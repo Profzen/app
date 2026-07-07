@@ -4,10 +4,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
 
 export const SecurityBanner = ({ icon, title, description }) => {
+  const DefaultShieldIcon = () => (
+    <View style={styles.shieldContainer}>
+      <Ionicons name="shield-outline" size={20} color="#1A73E8" />
+    </View>
+  );
+
   return (
     <View style={styles.securityBanner}>
       <View style={styles.iconContainer}>
-        {icon || <Ionicons name="shield-checkmark-outline" size={32} color={theme.colors.primary} />}
+        {icon ? icon : <DefaultShieldIcon />}
       </View>
       <View style={styles.texts}>
         <Text style={styles.title}>{title || 'Vos données sont sécurisées'}</Text>
@@ -48,5 +54,15 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: theme.colors.textSecondary,
     lineHeight: 16,
+  },
+  shieldContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#E8F0FE', // Light blue background
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#D2E3FC',
   }
 });

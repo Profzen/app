@@ -33,8 +33,12 @@ export default function VerificationScreen() {
 
   // Custom icon for Security Banner (The D coin)
   const DizzitCoinIcon = () => (
-    <View style={styles.coinIcon}>
-      <Text style={styles.coinText}>Đ</Text>
+    <View style={styles.coinIconContainer}>
+      <Image 
+        source={require('../../dizzitup logo cercle.png')} 
+        style={styles.coinImage}
+        resizeMode="contain"
+      />
     </View>
   );
 
@@ -217,19 +221,15 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
     marginLeft: theme.spacing.xs,
   },
-  coinIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: theme.colors.primary,
+  coinIconContainer: {
+    width: 36,
+    height: 36,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: theme.colors.textSecondary,
   },
-  coinText: {
-    color: theme.colors.accent,
-    fontFamily: theme.typography.fontFamily.bold,
-    fontSize: 18,
+  coinImage: {
+    width: 36,
+    height: 36,
+    transform: [{ scale: 2 }], // Doubler la taille visuelle pour compenser le padding de l'image
   }
 });

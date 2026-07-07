@@ -45,7 +45,12 @@ Ce document sert de mémoire centralisée pour le projet. Il contient tout le co
   2. Je reproduis l'écran au pixel près.
   3. Importation/Génération des assets (icônes, logos, images fictives).
   4. **Comportement "Prod-Ready" (TRÈS IMPORTANT)** : L'intégration n'est pas juste visuelle (statique). Il faut implémenter toute la logique d'état (React `useState`, validation de champs en temps réel, cases à cocher fonctionnelles, modales interactives) pour simuler une vraie application de bout en bout.
-  5. Fournir un aperçu : **Il faut TOUJOURS privilégier l'aperçu Web** (`npm run start` puis touche `w`) pour éviter les problèmes de compatibilité avec les versions mobiles d'Expo Go.
+  5. **Pratiques de Développement (Frontend)** :
+     - Utilisation des polices `Inter` et `Space Grotesk` comme défini dans le Design System.
+     - Couleurs principales : Primary (`#1A2840`), Secondary (`#F4F5F7`), Accent (`#FFC759`).
+     - Les composants répétitifs (Boutons, Inputs, Steppers, Bannières) sont centralisés dans `src/components/`.
+     - **Gestion des Icônes et Logos** : Privilégier les fichiers images spécifiques (ex: `dizzitup logo cercle.png`) plutôt que des redessinages CSS ou des rognages hasardeux sur les fichiers horizontaux globaux. L'ajustement du padding interne d'une image peut se faire proprement avec `transform: [{scale: X}]`.
+     - **Méthode de rendu privilégiée** : Toujours utiliser le navigateur web (`npm run start` puis touche `w`) pour visualiser l'application en cours de développement, afin d'éviter les bugs liés aux versions périmées de l'application mobile Expo Go. Cela garantit un aperçu fluide et continu pour tous les développeurs.
   6. Validation avant de passer à la maquette suivante.
 - **Gestion des versions de maquettes** : Les maquettes peuvent avoir des correctifs (ex: `M25_` est une mise à jour de `M25`). Il faut vérifier dans le suivi si la maquette a déjà été faite pour simplement la mettre à jour au lieu de la recréer.
 - **Mise à jour de la mémoire** : Après chaque action, le `memoire.md` global ainsi que le mémoire spécifique du développeur (`memoire_aziz.md` ou `memoire_remi.md`) doivent être enrichis.
