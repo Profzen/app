@@ -1,0 +1,58 @@
+
+DizzitUp
+Stablecoin-Powered Marketplace for Africa
+ 
+API & Data Structures Reference
+Mobile Team Technical Documentation : DizzitApp React Native Project
+dizzitup.com
+DizzitUp API & Data Structures Reference
+ 
+This document provides a high-level overview of the DizzitUp backend APIs and data structures. It is intended for the React Native mobile team (Remi & Aziz) to understand the data contracts for building UI screens, state management, and navigation flows.
+Note: All data structures are representations of the API contracts. Specific endpoints might return variations or paginated responses depending on the exact route.
+ 
+ 
+Purpose: Manages user registration, login, and profile data. Requires Auth: No for login/register, Yes for profile retrieval and updates.
+  Endpoints Overview
+•	POST /auth/register : Register a new user (Phone/Email)
+•	POST /auth/login : Authenticate and receive tokens
+•	GET /auth/profile : Get the current user's profile (Requires Auth)
+ 
+ 
+Purpose: Handles fiat and crypto balances, Mobile Money (MoMo) operations, sending, and swapping. Requires Auth: Yes (All endpoints)
+  Endpoints Overview
+•	GET /wallet/balances : Retrieves all asset balances for the user
+•	GET /transaction/history : List of past transactions
+•	POST /swap : Swap between tokens (e.g. USDT to DZY)
+•	POST /momo/pay-in : Deposit funds via Mobile Money
+•	POST /momo/pay-out : Withdraw funds to Mobile Money
+ 
+ 
+ 
+ 
+Purpose: Browsing the marketplace, viewing physical/digital goods, adding to cart, and checking out. Requires Auth: No for browsing, Yes for checkout and ordering.
+  Endpoints Overview
+•	GET /public/products : List available products (supports search, category, country filters)
+•	GET /public/products/:id : Get details of a specific product
+•	GET /public/stores/:country/:city/:shopSlug : Get merchant store details
+•	POST /cart : Manage shopping cart
+•	POST /orders : Create a new order (Requires Auth)
+ 
+ 
+ 
+Purpose: Purchasing airtime, data bundles, electricity (e.g. CEET), and international gift cards. Requires Auth: Yes (For payments, but providers can be fetched publicly).
+  Endpoints Overview
+•	GET /public/reloadly/providers : Get list of mobile/utility providers
+•	POST /airtime/topup : Purchase airtime (Requires Auth)
+•	POST /utilities/pay : Pay a utility bill (Requires Auth)
+•	POST /giftCard/purchase : Buy a digital gift card (Requires Auth)
+ 
+ 
+ 
+•	Authentication: Most secure routes will expect a Bearer token in the 
+Authorization header. UI components should gracefully handle 401 Unauthorized responses by redirecting to the login screen.
+•	Loading States: Screens should utilize Skeleton loaders matching the object shapes defined above while data is fetching.
+•	Offline States: For the mobile app, consider caching balances and profile data so the app feels responsive even on poor networks.
+DizzitUp
+dizzitup.com
+Confidential : For internal DizzitUp team use only
+

@@ -1,0 +1,264 @@
+CONTRAT DE PRESTATION SOLIDAIRE Entre les soussignés :
+AKAKPO Rémi Eli Kokou demeurant à Lomé Agoè Camp GP email :
+remieliakakpo@gmail.com Tél : 91127584 Ci-après dénommé Prestataire 1
+KOUMAI Abdel-Aziz demeurant à Agoè Nyivé email : koumaiabdelaziz@gmail.com Tél :
+92026792 Ci-après dénommé Prestataire 2
+BOTRE LARE Aboudou demeurant à Lomé Attikoumé email : botrelareaboudou@gmail.com
+Ci-après dénommé Prestataire 3
+Et
+DizzitUp Togo Sarl
+426 Rue SAint-Paul, Djidjolé
+Lomé, Togo
+NIF: 1001735783
+Représenté par Solofo Rafenombolatiana, Directeur Général
+Préambule : Les parties, agissant en qualité de prestataires indépendants, souhaitent
+collaborer de manière solidaire pour le design et conception du ”Front-end” et UX des
+applications mobiles DizzitApp et DizzitApp Business. Elles conviennent ce qui suit :
+Article 1 – Objet du contrat
+Le présent contrat a pour objet de définir les conditions dans lesquelles les trois prestataires
+collaborent pour la conception des applications. Chaque prestataire conserve son autonomie
+juridique et financière, mais s’engage à œuvrer dans un esprit de solidarité et de coopération.
+Article 2 – Prestations
+Les prestataires s’engagent à réaliser dans les délais convenus la conception des applications
+mobiles DizzitApp et DizzitApp business (la partie Front uniquement: Design, Figma et codes
+React Native)
+1. la refonte UX/UI des maquettes mobiles existantes de DizzitUp et DizzitUp Business ;
+2. l’adaptation des écrans mobiles à l’état actuel de la version web ;
+3. l’intégration des remarques et orientations transmises par le Client ;
+4. la création des écrans complémentaires nécessaires à la cohérence des parcours
+utilisateurs ;
+5. la réalisation des écrans front en React Native ;
+6. la liaison des écrans entre eux afin de permettre une simulation des principaux flux
+utilisateurs avec des données fictives.
+La mission concerne uniquement la partie UX/UI, design d’interface et front mobile
+simulable ainsi que la participation au test avec l’équipe de DizzitUp.
+Elle ne concerne pas le backend, les API, la base de données, l’authentification réelle, les
+paiements réels, les traitements serveur, le déploiement ou la mise en production.
+Article 3 – Périmètre de départ de la mission
+Les Parties reconnaissent que le projet dispose d’un ensemble initial d’environ 70 maquettes
+existantes servant de base de travail.
+Ces maquettes existantes feront l’objet :
+• d’un audit UX/UI ;
+• d’une refonte graphique et ergonomique ;
+• d’une adaptation à la direction artistique de DizzitUp ;
+• d’un alignement avec les fonctionnalités actuellement visibles sur la version web ;
+• d’ajustements selon les remarques du Client.
+Les Parties reconnaissent également qu’une première analyse a permis d’identifier la nécessité
+d’ajouter environ 10 nouvelles maquettes afin de compléter les parcours existants et de mieux
+correspondre à la version web actuelle.
+Ces 10 nouvelles maquettes identifiées à l’issue de l’audit initial sont incluses dans le périmètre
+de la présente mission.
+Article 4 – Optimisation des parcours et évolution du nombre de maquettes
+Le nombre de 70 maquettes existantes constitue une base de travail initiale et non un
+nombre final obligatoire de maquettes à reproduire strictement.
+Dans le cadre de la refonte, les Prestataires pourront proposer une simplification des parcours
+utilisateurs.
+Cette simplification pourra entraîner :
+• la fusion de certains écrans ;
+• la suppression d’étapes inutiles ;
+• la réduction du nombre de clics ;
+• la réduction du nombre final de maquettes ;
+• la réorganisation de certains parcours ;
+• l’ajout d’écrans complémentaires lorsque cela est nécessaire.
+L’objectif de la mission n’est donc pas de reproduire mécaniquement les 70 maquettes
+existantes, mais de produire une version plus cohérente, plus fluide et plus alignée avec les
+usages actuels de DizzitUp et DizzitUp Business.
+Toute réduction du nombre de maquettes résultant d’une optimisation UX validée par le Client
+ne pourra pas être considérée comme une inexécution, une réduction de la prestation ou une
+diminution de la rémunération convenue.
+De même, tout ajout important de nouvelles maquettes faisant dépasser les 80 maquettes
+prévues devra faire l’objet d’un accord écrit préalable, d’un devis ou d’un avenant.
+Article 5 – Prestations comprises
+La mission comprend :
+1. l’analyse des maquettes mobiles existantes ;
+2. l’audit des parcours utilisateurs ;
+3. la proposition d’améliorations UX/UI ;
+4. la refonte graphique des écrans ;
+5. l’adaptation des écrans aux remarques du Client ;
+6. l’alignement avec la version web actuelle ;
+7. la création des nouvelles maquettes nécessaires dans la limite du périmètre défini ;
+8. la préparation d’un document de suivi des maquettes et remarques ;
+9. la création des écrans front React Native correspondant aux maquettes retenues et
+validées ;
+10. la mise en place d’une navigation front entre les écrans ;
+11. l’utilisation de données fictives pour simuler les parcours ;
+12. la simulation des principaux flux utilisateurs afin de visualiser le fonctionnement
+côté front.
+Article 6 – Éléments expressément exclus
+Les Parties conviennent expressément que les éléments suivants ne sont pas inclus dans la
+présente mission :
+• développement backend ;
+• création, gestion ou modification de base de données ;
+• connexion réelle aux API, intégration d’API internes ou externes, gestion des routes
+backend, authentification réelle ;
+• gestion réelle des sessions utilisateurs ;
+• gestion réelle des paiements ;
+• sécurité serveur ;
+• stockage réel de données ;
+• hébergement ;
+• déploiement sur App Store ou Play Store ;
+• mise en production ;
+• maintenance technique après livraison ;
+• correction de bugs provenant du backend, des API ou de l’infrastructure ;
+• rédaction complète des contenus métier non fournis par le Client.
+Les écrans React Native livrés auront pour finalité de permettre une simulation front avec
+données fictives, et non une application connectée à une infrastructure réelle.
+Toute demande relative aux éléments exclus devra faire l’objet d’un devis, d’un avenant ou d’un
+accord écrit complémentaire.
+Article 7 – État d’avancement au jour de la signature
+Les Parties reconnaissent qu’au jour de la signature du présent contrat, la
+mission a déjà démarré. Une quarantaine de maquettes ont déjà été réalisées,
+adaptées ou proposées par les Prestataires.
+Ces travaux déjà effectués font partie intégrante de la mission et sont pris en compte dans la
+rémunération prévue au présent contrat.
+Le premier paiement prévu au présent contrat constitue donc un paiement de régularisation
+des travaux déjà engagés, et non une simple avance.
+Article 8 – Livrables attendus
+Les livrables attendus sont :
+1. les maquettes refondues des écrans mobiles DizzitUp et DizzitUp Business ;
+2. les nouvelles maquettes nécessaires à la cohérence des parcours, dans la limite du
+périmètre convenu ;
+3. un document de suivi permettant au Client de visualiser l’évolution des maquettes et
+de formuler ses remarques ;
+4. les écrans front React Native correspondant aux maquettes retenues et validées ;
+5. la navigation front entre les principaux écrans ;
+6. les données fictives nécessaires à la simulation ;
+7. une version front permettant de parcourir et tester visuellement les flux utilisateurs.
+Les livrables ne comprennent pas le branchement aux API, la base de données, les services
+backend, les fonctionnalités serveur, l’authentification réelle ou la mise en production.
+Article 9 – Corrections et validations
+Chaque écran ou lot d’écrans inclut deux cycles de correction raisonnables.
+Les retours du Client devront être formulés de manière claire, groupée et exploitable.
+Toute modification majeure après validation, tout changement complet de direction graphique,
+toute nouvelle fonctionnalité ou toute demande sortant du périmètre initial sera considérée
+comme une prestation complémentaire.
+Les validations et remarques du Client devront permettre la bonne continuité de la mission et
+seront intégrées dans la limite du périmètre prévu au présent contrat.
+Article 10 – Obligations des parties
+10.1. Chaque prestataire s’engage à :
+● Exécuter ses prestations avec diligence et professionnalisme.
+● Respecter les délais et modalités convenus.
+● Informer les autres parties de toute difficulté susceptible d’affecter la réalisation des
+prestations
+● Respecter la confidentialité du projet, à ne pas partager, ni divulguer à qui que ce soit en
+dehors de l’équipe de DizzitUp toutes les informations concernant le projet DizzitUp dont
+et non limitées à:
+○ La stratégie et objectifs de DizzitUp
+○ Les technologies, composants et framework utilisés par DizzitUp
+○ Les noms et information sur les partenaires technologiques et “business” de
+DizzitUp
+○ Les schémas, écrans reçus et nouvellement créés, les codes générés
+10.2. Les parties s’engagent à :
+● Mutualiser leurs moyens (humains, matériels, financiers) dans la mesure du possible.
+● Respecter les principes de transparence et de confiance mutuelle.
+● Respecter la confidentialité du projet et la propriété industrielle et intellectuelle de
+DizzitUp sur l’ensemble de son projet
+De manière générale, les Prestataires, les 3 conjointement, s’engagent à :
+• exécuter la mission avec sérieux, diligence et professionnalisme ;
+• respecter la direction artistique validée avec le Client ;
+• adapter les écrans en fonction des remarques raisonnables du Client ;
+• proposer des optimisations de parcours lorsque cela améliore l’expérience utilisateur ;
+• informer le Client en cas de difficulté pouvant impacter le planning ; • respecter les
+obligations de confidentialité prévues au présent contrat.
+Les obligations opérationnelles relatives à la conception UX/UI, aux maquettes, aux écrans
+React Native et à la simulation front sont assurées par Prestataire 1 et Prestataire 2.
+Les Prestataires sont tenus à une obligation de moyens pour la conception UX/UI et la
+simulation front.
+Ils ne sont pas tenus responsables du fonctionnement réel de l’application avec API, base de
+données, services backend ou infrastructure serveur.
+Article 11 – Obligations du Client
+Le Client s’engage à :
+• fournir les maquettes existantes ;
+• fournir les logos, contenus, textes, icônes et éléments graphiques nécessaires ;
+• fournir les références web à suivre ;
+• transmettre ses remarques dans des délais raisonnables ;
+• transmettre des retours clairs, groupés et exploitables ;
+• valider les lots livrés ;
+• ne pas étendre le périmètre sans accord préalable ; • effectuer les paiements selon
+l’échéancier convenu.
+Tout retard dans la transmission des éléments nécessaires ou dans la validation des livrables
+pourra entraîner un ajustement du calendrier.
+Article 12 – Rémunération et modalités financières
+La rémunération convenue est fixée comme suit :
+AKAKPO Rémi Eli Kokou : 100 000 FCFA + un bonus équivalent à 50 000
+FCFA en jetons DZY
+KOUMAI Abdel-Aziz : 100 000 FCFA + un bonus équivalent à 50 000 FCFA
+en jetons DZY
+BOTRE LARE Aboudou : un bonus équivalent à 50 000 FCFA en jetons DZY.
+Les Bonus sont acquis par les prestataires à l’atteinte de la livraison des
+maquettes sur Figma et des code React Native associés à Fin Juin 2026.
+De commun accord, cette date de livraison a été repoussée au 10 Juillet
+2026
+La rémunération des Prestataires 1 et 2 couvre uniquement le périmètre défini dans le
+présent contrat, à savoir :
+•la refonte UX/UI des maquettes existantes ;
+•l’optimisation des parcours ;
+•l’ajout des maquettes complémentaires identifiées après audit initial ;
+•l’adaptation aux remarques du Client ;
+•la production des écrans React Native côté front ;
+•la simulation des flux utilisateurs avec données fictives.
+Elle ne couvre pas les éléments exclus à l’article 6.
+Le bonus prévu au profit de Prestataire 3 est limité au montant indiqué ci-dessus et sera
+versé selon les modalités prévues à l’article 11.
+Article 12.1. En cas de défaillance d’un prestataire, les deux autres s’engagent à se substituer
+à lui pour assurer la continuité du service, sous réserve d’un accord préalable sur les modalités
+de compensation financière.
+Article 13 – Modalités de paiement
+Compte tenu du fait que la mission a déjà commencé et qu’une quarantaine de maquettes ont
+déjà été réalisées, les paiements seront effectués selon l’échéancier suivant pour Prestataire 1
+et Prestataire 2 :
+1. Premier paiement : 50 % du montant en FCFA à la signature du contrat, soit 50
+000 FCFA pour Prestataire 1 et 50 000 FCFA pour Prestataire 2, correspondant à la
+régularisation des travaux déjà réalisés et à la poursuite de la mission.
+2. Deuxième paiement : 50 % du montant restant en FCFA à la livraison acceptée des
+maquettes et des codes React Native permettant la simulation front des principaux
+parcours utilisateurs, soit 25 000 FCFA pour Prestataire 1 et 25 000 FCFA pour
+Prestataire 2. Cette livraison est attendue au 10 Juillet 2026
+3. Troisième paiement: la totalité du reliquat au 31 Juillet 2026 ou à 21 jours après la
+livraison des maquettes et codes si les prestataires n’ont pas livré au 10 Juillet convenu,
+soit 25 000 FCFA pour Prestataire 1 et 25 000 FCFA pour Prestataire 2.
+Les bonus en jetons DZY seront acquis officiellement par les prestataires à la fin de leur
+mission, prévue au 31 Juillet 2026 ou au plus tard 20 jours après leur livraison des maquettes
+Figma et codes.
+Comme pour tous les utilisateurs et marchands de DizzitUp, les jetons bonus des 3 prestataires
+seront versés dans leurs portefeuilles DZYwallet au lancement en bourse, sur un Exchange
+crypto mondial des jetons DZY, planifié à mi-Septembre 2026.
+• Prestataire 1 : équivalent de 50 000 FCFA en jetons DZY ;
+• Prestataire 2 : équivalent de 50 000 FCFA en jetons DZY ;
+• Prestataire 3 : équivalent de 50 000 FCFA en jetons DZY.
+La société DizzitUp precisera
+•le nombre exact de jetons DZY correspondant à l’équivalent de 50 000 FCFA ;
+•la valeur de référence utilisée ;
+•l’adresse wallet de réception ;
+•les modalités de compensation si le versement en DZY n’est pas possible.
+En cas d’impossibilité de versement des jetons DZY, DizzitUp s’engage à verser
+l’équivalent en FCFA si et seulement si les Prestataires ont livré les maquettes et codes
+acceptés et validés par la Société à temps selon le calendrier ci-dessous:
+- La livraison des jetons DZY n’auront lieu qu’au lancement en bourse de DZY (prévu
+mi-Septembre 2026) et la compensation au 30 Septembre 2026 si jamais les DZY ne
+sont pas encore lancés
+Article 14 – Propriété intellectuelle
+Les résultats des prestations (documents, créations, code etc.) et l’ensemble des informations,
+concept, logos, … partagés aux prestataires avant le démarrage de cette mission sont la
+propriété de DizzitUp et les 3 prestataires le reconnaissent par la signature de ce présent
+contrat
+Les prestataires s’engagent à respecter la confidentialité du projet et à ne pas ré-utiliser tous les
+concepts et codes générés durant leur prestation à leur bénéfice ou à autrui.
+Article 15 – Confidentialité
+Chaque partie s’engage à ne pas divulguer les informations confidentielles échangées dans le
+cadre de ce contrat, sauf accord écrit préalable.
+Article 16 – Durée et résiliation
+16.1. Le contrat est conclu pour une durée de 47 jours à compter du 17 juin au 30 juillet 2026.
+La livraison des maquettes Figma et des codes en React Native associés est prévue au 10
+Juillet 2026
+16.2. En cas de manquement grave d’une partie à ses obligations, les autres parties peuvent
+résilier le contrat sans préavis ni indemnité.
+Article 17 – Litiges
+Tout litige relatif à l’interprétation ou à l’exécution du présent contrat sera soumis à une
+médiation préalable.
+À défaut d’accord, les parties se soumettent à la compétence des tribunaux de Lomé.
+Fait à Lomé, le 4 Juillet 2026
+Signatures :
+AKAKPO Rémi Eli Kokou RAFENOMBOLATIANA Solofo
+KOUMAI Abdel-Aziz
+BOTRE LARE Aboudou

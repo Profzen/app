@@ -1,0 +1,159 @@
+DizzitUp Mobile Application - Technical Proposal & Resource Plan
+Introduction
+Ce document présente mon analyse technique et ma proposition concernant le développement de l’application mobile DizzitUp.
+
+L’objectif est de construire une application mobile native moderne capable de centraliser :
+• DZYwallet
+• PayBills
+• BuyGoods Marketplace
+• Paiements et remittances
+et la gestion des DZY en V2 quand ils seront lancés (Objectif d’ouverture des Airdrop: Fin Juin)
+
+tout en utilisant au maximum l’infrastructure et les APIs déjà existantes.
+1. Technologie recommandée
+React Native avec Expo représente selon moi la meilleure solution long terme pour DizzitUp.
+
+Cette approche permettrait :
+• Une vraie application native Android/iOS
+• Publication sur Google Play & App Store
+• Notifications push natives
+• Biométrie (FaceID / Fingerprint)
+• Performances mobiles optimisées
+• Accès caméra et fonctionnalités téléphone
+• Maintenance plus simple qu’un développement natif séparé
+2. Réutilisation de l’existant
+L’avantage principal est que nous pouvons réutiliser une très grande partie de l’écosystème actuel.
+Ce qui est réutilisable :
+• APIs BuyGoods
+• APIs PayBills
+• APIs Wallet
+• Supabase backend
+• Authentification
+• Services métiers
+• Wallet logic
+• Traductions i18n
+• Helpers / formatters
+• Contextes React
+
+Ce qui doit être reconstruit :
+• Toutes les interfaces UI mobile
+• Navigation mobile
+• Écrans React Native
+• Composants mobiles natifs
+• Expérience tactile mobile
+
+Techniquement, nous gardons le “cerveau” de la plateforme mais nous reconstruisons le “visage” mobile.
+3. Design & UX Mobile
+Designer Figma : recommandé mais non obligatoire.
+
+Nous possédons déjà un design web responsive relativement propre.
+
+Grâce à NativeWind, il sera possible de réutiliser une partie importante de notre logique Tailwind actuelle afin de reproduire rapidement le design mobile.
+
+Un designer mobile permettrait néanmoins de gagner du temps sur :
+• Ergonomie mobile
+• Safe areas iPhone
+• Transitions
+• Bottom sheets
+• Gestures
+• Expérience Android/iOS native
+4. Périmètre MVP - Phase 1
+Fonctionnalités prioritaires :
+
+Authentification :
+• Email / Password
+• Google Login
+• Apple Login
+
+DZYwallet :
+• Consultation des balances
+• Historique des transactions
+• Send / Receive
+• Swap
+• Confirmation sécurisée
+●	Tokens list avec ligne DZY
+
+
+PayBills :
+• Recharge mobile
+• Gift Cards
+• Paiement de factures
+
+Marketplace :
+• Navigation produits
+• Recherche
+• Panier
+• Checkout simplifié
+
+Utilisateur :
+• Profil utilisateur
+• Paramètres
+• Notifications push
+5. Ce que je ne recommande pas dans le MVP
+Afin d’éviter un scope trop large dès le départ, je pense qu’il vaut mieux repousser certaines parties dans une future phase.
+Phase 2 / Post-MVP :
+• Dashboard marchand complet
+• Back-office admin
+• Gestion marchands avancée
+• Escrow complexe
+• Gestion POS
+• Analytics
+• Merchant onboarding avancé
+• Outils business avancés
+6. Ressources nécessaires
+Développeur React Native dédié
+Selon moi, c’est la ressource la plus importante.
+Aujourd’hui il reste encore beaucoup de travail côté web :
+• Back Office
+• Escrow
+• Checkout
+• Merchant Dashboard
+• Stabilisation Wallet
+• Marketplace
+• Sécurité
+• Tests
+• Production hardening
+
+Le plus logique serait :
+• Un développeur React Native dédié au mobile
+• Pendant que le reste de l’équipe continue la stabilisation web
+7. Crossmint & Wallet Mobile
+Crossmint reste aujourd’hui très orienté Web.
+Le moyen le plus stable et sécurisé pour intégrer certaines parties mobile sera probablement :
+• WebView sécurisée
+• Deep-linking
+• Bridge natif
+
+Comme nous l’avons déjà vécu côté Wallet/Web, certaines intégrations peuvent révéler des cas complexes imprévus. C’est pour cela que je préfère rester prudente concernant les timelines afin d’éviter une accumulation de dette technique.
+8. Timeline réaliste
+Avec un développeur React Native dédié :
+• Environ 3 à 4 mois pour un MVP mobile solide.
+
+Sans ressource supplémentaire :
+• Environ 5 à 6 mois minimum si le développement mobile doit être fait en parallèle de BuyGoods, PayBills et de la stabilisation production.
+9. Objectif du 15 Juillet
+Je préfère être totalement transparente techniquement.
+
+Une application complète avec :
+• Wallet
+• PayBills
+• Marketplace
+• Stabilité production
+• Stores mobiles
+• QA
+• Tests Android/iPhone
+pour le 15 juillet me paraît ambitieux (en théorie).
+Une Beta plus légère centrée sur :
+• Auth
+• Wallet
+• PayBills
+pourrait être envisageable avec les bonnes ressources.
+10. Conclusion
+Le projet mobile reste totalement faisable et très intéressant stratégiquement pour DizzitUp.
+
+Avec :
+• Une bonne organisation
+• Un scope MVP raisonnable
+• Les bonnes ressources
+• Une stabilisation préalable du web. 
+Nous pouvons construire une application mobile solide tout en continuant à faire évoluer la plateforme actuelle.

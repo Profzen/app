@@ -1,0 +1,74 @@
+
+DizzitUp
+Stablecoin-Powered Marketplace for Africa
+ 
+Design System Reference
+Visual Identity Guide : DizzitApp React Native Project
+dizzitup.com
+DizzitUp Design System Reference
+ 
+This document outlines the core visual identity and design system parameters used in the DizzitUp ecosystem. It is intended for the React Native mobile team (Remi & Aziz) to ensure UI consistency across web and mobile platforms.
+ 
+ 
+The DizzitUp brand uses specific fonts to convey a modern, professional, and trustworthy feel.
+•	Primary Font (Sans-serif): Inter : Used for body text, paragraphs, buttons, and UI elements.
+•	Headings & Brand Type (Grotesk): Space Grotesk : Used for primary headings (H1, H2), numbers, and promotional banners (e.g. Beta banners).
+•	Monospace: JetBrains Mono : Used for wallet addresses, transaction hashes, and technical data.
+  Font Weights
+•	Normal: 400
+•	Medium: 500
+•	Semi-Bold: 600
+•	Black/Extra-Bold: 900 (Frequently used for primary action buttons and prominent headers)
+ 
+ 
+The DizzitUp palette is structured to feel premium, secure, and energetic.
+  Primary Brand Colors
+Role	Color Name	Hex Code	Usage
+ProfessionalMain brand color, header background, primary text on
+Primary	#20365B
+Bluelight backgrounds
+Primary Light	Blue Gradient
+Step	#2d4a7c
+Used in gradients with the Primary Blue
+Accent /
+	Energetic Amber	#FFC759	Primary Call-to-Action buttons, icons, highlights
+Highlight
+Accent Dark	Gold Variant	#F6C056
+Hover states, secondary highlights
+Background	Main background for dark mode components and
+ 
+Role	Color	Hex Code	Usage
+Success	Fresh Emerald	#4ade80	Successful transactions, operational status
+Warning	Consistent
+Amber	#facc15
+Pending states, partial operations
+ 
+•	Surface: Pure White ( #FFFFFF ) for cards and dropdowns
+•	Text Primary: Rich dark slate ( #20365B or #0E0E0E ) depending on the background
+•	Text Secondary: Muted slate (gray-400 / gray-500) for subtitles and placeholders
+ 
+ 
+In React Native, absolute pixels are used rather than Tailwind classes, but the ratios remain the same. DizzitUp uses a highly compact and dense mobile design.
+  Standard Padding/Margins (React Native Equivalents)
+Tailwind Class	Pixel Value	Usage
+p-2 / gap-2	8px	Tight clusters, icon spacing
+p-3 / gap-3	12px	Standard inner padding for small cards
+p-4 / gap-4	16px	Standard container padding
+p-6 / gap-6	24px	Section spacing
+p-8 / gap-8	32px	Major section dividers
+Note: The web app scales these down by roughly 10-20% on screens smaller than 640px to ensure maximum data density on small devices like the iPhone SE.
+ 
+ 
+The app favors highly rounded, friendly shapes. - Cards & Modals: 40px (rounded[2.5rem]) or 24px (rounded-3xl) - Buttons & Inputs: 16px (rounded-2xl) or fully pillshaped (rounded-full) - Small Elements / Badges: 12px (rounded-xl)
+  Shadows & Elevation
+•	Soft: 0 1px 3px rgba(0,0,0,0.1) : Standard cards
+•	Floating: 0 4px 6px -1px rgba(0,0,0,0.1) : Dropdowns, sticky headers
+•	Elevated: 0 10px 15px -3px rgba(0,0,0,0.1) : Modals, primary action buttons
+•	Brand Glow: Primary CTA buttons often feature a colored shadow (e.g. amber or blue glow at 20-30% opacity) to make them pop
+  Gradients
+The DizzitUp brand heavily utilizes subtle horizontal gradients for buttons and active states. - Primary Blue Gradient: left-to-right from #20365B to #2d4a7c - Gold Gradient:
+left-to-right from #FFC759 to #ffdb8a
+DizzitUp
+dizzitup.com
+Confidential : For internal DizzitUp team use only
+
