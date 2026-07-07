@@ -10,7 +10,7 @@ import {
 import {
   SpaceGrotesk_700Bold,
 } from '@expo-google-fonts/space-grotesk';
-import VerificationScreen from './src/screens/VerificationScreen';
+import SecureAccountScreen from './src/screens/SecureAccountScreen';
 
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -37,6 +37,6 @@ export default function App() {
     );
   }
 
-  return <VerificationScreen />;
+  return <SecureAccountScreen />;
 }
 

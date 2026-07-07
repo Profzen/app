@@ -5,7 +5,7 @@ Voici la liste des maquettes filtrées pour ne conserver que la version la plus 
 ## Série M
 - [x] M1.png
 - [x] M2.png
-- [ ] M3.png
+- [x] M3.png
 - [ ] M4_.png
 - [ ] M5_.png
 - [ ] M6_.png
