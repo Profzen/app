@@ -4,6 +4,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
 import { DizzitInput } from '../components/DizzitInput';
 import { DizzitButton } from '../components/DizzitButton';
+import { Stepper } from '../components/Stepper';
+import { SecurityBanner } from '../components/SecurityBanner';
+import { SocialLogins } from '../components/SocialLogins';
+import { FooterTerms } from '../components/FooterTerms';
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
@@ -61,28 +65,7 @@ export default function RegisterScreen() {
         </View>
 
         {/* Stepper */}
-        <View style={styles.stepperContainer}>
-          <View style={styles.stepItem}>
-            <View style={[styles.stepCircle, styles.stepActive]}>
-              <Text style={styles.stepTextActive}>1</Text>
-            </View>
-            <Text style={[styles.stepLabel, styles.stepLabelActive]}>Informations</Text>
-          </View>
-          <View style={styles.stepLine} />
-          <View style={styles.stepItem}>
-            <View style={styles.stepCircle}>
-              <Text style={styles.stepText}>2</Text>
-            </View>
-            <Text style={styles.stepLabel}>Vérification</Text>
-          </View>
-          <View style={styles.stepLine} />
-          <View style={styles.stepItem}>
-            <View style={styles.stepCircle}>
-              <Text style={styles.stepText}>3</Text>
-            </View>
-            <Text style={styles.stepLabel}>Sécurisation</Text>
-          </View>
-        </View>
+        <Stepper currentStep={1} />
 
         {/* Form */}
         <View style={styles.formContainer}>
@@ -126,17 +109,7 @@ export default function RegisterScreen() {
           />
 
           {/* Security Banner */}
-          <View style={styles.securityBanner}>
-            <View style={styles.shieldIconContainer}>
-              <Ionicons name="shield-checkmark-outline" size={32} color={theme.colors.primary} />
-            </View>
-            <View style={styles.securityTexts}>
-              <Text style={styles.securityTitle}>Vos données sont sécurisées</Text>
-              <Text style={styles.securityDesc}>
-                Vos données sont protégées avec le plus{'\n'}haut niveau de sécurité.
-              </Text>
-            </View>
-          </View>
+          <SecurityBanner />
 
           <DizzitButton 
             title="Continuer" 
@@ -146,37 +119,10 @@ export default function RegisterScreen() {
         </View>
 
         {/* Social Logins */}
-        <View style={styles.dividerContainer}>
-          <View style={styles.divider} />
-          <Text style={styles.dividerText}>ou continuer avec</Text>
-          <View style={styles.divider} />
-        </View>
-
-        <View style={styles.socialContainer}>
-          <TouchableOpacity style={styles.socialButton}>
-            <Ionicons name="logo-google" size={24} color={theme.colors.textSecondary} />
-            <Text style={styles.socialText}>Google</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton}>
-            <Ionicons name="logo-apple" size={24} color={theme.colors.textPrimary} />
-            <Text style={styles.socialText}>Apple</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton}>
-            <Ionicons name="logo-facebook" size={24} color="#1877F2" />
-            <Text style={styles.socialText}>Facebook</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton}>
-            {/* Close enough icon for X */}
-            <Text style={{fontWeight: 'bold', fontSize: 20, color: theme.colors.textPrimary}}>X</Text>
-            <Text style={styles.socialText}>X (Twitter)</Text>
-          </TouchableOpacity>
-        </View>
+        <SocialLogins />
 
         {/* Footer */}
-        <Text style={styles.footerText}>
-          En vous inscrivant, vous acceptez nos <Text style={styles.linkText}>Conditions d'utilisation</Text>{'\n'}
-          et notre <Text style={styles.linkText}>Politique de confidentialité</Text>
-        </Text>
+        <FooterTerms />
         
         {/* Spacer for bottom padding */}
         <View style={{height: 40}} />
