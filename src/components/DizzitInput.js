@@ -10,6 +10,10 @@ export const DizzitInput = ({
   onChangeText,
   iconLeft,
   isPassword,
+  secureTextEntry = false,
+  rightIcon,
+  onRightIconPress,
+  keyboardType = 'default',
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -35,9 +39,11 @@ export const DizzitInput = ({
           placeholderTextColor={theme.colors.textSecondary}
           value={value}
           onChangeText={onChangeText}
-          secureTextEntry={isPassword && !showPassword}
+          keyboardType={keyboardType}
+          secureTextEntry={isPassword ? !showPassword : secureTextEntry}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
+          selectionColor={theme.colors.accent}
           {...props}
         />
 
@@ -51,6 +57,12 @@ export const DizzitInput = ({
               size={20} 
               color={theme.colors.primary} 
             />
+          </TouchableOpacity>
+        )}
+
+        {rightIcon && (
+          <TouchableOpacity onPress={onRightIconPress} style={styles.rightIconContainer}>
+            {rightIcon}
           </TouchableOpacity>
         )}
       </View>
@@ -88,9 +100,13 @@ const styles = StyleSheet.create({
     marginLeft: theme.spacing.sm,
     padding: 4,
   },
+  rightIconContainer: {
+    marginLeft: theme.spacing.sm,
+    padding: 4,
+  },
   input: {
     flex: 1,
-    fontFamily: theme.typography.fontFamily.regular,
+    fontFamily: theme.typography.fontFamily.medium,
     fontSize: theme.typography.sizes.sm,
     color: theme.colors.textPrimary,
     height: '100%',

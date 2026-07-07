@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { View, TextInput, StyleSheet } from 'react-native';
 import { theme } from '../theme/theme';
 
-export const OtpInput = ({ length = 6, value, onChange }) => {
+export const OtpInput = ({ length = 6, value, onChange, isError }) => {
   const [code, setCode] = useState(value || new Array(length).fill(''));
   const inputs = useRef([]);
 
@@ -30,7 +30,11 @@ export const OtpInput = ({ length = 6, value, onChange }) => {
       {code.map((digit, index) => (
         <TextInput
           key={index}
-          style={[styles.input, digit && styles.inputActive]}
+          style={[
+            styles.input, 
+            digit && styles.inputActive,
+            isError && styles.inputError
+          ]}
           value={digit}
           onChangeText={(text) => handleChange(text, index)}
           onKeyPress={(e) => handleKeyPress(e, index)}
@@ -65,5 +69,9 @@ const styles = StyleSheet.create({
   },
   inputActive: {
     borderColor: theme.colors.accent,
+  },
+  inputError: {
+    borderColor: '#E74C3C',
+    backgroundColor: '#FDEDEC',
   }
 });

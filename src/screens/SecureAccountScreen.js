@@ -74,7 +74,16 @@ export default function SecureAccountScreen() {
             </Text>
           </View>
           
-          <OtpInput length={6} value={confirmPin} onChange={setConfirmPin} />
+          <OtpInput 
+            length={6} 
+            value={confirmPin} 
+            onChange={setConfirmPin} 
+            isError={confirmPin.length === 6 && confirmPin !== pin}
+          />
+          
+          {confirmPin.length === 6 && confirmPin !== pin && (
+            <Text style={styles.errorText}>Les codes PIN ne correspondent pas.</Text>
+          )}
 
           {/* Security Banner with specific text for M3 */}
           <SecurityBanner 
@@ -198,6 +207,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.colors.textSecondary,
     lineHeight: 18,
+  },
+  errorText: {
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: theme.typography.sizes.sm,
+    color: '#E74C3C',
+    marginTop: -theme.spacing.sm,
+    marginBottom: theme.spacing.md,
   },
   dividerContainer: {
     flexDirection: 'row',

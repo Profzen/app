@@ -6,7 +6,7 @@ Voici la liste des maquettes filtrées pour ne conserver que la version la plus 
 - [x] M1.png
 - [x] M2.png
 - [x] M3.png
-- [ ] M4_.png
+- [x] M4_.png
 - [ ] M5_.png
 - [ ] M6_.png
 - [ ] M7__.png
