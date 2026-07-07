@@ -3,7 +3,7 @@
 Voici la liste des maquettes filtrées pour ne conserver que la version la plus récente de chaque écran (en se basant sur le nombre de `_`).
 
 ## Série M
-- [ ] M1.png
+- [x] M1.png
 - [ ] M2.png
 - [ ] M3.png
 - [ ] M4_.png

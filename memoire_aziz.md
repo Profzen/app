@@ -7,4 +7,4 @@
 - **Liste de suivi** : [liste_maquettes_aziz.md](file:///g:/zen/projets/DizzitApp/app/liste_maquettes_aziz.md)
 
 ## Journal d'avancement
-*(Les mises à jour des intégrations faites par Aziz apparaîtront ici au fur et à mesure)*
+- **[07/07/2026]** : Intégration de `M1.png` (Écran d'inscription). Création du `theme.js` et des composants de base (`DizzitButton`, `DizzitInput`).
