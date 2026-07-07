@@ -44,7 +44,7 @@ Ce document sert de mémoire centralisée pour le projet. Il contient tout le co
   1. Le développeur (toi) fournit l'image de la maquette.
   2. Je reproduis l'écran au pixel près.
   3. Importation/Génération des assets (icônes, logos, images fictives).
-  4. Fournir un aperçu (lancement de l'app en local via Expo, avec instruction pour visualisation web/mobile).
+  4. Fournir un aperçu : **Il faut TOUJOURS privilégier l'aperçu Web** (`npm run start` puis touche `w`) pour éviter les problèmes de compatibilité avec les versions mobiles d'Expo Go.
   5. Validation avant de passer à la maquette suivante.
 - **Gestion des versions de maquettes** : Les maquettes peuvent avoir des correctifs (ex: `M25_` est une mise à jour de `M25`). Il faut vérifier dans le suivi si la maquette a déjà été faite pour simplement la mettre à jour au lieu de la recréer.
 - **Mise à jour de la mémoire** : Après chaque action, le `memoire.md` global ainsi que le mémoire spécifique du développeur (`memoire_aziz.md` ou `memoire_remi.md`) doivent être enrichis.
