@@ -1,67 +1,53 @@
-# DizzitApp - Projet Mobile React Native
-## Mémoire du Projet
+# 🧠 Mémoire Central du Projet : DizzitUp Mobile App
 
-Ce document sert de mémoire centralisée pour le projet. Il contient tout le contexte, les détails techniques, l'organisation du travail et l'état d'avancement. **Il doit être mis à jour à chaque avancée significative.**
+Ce fichier est la **source de vérité absolue** du projet. Il doit être lu au début de chaque nouvelle conversation pour récupérer tout le contexte, l'architecture, les règles de développement et l'état d'avancement, afin de reprendre le travail immédiatement sans perte d'information.
 
-### 1. Contexte et Objectif
-- **Nom du Projet** : DizzitApp (Application Mobile DizzitUp & DizzitUp Business).
-- **Objectif** : Reproduire au pixel près les maquettes d'application mobile (environ 80 écrans au total).
-- **Périmètre** : 
-  - Développement Front-end **uniquement**.
-  - Pas de branchement backend réel pour l'instant (simulation des flux avec données fictives).
-  - Le but final est d'avoir une application React Native (iOS/Android) simulable, fluide, reprenant le Design System.
+---
 
-### 2. Stack Technique et Design System
-- **Framework** : React Native avec **Expo**.
-- **Styling** : NativeWind (TailwindCSS) pour transposer facilement le design, ou StyleSheet classique en respectant les variables.
-- **Design System** :
-  - **Typographie** : 
-    - Principal : *Inter*
-    - Titres : *Space Grotesk*
-    - Code/Wallet : *JetBrains Mono*
-  - **Couleurs Principales** :
-    - Primary Blue : `#20365B` (Gradients vers `#2d4a7c`)
-    - Energetic Amber : `#FFC759` (Gradients vers `#ffdb8a`)
-    - Success : `#4ade80`, Warning : `#facc15`
-  - **Formes & Ombres** : 
-    - Bords très arrondis (40px pour modales/cartes, 16px/pill pour boutons).
-    - Ombres colorées (brand glow) pour les boutons d'appel à l'action.
+## 🎯 1. Contexte du Projet
+Nous développons l'application mobile **DizzitUp** en utilisant **React Native** (avec Expo). L'objectif est de fournir une interface "Prod-Ready", c'est-à-dire non seulement fidèle aux maquettes visuelles (Pixel-Perfect), mais aussi dotée d'une vraie logique d'interface (gestion d'état, validation, animations basiques) prête à être branchée sur un backend.
 
-### 3. Workflow et Organisation du Travail (Règles strictes)
-- **Collaboration** : L'équipe est composée de deux développeurs, **Aziz** et **Rémi**. 
-  - Chaque développeur possède son propre répertoire de maquettes (`maj/` pour Aziz, `maj_remi/` pour Rémi).
-  - Chacun a sa liste de suivi : [liste_maquettes_aziz.md](file:///g:/zen/projets/DizzitApp/app/liste_maquettes_aziz.md) et [liste_maquettes_remi.md](file:///g:/zen/projets/DizzitApp/app/liste_maquettes_remi.md).
-  - Chacun a son propre journal détaillé : [memoire_aziz.md](file:///g:/zen/projets/DizzitApp/app/memoire_aziz.md) et [memoire_remi.md](file:///g:/zen/projets/DizzitApp/app/memoire_remi.md).
-  - Ce présent fichier global (`memoire.md`) retrace l'évolution générale de l'architecture et du projet global.
-- **Gestion de version (Git)** :
-  - **Dépôt distant** : `https://github.com/Profzen/app`
-  - **Stratégie de branche** : 
-    - Tout le travail quotidien et les nouvelles maquettes se font sur la branche `develop`.
-    - La branche `main` est réservée aux versions stables (lots de maquettes finalisés).
-  - Toujours récupérer les dernières mises à jour (`git pull origin develop`) avant de commencer un travail pour éviter les conflits.
-  - Commiter et pousser les changements (`git push origin develop`) de manière atomique.
-- **Déroulement par maquette** :
-  1. Le développeur (toi) fournit l'image de la maquette.
-  2. Je reproduis l'écran au pixel près.
-  3. Importation/Génération des assets (icônes, logos, images fictives).
-  4. **Comportement "Prod-Ready" (TRÈS IMPORTANT)** : L'intégration n'est pas juste visuelle (statique). Il faut implémenter toute la logique d'état (React `useState`, validation de champs en temps réel, cases à cocher fonctionnelles, modales interactives) pour simuler une vraie application de bout en bout.
-  5. **Pratiques de Développement (Frontend)** :
-     - Utilisation des polices `Inter` et `Space Grotesk` comme défini dans le Design System.
-     - Couleurs principales : Primary (`#1A2840`), Secondary (`#F4F5F7`), Accent (`#FFC759`).
-     - Les composants répétitifs (Boutons, Inputs, Steppers, Bannières) sont centralisés dans `src/components/`.
-     - **Gestion des Icônes et Logos** : Privilégier les fichiers images spécifiques (ex: `dizzitup logo cercle.png`) plutôt que des redessinages CSS ou des rognages hasardeux sur les fichiers horizontaux globaux. L'ajustement du padding interne d'une image peut se faire proprement avec `transform: [{scale: X}]`.
-     - **Méthode de rendu privilégiée** : Toujours utiliser le navigateur web (`npm run start` puis touche `w`) pour visualiser l'application en cours de développement, afin d'éviter les bugs liés aux versions périmées de l'application mobile Expo Go. Cela garantit un aperçu fluide et continu pour tous les développeurs.
-  6. Validation avant de passer à la maquette suivante.
-- **Gestion des versions de maquettes** : Les maquettes peuvent avoir des correctifs (ex: `M25_` est une mise à jour de `M25`). Il faut vérifier dans le suivi si la maquette a déjà été faite pour simplement la mettre à jour au lieu de la recréer.
-- **Mise à jour de la mémoire** : Après chaque action, le `memoire.md` global ainsi que le mémoire spécifique du développeur (`memoire_aziz.md` ou `memoire_remi.md`) doivent être enrichis.
+---
 
-### 4. État d'Avancement Actuel
-- **Projet initialisé** : Expo React Native configuré avec Git sur la branche `develop`.
-- **Fichiers analysés** : Proposition technique, Design System, API Reference, Contrat.
-- **Séparation des espaces** : Création des listes et des mémoires spécifiques pour Aziz et Rémi.
-- **Action en cours** : Attente du choix de la première maquette par Aziz.
+## 🏗️ 2. Architecture & Composants Réutilisables
+Nous avons adopté une architecture orientée **Composants Réutilisables** (dans `src/components/`) pour standardiser le code et accélérer le développement des futurs écrans :
+- `DizzitInput` : Champ de texte standardisé, avec support d'icônes à gauche/droite, et gestion du mode mot de passe (icône œil pour afficher/masquer intégrée).
+- `DizzitButton` : Bouton principal aux couleurs de la charte.
+- `Stepper` : Indicateur de progression (ex: Étapes 1, 2, 3 d'inscription).
+- `SecurityBanner` : Bannière de réassurance (icône bouclier ou pièce) pour expliquer la sécurité des données.
+- `SocialLogins` : Boutons de connexion tiers (Google, Apple, FB, X). Gère un affichage en ligne (texte) ou en carré (`variant="square"`).
+- `OtpInput` : Champ de saisie multi-cases (ex: code PIN à 6 chiffres) interactif, avec passage automatique à la case suivante et gestion des erreurs (bordure rouge si erreur).
+- `FeaturesBanner` : Bloc de réassurance de bas de page affichant les atouts de l'app (Sécurité, Couverture, Qualité).
+- `BiometricsCard` : Carte d'activation Face ID/Empreinte avec un vrai composant `Switch` natif.
 
-### 5. Suivi Global des Maquettes Intégrées
-*Ce registre consolide le travail d'Aziz et de Rémi.*
+---
 
-- *(Aucune maquette intégrée pour le moment)*
+## 🎨 3. Design System & Règles Frontend
+- **Polices (Fonts)** : `Inter` (Regular, Medium, SemiBold, Bold) et `Space Grotesk` (Bold pour les gros titres). Ces polices sont préchargées dans `App.js`.
+- **Couleurs Principales** : 
+  - Primary (Bleu marine foncé) : `#1A2840`
+  - Accent (Jaune moutarde/Orange) : `#FFC759`
+  - Secondary (Gris clair) : `#F4F5F7`
+  - Texte secondaire : `#6B7280` ou similaire.
+- **Gestion des Icônes et Logos** : 
+  - Utilisation de la librairie `@expo/vector-icons` (`Ionicons`).
+  - **Règle stricte pour les assets** : Privilégier les fichiers images spécifiques (ex: `dizzitup logo cercle.png`) plutôt que des redessinages CSS ou des rognages hasardeux sur les fichiers horizontaux globaux. L'ajustement du padding interne d'une image peut se faire proprement avec `transform: [{scale: X}]`.
+- **Méthode de rendu privilégiée** : **TOUJOURS** utiliser le navigateur web (`npm run start` puis touche `w`) pour visualiser l'application en cours de développement. Cela évite les bugs liés aux versions périmées de l'application mobile Expo Go.
+
+---
+
+## 🚦 4. État d'Avancement (Maquettes Validées)
+Toutes les maquettes ci-dessous sont intégrées, versionnées sur GitHub (branche `develop`), et testées avec succès :
+- ✅ **M1 (Inscription - Étape 1)** : Création de compte avec logique de force de mot de passe dynamique et validation en temps réel.
+- ✅ **M2 (Vérification OTP - Étape 2)** : Saisie du code reçu par mail/SMS. Ajout d'un chronomètre fonctionnel de 45 secondes pour le renvoi du code.
+- ✅ **M3 (Sécurisation / Code PIN - Étape 3)** : Création et confirmation du code PIN. Validation intelligente (les cases passent au rouge avec message d'erreur si le code de confirmation diffère du premier). Toggle biométrique fonctionnel.
+- ✅ **M4_ (Connexion)** : Écran de connexion principal. Système d'onglets (Email/Téléphone), mot de passe visible/masqué, réseaux sociaux au format carré, et bannière de réassurance en bas.
+
+---
+
+## 📍 5. Où en sommes-nous actuellement ?
+- Le fichier `App.js` affiche actuellement `LoginScreen` (Maquette M4_).
+- Le code est propre, modulaire, et pousse automatiquement les bonnes pratiques UX (tous les champs ont des retours visuels).
+- **Prochaine étape attendue** : Lancement de la maquette **M5_** (ou de la prochaine maquette indiquée dans `liste_maquettes.md` ou `liste_maquettes_aziz.md`).
+
+*(Note pour l'IA : Après chaque nouvelle maquette ou modification architecturale majeure, ce fichier doit impérativement être mis à jour pour refléter la nouvelle réalité du projet).*
