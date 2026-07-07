@@ -42,11 +42,15 @@ Ce document sert de mémoire centralisée pour le projet. Il contient tout le co
   3. Importation/Génération des assets (icônes, logos, images fictives).
   4. Fournir un aperçu (lancement de l'app en local via Expo, avec instruction pour visualisation web/mobile).
   5. Validation avant de passer à la maquette suivante.
+- **Gestion des versions de maquettes** : Les maquettes peuvent avoir des correctifs (ex: `M25_` est une mise à jour de `M25`). Il faut vérifier dans le suivi si la maquette a déjà été faite pour simplement la mettre à jour au lieu de la recréer.
 - **Mise à jour de la mémoire** : Ce fichier (`memoire.md`) sera enrichi après chaque écran validé et chaque modification d'architecture.
 
 ### 4. État d'Avancement Actuel
-- **Étape 0** : Initialisation du contexte.
+- **Projet initialisé** : Expo React Native configuré avec Git sur la branche `develop`.
 - **Fichiers analysés** : Proposition technique, Design System, API Reference, Contrat.
-- **Action en attente** : 
-  - Initialisation du projet React Native (Expo) et configuration de Git sur la branche `develop`.
-  - Réception de la première maquette à reproduire.
+- **Action en cours** : Attente du choix de la première maquette parmi le dossier `maj`.
+
+### 5. Suivi des Maquettes Intégrées
+*Ce registre permet de tracer les écrans déjà codés pour éviter les doublons et gérer facilement les correctifs (ex: `M25` -> `M25_`).*
+
+- *(Aucune maquette intégrée pour le moment)*
