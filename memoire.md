@@ -28,7 +28,11 @@ Ce document sert de mémoire centralisée pour le projet. Il contient tout le co
     - Ombres colorées (brand glow) pour les boutons d'appel à l'action.
 
 ### 3. Workflow et Organisation du Travail (Règles strictes)
-- **Collaboration** : Travail en équipe avec un collègue développeur.
+- **Collaboration** : L'équipe est composée de deux développeurs, **Aziz** et **Rémi**. 
+  - Chaque développeur possède son propre répertoire de maquettes (`maj/` pour Aziz, `maj_remi/` pour Rémi).
+  - Chacun a sa liste de suivi : [liste_maquettes_aziz.md](file:///g:/zen/projets/DizzitApp/app/liste_maquettes_aziz.md) et [liste_maquettes_remi.md](file:///g:/zen/projets/DizzitApp/app/liste_maquettes_remi.md).
+  - Chacun a son propre journal détaillé : [memoire_aziz.md](file:///g:/zen/projets/DizzitApp/app/memoire_aziz.md) et [memoire_remi.md](file:///g:/zen/projets/DizzitApp/app/memoire_remi.md).
+  - Ce présent fichier global (`memoire.md`) retrace l'évolution générale de l'architecture et du projet global.
 - **Gestion de version (Git)** :
   - **Dépôt distant** : `https://github.com/Profzen/app`
   - **Stratégie de branche** : 
@@ -43,14 +47,15 @@ Ce document sert de mémoire centralisée pour le projet. Il contient tout le co
   4. Fournir un aperçu (lancement de l'app en local via Expo, avec instruction pour visualisation web/mobile).
   5. Validation avant de passer à la maquette suivante.
 - **Gestion des versions de maquettes** : Les maquettes peuvent avoir des correctifs (ex: `M25_` est une mise à jour de `M25`). Il faut vérifier dans le suivi si la maquette a déjà été faite pour simplement la mettre à jour au lieu de la recréer.
-- **Mise à jour de la mémoire** : Ce fichier (`memoire.md`) sera enrichi après chaque écran validé et chaque modification d'architecture.
+- **Mise à jour de la mémoire** : Après chaque action, le `memoire.md` global ainsi que le mémoire spécifique du développeur (`memoire_aziz.md` ou `memoire_remi.md`) doivent être enrichis.
 
 ### 4. État d'Avancement Actuel
 - **Projet initialisé** : Expo React Native configuré avec Git sur la branche `develop`.
 - **Fichiers analysés** : Proposition technique, Design System, API Reference, Contrat.
-- **Action en cours** : Attente du choix de la première maquette parmi le dossier `maj`.
+- **Séparation des espaces** : Création des listes et des mémoires spécifiques pour Aziz et Rémi.
+- **Action en cours** : Attente du choix de la première maquette par Aziz.
 
-### 5. Suivi des Maquettes Intégrées
-*Ce registre permet de tracer les écrans déjà codés pour éviter les doublons et gérer facilement les correctifs (ex: `M25` -> `M25_`).*
+### 5. Suivi Global des Maquettes Intégrées
+*Ce registre consolide le travail d'Aziz et de Rémi.*
 
 - *(Aucune maquette intégrée pour le moment)*
