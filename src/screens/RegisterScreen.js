@@ -1,11 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'react-native';
-import { Ionicons } from '@expo-vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
 import { DizzitInput } from '../components/DizzitInput';
 import { DizzitButton } from '../components/DizzitButton';
 
 export default function RegisterScreen() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [parrain, setParrain] = useState('');
+
+  const getPasswordStrength = (pass) => {
+    if (!pass) return 0; // Vide = 0 barres
+    let score = 0;
+    if (pass.length >= 6) score = 1; // Faible
+    if (pass.length >= 8 && /[0-9]/.test(pass) && /[A-Za-z]/.test(pass)) score = 2; // Moyen
+    if (score === 2 && /[^A-Za-z0-9]/.test(pass)) score = 3; // Fort
+    return score;
+  };
+
+  const strength = getPasswordStrength(password);
+  
+  const getBarColor = (index) => {
+    if (strength === 0) return theme.colors.border;
+    if (strength === 1 && index === 0) return theme.colors.error;
+    if (strength === 2 && index <= 1) return theme.colors.warning;
+    if (strength === 3 && index <= 2) return theme.colors.success;
+    return theme.colors.border;
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -66,6 +89,8 @@ export default function RegisterScreen() {
           <DizzitInput
             label="Entrez votre email ou votre numéro"
             placeholder="Entrez votre email ou votre numéro"
+            value={email}
+            onChangeText={setEmail}
             iconLeft={<Ionicons name="mail-outline" size={20} color={theme.colors.primary} />}
           />
           
@@ -73,26 +98,30 @@ export default function RegisterScreen() {
             label="Créez votre mot de passe"
             placeholder="Créez votre mot de passe"
             isPassword
+            value={password}
+            onChangeText={setPassword}
             iconLeft={<Ionicons name="lock-closed-outline" size={20} color={theme.colors.primary} />}
           />
           
           {/* Password Strength */}
           <View style={styles.strengthContainer}>
             <View style={styles.strengthBarContainer}>
-              <View style={[styles.strengthBar, {backgroundColor: theme.colors.error}]} />
-              <View style={[styles.strengthBar, {backgroundColor: theme.colors.border}]} />
-              <View style={[styles.strengthBar, {backgroundColor: theme.colors.border}]} />
+              <View style={[styles.strengthBar, {backgroundColor: getBarColor(0)}]} />
+              <View style={[styles.strengthBar, {backgroundColor: getBarColor(1)}]} />
+              <View style={[styles.strengthBar, {backgroundColor: getBarColor(2)}]} />
             </View>
             <View style={styles.strengthLabels}>
-              <Text style={[styles.strengthLabel, {color: theme.colors.error}]}>Faible</Text>
-              <Text style={styles.strengthLabel}>Moyen</Text>
-              <Text style={styles.strengthLabel}>Fort</Text>
+              <Text style={[styles.strengthLabel, strength === 1 && {color: theme.colors.error}]}>Faible</Text>
+              <Text style={[styles.strengthLabel, strength === 2 && {color: theme.colors.warning}]}>Moyen</Text>
+              <Text style={[styles.strengthLabel, strength === 3 && {color: theme.colors.success}]}>Fort</Text>
             </View>
           </View>
 
           <DizzitInput
             label="Entrez votre code parrain (optionnel)"
             placeholder="Entrez votre code parrain si vous en avez un"
+            value={parrain}
+            onChangeText={setParrain}
             iconLeft={<Ionicons name="people-outline" size={20} color={theme.colors.primary} />}
           />
 

@@ -44,8 +44,9 @@ Ce document sert de mémoire centralisée pour le projet. Il contient tout le co
   1. Le développeur (toi) fournit l'image de la maquette.
   2. Je reproduis l'écran au pixel près.
   3. Importation/Génération des assets (icônes, logos, images fictives).
-  4. Fournir un aperçu : **Il faut TOUJOURS privilégier l'aperçu Web** (`npm run start` puis touche `w`) pour éviter les problèmes de compatibilité avec les versions mobiles d'Expo Go.
-  5. Validation avant de passer à la maquette suivante.
+  4. **Comportement "Prod-Ready" (TRÈS IMPORTANT)** : L'intégration n'est pas juste visuelle (statique). Il faut implémenter toute la logique d'état (React `useState`, validation de champs en temps réel, cases à cocher fonctionnelles, modales interactives) pour simuler une vraie application de bout en bout.
+  5. Fournir un aperçu : **Il faut TOUJOURS privilégier l'aperçu Web** (`npm run start` puis touche `w`) pour éviter les problèmes de compatibilité avec les versions mobiles d'Expo Go.
+  6. Validation avant de passer à la maquette suivante.
 - **Gestion des versions de maquettes** : Les maquettes peuvent avoir des correctifs (ex: `M25_` est une mise à jour de `M25`). Il faut vérifier dans le suivi si la maquette a déjà été faite pour simplement la mettre à jour au lieu de la recréer.
 - **Mise à jour de la mémoire** : Après chaque action, le `memoire.md` global ainsi que le mémoire spécifique du développeur (`memoire_aziz.md` ou `memoire_remi.md`) doivent être enrichis.
 
