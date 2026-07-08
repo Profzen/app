@@ -110,5 +110,6 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.sizes.sm,
     color: theme.colors.textPrimary,
     height: '100%',
+    outlineStyle: 'none',
   }
 });

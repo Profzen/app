@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../theme/theme';
 
@@ -8,7 +8,9 @@ export const DizzitButton = ({
   onPress, 
   type = 'primary', // primary, outline, text
   icon,
-  style 
+  style,
+  isLoading = false,
+  disabled = false
 }) => {
   if (type === 'primary') {
     return (
@@ -16,15 +18,22 @@ export const DizzitButton = ({
         style={[styles.shadowContainer, theme.shadows.brandGlow, style]}
         activeOpacity={0.8}
         onPress={onPress}
+        disabled={isLoading || disabled}
       >
         <LinearGradient
-          colors={[theme.colors.accent, '#ffdb8a']}
+          colors={isLoading || disabled ? ['#E5E7EB', '#D1D5DB'] : [theme.colors.accent, '#ffdb8a']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.primaryButton}
         >
-          <Text style={styles.primaryText}>{title}</Text>
-          {icon && <React.Fragment>{icon}</React.Fragment>}
+          {isLoading ? (
+            <ActivityIndicator color={theme.colors.primary} />
+          ) : (
+            <React.Fragment>
+              <Text style={[styles.primaryText, (isLoading || disabled) && { color: theme.colors.textSecondary }]}>{title}</Text>
+              {icon && <React.Fragment>{icon}</React.Fragment>}
+            </React.Fragment>
+          )}
         </LinearGradient>
       </TouchableOpacity>
     );
@@ -35,15 +44,21 @@ export const DizzitButton = ({
       style={[
         styles.secondaryButton, 
         type === 'outline' && styles.outlineButton,
-        style
+        style,
+        (isLoading || disabled) && { opacity: 0.6 }
       ]}
       activeOpacity={0.7}
       onPress={onPress}
+      disabled={isLoading || disabled}
     >
-      <Text style={[
-        styles.secondaryText,
-        type === 'outline' && styles.outlineText
-      ]}>{title}</Text>
+      {isLoading ? (
+        <ActivityIndicator color={theme.colors.primary} />
+      ) : (
+        <Text style={[
+          styles.secondaryText,
+          type === 'outline' && styles.outlineText
+        ]}>{title}</Text>
+      )}
     </TouchableOpacity>
   );
 };

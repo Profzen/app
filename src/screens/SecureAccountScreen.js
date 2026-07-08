@@ -13,6 +13,26 @@ export default function SecureAccountScreen() {
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [biometricsEnabled, setBiometricsEnabled] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSetupSecurity = () => {
+    if (pin.length < 6 || confirmPin !== pin) return;
+    
+    setIsLoading(true);
+    // Simulate API call to save PIN and security preferences
+    const payload = {
+      pin: pin,
+      biometricsEnabled: biometricsEnabled
+    };
+    
+    console.log("Submitting security payload:", payload);
+    
+    setTimeout(() => {
+      setIsLoading(false);
+      // Navigate to Dashboard / Home
+      alert("Sécurité configurée avec succès ! Redirection vers l'accueil (Simulé)");
+    }, 1500);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -94,6 +114,9 @@ export default function SecureAccountScreen() {
           <DizzitButton 
             title="Terminer et accéder à mon compte" 
             icon={<Ionicons name="arrow-forward" size={20} color={theme.colors.textPrimary} />} 
+            onPress={handleSetupSecurity}
+            isLoading={isLoading}
+            disabled={pin.length < 6 || confirmPin !== pin}
           />
         </View>
 

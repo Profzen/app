@@ -43,11 +43,16 @@ Toutes les maquettes ci-dessous sont intégrées, versionnées sur GitHub (branc
 - ✅ **M3 (Sécurisation / Code PIN - Étape 3)** : Création et confirmation du code PIN. Validation intelligente (les cases passent au rouge avec message d'erreur si le code de confirmation diffère du premier). Toggle biométrique fonctionnel.
 - ✅ **M4_ (Connexion)** : Écran de connexion principal. Système d'onglets (Email/Téléphone), mot de passe visible/masqué, réseaux sociaux au format carré, et bannière de réassurance en bas.
 
+- ✅ **M15/M16 (Code PIN)** : Refonte de `PinCodeScreen` avec utilisation de `DizzitInput` pour la saisie de code à points.
+- ✅ **M19 (Contacts)** : Écran lourd avec `QuickActionCard`, `ContactListItem` (avatars, drapeaux) et la `BottomNavBar`.
+- ✅ **M20 (Shops)** : Écran similaire à Contacts avec des commerces (`ShopListItem`), filtres, et bannière générée par IA.
+- ✅ **M21_ (Pay Bills & Send Essentials)** : Écran transactionnel avec la sélection de bénéficiaires `SelectableContactItem` (bordure/fond jaune si actif) et un bouton d'action fixe ("Continuer") en bas.
+
 ---
 
 ## 📍 5. Où en sommes-nous actuellement ?
-- Le fichier `App.js` affiche actuellement `LoginScreen` (Maquette M4_).
-- Le code est propre, modulaire, et pousse automatiquement les bonnes pratiques UX (tous les champs ont des retours visuels).
-- **Prochaine étape attendue** : Lancement de la maquette **M5_** (ou de la prochaine maquette indiquée dans `liste_maquettes.md` ou `liste_maquettes_aziz.md`).
+- L'application compile correctement. `App.js` affiche la maquette **M21_** via le composant `PayBillsScreen`.
+- Le code est modulaire, gère finement le responsive (optimisation fine des flexbox pour tenir sur une ligne sans scroll sur l'écran Pay Bills).
+- **Prochaine étape attendue** : Lancement de la maquette **__M22_**.
 
 *(Note pour l'IA : Après chaque nouvelle maquette ou modification architecturale majeure, ce fichier doit impérativement être mis à jour pour refléter la nouvelle réalité du projet).*

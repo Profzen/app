@@ -12,6 +12,8 @@ import { OtpInput } from '../components/OtpInput';
 export default function VerificationScreen() {
   const [code, setCode] = useState('');
   const [timeLeft, setTimeLeft] = useState(45);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -28,7 +30,27 @@ export default function VerificationScreen() {
   };
 
   const handleResend = () => {
-    setTimeLeft(45);
+    setIsResending(true);
+    // Simulate API call to resend OTP
+    setTimeout(() => {
+      setIsResending(false);
+      setTimeLeft(45);
+      alert("Nouveau code envoyé (Simulé)");
+    }, 1000);
+  };
+
+  const handleVerify = () => {
+    if (code.length < 6) return;
+    
+    setIsLoading(true);
+    // Simulate API call to verify OTP
+    const payload = { code };
+    console.log("Submitting OTP payload:", payload);
+    
+    setTimeout(() => {
+      setIsLoading(false);
+      alert("Code vérifié ! Passage à l'étape sécurisation (Simulé)");
+    }, 1500);
   };
 
   // Custom icon for Security Banner (The D coin)
@@ -93,12 +115,12 @@ export default function VerificationScreen() {
           {/* Timer */}
           <TouchableOpacity 
             style={styles.timerContainer} 
-            onPress={timeLeft === 0 ? handleResend : undefined}
-            disabled={timeLeft > 0}
+            onPress={timeLeft === 0 && !isResending ? handleResend : undefined}
+            disabled={timeLeft > 0 || isResending}
           >
             <Ionicons name="time-outline" size={20} color={theme.colors.accent} />
-            <Text style={styles.timerText}>
-              {timeLeft > 0 ? `Renvoyer le code dans ${formatTime(timeLeft)}` : 'Renvoyer le code maintenant'}
+            <Text style={[styles.timerText, isResending && {color: theme.colors.textSecondary}]}>
+              {isResending ? 'Envoi en cours...' : (timeLeft > 0 ? `Renvoyer le code dans ${formatTime(timeLeft)}` : 'Renvoyer le code maintenant')}
             </Text>
           </TouchableOpacity>
 
@@ -108,6 +130,9 @@ export default function VerificationScreen() {
           <DizzitButton 
             title="Continuer" 
             icon={<Ionicons name="arrow-forward" size={20} color={theme.colors.textPrimary} />} 
+            onPress={handleVerify}
+            isLoading={isLoading}
+            disabled={code.length < 6}
           />
         </View>
 

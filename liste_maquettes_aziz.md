@@ -7,21 +7,21 @@ Voici la liste des maquettes filtrées pour ne conserver que la version la plus 
 - [x] M2.png
 - [x] M3.png
 - [x] M4_.png
-- [ ] M5_.png
-- [ ] M6_.png
-- [ ] M7__.png
-- [ ] M8.png
-- [ ] M9.png
-- [ ] M10.png
-- [ ] M11.png
-- [ ] M12.png
-- [ ] M13.png
-- [ ] M14.png
-- [ ] M15.png
-- [ ] M16.png
-- [ ] M19.png
-- [ ] M20.png
-- [ ] M21_.png
+- [x] M5_.png
+- [x] M6_.png
+- [x] M7__.png
+- [x] M8.png
+- [x] M9.png
+- [x] M10.png
+- [x] M11.png
+- [x] M12.png
+- [x] M13.png
+- [x] M14.png
+- [x] M15.png
+- [x] M16.png
+- [x] M19.png
+- [x] M20.png
+- [x] M21_.png
 - [ ] __M22_.png
 - [ ] __M23.png
 - [ ] M24_.png

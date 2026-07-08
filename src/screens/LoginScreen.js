@@ -11,6 +11,26 @@ export default function LoginScreen() {
   const [activeTab, setActiveTab] = useState('email'); // 'email' | 'phone'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLogin = () => {
+    if (!email || !password) return; // Basic validation
+    
+    setIsLoading(true);
+    // Simulate API call to POST /auth/login
+    const payload = {
+      identifier: email, // Could be phone based on activeTab
+      password: password
+    };
+    
+    console.log("Submitting login payload:", payload);
+    
+    setTimeout(() => {
+      setIsLoading(false);
+      // Navigate to Home or next screen
+      alert("Connexion réussie ! (Simulé)");
+    }, 1500);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -95,7 +115,12 @@ export default function LoginScreen() {
           </TouchableOpacity>
 
           <View style={{marginTop: theme.spacing.md}}>
-            <DizzitButton title="Se connecter" />
+            <DizzitButton 
+              title="Se connecter" 
+              onPress={handleLogin}
+              isLoading={isLoading}
+              disabled={!email || !password}
+            />
           </View>
         </View>
 

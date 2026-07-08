@@ -13,6 +13,7 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [parrain, setParrain] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const getPasswordStrength = (pass) => {
     if (!pass) return 0; // Vide = 0 barres
@@ -31,6 +32,26 @@ export default function RegisterScreen() {
     if (strength === 2 && index <= 1) return theme.colors.warning;
     if (strength === 3 && index <= 2) return theme.colors.success;
     return theme.colors.border;
+  };
+
+  const handleRegister = () => {
+    if (!email || !password || strength < 2) return; // Basic validation
+    
+    setIsLoading(true);
+    // Simulate API call to POST /auth/register
+    const payload = {
+      emailOrPhone: email,
+      password: password,
+      referralCode: parrain || undefined
+    };
+    
+    console.log("Submitting register payload:", payload);
+    
+    setTimeout(() => {
+      setIsLoading(false);
+      // Navigate to OTP Verification screen
+      alert("Inscription validée ! Passage à l'étape OTP (Simulé)");
+    }, 1500);
   };
 
   return (
@@ -115,6 +136,9 @@ export default function RegisterScreen() {
             title="Continuer" 
             icon={<Ionicons name="arrow-forward" size={20} color={theme.colors.textPrimary} />} 
             style={{marginTop: theme.spacing.sm}}
+            onPress={handleRegister}
+            isLoading={isLoading}
+            disabled={!email || !password || strength < 2}
           />
         </View>
 
