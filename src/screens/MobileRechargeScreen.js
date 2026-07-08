@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Platform } from 'react-native';
 import { theme } from '../theme/theme';
 import { Ionicons } from '@expo/vector-icons';
-import DizzitButton from '../components/DizzitButton';
+import { DizzitButton } from '../components/DizzitButton';
 import StepIndicator from '../components/StepIndicator'; // Ensure this exists or we create it
 
 export default function MobileRechargeScreen() {
@@ -51,7 +51,7 @@ export default function MobileRechargeScreen() {
           </View>
 
           <View style={styles.contactInfo}>
-            <Text style={styles.contactName} numberOfLines={1}>Mama Kemi Adebayo</Text>
+            <Text style={styles.contactName}>Mama Kemi Adebayo</Text>
             <Text style={styles.contactRelation}>+234 803 456 7890</Text>
             <View style={styles.locationRow}>
               <Ionicons name="location-outline" size={12} color="#8B92A5" style={styles.locationIcon} />
@@ -162,7 +162,7 @@ export default function MobileRechargeScreen() {
         <DizzitButton 
           title="Continuer"
           onPress={() => {}}
-          rightIcon="arrow-forward"
+          icon={<Ionicons name="arrow-forward" size={20} color="#1A2840" />}
         />
         <View style={styles.stepContainer}>
           <View style={styles.stepTitleRow}>
@@ -198,12 +198,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   backButton: {
-    marginRight: 12,
+    marginRight: 8,
   },
   headerTitle: {
     flex: 1,
     fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 20,
+    fontSize: 16,
     color: '#1A2840',
   },
   headerSubtitle: {
@@ -219,14 +219,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     borderWidth: 1,
     borderColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
+    marginLeft: 6,
     position: 'relative',
   },
   notificationDot: {
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   },
   contactName: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
+    fontSize: 13.5,
     color: '#1A2840',
     marginBottom: 2,
   },
@@ -335,9 +335,9 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   serviceIconWrapper: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: '#D1FAE5',
     justifyContent: 'center',
     alignItems: 'center',
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
   },
   operatorDetected: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 11,
+    fontSize: 10,
     color: '#10B981',
   },
   amountsGrid: {

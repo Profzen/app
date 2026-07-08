@@ -24,7 +24,7 @@ Voici la liste des maquettes filtrées pour ne conserver que la version la plus 
 - [x] M21_.png
 - [x] __M22_.png
 - [x] __M23.png
-- [ ] M24_.png
+- [x] M24_.png
 - [ ] M25_.png
 - [ ] M26.png
 - [ ] M27.png

@@ -13,6 +13,10 @@ Nous développons l'application mobile **DizzitUp** en utilisant **React Native*
 Nous avons adopté une architecture orientée **Composants Réutilisables** (dans `src/components/`) pour standardiser le code et accélérer le développement des futurs écrans :
 - `DizzitInput` : Champ de texte standardisé, avec support d'icônes à gauche/droite, et gestion du mode mot de passe (icône œil pour afficher/masquer intégrée).
 - `DizzitButton` : Bouton principal aux couleurs de la charte.
+- **Style par défaut (Boutons)** :
+  - Textes boutons (`DizzitButton`) : Mettre en gras avec la couleur par défaut (`#1A2840`) au lieu du blanc pour le bouton primaire (fond jaune/orange).
+- **Titres de navigation longs (Header)** :
+  - Pour les longs titres dans l'en-tête (ex: "Recharger un mobile"), utiliser une taille de police (`fontSize`) d'environ `16`, et réduire les marges des icônes latérales (`marginRight: 8` pour le bouton retour, `width/height: 30` et `marginLeft: 6` pour les icônes de droite) afin d'éviter tout passage à la ligne sur les petits écrans ou simulateurs Web.
 - `Stepper` : Indicateur de progression (ex: Étapes 1, 2, 3 d'inscription).
 - `SecurityBanner` : Bannière de réassurance (icône bouclier ou pièce) pour expliquer la sécurité des données.
 - `SocialLogins` : Boutons de connexion tiers (Google, Apple, FB, X). Gère un affichage en ligne (texte) ou en carré (`variant="square"`).
@@ -49,11 +53,12 @@ Toutes les maquettes ci-dessous sont intégrées, versionnées sur GitHub (branc
 - ✅ **M21_ (Pay Bills & Send Essentials)** : Écran transactionnel avec la sélection de bénéficiaires `SelectableContactItem` (bordure/fond jaune si actif) et un bouton d'action fixe ("Continuer") en bas.
 - ✅ **__M22_ (Choisir un service)** : Écran avec une grille de services (`ServiceGridCard`) et une bannière de méthodes de paiement en bas.
 - ✅ **__M23 (Recharge Mobile)** : Écran de sélection d'un montant de recharge, avec carte du contact, détection de l'opérateur (ex: MTN Nigeria), grille de montants, résumé de transaction et indicateur d'étape en bas.
+- ✅ **M24_ (Vérifier et payer)** : Écran de résumé de paiement avec champ de montant modifiable (et sélecteur de devise), liste des méthodes de paiement (carte, DZYwallet, Mobile Money), détail des frais, badge de sécurité et bouton d'action avec icône de cadenas.
 
 ---
 
 ## 📍 5. Où en sommes-nous actuellement ?
-- L'application compile correctement. `App.js` affiche la maquette **__M23** via le composant `MobileRechargeScreen`.
-- **Prochaine étape attendue** : Lancement de la maquette **M24_** ou la suivante sur la liste.
+- L'application compile correctement. `App.js` affiche la maquette **M24_** via le composant `ReviewPaymentScreen`.
+- **Prochaine étape attendue** : Lancement de la maquette **M25_** ou la suivante sur la liste.
 
 *(Note pour l'IA : Après chaque nouvelle maquette ou modification architecturale majeure, ce fichier doit impérativement être mis à jour pour refléter la nouvelle réalité du projet).*
