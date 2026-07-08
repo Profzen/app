@@ -15,7 +15,7 @@ export default function ChooseServiceScreen() {
           <TouchableOpacity style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle} numberOfLines={1}>Choisir un service</Text>
+          <Text style={styles.headerTitle}>Choisir un service</Text>
           <View style={styles.headerIcons}>
             <TouchableOpacity style={styles.iconButton}>
               <Ionicons name="notifications-outline" size={18} color="#1A2840" />
@@ -93,16 +93,16 @@ export default function ChooseServiceScreen() {
           />
 
           <ServiceGridCard 
-            title="Envoyer/Demander des fonds"
-            subtitle="Envoyez ou demandez de l'aide à vos proches en quelques secondes."
-            iconName="people-outline"
+            title="TV"
+            subtitle="Abonnements TV et bouquets."
+            iconName="tv-outline"
             iconColor="#8B5CF6"
             iconBgColor="#EDE9FE"
             onPress={() => {}}
           />
           <ServiceGridCard 
-            title="Produits & Services essentiels"
-            subtitle="Alimentaire, Education, et Santé et bien d'autres produits et services essentiels."
+            title="Produits essentiels"
+            subtitle="Envoyez des produits essentiels à vos proches."
             iconName="basket-outline"
             iconColor="#F97316"
             iconBgColor="#FFEDD5"
@@ -110,35 +110,14 @@ export default function ChooseServiceScreen() {
           />
         </View>
 
-        {/* Payment Methods Banner */}
+        {/* Secure Payments Banner */}
         <View style={styles.paymentBanner}>
           <View style={styles.shieldWrapper}>
-            <Ionicons name="shield-checkmark-outline" size={32} color="#1A2840" />
+            <Ionicons name="shield-checkmark-outline" size={24} color="#1A2840" />
           </View>
           <View style={styles.paymentContent}>
-            <Text style={styles.paymentTitle}>Tous méthodes de paiement acceptées</Text>
-            
-            <View style={styles.paymentRow}>
-              <View style={styles.paymentIconsRow}>
-                <Ionicons name="logo-usd" size={14} color="#10B981" style={styles.miniPaymentIcon} />
-                <Ionicons name="logo-euro" size={14} color="#3B82F6" style={styles.miniPaymentIcon} />
-              </View>
-              <Text style={styles.paymentText}>Stablecoins (USDT, USDC, EURC) & DZY</Text>
-            </View>
-
-            <View style={styles.paymentRow}>
-              <View style={styles.paymentIconsRow}>
-                <Ionicons name="card" size={16} color="#1A2840" style={styles.miniPaymentIcon} />
-              </View>
-              <Text style={styles.paymentText}>Visa, Mastercard, American Express cards</Text>
-            </View>
-
-            <View style={styles.paymentRow}>
-              <View style={styles.paymentIconsRow}>
-                <Ionicons name="phone-portrait" size={14} color="#F59E0B" style={styles.miniPaymentIcon} />
-              </View>
-              <Text style={styles.paymentText}>African Mobile Money</Text>
-            </View>
+            <Text style={styles.paymentTitle}>Paiements sécurisés</Text>
+            <Text style={styles.paymentText}>Toutes les transactions sont protégées par le protocole de sécurité DZYwallet.</Text>
           </View>
         </View>
 
@@ -213,7 +192,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 100, // Space for BottomNavBar
+    paddingBottom: 24, // Space for BottomNavBar
   },
   selectedContactCard: {
     flexDirection: 'row',
@@ -314,12 +293,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginHorizontal: 20,
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   shieldWrapper: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#E5E7EB',
     justifyContent: 'center',
     alignItems: 'center',
@@ -330,26 +309,14 @@ const styles = StyleSheet.create({
   },
   paymentTitle: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 13,
+    fontSize: 14,
     color: '#1A2840',
-    marginBottom: 12,
-  },
-  paymentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  paymentIconsRow: {
-    flexDirection: 'row',
-    width: 40, // Fixed width to align text nicely
-  },
-  miniPaymentIcon: {
-    marginRight: 4,
+    marginBottom: 4,
   },
   paymentText: {
-    flex: 1,
     fontFamily: 'Inter_400Regular',
-    fontSize: 11,
+    fontSize: 12,
     color: '#6B7280',
+    lineHeight: 18,
   }
 });
