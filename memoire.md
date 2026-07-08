@@ -48,11 +48,13 @@ Toutes les maquettes ci-dessous sont intégrées, versionnées sur GitHub (branc
 - ✅ **M20 (Shops)** : Écran similaire à Contacts avec des commerces (`ShopListItem`), filtres, et bannière générée par IA.
 - ✅ **M21_ (Pay Bills & Send Essentials)** : Écran transactionnel avec la sélection de bénéficiaires `SelectableContactItem` (bordure/fond jaune si actif) et un bouton d'action fixe ("Continuer") en bas.
 
+- ✅ **__M22_ (Choisir un service)** : Écran avec une grille de services (`ServiceGridCard`) et une bannière de méthodes de paiement en bas.
+
 ---
 
 ## 📍 5. Où en sommes-nous actuellement ?
-- L'application compile correctement. `App.js` affiche la maquette **M21_** via le composant `PayBillsScreen`.
-- Le code est modulaire, gère finement le responsive (optimisation fine des flexbox pour tenir sur une ligne sans scroll sur l'écran Pay Bills).
-- **Prochaine étape attendue** : Lancement de la maquette **__M22_**.
+- L'application compile correctement. `App.js` affiche la maquette **__M22_** via le composant `ChooseServiceScreen`.
+- Le code est modulaire, avec l'utilisation de `ServiceGridCard` pour les cartes de service.
+- **Prochaine étape attendue** : Lancement de la maquette **__M23** ou la suivante sur la liste.
 
 *(Note pour l'IA : Après chaque nouvelle maquette ou modification architecturale majeure, ce fichier doit impérativement être mis à jour pour refléter la nouvelle réalité du projet).*
