@@ -6,12 +6,12 @@ import BottomNavBar from '../components/BottomNavBar';
 const { width } = Dimensions.get('window');
 
 const ASSETS_DATA = [
-  { id: '1', symbol: 'BTC', name: 'Bitcoin', icon: 'logo-bitcoin', iconColor: '#F7931A', price: '$64,019.78', change: '- 0.40 %', isUp: false, isFav: false },
-  { id: '2', symbol: 'ETH', name: 'Ethereum', icon: 'diamond-outline', iconColor: '#627EEA', price: '$1,732.30', change: '+ 0.06 %', isUp: true, isFav: false }, 
-  { id: '3', symbol: 'USDC', name: 'USD Coin', icon: 'logo-usd', iconColor: '#2775CA', price: '$0.9997', change: '+ 0.00 %', isUp: true, isFav: false },
-  { id: '4', symbol: 'EURC', name: 'EURC', icon: 'logo-euro', iconColor: '#0052FF', price: '$1.14', change: '- 0.12 %', isUp: false, isFav: false },
-  { id: '5', symbol: 'DZY', name: 'DZY', icon: 'logo-dribbble', iconColor: '#F59E0B', price: '125,500.00', change: '+ 0.35 %', isUp: true, isFav: true },
-  { id: '6', symbol: 'SOL', name: 'Solana', icon: 'logo-venmo', iconColor: '#14F195', price: '$73.73', change: '+ 1.25 %', isUp: true, isFav: false },
+  { id: '1', symbol: 'BTC', name: 'Bitcoin', iconUrl: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png', price: '$64,019.28', change: '- 0.81 %', isUp: false, isFav: false },
+  { id: '2', symbol: 'ETH', name: 'Ethereum', iconUrl: 'https://cryptologos.cc/logos/ethereum-eth-logo.png', price: '$1,732.30', change: '+ 0.36 %', isUp: true, isFav: false }, 
+  { id: '3', symbol: 'USDC', name: 'USD Coin', iconUrl: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png', price: '$0.9997', change: '+ 0.01 %', isUp: true, isFav: false },
+  { id: '4', symbol: 'EURC', name: 'EURC', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/20562.png', price: '$1.14', change: '- 0.12 %', isUp: false, isFav: false },
+  { id: '5', symbol: 'DZY', name: 'DZY', isLocalIcon: true, price: '125,500.00', change: '+ 0.25 %', isUp: true, isFav: true },
+  { id: '6', symbol: 'SOL', name: 'Solana', iconUrl: 'https://cryptologos.cc/logos/solana-sol-logo.png', price: '$73.73', change: '+ 1.24 %', isUp: true, isFav: false },
 ];
 
 export default function AssetListPromoScreen() {
@@ -21,10 +21,11 @@ export default function AssetListPromoScreen() {
   const renderAssetRow = ({ item }) => (
     <View style={styles.assetRow}>
       <View style={styles.assetIconContainer}>
-        {/* Placeholder for real crypto icons, using Ionicons for now */}
-        <View style={[styles.cryptoIcon, { backgroundColor: item.iconColor }]}>
-          <Ionicons name={item.icon} size={20} color="#FFFFFF" />
-        </View>
+        {item.isLocalIcon ? (
+          <Image source={require('../../dizzitup logo cercle.png')} style={{width: 36, height: 36}} resizeMode="contain" />
+        ) : (
+          <Image source={{ uri: item.iconUrl }} style={{width: 36, height: 36}} resizeMode="contain" />
+        )}
       </View>
       
       <View style={styles.assetNameContainer}>
@@ -67,8 +68,8 @@ export default function AssetListPromoScreen() {
             <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
-            <Text style={styles.headerTitle}>Liste des actifs</Text>
-            <Text style={styles.headerSubtitle}>Suivez tous vos actifs au même endroit.</Text>
+            <Text style={styles.headerTitle} numberOfLines={1} adjustsFontSizeToFit>Liste des actifs</Text>
+            <Text style={styles.headerSubtitle} numberOfLines={1} adjustsFontSizeToFit>Suivez tous vos actifs au même endroit.</Text>
           </View>
           <View style={styles.headerIcons}>
             <TouchableOpacity style={styles.iconButton}>
@@ -220,18 +221,22 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   headerTitleContainer: {
+    alignItems: 'center',
     flex: 1,
+    paddingHorizontal: 8,
   },
   headerTitle: {
     fontFamily: 'SpaceGrotesk_700Bold',
     fontSize: 20,
     color: '#1A2840',
+    marginBottom: 4,
+    textAlign: 'center',
   },
   headerSubtitle: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 2,
+    fontSize: 11,
+    color: '#8B92A5',
+    textAlign: 'center',
   },
   headerIcons: {
     flexDirection: 'row',
