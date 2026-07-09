@@ -3,7 +3,7 @@ import { View, ActivityIndicator } from 'react-native';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { SpaceGrotesk_400Regular, SpaceGrotesk_500Medium, SpaceGrotesk_600SemiBold, SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk';
 
-import AssetListScreen from './src/screens/AssetListScreen';
+import ContactsScreen from './src/screens/ContactsScreen';
 
 export default function App() {
   let [fontsLoaded] = useFonts({
@@ -25,5 +25,5 @@ export default function App() {
     );
   }
 
-  return <AssetListScreen />;
+  return <ContactsScreen />;
 }
