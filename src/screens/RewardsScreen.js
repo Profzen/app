@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle, G, Text as SvgText } from 'react-native-svg';
 import BottomNavBar from '../components/BottomNavBar';
@@ -66,9 +66,8 @@ export default function RewardsScreen() {
                   <Ionicons name="add" size={14} color="#1A2840" />
                   <Text style={styles.topUpText}>Top up</Text>
                 </TouchableOpacity>
-                <View style={styles.dzyLogoBox}>
-                  <Text style={styles.dzyLogoText}>D</Text>
-                  <View style={styles.dzyLogoStrike} />
+                <View style={styles.dzyLogoWrapper}>
+                  <Image source={require('../../dizzitup logo cercle.png')} style={styles.dzyLogoImg} resizeMode="contain" />
                 </View>
               </View>
 
@@ -348,9 +347,9 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   centerCol: {
-    width: 80,
+    width: 90,
     alignItems: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 4,
   },
   topUpBtn: {
     flexDirection: 'row',
@@ -367,26 +366,13 @@ const styles = StyleSheet.create({
     color: '#1A2840',
     marginLeft: 2,
   },
-  dzyLogoBox: {
+  dzyLogoWrapper: {
     width: 60,
     height: 60,
-    borderRadius: 30,
-    borderWidth: 2,
-    borderColor: '#F8FAFC',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
-  dzyLogoText: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 32,
-    color: '#FFC759',
-    includeFontPadding: false,
-  },
-  dzyLogoStrike: {
-    position: 'absolute',
-    width: 24,
-    height: 2,
-    backgroundColor: '#FFC759',
+  dzyLogoImg: {
+    width: '100%',
+    height: '100%',
   },
   gridOverlay: {
     position: 'absolute',
