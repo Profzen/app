@@ -23,10 +23,7 @@ export default function ContactsScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLogoContainer}>
-            <View style={styles.logoCircle}>
-              <Text style={styles.logoD}>D</Text>
-              <View style={styles.logoStrike} />
-            </View>
+            <Image source={require('../../dizzitup logo cercle.png')} style={{ width: 36, height: 36, marginRight: 8 }} resizeMode="contain" />
             <Text style={styles.dizzitText}>Dizzit<Text style={styles.upText}>Up</Text></Text>
           </View>
           <View style={styles.headerIcons}>
@@ -75,49 +72,49 @@ export default function ContactsScreen() {
           {/* Quick Actions */}
           <View style={styles.quickActionsSection}>
             <Text style={styles.sectionTitle}>Actions rapides</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickActionsScroll}>
+            <View style={styles.quickActionsContainer}>
               
               <TouchableOpacity style={styles.quickActionCard}>
                 <View style={[styles.qaIconCircle, { backgroundColor: '#F3E8FF' }]}>
-                  <Ionicons name="cart-outline" size={20} color="#9333EA" />
+                  <Ionicons name="cart-outline" size={16} color="#9333EA" />
                 </View>
-                <Text style={styles.qaTitle}>1. Payer et acheter l'essentiel</Text>
-                <Text style={styles.qaDesc}>Payez et achetez l'essentiel pour eux.</Text>
+                <Text style={styles.qaTitle} numberOfLines={3}>1. Payer et acheter l'essentiel</Text>
+                <Text style={styles.qaDesc} numberOfLines={3}>Payez et achetez l'essentiel pour eux.</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.quickActionCard}>
                 <View style={[styles.qaIconCircle, { backgroundColor: '#ECFDF5' }]}>
-                  <Ionicons name="call-outline" size={20} color="#10B981" />
+                  <Ionicons name="call-outline" size={16} color="#10B981" />
                 </View>
-                <Text style={styles.qaTitle}>2. Recharger un mobile</Text>
-                <Text style={styles.qaDesc}>Rechargez le mobile de vos proches.</Text>
+                <Text style={styles.qaTitle} numberOfLines={3}>2. Recharger un mobile</Text>
+                <Text style={styles.qaDesc} numberOfLines={3}>Rechargez le mobile de vos proches.</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.quickActionCard}>
                 <View style={[styles.qaIconCircle, { backgroundColor: '#EFF6FF' }]}>
-                  <Ionicons name="document-text-outline" size={20} color="#3B82F6" />
+                  <Ionicons name="document-text-outline" size={16} color="#3B82F6" />
                 </View>
-                <Text style={styles.qaTitle}>3. Payer des factures</Text>
-                <Text style={styles.qaDesc}>Réglez les factures en toute simplicité.</Text>
+                <Text style={styles.qaTitle} numberOfLines={3}>3. Payer des factures</Text>
+                <Text style={styles.qaDesc} numberOfLines={3}>Réglez les factures en toute simplicité.</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.quickActionCard}>
                 <View style={[styles.qaIconCircle, { backgroundColor: '#EFF6FF' }]}>
-                  <Ionicons name="swap-horizontal-outline" size={20} color="#3B82F6" />
+                  <Ionicons name="swap-horizontal-outline" size={16} color="#3B82F6" />
                 </View>
-                <Text style={styles.qaTitle}>4. Envoyer / Demander des fonds</Text>
-                <Text style={styles.qaDesc}>Envoyez ou demandez des fonds facilement.</Text>
+                <Text style={styles.qaTitle} numberOfLines={4}>4. Envoyer / Demander des fonds</Text>
+                <Text style={styles.qaDesc} numberOfLines={3}>Envoyez ou demandez des fonds facilement.</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.quickActionCard}>
                 <View style={[styles.qaIconCircle, { backgroundColor: '#FEF3C7' }]}>
-                  <Ionicons name="person-add-outline" size={20} color="#F59E0B" />
+                  <Ionicons name="person-add-outline" size={16} color="#F59E0B" />
                 </View>
-                <Text style={styles.qaTitle}>5. Inviter</Text>
-                <Text style={styles.qaDesc}>Invitez vos amis et gagnez <Text style={{color: '#F59E0B'}}>$5 en DZY</Text></Text>
+                <Text style={styles.qaTitle} numberOfLines={2}>5. Inviter</Text>
+                <Text style={styles.qaDesc} numberOfLines={3}>Invitez vos amis et gagnez <Text style={{color: '#F59E0B'}}>$5 en DZY</Text></Text>
               </TouchableOpacity>
 
-            </ScrollView>
+            </View>
           </View>
 
           {/* Beneficiaries Section */}
@@ -131,27 +128,27 @@ export default function ContactsScreen() {
             </View>
 
             {/* Filter Chips */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
+            <View style={styles.filterContainer}>
               <TouchableOpacity style={[styles.filterChip, styles.filterChipActive]}>
-                <Ionicons name="location-outline" size={16} color="#FFFFFF" />
-                <Text style={[styles.filterChipText, styles.filterChipTextActive]}>À proximité</Text>
+                <Ionicons name="location-outline" size={12} color="#FFFFFF" />
+                <Text style={[styles.filterChipText, styles.filterChipTextActive]} numberOfLines={1} adjustsFontSizeToFit>À proximité</Text>
               </TouchableOpacity>
               
               <TouchableOpacity style={styles.filterChip}>
-                <Ionicons name="earth-outline" size={16} color="#1A2840" />
-                <Text style={styles.filterChipText}>Mes pays préférés</Text>
+                <Ionicons name="earth-outline" size={12} color="#1A2840" />
+                <Text style={styles.filterChipText} numberOfLines={1} adjustsFontSizeToFit>Mes pays préférés</Text>
               </TouchableOpacity>
               
               <TouchableOpacity style={styles.filterChip}>
-                <Ionicons name="map-outline" size={16} color="#1A2840" />
-                <Text style={styles.filterChipText}>Toute l'Afrique</Text>
+                <Ionicons name="map-outline" size={12} color="#1A2840" />
+                <Text style={styles.filterChipText} numberOfLines={1} adjustsFontSizeToFit>Toute l'Afrique</Text>
               </TouchableOpacity>
               
               <TouchableOpacity style={styles.filterChip}>
-                <Ionicons name="globe-outline" size={16} color="#1A2840" />
-                <Text style={styles.filterChipText}>Reste du monde</Text>
+                <Ionicons name="globe-outline" size={12} color="#1A2840" />
+                <Text style={styles.filterChipText} numberOfLines={1} adjustsFontSizeToFit>Reste du monde</Text>
               </TouchableOpacity>
-            </ScrollView>
+            </View>
 
             {/* List Headers */}
             <View style={styles.listHeaderRow}>
@@ -403,42 +400,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 12,
   },
-  quickActionsScroll: {
+  quickActionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingBottom: 8,
-    gap: 12,
   },
   quickActionCard: {
-    width: 140,
+    width: '19%',
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#F3F4F6',
-    padding: 16,
+    padding: 4,
     alignItems: 'center',
   },
   qaIconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 6,
   },
   qaTitle: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
+    fontSize: 7.5,
     color: '#1A2840',
     textAlign: 'center',
-    marginBottom: 8,
-    height: 32, // Fixed height for 2 lines
+    marginBottom: 4,
+    height: 30, // Fixed height to handle up to 3/4 lines
   },
   qaDesc: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 10,
+    fontSize: 6,
     color: '#8B92A5',
     textAlign: 'center',
-    lineHeight: 14,
+    lineHeight: 8,
   },
   beneficiariesSection: {
     marginBottom: 24,
@@ -460,20 +458,24 @@ const styles = StyleSheet.create({
     color: '#1A2840',
     marginRight: 4,
   },
-  filterScroll: {
+  filterContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     marginBottom: 20,
-    gap: 8,
+    gap: 4,
   },
   filterChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    paddingVertical: 6,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#F3F4F6',
     backgroundColor: '#FFFFFF',
+    flex: 1,
   },
   filterChipActive: {
     backgroundColor: '#0F172A', // Dark blue
@@ -481,9 +483,9 @@ const styles = StyleSheet.create({
   },
   filterChipText: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 12,
+    fontSize: 8,
     color: '#1A2840',
-    marginLeft: 6,
+    marginLeft: 4,
   },
   filterChipTextActive: {
     color: '#FFFFFF',

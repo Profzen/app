@@ -29,7 +29,7 @@ Voici la liste des maquettes filtrées pour ne conserver que la version la plus 
 - [x] M26.png
 - [x] M27.png
 - [x] __M28__.png
-- [ ] M29__.png
+- [x] M29__.png
 - [ ] __M30__.png
 - [ ] __M31__.png
 - [ ] _M32__.png

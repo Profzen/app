@@ -58,11 +58,12 @@ Toutes les maquettes ci-dessous sont intégrées, versionnées sur GitHub (branc
 - ✅ **M26 (Home Screen Anglais)** : Remaniement complet de l'écran d'accueil (`HomeScreen.js`). La `WalletCard` affiche GHS et XOF (Togo). La liste `To-do list` devient une liste verticale avec boutons d'action individuels. Ajout de la bannière "Invite friends" avec grosse pièce dorée, et création d'une grille "Quick actions" de 8 boutons, suivi d'une bannière de sécurité DizzitUp.
 - ✅ **M27 (Liste des actifs)** : Création de l'écran `AssetListScreen.js`. La carte DZYwallet est modifiée pour un style "Assets" (conversion empilées, pièce DZY géante sur le côté, design bleu foncé). Ajout d'une barre de recherche, de filtres, d'onglets (Tous, Crypto, Stablecoins, Favoris) et d'une liste détaillée d'actifs (BTC, ETH, USDC, etc.) avec icônes, prix, variations et boutons Acheter/Vendre.
 - ✅ **M28 (Contacts)** : Création de l'écran `ContactsScreen.js`. En-tête avec logo "DizzitUp", bannière de synchronisation des contacts, barre de recherche, section "Actions rapides" avec défilement horizontal (Payer, Recharger, etc.), et liste "Mes bénéficiaires" (avec filtres : À proximité, Afrique, etc.). Les contacts affichent leurs infos (pays, relation), statut "Bénéficiaire" (Oui/Non) et "Parrain" (Oui/Non).
+- ✅ **M29__ (Shops)** : Création de l'écran `ShopsScreen.js`. En-tête avec logo "DizzitUp", onglets supérieurs (De mes pays préférés, COIs), barre de recherche, section "Actions rapides" avec 4 cartes (Référer, Mes shops, À proximité, Nouveaux shops), liste "Mes shops" avec filtres et informations détaillées (logo, catégorie, drapeaux, distance, notation, badges), bannière promotionnelle "DZYStores", et barre de sous-navigation.
 
 ---
 
 ## 📍 5. Où en sommes-nous actuellement ?
-- L'application compile correctement. `App.js` affiche la maquette **M28** via le composant `ContactsScreen`.
-- **Prochaine étape attendue** : Lancement de la maquette **M29__** ou la suivante sur la liste.
+- L'application compile correctement. `App.js` affiche la maquette **M29__** via le composant `ShopsScreen`.
+- **Prochaine étape attendue** : Lancement de la maquette **__M30__** ou la suivante sur la liste.
 
 *(Note pour l'IA : Après chaque nouvelle maquette ou modification architecturale majeure, ce fichier doit impérativement être mis à jour pour refléter la nouvelle réalité du projet).*
