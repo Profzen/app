@@ -34,7 +34,7 @@ Voici la liste des maquettes filtrées pour ne conserver que la version la plus 
 - [x] __M31__.png
 - [x] _M32__.png
 - [x] M33.png
-- [ ] ___M34_.png
+- [x] ___M34_.png
 - [ ] M35.png
 - [ ] M36__.png
 - [ ] M37.png
