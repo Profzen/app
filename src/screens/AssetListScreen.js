@@ -7,11 +7,11 @@ const { width } = Dimensions.get('window');
 
 const ASSETS_DATA = [
   { id: '1', symbol: 'BTC', name: 'Bitcoin', icon: 'logo-bitcoin', iconColor: '#F7931A', price: '$64,019.78', change: '- 0.40 %', isUp: false, isFav: false },
-  { id: '2', symbol: 'ETH', name: 'Ethereum', icon: 'logo-github', iconColor: '#627EEA', price: '$1,732.30', change: '+ 0.06 %', isUp: true, isFav: false }, // Using github as placeholder for eth diamond if not available
+  { id: '2', symbol: 'ETH', name: 'Ethereum', icon: 'diamond-outline', iconColor: '#627EEA', price: '$1,732.30', change: '+ 0.06 %', isUp: true, isFav: false }, 
   { id: '3', symbol: 'USDC', name: 'USD Coin', icon: 'logo-usd', iconColor: '#2775CA', price: '$0.9997', change: '+ 0.00 %', isUp: true, isFav: false },
   { id: '4', symbol: 'EURC', name: 'EURC', icon: 'logo-euro', iconColor: '#0052FF', price: '$1.14', change: '- 0.12 %', isUp: false, isFav: false },
   { id: '5', symbol: 'DZY', name: 'DZY', icon: 'logo-dribbble', iconColor: '#F59E0B', price: '125,500.00', change: '+ 0.35 %', isUp: true, isFav: true },
-  { id: '6', symbol: 'SOL', name: 'Solana', icon: 'logo-slack', iconColor: '#14F195', price: '$73.73', change: '+ 1.25 %', isUp: true, isFav: false },
+  { id: '6', symbol: 'SOL', name: 'Solana', icon: 'logo-venmo', iconColor: '#14F195', price: '$73.73', change: '+ 1.25 %', isUp: true, isFav: false },
 ];
 
 export default function AssetListScreen() {

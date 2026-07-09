@@ -43,17 +43,17 @@ export default function WalletCard({ balances }) {
       <View style={styles.conversionRow}>
         <View style={styles.conversionItem}>
           <Image source={{ uri: 'https://flagcdn.com/w80/gh.png' }} style={styles.flagImage} />
-          <View style={styles.conversionTextContainer}>
-            <Text style={styles.conversionValue} numberOfLines={1} adjustsFontSizeToFit>≈ {isVisible ? formatNum(ghsBalance) : "•••"} GHS</Text>
-            <Text style={styles.conversionLabel} numberOfLines={1} adjustsFontSizeToFit>Ghana Cedi</Text>
+          <View>
+            <Text style={styles.conversionValue}>≈ {isVisible ? formatNum(ghsBalance) : "•••"} GHS</Text>
+            <Text style={styles.conversionLabel}>Ghana Cedi</Text>
           </View>
         </View>
         <View style={styles.separator} />
         <View style={styles.conversionItem}>
           <Image source={{ uri: 'https://flagcdn.com/w80/tg.png' }} style={styles.flagImage} />
-          <View style={styles.conversionTextContainer}>
-            <Text style={styles.conversionValue} numberOfLines={1} adjustsFontSizeToFit>≈ {isVisible ? formatNum(xofBalance) : "•••"} XOF</Text>
-            <Text style={styles.conversionLabel} numberOfLines={1} adjustsFontSizeToFit>CFA Franc (Togo)</Text>
+          <View>
+            <Text style={styles.conversionValue}>≈ {isVisible ? formatNum(xofBalance) : "•••"} XOF</Text>
+            <Text style={styles.conversionLabel}>CFA Franc (Togo)</Text>
           </View>
         </View>
       </View>
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
   titleText: {
     color: '#FFFFFF',
     fontFamily: 'Inter_500Medium',
-    fontSize: 16,
+    fontSize: 14,
   },
   eyeIcon: {
     marginLeft: 8,
@@ -118,11 +118,11 @@ const styles = StyleSheet.create({
   balanceText: {
     color: '#FFFFFF',
     fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 32,
+    fontSize: 28,
   },
   currencyText: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 16,
+    fontSize: 14,
   },
   topRightActions: {
     flexDirection: 'row',
@@ -156,20 +156,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  conversionTextContainer: {
-    flex: 1,
-  },
   flagImage: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     marginRight: 6,
     backgroundColor: '#E5E7EB',
   },
   conversionValue: {
     color: '#FFFFFF',
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
+    fontSize: 11,
   },
   conversionLabel: {
     color: '#A0AABF',
@@ -178,7 +175,7 @@ const styles = StyleSheet.create({
   },
   separator: {
     width: 1,
-    height: 32,
+    height: 28,
     backgroundColor: '#A0AABF',
     marginHorizontal: 12,
     opacity: 0.3,
