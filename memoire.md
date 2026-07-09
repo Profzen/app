@@ -55,11 +55,12 @@ Toutes les maquettes ci-dessous sont intégrées, versionnées sur GitHub (branc
 - ✅ **__M23 (Recharge Mobile)** : Écran de sélection d'un montant de recharge, avec carte du contact, détection de l'opérateur (ex: MTN Nigeria), grille de montants, résumé de transaction et indicateur d'étape en bas.
 - ✅ **M24_ (Vérifier et payer)** : Écran de résumé de paiement avec champ de montant modifiable (et sélecteur de devise), liste des méthodes de paiement (carte, DZYwallet, Mobile Money), détail des frais, badge de sécurité et bouton d'action avec icône de cadenas.
 - ✅ **M25_ (Paiement réussi)** : Écran de succès avec une grande icône de validation et confettis, un reçu détaillé (date, méthode, frais, numéro de transaction copiables), une bannière illustrative (DZYwallet), des boutons d'actions contextuels (Voir le reçu, faire un autre paiement), et la barre de navigation inférieure (Bottom Navigation).
+- ✅ **M26 (Home Screen Anglais)** : Remaniement complet de l'écran d'accueil (`HomeScreen.js`). La `WalletCard` affiche GHS et XOF (Togo). La liste `To-do list` devient une liste verticale avec boutons d'action individuels. Ajout de la bannière "Invite friends" avec grosse pièce dorée, et création d'une grille "Quick actions" de 8 boutons, suivi d'une bannière de sécurité DizzitUp.
 
 ---
 
 ## 📍 5. Où en sommes-nous actuellement ?
-- L'application compile correctement. `App.js` affiche la maquette **M25_** via le composant `PaymentSuccessScreen`.
-- **Prochaine étape attendue** : Lancement de la maquette **M26** ou la suivante sur la liste.
+- L'application compile correctement. `App.js` affiche la maquette **M26** via le composant `HomeScreen`.
+- **Prochaine étape attendue** : Lancement de la maquette **M27** ou la suivante sur la liste.
 
 *(Note pour l'IA : Après chaque nouvelle maquette ou modification architecturale majeure, ce fichier doit impérativement être mis à jour pour refléter la nouvelle réalité du projet).*

@@ -34,15 +34,24 @@ export default function PaymentSuccessScreen() {
         <View style={styles.successHeader}>
           {/* Confetti logic can be added later, for now we just show the big checkmark */}
           <View style={styles.confettiContainer}>
-            {/* Some placeholder confetti shapes */}
-            <View style={[styles.confetti, { top: 20, left: 40, backgroundColor: '#10B981', transform: [{ rotate: '45deg' }] }]} />
-            <View style={[styles.confetti, { top: 80, left: 20, backgroundColor: '#10B981', transform: [{ rotate: '-20deg' }] }]} />
-            <View style={[styles.confetti, { top: 30, right: 60, backgroundColor: '#10B981', transform: [{ rotate: '15deg' }] }]} />
-            <View style={[styles.confetti, { top: 100, right: 30, backgroundColor: '#FFC759', transform: [{ rotate: '-45deg' }] }]} />
-            <View style={[styles.confetti, { top: 90, left: 80, backgroundColor: '#FFC759', transform: [{ rotate: '30deg' }] }]} />
-            
-            <View style={styles.successCircle}>
-              <Ionicons name="checkmark" size={48} color="#FFFFFF" />
+            {/* Left side confetti */}
+            <View style={[styles.confetti, { top: 10, left: 20, backgroundColor: '#FFC759', transform: [{ rotate: '45deg' }] }]} />
+            <View style={[styles.confetti, { top: 40, left: -20, backgroundColor: '#10B981', transform: [{ rotate: '-20deg' }] }]} />
+            <View style={[styles.confetti, { top: 80, left: 10, backgroundColor: '#10B981', transform: [{ rotate: '15deg' }] }]} />
+            <View style={[styles.confetti, { top: 110, left: -10, backgroundColor: '#FFC759', transform: [{ rotate: '60deg' }] }]} />
+            <View style={[styles.confetti, { top: 130, left: 30, backgroundColor: '#10B981', transform: [{ rotate: '-10deg' }] }]} />
+
+            {/* Right side confetti */}
+            <View style={[styles.confetti, { top: 5, right: 30, backgroundColor: '#10B981', transform: [{ rotate: '-30deg' }] }]} />
+            <View style={[styles.confetti, { top: 45, right: -15, backgroundColor: '#10B981', transform: [{ rotate: '25deg' }] }]} />
+            <View style={[styles.confetti, { top: 70, right: 15, backgroundColor: '#FFC759', transform: [{ rotate: '-45deg' }] }]} />
+            <View style={[styles.confetti, { top: 100, right: -25, backgroundColor: '#10B981', transform: [{ rotate: '10deg' }] }]} />
+            <View style={[styles.confetti, { top: 140, right: 10, backgroundColor: '#FFC759', transform: [{ rotate: '40deg' }] }]} />
+
+            <View style={styles.successCircleOutline}>
+              <View style={styles.successCircle}>
+                <Ionicons name="checkmark" size={48} color="#FFFFFF" />
+              </View>
             </View>
           </View>
           
@@ -249,12 +258,20 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   confettiContainer: {
-    width: 160,
+    width: '100%',
     height: 160,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
     position: 'relative',
+  },
+  successCircleOutline: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#ECFDF5',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   successCircle: {
     width: 96,

@@ -7,11 +7,11 @@ export default function WalletCard({ balances }) {
 
   // Valeurs par défaut sécurisées
   const mainBalance = balances?.DZY || 0;
-  const eurBalance = balances?.EUR || 0;
-  const xafBalance = balances?.XAF || 0;
+  const ghsBalance = balances?.GHS || 125000;
+  const xofBalance = balances?.XOF || 510000;
 
   // Formatage des nombres
-  const formatNum = (num) => num.toLocaleString('fr-FR');
+  const formatNum = (num) => num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
     <View style={styles.cardContainer}>
@@ -23,24 +23,37 @@ export default function WalletCard({ balances }) {
             <Ionicons name={isVisible ? "eye-outline" : "eye-off-outline"} size={20} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
+        <TouchableOpacity style={styles.topUpButton}>
+          <Ionicons name="add" size={16} color="#1A2840" />
+          <Text style={styles.topUpText}>Top-up</Text>
+        </TouchableOpacity>
+        <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
       </View>
 
-      {/* Main Balance and Top Up */}
+      {/* Main Balance */}
       <View style={styles.balanceRow}>
         <Text style={styles.balanceText}>
           {isVisible ? formatNum(mainBalance) : "••••••"} <Text style={styles.currencyText}>DZY</Text>
         </Text>
-        <TouchableOpacity style={styles.topUpButton}>
-          <Ionicons name="add" size={18} color="#1A2840" />
-          <Text style={styles.topUpText}>Top up</Text>
-        </TouchableOpacity>
       </View>
 
       {/* Conversions */}
       <View style={styles.conversionRow}>
-        <Text style={styles.conversionText}>≈ {isVisible ? formatNum(eurBalance) : "•••"} EUR</Text>
+        <View style={styles.conversionItem}>
+          <Text style={styles.flag}>🇬🇭</Text>
+          <View>
+            <Text style={styles.conversionValue}>≈ {isVisible ? formatNum(ghsBalance) : "•••"} GHS</Text>
+            <Text style={styles.conversionLabel}>Ghana Cedi</Text>
+          </View>
+        </View>
         <View style={styles.separator} />
-        <Text style={styles.conversionText}>≈ {isVisible ? formatNum(xafBalance) : "•••"} XAF</Text>
+        <View style={styles.conversionItem}>
+          <Text style={styles.flag}>🇹🇬</Text>
+          <View>
+            <Text style={styles.conversionValue}>≈ {isVisible ? formatNum(xofBalance) : "•••"} XOF</Text>
+            <Text style={styles.conversionLabel}>CFA Franc (Togo)</Text>
+          </View>
+        </View>
       </View>
 
       {/* Actions */}
@@ -127,18 +140,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 24,
+    justifyContent: 'space-between',
   },
-  conversionText: {
+  conversionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  flag: {
+    fontSize: 20,
+    marginRight: 8,
+  },
+  conversionValue: {
+    color: '#FFFFFF',
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 13,
+  },
+  conversionLabel: {
     color: '#A0AABF',
     fontFamily: 'Inter_400Regular',
-    fontSize: 14,
+    fontSize: 11,
   },
   separator: {
     width: 1,
-    height: 12,
+    height: 32,
     backgroundColor: '#A0AABF',
     marginHorizontal: 16,
-    opacity: 0.5,
+    opacity: 0.3,
   },
   actionsRow: {
     flexDirection: 'row',

@@ -1,152 +1,145 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, FlatList, SafeAreaView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, SafeAreaView, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import WalletCard from '../components/WalletCard';
-import TodoCard from '../components/TodoCard';
-import FeedItem from '../components/FeedItem';
-import ServiceMenuItem from '../components/ServiceMenuItem';
 import BottomNavBar from '../components/BottomNavBar';
+import { theme } from '../theme/theme';
 
-const TODO_DATA = [
-  { id: '1', icon: 'chatbubble-ellipses-outline', iconColor: '#3B82F6', iconBgColor: '#EFF6FF', title: 'Demande reçue\nRequest funds', subtitle: 'De : John Doe', date: 'Il y a 2 h' },
-  { id: '2', icon: 'calendar-outline', iconColor: '#10B981', iconBgColor: '#ECFDF5', title: 'Paiement\nprogrammé', subtitle: 'Facture CEET', date: 'Échéance demain' },
-  { id: '3', icon: 'paper-plane-outline', iconColor: '#8B5CF6', iconBgColor: '#F5F3FF', title: 'Buy /\nPay me this', subtitle: '2 demandes', date: 'en attente' },
-  { id: '4', icon: 'wallet-outline', iconColor: '#F59E0B', iconBgColor: '#FFFBEB', title: 'Alerte Top-up\nDZYwallet', subtitle: 'Solde faible', date: '' },
-  { id: '5', icon: 'gift-outline', iconColor: '#EC4899', iconBgColor: '#FDF2F8', title: 'Anniversaire\ncontact', subtitle: 'Marie K.', date: 'Demain' },
-  { id: '6', icon: 'sync-outline', iconColor: '#8B5CF6', iconBgColor: '#F5F3FF', title: 'Abonnement\nmensuel', subtitle: 'Spotify', date: '15 juil. 2026' },
+const { width } = Dimensions.get('window');
+
+const TODO_LIST = [
+  { id: '1', icon: 'person-outline', iconColor: '#F59E0B', iconBgColor: '#FFFBEB', title: 'Abdou asked you\nto buy something', buttonText: 'View', buttonColor: '#F59E0B', buttonBgColor: '#FFFBEB' },
+  { id: '2', icon: 'warning-outline', iconColor: '#EF4444', iconBgColor: '#FEF2F2', title: 'Low balance,\ntop up your account', buttonText: 'Top up', buttonColor: '#EF4444', buttonBgColor: '#FEF2F2' },
+  { id: '3', icon: 'shield-checkmark-outline', iconColor: '#3B82F6', iconBgColor: '#EFF6FF', title: 'Complete your profile\nfor more security', buttonText: 'Complete', buttonColor: '#3B82F6', buttonBgColor: '#EFF6FF' },
+  { id: '4', icon: 'storefront-outline', iconColor: '#8B5CF6', iconBgColor: '#F5F3FF', title: 'Create your DZYStore\nand start selling', buttonText: 'Create', buttonColor: '#8B5CF6', buttonBgColor: '#F5F3FF' },
 ];
 
-const SERVICES_DATA = [
-  { id: '1', icon: 'bag-handle-outline', title: 'Pay bills & Send essentials', subtitle: 'Achetez des crédits, payez vos factures et plus', action: 'navigate_bills' },
-  { id: '2', icon: 'paper-plane-outline', title: 'Send funds', subtitle: "Envoyez de l'argent à vos proches", action: 'navigate_send' },
-  { id: '3', icon: 'chatbubbles-outline', title: 'Buy, Pay me this', subtitle: 'Payez un marchand ou demandez un paiement', action: 'navigate_payme' },
-  { id: '4', icon: 'cash-outline', title: 'Request funds', subtitle: "Demandez de l'argent à quelqu'un", action: 'navigate_request' },
-  { id: '5', icon: 'add-circle-outline', title: 'Top-up DZYwallet', subtitle: 'Rechargez votre DZYwallet facilement', action: 'navigate_topup' },
-  { id: '6', icon: 'storefront-outline', title: 'Refer a business', subtitle: 'Parrainez une entreprise et gagnez des DZY', action: 'navigate_refer' },
-  { id: '7', icon: 'globe-outline', title: 'Source in Africa', subtitle: 'Achetez produits et services africains', action: 'navigate_source' },
-  { id: '8', icon: 'card-outline', title: 'Local FIAT ATM', subtitle: 'Scan to Cash against USDC, USDT, EURC & DZY', action: 'navigate_atm' },
-];
-
-const FEED_DATA = [
-  { id: '1', icon: 'gift-outline', iconColor: '#F59E0B', iconBgColor: '#FFFBEB', titleBold: 'Ben Beckman', title: 'vous a envoyé 20 DZY.', timeAgo: 'Il y a 4 h', imageColor: '#4B5563' },
-  { id: '2', icon: 'cart-outline', iconColor: '#8B5CF6', iconBgColor: '#F5F3FF', titleBold: 'Super Maki', title: 'accepte les paiements en DZY.', timeAgo: 'Il y a 1 jour', imageColor: '#9CA3AF' },
+const QUICK_ACTIONS = [
+  { id: '1', icon: 'bag-handle-outline', color: '#8B5CF6', bgColor: '#F5F3FF', title: 'Buy goods' },
+  { id: '2', icon: 'document-text-outline', color: '#3B82F6', bgColor: '#EFF6FF', title: 'Pay bills' },
+  { id: '3', icon: 'cart-outline', color: '#F59E0B', bgColor: '#FFFBEB', title: 'Buy / Pay me' },
+  { id: '4', icon: 'paper-plane-outline', color: '#8B5CF6', bgColor: '#F5F3FF', title: 'Send & Request' },
+  { id: '5', icon: 'add-outline', color: '#10B981', bgColor: '#ECFDF5', title: 'Top-up DZYwallet' },
+  { id: '6', icon: 'storefront-outline', color: '#F59E0B', bgColor: '#FFFBEB', title: 'Refer a business' },
+  { id: '7', icon: 'globe-outline', color: '#3B82F6', bgColor: '#EFF6FF', title: 'Source in Africa' },
+  { id: '8', icon: 'business-outline', color: '#0D9488', bgColor: '#F0FDFA', title: 'Distribute cash\nXOF ATM' },
 ];
 
 export default function HomeScreen() {
-  // Mocked data that would come from API endpoints like /auth/profile and /wallet/balances
-  const [userProfile, setUserProfile] = React.useState({
-    firstName: 'David',
-    profilePicture: null, // e.g. 'https://example.com/avatar.png'
-  });
-
-  const [walletBalances, setWalletBalances] = React.useState({
-    DZY: 125500,
-    EUR: 191.34,
-    XAF: 125120
-  });
-
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-  const [loadingServiceId, setLoadingServiceId] = React.useState(null);
-
-  const handleServicePress = (service) => {
-    // Prod behavior: simulate navigating to a sub-screen or fetching data
-    setLoadingServiceId(service.id);
-    console.log(`Action demandée : ${service.action}`);
-    
-    setTimeout(() => {
-      setLoadingServiceId(null);
-      alert(`Navigation vers : ${service.title}`);
-    }, 800);
-  };
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [walletBalances] = useState({ DZY: 125500, GHS: 125000, XOF: 510000 });
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.userInfo}>
-              {userProfile?.profilePicture ? (
-                <Image source={{ uri: userProfile.profilePicture }} style={styles.avatarImage} />
-              ) : (
-                <View style={styles.avatarPlaceholder} />
-              )}
+              <Image source={{ uri: 'https://i.pravatar.cc/150?u=david' }} style={styles.avatarImage} />
               <View>
                 <Text style={styles.greetingText}>Hello,</Text>
-                <Text style={styles.nameText}>{userProfile?.firstName || 'User'}</Text>
+                <Text style={styles.nameText}>David</Text>
               </View>
             </View>
-            <TouchableOpacity style={styles.notificationBtn}>
-              <Ionicons name="notifications-outline" size={24} color="#1A2840" />
-              <View style={styles.notificationDot} />
-            </TouchableOpacity>
-          </View>
-          {/* Wallet Card */}
-          <WalletCard balances={walletBalances} />
-          {/* To-do List Section */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>To-do list</Text>
-            <TouchableOpacity style={styles.seeAllBtn}>
-              <Text style={styles.seeAllText}>See all</Text>
-              <Ionicons name="arrow-forward" size={16} color="#1A2840" />
-            </TouchableOpacity>
-          </View>
-          <FlatList
-            data={TODO_DATA}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={item => item.id}
-            renderItem={({ item }) => <TodoCard {...item} />}
-            contentContainerStyle={styles.todoListContent}
-          />
-          {/* Promo Banner */}
-          <View style={styles.promoBanner}>
-            <View style={styles.promoContent}>
-              <Text style={styles.promoTitle}>Earn DZY{'\n'}for free !</Text>
-              <Text style={styles.promoSubtitle}>Invite friends, complete{'\n'}missions and earn DZY.</Text>
-              <TouchableOpacity style={styles.promoBtn}>
-                <Text style={styles.promoBtnText}>Learn more</Text>
+            <View style={styles.headerIcons}>
+              <TouchableOpacity style={styles.iconButton}>
+                <Ionicons name="notifications-outline" size={20} color="#1A2840" />
+                <View style={styles.notificationDot} />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.iconButton}>
+                <Ionicons name="gift-outline" size={20} color="#1A2840" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.iconButton}>
+                <Ionicons name="ellipsis-horizontal" size={20} color="#1A2840" />
               </TouchableOpacity>
             </View>
-            {/* Dots */}
-            <View style={styles.promoDots}>
-              <View style={[styles.dot, styles.dotActive]} />
-              <View style={styles.dot} />
-              <View style={styles.dot} />
-              <View style={styles.dot} />
-            </View>
+          </View>
+
+          {/* Wallet Card */}
+          <WalletCard balances={walletBalances} />
+
+          {/* To-do list */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>To-do list</Text>
+            <TouchableOpacity>
+              <Text style={styles.viewAllText}>View all</Text>
+            </TouchableOpacity>
           </View>
           
-          {isMenuOpen ? (
-            <View style={styles.servicesContainer}>
-              {SERVICES_DATA.map(item => (
-                <ServiceMenuItem 
-                  key={item.id} 
-                  icon={item.icon}
-                  title={item.title}
-                  subtitle={item.subtitle}
-                  isLoading={loadingServiceId === item.id}
-                  onPress={() => handleServicePress(item)}
-                />
-              ))}
-            </View>
-          ) : (
-            <React.Fragment>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Pour vous, autour de vous</Text>
-                <TouchableOpacity style={styles.seeAllBtn}>
-                  <Text style={styles.seeAllText}>See all</Text>
-                  <Ionicons name="arrow-forward" size={16} color="#1A2840" />
+          <View style={styles.todoListContainer}>
+            {TODO_LIST.map(item => (
+              <View key={item.id} style={styles.todoItem}>
+                <View style={[styles.todoIconWrapper, { backgroundColor: item.iconBgColor }]}>
+                  <Ionicons name={item.icon} size={20} color={item.iconColor} />
+                </View>
+                <Text style={styles.todoTitle}>{item.title}</Text>
+                <TouchableOpacity style={[styles.todoButton, { backgroundColor: item.buttonBgColor }]}>
+                  <Text style={[styles.todoButtonText, { color: item.buttonColor }]}>{item.buttonText}</Text>
                 </TouchableOpacity>
               </View>
-              {FEED_DATA.map(item => (
-                <FeedItem key={item.id} {...item} />
-              ))}
-            </React.Fragment>
-          )}
+            ))}
+          </View>
+
+          {/* Invite Banner */}
+          <View style={styles.inviteBanner}>
+            <View style={styles.inviteContent}>
+              <Text style={styles.inviteTitle}>Invite friends{'\n'}and earn{'\n'}<Text style={styles.inviteTitleHighlight}>$5 in DZY</Text></Text>
+              <Text style={styles.inviteSubtitle}>Send money, buy goods,{'\n'}pay bills and earn rewards.</Text>
+              <TouchableOpacity style={styles.inviteButton}>
+                <Text style={styles.inviteButtonText}>Invite now</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.inviteGraphic}>
+              {/* Using CSS for a giant coin placeholder instead of image for now */}
+              <View style={styles.giantCoin}>
+                <View style={styles.innerCoin}>
+                  <Text style={styles.coinText}>DZY</Text>
+                </View>
+              </View>
+              {/* Little avatars */}
+              <Image source={{ uri: 'https://i.pravatar.cc/100?img=1' }} style={[styles.miniAvatar, { top: 10, right: 10 }]} />
+              <Image source={{ uri: 'https://i.pravatar.cc/100?img=2' }} style={[styles.miniAvatar, { bottom: 10, left: 10 }]} />
+              <TouchableOpacity style={styles.closeBannerButton}>
+                <Ionicons name="close" size={16} color="#1A2840" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Quick Actions */}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Quick actions</Text>
+          </View>
+          
+          <View style={styles.quickActionsGrid}>
+            {QUICK_ACTIONS.map(action => (
+              <TouchableOpacity key={action.id} style={styles.actionGridItem}>
+                <View style={[styles.actionGridIcon, { backgroundColor: action.bgColor }]}>
+                  <Ionicons name={action.icon} size={24} color={action.color} />
+                </View>
+                <Text style={styles.actionGridText}>{action.title}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Security Banner */}
+          <View style={styles.securityBanner}>
+            <View style={styles.securityIconWrapper}>
+              <Ionicons name="shield-checkmark-outline" size={24} color="#1A2840" />
+            </View>
+            <View style={styles.securityTextContent}>
+              <Text style={styles.securityTitle}>Secure, simple and instant</Text>
+              <Text style={styles.securityDesc}>Your funds are protected by the <Text style={{color: '#F59E0B'}}>DizzitUp</Text> security protocol.</Text>
+            </View>
+            <View style={styles.lockIconWrapper}>
+              <Ionicons name="lock-closed-outline" size={20} color="#1A2840" />
+            </View>
+          </View>
 
           <View style={{ height: 40 }} />
         </ScrollView>
+        
         <BottomNavBar 
           activeTab="Home" 
           isMenuOpen={isMenuOpen} 
@@ -160,7 +153,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F4F5F7',
+    backgroundColor: '#FFFFFF',
   },
   container: {
     flex: 1,
@@ -174,17 +167,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 16,
+    paddingBottom: 8,
   },
   userInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  avatarPlaceholder: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#D1D5DB', // Gray placeholder
-    marginRight: 12,
   },
   avatarImage: {
     width: 48,
@@ -193,7 +180,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   greetingText: {
-    fontFamily: 'Inter_400Regular',
+    fontFamily: 'Inter_500Medium',
     fontSize: 14,
     color: '#1A2840',
   },
@@ -202,28 +189,31 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#1A2840',
   },
-  notificationBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#FFFFFF',
+  headerIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    marginLeft: 8,
     position: 'relative',
   },
   notificationDot: {
     position: 'absolute',
-    top: 10,
-    right: 12,
+    top: 8,
+    right: 10,
     width: 8,
     height: 8,
     borderRadius: 4,
     backgroundColor: '#FFC759',
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -238,81 +228,212 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#1A2840',
   },
-  seeAllBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  seeAllText: {
-    fontFamily: 'Inter_500Medium',
+  viewAllText: {
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 14,
-    color: '#1A2840',
-    marginRight: 4,
+    color: '#F59E0B',
   },
-  todoListContent: {
+  todoListContainer: {
     paddingHorizontal: 20,
   },
-  promoBanner: {
-    backgroundColor: '#1A2840',
+  todoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  todoIconWrapper: {
+    width: 40,
+    height: 40,
     borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  todoTitle: {
+    flex: 1,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 13,
+    color: '#1A2840',
+    lineHeight: 18,
+    paddingRight: 16,
+  },
+  todoButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+  },
+  todoButtonText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+  },
+  inviteBanner: {
+    backgroundColor: '#EFF6FF',
     marginHorizontal: 20,
-    marginTop: 24,
+    marginTop: 16,
+    borderRadius: 16,
     padding: 20,
-    minHeight: 180,
-    position: 'relative',
+    flexDirection: 'row',
     overflow: 'hidden',
   },
-  promoContent: {
-    zIndex: 1,
-    width: '60%',
+  inviteContent: {
+    flex: 1,
+    zIndex: 2,
   },
-  promoTitle: {
+  inviteTitle: {
     fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 24,
-    color: '#FFFFFF',
+    fontSize: 18,
+    color: '#1A2840',
+    lineHeight: 24,
     marginBottom: 8,
   },
-  promoSubtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    color: '#D1D5DB',
-    marginBottom: 16,
-    lineHeight: 18,
+  inviteTitleHighlight: {
+    color: '#3B82F6',
   },
-  promoBtn: {
-    backgroundColor: '#FFC759',
+  inviteSubtitle: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12,
+    color: '#6B7280',
+    lineHeight: 16,
+    marginBottom: 16,
+  },
+  inviteButton: {
+    backgroundColor: '#1A2840',
     alignSelf: 'flex-start',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
   },
-  promoBtnText: {
+  inviteButtonText: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 13,
-    color: '#1A2840',
+    fontSize: 12,
+    color: '#FFFFFF',
   },
-  promoDots: {
-    flexDirection: 'row',
+  inviteGraphic: {
+    width: 120,
+    height: '100%',
     position: 'absolute',
-    bottom: 16,
-    left: 0,
     right: 0,
+    top: 0,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#A0AABF',
-    marginHorizontal: 4,
-    opacity: 0.5,
+  giantCoin: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#FCD34D',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 4,
+    borderColor: '#FDE68A',
+    transform: [{ perspective: 800 }, { rotateY: '-20deg' }],
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: -4, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 8,
   },
-  dotActive: {
-    backgroundColor: '#FFFFFF',
-    opacity: 1,
+  innerCoin: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#F59E0B',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FBBF24',
   },
-  servicesContainer: {
-    marginTop: 24,
+  coinText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 24,
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.1)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  miniAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    position: 'absolute',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  closeBannerButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+  },
+  quickActionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 10,
+  },
+  actionGridItem: {
+    width: (width - 20) / 4,
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  actionGridIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 8,
+  },
+  actionGridText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 11,
+    color: '#1A2840',
+    textAlign: 'center',
+    paddingHorizontal: 4,
+  },
+  securityBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    marginHorizontal: 20,
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 8,
+  },
+  securityIconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  securityTextContent: {
+    flex: 1,
+  },
+  securityTitle: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 13,
+    color: '#1A2840',
+    marginBottom: 2,
+  },
+  securityDesc: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    color: '#6B7280',
+    lineHeight: 16,
+  },
+  lockIconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 12,
   }
 });
