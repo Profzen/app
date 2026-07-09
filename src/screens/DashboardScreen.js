@@ -75,10 +75,7 @@ export default function DashboardScreen() {
               </View>
               
               <View style={styles.bigDzyIcon}>
-                <View style={styles.bigDzyInner}>
-                  <Text style={styles.bigDzyText}>D</Text>
-                  <View style={styles.bigDzyStrike} />
-                </View>
+                <Image source={require('../../dizzitup logo cercle.png')} style={{width: 80, height: 80}} resizeMode="contain" />
               </View>
             </View>
           </View>
@@ -137,7 +134,7 @@ export default function DashboardScreen() {
                 <View style={styles.fondItem}>
                   <View style={styles.fondIcon}>
                     {item.isLocal ? (
-                      <Image source={require('../../dizzitup logo cercle.png')} style={{width: 48, height: 48}} resizeMode="contain" />
+                      <Image source={require('../../dizzitup logo cercle.png')} style={{width: 68, height: 68, transform: [{scale: 1.2}]}} resizeMode="contain" />
                     ) : item.isCustom ? (
                       <View style={[styles.customFondIcon, {backgroundColor: item.iconColor}]}>
                         <Ionicons name={item.icon} size={24} color="#FFFFFF" />
@@ -397,35 +394,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   bigDzyIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0F172A',
-  },
-  bigDzyInner: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    borderWidth: 2,
-    borderColor: '#FFC759',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  bigDzyText: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 28,
-    color: '#FFC759',
-  },
-  bigDzyStrike: {
-    position: 'absolute',
-    width: 24,
-    height: 2,
-    backgroundColor: '#FFC759',
-    transform: [{rotate: '-45deg'}],
   },
   actionsGrid: {
     flexDirection: 'row',
