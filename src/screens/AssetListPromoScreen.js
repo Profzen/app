@@ -9,7 +9,7 @@ const ASSETS_DATA = [
   { id: '1', symbol: 'BTC', name: 'Bitcoin', iconUrl: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png', price: '$64,019.28', change: '- 0.81 %', isUp: false, isFav: false },
   { id: '2', symbol: 'ETH', name: 'Ethereum', iconUrl: 'https://cryptologos.cc/logos/ethereum-eth-logo.png', price: '$1,732.30', change: '+ 0.36 %', isUp: true, isFav: false }, 
   { id: '3', symbol: 'USDC', name: 'USD Coin', iconUrl: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png', price: '$0.9997', change: '+ 0.01 %', isUp: true, isFav: false },
-  { id: '4', symbol: 'EURC', name: 'EURC', iconUrl: 'https://s2.coinmarketcap.com/static/img/coins/64x64/20562.png', price: '$1.14', change: '- 0.12 %', isUp: false, isFav: false },
+  { id: '4', symbol: 'EURC', name: 'EURC', isCustomIcon: true, icon: 'logo-euro', iconColor: '#2775CA', price: '$1.14', change: '- 0.12 %', isUp: false, isFav: false },
   { id: '5', symbol: 'DZY', name: 'DZY', isLocalIcon: true, price: '125,500.00', change: '+ 0.25 %', isUp: true, isFav: true },
   { id: '6', symbol: 'SOL', name: 'Solana', iconUrl: 'https://cryptologos.cc/logos/solana-sol-logo.png', price: '$73.73', change: '+ 1.24 %', isUp: true, isFav: false },
 ];
@@ -22,7 +22,11 @@ export default function AssetListPromoScreen() {
     <View style={styles.assetRow}>
       <View style={styles.assetIconContainer}>
         {item.isLocalIcon ? (
-          <Image source={require('../../dizzitup logo cercle.png')} style={{width: 36, height: 36}} resizeMode="contain" />
+          <Image source={require('../../dizzitup logo cercle.png')} style={{width: 52, height: 52}} resizeMode="contain" />
+        ) : item.isCustomIcon ? (
+          <View style={[{ width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' }, { backgroundColor: item.iconColor }]}>
+            <Ionicons name={item.icon} size={22} color="#FFFFFF" />
+          </View>
         ) : (
           <Image source={{ uri: item.iconUrl }} style={{width: 36, height: 36}} resizeMode="contain" />
         )}
