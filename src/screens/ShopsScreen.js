@@ -47,6 +47,9 @@ export default function ShopsScreen() {
           <View style={styles.titleSection}>
             <Text style={styles.mainTitle}>Shops</Text>
             <Text style={styles.subtitle}>Découvrez, payez et soutenez les entreprises africaines.</Text>
+            <Text style={styles.acceptedText}>
+              <Text style={{color: '#3B82F6'}}>USDT</Text>, <Text style={{color: '#3B82F6'}}>USDC</Text>, EURC, <Text style={{color: '#F59E0B'}}>DZY</Text> accepted »
+            </Text>
           </View>
 
           {/* Top Tabs */}
@@ -186,35 +189,66 @@ export default function ShopsScreen() {
             </View>
           </View>
 
-          {/* Promotional Banner */}
-          <View style={styles.promoBanner}>
-            <View style={styles.promoContent}>
-              <Text style={styles.promoTitle}>Découvrez les <Text style={styles.promoTitleHighlight}>DZYStores</Text>{'\n'}de confiance autour de vous</Text>
-              <Text style={styles.promoSubtitle}>Payez par cartes, stablecoins, DZY{'\n'}et Mobile Money.</Text>
-              <TouchableOpacity style={styles.promoButton}>
-                <Text style={styles.promoButtonText}>Explorer les shops</Text>
+          {/* Promotional Cards */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.promoCardsScroll}>
+            
+            {/* Card 1 */}
+            <View style={styles.promoCard}>
+              <View style={styles.promoCardContent}>
+                <View style={styles.storeIllustrationPlaceholder}>
+                  <View style={styles.storeAwning} />
+                  <View style={styles.storeBody}>
+                    <View style={styles.storeWindow} />
+                    <View style={styles.storeDoor} />
+                  </View>
+                </View>
+                <Text style={styles.promoCardTitle}>DZY Store</Text>
+              </View>
+              <TouchableOpacity style={styles.promoDownloadBtn}>
+                <Ionicons name="download-outline" size={12} color="#1A2840" />
               </TouchableOpacity>
             </View>
-            <View style={styles.promoGraphic}>
-              <Ionicons name="location" size={24} color="#FFC759" style={styles.promoPin} />
-              <View style={styles.promoPhone}>
-                <View style={styles.promoAwning}>
-                  <View style={styles.awningStripeYellow} />
-                  <View style={styles.awningStripeWhite} />
-                  <View style={styles.awningStripeYellow} />
-                  <View style={styles.awningStripeWhite} />
-                  <View style={styles.awningStripeYellow} />
+
+            {/* Card 2 */}
+            <View style={[styles.promoCard, { width: 180, paddingHorizontal: 12 }]}>
+              <Text style={styles.promoCardTitleCenter}>
+                USDT, USDC,{'\n'}<Text style={{color: '#3B82F6'}}>EURC</Text>, <Text style={{color: '#F59E0B'}}>DZY</Text> accepted »
+              </Text>
+              <View style={styles.cryptoIconsRow}>
+                <View style={{alignItems: 'center'}}>
+                  <View style={[styles.cryptoIconRound, {backgroundColor: '#10B981'}]}><Text style={styles.cryptoIconText}>T</Text></View>
+                  <Text style={styles.cryptoIconLabel}>USDT</Text>
                 </View>
-                <View style={styles.promoCoin}>
-                  <Text style={styles.promoCoinText}>D</Text>
-                  <View style={styles.promoCoinStrike} />
+                <View style={{alignItems: 'center'}}>
+                  <View style={[styles.cryptoIconRound, {backgroundColor: '#3B82F6'}]}><Text style={styles.cryptoIconText}>$</Text></View>
+                  <Text style={styles.cryptoIconLabel}>USDC</Text>
+                </View>
+                <View style={{alignItems: 'center'}}>
+                  <View style={[styles.cryptoIconRound, {backgroundColor: '#3B82F6'}]}><Text style={styles.cryptoIconText}>€</Text></View>
+                  <Text style={styles.cryptoIconLabel}>EURC</Text>
+                </View>
+                <View style={{alignItems: 'center'}}>
+                  <View style={[styles.cryptoIconRound, {backgroundColor: '#1A2840'}]}><Text style={[styles.cryptoIconText, {color: '#F59E0B'}]}>D</Text></View>
+                  <Text style={styles.cryptoIconLabel}>DZY</Text>
                 </View>
               </View>
-              <TouchableOpacity style={styles.closeBannerButton}>
-                <Ionicons name="close" size={16} color="#FFFFFF" />
+            </View>
+
+            {/* Card 3 */}
+            <View style={styles.promoCard}>
+              <View style={styles.promoCardContent}>
+                <View style={styles.pinIllustrationPlaceholder}>
+                  <Ionicons name="location" size={32} color="#FFC759" style={{marginBottom: -4}} />
+                  <View style={styles.pinBase} />
+                </View>
+                <Text style={styles.promoCardTitle}>Nous sommes ici</Text>
+              </View>
+              <TouchableOpacity style={styles.promoDownloadBtn}>
+                <Ionicons name="download-outline" size={12} color="#1A2840" />
               </TouchableOpacity>
             </View>
-          </View>
+
+          </ScrollView>
 
           {/* Sub Navigation */}
           <View style={styles.subNavigation}>
@@ -347,6 +381,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_400Regular',
     fontSize: 13,
     color: '#6B7280',
+  },
+  acceptedText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: '#1A2840',
+    marginTop: 6,
   },
   topTabsContainer: {
     flexDirection: 'row',
@@ -588,114 +628,128 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginLeft: 8,
   },
-  promoBanner: {
-    backgroundColor: '#0F172A',
-    marginHorizontal: 16,
-    marginTop: 12,
-    borderRadius: 16,
-    padding: 20,
-    flexDirection: 'row',
-    overflow: 'hidden',
-  },
-  promoContent: {
-    flex: 1,
-    zIndex: 2,
-  },
-  promoTitle: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 16,
-    color: '#FFFFFF',
-    lineHeight: 22,
-    marginBottom: 8,
-  },
-  promoTitleHighlight: {
-    color: '#FFC759',
-  },
-  promoSubtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    color: '#9CA3AF',
-    lineHeight: 14,
-    marginBottom: 16,
-  },
-  promoButton: {
-    backgroundColor: '#FFC759',
-    alignSelf: 'flex-start',
+  promoCardsScroll: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingVertical: 12,
+    gap: 12,
   },
-  promoButtonText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
-    color: '#1A2840',
-  },
-  promoGraphic: {
-    width: 100,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-  },
-  promoPin: {
-    position: 'absolute',
-    right: 10,
-    top: 20,
-    zIndex: 3,
-  },
-  promoPhone: {
-    width: 50,
-    height: 80,
-    backgroundColor: '#1E293B',
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#334155',
-    position: 'relative',
-    overflow: 'hidden',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  promoAwning: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 16,
-    flexDirection: 'row',
-  },
-  awningStripeYellow: {
-    flex: 1,
-    backgroundColor: '#FFC759',
-  },
-  awningStripeWhite: {
-    flex: 1,
+  promoCard: {
+    width: 150,
+    height: 96,
     backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#FFEFB3',
+    padding: 12,
+    justifyContent: 'space-between',
+    position: 'relative',
+    shadowColor: '#FFC759',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  promoCoin: {
+  promoCardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  promoCardTitle: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    color: '#1A2840',
+    flex: 1,
+  },
+  promoDownloadBtn: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
     width: 24,
     height: 24,
     borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#FFC759',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  promoCardTitleCenter: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 10,
+    color: '#1A2840',
+    textAlign: 'center',
+    marginBottom: 8,
+    lineHeight: 14,
+  },
+  cryptoIconsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  cryptoIconRound: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  promoCoinText: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 10,
-    color: '#FFC759',
+  cryptoIconText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 11,
+    color: '#FFFFFF',
   },
-  promoCoinStrike: {
-    position: 'absolute',
-    width: 16,
-    height: 1,
+  cryptoIconLabel: {
+    fontSize: 8,
+    fontFamily: 'Inter_600SemiBold',
+    color: '#8B92A5',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  storeIllustrationPlaceholder: {
+    width: 36,
+    height: 44,
+    backgroundColor: '#1E3A8A',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  storeAwning: {
+    height: 12,
     backgroundColor: '#FFC759',
-    transform: [{ rotate: '-45deg' }],
+    borderBottomWidth: 2,
+    borderBottomColor: '#FFFFFF',
+    borderStyle: 'dashed',
   },
-  closeBannerButton: {
-    position: 'absolute',
-    top: -10,
-    right: -10,
-    zIndex: 4,
+  storeBody: {
+    flex: 1,
+    flexDirection: 'row',
+    padding: 4,
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+  },
+  storeWindow: {
+    width: 12,
+    height: 12,
+    backgroundColor: '#3B82F6',
+    borderRadius: 2,
+  },
+  storeDoor: {
+    width: 10,
+    height: 20,
+    backgroundColor: '#FFC759',
+    borderTopLeftRadius: 2,
+    borderTopRightRadius: 2,
+  },
+  pinIllustrationPlaceholder: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  pinBase: {
+    width: 32,
+    height: 12,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 6,
+    transform: [{ scaleX: 1.5 }],
   },
   subNavigation: {
     flexDirection: 'row',
