@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function WalletCard({ balances }) {
@@ -23,11 +23,13 @@ export default function WalletCard({ balances }) {
             <Ionicons name={isVisible ? "eye-outline" : "eye-off-outline"} size={20} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.topUpButton}>
-          <Ionicons name="add" size={16} color="#1A2840" />
-          <Text style={styles.topUpText}>Top-up</Text>
-        </TouchableOpacity>
-        <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
+        <View style={styles.topRightActions}>
+          <TouchableOpacity style={styles.topUpButton}>
+            <Ionicons name="add" size={16} color="#1A2840" />
+            <Text style={styles.topUpText}>Top-up</Text>
+          </TouchableOpacity>
+          <Ionicons name="arrow-forward" size={16} color="#FFFFFF" style={styles.arrowIcon} />
+        </View>
       </View>
 
       {/* Main Balance */}
@@ -40,18 +42,18 @@ export default function WalletCard({ balances }) {
       {/* Conversions */}
       <View style={styles.conversionRow}>
         <View style={styles.conversionItem}>
-          <Text style={styles.flag}>🇬🇭</Text>
-          <View>
-            <Text style={styles.conversionValue}>≈ {isVisible ? formatNum(ghsBalance) : "•••"} GHS</Text>
-            <Text style={styles.conversionLabel}>Ghana Cedi</Text>
+          <Image source={{ uri: 'https://flagcdn.com/w80/gh.png' }} style={styles.flagImage} />
+          <View style={styles.conversionTextContainer}>
+            <Text style={styles.conversionValue} numberOfLines={1} adjustsFontSizeToFit>≈ {isVisible ? formatNum(ghsBalance) : "•••"} GHS</Text>
+            <Text style={styles.conversionLabel} numberOfLines={1} adjustsFontSizeToFit>Ghana Cedi</Text>
           </View>
         </View>
         <View style={styles.separator} />
         <View style={styles.conversionItem}>
-          <Text style={styles.flag}>🇹🇬</Text>
-          <View>
-            <Text style={styles.conversionValue}>≈ {isVisible ? formatNum(xofBalance) : "•••"} XOF</Text>
-            <Text style={styles.conversionLabel}>CFA Franc (Togo)</Text>
+          <Image source={{ uri: 'https://flagcdn.com/w80/tg.png' }} style={styles.flagImage} />
+          <View style={styles.conversionTextContainer}>
+            <Text style={styles.conversionValue} numberOfLines={1} adjustsFontSizeToFit>≈ {isVisible ? formatNum(xofBalance) : "•••"} XOF</Text>
+            <Text style={styles.conversionLabel} numberOfLines={1} adjustsFontSizeToFit>CFA Franc (Togo)</Text>
           </View>
         </View>
       </View>
@@ -122,19 +124,26 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     fontSize: 16,
   },
+  topRightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   topUpButton: {
     backgroundColor: '#FFC759',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
   },
   topUpText: {
     color: '#1A2840',
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
+    fontSize: 13,
     marginLeft: 4,
+  },
+  arrowIcon: {
+    marginLeft: 12,
   },
   conversionRow: {
     flexDirection: 'row',
@@ -147,25 +156,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  flag: {
-    fontSize: 20,
-    marginRight: 8,
+  conversionTextContainer: {
+    flex: 1,
+  },
+  flagImage: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    marginRight: 6,
+    backgroundColor: '#E5E7EB',
   },
   conversionValue: {
     color: '#FFFFFF',
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 13,
+    fontSize: 12,
   },
   conversionLabel: {
     color: '#A0AABF',
     fontFamily: 'Inter_400Regular',
-    fontSize: 11,
+    fontSize: 10,
   },
   separator: {
     width: 1,
     height: 32,
     backgroundColor: '#A0AABF',
-    marginHorizontal: 16,
+    marginHorizontal: 12,
     opacity: 0.3,
   },
   actionsRow: {

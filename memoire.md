@@ -56,11 +56,12 @@ Toutes les maquettes ci-dessous sont intégrées, versionnées sur GitHub (branc
 - ✅ **M24_ (Vérifier et payer)** : Écran de résumé de paiement avec champ de montant modifiable (et sélecteur de devise), liste des méthodes de paiement (carte, DZYwallet, Mobile Money), détail des frais, badge de sécurité et bouton d'action avec icône de cadenas.
 - ✅ **M25_ (Paiement réussi)** : Écran de succès avec une grande icône de validation et confettis, un reçu détaillé (date, méthode, frais, numéro de transaction copiables), une bannière illustrative (DZYwallet), des boutons d'actions contextuels (Voir le reçu, faire un autre paiement), et la barre de navigation inférieure (Bottom Navigation).
 - ✅ **M26 (Home Screen Anglais)** : Remaniement complet de l'écran d'accueil (`HomeScreen.js`). La `WalletCard` affiche GHS et XOF (Togo). La liste `To-do list` devient une liste verticale avec boutons d'action individuels. Ajout de la bannière "Invite friends" avec grosse pièce dorée, et création d'une grille "Quick actions" de 8 boutons, suivi d'une bannière de sécurité DizzitUp.
+- ✅ **M27 (Liste des actifs)** : Création de l'écran `AssetListScreen.js`. La carte DZYwallet est modifiée pour un style "Assets" (conversion empilées, pièce DZY géante sur le côté, design bleu foncé). Ajout d'une barre de recherche, de filtres, d'onglets (Tous, Crypto, Stablecoins, Favoris) et d'une liste détaillée d'actifs (BTC, ETH, USDC, etc.) avec icônes, prix, variations et boutons Acheter/Vendre.
 
 ---
 
 ## 📍 5. Où en sommes-nous actuellement ?
-- L'application compile correctement. `App.js` affiche la maquette **M26** via le composant `HomeScreen`.
-- **Prochaine étape attendue** : Lancement de la maquette **M27** ou la suivante sur la liste.
+- L'application compile correctement. `App.js` affiche la maquette **M27** via le composant `AssetListScreen`.
+- **Prochaine étape attendue** : Lancement de la maquette **__M28__** ou la suivante sur la liste.
 
 *(Note pour l'IA : Après chaque nouvelle maquette ou modification architecturale majeure, ce fichier doit impérativement être mis à jour pour refléter la nouvelle réalité du projet).*
