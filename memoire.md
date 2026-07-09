@@ -67,11 +67,12 @@ Toutes les maquettes ci-dessous sont intégrées, versionnées sur GitHub (branc
 - ✅ **M35 (Envoyer de l'argent - Saisie du Montant)** : Création de l'écran `SendMoneyScreen.js`. Écran de saisie du montant à envoyer. L'écran inclut : un indicateur d'étape (Montant -> Méthode), une grande carte blanche d'affichage du montant avec un sélecteur de devise (Ariary malgache), l'équivalence (≈ 1,03 DZ), un bouton "Convertir", et un clavier numérique personnalisé ("Custom Keypad") complet et interactif pour la saisie, ainsi qu'un gros bouton d'action "Continuer".
 - ✅ **M36 (Envoyer de l'argent - Méthode)** : Création de l'écran `SendMoneyMethodScreen.js`. Écran de sélection de la méthode d'envoi. L'indicateur d'étape passe à l'étape 2 (Méthode). Deux options de paiement sous forme de cartes sélectionnables via boutons radio : "Dizzy" (portefeuille DIZY) et "Mobile money". Ajout d'une bannière de sécurité ("Vos transactions sont sécurisées"). Boutons de navigation "Précédent" (gris) et "Suivant" (jaune) en bas.
 - ✅ **M37 (Envoyer de l'argent - Code PIN)** : Création de l'écran `SendMoneyPinScreen.js`. Écran de saisie du code PIN à 6 chiffres pour confirmation de transaction. Grille de 6 carrés (visuel interactif du code PIN). Clavier numérique circulaire élégant avec touches gris clair, touche de suppression bleu foncé, et touche pour virgule/point désactivée (ou sans fond). Présence de la bannière de sécurité au bas de l'écran.
+- ✅ **M38 (Envoyer de l'argent - Récapitulatif)** : Création de l'écran `SendMoneySummaryScreen.js`. Écran de résumé avant validation. Affiche trois grandes cartes : Détails d'envoi (montant, frais, méthode Dizzy), Bénéficiaire (photo, nom, montant converti et taux de change), et Total à payer (avec bordure jaune). Boutons "Précédent" et "Confirmer".
 
 ---
 
 ## 📍 5. Où en sommes-nous actuellement ?
-- L'application compile correctement. `App.js` affiche la maquette **M37** via le composant `SendMoneyPinScreen`.
-- **Prochaine étape attendue** : Lancement de la maquette **M38** ou la suivante sur la liste.
+- L'application compile correctement. `App.js` affiche la maquette **M38** via le composant `SendMoneySummaryScreen`.
+- **Prochaine étape attendue** : Lancement de la maquette **M39** ou la suivante sur la liste.
 
 *(Note pour l'IA : Après chaque nouvelle maquette ou modification architecturale majeure, ce fichier doit impérativement être mis à jour pour refléter la nouvelle réalité du projet).*
