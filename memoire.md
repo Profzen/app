@@ -64,11 +64,12 @@ Toutes les maquettes ci-dessous sont intégrées, versionnées sur GitHub (branc
 - ✅ **M32 (Dashboard Global / Variante English)** : Création de `DashboardEngScreen.js`. Variante du Dashboard global en anglais. En-tête avec l'avatar utilisateur ("Hello, David"). La carte portefeuille s'allonge pour englober la rangée de boutons (Send, Receive, History, Cash-out). Ajout d'une section "To-do list" dynamique (actions demandées). Ajout d'une bannière de parrainage "Invite friends and earn $5 in DZY". Nouvelle grille de "Quick actions" (4 colonnes x 2 lignes, avec Buy goods, Pay bills, etc.). Bannière de sécurité "Secure, simple and instant" en bas de page.
 - ✅ **M33 (Paiement réussi)** : Création de l'écran `PaymentSuccessScreen.js`. Écran de confirmation de paiement. Animation visuelle (cercle vert avec icône check). Carte détaillée de la transaction (bénéficiaire, type de service, date/heure, moyen de paiement USDC, frais et total payé). Bannière jaune "Cashback gagné" (récompenses). Boutons d'action : "Voir le reçu" (principal), "Faire un autre paiement", "Retour à l'accueil".
 - ✅ **M34 (DZY Rewards)** : Création de l'écran `RewardsScreen.js`. Tableau de bord des récompenses. Installation de `react-native-svg` pour générer le graphique circulaire (donut chart) des usages de DZY. L'écran affiche : un grand bandeau supérieur avec "Total DZY" et "Balance", 3 cartes pour "Vos récompenses" (Parrainage, Cashback, Actions), la section "Vos usages de DZY" (Donut chart dynamique + légende avec pourcentages), et deux bannières d'information en bas concernant le réseau Polygon et l'expiration des rewards.
+- ✅ **M35 (Envoyer de l'argent - Saisie du Montant)** : Création de l'écran `SendMoneyScreen.js`. Écran de saisie du montant à envoyer. L'écran inclut : un indicateur d'étape (Montant -> Méthode), une grande carte blanche d'affichage du montant avec un sélecteur de devise (Ariary malgache), l'équivalence (≈ 1,03 DZ), un bouton "Convertir", et un clavier numérique personnalisé ("Custom Keypad") complet et interactif pour la saisie, ainsi qu'un gros bouton d'action "Continuer".
 
 ---
 
 ## 📍 5. Où en sommes-nous actuellement ?
-- L'application compile correctement. `App.js` affiche la maquette **M34** via le composant `RewardsScreen`.
-- **Prochaine étape attendue** : Lancement de la maquette **M35** ou la suivante sur la liste.
+- L'application compile correctement. `App.js` affiche la maquette **M35** via le composant `SendMoneyScreen`.
+- **Prochaine étape attendue** : Lancement de la maquette **M36__** ou la suivante sur la liste.
 
 *(Note pour l'IA : Après chaque nouvelle maquette ou modification architecturale majeure, ce fichier doit impérativement être mis à jour pour refléter la nouvelle réalité du projet).*
