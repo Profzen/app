@@ -161,13 +161,9 @@ export default function DashboardScreen() {
           {/* DZYCard Promo */}
           <View style={styles.cardPromo}>
             <View style={styles.cardPromoContent}>
-              <Text style={styles.cardPromoTitle}>Réservez votre</Text>
-              <Text style={styles.cardPromoTitleDzy}>DZYCard</Text>
-              <Text style={styles.cardPromoSub}>Payez partout dans le monde avec votre carte DZYCard.</Text>
-              
-              <TouchableOpacity style={styles.reserveBtn}>
-                <Text style={styles.reserveBtnText}>Réserver maintenant</Text>
-              </TouchableOpacity>
+              <Text style={styles.cardPromoText}>
+                Votre carte Visa en $US et non pas en Naira, Bir, ZAR, FCFA, ... pour acheter et voyager partout dans le monde.
+              </Text>
               
               <View style={styles.payMethods}>
                 <View style={styles.payBadge}>
@@ -175,7 +171,7 @@ export default function DashboardScreen() {
                   <Text style={styles.payBadgeText}>Pay</Text>
                 </View>
                 <View style={styles.payBadge}>
-                  <Image source={{uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png'}} style={{width: 14, height: 14, marginRight: 2}} />
+                  <Image source={{uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1200px-Google_%22G%22_logo.svg.png'}} style={{width: 14, height: 14, marginRight: 2}} />
                   <Text style={styles.payBadgeText}>Pay</Text>
                 </View>
               </View>
@@ -534,38 +530,15 @@ const styles = StyleSheet.create({
   cardPromoContent: {
     flex: 1,
     zIndex: 2,
-    paddingRight: 10,
+    paddingRight: 16,
+    justifyContent: 'space-between',
   },
-  cardPromoTitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    color: '#FFFFFF',
-  },
-  cardPromoTitleDzy: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 22,
-    color: '#FFC759',
-    marginBottom: 8,
-  },
-  cardPromoSub: {
+  cardPromoText: {
     fontFamily: 'Inter_400Regular',
     fontSize: 10,
     color: '#E2E8F0',
-    lineHeight: 14,
+    lineHeight: 16,
     marginBottom: 16,
-  },
-  reserveBtn: {
-    backgroundColor: '#FFC759',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 16,
-    marginBottom: 16,
-  },
-  reserveBtnText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-    color: '#1A2840',
   },
   payMethods: {
     flexDirection: 'row',
@@ -576,30 +549,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 6,
     borderRadius: 4,
   },
   payBadgeText: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 11,
     color: '#000000',
-    marginLeft: 2,
+    marginLeft: 4,
   },
   dzyCardMockup: {
-    width: 140,
-    height: 120,
-    position: 'absolute',
-    right: -20,
-    bottom: -10,
-    transform: [{ rotate: '-10deg' }],
+    width: 150,
+    height: 100,
   },
   dzyCardMockupInner: {
     flex: 1,
-    backgroundColor: '#1E293B',
-    borderRadius: 12,
+    backgroundColor: '#0F172A',
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#334155',
-    padding: 12,
+    borderColor: '#475569',
+    padding: 10,
     position: 'relative',
     overflow: 'hidden',
   },
