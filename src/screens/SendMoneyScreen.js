@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function SendMoneyScreen() {
@@ -52,6 +52,7 @@ export default function SendMoneyScreen() {
           </TouchableOpacity>
         </View>
 
+        <ScrollView style={{flex: 1}} contentContainerStyle={{flexGrow: 1, paddingBottom: 24}} showsVerticalScrollIndicator={false}>
         {/* Stepper */}
         <View style={styles.stepperContainer}>
           <View style={styles.stepItem}>
@@ -137,6 +138,7 @@ export default function SendMoneyScreen() {
             <Text style={styles.continueBtnText}>Continuer</Text>
           </TouchableOpacity>
         </View>
+        </ScrollView>
 
       </View>
     </SafeAreaView>
