@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function SendMoneyPinScreen() {
@@ -50,72 +50,74 @@ export default function SendMoneyPinScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.content}>
-          <Text style={styles.pageTitle}>Saisissez votre code PIN</Text>
-          <Text style={styles.pageSubtitle}>
-            Entrez votre code PIN à 6 chiffres pour{'\n'}confirmer cette transaction.
-          </Text>
+        <ScrollView style={{flex: 1}} contentContainerStyle={{flexGrow: 1, paddingBottom: 24}} showsVerticalScrollIndicator={false}>
+          <View style={styles.content}>
+            <Text style={styles.pageTitle}>Saisissez votre code PIN</Text>
+            <Text style={styles.pageSubtitle}>
+              Entrez votre code PIN à 6 chiffres pour{'\n'}confirmer cette transaction.
+            </Text>
 
-          {/* PIN Input Boxes */}
-          <View style={styles.pinContainer}>
-            {[...Array(6)].map((_, i) => {
-              const isFilled = i < pin.length;
-              const isActive = i === pin.length - 1; // Highlight the last filled one, or the next empty one based on mockup
-              // Mockup shows first box yellow with yellow dot, so let's match that if length is 1
-              const showYellow = isFilled && isActive;
+            {/* PIN Input Boxes */}
+            <View style={styles.pinContainer}>
+              {[...Array(6)].map((_, i) => {
+                const isFilled = i < pin.length;
+                const isActive = i === pin.length - 1; // Highlight the last filled one, or the next empty one based on mockup
+                // Mockup shows first box yellow with yellow dot, so let's match that if length is 1
+                const showYellow = isFilled && isActive;
 
-              return (
-                <View 
-                  key={i} 
-                  style={[
-                    styles.pinBox, 
-                    showYellow ? styles.pinBoxActive : null
-                  ]}
-                >
-                  <View style={[
-                    styles.pinDot,
-                    showYellow ? styles.pinDotActive : (isFilled ? styles.pinDotFilled : null)
-                  ]} />
-                </View>
-              );
-            })}
+                return (
+                  <View 
+                    key={i} 
+                    style={[
+                      styles.pinBox, 
+                      showYellow ? styles.pinBoxActive : null
+                    ]}
+                  >
+                    <View style={[
+                      styles.pinDot,
+                      showYellow ? styles.pinDotActive : (isFilled ? styles.pinDotFilled : null)
+                    ]} />
+                  </View>
+                );
+              })}
+            </View>
           </View>
-        </View>
 
-        {/* Circular Keypad */}
-        <View style={styles.keypad}>
-          <View style={styles.keyRow}>
-            <KeyButton num="1" />
-            <KeyButton num="2" />
-            <KeyButton num="3" />
+          {/* Circular Keypad */}
+          <View style={styles.keypad}>
+            <View style={styles.keyRow}>
+              <KeyButton num="1" />
+              <KeyButton num="2" />
+              <KeyButton num="3" />
+            </View>
+            <View style={styles.keyRow}>
+              <KeyButton num="4" />
+              <KeyButton num="5" />
+              <KeyButton num="6" />
+            </View>
+            <View style={styles.keyRow}>
+              <KeyButton num="7" />
+              <KeyButton num="8" />
+              <KeyButton num="9" />
+            </View>
+            <View style={styles.keyRow}>
+              <KeyButton num="." isAction={true} />
+              <KeyButton num="0" />
+              <KeyButton num="backspace" icon="backspace" isAction={true} />
+            </View>
           </View>
-          <View style={styles.keyRow}>
-            <KeyButton num="4" />
-            <KeyButton num="5" />
-            <KeyButton num="6" />
-          </View>
-          <View style={styles.keyRow}>
-            <KeyButton num="7" />
-            <KeyButton num="8" />
-            <KeyButton num="9" />
-          </View>
-          <View style={styles.keyRow}>
-            <KeyButton num="." isAction={true} />
-            <KeyButton num="0" />
-            <KeyButton num="backspace" icon="backspace" isAction={true} />
-          </View>
-        </View>
 
-        {/* Security Banner */}
-        <View style={styles.securityBanner}>
-          <View style={styles.securityIconWrapper}>
-            <Ionicons name="shield-checkmark-outline" size={24} color="#1A2840" />
+          {/* Security Banner */}
+          <View style={styles.securityBanner}>
+            <View style={styles.securityIconWrapper}>
+              <Ionicons name="shield-checkmark-outline" size={24} color="#1A2840" />
+            </View>
+            <View style={styles.securityContent}>
+              <Text style={styles.securityTitle}>Vos transactions sont sécurisées</Text>
+              <Text style={styles.securityDesc}>Nous protégeons vos fonds et vos informations à chaque étape.</Text>
+            </View>
           </View>
-          <View style={styles.securityContent}>
-            <Text style={styles.securityTitle}>Vos transactions sont sécurisées</Text>
-            <Text style={styles.securityDesc}>Nous protégeons vos fonds et vos informations à chaque étape.</Text>
-          </View>
-        </View>
+        </ScrollView>
 
       </View>
     </SafeAreaView>
@@ -218,8 +220,8 @@ const styles = StyleSheet.create({
   },
   keypad: {
     paddingHorizontal: 40,
-    flex: 1,
     justifyContent: 'center',
+    marginBottom: 40,
   },
   keyRow: {
     flexDirection: 'row',
@@ -249,7 +251,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#F8F9FE',
     marginHorizontal: 20,
-    marginBottom: 32,
+    marginTop: 'auto',
+    marginBottom: 8,
     padding: 16,
     borderRadius: 16,
     alignItems: 'center',
