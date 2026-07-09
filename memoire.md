@@ -62,11 +62,12 @@ Toutes les maquettes ci-dessous sont intégrées, versionnées sur GitHub (branc
 - ✅ **M30 (Liste des actifs - Variante Promo)** : Création de `AssetListPromoScreen.js`. Il s'agit d'une variante de l'écran "Liste des actifs" où la carte de portefeuille classique est remplacée par une grande bannière promotionnelle "Tout votre argent, toujours avec vous" avec une illustration du portefeuille bleu (DZYwallet). Les boutons Acheter/Vendre de la liste sont affichés en anglais ("Buy", "Sell"). Un gros bouton "+ Ajouter un actif" remplace la bannière d'invitation en bas.
 - ✅ **M31 (Dashboard Global / Accueil Variante)** : Création de `DashboardScreen.js`. Écran d'accueil alternatif ou tableau de bord principal. En-tête avec drapeau (langue), cloche, horloge et paramètres. Carte "Solde total" avec conversions EUR/XAF et logo DZY néon. Actions rapides (Envoyer, Recevoir, Convertir, Cash-out désactivé). Section "Mes fonds" avec défilement horizontal des cryptos. Bannière de réservation de la "DZYCard" (Visa) avec illustration de la carte. Liste des "Transactions récentes" avec montants colorés.
 - ✅ **M32 (Dashboard Global / Variante English)** : Création de `DashboardEngScreen.js`. Variante du Dashboard global en anglais. En-tête avec l'avatar utilisateur ("Hello, David"). La carte portefeuille s'allonge pour englober la rangée de boutons (Send, Receive, History, Cash-out). Ajout d'une section "To-do list" dynamique (actions demandées). Ajout d'une bannière de parrainage "Invite friends and earn $5 in DZY". Nouvelle grille de "Quick actions" (4 colonnes x 2 lignes, avec Buy goods, Pay bills, etc.). Bannière de sécurité "Secure, simple and instant" en bas de page.
+- ✅ **M33 (Paiement réussi)** : Création de l'écran `PaymentSuccessScreen.js`. Écran de confirmation de paiement. Animation visuelle (cercle vert avec icône check). Carte détaillée de la transaction (bénéficiaire, type de service, date/heure, moyen de paiement USDC, frais et total payé). Bannière jaune "Cashback gagné" (récompenses). Boutons d'action : "Voir le reçu" (principal), "Faire un autre paiement", "Retour à l'accueil".
 
 ---
 
 ## 📍 5. Où en sommes-nous actuellement ?
-- L'application compile correctement. `App.js` affiche la maquette **M32** via le composant `DashboardEngScreen`.
-- **Prochaine étape attendue** : Lancement de la maquette **M33** ou la suivante sur la liste.
+- L'application compile correctement. `App.js` affiche la maquette **M33** via le composant `PaymentSuccessScreen`.
+- **Prochaine étape attendue** : Lancement de la maquette **___M34_** ou la suivante sur la liste.
 
 *(Note pour l'IA : Après chaque nouvelle maquette ou modification architecturale majeure, ce fichier doit impérativement être mis à jour pour refléter la nouvelle réalité du projet).*

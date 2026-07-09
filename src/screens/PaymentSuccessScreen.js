@@ -1,206 +1,155 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Platform } from 'react-native';
-import { theme } from '../theme/theme';
-import { Ionicons } from '@expo/vector-icons';
-import { DizzitButton } from '../components/DizzitButton';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { Ionicons, Feather } from '@expo/vector-icons';
+import BottomNavBar from '../components/BottomNavBar';
 
 export default function PaymentSuccessScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#1A2840" />
-        </TouchableOpacity>
-        <View style={{ flex: 1 }} />
-        <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="notifications-outline" size={18} color="#1A2840" />
-            <View style={styles.notificationDot} />
+      <View style={styles.container}>
+        
+        {/* Header (Top Right Icons only) */}
+        <View style={styles.headerRight}>
+          <TouchableOpacity style={styles.iconBtn}>
+            <Ionicons name="notifications-outline" size={22} color="#1A2840" />
+            <View style={styles.badge} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="ellipsis-horizontal" size={18} color="#1A2840" />
+          <TouchableOpacity style={styles.iconBtn}>
+            <Ionicons name="share-outline" size={22} color="#1A2840" />
           </TouchableOpacity>
         </View>
-      </View>
 
-      <ScrollView 
-        style={styles.mainScroll}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        {/* Success Header Area */}
-        <View style={styles.successHeader}>
-          {/* Confetti logic can be added later, for now we just show the big checkmark */}
-          <View style={styles.confettiContainer}>
-            {/* Left side confetti */}
-            <View style={[styles.confetti, { top: 10, left: 20, backgroundColor: '#FFC759', transform: [{ rotate: '45deg' }] }]} />
-            <View style={[styles.confetti, { top: 40, left: -20, backgroundColor: '#10B981', transform: [{ rotate: '-20deg' }] }]} />
-            <View style={[styles.confetti, { top: 80, left: 10, backgroundColor: '#10B981', transform: [{ rotate: '15deg' }] }]} />
-            <View style={[styles.confetti, { top: 110, left: -10, backgroundColor: '#FFC759', transform: [{ rotate: '60deg' }] }]} />
-            <View style={[styles.confetti, { top: 130, left: 30, backgroundColor: '#10B981', transform: [{ rotate: '-10deg' }] }]} />
-
-            {/* Right side confetti */}
-            <View style={[styles.confetti, { top: 5, right: 30, backgroundColor: '#10B981', transform: [{ rotate: '-30deg' }] }]} />
-            <View style={[styles.confetti, { top: 45, right: -15, backgroundColor: '#10B981', transform: [{ rotate: '25deg' }] }]} />
-            <View style={[styles.confetti, { top: 70, right: 15, backgroundColor: '#FFC759', transform: [{ rotate: '-45deg' }] }]} />
-            <View style={[styles.confetti, { top: 100, right: -25, backgroundColor: '#10B981', transform: [{ rotate: '10deg' }] }]} />
-            <View style={[styles.confetti, { top: 140, right: 10, backgroundColor: '#FFC759', transform: [{ rotate: '40deg' }] }]} />
-
-            <View style={styles.successCircleOutline}>
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          
+          {/* Success Animation / Icon Area */}
+          <View style={styles.successArea}>
+            <View style={styles.successHalo}>
               <View style={styles.successCircle}>
-                <Ionicons name="checkmark" size={48} color="#FFFFFF" />
+                <Ionicons name="checkmark-sharp" size={48} color="#FFFFFF" />
               </View>
             </View>
+            
+            <Text style={styles.successTitle}>Paiement réussi !</Text>
+            <Text style={styles.successSub}>Votre paiement a été effectué avec succès.</Text>
+            
+            <View style={styles.secureBadge}>
+              <Ionicons name="shield-checkmark-outline" size={14} color="#10B981" />
+              <Text style={styles.secureText}>Transaction 100% sécurisée</Text>
+            </View>
           </View>
-          
-          <Text style={styles.title}>Paiement réussi !</Text>
-          <Text style={styles.subtitle}>Votre paiement a été effectué avec succès.</Text>
-          
-          <View style={styles.securityBadgeSmall}>
-            <Ionicons name="shield-checkmark-outline" size={12} color="#10B981" />
-            <Text style={styles.securityBadgeText}>Transaction 100% sécurisée</Text>
-          </View>
-        </View>
 
-        {/* Receipt Card */}
-        <View style={styles.receiptCard}>
-          {/* Contact Row */}
-          <View style={styles.receiptRow}>
-            <Image source={{ uri: 'https://i.pravatar.cc/150?u=kemi' }} style={styles.avatar} />
-            <View style={styles.receiptRowInfo}>
-              <Text style={styles.contactName}>Mama Kemi Adebayo</Text>
-              <Text style={styles.contactRelation}>Mère</Text>
-              <View style={styles.locationRow}>
-                <Ionicons name="location-outline" size={12} color="#8B92A5" style={styles.locationIcon} />
-                <Text style={styles.contactLocation}>Lagos, Nigeria 🇳🇬</Text>
+          {/* Transaction Details Card */}
+          <View style={styles.detailsCard}>
+            
+            {/* Contact Row */}
+            <View style={styles.contactRow}>
+              <Image source={{uri: 'https://i.pravatar.cc/150?img=47'}} style={styles.contactAvatar} />
+              <View style={styles.contactInfo}>
+                <Text style={styles.contactName}>Mama Kemi Adebayo</Text>
+                <Text style={styles.contactRelation}>Mère</Text>
+                <View style={styles.contactLocation}>
+                  <Ionicons name="location-outline" size={12} color="#6B7280" />
+                  <Text style={styles.contactLocationText}>Lagos, Nigeria </Text>
+                  <Image source={{uri: 'https://flagcdn.com/w40/ng.png'}} style={styles.flagIcon} />
+                </View>
+              </View>
+              <View style={styles.statusBadge}>
+                <Text style={styles.statusText}>Succès</Text>
               </View>
             </View>
-            <View style={styles.statusBadge}>
-              <Text style={styles.statusBadgeText}>Succès</Text>
-            </View>
-          </View>
 
-          <View style={styles.divider} />
-
-          {/* Service Row */}
-          <View style={styles.receiptRow}>
-            <View style={styles.serviceIconWrapper}>
-              <Ionicons name="phone-portrait-outline" size={20} color="#10B981" />
-            </View>
-            <View style={styles.receiptRowInfo}>
-              <Text style={styles.serviceName}>Recharge mobile</Text>
-              <Text style={styles.serviceProvider}>MTN Nigeria</Text>
-            </View>
-            <Text style={styles.serviceAmount}>20.00 USD</Text>
-          </View>
-
-          <View style={styles.divider} />
-
-          {/* Details */}
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Date et heure</Text>
-            <Text style={styles.detailValue}>18 mai 2024 • 10:45</Text>
-          </View>
-          
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Méthode de paiement</Text>
-            <View style={styles.paymentMethodValue}>
-              <View style={styles.cardIconMini}>
-                <Ionicons name="card-outline" size={14} color="#1A2840" />
+            {/* Service Row */}
+            <View style={styles.serviceRow}>
+              <View style={styles.serviceIconBox}>
+                <Ionicons name="phone-portrait-outline" size={20} color="#10B981" />
               </View>
-              <View>
-                <Text style={styles.paymentMethodName}>Card Payment</Text>
-                <Text style={styles.paymentMethodCards}>Visa, Mastercard</Text>
+              <View style={styles.serviceInfo}>
+                <Text style={styles.serviceName}>Recharge mobile</Text>
+                <Text style={styles.serviceProvider}>MTN Nigeria</Text>
+              </View>
+              <Text style={styles.serviceAmount}>20.00 USD</Text>
+            </View>
+
+            <View style={styles.divider} />
+
+            {/* Detailed Info Rows */}
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Date et heure</Text>
+              <Text style={styles.detailValue}>18 Mai 2024 • 10:45 AM</Text>
+            </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Méthode de paiement</Text>
+              <View style={styles.paymentMethod}>
+                <Image source={{uri: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png'}} style={styles.usdcIcon} />
+                <Text style={styles.detailValue}>USDC</Text>
               </View>
             </View>
+
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Frais de service</Text>
+              <Text style={styles.detailValue}>0.50 USD</Text>
+            </View>
+
+            <View style={[styles.detailRow, styles.totalRow]}>
+              <Text style={styles.detailLabel}>Total payé</Text>
+              <Text style={styles.totalValue}>20.50 USD</Text>
+            </View>
+
+            <View style={[styles.detailRow, {marginBottom: 0}]}>
+              <Text style={styles.detailLabel}>Numéro de transaction</Text>
+              <View style={styles.txNumberRow}>
+                <Text style={styles.txNumberValue}>DZY20240518104532</Text>
+                <TouchableOpacity style={{marginLeft: 8}}>
+                  <Ionicons name="copy-outline" size={16} color="#6B7280" />
+                </TouchableOpacity>
+              </View>
+            </View>
+
           </View>
 
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Frais de service</Text>
-            <Text style={styles.detailValue}>0.50 USD</Text>
-          </View>
-
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Total payé</Text>
-            <Text style={styles.totalValueGreen}>20.50 USD</Text>
-          </View>
-
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Numéro de transaction</Text>
-            <View style={styles.transactionNumberValue}>
-              <Text style={styles.detailValue}>DZY20240518104532</Text>
-              <TouchableOpacity style={styles.copyIcon}>
-                <Ionicons name="copy-outline" size={16} color="#6B7280" />
+          {/* Cashback Reward Banner */}
+          <View style={styles.rewardBanner}>
+            <View style={styles.giftIconWrapper}>
+              <Text style={{fontSize: 48}}>🎁</Text>
+              <View style={styles.giftCheck}>
+                <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+              </View>
+            </View>
+            <View style={styles.rewardContent}>
+              <Text style={styles.rewardTitle}>Vous avez gagné <Text style={styles.rewardHighlight}>2.50 DZY</Text> en Cashback !</Text>
+              <Text style={styles.rewardSub}>Cette récompense a été créditée dans votre DZYWallet.</Text>
+              <TouchableOpacity style={styles.rewardLink}>
+                <Text style={styles.rewardLinkText}>Voir mes Rewards</Text>
+                <Ionicons name="arrow-forward" size={14} color="#1A2840" />
               </TouchableOpacity>
             </View>
           </View>
 
-        </View>
+          {/* Action Buttons */}
+          <View style={styles.actionButtons}>
+            <TouchableOpacity style={styles.primaryBtn}>
+              <Ionicons name="receipt-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
+              <Text style={styles.primaryBtnText}>Voir le reçu</Text>
+            </TouchableOpacity>
 
-        {/* Info Banner */}
-        <View style={styles.infoBanner}>
-          <View style={styles.infoBannerIconArea}>
-            <View style={styles.walletPlaceholder}>
-              <Text style={styles.walletPlaceholderText}>DZ</Text>
-              <View style={styles.walletShield}>
-                <Ionicons name="shield-checkmark" size={14} color="#FFFFFF" />
-              </View>
+            <View style={styles.secondaryBtnRow}>
+              <TouchableOpacity style={styles.secondaryBtn}>
+                <Ionicons name="refresh-outline" size={20} color="#1A2840" style={{marginRight: 6}} />
+                <Text style={styles.secondaryBtnText}>Faire un autre paiement</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.secondaryBtn}>
+                <Ionicons name="home-outline" size={20} color="#1A2840" style={{marginRight: 6}} />
+                <Text style={styles.secondaryBtnText}>Retour à l'accueil</Text>
+              </TouchableOpacity>
             </View>
           </View>
-          <View style={styles.infoBannerTextContent}>
-            <Text style={styles.infoBannerTitle}>Vous avez envoyé des crédits avec succès.</Text>
-            <Text style={styles.infoBannerText}>Vos proches recevront les crédits en quelques secondes.</Text>
-          </View>
-        </View>
+          
+          <View style={{height: 30}} />
+        </ScrollView>
 
-        {/* Buttons */}
-        <View style={styles.actionButtons}>
-          <DizzitButton 
-            title="Voir le reçu"
-            onPress={() => {}}
-            icon={<Ionicons name="document-text-outline" size={18} color="#1A2840" style={{ marginRight: 8 }} />}
-            style={styles.primaryButton}
-          />
-          <View style={styles.secondaryButtonsRow}>
-            <TouchableOpacity style={styles.secondaryButton}>
-              <Ionicons name="refresh-outline" size={18} color="#1A2840" style={styles.secondaryButtonIcon} />
-              <Text style={styles.secondaryButtonText}>Faire un autre paiement</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.secondaryButton}>
-              <Ionicons name="home-outline" size={18} color="#1A2840" style={styles.secondaryButtonIcon} />
-              <Text style={styles.secondaryButtonText}>Retour à l'accueil</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </ScrollView>
-
-      {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="home-outline" size={24} color="#1A2840" />
-          <Text style={styles.navItemText}>Accueil</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="people-outline" size={24} color="#8B92A5" />
-          <Text style={styles.navItemTextInactive}>Contacts</Text>
-        </TouchableOpacity>
-        <View style={styles.fabWrapper}>
-          <TouchableOpacity style={styles.fab}>
-            <Ionicons name="swap-horizontal" size={24} color="#1A2840" />
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="grid-outline" size={24} color="#8B92A5" />
-          <Text style={styles.navItemTextInactive}>Shops</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="ellipsis-horizontal" size={24} color="#8B92A5" />
-          <Text style={styles.navItemTextInactive}>More</Text>
-        </TouchableOpacity>
+        <BottomNavBar activeTab="Accueil" />
       </View>
-
     </SafeAreaView>
   );
 }
@@ -210,98 +159,76 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
-  header: {
+  container: {
+    flex: 1,
+  },
+  headerRight: {
     flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'android' ? 40 : 10,
-    paddingBottom: 10,
+    justifyContent: 'flex-end',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    gap: 12,
   },
-  backButton: {
-    padding: 4,
-  },
-  headerIcons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconButton: {
+  iconBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#F3F4F6',
+    borderColor: '#E2E8F0',
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
     position: 'relative',
   },
-  notificationDot: {
+  badge: {
     position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#FFC759',
-    borderWidth: 1,
+    top: -2,
+    right: -2,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#F59E0B',
+    borderWidth: 2,
     borderColor: '#FFFFFF',
   },
-  mainScroll: {
+  scrollView: {
     flex: 1,
   },
-  scrollContent: {
-    paddingBottom: 40,
-  },
-  successHeader: {
+  successArea: {
     alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 24,
+    marginTop: 20,
+    paddingHorizontal: 16,
   },
-  confettiContainer: {
-    width: '100%',
-    height: 160,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-    position: 'relative',
-  },
-  successCircleOutline: {
+  successHalo: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#ECFDF5',
+    backgroundColor: '#D1FAE5',
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 20,
   },
   successCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: '#10B981',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  confetti: {
-    position: 'absolute',
-    width: 8,
-    height: 12,
-    borderRadius: 4,
-  },
-  title: {
+  successTitle: {
     fontFamily: 'SpaceGrotesk_700Bold',
     fontSize: 24,
     color: '#1A2840',
     marginBottom: 8,
-    textAlign: 'center',
   },
-  subtitle: {
+  successSub: {
     fontFamily: 'Inter_400Regular',
     fontSize: 14,
     color: '#6B7280',
     marginBottom: 16,
-    textAlign: 'center',
   },
-  securityBadgeSmall: {
+  secureBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#ECFDF5',
@@ -309,81 +236,84 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 16,
   },
-  securityBadgeText: {
+  secureText: {
     fontFamily: 'Inter_500Medium',
     fontSize: 12,
     color: '#10B981',
     marginLeft: 6,
   },
-  receiptCard: {
+  detailsCard: {
     backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
+    marginHorizontal: 16,
+    marginTop: 24,
     borderRadius: 16,
-    marginHorizontal: 20,
-    padding: 20,
-    marginBottom: 24,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
+    shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
   },
-  receiptRow: {
+  contactRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 20,
   },
-  avatar: {
+  contactAvatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#E5E7EB',
     marginRight: 12,
   },
-  receiptRowInfo: {
+  contactInfo: {
     flex: 1,
   },
   contactName: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 14,
     color: '#1A2840',
-    marginBottom: 2,
   },
   contactRelation: {
     fontFamily: 'Inter_400Regular',
     fontSize: 12,
     color: '#6B7280',
-    marginBottom: 4,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  locationIcon: {
-    marginRight: 4,
+    marginTop: 2,
   },
   contactLocation: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  contactLocationText: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: '#1A2840',
+    fontSize: 11,
+    color: '#6B7280',
+    marginLeft: 4,
+  },
+  flagIcon: {
+    width: 14,
+    height: 10,
+    marginLeft: 4,
   },
   statusBadge: {
     backgroundColor: '#ECFDF5',
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
-  statusBadgeText: {
+  statusText: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
+    fontSize: 11,
     color: '#10B981',
   },
-  divider: {
-    height: 1,
-    backgroundColor: '#F3F4F6',
-    marginVertical: 16,
+  serviceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
   },
-  serviceIconWrapper: {
+  serviceIconBox: {
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -392,205 +322,164 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 12,
   },
+  serviceInfo: {
+    flex: 1,
+  },
   serviceName: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
+    fontSize: 13,
     color: '#1A2840',
-    marginBottom: 2,
   },
   serviceProvider: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 12,
+    fontSize: 11,
     color: '#6B7280',
+    marginTop: 2,
   },
   serviceAmount: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 16,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
     color: '#1A2840',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#F1F5F9',
+    marginBottom: 20,
   },
   detailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 16,
   },
   detailLabel: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 13,
+    fontSize: 12,
     color: '#6B7280',
   },
   detailValue: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 13,
+    fontSize: 12,
     color: '#1A2840',
   },
-  paymentMethodValue: {
+  paymentMethod: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  cardIconMini: {
-    width: 24,
-    height: 24,
-    borderRadius: 4,
-    backgroundColor: '#F3F4F6',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
+  usdcIcon: {
+    width: 16,
+    height: 16,
+    marginRight: 6,
   },
-  paymentMethodName: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 13,
-    color: '#1A2840',
-    textAlign: 'right',
+  totalRow: {
+    marginBottom: 16,
   },
-  paymentMethodCards: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 11,
-    color: '#6B7280',
-    textAlign: 'right',
-  },
-  totalValueGreen: {
-    fontFamily: 'SpaceGrotesk_700Bold',
+  totalValue: {
+    fontFamily: 'Inter_700Bold',
     fontSize: 14,
     color: '#10B981',
   },
-  transactionNumberValue: {
+  txNumberRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  copyIcon: {
-    marginLeft: 6,
+  txNumberValue: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
+    color: '#6B7280',
   },
-  infoBanner: {
-    flexDirection: 'row',
-    backgroundColor: '#F8F9FA',
-    borderRadius: 16,
+  rewardBanner: {
+    backgroundColor: '#FFFBEB',
+    marginHorizontal: 16,
+    marginTop: 20,
+    borderRadius: 12,
     padding: 16,
-    marginHorizontal: 20,
-    marginBottom: 24,
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  infoBannerIconArea: {
+  giftIconWrapper: {
     marginRight: 16,
-  },
-  walletPlaceholder: {
-    width: 50,
-    height: 36,
-    backgroundColor: '#1E293B',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
     position: 'relative',
   },
-  walletPlaceholderText: {
-    color: '#FFC759',
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 14,
-  },
-  walletShield: {
+  giftCheck: {
     position: 'absolute',
-    bottom: -6,
-    right: -6,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    bottom: -4,
+    right: -4,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     backgroundColor: '#10B981',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#F8F9FA',
+    borderColor: '#FFFBEB',
   },
-  infoBannerTextContent: {
+  rewardContent: {
     flex: 1,
   },
-  infoBannerTitle: {
+  rewardTitle: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 12,
     color: '#1A2840',
     marginBottom: 4,
   },
-  infoBannerText: {
+  rewardHighlight: {
+    color: '#10B981',
+  },
+  rewardSub: {
     fontFamily: 'Inter_400Regular',
     fontSize: 11,
-    color: '#6B7280',
+    color: '#475569',
     lineHeight: 16,
+    marginBottom: 8,
+  },
+  rewardLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+  },
+  rewardLinkText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    color: '#1A2840',
+    marginRight: 4,
   },
   actionButtons: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
+    marginTop: 24,
   },
-  primaryButton: {
-    marginBottom: 16,
-  },
-  secondaryButtonsRow: {
+  primaryBtn: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFC759',
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginBottom: 12,
   },
-  secondaryButton: {
+  primaryBtnText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
+    color: '#1A2840',
+  },
+  secondaryBtnRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  secondaryBtn: {
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
     backgroundColor: '#FFFFFF',
-    marginHorizontal: 4,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingVertical: 14,
+    borderRadius: 12,
   },
-  secondaryButtonIcon: {
-    marginRight: 6,
-  },
-  secondaryButtonText: {
+  secondaryBtnText: {
     fontFamily: 'Inter_500Medium',
     fontSize: 11,
     color: '#1A2840',
   },
-  bottomNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
-    position: 'relative',
-  },
-  navItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-  },
-  navItemText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 10,
-    color: '#1A2840',
-    marginTop: 4,
-  },
-  navItemTextInactive: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 10,
-    color: '#8B92A5',
-    marginTop: 4,
-  },
-  fabWrapper: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  fab: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#FFC759',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: -20, // Elevate above the bar
-    shadowColor: '#F59E0B',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-  }
 });
