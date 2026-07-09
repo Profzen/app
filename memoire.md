@@ -60,11 +60,12 @@ Toutes les maquettes ci-dessous sont intégrées, versionnées sur GitHub (branc
 - ✅ **M28 (Contacts)** : Création de l'écran `ContactsScreen.js`. En-tête avec logo "DizzitUp", bannière de synchronisation des contacts, barre de recherche, section "Actions rapides" avec défilement horizontal (Payer, Recharger, etc.), et liste "Mes bénéficiaires" (avec filtres : À proximité, Afrique, etc.). Les contacts affichent leurs infos (pays, relation), statut "Bénéficiaire" (Oui/Non) et "Parrain" (Oui/Non).
 - ✅ **M29__ (Shops)** : Création de l'écran `ShopsScreen.js`. En-tête avec logo "DizzitUp", onglets supérieurs (De mes pays préférés, COIs), barre de recherche, section "Actions rapides" avec 4 cartes (Référer, Mes shops, À proximité, Nouveaux shops), liste "Mes shops" avec filtres et informations détaillées (logo, catégorie, drapeaux, distance, notation, badges), bannière promotionnelle défilante, et barre de sous-navigation.
 - ✅ **M30 (Liste des actifs - Variante Promo)** : Création de `AssetListPromoScreen.js`. Il s'agit d'une variante de l'écran "Liste des actifs" où la carte de portefeuille classique est remplacée par une grande bannière promotionnelle "Tout votre argent, toujours avec vous" avec une illustration du portefeuille bleu (DZYwallet). Les boutons Acheter/Vendre de la liste sont affichés en anglais ("Buy", "Sell"). Un gros bouton "+ Ajouter un actif" remplace la bannière d'invitation en bas.
+- ✅ **M31 (Dashboard Global / Accueil Variante)** : Création de `DashboardScreen.js`. Écran d'accueil alternatif ou tableau de bord principal. En-tête avec drapeau (langue), cloche, horloge et paramètres. Carte "Solde total" avec conversions EUR/XAF et logo DZY néon. Actions rapides (Envoyer, Recevoir, Convertir, Cash-out désactivé). Section "Mes fonds" avec défilement horizontal des cryptos. Bannière de réservation de la "DZYCard" (Visa) avec illustration de la carte. Liste des "Transactions récentes" avec montants colorés.
 
 ---
 
 ## 📍 5. Où en sommes-nous actuellement ?
-- L'application compile correctement. `App.js` affiche la maquette **M30** via le composant `AssetListPromoScreen`.
-- **Prochaine étape attendue** : Lancement de la maquette **__M31__** ou la suivante sur la liste.
+- L'application compile correctement. `App.js` affiche la maquette **M31** via le composant `DashboardScreen`.
+- **Prochaine étape attendue** : Lancement de la maquette **_M32__** ou la suivante sur la liste.
 
 *(Note pour l'IA : Après chaque nouvelle maquette ou modification architecturale majeure, ce fichier doit impérativement être mis à jour pour refléter la nouvelle réalité du projet).*
