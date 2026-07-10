@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Platform, TextInput } from 'react-native';
 import { theme } from '../theme/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { DizzitButton } from '../components/DizzitButton';
 
 export default function ReviewPaymentScreen() {
+  const navigation = useNavigation();
   const [selectedPayment, setSelectedPayment] = useState('card');
 
   return (
@@ -13,8 +15,8 @@ export default function ReviewPaymentScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTopRow}>
-          <TouchableOpacity style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#1A2840" />
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Vérifier et payer</Text>
           <View style={styles.headerIcons}>

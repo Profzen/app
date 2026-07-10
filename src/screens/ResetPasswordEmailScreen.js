@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Keyboard } from 'react-native';
 import { theme } from '../theme/theme';
 import HeaderBackButton from '../components/HeaderBackButton';
@@ -13,6 +14,7 @@ const STEPS = [
 ];
 
 export default function ResetPasswordEmailScreen() {
+  const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
@@ -8,6 +9,7 @@ import { SocialLogins } from '../components/SocialLogins';
 import { FeaturesBanner } from '../components/FeaturesBanner';
 
 export default function LoginScreen() {
+  const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState('email'); // 'email' | 'phone'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,8 +29,8 @@ export default function LoginScreen() {
     
     setTimeout(() => {
       setIsLoading(false);
-      // Navigate to Home or next screen
-      alert("Connexion réussie ! (Simulé)");
+      // Navigate to Home
+      navigation.navigate('HomeScreen');
     }, 1500);
   };
 
@@ -38,8 +40,8 @@ export default function LoginScreen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color={theme.colors.primary} />
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color={theme.colors.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Connexion</Text>
           <TouchableOpacity style={styles.languageSelector}>
@@ -110,7 +112,7 @@ export default function LoginScreen() {
             />
           </View>
 
-          <TouchableOpacity style={styles.forgotPasswordContainer}>
+          <TouchableOpacity style={styles.forgotPasswordContainer} onPress={() => navigation.navigate('ResetPasswordEmailScreen')}>
             <Text style={styles.forgotPasswordText}>Mot de passe oublié ?</Text>
           </TouchableOpacity>
 
@@ -132,7 +134,7 @@ export default function LoginScreen() {
         {/* Signup Link */}
         <View style={styles.signupContainer}>
           <Text style={styles.signupText}>Vous n'avez pas de compte ? </Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('RegisterScreen')}>
             <Text style={styles.signupLink}>S'inscrire</Text>
           </TouchableOpacity>
         </View>

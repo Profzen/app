@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { theme } from '../theme/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,6 +11,7 @@ export default function SuccessScreen({
   customIcon,
   onButtonPress
 }) {
+  const navigation = useNavigation();
   const [isLoading, setIsLoading] = useState(false);
 
   const handlePress = () => {

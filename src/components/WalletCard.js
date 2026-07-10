@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 export default function WalletCard({ balances }) {
+  const navigation = useNavigation();
   const [isVisible, setIsVisible] = useState(true);
 
   // Valeurs par défaut sécurisées
@@ -24,7 +26,7 @@ export default function WalletCard({ balances }) {
           </TouchableOpacity>
         </View>
         <View style={styles.topRightActions}>
-          <TouchableOpacity style={styles.topUpButton}>
+          <TouchableOpacity style={styles.topUpButton} onPress={() => navigation.navigate('TopUpScreen')}>
             <Ionicons name="add" size={16} color="#1A2840" />
             <Text style={styles.topUpText}>Top-up</Text>
           </TouchableOpacity>
@@ -60,18 +62,18 @@ export default function WalletCard({ balances }) {
 
       {/* Actions */}
       <View style={styles.actionsRow}>
-        <ActionItem icon="paper-plane-outline" label="Send" />
-        <ActionItem icon="arrow-down-outline" label="Receive" />
-        <ActionItem icon="time-outline" label="History" />
-        <ActionItem icon="card-outline" label="Cash-out" />
+        <ActionItem icon="paper-plane-outline" label="Send" onPress={() => navigation.navigate('SendMoneyScreen')} />
+        <ActionItem icon="arrow-down-outline" label="Receive" onPress={() => navigation.navigate('ReceiveFundsScreen')} />
+        <ActionItem icon="time-outline" label="History" onPress={() => navigation.navigate('TransactionsListScreen')} />
+        <ActionItem icon="card-outline" label="Cash-out" onPress={() => navigation.navigate('WithdrawFundsScreen')} />
       </View>
     </View>
   );
 }
 
-function ActionItem({ icon, label }) {
+function ActionItem({ icon, label, onPress }) {
   return (
-    <TouchableOpacity style={styles.actionItem}>
+    <TouchableOpacity style={styles.actionItem} onPress={onPress}>
       <Ionicons name={icon} size={24} color="#FFFFFF" />
       <Text style={styles.actionLabel}>{label}</Text>
     </TouchableOpacity>

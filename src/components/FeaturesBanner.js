@@ -64,6 +64,8 @@ const styles = StyleSheet.create({
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
+    width: 30, // Force bounding box for web SVGs
+    height: 30,
   },
   innerIcon: {
     position: 'absolute',

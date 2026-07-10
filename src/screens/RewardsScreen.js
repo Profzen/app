@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle, G, Text as SvgText } from 'react-native-svg';
@@ -13,6 +14,7 @@ const USAGE_DATA = [
 ];
 
 export default function RewardsScreen() {
+  const navigation = useNavigation();
   // Simple Donut Chart Calculation
   const size = 180;
   const strokeWidth = 35;
@@ -26,8 +28,8 @@ export default function RewardsScreen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color="#1A2840" />
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>DZY Rewards</Text>
           <View style={styles.headerRight}>

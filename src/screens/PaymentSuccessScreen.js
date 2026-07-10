@@ -1,9 +1,11 @@
 import React from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 
 export default function PaymentSuccessScreen() {
+  const navigation = useNavigation();
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>

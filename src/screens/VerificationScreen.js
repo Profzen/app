@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
@@ -10,6 +11,7 @@ import { FooterTerms } from '../components/FooterTerms';
 import { OtpInput } from '../components/OtpInput';
 
 export default function VerificationScreen() {
+  const navigation = useNavigation();
   const [code, setCode] = useState('');
   const [timeLeft, setTimeLeft] = useState(45);
   const [isLoading, setIsLoading] = useState(false);
@@ -70,8 +72,8 @@ export default function VerificationScreen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color={theme.colors.primary} />
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name="chevron-back" size={24} color={theme.colors.primary} />
           </TouchableOpacity>
           <View style={styles.loginLinkContainer}>
             <Text style={styles.loginText}>Déjà un compte ? </Text>

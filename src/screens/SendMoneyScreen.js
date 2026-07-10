@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function SendMoneyScreen() {
+  const navigation = useNavigation();
   const [amount, setAmount] = useState('4 000');
 
   const handleKeyPress = (key) => {
@@ -43,8 +45,8 @@ export default function SendMoneyScreen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color="#1A2840" />
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Envoyer de l'argent</Text>
           <TouchableOpacity style={styles.iconBtn}>
@@ -88,7 +90,14 @@ export default function SendMoneyScreen() {
           </View>
           
           <View style={styles.amountDisplay}>
-            <Text style={styles.amountValue}>{amount || '0'}</Text>
+            <TextInput 
+              style={styles.amountValue} 
+              value={amount}
+              onChangeText={setAmount}
+              keyboardType="numeric"
+              placeholder="0"
+              placeholderTextColor="#94A3B8"
+            />
             <Text style={styles.amountSymbol}>Ar</Text>
           </View>
           
@@ -132,9 +141,8 @@ export default function SendMoneyScreen() {
           </View>
         </View>
 
-        {/* Continue Button */}
         <View style={styles.footer}>
-          <TouchableOpacity style={styles.continueBtn}>
+          <TouchableOpacity style={styles.continueBtn} onPress={() => navigation.navigate('SendMoneyMethodScreen')}>
             <Text style={styles.continueBtnText}>Continuer</Text>
           </TouchableOpacity>
         </View>

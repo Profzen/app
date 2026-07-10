@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Platform } from 'react-native';
 import { theme } from '../theme/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,14 +7,15 @@ import ServiceGridCard from '../components/ServiceGridCard';
 import BottomNavBar from '../components/BottomNavBar';
 
 export default function ChooseServiceScreen() {
+  const navigation = useNavigation();
   return (
     <SafeAreaView style={styles.safeArea}>
 
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTopRow}>
-          <TouchableOpacity style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#1A2840" />
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Choisir un service</Text>
           <View style={styles.headerIcons}>

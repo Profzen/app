@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
@@ -10,6 +11,7 @@ import { SocialLogins } from '../components/SocialLogins';
 import { FooterTerms } from '../components/FooterTerms';
 
 export default function RegisterScreen() {
+  const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [parrain, setParrain] = useState('');
@@ -60,8 +62,8 @@ export default function RegisterScreen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color={theme.colors.primary} />
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name="chevron-back" size={24} color={theme.colors.primary} />
           </TouchableOpacity>
           <View style={styles.loginLinkContainer}>
             <Text style={styles.loginText}>Déjà un compte ? </Text>
@@ -133,7 +135,7 @@ export default function RegisterScreen() {
           <SecurityBanner />
 
           <DizzitButton 
-            title="Continuer" 
+            title="Continuer" onPress={() => navigation.navigate('VerificationScreen')} 
             icon={<Ionicons name="arrow-forward" size={20} color={theme.colors.textPrimary} />} 
             style={{marginTop: theme.spacing.sm}}
             onPress={handleRegister}

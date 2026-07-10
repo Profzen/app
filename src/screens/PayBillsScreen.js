@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, TextInput, Platform } from 'react-native';
 import { theme } from '../theme/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,6 +15,7 @@ const MOCK_CONTACTS = [
 ];
 
 export default function PayBillsScreen() {
+  const navigation = useNavigation();
   const [activeFilter, setActiveFilter] = useState('À proximité');
   const [searchQuery, setSearchQuery] = useState('');
   const [showPromo, setShowPromo] = useState(true);
@@ -25,8 +27,8 @@ export default function PayBillsScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTopRow}>
-          <TouchableOpacity style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#1A2840" />
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <Text style={styles.headerTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>Pay Bills & Send Essentials</Text>
           <View style={styles.headerIcons}>

@@ -1,0 +1,133 @@
+import React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+import AssetListPromoScreen from '../screens/AssetListPromoScreen';
+import AssetListScreen from '../screens/AssetListScreen';
+import AssetsListScreen from '../screens/AssetsListScreen';
+import CashierScanScreen from '../screens/CashierScanScreen';
+import CashierSendFundsScreen from '../screens/CashierSendFundsScreen';
+import CashierSuccessScreen from '../screens/CashierSuccessScreen';
+import CashRegisterScreen from '../screens/CashRegisterScreen';
+import ChooseServiceScreen from '../screens/ChooseServiceScreen';
+import ContactHistoryScreen from '../screens/ContactHistoryScreen';
+import ContactProfileScreen from '../screens/ContactProfileScreen';
+import ContactsManageScreen from '../screens/ContactsManageScreen';
+import ContactsScreen from '../screens/ContactsScreen';
+import DashboardEngScreen from '../screens/DashboardEngScreen';
+import DashboardScreen from '../screens/DashboardScreen';
+import FiltersScreen from '../screens/FiltersScreen';
+import HomeScreen from '../screens/HomeScreen';
+import LoginScreen from '../screens/LoginScreen';
+import MobileRechargeScreen from '../screens/MobileRechargeScreen';
+import OrderConfirmationScreen from '../screens/OrderConfirmationScreen';
+import OrderVerificationScreen from '../screens/OrderVerificationScreen';
+import PayBillsScreen from '../screens/PayBillsScreen';
+import PaymentInProgressScreen from '../screens/PaymentInProgressScreen';
+import PaymentSuccessScreen from '../screens/PaymentSuccessScreen';
+import PinCodeScreen from '../screens/PinCodeScreen';
+import ProductDetailsScreen from '../screens/ProductDetailsScreen';
+import ReceiveFundsScreen from '../screens/ReceiveFundsScreen';
+import ReceiveFundsV2Screen from '../screens/ReceiveFundsV2Screen';
+import RegisterScreen from '../screens/RegisterScreen';
+import ResetPasswordCodeScreen from '../screens/ResetPasswordCodeScreen';
+import ResetPasswordEmailScreen from '../screens/ResetPasswordEmailScreen';
+import ResetPasswordFinalScreen from '../screens/ResetPasswordFinalScreen';
+import ReviewPaymentScreen from '../screens/ReviewPaymentScreen';
+import RewardsScreen from '../screens/RewardsScreen';
+import SecureAccountScreen from '../screens/SecureAccountScreen';
+import SendMoneyMethodScreen from '../screens/SendMoneyMethodScreen';
+import SendMoneyPinScreen from '../screens/SendMoneyPinScreen';
+import SendMoneyScreen from '../screens/SendMoneyScreen';
+import SendMoneySuccessScreen from '../screens/SendMoneySuccessScreen';
+import SendMoneySummaryScreen from '../screens/SendMoneySummaryScreen';
+import ShopDetailsScreen from '../screens/ShopDetailsScreen';
+import ShopProductsScreen from '../screens/ShopProductsScreen';
+import ShopsScreen from '../screens/ShopsScreen';
+import SuccessScreen from '../screens/SuccessScreen';
+import SwapTokensScreen from '../screens/SwapTokensScreen';
+import TopUpDetailsScreen from '../screens/TopUpDetailsScreen';
+import TopUpPaymentScreen from '../screens/TopUpPaymentScreen';
+import TopUpScreen from '../screens/TopUpScreen';
+import TopUpSummaryScreen from '../screens/TopUpSummaryScreen';
+import TopUpWalletConfirmationScreen from '../screens/TopUpWalletConfirmationScreen';
+import TopUpWalletDetailsScreen from '../screens/TopUpWalletDetailsScreen';
+import TopUpWalletPaymentScreen from '../screens/TopUpWalletPaymentScreen';
+import TopUpWalletScreen from '../screens/TopUpWalletScreen';
+import TransactionHistoryScreen from '../screens/TransactionHistoryScreen';
+import VerificationScreen from '../screens/VerificationScreen';
+import WithdrawFundsMethodScreen from '../screens/WithdrawFundsMethodScreen';
+import WithdrawFundsMobileMoneyProcessingScreen from '../screens/WithdrawFundsMobileMoneyProcessingScreen';
+import WithdrawFundsMobileMoneySuccessScreen from '../screens/WithdrawFundsMobileMoneySuccessScreen';
+import WithdrawFundsMobileMoneySummaryScreen from '../screens/WithdrawFundsMobileMoneySummaryScreen';
+import WithdrawFundsScreen from '../screens/WithdrawFundsScreen';
+
+const Stack = createNativeStackNavigator();
+
+export default function AppNavigator() {
+  return (
+    <Stack.Navigator 
+      initialRouteName="LoginScreen"
+      screenOptions={{ headerShown: false }}
+    >
+      <Stack.Screen name="AssetListPromoScreen" component={AssetListPromoScreen} />
+      <Stack.Screen name="AssetListScreen" component={AssetListScreen} />
+      <Stack.Screen name="AssetsListScreen" component={AssetsListScreen} />
+      <Stack.Screen name="CashierScanScreen" component={CashierScanScreen} />
+      <Stack.Screen name="CashierSendFundsScreen" component={CashierSendFundsScreen} />
+      <Stack.Screen name="CashierSuccessScreen" component={CashierSuccessScreen} />
+      <Stack.Screen name="CashRegisterScreen" component={CashRegisterScreen} />
+      <Stack.Screen name="ChooseServiceScreen" component={ChooseServiceScreen} />
+      <Stack.Screen name="ContactHistoryScreen" component={ContactHistoryScreen} />
+      <Stack.Screen name="ContactProfileScreen" component={ContactProfileScreen} />
+      <Stack.Screen name="ContactsManageScreen" component={ContactsManageScreen} />
+      <Stack.Screen name="ContactsScreen" component={ContactsScreen} />
+      <Stack.Screen name="DashboardEngScreen" component={DashboardEngScreen} />
+      <Stack.Screen name="DashboardScreen" component={DashboardScreen} />
+      <Stack.Screen name="FiltersScreen" component={FiltersScreen} />
+      <Stack.Screen name="HomeScreen" component={HomeScreen} />
+      <Stack.Screen name="LoginScreen" component={LoginScreen} />
+      <Stack.Screen name="MobileRechargeScreen" component={MobileRechargeScreen} />
+      <Stack.Screen name="OrderConfirmationScreen" component={OrderConfirmationScreen} />
+      <Stack.Screen name="OrderVerificationScreen" component={OrderVerificationScreen} />
+      <Stack.Screen name="PayBillsScreen" component={PayBillsScreen} />
+      <Stack.Screen name="PaymentInProgressScreen" component={PaymentInProgressScreen} />
+      <Stack.Screen name="PaymentSuccessScreen" component={PaymentSuccessScreen} />
+      <Stack.Screen name="PinCodeScreen" component={PinCodeScreen} />
+      <Stack.Screen name="ProductDetailsScreen" component={ProductDetailsScreen} />
+      <Stack.Screen name="ReceiveFundsScreen" component={ReceiveFundsScreen} />
+      <Stack.Screen name="ReceiveFundsV2Screen" component={ReceiveFundsV2Screen} />
+      <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
+      <Stack.Screen name="ResetPasswordCodeScreen" component={ResetPasswordCodeScreen} />
+      <Stack.Screen name="ResetPasswordEmailScreen" component={ResetPasswordEmailScreen} />
+      <Stack.Screen name="ResetPasswordFinalScreen" component={ResetPasswordFinalScreen} />
+      <Stack.Screen name="ReviewPaymentScreen" component={ReviewPaymentScreen} />
+      <Stack.Screen name="RewardsScreen" component={RewardsScreen} />
+      <Stack.Screen name="SecureAccountScreen" component={SecureAccountScreen} />
+      <Stack.Screen name="SendMoneyMethodScreen" component={SendMoneyMethodScreen} />
+      <Stack.Screen name="SendMoneyPinScreen" component={SendMoneyPinScreen} />
+      <Stack.Screen name="SendMoneyScreen" component={SendMoneyScreen} />
+      <Stack.Screen name="SendMoneySuccessScreen" component={SendMoneySuccessScreen} />
+      <Stack.Screen name="SendMoneySummaryScreen" component={SendMoneySummaryScreen} />
+      <Stack.Screen name="ShopDetailsScreen" component={ShopDetailsScreen} />
+      <Stack.Screen name="ShopProductsScreen" component={ShopProductsScreen} />
+      <Stack.Screen name="ShopsScreen" component={ShopsScreen} />
+      <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
+      <Stack.Screen name="SwapTokensScreen" component={SwapTokensScreen} />
+      <Stack.Screen name="TopUpDetailsScreen" component={TopUpDetailsScreen} />
+      <Stack.Screen name="TopUpPaymentScreen" component={TopUpPaymentScreen} />
+      <Stack.Screen name="TopUpScreen" component={TopUpScreen} />
+      <Stack.Screen name="TopUpSummaryScreen" component={TopUpSummaryScreen} />
+      <Stack.Screen name="TopUpWalletConfirmationScreen" component={TopUpWalletConfirmationScreen} />
+      <Stack.Screen name="TopUpWalletDetailsScreen" component={TopUpWalletDetailsScreen} />
+      <Stack.Screen name="TopUpWalletPaymentScreen" component={TopUpWalletPaymentScreen} />
+      <Stack.Screen name="TopUpWalletScreen" component={TopUpWalletScreen} />
+      <Stack.Screen name="TransactionHistoryScreen" component={TransactionHistoryScreen} />
+      <Stack.Screen name="VerificationScreen" component={VerificationScreen} />
+      <Stack.Screen name="WithdrawFundsMethodScreen" component={WithdrawFundsMethodScreen} />
+      <Stack.Screen name="WithdrawFundsMobileMoneyProcessingScreen" component={WithdrawFundsMobileMoneyProcessingScreen} />
+      <Stack.Screen name="WithdrawFundsMobileMoneySuccessScreen" component={WithdrawFundsMobileMoneySuccessScreen} />
+      <Stack.Screen name="WithdrawFundsMobileMoneySummaryScreen" component={WithdrawFundsMobileMoneySummaryScreen} />
+      <Stack.Screen name="WithdrawFundsScreen" component={WithdrawFundsScreen} />
+    </Stack.Navigator>
+  );
+}

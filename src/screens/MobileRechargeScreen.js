@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Platform } from 'react-native';
 import { theme } from '../theme/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,6 +7,7 @@ import { DizzitButton } from '../components/DizzitButton';
 import StepIndicator from '../components/StepIndicator'; // Ensure this exists or we create it
 
 export default function MobileRechargeScreen() {
+  const navigation = useNavigation();
   const [selectedAmount, setSelectedAmount] = useState(500);
 
   const amounts = [500, 1000, 2000, 5000, 10000, 20000];
@@ -16,8 +18,8 @@ export default function MobileRechargeScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTopRow}>
-          <TouchableOpacity style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#1A2840" />
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Recharger un mobile</Text>
           <View style={styles.headerIcons}>

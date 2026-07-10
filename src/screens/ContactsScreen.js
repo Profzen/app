@@ -1,232 +1,202 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Dimensions } from 'react-native';
+import React from 'react';
+import { useNavigation } from '@react-navigation/native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 
-const { width } = Dimensions.get('window');
+const quickActions = [
+  { id: '1', title: "Payer et\nacheter l'essentiel", subtitle: "Achat de crédit,\ninternet, TV, jeux,\ncrypto et plus", icon: "bag-handle-outline", color: "#8B5CF6" },
+  { id: '2', title: "Recharger\nmobile", subtitle: "Achat de crédit\nmobile", icon: "phone-portrait-outline", color: "#10B981" },
+  { id: '3', title: "Payer des\nfactures", subtitle: "Électricité, eau,\ninternet et plus", icon: "receipt-outline", color: "#3B82F6" },
+  { id: '4', title: "Envoyer /\nDemander\ndes fonds", subtitle: "Transferts d'argent\ninstantanés", icon: "swap-horizontal-outline", color: "#F59E0B" },
+  { id: '5', title: "Inviter", subtitle: "Invitez vos amis\net gagnez\n$5 en DZY", icon: "person-add-outline", color: "#8B5CF6" },
+];
 
-const BENEFICIARIES_DATA = [
-  { id: '1', name: 'John Doe', relation: 'Frère', city: 'Lomé', country: 'Togo', flagCode: 'tg', isBeneficiary: true, isSponsor: true, avatarUrl: 'https://i.pravatar.cc/100?img=11' },
-  { id: '2', name: 'Marie K.', relation: 'Soeur', city: 'Dakar', country: 'Sénégal', flagCode: 'sn', isBeneficiary: false, isSponsor: true, avatarUrl: 'https://i.pravatar.cc/100?img=5' },
-  { id: '3', name: 'Ousmane T.', relation: 'Ami', city: 'Bamako', country: 'Mali', flagCode: 'ml', isBeneficiary: true, isSponsor: false, avatarUrl: 'https://i.pravatar.cc/100?img=12' },
-  { id: '4', name: 'Aissatou B.', relation: 'Famille', city: 'Ouagadougou', country: 'Burkina Faso', flagCode: 'bf', isBeneficiary: true, isSponsor: false, avatarUrl: 'https://i.pravatar.cc/100?img=9' },
-  { id: '5', name: 'Kwame A.', relation: 'Ami', city: 'Accra', country: 'Ghana', flagCode: 'gh', isBeneficiary: false, isSponsor: true, avatarUrl: 'https://i.pravatar.cc/100?img=15' },
+const contacts = [
+  { id: '1', name: "John Doe", relation: "Frère", location: "Lomé, Togo", flag: "🇹🇬", isBeneficiary: true, isSponsor: true, image: "https://i.pravatar.cc/150?img=11" },
+  { id: '2', name: "Marie K.", relation: "Sœur", location: "Dakar, Sénégal", flag: "🇸🇳", isBeneficiary: true, isSponsor: true, image: "https://i.pravatar.cc/150?img=5" },
+  { id: '3', name: "Ousmane T.", relation: "Ami", location: "Bamako, Mali", flag: "🇲🇱", isBeneficiary: true, isSponsor: false, image: "https://i.pravatar.cc/150?img=12" },
+  { id: '4', name: "Aïssatou B.", relation: "Famille", location: "Ouagadougou, Burkina Faso", flag: "🇧🇫", isBeneficiary: true, isSponsor: false, image: "https://i.pravatar.cc/150?img=9" },
+  { id: '5', name: "Kwame A.", relation: "Ami", location: "Accra, Ghana", flag: "🇬🇭", isBeneficiary: false, isSponsor: true, image: "https://i.pravatar.cc/150?img=14" },
 ];
 
 export default function ContactsScreen() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+  const navigation = useNavigation();
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.headerLogoContainer}>
-            <Image source={require('../../dizzitup logo cercle.png')} style={{ width: 36, height: 36, marginRight: 8 }} resizeMode="contain" />
-            <Text style={styles.dizzitText}>Dizzit<Text style={styles.upText}>Up</Text></Text>
+          <View style={styles.logoContainer}>
+            <Image source={require('../../assets/icon.png')} style={styles.logoImage} resizeMode="contain" />
           </View>
-          <View style={styles.headerIcons}>
-            <TouchableOpacity style={styles.iconButton}>
+          <View style={styles.headerRightIcons}>
+            <TouchableOpacity style={styles.iconBtnRight}>
               <Ionicons name="notifications-outline" size={20} color="#1A2840" />
               <View style={styles.notificationDot} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity style={styles.iconBtnRight}>
               <Ionicons name="gift-outline" size={20} color="#1A2840" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity style={styles.iconBtnRight}>
               <Ionicons name="ellipsis-horizontal" size={20} color="#1A2840" />
             </TouchableOpacity>
           </View>
         </View>
 
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          <View style={styles.titleSection}>
-            <Text style={styles.mainTitle}>Contacts</Text>
-            <Text style={styles.subtitle}>Envoyez de l'argent à vos bénéficiaires à travers l'Afrique.</Text>
-          </View>
-
-          {/* Sync Contacts Banner */}
-          <TouchableOpacity style={styles.syncBanner}>
-            <View style={styles.syncIconContainer}>
-              <Ionicons name="phone-portrait-outline" size={24} color="#F59E0B" />
-              <Ionicons name="sync" size={14} color="#F59E0B" style={styles.syncBadge} />
-            </View>
-            <View style={styles.syncTextContainer}>
-              <Text style={styles.syncTitle}>Synchroniser vos contacts</Text>
-              <Text style={styles.syncSubtitle}>Accédez facilement à vos contacts pour envoyer de l'argent.</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#1A2840" />
+          <Text style={styles.mainTitle}>Contacts</Text>
+          
+          <TouchableOpacity style={styles.syncBtn}>
+            <Ionicons name="sync-outline" size={16} color="#3B82F6" style={{marginRight: 8}} />
+            <Text style={styles.syncBtnText}>Synchroniser vos contacts</Text>
           </TouchableOpacity>
+          
+          <Text style={styles.subtitle}>Envoyez de l'argent à vos bénéficiaires à travers l'Afrique.</Text>
 
           {/* Search Bar */}
           <View style={styles.searchContainer}>
-            <Ionicons name="search-outline" size={20} color="#1A2840" style={styles.searchIcon} />
+            <Ionicons name="search-outline" size={20} color="#94A3B8" style={styles.searchIcon} />
             <View>
-              <Text style={styles.searchPlaceholderTop}>Rechercher un contact</Text>
-              <Text style={styles.searchPlaceholderBottom}>Nom, téléphone, email, ville ou pays</Text>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Rechercher un contact"
+                placeholderTextColor="#64748B"
+              />
+              <Text style={styles.searchSubText}>Nom, téléphone, email, ville ou pays</Text>
             </View>
           </View>
 
-          {/* Quick Actions */}
-          <View style={styles.quickActionsSection}>
-            <Text style={styles.sectionTitle}>Actions rapides</Text>
-            <View style={styles.quickActionsContainer}>
-              
-              <TouchableOpacity style={styles.quickActionCard}>
-                <View style={[styles.qaIconCircle, { backgroundColor: '#F3E8FF' }]}>
-                  <Ionicons name="cart-outline" size={16} color="#9333EA" />
+          {/* Actions rapides */}
+          <Text style={styles.sectionTitle}>Actions rapides</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickActionsScroll}>
+            {quickActions.map(action => (
+              <TouchableOpacity key={action.id} style={styles.quickActionCard}>
+                <View style={styles.quickActionIconContainer}>
+                  <Ionicons name={action.icon} size={28} color={action.color} />
                 </View>
-                <Text style={styles.qaTitle} numberOfLines={3}>1. Payer et acheter l'essentiel</Text>
-                <Text style={styles.qaDesc} numberOfLines={3}>Payez et achetez l'essentiel pour eux.</Text>
+                <Text style={styles.quickActionTitle}>{action.title}</Text>
+                <Text style={styles.quickActionSubtitle}>{action.subtitle}</Text>
               </TouchableOpacity>
+            ))}
+          </ScrollView>
 
-              <TouchableOpacity style={styles.quickActionCard}>
-                <View style={[styles.qaIconCircle, { backgroundColor: '#ECFDF5' }]}>
-                  <Ionicons name="call-outline" size={16} color="#10B981" />
-                </View>
-                <Text style={styles.qaTitle} numberOfLines={3}>2. Recharger un mobile</Text>
-                <Text style={styles.qaDesc} numberOfLines={3}>Rechargez le mobile de vos proches.</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.quickActionCard}>
-                <View style={[styles.qaIconCircle, { backgroundColor: '#EFF6FF' }]}>
-                  <Ionicons name="document-text-outline" size={16} color="#3B82F6" />
-                </View>
-                <Text style={styles.qaTitle} numberOfLines={3}>3. Payer des factures</Text>
-                <Text style={styles.qaDesc} numberOfLines={3}>Réglez les factures en toute simplicité.</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.quickActionCard}>
-                <View style={[styles.qaIconCircle, { backgroundColor: '#EFF6FF' }]}>
-                  <Ionicons name="swap-horizontal-outline" size={16} color="#3B82F6" />
-                </View>
-                <Text style={styles.qaTitle} numberOfLines={4}>4. Envoyer / Demander des fonds</Text>
-                <Text style={styles.qaDesc} numberOfLines={3}>Envoyez ou demandez des fonds facilement.</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.quickActionCard}>
-                <View style={[styles.qaIconCircle, { backgroundColor: '#FEF3C7' }]}>
-                  <Ionicons name="person-add-outline" size={16} color="#F59E0B" />
-                </View>
-                <Text style={styles.qaTitle} numberOfLines={2}>5. Inviter</Text>
-                <Text style={styles.qaDesc} numberOfLines={3}>Invitez vos amis et gagnez <Text style={{color: '#F59E0B'}}>$5 en DZY</Text></Text>
-              </TouchableOpacity>
-
-            </View>
+          {/* Mes bénéficiaires */}
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>Mes bénéficiaires</Text>
+            <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Text style={styles.showLessText}>Afficher moins</Text>
+              <Ionicons name="chevron-up" size={14} color="#64748B" style={{marginLeft: 4}} />
+            </TouchableOpacity>
           </View>
 
-          {/* Beneficiaries Section */}
-          <View style={styles.beneficiariesSection}>
-            <View style={styles.beneficiariesHeader}>
-              <Text style={styles.sectionTitle}>Mes bénéficiaires</Text>
-              <TouchableOpacity style={styles.seeAllButton}>
-                <Text style={styles.seeAllText}>Voir tout</Text>
-                <Ionicons name="arrow-forward" size={16} color="#1A2840" />
-              </TouchableOpacity>
-            </View>
+          {/* Filters */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>
+            <TouchableOpacity style={styles.filterChipActive}>
+              <Ionicons name="location-outline" size={16} color="#FFFFFF" style={{marginRight: 6}} />
+              <Text style={styles.filterChipTextActive}>À proximité</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.filterChip}>
+              <Ionicons name="heart-outline" size={16} color="#64748B" style={{marginRight: 6}} />
+              <Text style={styles.filterChipText}>De mes pays préférés</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.filterChip}>
+              <Ionicons name="earth-outline" size={16} color="#64748B" style={{marginRight: 6}} />
+              <Text style={styles.filterChipText}>De toute l'Afrique</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.filterChip}>
+              <Ionicons name="globe-outline" size={16} color="#64748B" style={{marginRight: 6}} />
+              <Text style={styles.filterChipText}>Du reste du monde</Text>
+            </TouchableOpacity>
+          </ScrollView>
 
-            {/* Filter Chips */}
-            <View style={styles.filterContainer}>
-              <TouchableOpacity style={[styles.filterChip, styles.filterChipActive]}>
-                <Ionicons name="location-outline" size={12} color="#FFFFFF" />
-                <Text style={[styles.filterChipText, styles.filterChipTextActive]} numberOfLines={1} adjustsFontSizeToFit>À proximité</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity style={styles.filterChip}>
-                <Ionicons name="earth-outline" size={12} color="#1A2840" />
-                <Text style={styles.filterChipText} numberOfLines={1} adjustsFontSizeToFit>Mes pays préférés</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity style={styles.filterChip}>
-                <Ionicons name="map-outline" size={12} color="#1A2840" />
-                <Text style={styles.filterChipText} numberOfLines={1} adjustsFontSizeToFit>Toute l'Afrique</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity style={styles.filterChip}>
-                <Ionicons name="globe-outline" size={12} color="#1A2840" />
-                <Text style={styles.filterChipText} numberOfLines={1} adjustsFontSizeToFit>Reste du monde</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* List Headers */}
-            <View style={styles.listHeaderRow}>
-              <Text style={[styles.listHeaderText, { flex: 2 }]}>Contact</Text>
-              <Text style={[styles.listHeaderText, { flex: 1, textAlign: 'center' }]}>Bénéficiaire</Text>
-              <Text style={[styles.listHeaderText, { flex: 1, textAlign: 'center' }]}>Parrain</Text>
-              <View style={{ width: 20 }} />
-            </View>
-
-            {/* List Items */}
-            <View style={styles.listContainer}>
-              {BENEFICIARIES_DATA.map((item, index) => (
-                <TouchableOpacity key={item.id} style={styles.beneficiaryRow}>
-                  {/* Contact Info */}
-                  <View style={styles.contactInfo}>
-                    <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
-                    <View style={styles.contactDetails}>
-                      <Text style={styles.contactName}>{item.name}</Text>
-                      <Text style={styles.contactRelation}>{item.relation}</Text>
-                      <View style={styles.locationRow}>
-                        <Image source={{ uri: `https://flagcdn.com/w20/${item.flagCode}.png` }} style={styles.smallFlag} />
-                        <Text style={styles.locationText}>{item.city}, {item.country}</Text>
-                      </View>
-                    </View>
-                  </View>
-
-                  {/* Beneficiary Status */}
-                  <View style={styles.statusCol}>
-                    <Ionicons name="person-outline" size={20} color={item.isBeneficiary ? "#10B981" : "#A0AABF"} />
-                    <Text style={[styles.statusText, { color: item.isBeneficiary ? "#10B981" : "#A0AABF" }]}>
-                      {item.isBeneficiary ? "Oui" : "Non"}
-                    </Text>
-                  </View>
-
-                  {/* Sponsor Status */}
-                  <View style={styles.statusCol}>
-                    {/* Using a heart icon as placeholder for the handshake/heart icon */}
-                    <Ionicons name="heart-circle-outline" size={20} color={item.isSponsor ? "#10B981" : "#A0AABF"} />
-                    <Text style={[styles.statusText, { color: item.isSponsor ? "#10B981" : "#A0AABF" }]}>
-                      {item.isSponsor ? "Oui" : "Non"}
-                    </Text>
-                  </View>
-
-                  <Ionicons name="chevron-forward" size={20} color="#1A2840" />
-                </TouchableOpacity>
-              ))}
-            </View>
+          {/* Contacts List Header */}
+          <View style={styles.listHeaderRow}>
+            <Text style={[styles.listHeaderText, {flex: 2}]}>Contact</Text>
+            <Text style={[styles.listHeaderText, {flex: 1, textAlign: 'center'}]}>Bénéficiaire</Text>
+            <Text style={[styles.listHeaderText, {flex: 1, textAlign: 'center'}]}>Parrain</Text>
+            <View style={{width: 20}} />
           </View>
 
-          {/* Invite Banner Footer */}
+          {/* Contacts List */}
+          <View style={styles.contactsList}>
+            {contacts.map(contact => (
+              <TouchableOpacity key={contact.id} style={styles.contactItem}>
+                
+                {/* Contact Info */}
+                <View style={styles.contactInfoCol}>
+                  <Image source={{uri: contact.image}} style={styles.contactAvatar} />
+                  <View style={styles.contactDetails}>
+                    <Text style={styles.contactName}>{contact.name}</Text>
+                    <Text style={styles.contactRelation}>{contact.relation}</Text>
+                    <Text style={styles.contactLocation}>{contact.flag} {contact.location}</Text>
+                  </View>
+                </View>
+
+                {/* Bénéficiaire Status */}
+                <View style={styles.statusCol}>
+                  <Ionicons 
+                    name="person-outline" 
+                    size={20} 
+                    color={contact.isBeneficiary ? '#10B981' : '#94A3B8'} 
+                    style={{marginBottom: 4}}
+                  />
+                  <Text style={[styles.statusText, {color: contact.isBeneficiary ? '#10B981' : '#94A3B8'}]}>
+                    {contact.isBeneficiary ? 'Oui' : 'Non'}
+                  </Text>
+                </View>
+
+                {/* Parrain Status */}
+                <View style={styles.statusCol}>
+                  <Ionicons 
+                    name="person-add-outline" 
+                    size={20} 
+                    color={contact.isSponsor ? '#10B981' : '#94A3B8'} 
+                    style={{marginBottom: 4}}
+                  />
+                  <Text style={[styles.statusText, {color: contact.isSponsor ? '#10B981' : '#94A3B8'}]}>
+                    {contact.isSponsor ? 'Oui' : 'Non'}
+                  </Text>
+                </View>
+
+                <Ionicons name="chevron-forward" size={20} color="#1A2840" />
+              </TouchableOpacity>
+            ))}
+          </View>
+
+        </ScrollView>
+
+        {/* Invite Banner (Floating) */}
+        <View style={styles.inviteBannerWrapper}>
           <View style={styles.inviteBanner}>
-            <View style={styles.inviteContent}>
-              <Text style={styles.inviteTitle}>Invitez vos amis{'\n'}et gagnez <Text style={styles.inviteTitleHighlight}>$5 en DZY</Text></Text>
-              <Text style={styles.inviteSubtitle}>Envoyez de l'argent, achetez, payez des factures{'\n'}et gagnez des récompenses ensemble.</Text>
-              <TouchableOpacity style={styles.inviteButton}>
-                <Text style={styles.inviteButtonText}>Inviter maintenant</Text>
+            <TouchableOpacity style={styles.closeBannerBtn}>
+              <Ionicons name="close" size={20} color="#FFFFFF" />
+            </TouchableOpacity>
+            <View style={styles.inviteBannerLeft}>
+              <Text style={styles.inviteBannerTitle}>
+                Invitez vos amis{'\n'}et gagnez <Text style={{color: '#FFB800'}}>$5 en DZY</Text>
+              </Text>
+              <Text style={styles.inviteBannerText}>
+                Envoyez de l'argent, achetez, payez des factures et gagnez des récompenses ensemble.
+              </Text>
+              <TouchableOpacity style={styles.inviteBtn}>
+                <Text style={styles.inviteBtnText}>Inviter maintenant</Text>
               </TouchableOpacity>
             </View>
-            <View style={styles.inviteGraphic}>
-              <View style={styles.phonePlaceholder}>
-                <View style={styles.miniCoin}>
-                  <Text style={styles.miniCoinText}>DZY</Text>
+            <View style={styles.inviteBannerRight}>
+              {/* Abstract illustration representation */}
+              <View style={styles.mockPhoneIllustration}>
+                <View style={styles.mockPhoneIconCircle}>
+                  <Text style={{color: '#FFB800', fontWeight: 'bold', fontSize: 24}}>D</Text>
                 </View>
               </View>
-              <TouchableOpacity style={styles.closeBannerButton}>
-                <Ionicons name="close" size={16} color="#FFFFFF" />
-              </TouchableOpacity>
             </View>
           </View>
+        </View>
 
-          <View style={{ height: 40 }} />
-        </ScrollView>
-        
-        <BottomNavBar 
-          activeTab="Contacts" 
-          isMenuOpen={isMenuOpen} 
-          onCenterButtonPress={() => setIsMenuOpen(!isMenuOpen)} 
-        />
+        <BottomNavBar activeTab="contacts" />
       </View>
     </SafeAreaView>
   );
@@ -235,10 +205,11 @@ export default function ContactsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FAFAFA',
   },
   container: {
     flex: 1,
+    position: 'relative',
   },
   header: {
     flexDirection: 'row',
@@ -248,308 +219,241 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 12,
   },
-  headerLogoContainer: {
+  logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  logoCircle: {
-    width: 32,
+  logoImage: {
     height: 32,
-    borderRadius: 16,
-    backgroundColor: '#0F172A',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-    position: 'relative',
+    width: 120,
   },
-  logoD: {
-    color: '#FFC759',
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 18,
-  },
-  logoStrike: {
-    position: 'absolute',
-    width: 24,
-    height: 2,
-    backgroundColor: '#FFC759',
-    transform: [{ rotate: '-45deg' }],
-  },
-  dizzitText: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 20,
-    color: '#1A2840',
-  },
-  upText: {
-    color: '#F59E0B',
-  },
-  headerIcons: {
+  headerRightIcons: {
     flexDirection: 'row',
-    alignItems: 'center',
   },
-  iconButton: {
+  iconBtnRight: {
     width: 36,
     height: 36,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
     marginLeft: 8,
     position: 'relative',
-    backgroundColor: '#FFFFFF',
   },
   notificationDot: {
     position: 'absolute',
-    top: 6,
+    top: 8,
     right: 8,
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#FFC759',
+    backgroundColor: '#FFB800',
     borderWidth: 1,
     borderColor: '#FFFFFF',
   },
   scrollView: {
     flex: 1,
   },
-  titleSection: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    marginBottom: 20,
+  scrollContent: {
+    paddingTop: 8,
+    paddingBottom: 160, // extra padding for floating banner
   },
   mainTitle: {
-    fontFamily: 'SpaceGrotesk_700Bold',
+    fontFamily: 'Inter_700Bold',
     fontSize: 28,
-    color: '#0F172A',
-    marginBottom: 4,
+    color: '#0A1128',
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  syncBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  syncBtnText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
+    color: '#3B82F6',
   },
   subtitle: {
     fontFamily: 'Inter_400Regular',
     fontSize: 13,
-    color: '#6B7280',
-  },
-  syncBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 16,
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#FDE68A', // Light yellow border
-    backgroundColor: '#FFFFFF',
-    marginBottom: 20,
-  },
-  syncIconContainer: {
-    position: 'relative',
-    marginRight: 12,
-  },
-  syncBadge: {
-    position: 'absolute',
-    bottom: -2,
-    right: -4,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-  },
-  syncTextContainer: {
-    flex: 1,
-  },
-  syncTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-    color: '#1A2840',
-    marginBottom: 2,
-  },
-  syncSubtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 11,
-    color: '#6B7280',
+    color: '#64748B',
+    paddingHorizontal: 16,
+    marginBottom: 16,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
     backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    borderRadius: 16,
+    padding: 12,
+    marginHorizontal: 16,
     marginBottom: 24,
   },
   searchIcon: {
     marginRight: 12,
   },
-  searchPlaceholderTop: {
+  searchInput: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 13,
-    color: '#6B7280',
+    fontSize: 14,
+    color: '#1A2840',
     marginBottom: 2,
+    padding: 0,
   },
-  searchPlaceholderBottom: {
+  searchSubText: {
     fontFamily: 'Inter_400Regular',
     fontSize: 11,
-    color: '#A0AABF',
-  },
-  quickActionsSection: {
-    marginBottom: 24,
+    color: '#94A3B8',
   },
   sectionTitle: {
-    fontFamily: 'SpaceGrotesk_700Bold',
+    fontFamily: 'Inter_700Bold',
     fontSize: 16,
     color: '#1A2840',
     paddingHorizontal: 16,
     marginBottom: 12,
   },
-  quickActionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  quickActionsScroll: {
     paddingHorizontal: 16,
-    paddingBottom: 8,
+    paddingBottom: 24,
   },
   quickActionCard: {
-    width: '19%',
+    width: 140,
     backgroundColor: '#FFFFFF',
-    borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
-    padding: 4,
+    borderColor: '#F1F5F9',
+    borderRadius: 16,
+    padding: 16,
+    marginRight: 12,
     alignItems: 'center',
   },
-  qaIconCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  quickActionIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#FAFAFA',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 12,
   },
-  qaTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 7.5,
+  quickActionTitle: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 12,
     color: '#1A2840',
     textAlign: 'center',
-    marginBottom: 4,
-    height: 30, // Fixed height to handle up to 3/4 lines
+    marginBottom: 8,
   },
-  qaDesc: {
+  quickActionSubtitle: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 6,
-    color: '#8B92A5',
+    fontSize: 10,
+    color: '#64748B',
     textAlign: 'center',
-    lineHeight: 8,
+    lineHeight: 14,
   },
-  beneficiariesSection: {
-    marginBottom: 24,
-  },
-  beneficiariesHeader: {
+  sectionHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingRight: 16,
     marginBottom: 12,
   },
-  seeAllButton: {
+  showLessText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
+    color: '#64748B',
+  },
+  filtersScroll: {
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  filterChipActive: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  seeAllText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 13,
-    color: '#1A2840',
-    marginRight: 4,
-  },
-  filterContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    backgroundColor: '#0A1128',
     paddingHorizontal: 16,
-    marginBottom: 20,
-    gap: 4,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginRight: 8,
+  },
+  filterChipTextActive: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 13,
+    color: '#FFFFFF',
   },
   filterChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-    paddingVertical: 6,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
     backgroundColor: '#FFFFFF',
-    flex: 1,
-  },
-  filterChipActive: {
-    backgroundColor: '#0F172A', // Dark blue
-    borderColor: '#0F172A',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginRight: 8,
   },
   filterChipText: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 8,
-    color: '#1A2840',
-    marginLeft: 4,
-  },
-  filterChipTextActive: {
-    color: '#FFFFFF',
+    fontSize: 13,
+    color: '#64748B',
   },
   listHeaderRow: {
     flexDirection: 'row',
     paddingHorizontal: 16,
-    marginBottom: 12,
+    marginBottom: 8,
+    alignItems: 'center',
   },
   listHeaderText: {
     fontFamily: 'Inter_500Medium',
     fontSize: 11,
-    color: '#8B92A5',
+    color: '#94A3B8',
   },
-  listContainer: {
+  contactsList: {
     paddingHorizontal: 16,
   },
-  beneficiaryRow: {
+  contactItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: '#F1F5F9',
+    paddingVertical: 12,
   },
-  contactInfo: {
-    flex: 2,
+  contactInfoCol: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 2,
   },
-  avatar: {
+  contactAvatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
     marginRight: 12,
-    backgroundColor: '#E5E7EB',
   },
   contactDetails: {
     flex: 1,
   },
   contactName: {
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: 'Inter_700Bold',
     fontSize: 14,
     color: '#1A2840',
-  },
-  contactRelation: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 11,
-    color: '#8B92A5',
     marginBottom: 2,
   },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  smallFlag: {
-    width: 14,
-    height: 10,
-    borderRadius: 2,
-    marginRight: 4,
-  },
-  locationText: {
+  contactRelation: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 10,
-    color: '#1A2840',
+    fontSize: 12,
+    color: '#64748B',
+    marginBottom: 2,
+  },
+  contactLocation: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    color: '#64748B',
   },
   statusCol: {
     flex: 1,
@@ -557,85 +461,81 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   statusText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 10,
-    marginTop: 2,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 11,
+  },
+  inviteBannerWrapper: {
+    position: 'absolute',
+    bottom: 90, // above bottom nav
+    left: 16,
+    right: 16,
   },
   inviteBanner: {
-    backgroundColor: '#0F172A', // Dark blue variant
-    marginHorizontal: 16,
-    marginTop: 12,
+    backgroundColor: '#0A1128',
     borderRadius: 16,
-    padding: 20,
+    padding: 16,
     flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
     overflow: 'hidden',
   },
-  inviteContent: {
+  closeBannerBtn: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    zIndex: 10,
+  },
+  inviteBannerLeft: {
     flex: 1,
     zIndex: 2,
   },
-  inviteTitle: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 18,
+  inviteBannerTitle: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 16,
     color: '#FFFFFF',
-    lineHeight: 24,
     marginBottom: 8,
+    lineHeight: 22,
   },
-  inviteTitleHighlight: {
-    color: '#FFC759',
-  },
-  inviteSubtitle: {
+  inviteBannerText: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    color: '#9CA3AF',
-    lineHeight: 14,
+    fontSize: 11,
+    color: '#E2E8F0',
     marginBottom: 16,
+    lineHeight: 16,
   },
-  inviteButton: {
-    backgroundColor: '#FFC759',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 16,
+  inviteBtn: {
+    backgroundColor: '#FFB800',
     paddingVertical: 8,
+    paddingHorizontal: 16,
     borderRadius: 8,
+    alignSelf: 'flex-start',
   },
-  inviteButtonText: {
-    fontFamily: 'Inter_600SemiBold',
+  inviteBtnText: {
+    fontFamily: 'Inter_700Bold',
     fontSize: 12,
     color: '#1A2840',
   },
-  inviteGraphic: {
+  inviteBannerRight: {
     width: 100,
+    height: 100,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 1,
   },
-  phonePlaceholder: {
+  mockPhoneIllustration: {
     width: 60,
     height: 100,
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
   },
-  miniCoin: {
+  mockPhoneIconCircle: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#FFC759',
+    backgroundColor: '#0A1128',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  miniCoinText: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 10,
-    color: '#1A2840',
-  },
-  closeBannerButton: {
-    position: 'absolute',
-    top: 0,
-    right: -10,
-  }
 });

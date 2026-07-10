@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import AppNavigator from './src/navigation/AppNavigator';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { SpaceGrotesk_400Regular, SpaceGrotesk_500Medium, SpaceGrotesk_600SemiBold, SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk';
-
-import SendMoneySummaryScreen from './src/screens/SendMoneySummaryScreen';
 
 export default function App() {
   let [fontsLoaded] = useFonts({
@@ -25,5 +25,9 @@ export default function App() {
     );
   }
 
-  return <SendMoneySummaryScreen />;
+  return (
+    <NavigationContainer>
+      <AppNavigator />
+    </NavigationContainer>
+  );
 }

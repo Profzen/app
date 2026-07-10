@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
@@ -24,6 +25,7 @@ const TABS = [
 ];
 
 export default function AssetsListScreen() {
+  const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [favorites, setFavorites] = useState(['5']); // DZY favori par défaut comme sur l'image
@@ -62,8 +64,8 @@ export default function AssetsListScreen() {
         {/* Header (Fixed) */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <TouchableOpacity style={styles.backBtn}>
-              <Ionicons name="arrow-back" size={24} color="#1A2840" />
+            <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color="#1A2840" />
             </TouchableOpacity>
             <View>
               <Text style={styles.headerTitle}>Liste des actifs</Text>

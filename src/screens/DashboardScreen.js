@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
@@ -22,6 +23,7 @@ const TRANSACTIONS = [
 ];
 
 export default function DashboardScreen() {
+  const navigation = useNavigation();
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -55,7 +57,7 @@ export default function DashboardScreen() {
                 <Text style={styles.soldeText}>Solde total</Text>
                 <Ionicons name="eye" size={16} color="#FFFFFF" style={{marginLeft: 8}} />
               </View>
-              <TouchableOpacity style={styles.rechargerBtn}>
+              <TouchableOpacity style={styles.rechargerBtn} onPress={() => navigation.navigate('TopUpScreen')}>
                 <Ionicons name="add" size={14} color="#1A2840" />
                 <Text style={styles.rechargerText}>Recharger</Text>
               </TouchableOpacity>
@@ -82,7 +84,7 @@ export default function DashboardScreen() {
 
           {/* Quick Actions */}
           <View style={styles.actionsGrid}>
-            <TouchableOpacity style={styles.actionItem}>
+            <TouchableOpacity style={styles.actionItem} onPress={() => navigation.navigate('SendMoneyScreen')}>
               <View style={styles.actionIconWrapper}>
                 <Ionicons name="paper-plane-outline" size={24} color="#1A2840" />
               </View>
@@ -91,7 +93,7 @@ export default function DashboardScreen() {
             
             <View style={styles.verticalDivider} />
             
-            <TouchableOpacity style={styles.actionItem}>
+            <TouchableOpacity style={styles.actionItem} onPress={() => navigation.navigate('ReceiveFundsScreen')}>
               <View style={styles.actionIconWrapper}>
                 <Ionicons name="download-outline" size={24} color="#1A2840" />
               </View>
@@ -100,7 +102,7 @@ export default function DashboardScreen() {
             
             <View style={styles.verticalDivider} />
             
-            <TouchableOpacity style={styles.actionItem}>
+            <TouchableOpacity style={styles.actionItem} onPress={() => navigation.navigate('SwapTokensScreen')}>
               <View style={styles.actionIconWrapper}>
                 <Ionicons name="swap-horizontal-outline" size={24} color="#1A2840" />
               </View>
@@ -109,7 +111,7 @@ export default function DashboardScreen() {
             
             <View style={styles.verticalDivider} />
             
-            <TouchableOpacity style={styles.actionItemDisabled}>
+            <TouchableOpacity style={styles.actionItemDisabled} onPress={() => navigation.navigate('WithdrawFundsScreen')}>
               <View style={styles.actionIconWrapperDisabled}>
                 <Ionicons name="add-circle-outline" size={24} color="#6B7280" />
               </View>
@@ -123,8 +125,7 @@ export default function DashboardScreen() {
           {/* Mes fonds */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Mes fonds</Text>
-            <TouchableOpacity>
-              <Text style={styles.voirTout}>Voir tout <Ionicons name="arrow-forward" size={14} /></Text>
+            <TouchableOpacity onPress={() => navigation.navigate('AssetListScreen')}><Text style={styles.voirTout}>Voir tout <Ionicons name="arrow-forward" size={14} /></Text>
             </TouchableOpacity>
           </View>
 
@@ -210,8 +211,7 @@ export default function DashboardScreen() {
           {/* Transactions récentes */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Transactions récentes</Text>
-            <TouchableOpacity>
-              <Text style={styles.voirTout}>Voir tout <Ionicons name="arrow-forward" size={14} /></Text>
+            <TouchableOpacity onPress={() => navigation.navigate('AssetListScreen')}><Text style={styles.voirTout}>Voir tout <Ionicons name="arrow-forward" size={14} /></Text>
             </TouchableOpacity>
           </View>
 
@@ -242,7 +242,7 @@ export default function DashboardScreen() {
           <View style={{ height: 30 }} />
         </ScrollView>
 
-        <BottomNavBar activeTab="Accueil" />
+        <BottomNavBar activeTab="More" />
       </View>
     </SafeAreaView>
   );

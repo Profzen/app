@@ -68,11 +68,209 @@ Toutes les maquettes ci-dessous sont intégrées, versionnées sur GitHub (branc
 - ✅ **M36 (Envoyer de l'argent - Méthode)** : Création de l'écran `SendMoneyMethodScreen.js`. Écran de sélection de la méthode d'envoi. L'indicateur d'étape passe à l'étape 2 (Méthode). Deux options de paiement sous forme de cartes sélectionnables via boutons radio : "Dizzy" (portefeuille DIZY) et "Mobile money". Ajout d'une bannière de sécurité ("Vos transactions sont sécurisées"). Boutons de navigation "Précédent" (gris) et "Suivant" (jaune) en bas.
 - ✅ **M37 (Envoyer de l'argent - Code PIN)** : Création de l'écran `SendMoneyPinScreen.js`. Écran de saisie du code PIN à 6 chiffres pour confirmation de transaction. Grille de 6 carrés (visuel interactif du code PIN). Clavier numérique circulaire élégant avec touches gris clair, touche de suppression bleu foncé, et touche pour virgule/point désactivée (ou sans fond). Présence de la bannière de sécurité au bas de l'écran.
 - ✅ **M38 (Envoyer de l'argent - Récapitulatif)** : Création de l'écran `SendMoneySummaryScreen.js`. Écran de résumé avant validation. Affiche trois grandes cartes : Détails d'envoi (montant, frais, méthode Dizzy), Bénéficiaire (photo, nom, montant converti et taux de change), et Total à payer (avec bordure jaune). Boutons "Précédent" et "Confirmer".
+- ✅ **M39 (Transaction réussie)** : Création de l'écran `SendMoneySuccessScreen.js`. Écran de succès post-transaction. Inclut une grande animation visuelle de succès (cercle jaune avec check et confettis), un titre "Transaction réussie !", et une carte de reçu détaillée listant le montant envoyé, le destinataire, la méthode, la date et la référence de la transaction. Bouton "Terminé" et un lien "Voir les détails de la transaction".
+- ✅ **M40 & M41 (Recevoir fonds)** : Création de l'écran `ReceiveFundsScreen.js`. Écran pour recevoir de la crypto. Sélecteur de blockchain (ex: Polygon). Navigation par onglets (Adresse / Scanner QR).
+  - L'onglet **Adresse (M40)** affiche une grande carte bleue foncée contenant l'adresse publique (avec label EVM Réseau, icône blockchain) et des badges de sécurité, ainsi que des boutons "Copier" et "Partager".
+  - L'onglet **Scanner QR (M41)** affiche une carte blanche centrée avec un grand code QR, une icône de scan, et un label "Transaction 100% sécurisée".
+- ✅ **M42 & M43 & M44 (Recevoir des fonds V2)** : Création de l'écran `ReceiveFundsV2Screen.js`. Évolution de l'écran de réception.
+  - Onglet **Adresse** : La carte d'adresse intègre directement les boutons "COPIER" et "PARTAGER" à l'intérieur, avec un fond bleu nuit.
+  - Onglet **QR Code (M44)** : Affiche un grand QR code au centre d'une carte bleue. Intègre des mini-onglets "VOIR L'ADRESSE" et "SCANNER" juste sous le QR code, et affiche l'adresse publique raccourcie en dessous. Les boutons principaux "COPIER" et "PARTAGER" sont en-dehors de la carte.
+  - Sélecteur de blockchain (M43) : Affiche un menu déroulant complet avec plusieurs réseaux (Polygone, Ethereum, Base, Solana, Chaîne BNB).
+  - Notification : Toast vert "Adresse copiée !" lors du clic sur le bouton copier.
+- ✅ **M45_ & M46 (Caisse TPE / PDV)** : Création de l'écran `CashRegisterScreen.js`. Écran de caisse pour commerçants. Titre dynamique "Caisse (TPE)" ou "Caissier (PDV)". Switch en haut pour basculer entre les deux onglets.
+  - Onglet **Afficher le QR Code (M45_)** : Grande carte bleu nuit contenant la sélection de crypto (USDT, USDC, DZY), le montant saisi en gros, l'équivalent en crypto, un pavé numérique complet avec retour arrière, et un bouton de validation "Afficher le QR Code".
+  - Onglet **Scanner les billets (M46)** : L'écran devient plein avec un fond bleu nuit. Affiche un scanner circulaire animé (illustration avec coins jaunes et rayon laser bleu sur une icône de billet). Actions pour "Autoriser la caméra" (bouton jaune) ou "Importer une image" (bouton transparent).
+- ✅ **M47 (Historique des Transactions - Vide)** : Création de l'écran `TransactionHistoryScreen.js`. Écran de suivi des transactions. Navigation par onglets (HISTORIQUE / STATISTIQUES).
+  - Affiche une grande carte avec un en-tête bleu nuit (Titre "Historique des Transactions Pro", compteur "0 transactions", sélecteur de date "Juillet 2026", bouton jaune "RELEVÉ").
+  - Le corps de la carte est blanc avec une illustration d'état vide (icône de reçu avec badge horloge jaune) et un texte "Aucune transaction". Bouton "Effectuer une transaction" intégré.
+  - Bannière d'information grisée en bas pour le téléchargement PDF.
+- ✅ **M48_ (Recharger - Mode de paiement)** : Création de l'écran `TopUpScreen.js`. Écran "Recharger" avec un indicateur d'étape (Stepper) en haut (1. Mode de paiement, 2. Détails, 3. Résumé, 4. Paiement).
+  - Affiche le choix entre "Mobile Money" et "Carte bancaire" sous forme de grandes cartes sélectionnables avec boutons radio.
+  - La carte "Mobile Money" active affiche une liste d'opérateurs (Moov, MTN, Mixx, Airtel) et leurs avantages. La carte "Carte bancaire" affiche les avantages sous forme de badges textuels.
+  - Bouton jaune "Continuer" en bas.
+- ✅ **M49 (Recharger - Détails)** : Création de l'écran `TopUpDetailsScreen.js`. Étape 2 du rechargement.
+  - Le Stepper avance à l'étape 2 "Détails" (l'étape 1 est validée avec une icône check).
+  - Titre "Entrez vos informations".
+  - Champs de formulaire complexes : "NUMÉRO MOBILE MONEY" avec un bouton modifier, indicatif pays, et vérification (message vert). "OPÉRATEUR DÉTECTÉ" avec un dropdown (Mixx by Yas, badge Recommandé). Une ligne avec "MONTANT À PAYER" (saisie de 10 USD avec conversion XOF) et "TOKEN À ACHETER" (dropdown USDC).
+  - Bannière de sécurité jaune en bas. Bouton "Continuer".
+- ✅ **M50_ (Recharger - Résumé)** : Création de l'écran `TopUpSummaryScreen.js`. Étape 3 du rechargement.
+  - Le Stepper avance à l'étape 3 "Résumé".
+  - Deux grandes cartes blanches. 1) "RÉSUMÉ DE LA TRANSACTION" avec le détail (Vous achetez, Réseau, Frais), total à payer en gros, et bannière "Aucun frais caché". 2) "ADRESSE DE LIVRAISON DU TOKEN" avec les détails du DZYwallet et bannière informative.
+  - Bouton jaune "Confirmer le paiement" avec icône cadenas.
+- ✅ **M51_ (Recharger - Paiement en cours)** : Création de l'écran `TopUpPaymentScreen.js`. Étape 4 (finale).
+  - Le Stepper avance à l'étape 4 "Paiement".
+  - Titre "Paiement en cours" avec message demandant de valider sur le téléphone.
+  - Diagramme vertical : Noeud haut (DZYwallet), Noeud central animé (cercle jaune "En attente de confirmation"), Noeud bas (Mixx by Yas). Lignes en pointillés entre les noeuds.
+  - Bannières d'information : "Transaction sécurisée", et deux petites cartes en bas ("Temps estimé", "Montant à payer").
+- ✅ **M52 (Recharger le portefeuille - Mode de paiement)** : Création de l'écran `TopUpWalletScreen.js`. Variante de l'écran de rechargement avec 5 étapes dans le Stepper (1. Mode de paiement, 2. Détails, 3. Résumé, 4. Paiement, 5. Confirmation).
+  - La "Carte bancaire" est présélectionnée en première option avec badge "Recommandé".
+  - Le "Mobile Money" est en seconde option. Les illustrations sont spécifiques (carte bleue, téléphone avec Bitcoin).
+- ✅ **M53_ (Recharger le portefeuille - Détails carte)** : Création de l'écran `TopUpWalletDetailsScreen.js`. Étape 2 (Détails).
+  - Formulaire de saisie des détails de la carte (Numéro, Date d'expiration, CVV, Nom).
+  - Bannière de sécurité "Secured payment by Ecobank".
+  - Dropdowns pour la Devise (USDC) et le Réseau de transaction (Réseau principal de base).
+- ✅ **M54 (Recharger le portefeuille - Paiement)** : Création de l'écran `TopUpWalletPaymentScreen.js`. Étape 4 (Paiement).
+  - Diagramme de flux horizontal : Carte bancaire -> Crossmint (Vérification sécurisée) -> DZY Wallet.
+  - Bannière de chargement "Vérification de votre paiement...".
+  - Carte de détails avec le temps estimé, le montant, et le logo Crossmint. Bannière "Sécurité maximale" en bas.
+- ✅ **M55_ (Recharger le portefeuille - Confirmation)** : Création de l'écran `TopUpWalletConfirmationScreen.js`. Étape 5 finale (Confirmation).
+  - Animation de succès (cercle vert check + confettis).
+  - Carte complète "DÉTAILS DE LA TRANSACTION" avec icônes.
+  - Bannière de succès "Transaction sécurisée".
+  - Boutons "Voir mon portefeuille DZYwallet" (jaune) et "Effectuer une autre recharge" (blanc).
+- ✅ **M56_ (Retirer des fonds - Détails)** : Création de l'écran `WithdrawFundsScreen.js`. Étape 1/5 du retrait.
+  - Stepper simplifié avec juste les numéros.
+  - Saisie du "Montant à retirer" avec sélecteur de devise (FCFA) et équivalence USDC.
+  - Grille "Choisissez le jeton" (USDC, USDT, EURC, DZY) avec affichage du solde.
+  - Grille "Choisissez le réseau" (Polygon, Base, Solana, Ethereum).
+- ✅ **M57 (Retirer des fonds - Mode de réception)** : Création de l'écran `WithdrawFundsMethodScreen.js`. Étape 2/5 du retrait.
+  - Liste des 3 modes de réception sous forme de grandes cartes.
+  - Virement bancaire (Recommandé, sélectionné), Mobile Money, Carte bancaire (Désactivé, Bientôt disponible).
+  - Détails intégrés dans chaque carte (Délai, Frais DizzitUp, Frais réseau).
+- ✅ **M58_ (Retirer des fonds vers Mobile Money - Résumé)** : Création de l'écran `WithdrawFundsMobileMoneySummaryScreen.js`. Étape 3/5 du retrait.
+  - Résumé détaillé de la transaction : Vous retirez, Votre DZYwallet est débité, Vous recevez (Mixx).
+  - Détail des frais (DizzitUp, Mixin Network) et Total.
+  - Carte supplémentaire "Transaction de vente" (Sell 251,40 USDC).
+- ✅ **M59_ (Retrait en cours)** : Création de l'écran `WithdrawFundsMobileMoneyProcessingScreen.js`. Étape 4/5 du retrait.
+  - Diagramme vertical avec fond circulaire : DZY Wallet -> Blockchain Polygon -> Mixx by Yas. Indicateurs d'état (check/spinner).
+  - Bannière "Traitement en cours..." avec Temps estimé (2 à 5 minutes) et Statut (En cours).
+- ✅ **M60_ (Retrait réussi)** : Création de l'écran `WithdrawFundsMobileMoneySuccessScreen.js`. Étape 5/5 finale.
+  - Grande carte avec fond vert clair en haut, icône de succès (cercle vert check) et confettis animés.
+  - Détails complets de la transaction (Moyen de retrait, Réseau, Blockchain link, ID, Destinataire).
+  - Boutons "Voir l'historique" (contour) et "Effectuer un autre retrait" (jaune plein).
+- ✅ **M61_ (Échange de jetons)** : Création de l'écran `SwapTokensScreen.js`.
+  - Header avec icônes (notifications, cadeaux, menu).
+  - Sélecteurs de réseau ("DE LA CHAÎNE", "À CHAÎNE" : Polygon).
+  - Bannière annonce du jeton DZY.
+  - SÉLECTION RAPIDE - POLYGON avec 5 jetons (DZY, USDC, USDT, POL, WBTC).
+  - Interface de swap ("À PARTIR DU JETON", "À TOKEN (ESTIMATION)") avec bouton d'inversion central.
+  - Résumé du portefeuille actif (Solde disponible, adresse).
+- ✅ **M62_ (Contacts)** : Création de l'écran `ContactsScreen.js`.
+  - Navbar incluant l'Accueil, Contacts, Swap, Boutiques, Plus.
+  - Recherche et bouton "Synchroniser vos contacts".
+  - Section "Actions rapides" (scroll horizontal).
+  - Section "Mes bénéficiaires" avec filtres géographiques (À proximité, pays préférés, etc.).
+  - Liste des contacts avec avatars et statuts "Bénéficiaire" / "Parrain".
+  - Bannière flottante d'invitation (gagnez $5 en DZY).
+- ✅ **M63 (Gestion des Contacts)** : Création de l'écran `ContactsManageScreen.js`.
+  - Variante de l'écran Contacts avec des "Actions rapides" axées sur la gestion (Ajouter, Modifier, Mes bénéficiaires, Inviter).
+  - Implémentation du swipe (glissement) sur un contact pour afficher les actions : "Favoris" (étoile), "Modifier" (crayon) et "Supprimer" (corbeille rouge).
+- ✅ **M64_ (Profil Contact)** : Création de l'écran `ContactProfileScreen.js`.
+  - En-tête avec avatar, badge vérifié, nom et tags (Bénéficiaire, Parrain).
+  - Actions rapides spécifiques au contact (Envoyer, Demander, Payer, Inviter).
+  - Liste d'informations détaillées (Téléphone, Email, Pays, Groupe, Parrain) avec icônes d'action.
+  - Bannière "Contact vérifié".
+  - Section "Activité récente" (envois/demandes de fonds).
+  - Bouton d'action principal "Save".
+- ✅ **M65_ (Historique Contact)** : Création de l'écran `ContactHistoryScreen.js`.
+  - Onglet "Historique" actif dans le profil du contact.
+  - Sélecteur de mois (Historique mensuel).
+  - Boutons "Télécharger PDF" et "Filtres".
+  - Liste des transactions avec icônes spécifiques (Envoi, Demande, Paiement, Invitation acceptée).
+  - Bannière "Seules vos transactions avec ce contact sont affichées."
+- ✅ **M66_ (Filtres Historique)** : Création de l'écran `FiltersScreen.js`.
+  - Modale/Page avec trois sections : Type de transaction, Sens de la transaction, Période.
+  - Boutons radio personnalisés jaunes.
+  - Liste exhaustive des types de transaction avec leurs icônes spécifiques.
+  - Boutons d'action "Appliquer les filtres" (jaune) et "Réinitialiser" (contour).
+- ✅ **M67 (Shops)** : Création de l'écran `ShopsScreen.js`.
+  - En-tête avec barre de recherche, notification et texte pour les cryptos acceptées.
+  - Liste d'actions rapides (Référer, Mes shops, À proximité, Nouveaux shops).
+  - Puces de filtres (À proximité, Mobile & Utilities, Digital & Services, Goods).
+  - Liste de boutiques partenaires avec logo, nom, type, drapeaux de pays/distance, étiquettes (Delivery, On-line, Picking) et évaluations (étoiles).
+  - Bannières promotionnelles défilantes à la fin (DZY Store, jetons acceptés, localisation).
+  - Sous-navigation (Mes shops, Nouveaux shops, Catégories, Activité) juste au-dessus de la Bottom Nav.
+- ✅ **M68_ (Détails Shop)** : Création de l'écran `ShopDetailsScreen.js`.
+  - Image de couverture large avec logo superposé au centre-gauche.
+  - Informations de la boutique : Nom, vérification, catégorie (Marketplace), type, note, localisation.
+  - Grille de 4 cartes informatives : Horaires, Livraison, Vérifié, Depuis.
+  - Section des moyens de paiement acceptés (USDT, USDC, EURC, DZY).
+  - Boutons d'action principaux : "Contacter" (contour bleu) et "Voir les produits" (jaune plein).
+  - Carrousel horizontal de "Produits populaires".
+  - Section accordéon "À propos".
+- ✅ **M69_ (Produits Shop)** : Création de l'écran `ShopProductsScreen.js`.
+  - Variante de la boutique (onglet Produits actif).
+  - En-tête condensé (pas de couverture, logo et infos alignés horizontalement).
+  - Onglets : Produits (actif), Avis, Infos, Boutique.
+  - Barre de recherche avec bouton de filtrage.
+  - Puces de catégories défilantes (Tout, Téléphones, Électronique, etc.).
+  - Grille de produits complète (4 colonnes simulées pour respecter le rendu de la maquette).
+  - Liste de garanties en pied de page (Paiement sécurisé, Livraison rapide, Support 7j/7, Vendeur vérifié).
+- ✅ **M70 (Détails Produit)** : Création de l'écran `ProductDetailsScreen.js`.
+  - Section supérieure en 2 colonnes : Galerie d'images à gauche (image principale + miniatures), informations essentielles à droite (Titre, prix, cryptos acceptées, bannière sécurité).
+  - Section Description (texte condensé).
+  - Section Caractéristiques (grille de 2 colonnes avec icônes).
+  - Section Livraison & Retrait (carte avec options de livraison).
+  - Section Vendu par (Logo, nom, évaluation du vendeur, bouton pour voir la boutique).
+  - Barre d'action fixe en bas avec "Contacter le vendeur" et "Acheter maintenant".
+- ✅ **M71 (Vérification Commande)** : Création de l'écran `OrderVerificationScreen.js`.
+  - En-tête avec titre "Vérification de la commande".
+  - Récapitulatif du vendeur et du produit avec sélecteur de quantité (- 1 +).
+  - Adresse de livraison avec option "Modifier".
+  - Options de livraison sous forme de boutons radio stylisés (Domicile ou Retrait).
+  - Choix du moyen de paiement (USDT, USDC, EURC, DZY) avec affichage des équivalents en FCFA.
+  - Choix du réseau blockchain (Polygon, Base, Ethereum, Solana) avec défilement horizontal.
+  - Résumé de la commande avec sous-total, livraison, frais réseau et total.
+  - Barre d'action en bas avec badge de sécurité et bouton jaune "Continuer".
+- ✅ **M72 (Résumé et Confirmation)** : Création de l'écran `OrderConfirmationScreen.js`.
+  - En-tête "Résumé et confirmation".
+  - Bannière de sécurité "Vérifiez et confirmez votre achat" (fond jaune clair, icônes cadenas).
+  - Carte "Vous achetez" (Image, Titre, Vendeur, n° commande, Prix, Qté).
+  - Carte "Détails du paiement" (Crypto, Réseau, Montant, Livraison, Adresse).
+  - Carte "Répartition du paiement" (Vendeur, Frais DizzitUp, Frais réseau, Total).
+  - Carte "Informations de la transaction" (URL copiable, Note, Badge smart contract).
+  - Bannière "Achetez-moi ceci" pour partager le paiement.
+  - Bouton de confirmation fixe en bas "Confirmer l'achat".
+- ✅ **M73 (Paiement en Cours)** : Création de l'écran `PaymentInProgressScreen.js`.
+  - En-tête "Paiement en cours".
+  - Message de statut principal "Votre paiement est en cours" avec avertissement de ne pas quitter l'application.
+  - Stepper de progression (DZY Wallet -> Smart Contract -> Jumia Sénégal) avec icônes et styles reflétant l'état de chaque étape.
+  - Carte "Détails de la transaction" (Vous payez, Réseau, Adresse vendeur, Commande, Statut).
+  - Carte "Confirmation blockchain" (Progression réseau, jauge, temps estimé, sécurité, bloc actuel).
+  - Bannière explicative sur le smart contract.
+  - Bouton secondaire "Annuler le paiement" (contour bleu).
+- ✅ **M75 (Recharger - Résumé)** : Création de l'écran `TopUpSummaryScreen.js`.
+  - En-tête "Recharger le portefeuille".
+  - Stepper 5 étapes (Mode de paiement, Détails, Résumé (actif), Paiement, Confirmation).
+  - Titre principal "Vérifiez et confirmez".
+  - Carte "Détails de la transaction" (USDC achetés, réseau de base, stablecoin acheté, frais, total en USD, encart informatif).
+  - Carte "Méthode de paiement" (Carte VISA ...4242).
+  - Bannière de sécurité de paiement 100% sécurisé.
+  - Bouton "Confirmer le paiement" avec cadenas.
+  - Intégration du `BottomNav` (Swap actif).
+- ✅ **M76 (Caisse TPE)** : Création de l'écran `CashierScanScreen.js`.
+  - En-tête "Caisse (TPE)".
+  - Titre "Scannez pour payer" et instruction.
+  - Carte foncée affichant le montant à recevoir (ex: 2000 XOF) et ce que l'on reçoit (USDT sur Polygon).
+  - Grand QR Code avec bouton "Actualiser".
+  - Bannières d'information "En attente du paiement" avec timer et "Gardez l'application ouverte".
+  - Bouton "Annuler la transaction" (rouge).
+  - Intégration du `BottomNav` (Swap actif).
+- ✅ **M77 (Caisse TPE - Succès)** : Création de l'écran `CashierSuccessScreen.js`.
+  - En-tête "Caisse (TPE)".
+  - Icône de succès animée/décorée avec confettis. "Paiement reçu avec succès !".
+  - Carte foncée affichant le montant reçu (en vert) et ce que l'on a reçu (USDT).
+  - Carte "Détails de la transaction" (Date, ID, Méthode, Réseau, Statut "Réussi").
+  - Bannière "Transaction sécurisée" (verte).
+  - Boutons d'action "Voir le reçu" (jaune plein), "Nouvelle transaction" (contour), "Retour à la caisse" (texte).
+  - Intégration du `BottomNav` (Swap actif).
+- ✅ **M78 (Caisse TPE - Envoyer des fonds)** : Création de l'écran `CashierSendFundsScreen.js`.
+  - En-tête "Caisse (TPE)" avec icône de scan.
+  - Bannière d'information "Validation requise" (grise).
+  - Bannière pour recharger le DZYwallet (jaune clair).
+  - Carte "Envoyer des fonds" avec badge "sécurisé".
+  - Sélecteurs pour Blockchain et Jeton.
+  - Champ de destinataire style contact ("My Business").
+  - Champ de montant avec affichage du solde disponible. Affichage d'erreur (bordure rouge) et bannière "SOLDE INSUFFISANT".
+  - Bouton d'envoi désactivé (grisé).
+  - Clavier numérique simulé stylisé couvrant le bas de l'écran.
 
 ---
 
 ## 📍 5. Où en sommes-nous actuellement ?
-- L'application compile correctement. `App.js` affiche la maquette **M38** via le composant `SendMoneySummaryScreen`.
-- **Prochaine étape attendue** : Lancement de la maquette **M39** ou la suivante sur la liste.
+- L'intégration de la série de maquettes `M39` jusqu'à `M78` est totalement achevée (100% autonome).
+- L'application compile correctement. `App.js` affiche la maquette **M78** via le composant `CashierSendFundsScreen`.
+- La liste `liste_maquettes_aziz.md` est cochée jusqu'à M78.
+- **Prochaine étape attendue** : Finalisation, navigation globale ou intégration de nouvelles maquettes selon les directives.
 
 *(Note pour l'IA : Après chaque nouvelle maquette ou modification architecturale majeure, ce fichier doit impérativement être mis à jour pour refléter la nouvelle réalité du projet).*

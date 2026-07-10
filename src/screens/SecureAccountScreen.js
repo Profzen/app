@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
@@ -10,6 +11,7 @@ import { OtpInput } from '../components/OtpInput';
 import { BiometricsCard } from '../components/BiometricsCard';
 
 export default function SecureAccountScreen() {
+  const navigation = useNavigation();
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [biometricsEnabled, setBiometricsEnabled] = useState(false);
@@ -40,8 +42,8 @@ export default function SecureAccountScreen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color={theme.colors.primary} />
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name="chevron-back" size={24} color={theme.colors.primary} />
           </TouchableOpacity>
           <View style={styles.loginLinkContainer}>
             <Text style={styles.loginText}>Déjà un compte ? </Text>

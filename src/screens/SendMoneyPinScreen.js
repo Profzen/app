@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function SendMoneyPinScreen() {
+  const navigation = useNavigation();
   const [pin, setPin] = useState('1'); // Initial state with 1 digit to match mockup
 
   const handleKeyPress = (val) => {
@@ -38,8 +40,8 @@ export default function SendMoneyPinScreen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color="#1A2840" />
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <Ionicons name="arrow-redo" size={20} color="#1A2840" style={styles.headerIcon} />

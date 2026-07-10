@@ -1,16 +1,18 @@
 import React from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function SendMoneySummaryScreen() {
+  const navigation = useNavigation();
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={24} color="#1A2840" />
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <Ionicons name="arrow-redo" size={20} color="#1A2840" style={styles.headerIcon} />

@@ -39,45 +39,45 @@ Voici la liste des maquettes filtrées pour ne conserver que la version la plus 
 - [x] M36__.png
 - [x] M37.png
 - [x] M38.png
-- [ ] M39.png
-- [ ] M40.png
-- [ ] M41.png
-- [ ] M42.png
-- [ ] M43.png
-- [ ] M44.png
-- [ ] M45_.png
-- [ ] M46.png
-- [ ] M47.png
-- [ ] M48_.png
-- [ ] M49.png
-- [ ] M50_.png
-- [ ] M51_.png
-- [ ] M52.png
-- [ ] M53_.png
-- [ ] M54.png
-- [ ] M55_.png
-- [ ] M56_.png
-- [ ] M57.png
-- [ ] M58_.png
-- [ ] M59_.png
-- [ ] M60_.png
-- [ ] M61_.png
-- [ ] M62_.png
-- [ ] M63.png
-- [ ] M64_.png
-- [ ] M65_.png
-- [ ] M66_.png
-- [ ] M67.png
-- [ ] M68_.png
-- [ ] M69_.png
-- [ ] M70.png
-- [ ] M71.png
-- [ ] M72.png
-- [ ] M73.png
-- [ ] M75.png
-- [ ] M76.png
-- [ ] M77.png
-- [ ] M78.png
+- [x] M39.png
+- [x] M40.png
+- [x] M41.png
+- [x] M42.png
+- [x] M43.png
+- [x] M44.png
+- [x] M45_.png
+- [x] M46.png
+- [x] M47.png
+- [x] M48_.png
+- [x] M49.png
+- [x] M50_.png
+- [x] M51_.png
+- [x] M52.png
+- [x] M53_.png
+- [x] M54.png
+- [x] M55_.png
+- [x] M56_.png
+- [x] M57.png
+- [x] M58_.png
+- [x] M59_.png
+- [x] M60_.png
+- [x] M61_.png
+- [x] M62_.png
+- [x] M63.png
+- [x] M64_.png
+- [x] M65_.png
+- [x] M66_.png
+- [x] M67.png
+- [x] M68_.png
+- [x] M69_.png
+- [x] M70.png
+- [x] M71.png
+- [x] M72.png
+- [x] M73.png
+- [x] M75.png
+- [x] M76.png
+- [x] M77.png
+- [x] M78.png
 
 ## Série Mockup
 - [ ] Mockup1.png

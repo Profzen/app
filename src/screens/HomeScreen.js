@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, SafeAreaView, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import WalletCard from '../components/WalletCard';
@@ -26,6 +27,7 @@ const QUICK_ACTIONS = [
 ];
 
 export default function HomeScreen() {
+  const navigation = useNavigation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [walletBalances] = useState({ DZY: 125500, GHS: 125000, XOF: 510000 });
 
@@ -37,7 +39,7 @@ export default function HomeScreen() {
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.userInfo}>
-              <Image source={{ uri: 'https://i.pravatar.cc/150?u=david' }} style={styles.avatarImage} />
+              <Image source={require('../../dizzitup logo cercle.png')} style={styles.avatarImage} />
               <View>
                 <Text style={styles.greetingText}>Hello,</Text>
                 <Text style={styles.nameText}>David</Text>
@@ -99,8 +101,8 @@ export default function HomeScreen() {
                 </View>
               </View>
               {/* Little avatars */}
-              <Image source={{ uri: 'https://i.pravatar.cc/100?img=1' }} style={[styles.miniAvatar, { top: 10, right: 10 }]} />
-              <Image source={{ uri: 'https://i.pravatar.cc/100?img=2' }} style={[styles.miniAvatar, { bottom: 10, left: 10 }]} />
+              <Image source={require('../../dizzitup logo cercle.png')} style={[styles.miniAvatar, { top: 10, right: 10 }]} />
+              <Image source={require('../../dizzitup logo cercle.png')} style={[styles.miniAvatar, { bottom: 10, left: 10 }]} />
               <TouchableOpacity style={styles.closeBannerButton}>
                 <Ionicons name="close" size={16} color="#1A2840" />
               </TouchableOpacity>
@@ -114,7 +116,7 @@ export default function HomeScreen() {
           
           <View style={styles.quickActionsGrid}>
             {QUICK_ACTIONS.map(action => (
-              <TouchableOpacity key={action.id} style={styles.actionGridItem}>
+              <TouchableOpacity key={action.id} style={styles.actionGridItem} onPress={() => { if(action.id==='1' || action.id==='4') navigation.navigate('SendMoneyScreen'); else if(action.id==='5') navigation.navigate('TopUpScreen'); else if(action.id==='2') navigation.navigate('CashierScanScreen'); else if(action.id==='3' || action.id==='6' || action.id==='7') navigation.navigate('ShopsScreen'); else if(action.id==='8') navigation.navigate('WithdrawFundsScreen'); }}>
                 <View style={[styles.actionGridIcon, { backgroundColor: action.bgColor }]}>
                   <Ionicons name={action.icon} size={24} color={action.color} />
                 </View>

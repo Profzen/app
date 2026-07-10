@@ -1,19 +1,28 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, isMenuOpen }) {
+  const navigation = useNavigation();
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <NavItem icon="home" label="Accueil" isActive={activeTab === 'Accueil'} />
-        <NavItem icon="people-outline" label="Contacts" isActive={activeTab === 'Contacts'} />
+        <NavItem icon="home" label="Accueil" isActive={activeTab.toLowerCase() === 'home' || activeTab.toLowerCase() === 'accueil'} onPress={() => navigation.navigate('HomeScreen')} />
+        <NavItem icon="people-outline" label="Contacts" isActive={activeTab.toLowerCase() === 'contacts'} onPress={() => navigation.navigate('ContactsScreen')} />
         
         {/* Center Floating Button */}
         <View style={styles.centerButtonWrapper}>
           <TouchableOpacity 
             style={[styles.centerButton, isMenuOpen && styles.centerButtonActive]}
-            onPress={onCenterButtonPress}
+            onPress={() => {
+              if (onCenterButtonPress) {
+                onCenterButtonPress();
+              } else {
+                navigation.navigate('SwapTokensScreen');
+              }
+            }}
             activeOpacity={0.8}
           >
             <Ionicons 
@@ -24,17 +33,17 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
           </TouchableOpacity>
         </View>
 
-        <NavItem icon="grid-outline" label="Shops" isActive={activeTab === 'Shops'} />
-        <NavItem icon="ellipsis-horizontal" label="More" isActive={activeTab === 'More'} />
+        <NavItem icon="grid-outline" label="Shops" isActive={activeTab.toLowerCase() === 'shops'} onPress={() => navigation.navigate('ShopsScreen')} />
+        <NavItem icon="ellipsis-horizontal" label="More" isActive={activeTab.toLowerCase() === 'more'} onPress={() => navigation.navigate('DashboardScreen')} />
       </View>
     </SafeAreaView>
   );
 }
 
-function NavItem({ icon, label, isActive }) {
+function NavItem({ icon, label, isActive, onPress }) {
   return (
-    <TouchableOpacity style={styles.navItem}>
-      <Ionicons name={isActive ? icon.replace('-outline', '') : icon} size={24} color={isActive ? '#1A2840' : '#A0AABF'} />
+    <TouchableOpacity style={styles.navItem} onPress={onPress}>
+      <Ionicons name={isActive ? icon.replace('-outline', '') : icon} size={24} color={isActive ? '#3B82F6' : '#A0AABF'} />
       <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>{label}</Text>
     </TouchableOpacity>
   );
@@ -67,7 +76,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   navLabelActive: {
-    color: '#1A2840',
+    color: '#3B82F6',
   },
   centerButtonWrapper: {
     width: 60,
