@@ -29,7 +29,7 @@ export default function ContactsScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <Image source={require('../../assets/icon.png')} style={styles.logoImage} resizeMode="contain" />
+            <Text style={styles.mainTitle}>Contacts</Text>
           </View>
           <View style={styles.headerRightIcons}>
             <TouchableOpacity style={styles.iconBtnRight}>
@@ -47,7 +47,7 @@ export default function ContactsScreen() {
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          <Text style={styles.mainTitle}>Contacts</Text>
+          
           
           <TouchableOpacity style={styles.syncBtn}>
             <Ionicons name="sync-outline" size={16} color="#3B82F6" style={{marginRight: 8}} />
@@ -262,10 +262,8 @@ const styles = StyleSheet.create({
   },
   mainTitle: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 28,
+    fontSize: 24,
     color: '#0A1128',
-    paddingHorizontal: 16,
-    marginBottom: 8,
   },
   syncBtn: {
     flexDirection: 'row',

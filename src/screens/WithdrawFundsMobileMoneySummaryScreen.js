@@ -174,7 +174,7 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
           </View>
 
           {/* Continue Button */}
-          <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('')}>
+          <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('WithdrawFundsMobileMoneyProcessingScreen')}>
             <Ionicons name="lock-closed" size={18} color="#1A2840" style={{marginRight: 8}} />
             <Text style={styles.btnContinueText}>Confirmer le retrait</Text>
           </TouchableOpacity>

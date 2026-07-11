@@ -275,7 +275,7 @@ export default function WithdrawFundsMethodScreen() {
           </View>
 
           {/* Continue Button */}
-          <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('')}>
+          <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('WithdrawFundsMobileMoneySummaryScreen')}>
             <Text style={styles.btnContinueText}>Continuer</Text>
           </TouchableOpacity>
 

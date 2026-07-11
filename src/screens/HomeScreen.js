@@ -29,6 +29,7 @@ const QUICK_ACTIONS = [
 export default function HomeScreen() {
   const navigation = useNavigation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [walletBalances] = useState({ DZY: 125500, GHS: 125000, XOF: 510000 });
 
   return (
@@ -53,7 +54,7 @@ export default function HomeScreen() {
               <TouchableOpacity style={styles.iconButton}>
                 <Ionicons name="gift-outline" size={20} color="#1A2840" />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.iconButton}>
+              <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('DashboardScreen')}>
                 <Ionicons name="ellipsis-horizontal" size={20} color="#1A2840" />
               </TouchableOpacity>
             </View>
@@ -65,7 +66,7 @@ export default function HomeScreen() {
           {/* To-do list */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>To-do list</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('AssetsListScreen')}>
               <Text style={styles.viewAllText}>View all</Text>
             </TouchableOpacity>
           </View>
@@ -85,7 +86,7 @@ export default function HomeScreen() {
           </View>
 
           {/* Invite Banner */}
-          <View style={styles.inviteBanner}>
+          {isBannerVisible && (<View style={styles.inviteBanner}>
             <View style={styles.inviteContent}>
               <Text style={styles.inviteTitle}>Invite friends{'\n'}and earn{'\n'}<Text style={styles.inviteTitleHighlight}>$5 in DZY</Text></Text>
               <Text style={styles.inviteSubtitle}>Send money, buy goods,{'\n'}pay bills and earn rewards.</Text>
@@ -103,11 +104,11 @@ export default function HomeScreen() {
               {/* Little avatars */}
               <Image source={require('../../dizzitup logo cercle.png')} style={[styles.miniAvatar, { top: 10, right: 10 }]} />
               <Image source={require('../../dizzitup logo cercle.png')} style={[styles.miniAvatar, { bottom: 10, left: 10 }]} />
-              <TouchableOpacity style={styles.closeBannerButton}>
+              <TouchableOpacity style={styles.closeBannerButton} onPress={() => setIsBannerVisible(false)}>
                 <Ionicons name="close" size={16} color="#1A2840" />
               </TouchableOpacity>
             </View>
-          </View>
+          </View>)}
 
           {/* Quick Actions */}
           <View style={styles.sectionHeader}>
@@ -116,7 +117,7 @@ export default function HomeScreen() {
           
           <View style={styles.quickActionsGrid}>
             {QUICK_ACTIONS.map(action => (
-              <TouchableOpacity key={action.id} style={styles.actionGridItem} onPress={() => { if(action.id==='1' || action.id==='4') navigation.navigate('SendMoneyScreen'); else if(action.id==='5') navigation.navigate('TopUpScreen'); else if(action.id==='2') navigation.navigate('CashierScanScreen'); else if(action.id==='3' || action.id==='6' || action.id==='7') navigation.navigate('ShopsScreen'); else if(action.id==='8') navigation.navigate('WithdrawFundsScreen'); }}>
+              <TouchableOpacity key={action.id} style={styles.actionGridItem} onPress={() => { if(action.id==='1' || action.id==='3' || action.id==='6' || action.id==='7') navigation.navigate('ShopsScreen'); else if(action.id==='2') navigation.navigate('CashierScanScreen'); else if(action.id==='4') navigation.navigate('SendMoneyScreen'); else if(action.id==='5') navigation.navigate('TopUpScreen'); else if(action.id==='8') navigation.navigate('WithdrawFundsScreen'); }}>
                 <View style={[styles.actionGridIcon, { backgroundColor: action.bgColor }]}>
                   <Ionicons name={action.icon} size={24} color={action.color} />
                 </View>

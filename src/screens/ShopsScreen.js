@@ -120,7 +120,7 @@ export default function ShopsScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <Image source={require('../../assets/icon.png')} style={styles.logoImage} resizeMode="contain" />
+            <Text style={styles.mainTitle}>Shops</Text>
           </View>
           <View style={styles.headerRightIcons}>
             <TouchableOpacity style={styles.iconBtnRight}>
@@ -140,7 +140,7 @@ export default function ShopsScreen() {
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          <Text style={styles.mainTitle}>Shops</Text>
+          
           <Text style={styles.subtitle}>Découvrez, payez et soutenez les entreprises africaines.</Text>
           <Text style={styles.acceptedTokensText}>
             <Text style={{color: '#10B981'}}>USDT</Text>, <Text style={{color: '#3B82F6'}}>USDC</Text>, <Text style={{color: '#3B82F6'}}>EURC</Text>, <Text style={{color: '#F59E0B'}}>DZY</Text> accepted »
@@ -396,10 +396,8 @@ const styles = StyleSheet.create({
   },
   mainTitle: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 28,
+    fontSize: 24,
     color: '#0A1128',
-    paddingHorizontal: 16,
-    marginBottom: 8,
   },
   subtitle: {
     fontFamily: 'Inter_400Regular',

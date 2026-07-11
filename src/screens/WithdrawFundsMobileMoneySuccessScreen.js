@@ -218,7 +218,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
               <Text style={styles.btnOutlineText}>Voir l'historique</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.btnPrimary} onPress={() => navigation.navigate('')}>
+            <TouchableOpacity style={styles.btnPrimary} onPress={() => navigation.navigate('DashboardScreen')}>
               <Ionicons name="refresh" size={20} color="#1A2840" style={{marginRight: 8}} />
               <Text style={styles.btnPrimaryText}>Effectuer un autre retrait</Text>
             </TouchableOpacity>

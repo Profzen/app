@@ -173,7 +173,7 @@ export default function TopUpDetailsScreen() {
           </View>
 
           {/* Continue Button */}
-          <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('')}>
+          <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('TopUpSummaryScreen')}>
             <Text style={styles.btnContinueText}>Continuer</Text>
             <Ionicons name="arrow-forward" size={20} color="#1A2840" />
           </TouchableOpacity>

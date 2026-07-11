@@ -303,6 +303,8 @@ const styles = StyleSheet.create({
     fontSize: 64,
     color: '#0F172A',
     includeFontPadding: false,
+    textAlign: 'center',
+    minWidth: 150,
   },
   amountSymbol: {
     fontFamily: 'Inter_400Regular',

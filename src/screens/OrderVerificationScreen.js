@@ -321,7 +321,7 @@ export default function OrderVerificationScreen() {
             <Text style={styles.securityDesc}>Vos fonds sont protégés</Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('')}>
+        <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('OrderConfirmationScreen')}>
           <Text style={styles.btnContinueText}>Continuer</Text>
           <Ionicons name="chevron-forward" size={18} color="#1A2840" />
         </TouchableOpacity>

@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 
 export default function CashierSendFundsScreen() {
+  const [selectedNetwork, setSelectedNetwork] = useState('Polygon');
+  const [selectedToken, setSelectedToken] = useState('USDC');
+  
+  const toggleNetwork = () => setSelectedNetwork(prev => prev === 'Polygon' ? 'Solana' : 'Polygon');
+  const toggleToken = () => setSelectedToken(prev => prev === 'USDC' ? 'USDT' : 'USDC');
   const navigation = useNavigation();
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -68,7 +73,7 @@ export default function CashierSendFundsScreen() {
             <TouchableOpacity style={styles.dropdownInput}>
               <View style={styles.dropdownLeft}>
                 <View style={[styles.tokenIconSmall, {backgroundColor: '#8B5CF6'}]}><Text style={styles.tokenIconTextSmall}>P</Text></View>
-                <Text style={styles.dropdownText}>Polygon</Text>
+                <Text style={styles.dropdownText}>{selectedNetwork}</Text>
               </View>
               <Ionicons name="chevron-down" size={20} color="#1A2840" />
             </TouchableOpacity>
@@ -76,10 +81,10 @@ export default function CashierSendFundsScreen() {
 
           <View style={styles.formGroup}>
             <Text style={styles.inputLabel}>JETON</Text>
-            <TouchableOpacity style={styles.dropdownInput}>
+            <TouchableOpacity style={styles.dropdownInput} onPress={toggleToken}>
               <View style={styles.dropdownLeft}>
                 <View style={[styles.tokenIconSmall, {backgroundColor: '#3B82F6'}]}><Text style={styles.tokenIconTextSmall}>$</Text></View>
-                <Text style={styles.dropdownText}>USDC</Text>
+                <Text style={styles.dropdownText}>{selectedToken}</Text>
               </View>
               <Ionicons name="chevron-down" size={20} color="#1A2840" />
             </TouchableOpacity>

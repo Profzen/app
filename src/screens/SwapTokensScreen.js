@@ -4,6 +4,10 @@ import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Tex
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function SwapTokensScreen() {
+  const [fromChain, setFromChain] = useState('Polygon');
+  const [toChain, setToChain] = useState('Solana');
+  const toggleFromChain = () => setFromChain(prev => prev === 'Polygon' ? 'Ethereum' : 'Polygon');
+  const toggleToChain = () => setToChain(prev => prev === 'Solana' ? 'Base' : 'Solana');
   const navigation = useNavigation();
   const [fromAmount, setFromAmount] = useState('0,00');
   const [toAmount, setToAmount] = useState('0,00');
@@ -43,12 +47,12 @@ export default function SwapTokensScreen() {
           <View style={styles.chainRow}>
             <View style={styles.chainCol}>
               <Text style={styles.inputLabel}>DE LA CHAÎNE</Text>
-              <TouchableOpacity style={styles.chainSelector}>
+              <TouchableOpacity style={styles.chainSelector} onPress={toggleFromChain}>
                 <View style={styles.chainLeft}>
                   <View style={styles.polygonIconSmall}>
                     <Text style={{color: '#FFF', fontSize: 10, fontWeight: 'bold'}}>∞</Text>
                   </View>
-                  <Text style={styles.chainName}>Polygon</Text>
+                  <Text style={styles.chainName}>{fromChain}</Text>
                 </View>
                 <Ionicons name="chevron-down" size={16} color="#1A2840" />
               </TouchableOpacity>
@@ -56,12 +60,12 @@ export default function SwapTokensScreen() {
             <View style={{width: 16}} />
             <View style={styles.chainCol}>
               <Text style={styles.inputLabel}>À CHAÎNE</Text>
-              <TouchableOpacity style={styles.chainSelector}>
+              <TouchableOpacity style={styles.chainSelector} onPress={toggleToChain}>
                 <View style={styles.chainLeft}>
                   <View style={styles.polygonIconSmall}>
                     <Text style={{color: '#FFF', fontSize: 10, fontWeight: 'bold'}}>∞</Text>
                   </View>
-                  <Text style={styles.chainName}>Polygon</Text>
+                  <Text style={styles.chainName}>{toChain}</Text>
                 </View>
                 <Ionicons name="chevron-down" size={16} color="#1A2840" />
               </TouchableOpacity>

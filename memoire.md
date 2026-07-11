@@ -267,10 +267,29 @@ Toutes les maquettes ci-dessous sont intégrées, versionnées sur GitHub (branc
 
 ---
 
-## 📍 5. Où en sommes-nous actuellement ?
-- L'intégration de la série de maquettes `M39` jusqu'à `M78` est totalement achevée (100% autonome).
-- L'application compile correctement. `App.js` affiche la maquette **M78** via le composant `CashierSendFundsScreen`.
-- La liste `liste_maquettes_aziz.md` est cochée jusqu'à M78.
-- **Prochaine étape attendue** : Finalisation, navigation globale ou intégration de nouvelles maquettes selon les directives.
+## 🚦 5. Prototypes et Navigation (Parcours Utilisateurs)
+Pour finaliser le prototype interactif, nous avons manuellement relié tous les boutons d'action internes des écrans (plus de 59 écrans liés) selon 8 parcours utilisateurs principaux (User Flows) :
+- **Parcours 1 : Inscription & Connexion** (`LoginScreen`, `RegisterScreen`, etc.)
+- **Parcours 2 : Rechargement (Top-Up)** (`TopUpScreen` -> `TopUpDetailsScreen` -> `TopUpSummaryScreen` -> `TopUpPaymentScreen`)
+- **Parcours 3 : Retrait (Withdraw)** (`WithdrawFundsScreen` -> `WithdrawFundsMethodScreen` -> `WithdrawFundsMobileMoneySummaryScreen` -> `WithdrawFundsMobileMoneyProcessingScreen` -> `WithdrawFundsMobileMoneySuccessScreen`)
+- **Parcours 4 : Envoi d'argent (Send Money)** (`SendMoneyScreen` -> `SendMoneyMethodScreen` -> `SendMoneyPinScreen` -> `SendMoneySummaryScreen` -> `SendMoneySuccessScreen`)
+- **Parcours 5 : Paiement Marchand / Scan** (`CashierScanScreen` -> `CashierSuccessScreen` / `OrderVerificationScreen` -> `OrderConfirmationScreen` -> `PaymentInProgressScreen` -> `PaymentSuccessScreen`)
+- **Parcours 6 : Boutiques (Shops)** (`ShopsScreen` -> `ShopDetailsScreen` -> `ShopProductsScreen` -> `ProductDetailsScreen`)
+- **Parcours 7 : Contacts & Historique** (`ContactsScreen` -> `ContactProfileScreen` -> `ContactHistoryScreen` -> `FiltersScreen`)
+- **Parcours 8 : Gestion des Actifs & Swap** (`AssetListScreen` / `AssetsListScreen` -> `SwapTokensScreen` -> `ReceiveFundsV2Screen`)
 
-*(Note pour l'IA : Après chaque nouvelle maquette ou modification architecturale majeure, ce fichier doit impérativement être mis à jour pour refléter la nouvelle réalité du projet).*
+La `BottomNavBar` a été globalement mise à jour pour s'assurer que ses icônes (Home, Contacts, Bouton Central, Shops, More) reflètent correctement l'écran actif (icône en bleu).
+
+---
+
+## 📍 6. Où en sommes-nous actuellement ?
+- L'intégration de **toutes les maquettes** de la série M (jusqu'à `M78`) est **100% achevée** (cf. `liste_maquettes_aziz.md`).
+- **L'application possède désormais une navigation complète et fluide** : tous les écrans sont déclarés dans `AppNavigator.js` et connectés entre eux via `useNavigation()`.
+- **UI/UX Polished** : 
+  - Les titres d'en-tête (ex: "Shops", "Contacts") ont été correctement replacés en haut à gauche.
+  - Le comportement des inputs web a été corrigé (retrait du contour bleu par défaut via `outlineStyle: 'none'`).
+  - Les erreurs d'écrans blancs (nœuds de texte inattendus) ont été identifiées et corrigées.
+  - La page d'accueil (`HomeScreen`) renvoie désormais correctement vers `AssetsListScreen` au clic sur "View all".
+- L'application est testable de bout en bout sur le web (`npm run start` -> touche `w`).
+
+*(Note pour l'IA : Ce fichier est le journal de bord central. Après chaque nouvelle action, modification majeure, ou ajout d'écran, ce fichier DOIT être mis à jour afin de garantir un passage de relais parfait d'une session à l'autre.)*
