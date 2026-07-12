@@ -9,6 +9,7 @@ import { Stepper } from '../components/Stepper';
 import { SecurityBanner } from '../components/SecurityBanner';
 import { SocialLogins } from '../components/SocialLogins';
 import { FooterTerms } from '../components/FooterTerms';
+import AppToast from '../components/AppToast';
 
 export default function RegisterScreen() {
   const navigation = useNavigation();
@@ -16,6 +17,7 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [parrain, setParrain] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const getPasswordStrength = (pass) => {
     if (!pass) return 0; // Vide = 0 barres
@@ -52,7 +54,8 @@ export default function RegisterScreen() {
     setTimeout(() => {
       setIsLoading(false);
       // Navigate to OTP Verification screen
-      alert("Inscription validée ! Passage à l'étape OTP (Simulé)");
+      setShowSuccess(true);
+      setTimeout(() => navigation.navigate('VerificationScreen'), 900);
     }, 1500);
   };
 
@@ -67,7 +70,7 @@ export default function RegisterScreen() {
           </TouchableOpacity>
           <View style={styles.loginLinkContainer}>
             <Text style={styles.loginText}>Déjà un compte ? </Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
               <Text style={styles.loginLink}>Se connecter</Text>
             </TouchableOpacity>
           </View>
@@ -153,6 +156,7 @@ export default function RegisterScreen() {
         {/* Spacer for bottom padding */}
         <View style={{height: 40}} />
       </ScrollView>
+      <AppToast visible={showSuccess} title="Inscription réussie" message="Votre code de vérification est prêt." onClose={() => setShowSuccess(false)} />
     </SafeAreaView>
   );
 }

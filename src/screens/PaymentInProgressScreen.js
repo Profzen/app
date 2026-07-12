@@ -180,9 +180,9 @@ export default function PaymentInProgressScreen() {
         </View>
 
         {/* Cancel Button */}
-        <TouchableOpacity style={styles.btnCancel}>
-          <Ionicons name="close" size={20} color="#3B82F6" style={{marginRight: 8}} />
-          <Text style={styles.btnCancelText}>Annuler le paiement</Text>
+        <TouchableOpacity style={styles.btnCancel} onPress={() => navigation.navigate('PaymentSuccessScreen')}>
+          <Ionicons name="checkmark-circle-outline" size={20} color="#3B82F6" style={{marginRight: 8}} />
+          <Text style={styles.btnCancelText}>Simuler la confirmation du paiement</Text>
         </TouchableOpacity>
 
       </ScrollView>

@@ -5,6 +5,10 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function WithdrawFundsMobileMoneyProcessingScreen() {
   const navigation = useNavigation();
+  React.useEffect(() => {
+    const timer = setTimeout(() => navigation.navigate('WithdrawFundsMobileMoneySuccessScreen'), 2500);
+    return () => clearTimeout(timer);
+  }, [navigation]);
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>

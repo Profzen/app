@@ -40,7 +40,7 @@ export default function LoginScreen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.canGoBack() ? navigation.goBack() : navigation.navigate('HomeScreen')}>
           <Ionicons name="arrow-back" size={24} color={theme.colors.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Connexion</Text>
@@ -93,12 +93,12 @@ export default function LoginScreen() {
         {/* Form Container */}
         <View style={styles.formContainer}>
           <DizzitInput 
-            label="Adresse e-mail"
-            iconLeft={<Ionicons name="mail-outline" size={20} color={theme.colors.primary} />}
-            placeholder="Entrez votre adresse e-mail"
+            label={activeTab === 'email' ? 'Adresse e-mail' : 'Numéro de téléphone'}
+            iconLeft={<Ionicons name={activeTab === 'email' ? 'mail-outline' : 'call-outline'} size={20} color={theme.colors.primary} />}
+            placeholder={activeTab === 'email' ? 'Entrez votre adresse e-mail' : 'Entrez votre numéro de téléphone'}
             value={email}
             onChangeText={setEmail}
-            keyboardType="email-address"
+            keyboardType={activeTab === 'email' ? 'email-address' : 'phone-pad'}
           />
 
           <View style={styles.passwordContainer}>

@@ -163,7 +163,7 @@ export default function MobileRechargeScreen() {
       <View style={styles.footer}>
         <DizzitButton 
           title="Continuer"
-          onPress={() => {}}
+          onPress={() => navigation.navigate('ReviewPaymentScreen')}
           icon={<Ionicons name="arrow-forward" size={20} color="#1A2840" />}
         />
         <View style={styles.stepContainer}>

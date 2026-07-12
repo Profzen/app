@@ -144,7 +144,7 @@ export default function ShopDetailsScreen() {
               <Ionicons name="chatbubble-outline" size={18} color="#3B82F6" style={{marginRight: 8}} />
               <Text style={styles.btnContactText}>Contacter</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.btnProducts}>
+          <TouchableOpacity style={styles.btnProducts} onPress={() => navigation.navigate('ShopProductsScreen')}>
               <Ionicons name="bag-handle-outline" size={18} color="#1A2840" style={{marginRight: 8}} />
               <Text style={styles.btnProductsText}>Voir les produits</Text>
             </TouchableOpacity>
@@ -171,7 +171,7 @@ export default function ShopDetailsScreen() {
                   <Text style={styles.productPrice}>{product.price}</Text>
                   <Text style={styles.productStock}>{product.stock}</Text>
                 </View>
-                <TouchableOpacity style={styles.btnBuy}>
+            <TouchableOpacity style={styles.btnBuy} onPress={() => navigation.navigate('ProductDetailsScreen')}>
                   <Text style={styles.btnBuyText}>Acheter</Text>
                 </TouchableOpacity>
               </View>

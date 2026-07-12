@@ -32,7 +32,7 @@ export default function ResetPasswordEmailScreen() {
     setTimeout(() => {
       setIsLoading(false);
       alert('Code de vérification envoyé à ' + email);
-      // In prod: navigation.navigate('ResetPasswordCodeScreen', { email })
+      navigation.navigate('ResetPasswordCodeScreen', { email });
     }, 1500);
   };
 
@@ -50,7 +50,7 @@ export default function ResetPasswordEmailScreen() {
             
             {/* Header */}
             <View style={styles.header}>
-              <HeaderBackButton onPress={() => alert('Retour')} />
+              <HeaderBackButton onPress={() => navigation.goBack()} />
               <Text style={styles.headerTitle}>Réinitialiser le mot de passe</Text>
               <View style={styles.placeholderBox} />
             </View>

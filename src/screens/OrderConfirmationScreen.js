@@ -202,7 +202,7 @@ export default function OrderConfirmationScreen() {
 
       {/* Bottom Fixed Button */}
       <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.btnConfirm}>
+        <TouchableOpacity style={styles.btnConfirm} onPress={() => navigation.navigate('PaymentInProgressScreen')}>
           <View style={{flex: 1}} />
           <View style={styles.btnConfirmCenter}>
             <View style={styles.btnConfirmTitleRow}>

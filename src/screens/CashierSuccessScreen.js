@@ -140,17 +140,17 @@ export default function CashierSuccessScreen() {
         </View>
 
         {/* Action Buttons */}
-        <TouchableOpacity style={styles.btnReceipt}>
+        <TouchableOpacity style={styles.btnReceipt} onPress={() => navigation.navigate('TransactionHistoryScreen')}>
           <Ionicons name="receipt-outline" size={20} color="#1A2840" style={{position: 'absolute', left: 20}} />
           <Text style={styles.btnReceiptText}>Voir le reçu</Text>
           <Ionicons name="arrow-forward" size={20} color="#1A2840" style={{position: 'absolute', right: 20}} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.btnNewTransaction}>
+        <TouchableOpacity style={styles.btnNewTransaction} onPress={() => navigation.navigate('CashierScanScreen')}>
           <Text style={styles.btnNewTransactionText}>Nouvelle transaction</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.btnReturn}>
+        <TouchableOpacity style={styles.btnReturn} onPress={() => navigation.navigate('CashRegisterScreen')}>
           <Text style={styles.btnReturnText}>Retour à la caisse</Text>
         </TouchableOpacity>
 

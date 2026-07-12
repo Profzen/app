@@ -32,7 +32,7 @@ export default function SecureAccountScreen() {
     setTimeout(() => {
       setIsLoading(false);
       // Navigate to Dashboard / Home
-      alert("Sécurité configurée avec succès ! Redirection vers l'accueil (Simulé)");
+      navigation.navigate('SuccessScreen');
     }, 1500);
   };
 

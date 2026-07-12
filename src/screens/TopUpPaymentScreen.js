@@ -5,6 +5,10 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function TopUpPaymentScreen() {
   const navigation = useNavigation();
+  React.useEffect(() => {
+    const timer = setTimeout(() => navigation.navigate('TopUpWalletConfirmationScreen'), 2500);
+    return () => clearTimeout(timer);
+  }, [navigation]);
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>

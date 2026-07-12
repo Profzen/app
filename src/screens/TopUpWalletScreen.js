@@ -185,7 +185,7 @@ export default function TopUpWalletScreen() {
           </View>
 
           {/* Continue Button */}
-          <TouchableOpacity style={styles.btnContinue}>
+          <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate(selectedMethod === 'card' ? 'TopUpWalletDetailsScreen' : 'TopUpDetailsScreen')}>
             <Text style={styles.btnContinueText}>Continuer</Text>
             <Ionicons name="arrow-forward" size={20} color="#1A2840" />
           </TouchableOpacity>

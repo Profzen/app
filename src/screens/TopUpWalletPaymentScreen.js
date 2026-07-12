@@ -6,6 +6,10 @@ import BottomNavBar from '../components/BottomNavBar';
 
 export default function TopUpWalletPaymentScreen() {
   const navigation = useNavigation();
+  React.useEffect(() => {
+    const timer = setTimeout(() => navigation.navigate('TopUpWalletConfirmationScreen'), 2500);
+    return () => clearTimeout(timer);
+  }, [navigation]);
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>

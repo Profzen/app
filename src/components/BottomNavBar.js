@@ -1,13 +1,38 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
 export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, isMenuOpen }) {
   const navigation = useNavigation();
+  const [localMenuOpen, setLocalMenuOpen] = useState(false);
+  const menuOpen = typeof isMenuOpen === 'boolean' ? isMenuOpen : localMenuOpen;
+  const shortcuts = [
+    ['briefcase-outline', 'Pay bills & Send essentials', 'ChooseServiceScreen'],
+    ['paper-plane-outline', 'Send funds', 'SendMoneyScreen'],
+    ['chatbox-ellipses-outline', 'Buy, Pay me this', 'ShopsScreen'],
+    ['hand-left-outline', 'Request funds', 'ReceiveFundsV2Screen'],
+    ['add-circle-outline', 'Top-up DZYwallet', 'TopUpWalletScreen'],
+    ['storefront-outline', 'Refer a business', 'ShopsScreen'],
+    ['globe-outline', 'Source in Africa', 'ShopsScreen'],
+    ['cash-outline', 'Local FIAT ATM', 'WithdrawFundsScreen'],
+  ];
+  const closeAndNavigate = (route) => { setLocalMenuOpen(false); navigation.navigate(route); };
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      {menuOpen && (
+        <View style={styles.shortcutMenu}>
+          <Text style={styles.shortcutTitle}>Actions rapides</Text>
+          {shortcuts.map(([icon, label, route]) => (
+            <TouchableOpacity key={label} style={styles.shortcutItem} onPress={() => closeAndNavigate(route)}>
+              <View style={styles.shortcutIcon}><Ionicons name={icon} size={17} color="#1A2840" /></View>
+              <Text style={styles.shortcutLabel}>{label}</Text>
+              <Ionicons name="chevron-forward" size={16} color="#64748B" />
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
       <View style={styles.container}>
         <NavItem icon="home" label="Accueil" isActive={activeTab.toLowerCase() === 'home' || activeTab.toLowerCase() === 'accueil'} onPress={() => navigation.navigate('HomeScreen')} />
         <NavItem icon="people-outline" label="Contacts" isActive={activeTab.toLowerCase() === 'contacts'} onPress={() => navigation.navigate('ContactsScreen')} />
@@ -15,18 +40,19 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
         {/* Center Floating Button */}
         <View style={styles.centerButtonWrapper}>
           <TouchableOpacity 
-            style={[styles.centerButton, isMenuOpen && styles.centerButtonActive]}
+            style={[styles.centerButton, menuOpen && styles.centerButtonActive]}
             onPress={() => {
               if (onCenterButtonPress) {
                 onCenterButtonPress();
               } else {
-                navigation.navigate('SwapTokensScreen');
+                setLocalMenuOpen(!localMenuOpen);
               }
             }}
             activeOpacity={0.8}
+            accessibilityLabel={menuOpen ? 'Fermer les actions rapides' : 'Ouvrir les actions rapides'}
           >
             <Ionicons 
-              name={isMenuOpen ? "close" : "swap-horizontal"} 
+              name={menuOpen ? "close" : "swap-horizontal"} 
               size={28} 
               color="#1A2840" 
             />
@@ -55,6 +81,16 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#F4F5F7',
   },
+  shortcutMenu: {
+    position: 'absolute', left: 12, right: 12, bottom: 64, zIndex: 50,
+    backgroundColor: '#FFFFFF', borderRadius: 18, padding: 12,
+    borderWidth: 1, borderColor: '#E5E7EB', shadowColor: '#000', shadowOpacity: 0.16,
+    shadowRadius: 14, shadowOffset: { width: 0, height: -4 }, elevation: 12,
+  },
+  shortcutTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#1A2840', marginBottom: 6 },
+  shortcutItem: { flexDirection: 'row', alignItems: 'center', minHeight: 42, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+  shortcutIcon: { width: 30, height: 30, borderRadius: 9, backgroundColor: '#FFF7E6', alignItems: 'center', justifyContent: 'center', marginRight: 10 },
+  shortcutLabel: { flex: 1, fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840' },
   container: {
     flexDirection: 'row',
     justifyContent: 'space-between',

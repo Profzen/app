@@ -63,8 +63,8 @@ export default function WalletCard({ balances }) {
       {/* Actions */}
       <View style={styles.actionsRow}>
         <ActionItem icon="paper-plane-outline" label="Send" onPress={() => navigation.navigate('SendMoneyScreen')} />
-        <ActionItem icon="arrow-down-outline" label="Receive" onPress={() => navigation.navigate('ReceiveFundsScreen')} />
-        <ActionItem icon="time-outline" label="History" onPress={() => navigation.navigate('TransactionsListScreen')} />
+        <ActionItem icon="arrow-down-outline" label="Receive" onPress={() => navigation.navigate('ReceiveFundsV2Screen')} />
+        <ActionItem icon="time-outline" label="History" onPress={() => navigation.navigate('TransactionHistoryScreen')} />
         <ActionItem icon="card-outline" label="Cash-out" onPress={() => navigation.navigate('WithdrawFundsScreen')} />
       </View>
     </View>

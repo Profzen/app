@@ -66,9 +66,9 @@ export default function CashierScanScreen() {
               <Ionicons name="qr-code-outline" size={160} color="#1A2840" />
             </View>
           </View>
-          <TouchableOpacity style={styles.refreshBtn}>
+          <TouchableOpacity style={styles.refreshBtn} onPress={() => navigation.navigate('CashierSuccessScreen')}>
             <Ionicons name="scan-outline" size={16} color="#1A2840" style={{marginRight: 6}} />
-            <Text style={styles.refreshBtnText}>Actualiser le QR Code</Text>
+            <Text style={styles.refreshBtnText}>Simuler le paiement</Text>
           </TouchableOpacity>
         </View>
 
@@ -99,7 +99,7 @@ export default function CashierScanScreen() {
         </View>
 
         {/* Cancel Button */}
-        <TouchableOpacity style={styles.btnCancel}>
+        <TouchableOpacity style={styles.btnCancel} onPress={() => navigation.goBack()}>
           <Ionicons name="close" size={20} color="#EF4444" style={{marginRight: 8}} />
           <Text style={styles.btnCancelText}>Annuler la transaction</Text>
         </TouchableOpacity>

@@ -1,14 +1,22 @@
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Animated } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Pressable, ScrollView, Animated, Share } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
+import Svg, { Rect } from 'react-native-svg';
+import QRCode from 'qrcode';
 import BottomNavBar from '../components/BottomNavBar';
 
 export default function ReceiveFundsV2Screen() {
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState('adresse');
-  const [showToast, setShowToast] = useState(true);
+  const [showToast, setShowToast] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const address = '0x5C292F468c41b3F2D84D1d888B578aCf4BC339b91';
+  const qr = QRCode.create(address, { errorCorrectionLevel: 'M' });
+  const copyAddress = () => { setShowToast(true); Clipboard.setStringAsync(address).catch(() => {}); };
+  const shareAddress = async () => { try { await Share.share({ message: `Adresse DizzitUp Polygon : ${address}` }); } catch { await Clipboard.setStringAsync(address); setShowToast(true); } };
+  const RealQrCode = () => <Svg width={180} height={180} viewBox={`0 0 ${qr.modules.size} ${qr.modules.size}`} accessibilityLabel="QR code de l'adresse Polygon"><Rect width={qr.modules.size} height={qr.modules.size} fill="#FFFFFF" />{Array.from(qr.modules.data).map((cell, index) => cell ? <Rect key={index} x={index % qr.modules.size} y={Math.floor(index / qr.modules.size)} width="1" height="1" fill="#071536" /> : null)}</Svg>;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -181,40 +189,25 @@ export default function ReceiveFundsV2Screen() {
                   <Text style={styles.addressText}>
                     0x5C292F468c41b3F2D84D1d88{'\n'}8B578aCf4BC339b91
                   </Text>
-                  <TouchableOpacity style={styles.btnCopyIcon}>
+                  <Pressable style={styles.btnCopyIcon} onPress={copyAddress} onPressIn={copyAddress}>
                     <Ionicons name="copy-outline" size={18} color="#FFFFFF" />
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
 
               </View>
 
               {/* Action Buttons */}
               <View style={styles.actionBtnsRow}>
-                <TouchableOpacity style={styles.btnCopy}>
+                <Pressable style={styles.btnCopy} onPress={copyAddress} onPressIn={copyAddress} accessibilityLabel="Copier l'adresse">
                   <Ionicons name="copy-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
                   <Text style={styles.btnCopyText}>COPIER</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.btnShare}>
+                </Pressable>
+                <TouchableOpacity style={styles.btnShare} onPress={shareAddress}>
                   <Ionicons name="share-outline" size={20} color="#FFFFFF" style={{marginRight: 8}} />
                   <Text style={styles.btnShareText}>PARTAGER</Text>
                 </TouchableOpacity>
               </View>
 
-              {/* Toast Notification */}
-              {showToast && (
-                <View style={styles.toastCard}>
-                  <View style={styles.toastIconBg}>
-                    <Ionicons name="checkmark" size={16} color="#FFFFFF" />
-                  </View>
-                  <View style={styles.toastContent}>
-                    <Text style={styles.toastTitle}>Adresse copiée !</Text>
-                    <Text style={styles.toastDesc}>L'adresse a été copiée dans le presse-papiers.</Text>
-                  </View>
-                  <TouchableOpacity onPress={() => setShowToast(false)}>
-                    <Ionicons name="close" size={20} color="#94A3B8" />
-                  </TouchableOpacity>
-                </View>
-              )}
             </>
           ) : (
             <>
@@ -242,11 +235,11 @@ export default function ReceiveFundsV2Screen() {
                   <Text style={styles.qrCardSub}>Ceci est votre adresse dédiée pour Polygon</Text>
                   
                   <View style={styles.qrCodeBox}>
-                    <Ionicons name="qr-code" size={180} color="#071536" />
+                    <RealQrCode />
                   </View>
                   
                   <View style={styles.qrInnerTabs}>
-                    <TouchableOpacity style={styles.qrInnerTab}>
+                    <TouchableOpacity style={styles.qrInnerTab} onPress={() => setActiveTab('adresse')}>
                       <Ionicons name="wallet-outline" size={14} color="#FFFFFF" style={{marginRight: 6}} />
                       <Text style={styles.qrInnerTabText}>VOIR L'ADRESSE</Text>
                     </TouchableOpacity>
@@ -266,25 +259,33 @@ export default function ReceiveFundsV2Screen() {
                   <Text style={styles.addressTextSmall} numberOfLines={1} ellipsizeMode="middle">
                     0x5C292F468c41b3F2D84D1d88B578aCf4BC339b91
                   </Text>
-                  <TouchableOpacity style={styles.btnCopyIcon}>
+                  <Pressable style={styles.btnCopyIcon} onPress={copyAddress} onPressIn={copyAddress}>
                     <Ionicons name="copy-outline" size={18} color="#FFFFFF" />
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
 
               </View>
 
               {/* Action Buttons */}
               <View style={styles.actionBtnsRow}>
-                <TouchableOpacity style={styles.btnCopy}>
+                <Pressable style={styles.btnCopy} onPress={copyAddress} onPressIn={copyAddress} accessibilityLabel="Copier l'adresse">
                   <Ionicons name="copy-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
                   <Text style={styles.btnCopyText}>COPIER</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.btnShare}>
+                </Pressable>
+                <TouchableOpacity style={styles.btnShare} onPress={shareAddress}>
                   <Ionicons name="share-outline" size={20} color="#FFFFFF" style={{marginRight: 8}} />
                   <Text style={styles.btnShareText}>PARTAGER</Text>
                 </TouchableOpacity>
               </View>
             </>
+          )}
+
+          {showToast && (
+            <View style={styles.toastCard}>
+              <View style={styles.toastIconBg}><Ionicons name="checkmark" size={16} color="#FFFFFF" /></View>
+              <View style={styles.toastContent}><Text style={styles.toastTitle}>Adresse copiée !</Text><Text style={styles.toastDesc}>L'adresse a été copiée dans le presse-papiers.</Text></View>
+              <TouchableOpacity onPress={() => setShowToast(false)}><Ionicons name="close" size={20} color="#94A3B8" /></TouchableOpacity>
+            </View>
           )}
 
           {/* Bottom Security Banner */}

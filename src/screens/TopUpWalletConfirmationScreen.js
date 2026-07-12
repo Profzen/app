@@ -203,13 +203,13 @@ export default function TopUpWalletConfirmationScreen() {
           </View>
 
           {/* Buttons */}
-          <TouchableOpacity style={styles.btnPrimary}>
+          <TouchableOpacity style={styles.btnPrimary} onPress={() => navigation.navigate('AssetsListScreen')}>
             <Ionicons name="wallet-outline" size={20} color="#1A2840" style={styles.btnIconLeft} />
             <Text style={styles.btnPrimaryText}>Voir mon portefeuille DZYwallet</Text>
             <Ionicons name="arrow-forward" size={20} color="#1A2840" style={styles.btnIconRight} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.btnSecondary}>
+          <TouchableOpacity style={styles.btnSecondary} onPress={() => navigation.navigate('TopUpWalletScreen')}>
             <Text style={styles.btnSecondaryText}>Effectuer une autre recharge</Text>
           </TouchableOpacity>
 

@@ -17,6 +17,10 @@ export default function SendMoneyPinScreen() {
     }
   };
 
+  React.useEffect(() => {
+    if (pin.length === 6) navigation.navigate('SendMoneySummaryScreen');
+  }, [pin, navigation]);
+
   const KeyButton = ({ num, isAction, icon, onPress }) => (
     <TouchableOpacity 
       style={[

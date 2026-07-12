@@ -105,11 +105,11 @@ export default function SendMoneySuccessScreen() {
         </View>
 
         {/* Buttons */}
-        <TouchableOpacity style={styles.btnFinish}>
+        <TouchableOpacity style={styles.btnFinish} onPress={() => navigation.navigate('HomeScreen')}>
           <Text style={styles.btnFinishText}>Terminé</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.btnDetails}>
+        <TouchableOpacity style={styles.btnDetails} onPress={() => navigation.navigate('TransactionHistoryScreen')}>
           <Ionicons name="receipt-outline" size={18} color="#0052CC" style={{marginRight: 8}} />
           <Text style={styles.btnDetailsText}>Voir les détails de la transaction</Text>
           <Ionicons name="chevron-forward" size={16} color="#0052CC" style={{marginLeft: 4, marginTop: 2}} />

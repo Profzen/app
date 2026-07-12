@@ -293,3 +293,44 @@ La `BottomNavBar` a été globalement mise à jour pour s'assurer que ses icône
 - L'application est testable de bout en bout sur le web (`npm run start` -> touche `w`).
 
 *(Note pour l'IA : Ce fichier est le journal de bord central. Après chaque nouvelle action, modification majeure, ou ajout d'écran, ce fichier DOIT être mis à jour afin de garantir un passage de relais parfait d'une session à l'autre.)*
+# Mise à jour navigation et simulation client — 12 juillet 2026
+
+- Audit statique ajouté dans `scripts/audit-interactions.js` : 59 routes déclarées, 92 appels de navigation contrôlés et aucune cible inexistante.
+- Suites Chromium ajoutées : `scripts/e2e-smoke.js` et `scripts/e2e-commerce.js`.
+- Parcours validés sur Expo Web : connexion, envoi d'argent, retrait Mobile Money, recharge, boutique → produit → commande → paiement → succès.
+- Parcours réparés : inscription/sécurisation, mot de passe oublié, contacts/historique, paiement de factures/recharge mobile, recharge portefeuille, actifs, swap et caisse.
+- Correction de la route inexistante `TransactionsListScreen` vers `TransactionHistoryScreen`.
+- Les écrans de traitement simulés redirigent vers leur confirmation afin de permettre une présentation sans backend.
+- Validation finale : export Expo Web réussi, aucune cible de navigation invalide et aucune erreur JavaScript pendant les tests Chromium.
+
+## Correctifs fonctionnels ciblés — 12 juillet 2026
+
+- Le bouton `Pay bills` de l'accueil ouvre désormais `ChooseServiceScreen` au lieu de la caisse.
+- Les cinq services de l'écran « Choisir un service » ont une destination fonctionnelle : factures, recharge mobile, Internet/TV/Jeux/Crypto, envoi/demande de fonds et produits essentiels.
+- Contacts : bannière d'invitation refermable, bouton d'invitation actif et cinq actions rapides reliées aux bons parcours.
+- Shops : sous-navigation Mes shops / Nouveaux shops / Catégories / Activité interactive; grille produits ramenée à deux colonnes défilables.
+- Ajout du composant `CryptoIcon` utilisant les logos crypto officiels et le logo circulaire DizzitUp pour DZY.
+- Receive funds V2 : véritable QR code encodant l'adresse Polygon, copie presse-papiers et partage fonctionnels.
+- Connexion : l'onglet téléphone affiche désormais un libellé, une icône, un placeholder et un clavier téléphone adaptés; retour sécurisé même sans historique.
+- Inscription : suppression de l'alerte navigateur au profit d'une notification intégrée au design system, suivie de la navigation OTP.
+- Tests ajoutés : `e2e-requested-fixes.js`, `test-contact-close.js`, `test-receive-qr.js`, `test-register-toast.js`.
+- Validation Chromium : tous les scénarios ciblés passent avec zéro erreur d'exécution.
+
+## Branchement Top-up carte / Mobile Money — 12 juillet 2026
+
+- Correction du bouton Continuer des écrans de choix de recharge : la destination dépend désormais réellement du moyen sélectionné.
+- Carte bancaire : `TopUpScreen` / `TopUpWalletScreen` → `TopUpWalletDetailsScreen` → `TopUpWalletPaymentScreen` → `TopUpWalletConfirmationScreen`.
+- Mobile Money : `TopUpScreen` / `TopUpWalletScreen` → `TopUpDetailsScreen`, puis le parcours Mobile Money existant.
+- Test Chromium ajouté dans `scripts/test-topup-branches.js` : les deux branches sont validées avec zéro erreur d'exécution.
+
+## Actifs, raccourcis et To-do — 12 juillet 2026
+
+- Les actions Envoyer, Recevoir, Historique et Cash-out de `AssetListScreen` sont maintenant reliées aux écrans attendus.
+- `ldci.png`, fourni à la racine, est intégré sans contour comme bannière promotionnelle sur la liste des actifs et ouvre la recharge portefeuille.
+- Les écrans Cash-out et Swap utilisent `CryptoIcon` avec les logos officiels; DZY utilise le logo circulaire DizzitUp.
+- Le bouton central à deux flèches ouvre désormais un panneau de huit raccourcis d'actions, cohérent avec la maquette fournie.
+- Création de `TodoListScreen` : liste exhaustive, progression, tâches cochables, formulaire de création, sauvegarde et notification intégrée.
+- Le bouton View all de la To-do list sur Home ouvre `TodoListScreen`.
+- Tests Chromium : quatre actions Asset List validées, menu central validé, création/sauvegarde To-do validée, zéro erreur d'exécution.
+
+---

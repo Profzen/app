@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput, Image } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Pressable, ScrollView, TextInput, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 
@@ -22,6 +22,10 @@ const contacts = [
 
 export default function ContactsScreen() {
   const navigation = useNavigation();
+  const [showInvite, setShowInvite] = useState(true);
+  const inviteRef = useRef(null);
+  const closeInvite = () => { if (inviteRef.current?.remove) { inviteRef.current.remove(); return; } setShowInvite(false); };
+  const actionRoutes = { '1': 'ChooseServiceScreen', '2': 'MobileRechargeScreen', '3': 'ChooseServiceScreen', '4': 'SendMoneyScreen', '5': 'RewardsScreen' };
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -73,7 +77,7 @@ export default function ContactsScreen() {
           <Text style={styles.sectionTitle}>Actions rapides</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickActionsScroll}>
             {quickActions.map(action => (
-              <TouchableOpacity key={action.id} style={styles.quickActionCard}>
+              <TouchableOpacity key={action.id} style={styles.quickActionCard} onPress={() => navigation.navigate(actionRoutes[action.id])}>
                 <View style={styles.quickActionIconContainer}>
                   <Ionicons name={action.icon} size={28} color={action.color} />
                 </View>
@@ -86,7 +90,7 @@ export default function ContactsScreen() {
           {/* Mes bénéficiaires */}
           <View style={styles.sectionHeaderRow}>
             <Text style={styles.sectionTitle}>Mes bénéficiaires</Text>
-            <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}}>
+            <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}} onPress={() => navigation.navigate('ContactsManageScreen')}>
               <Text style={styles.showLessText}>Afficher moins</Text>
               <Ionicons name="chevron-up" size={14} color="#64748B" style={{marginLeft: 4}} />
             </TouchableOpacity>
@@ -123,7 +127,7 @@ export default function ContactsScreen() {
           {/* Contacts List */}
           <View style={styles.contactsList}>
             {contacts.map(contact => (
-              <TouchableOpacity key={contact.id} style={styles.contactItem}>
+              <TouchableOpacity key={contact.id} style={styles.contactItem} onPress={() => navigation.navigate('ContactProfileScreen')}>
                 
                 {/* Contact Info */}
                 <View style={styles.contactInfoCol}>
@@ -169,11 +173,11 @@ export default function ContactsScreen() {
         </ScrollView>
 
         {/* Invite Banner (Floating) */}
-        <View style={styles.inviteBannerWrapper}>
+        {showInvite && <View ref={inviteRef} style={styles.inviteBannerWrapper}>
           <View style={styles.inviteBanner}>
-            <TouchableOpacity style={styles.closeBannerBtn}>
+            <Pressable style={styles.closeBannerBtn} onPress={closeInvite} onPressIn={closeInvite} onPointerDown={closeInvite} accessibilityRole="button" accessibilityLabel="Fermer la bannière d'invitation">
               <Ionicons name="close" size={20} color="#FFFFFF" />
-            </TouchableOpacity>
+            </Pressable>
             <View style={styles.inviteBannerLeft}>
               <Text style={styles.inviteBannerTitle}>
                 Invitez vos amis{'\n'}et gagnez <Text style={{color: '#FFB800'}}>$5 en DZY</Text>
@@ -181,7 +185,7 @@ export default function ContactsScreen() {
               <Text style={styles.inviteBannerText}>
                 Envoyez de l'argent, achetez, payez des factures et gagnez des récompenses ensemble.
               </Text>
-              <TouchableOpacity style={styles.inviteBtn}>
+              <TouchableOpacity style={styles.inviteBtn} onPress={() => navigation.navigate('RewardsScreen')}>
                 <Text style={styles.inviteBtnText}>Inviter maintenant</Text>
               </TouchableOpacity>
             </View>
@@ -194,7 +198,7 @@ export default function ContactsScreen() {
               </View>
             </View>
           </View>
-        </View>
+        </View>}
 
         <BottomNavBar activeTab="contacts" />
       </View>

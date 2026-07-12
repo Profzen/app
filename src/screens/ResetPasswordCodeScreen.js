@@ -24,7 +24,7 @@ export default function ResetPasswordCodeScreen() {
     setTimeout(() => {
       setIsLoading(false);
       alert('Code validé avec succès !');
-      // In prod: navigation.navigate('ResetPasswordFinalScreen')
+      navigation.navigate('ResetPasswordFinalScreen');
     }, 1500);
   };
 
@@ -68,7 +68,7 @@ export default function ResetPasswordCodeScreen() {
           <View style={styles.buttonsContainer}>
             <TouchableOpacity 
               style={[styles.button, styles.buttonPrevious]}
-              onPress={() => alert('Précédent')}
+              onPress={() => navigation.goBack()}
             >
               <Text style={styles.buttonPreviousText}>PRÉCÉDENT</Text>
             </TouchableOpacity>

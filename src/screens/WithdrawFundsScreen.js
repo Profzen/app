@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import CryptoIcon from '../components/CryptoIcon';
 
 export default function WithdrawFundsScreen() {
   const navigation = useNavigation();
@@ -22,15 +23,7 @@ export default function WithdrawFundsScreen() {
     { id: 'Ethereum', name: 'Ethereum', icon: 'ETH_ICON' },
   ];
 
-  const renderTokenIcon = (id) => {
-    switch (id) {
-      case 'USDC': return <View style={[styles.tokenIconCircle, {backgroundColor: '#2775CA'}]}><Text style={styles.tokenIconText}>$</Text></View>;
-      case 'USDT': return <View style={[styles.tokenIconCircle, {backgroundColor: '#26A17B'}]}><Text style={styles.tokenIconText}>₮</Text></View>;
-      case 'EURC': return <View style={[styles.tokenIconCircle, {backgroundColor: '#2775CA'}]}><Text style={styles.tokenIconText}>€</Text></View>;
-      case 'DZY': return <View style={[styles.tokenIconCircle, {backgroundColor: '#1A2840'}]}><Text style={[styles.tokenIconText, {color: '#FFB800'}]}>Ð</Text></View>;
-      default: return null;
-    }
-  };
+  const renderTokenIcon = (id) => <CryptoIcon symbol={id} size={48} />;
 
   const renderNetworkIcon = (id) => {
     switch (id) {

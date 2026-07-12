@@ -51,7 +51,7 @@ export default function VerificationScreen() {
     
     setTimeout(() => {
       setIsLoading(false);
-      alert("Code vérifié ! Passage à l'étape sécurisation (Simulé)");
+      navigation.navigate('SecureAccountScreen');
     }, 1500);
   };
 

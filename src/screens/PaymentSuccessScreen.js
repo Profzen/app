@@ -130,17 +130,17 @@ export default function PaymentSuccessScreen() {
 
           {/* Action Buttons */}
           <View style={styles.actionButtons}>
-            <TouchableOpacity style={styles.primaryBtn}>
+          <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation.navigate('TransactionHistoryScreen')}>
               <Ionicons name="receipt-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
               <Text style={styles.primaryBtnText}>Voir le reçu</Text>
             </TouchableOpacity>
 
             <View style={styles.secondaryBtnRow}>
-              <TouchableOpacity style={styles.secondaryBtn}>
+          <TouchableOpacity style={styles.secondaryBtn} onPress={() => navigation.navigate('ShopsScreen')}>
                 <Ionicons name="refresh-outline" size={20} color="#1A2840" style={{marginRight: 6}} />
                 <Text style={styles.secondaryBtnText}>Faire un autre paiement</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.secondaryBtn}>
+          <TouchableOpacity style={styles.secondaryBtn} onPress={() => navigation.navigate('HomeScreen')}>
                 <Ionicons name="home-outline" size={20} color="#1A2840" style={{marginRight: 6}} />
                 <Text style={styles.secondaryBtnText}>Retour à l'accueil</Text>
               </TouchableOpacity>

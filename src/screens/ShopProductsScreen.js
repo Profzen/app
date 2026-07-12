@@ -3,9 +3,10 @@ import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
+import CryptoIcon from '../components/CryptoIcon';
 
 const { width } = Dimensions.get('window');
-const cardWidth = (width - 32 - 24) / 4; // 4 columns, 32px padding, 24px total gap (8px * 3)
+const cardWidth = (Math.min(width, 520) - 48) / 2;
 
 const products = [
   { 
@@ -112,19 +113,19 @@ export default function ShopProductsScreen() {
             <Text style={styles.paymentMethodsTitle}>Moyens de paiement acceptés</Text>
             <View style={styles.paymentIconsRow}>
               <View style={styles.paymentItem}>
-                <View style={[styles.tokenIcon, {backgroundColor: '#10B981'}]}><Text style={styles.tokenIconText}>₮</Text></View>
+                <CryptoIcon symbol="USDT" size={36} />
                 <Text style={styles.tokenLabel}>USDT</Text>
               </View>
               <View style={styles.paymentItem}>
-                <View style={[styles.tokenIcon, {backgroundColor: '#3B82F6'}]}><Text style={styles.tokenIconText}>$</Text></View>
+                <CryptoIcon symbol="USDC" size={36} />
                 <Text style={styles.tokenLabel}>USDC</Text>
               </View>
               <View style={styles.paymentItem}>
-                <View style={[styles.tokenIcon, {backgroundColor: '#3B82F6'}]}><Text style={styles.tokenIconText}>€</Text></View>
+                <CryptoIcon symbol="EURC" size={36} />
                 <Text style={styles.tokenLabel}>EURC</Text>
               </View>
               <View style={styles.paymentItem}>
-                <View style={[styles.tokenIcon, {backgroundColor: '#0A1128'}]}><Text style={[styles.tokenIconText, {color: '#FFB800'}]}>D</Text></View>
+                <CryptoIcon symbol="DZY" size={36} />
                 <Text style={styles.tokenLabel}>DZY</Text>
               </View>
               <TouchableOpacity style={styles.paymentItem}>
@@ -206,7 +207,7 @@ export default function ShopProductsScreen() {
                     <Text style={styles.productStock}>{product.stock}</Text>
                   </View>
                   
-                  <TouchableOpacity style={styles.btnBuyCeci}>
+              <TouchableOpacity style={styles.btnBuyCeci} onPress={() => navigation.navigate('ProductDetailsScreen')}>
                     <Ionicons name="cart-outline" size={12} color="#1A2840" style={{marginRight: 4}} />
                     <Text style={styles.btnBuyCeciText}>Achetez-moi ceci</Text>
                   </TouchableOpacity>
@@ -550,6 +551,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: 16,
+    justifyContent: 'space-between',
   },
   productCard: {
     width: cardWidth,
@@ -559,7 +561,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 6,
     marginBottom: 8,
-    marginRight: 8,
+    marginHorizontal: 4,
     position: 'relative',
   },
   heartIcon: {

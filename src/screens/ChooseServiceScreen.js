@@ -73,7 +73,7 @@ export default function ChooseServiceScreen() {
             iconName="document-text-outline"
             iconColor="#F59E0B"
             iconBgColor="#FEF3C7"
-            onPress={() => {}}
+            onPress={() => navigation.navigate('ReviewPaymentScreen', { service: 'Factures eau, gaz et électricité' })}
           />
           <ServiceGridCard 
             title="Recharge mobile"
@@ -81,7 +81,7 @@ export default function ChooseServiceScreen() {
             iconName="phone-portrait-outline"
             iconColor="#10B981"
             iconBgColor="#D1FAE5"
-            onPress={() => {}}
+            onPress={() => navigation.navigate('MobileRechargeScreen')}
           />
           
           <ServiceGridCard 
@@ -91,24 +91,24 @@ export default function ChooseServiceScreen() {
             multiIcons={['wifi', 'tv-outline', 'game-controller-outline', 'logo-bitcoin']}
             iconColor="#3B82F6"
             iconBgColor="#EFF6FF"
-            onPress={() => {}}
+            onPress={() => navigation.navigate('ReviewPaymentScreen', { service: 'Internet, TV, Jeux & Crypto' })}
           />
 
           <ServiceGridCard 
-            title="TV"
-            subtitle="Abonnements TV et bouquets."
-            iconName="tv-outline"
+            title="Envoyer/Demander des fonds"
+            subtitle="Envoyez ou demandez de l'aide à vos proches en quelques secondes."
+            iconName="swap-horizontal-outline"
             iconColor="#8B5CF6"
             iconBgColor="#EDE9FE"
-            onPress={() => {}}
+            onPress={() => navigation.navigate('SendMoneyScreen')}
           />
           <ServiceGridCard 
-            title="Produits essentiels"
+            title="Produits & Services essentiels"
             subtitle="Envoyez des produits essentiels à vos proches."
             iconName="basket-outline"
             iconColor="#F97316"
             iconBgColor="#FFEDD5"
-            onPress={() => {}}
+            onPress={() => navigation.navigate('ShopsScreen')}
           />
         </View>
 

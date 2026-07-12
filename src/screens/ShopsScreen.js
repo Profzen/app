@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -113,6 +113,7 @@ const shopsList = [
 
 export default function ShopsScreen() {
   const navigation = useNavigation();
+  const [activeSubNav, setActiveSubNav] = useState('shops');
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -203,10 +204,16 @@ export default function ShopsScreen() {
           </ScrollView>
 
           {/* Shops List */}
+          {activeSubNav !== 'shops' && (
+            <View style={{marginHorizontal: 16, marginBottom: 12, padding: 12, borderRadius: 12, backgroundColor: '#FFF7E6'}}>
+              <Text style={{fontFamily: 'Inter_700Bold', color: '#1A2840'}}>{activeSubNav === 'new' ? 'Nouveaux shops' : 'Catégories de shops'}</Text>
+              <Text style={{fontFamily: 'Inter_400Regular', color: '#64748B', marginTop: 3}}>{activeSubNav === 'new' ? 'Découvrez les commerces récemment ajoutés.' : 'Parcourez les commerces par catégorie.'}</Text>
+            </View>
+          )}
           <View style={styles.shopsList}>
             {shopsList.map((shop, index) => (
               <View key={shop.id}>
-                <TouchableOpacity style={styles.shopItem}>
+            <TouchableOpacity style={styles.shopItem} onPress={() => navigation.navigate('ShopDetailsScreen')}>
                   
                   {/* Logo */}
                   <View style={[styles.shopLogo, {backgroundColor: shop.logoBg}]}>
@@ -309,20 +316,20 @@ export default function ShopsScreen() {
 
         {/* Shops Sub-nav */}
         <View style={styles.shopsSubNav}>
-          <TouchableOpacity style={styles.subNavItem}>
+          <TouchableOpacity style={styles.subNavItem} onPress={() => setActiveSubNav('shops')}>
             <Ionicons name="storefront-outline" size={20} color="#1A2840" />
             <Text style={styles.subNavItemTextActive}>Mes shops</Text>
             <View style={styles.activeLine} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subNavItem}>
+          <TouchableOpacity style={styles.subNavItem} onPress={() => setActiveSubNav('new')}>
             <Ionicons name="business-outline" size={20} color="#94A3B8" />
             <Text style={styles.subNavItemText}>Nouveaux shops</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subNavItem}>
+          <TouchableOpacity style={styles.subNavItem} onPress={() => setActiveSubNav('categories')}>
             <Ionicons name="grid-outline" size={20} color="#94A3B8" />
             <Text style={styles.subNavItemText}>Catégories</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.subNavItem}>
+          <TouchableOpacity style={styles.subNavItem} onPress={() => navigation.navigate('TransactionHistoryScreen')}>
             <Ionicons name="time-outline" size={20} color="#94A3B8" />
             <Text style={styles.subNavItemText}>Activité</Text>
           </TouchableOpacity>

@@ -34,7 +34,7 @@ export default function PinCodeScreen() {
     setTimeout(() => {
       setIsLoading(false);
       alert('Code PIN créé avec succès !');
-      // In prod: navigation.navigate('SuccessScreen')
+      navigation.navigate('SuccessScreen');
     }, 1500);
   };
 
@@ -51,8 +51,8 @@ export default function PinCodeScreen() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <HeaderBackButton onPress={() => alert('Retour')} />
-            <TouchableOpacity onPress={() => alert('Aller à la connexion')}>
+            <HeaderBackButton onPress={() => navigation.goBack()} />
+            <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
               <Text style={styles.loginText}>
                 Déjà un compte ? <Text style={styles.loginLink}>Se connecter</Text>
               </Text>
@@ -106,7 +106,7 @@ export default function PinCodeScreen() {
           <View style={styles.buttonRow}>
             <TouchableOpacity 
               style={[styles.actionButton, styles.previousButton]}
-              onPress={() => alert('Précédent')}
+              onPress={() => navigation.goBack()}
             >
               <Text style={styles.previousButtonText}>PRÉCÉDENT</Text>
             </TouchableOpacity>

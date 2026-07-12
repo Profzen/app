@@ -3,6 +3,7 @@ import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, FlatList, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
+import CryptoIcon from '../components/CryptoIcon';
 
 const { width } = Dimensions.get('window');
 
@@ -23,10 +24,7 @@ export default function AssetListScreen() {
   const renderAssetRow = ({ item }) => (
     <View style={styles.assetRow}>
       <View style={styles.assetIconContainer}>
-        {/* Placeholder for real crypto icons, using Ionicons for now */}
-        <View style={[styles.cryptoIcon, { backgroundColor: item.iconColor }]}>
-          <Ionicons name={item.icon} size={20} color="#FFFFFF" />
-        </View>
+        <CryptoIcon symbol={item.symbol} size={40} />
       </View>
       
       <View style={styles.assetNameContainer}>
@@ -99,7 +97,7 @@ export default function AssetListScreen() {
                 </TouchableOpacity>
               </View>
               <View style={styles.walletActionsTop}>
-                <TouchableOpacity style={styles.topUpButton}>
+          <TouchableOpacity style={styles.topUpButton} onPress={() => navigation.navigate('TopUpWalletScreen')}>
                   <Ionicons name="add" size={14} color="#1A2840" />
                   <Text style={styles.topUpText}>Recharger</Text>
                 </TouchableOpacity>
@@ -145,25 +143,25 @@ export default function AssetListScreen() {
 
             {/* Bottom Actions */}
             <View style={styles.walletBottomActions}>
-              <View style={styles.actionItem}>
+              <TouchableOpacity style={styles.actionItem} onPress={() => navigation.navigate('SendMoneyScreen')}>
                 <Ionicons name="paper-plane-outline" size={20} color="#FFFFFF" />
                 <Text style={styles.actionLabel}>Envoyer</Text>
-              </View>
+              </TouchableOpacity>
               <View style={styles.actionSeparator} />
-              <View style={styles.actionItem}>
+              <TouchableOpacity style={styles.actionItem} onPress={() => navigation.navigate('ReceiveFundsV2Screen')}>
                 <Ionicons name="arrow-down-outline" size={20} color="#FFFFFF" />
                 <Text style={styles.actionLabel}>Recevoir</Text>
-              </View>
+              </TouchableOpacity>
               <View style={styles.actionSeparator} />
-              <View style={styles.actionItem}>
+              <TouchableOpacity style={styles.actionItem} onPress={() => navigation.navigate('TransactionHistoryScreen')}>
                 <Ionicons name="time-outline" size={20} color="#FFFFFF" />
                 <Text style={styles.actionLabel}>Historique</Text>
-              </View>
+              </TouchableOpacity>
               <View style={styles.actionSeparator} />
-              <View style={styles.actionItem}>
+              <TouchableOpacity style={styles.actionItem} onPress={() => navigation.navigate('WithdrawFundsScreen')}>
                 <Ionicons name="card-outline" size={20} color="#FFFFFF" />
                 <Text style={styles.actionLabel}>Cash-out</Text>
-              </View>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -199,26 +197,9 @@ export default function AssetListScreen() {
             ))}
           </View>
 
-          {/* Invite Banner Footer */}
-          <View style={styles.inviteBanner}>
-            <View style={styles.inviteContent}>
-              <Text style={styles.inviteTitle}>Invitez vos amis{'\n'}et gagnez <Text style={styles.inviteTitleHighlight}>$5 en DZY</Text></Text>
-              <Text style={styles.inviteSubtitle}>Envoyez de l'argent, achetez,{'\n'}payez des factures et gagnez des récompenses.</Text>
-              <TouchableOpacity style={styles.inviteButton}>
-                <Text style={styles.inviteButtonText}>Inviter maintenant</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.inviteGraphic}>
-              <View style={styles.phonePlaceholder}>
-                <View style={styles.miniCoin}>
-                  <Text style={styles.miniCoinText}>DZY</Text>
-                </View>
-              </View>
-              <TouchableOpacity style={styles.closeBannerButton}>
-                <Ionicons name="close" size={16} color="#FFFFFF" />
-              </TouchableOpacity>
-            </View>
-          </View>
+          <TouchableOpacity onPress={() => navigation.navigate('TopUpWalletScreen')} activeOpacity={0.9}>
+            <Image source={require('../../ldci.png')} style={styles.ldciBanner} resizeMode="contain" />
+          </TouchableOpacity>
 
           <View style={{ height: 40 }} />
         </ScrollView>
@@ -240,6 +221,12 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+  },
+  ldciBanner: {
+    width: '100%',
+    height: 220,
+    marginTop: 18,
+    alignSelf: 'center',
   },
   header: {
     flexDirection: 'row',

@@ -22,7 +22,7 @@ export default function SuccessScreen({
       setIsLoading(true);
       setTimeout(() => {
         setIsLoading(false);
-        alert('Redirection vers la page de connexion...');
+        navigation.navigate('HomeScreen');
       }, 1000);
     }
   };

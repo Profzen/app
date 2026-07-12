@@ -155,7 +155,7 @@ export default function CashRegisterScreen() {
             </View>
 
             {/* Action Button */}
-            <TouchableOpacity style={styles.btnAction}>
+              <TouchableOpacity style={styles.btnAction} onPress={() => navigation.navigate('CashierScanScreen')}>
               <Ionicons name="qr-code" size={24} color="#1A2840" style={{marginRight: 8}} />
               <Text style={styles.btnActionText}>Afficher le QR Code</Text>
             </TouchableOpacity>
@@ -194,7 +194,7 @@ export default function CashRegisterScreen() {
 
               {/* Actions */}
               <View style={styles.billetsActions}>
-                <TouchableOpacity style={styles.btnCamera}>
+              <TouchableOpacity style={styles.btnCamera} onPress={() => navigation.navigate('CashierScanScreen')}>
                   <Ionicons name="camera-outline" size={24} color="#1A2840" style={{marginRight: 8}} />
                   <Text style={styles.btnCameraText}>Autoriser la caméra</Text>
                 </TouchableOpacity>

@@ -55,28 +55,28 @@ export default function ContactProfileScreen() {
 
           {/* Quick Actions */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickActionsScroll}>
-            <TouchableOpacity style={styles.quickActionCard}>
+            <TouchableOpacity style={styles.quickActionCard} onPress={() => navigation.navigate('SendMoneyScreen')}>
               <View style={[styles.quickActionIconContainer, {backgroundColor: '#ECFDF5'}]}>
                 <Ionicons name="paper-plane-outline" size={24} color="#10B981" />
               </View>
               <Text style={styles.quickActionTitle}>Envoyer{'\n'}des fonds</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickActionCard}>
+            <TouchableOpacity style={styles.quickActionCard} onPress={() => navigation.navigate('MobileRechargeScreen')}>
               <View style={[styles.quickActionIconContainer, {backgroundColor: '#FFFBEB'}]}>
                 <Ionicons name="download-outline" size={24} color="#F59E0B" />
               </View>
               <Text style={styles.quickActionTitle}>Demander{'\n'}des fonds</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickActionCard}>
+            <TouchableOpacity style={styles.quickActionCard} onPress={() => navigation.navigate('PayBillsScreen')}>
               <View style={[styles.quickActionIconContainer, {backgroundColor: '#EFF6FF'}]}>
                 <Ionicons name="bag-handle-outline" size={24} color="#3B82F6" />
               </View>
               <Text style={styles.quickActionTitle}>Payer &{'\n'}acheter{'\n'}l'essentiel</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickActionCard}>
+            <TouchableOpacity style={styles.quickActionCard} onPress={() => navigation.navigate('ContactHistoryScreen')}>
               <View style={[styles.quickActionIconContainer, {backgroundColor: '#F5F3FF'}]}>
                 <Ionicons name="person-add-outline" size={24} color="#8B5CF6" />
               </View>
@@ -189,7 +189,7 @@ export default function ContactProfileScreen() {
 
           <View style={styles.activityList}>
             {/* Activity 1 */}
-            <TouchableOpacity style={styles.activityItem}>
+            <TouchableOpacity style={styles.activityItem} onPress={() => navigation.navigate('ContactHistoryScreen')}>
               <View style={[styles.activityIconCircle, {backgroundColor: '#ECFDF5'}]}>
                 <Ionicons name="arrow-up-outline" size={18} color="#10B981" style={{transform: [{rotate: '45deg'}]}} />
               </View>
@@ -206,7 +206,7 @@ export default function ContactProfileScreen() {
             <View style={styles.divider} />
 
             {/* Activity 2 */}
-            <TouchableOpacity style={styles.activityItem}>
+            <TouchableOpacity style={styles.activityItem} onPress={() => navigation.navigate('ContactHistoryScreen')}>
               <View style={[styles.activityIconCircle, {backgroundColor: '#FFFBEB'}]}>
                 <Ionicons name="cash-outline" size={18} color="#F59E0B" />
               </View>
@@ -222,7 +222,7 @@ export default function ContactProfileScreen() {
           </View>
 
           {/* Save Button */}
-          <TouchableOpacity style={styles.btnSave}>
+          <TouchableOpacity style={styles.btnSave} onPress={() => navigation.goBack()}>
             <Ionicons name="save-outline" size={20} color="#FFFFFF" style={{marginRight: 8}} />
             <Text style={styles.btnSaveText}>Save</Text>
           </TouchableOpacity>

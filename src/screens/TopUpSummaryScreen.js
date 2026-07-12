@@ -162,7 +162,7 @@ export default function TopUpSummaryScreen() {
         </View>
 
         {/* Confirm Button */}
-        <TouchableOpacity style={styles.btnConfirm}>
+        <TouchableOpacity style={styles.btnConfirm} onPress={() => navigation.navigate('TopUpPaymentScreen')}>
           <Ionicons name="lock-closed-outline" size={20} color="#1A2840" />
           <Text style={styles.btnConfirmText}>Confirmer le paiement</Text>
           <Ionicons name="arrow-forward" size={20} color="#1A2840" />

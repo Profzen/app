@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import CryptoIcon from '../components/CryptoIcon';
 
 export default function SwapTokensScreen() {
   const [fromChain, setFromChain] = useState('Polygon');
@@ -88,43 +89,35 @@ export default function SwapTokensScreen() {
           <View style={styles.quickSelectionRow}>
             <TouchableOpacity style={styles.quickTokenCard}>
               <View style={[styles.tokenLogoWrapper, {borderColor: '#FFB800'}]}>
-                <Text style={{color: '#FFB800', fontSize: 16, fontWeight: 'bold'}}>D</Text>
+                <CryptoIcon symbol="DZY" size={28} />
               </View>
               <Text style={styles.quickTokenName}>DZY</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.quickTokenCard}>
               <View style={[styles.tokenLogoWrapper, {borderColor: '#3B82F6'}]}>
-                <View style={[styles.usdcLogo, {width: 28, height: 28, borderRadius: 14}]}>
-                  <Text style={{color: '#FFF', fontSize: 14, fontWeight: 'bold'}}>$</Text>
-                </View>
+                <CryptoIcon symbol="USDC" size={28} />
               </View>
               <Text style={styles.quickTokenName}>USDC</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.quickTokenCard}>
               <View style={[styles.tokenLogoWrapper, {borderColor: '#10B981'}]}>
-                <View style={[styles.usdtLogo, {width: 28, height: 28, borderRadius: 14}]}>
-                  <Text style={{color: '#FFF', fontSize: 14, fontWeight: 'bold'}}>₮</Text>
-                </View>
+                <CryptoIcon symbol="USDT" size={28} />
               </View>
               <Text style={styles.quickTokenName}>USDT</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.quickTokenCard}>
               <View style={[styles.tokenLogoWrapper, {borderColor: '#8B5CF6'}]}>
-                <View style={[styles.polygonLogo, {width: 28, height: 28, borderRadius: 14}]}>
-                  <Text style={{color: '#FFF', fontSize: 14, fontWeight: 'bold'}}>∞</Text>
-                </View>
+                <CryptoIcon symbol="POL" size={28} />
               </View>
               <Text style={styles.quickTokenName}>POL</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.quickTokenCard}>
               <View style={[styles.tokenLogoWrapper, {borderColor: '#F59E0B'}]}>
-                <View style={[styles.wbtcLogo, {width: 28, height: 28, borderRadius: 14}]}>
-                  <Text style={{color: '#FFF', fontSize: 14, fontWeight: 'bold'}}>₿</Text>
-                </View>
+                <CryptoIcon symbol="WBTC" size={28} />
               </View>
               <Text style={styles.quickTokenName}>WBTC</Text>
             </TouchableOpacity>
@@ -147,9 +140,7 @@ export default function SwapTokensScreen() {
               </View>
               <View style={styles.inputRow}>
                 <TouchableOpacity style={styles.tokenSelector}>
-                  <View style={styles.usdcLogo}>
-                    <Text style={{color: '#FFF', fontSize: 12, fontWeight: 'bold'}}>$</Text>
-                  </View>
+                  <CryptoIcon symbol="USDC" size={24} />
                   <Text style={styles.selectedTokenName}>USDC</Text>
                   <Ionicons name="chevron-down" size={16} color="#1A2840" />
                 </TouchableOpacity>
@@ -182,9 +173,7 @@ export default function SwapTokensScreen() {
               </View>
               <View style={styles.inputRow}>
                 <TouchableOpacity style={styles.tokenSelector}>
-                  <View style={styles.usdtLogo}>
-                    <Text style={{color: '#FFF', fontSize: 12, fontWeight: 'bold'}}>₮</Text>
-                  </View>
+                  <CryptoIcon symbol="USDT" size={24} />
                   <Text style={styles.selectedTokenName}>USDT</Text>
                   <Ionicons name="chevron-down" size={16} color="#1A2840" />
                 </TouchableOpacity>
@@ -226,7 +215,7 @@ export default function SwapTokensScreen() {
           </View>
 
           {/* Action Button */}
-          <TouchableOpacity style={styles.btnAction}>
+          <TouchableOpacity style={styles.btnAction} onPress={() => navigation.navigate('SuccessScreen')}>
             <Ionicons name="flash" size={20} color="#FFB800" style={{marginRight: 8}} />
             <Text style={styles.btnActionText}>ÉCHANGEZ DES JETONS MAINTENANT</Text>
           </TouchableOpacity>

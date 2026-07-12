@@ -173,7 +173,7 @@ export default function PayBillsScreen() {
 
       {/* Bottom Sticky CTA */}
       <View style={styles.bottomCTA}>
-        <TouchableOpacity style={styles.ctaButton} onPress={() => alert('Continuer')}>
+        <TouchableOpacity style={styles.ctaButton} onPress={() => navigation.navigate('ChooseServiceScreen')}>
           <Text style={styles.ctaButtonText}>Continuer</Text>
           <Ionicons name="arrow-forward" size={20} color="#1A2840" />
         </TouchableOpacity>

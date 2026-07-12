@@ -207,7 +207,7 @@ export default function ReviewPaymentScreen() {
       <View style={styles.footer}>
         <DizzitButton 
           title="Payer & envoyer"
-          onPress={() => {}}
+          onPress={() => navigation.navigate('PaymentInProgressScreen')}
           icon={
             <View style={styles.buttonIconLeft}>
               <Ionicons name="lock-closed-outline" size={18} color="#1A2840" />

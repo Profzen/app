@@ -25,7 +25,7 @@ export default function ResetPasswordFinalScreen() {
     setTimeout(() => {
       setIsLoading(false);
       alert('Votre mot de passe a été réinitialisé avec succès !');
-      // In prod: navigation.navigate('LoginScreen')
+      navigation.navigate('LoginScreen');
     }, 1500);
   };
 
@@ -109,7 +109,7 @@ export default function ResetPasswordFinalScreen() {
           <View style={styles.buttonsContainer}>
             <TouchableOpacity 
               style={[styles.button, styles.buttonPrevious]}
-              onPress={() => alert('Précédent')}
+              onPress={() => navigation.goBack()}
             >
               <Text style={styles.buttonPreviousText}>PRÉCÉDENT</Text>
             </TouchableOpacity>

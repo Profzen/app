@@ -213,14 +213,14 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
 
           {/* Action Buttons */}
           <View style={styles.actionButtonsContainer}>
-            <TouchableOpacity style={styles.btnOutline}>
+            <TouchableOpacity style={styles.btnOutline} onPress={() => navigation.navigate('TransactionHistoryScreen')}>
               <Ionicons name="time-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
               <Text style={styles.btnOutlineText}>Voir l'historique</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.btnPrimary} onPress={() => navigation.navigate('DashboardScreen')}>
+            <TouchableOpacity style={styles.btnPrimary} onPress={() => navigation.navigate('HomeScreen')}>
               <Ionicons name="refresh" size={20} color="#1A2840" style={{marginRight: 8}} />
-              <Text style={styles.btnPrimaryText}>Effectuer un autre retrait</Text>
+              <Text style={styles.btnPrimaryText}>Retour à l'accueil</Text>
             </TouchableOpacity>
           </View>
 

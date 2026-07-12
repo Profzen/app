@@ -66,7 +66,7 @@ export default function HomeScreen() {
           {/* To-do list */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>To-do list</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('AssetsListScreen')}>
+            <TouchableOpacity onPress={() => navigation.navigate('TodoListScreen')}>
               <Text style={styles.viewAllText}>View all</Text>
             </TouchableOpacity>
           </View>
@@ -117,7 +117,7 @@ export default function HomeScreen() {
           
           <View style={styles.quickActionsGrid}>
             {QUICK_ACTIONS.map(action => (
-              <TouchableOpacity key={action.id} style={styles.actionGridItem} onPress={() => { if(action.id==='1' || action.id==='3' || action.id==='6' || action.id==='7') navigation.navigate('ShopsScreen'); else if(action.id==='2') navigation.navigate('CashierScanScreen'); else if(action.id==='4') navigation.navigate('SendMoneyScreen'); else if(action.id==='5') navigation.navigate('TopUpScreen'); else if(action.id==='8') navigation.navigate('WithdrawFundsScreen'); }}>
+              <TouchableOpacity key={action.id} style={styles.actionGridItem} onPress={() => { if(action.id==='1' || action.id==='3' || action.id==='6' || action.id==='7') navigation.navigate('ShopsScreen'); else if(action.id==='2') navigation.navigate('ChooseServiceScreen'); else if(action.id==='4') navigation.navigate('SendMoneyScreen'); else if(action.id==='5') navigation.navigate('TopUpScreen'); else if(action.id==='8') navigation.navigate('WithdrawFundsScreen'); }}>
                 <View style={[styles.actionGridIcon, { backgroundColor: action.bgColor }]}>
                   <Ionicons name={action.icon} size={24} color={action.color} />
                 </View>
