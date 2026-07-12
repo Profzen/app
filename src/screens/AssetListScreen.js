@@ -86,8 +86,21 @@ export default function AssetListScreen() {
 
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           
-          {/* Custom Asset Wallet Card */}
-          <View style={styles.walletCard}>
+          {/* DZYwallet promotional banner: copy on the left, supplied wallet visual on the right */}
+          <TouchableOpacity style={styles.ldciHeroButton} onPress={() => navigation.navigate('TopUpWalletScreen')} activeOpacity={0.92}>
+            <View style={styles.ldciCopy}>
+              <Text style={styles.ldciBrand}><Text style={styles.ldciBrandAccent}>DZY</Text>wallet</Text>
+              <Text style={styles.ldciHeadline}>Tout votre argent,{`\n`}toujours <Text style={styles.ldciHighlight}>avec vous.</Text></Text>
+              <Text style={styles.ldciDescription}>Sécurisé sur blockchains, Sans frontière ni Intermédiaire</Text>
+              <Text style={styles.ldciDescription}>A Non-Custodial, Multi-chain Stablecoins & Crypto Wallet</Text>
+              <Text style={styles.ldciNetworks}>Ethereum  <Text style={styles.ldciDot}>•</Text>  Polygon  <Text style={styles.ldciDot}>•</Text>  Base  <Text style={styles.ldciDot}>•</Text>  BSC  <Text style={styles.ldciDot}>•</Text>  Solana</Text>
+            </View>
+            <Image source={require('../../ldci.png')} style={styles.ldciVisual} resizeMode="contain" pointerEvents="none" />
+            <View style={styles.ldciArrow}><Ionicons name="chevron-forward" size={20} color="#FFFFFF" /></View>
+          </TouchableOpacity>
+
+          {/* Legacy wallet card kept out of the visual flow */}
+          {false && <View style={styles.walletCard}>
             {/* Top row: Title, eye, Recharger */}
             <View style={styles.walletHeader}>
               <View style={styles.walletTitleRow}>
@@ -163,7 +176,7 @@ export default function AssetListScreen() {
                 <Text style={styles.actionLabel}>Cash-out</Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </View>}
 
           {/* Search & Sort */}
           <View style={styles.searchRow}>
@@ -197,10 +210,6 @@ export default function AssetListScreen() {
             ))}
           </View>
 
-          <TouchableOpacity onPress={() => navigation.navigate('TopUpWalletScreen')} activeOpacity={0.9}>
-            <Image source={require('../../ldci.png')} style={styles.ldciBanner} resizeMode="contain" />
-          </TouchableOpacity>
-
           <View style={{ height: 40 }} />
         </ScrollView>
         
@@ -228,6 +237,25 @@ const styles = StyleSheet.create({
     marginTop: 18,
     alignSelf: 'center',
   },
+  ldciHeroButton: {
+    width: '100%',
+    height: 230,
+    backgroundColor: '#03163E',
+    borderRadius: 22,
+    overflow: 'hidden',
+    marginBottom: 12,
+    position: 'relative',
+  },
+  ldciCopy: { width: '55%', height: '100%', paddingLeft: 18, paddingTop: 17, zIndex: 6 },
+  ldciBrand: { fontFamily: 'Inter_700Bold', fontSize: 16, color: '#FFFFFF', marginBottom: 12 },
+  ldciBrandAccent: { color: '#FFC000' },
+  ldciHeadline: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 19, lineHeight: 24, color: '#FFFFFF', marginBottom: 12 },
+  ldciHighlight: { color: '#FFC000' },
+  ldciDescription: { width: 215, fontFamily: 'Inter_400Regular', fontSize: 7.5, lineHeight: 13, color: '#FFFFFF', marginBottom: 2 },
+  ldciNetworks: { width: 220, fontFamily: 'Inter_500Medium', fontSize: 7.5, color: '#FFFFFF', marginTop: 7 },
+  ldciDot: { color: '#FFC000' },
+  ldciVisual: { position: 'absolute', width: 180, height: 180, right: 7, top: 36, zIndex: 5 },
+  ldciArrow: { position: 'absolute', right: 11, top: 11, width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.13)', alignItems: 'center', justifyContent: 'center', zIndex: 7 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

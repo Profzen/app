@@ -333,4 +333,6 @@ La `BottomNavBar` a été globalement mise à jour pour s'assurer que ses icône
 - Le bouton View all de la To-do list sur Home ouvre `TodoListScreen`.
 - Tests Chromium : quatre actions Asset List validées, menu central validé, création/sauvegarde To-do validée, zéro erreur d'exécution.
 
+- Ajustement visuel Asset List : le hero DZYwallet est désormais composé dans le code avec le texte à gauche et `ldci.png` recadrée uniquement dans la partie droite du rectangle bleu, conformément à la référence fournie.
+
 ---
