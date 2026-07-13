@@ -87,7 +87,13 @@ export default function AssetListScreen() {
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           
           {/* DZYwallet promotional banner: copy on the left, supplied wallet visual on the right */}
-          <TouchableOpacity style={styles.ldciHeroButton} onPress={() => navigation.navigate('TopUpWalletScreen')} activeOpacity={0.92}>
+          <TouchableOpacity
+            style={styles.ldciHeroButton}
+            onPress={() => navigation.navigate('TopUpWalletScreen')}
+            activeOpacity={0.92}
+            accessibilityRole="button"
+            accessibilityLabel="Recharger le portefeuille"
+          >
             <View style={styles.ldciCopy}>
               <Text style={styles.ldciBrand}><Text style={styles.ldciBrandAccent}>DZY</Text>wallet</Text>
               <Text style={styles.ldciHeadline}>Tout votre argent,{`\n`}toujours <Text style={styles.ldciHighlight}>avec vous.</Text></Text>

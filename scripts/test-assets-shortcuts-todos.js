@@ -1,14 +1,11 @@
 const { chromium } = require('playwright');
-const base='http://127.0.0.1:8083';
+const base = process.env.E2E_BASE_URL || 'http://127.0.0.1:8081';
 async function login(page){await page.goto(base,{waitUntil:'domcontentloaded'});await page.locator('input').nth(0).fill('demo@dizzitup.com');await page.locator('input').nth(1).fill('Demo123!');await page.getByText('Se connecter',{exact:true}).click();await page.getByText('Quick actions',{exact:true}).last().waitFor();}
 async function assetList(page){await login(page);await page.getByText('More',{exact:true}).last().click();await page.getByText('Voir tout',{exact:false}).first().click();await page.getByText('Liste des actifs',{exact:true}).waitFor();}
 (async()=>{const browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});const page=await browser.newPage({viewport:{width:430,height:932}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await assetList(page); if(!(await page.locator('img[src*="ldci"]').count()))throw new Error('ldci.png absent de la liste des actifs');
-  await page.getByText('Envoyer',{exact:true}).filter({visible:true}).last().click();await page.getByText('Quel montant souhaitez-vous envoyer ?', {exact:true}).waitFor();console.log('ASSETS -> SEND: OK');
-  await assetList(page);await page.getByText('Recevoir',{exact:true}).filter({visible:true}).last().click();await page.getByText('Recevoir des fonds',{exact:true}).waitFor();console.log('ASSETS -> RECEIVE: OK');
-  await assetList(page);await page.getByText('Historique',{exact:true}).filter({visible:true}).last().click();await page.getByText('Historique des Transactions Pro',{exact:true}).waitFor();console.log('ASSETS -> HISTORY: OK');
-  await assetList(page);await page.getByText('Cash-out',{exact:true}).filter({visible:true}).last().click();await page.getByText('Choisissez le jeton',{exact:true}).waitFor();console.log('ASSETS -> CASH-OUT: OK');
+  await assetList(page);if(!(await page.locator('img[src*="ldci"]').count()))throw new Error('ldci.png absent de la liste des actifs');
+  await page.getByLabel('Recharger le portefeuille').click();await page.getByText('Choisissez votre mode de paiement',{exact:true}).waitFor();console.log('ASSETS -> WALLET TOP-UP: OK');
   await login(page);await page.getByLabel('Ouvrir les actions rapides').click();await page.getByText('Pay bills & Send essentials',{exact:true}).waitFor();await page.getByText('Top-up DZYwallet',{exact:true}).filter({visible:true}).last().click();await page.getByText('Choisissez votre mode de paiement',{exact:true}).waitFor();console.log('CENTER SHORTCUT MENU: OK');
   await login(page);await page.getByText('View all',{exact:true}).click();await page.getByText('Ma To-do list',{exact:true}).waitFor();await page.getByLabel('Créer une tâche').click();await page.locator('input[placeholder="Que souhaitez-vous faire ?"]').fill('Préparer la présentation client');await page.getByText('Sauvegarder',{exact:true}).click();await page.getByText('Préparer la présentation client',{exact:true}).waitFor();await page.getByText('Tâche sauvegardée',{exact:true}).waitFor();console.log('TODO VIEW/CREATE/SAVE: OK');
   console.log(`RUNTIME ERRORS: ${errors.length}`);errors.forEach(e=>console.log(e));await browser.close();if(errors.length)process.exitCode=1;
-})().catch(e=>{console.error(e);process.exitCode=1});
+})().catch(e=>{console.error(e);process.exit(1)});

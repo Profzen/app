@@ -93,7 +93,7 @@ export default function DashboardScreen() {
             
             <View style={styles.verticalDivider} />
             
-            <TouchableOpacity style={styles.actionItem} onPress={() => navigation.navigate('ReceiveFundsScreen')}>
+            <TouchableOpacity style={styles.actionItem} onPress={() => navigation.navigate('ReceiveFundsV2Screen')}>
               <View style={styles.actionIconWrapper}>
                 <Ionicons name="download-outline" size={24} color="#1A2840" />
               </View>

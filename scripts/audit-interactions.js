@@ -78,10 +78,10 @@ const invalid = navigations.filter(({ target }) => target !== '<dynamic>' && !de
 console.log(`Routes declared: ${declaredRoutes.size}`);
 console.log(`Navigation calls: ${navigations.length}`);
 console.log(`Controls with handlers: ${handledControls.length}`);
-console.log(`Controls without handlers: ${inertControls.length}`);
+console.log(`Controls without direct handlers (review candidates, not confirmed defects): ${inertControls.length}`);
 console.log('\nINVALID NAVIGATION TARGETS');
 invalid.forEach((item) => console.log(`${item.file}:${item.line} ${item.method}('${item.target}')`));
-console.log('\nCONTROLS WITHOUT HANDLERS');
+console.log('\nCONTROLS WITHOUT DIRECT HANDLERS (MANUAL REVIEW REQUIRED)');
 inertControls.forEach((item) => console.log(item));
 console.log('\nALL NAVIGATION CALLS');
 navigations.forEach((item) => console.log(`${item.file}:${item.line} ${item.method}('${item.target}')`));

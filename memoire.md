@@ -336,3 +336,71 @@ La `BottomNavBar` a été globalement mise à jour pour s'assurer que ses icône
 - Ajustement visuel Asset List : le hero DZYwallet est désormais composé dans le code avec le texte à gauche et `ldci.png` recadrée uniquement dans la partie droite du rectangle bleu, conformément à la référence fournie.
 
 ---
+
+## Passation consolidée et état réel — 13 juillet 2026
+
+### Règle permanente de continuité
+
+- `memoire.md` est le journal de bord et la source de contexte prioritaire du projet.
+- Au début de toute nouvelle conversation, lire les instructions du dépôt, tous les fichiers utiles à la tâche et l’intégralité de `memoire.md` avant d’intervenir.
+- Après chaque évolution significative (écran, navigation, comportement, test, décision de design, dépendance, correction ou changement de branche), enrichir immédiatement ce fichier avant le commit.
+- Une entrée doit préciser au minimum : ce qui a changé, les fichiers ou parcours concernés, la décision fonctionnelle prise, les tests exécutés, leur résultat et les éventuels points restant à surveiller.
+- Si une information récente contredit une ancienne section, la plus récente fait foi. Ne pas supprimer l’historique utile : documenter explicitement le remplacement de la décision.
+- Objectif : permettre une reprise complète dans une nouvelle conversation par la seule lecture du dépôt et de ce fichier, sans dépendre de l’historique du chat.
+
+### Référentiel technique actuel
+
+- Dépôt GitHub : `https://github.com/Profzen/app.git`.
+- Branche de travail et de livraison actuelle : `develop`.
+- Stack : Expo SDK 57, React Native 0.86, React 19.2.3 et React Native Web 0.21.x.
+- Avant toute modification de code Expo/React Native, consulter la documentation versionnée Expo 57 : `https://docs.expo.dev/versions/v57.0.0/`.
+- Navigation principale déclarée dans `src/navigation/AppNavigator.js` : 60 routes au dernier audit.
+- Les maquettes sont une simulation client interactive : les traitements nécessitant normalement un backend peuvent utiliser une progression simulée, mais chaque parcours présenté doit atteindre un écran final cohérent.
+
+### Décisions fonctionnelles et visuelles actuellement validées
+
+- `ReceiveFundsV2Screen` est la version de référence du parcours « Recevoir des fonds ». Les accès de `WalletCard`, du menu central et du tableau de bord doivent tous ouvrir cette V2.
+- Les deux routes `ReceiveFundsScreen` et `ReceiveFundsV2Screen` restent enregistrées pour préserver la compatibilité avec les anciens écrans, mais aucune nouvelle navigation ne doit cibler l’ancienne version sans décision explicite.
+- Sur `AssetListScreen`, la grande ancienne carte de solde et ses quatre actions ont été remplacées par le hero promotionnel validé : rectangle bleu, textes à gauche, visuel `ldci.png` réduit et intégré à droite, sans contour.
+- Le hero de la liste des actifs est lui-même interactif et ouvre `TopUpWalletScreen`. Il possède le libellé d’accessibilité « Recharger le portefeuille ».
+- Les anciens tests qui recherchaient Envoyer/Recevoir/Historique/Cash-out dans cette carte ne représentent plus la maquette finale. Ces flux restent accessibles depuis les autres entrées de l’application et sont couverts par les tests principaux.
+- La branche Carte bancaire du Top-up doit rester distincte de Mobile Money : carte vers les écrans `TopUpWallet*`, Mobile Money vers `TopUpDetailsScreen` puis son parcours dédié.
+- DZY doit utiliser le logo circulaire DizzitUp. Les autres cryptomonnaies doivent utiliser leurs logos officiels via `CryptoIcon`.
+- Les notifications fonctionnelles doivent utiliser `AppToast` et le design system de l’application, jamais une alerte navigateur native pour la simulation client.
+
+### Derniers correctifs issus de la revue d’un collègue
+
+- Le rapport externe confirmait que les flux principaux passaient sans erreur JavaScript, mais deux tests échouaient avec `ERR_CONNECTION_REFUSED` sur les ports 8083 et 8084.
+- Diagnostic : ce n’était pas un défaut de l’application ; les scripts utilisaient des ports locaux codés en dur sans serveur Expo actif sur ces ports.
+- `scripts/test-assets-shortcuts-todos.js` et `scripts/test-shortcut-todo.js` utilisent maintenant `E2E_BASE_URL` lorsqu’elle est fournie, avec `http://127.0.0.1:8081` comme valeur par défaut.
+- `DashboardScreen` ouvre désormais `ReceiveFundsV2Screen` au clic sur « Recevoir », ce qui uniformise le parcours avec `WalletCard` et `BottomNavBar`.
+- `scripts/audit-interactions.js` ne présente plus les éléments détectés comme des défauts confirmés. Le libellé indique clairement « controls without direct handlers » et impose une revue manuelle.
+- Le nombre 257 ne signifie donc pas « 257 boutons cassés » : il comprend des éléments décoratifs, désactivés, anciens, non accessibles ou recevant potentiellement leur comportement par composition. Il reste toutefois utile comme liste de candidats pour une revue écran par écran.
+- Dernier audit : 60 routes, 103 appels de navigation et aucune cible de navigation invalide.
+
+### Validation la plus récente
+
+- Export Expo Web réussi après les derniers changements : 732 modules assemblés sans erreur.
+- `scripts/e2e-smoke.js` : connexion vers accueil, envoi d’argent, retrait et recharge validés ; 0 erreur JavaScript.
+- `scripts/test-assets-shortcuts-todos.js` : liste des actifs vers recharge portefeuille, menu central et création/sauvegarde d’une tâche validés ; 0 erreur JavaScript.
+- `scripts/test-shortcut-todo.js` : menu central et création/sauvegarde d’une tâche validés ; 0 erreur JavaScript.
+- Audit de navigation : aucune cible invalide.
+- `git diff --check` ne signale aucune erreur de contenu ; les avertissements LF/CRLF sous Windows sont uniquement liés à la normalisation des fins de ligne Git.
+
+### Utilisation des tests
+
+- Démarrer Expo Web sur le port attendu avant les tests : `npx expo start --web --port 8081`.
+- Valeur par défaut des scénarios corrigés : `http://127.0.0.1:8081`.
+- Pour utiliser un autre serveur : PowerShell `$env:E2E_BASE_URL='http://127.0.0.1:PORT'`, puis exécuter le script Node.
+- Tests de référence disponibles dans `scripts/` : `e2e-smoke.js`, `e2e-commerce.js`, `e2e-requested-fixes.js`, `test-topup-branches.js`, `test-assets-shortcuts-todos.js`, `test-shortcut-todo.js`, `test-contact-close.js`, `test-receive-qr.js` et `test-register-toast.js`.
+- `audit-interactions.js` est un audit statique indicatif. Un contrôle sans `onPress` direct doit être inspecté dans son contexte avant toute modification.
+
+### Priorités pour les prochaines interventions
+
+1. Préserver les parcours principaux déjà validés et relancer les scénarios concernés après chaque changement de navigation.
+2. Pour les contrôles sans gestionnaire, vérifier d’abord qu’ils sont visibles et accessibles dans la version réellement présentée au client.
+3. Ne pas inventer une destination pour une icône décorative ou un écran absent ; documenter le besoin ou utiliser un comportement cohérent seulement lorsque la cible fonctionnelle est certaine.
+4. Continuer la revue manuelle des actions secondaires visibles sur les écrans actifs, en priorité Dashboard, Contacts, Shops, Receive Funds V2, Swap et historique.
+5. Garder les scripts de test synchronisés avec la maquette courante : une évolution volontaire de l’interface doit entraîner l’actualisation du scénario correspondant.
+
+---
