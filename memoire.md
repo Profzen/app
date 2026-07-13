@@ -337,6 +337,14 @@ La `BottomNavBar` a été globalement mise à jour pour s'assurer que ses icône
 
 ---
 
+## Ajustement visuel Asset List — 13 juillet 2026
+
+- Le visuel `ldci.png` du hero DZYwallet a été décalé de 21 px vers la droite (`right: 7` vers `right: -14`) sans modifier sa taille.
+- Objectif : conserver le portefeuille dans la partie droite du rectangle bleu et dégager les textes de gauche afin d’éviter leur chevauchement avec l’illustration.
+- Aucun comportement ou parcours de navigation n’a été modifié par cet ajustement.
+
+---
+
 ## Passation consolidée et état réel — 13 juillet 2026
 
 ### Règle permanente de continuité

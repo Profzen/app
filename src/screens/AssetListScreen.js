@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   ldciDescription: { width: 215, fontFamily: 'Inter_400Regular', fontSize: 7.5, lineHeight: 13, color: '#FFFFFF', marginBottom: 2 },
   ldciNetworks: { width: 220, fontFamily: 'Inter_500Medium', fontSize: 7.5, color: '#FFFFFF', marginTop: 7 },
   ldciDot: { color: '#FFC000' },
-  ldciVisual: { position: 'absolute', width: 180, height: 180, right: 7, top: 36, zIndex: 5 },
+  ldciVisual: { position: 'absolute', width: 180, height: 180, right: -14, top: 36, zIndex: 5 },
   ldciArrow: { position: 'absolute', right: 11, top: 11, width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.13)', alignItems: 'center', justifyContent: 'center', zIndex: 7 },
   header: {
     flexDirection: 'row',
