@@ -1,11 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
+import AppSelect from '../components/AppSelect';
+import CryptoIcon from '../components/CryptoIcon';
+
+const countryOptions = [
+  { value: '+228', label: '🇹🇬  +228', subtitle: 'Togo' },
+  { value: '+221', label: '🇸🇳  +221', subtitle: 'Sénégal' },
+  { value: '+233', label: '🇬🇭  +233', subtitle: 'Ghana' },
+  { value: '+234', label: '🇳🇬  +234', subtitle: 'Nigeria' },
+];
+const operatorOptions = [
+  { value: 'mixx', label: 'Mixx by Yas', subtitle: 'Recommandé' },
+  { value: 'mtn', label: 'MTN Mobile Money', subtitle: 'Disponible' },
+  { value: 'moov', label: 'Moov Money', subtitle: 'Disponible' },
+  { value: 'airtel', label: 'Airtel Money', subtitle: 'Disponible' },
+];
+const tokenOptions = ['USDC', 'USDT', 'EURC', 'DZY'].map((value) => ({ value, label: value }));
 
 export default function TopUpDetailsScreen() {
   const navigation = useNavigation();
+  const [phone, setPhone] = useState('90 12 34 56');
+  const [countryCode, setCountryCode] = useState('+228');
+  const [operator, setOperator] = useState('mixx');
+  const [amount, setAmount] = useState('10');
+  const [token, setToken] = useState('USDC');
+  const formatPhone = (text) => setPhone(text.replace(/\D/g, '').slice(0, 12).replace(/(.{2})/g, '$1 ').trim());
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -77,19 +99,15 @@ export default function TopUpDetailsScreen() {
             </View>
             
             <View style={styles.inputContainer}>
-              <TouchableOpacity style={styles.countryCodeBtn}>
-                <Text style={styles.flagText}>🇹🇬</Text>
-                <Text style={styles.countryCodeText}>+228</Text>
-                <Ionicons name="chevron-down" size={16} color="#1A2840" />
-              </TouchableOpacity>
+              <AppSelect value={countryCode} options={countryOptions} onChange={setCountryCode} title="Choisir le pays" style={styles.countryInlineSelect} textStyle={styles.countryInlineText} />
               
               <View style={styles.verticalDivider} />
               
               <TextInput 
                 style={styles.input}
-                value="90 12 34 56"
+                value={phone}
+                onChangeText={formatPhone}
                 keyboardType="phone-pad"
-                editable={false}
               />
               
               <TouchableOpacity style={styles.contactBtn}>
@@ -107,21 +125,7 @@ export default function TopUpDetailsScreen() {
           <View style={styles.formGroup}>
             <Text style={styles.label}>OPÉRATEUR DÉTECTÉ</Text>
             
-            <TouchableOpacity style={styles.operatorDropdown}>
-              <View style={styles.operatorLeft}>
-                <View style={styles.operatorLogoMock}>
-                  <Text style={{color: '#FFF', fontSize: 12, fontWeight: 'bold'}}>mixx</Text>
-                </View>
-                <Text style={styles.operatorName}>Mixx by Yas</Text>
-              </View>
-              
-              <View style={styles.operatorRight}>
-                <View style={styles.recommendedBadge}>
-                  <Text style={styles.recommendedText}>Recommandé</Text>
-                </View>
-                <Ionicons name="chevron-down" size={20} color="#1A2840" />
-              </View>
-            </TouchableOpacity>
+            <AppSelect value={operator} options={operatorOptions} onChange={setOperator} title="Choisir l'opérateur" renderLeading={() => <View style={styles.operatorLogoMock}><Text style={{color: '#FFF', fontSize: 10, fontWeight: 'bold'}}>{operator}</Text></View>} />
           </View>
 
           {/* Form: Montant & Token */}
@@ -135,7 +139,8 @@ export default function TopUpDetailsScreen() {
               <View style={styles.amountInputContainer}>
                 <TextInput 
                   style={styles.amountInput}
-                  value="10"
+                  value={amount}
+                  onChangeText={(text) => setAmount(text.replace(/[^0-9.,]/g, '').replace(',', '.').slice(0, 10))}
                   keyboardType="numeric"
                 />
                 <Text style={styles.currencyText}>USD</Text>
@@ -147,15 +152,7 @@ export default function TopUpDetailsScreen() {
             <View style={[styles.formGroup, {flex: 1, marginLeft: 8}]}>
               <Text style={styles.label}>TOKEN À ACHETER</Text>
               
-              <TouchableOpacity style={styles.tokenDropdown}>
-                <View style={styles.tokenLeft}>
-                  <View style={styles.tokenIconCircle}>
-                    <Text style={{color: '#FFF', fontSize: 10, fontWeight: 'bold'}}>USDC</Text>
-                  </View>
-                  <Text style={styles.tokenName}>USDC</Text>
-                </View>
-                <Ionicons name="chevron-down" size={20} color="#1A2840" />
-              </TouchableOpacity>
+              <AppSelect value={token} options={tokenOptions} onChange={setToken} title="Choisir le token" renderLeading={(option) => <CryptoIcon symbol={option.value} size={26} style={{marginRight: 8}} />} />
             </View>
           </View>
 
@@ -370,6 +367,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     fontSize: 16,
     color: '#1A2840',
+    outlineStyle: 'none',
   },
   contactBtn: {
     width: 32,
@@ -455,7 +453,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold',
     fontSize: 18,
     color: '#1A2840',
+    outlineStyle: 'none',
   },
+  countryInlineSelect: { width: 118, minHeight: 52, borderWidth: 0, paddingHorizontal: 0, backgroundColor: 'transparent' },
+  countryInlineText: { fontSize: 13 },
   currencyText: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 14,

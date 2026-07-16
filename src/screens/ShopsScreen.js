@@ -3,6 +3,8 @@ import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
+import CryptoIcon from '../components/CryptoIcon';
+import AppToast from '../components/AppToast';
 
 const quickActions = [
   { id: '1', title: "Référer\nun business", subtitle: "Participez au\ncommerce", icon: "add", color: "#F59E0B", iconBg: '#FFFBEB' },
@@ -114,6 +116,12 @@ const shopsList = [
 export default function ShopsScreen() {
   const navigation = useNavigation();
   const [activeSubNav, setActiveSubNav] = useState('shops');
+  const [query, setQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('Tout');
+  const [toast, setToast] = useState(null);
+  const visibleShops = shopsList.filter((shop) => shop.name.toLowerCase().includes(query.trim().toLowerCase()) && (activeFilter === 'Tout' || (activeFilter === 'Électronique' ? shop.category === 'Électronique' : activeFilter === 'Goods' ? ['Marketplace','Supermarché'].includes(shop.category) : true)));
+  const runQuickAction = (id) => { if (id === '1') setToast({title: 'Référencement démarré', message: 'Le formulaire de recommandation est prêt.'}); else if (id === '2') setActiveSubNav('shops'); else if (id === '3') {setActiveFilter('Tout');setToast({title: 'À proximité', message: 'Les commerces sont classés selon votre position simulée.'});} else setActiveSubNav('new'); };
+  const simulateDownload = (name) => { setToast({title: 'Téléchargement en cours', message: `${name} est en préparation…`}); setTimeout(() => setToast({title: 'Téléchargement terminé', message: `${name} a été téléchargé (simulation).`}), 900); };
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -154,6 +162,8 @@ export default function ShopsScreen() {
               style={styles.searchInput}
               placeholder="Rechercher en Afrique (shops, produits, services...)"
               placeholderTextColor="#94A3B8"
+              value={query}
+              onChangeText={setQuery}
             />
           </View>
 
@@ -161,7 +171,7 @@ export default function ShopsScreen() {
           <Text style={styles.sectionTitle}>Actions rapides</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickActionsScroll}>
             {quickActions.map(action => (
-              <TouchableOpacity key={action.id} style={styles.quickActionCard}>
+              <TouchableOpacity key={action.id} style={styles.quickActionCard} onPress={() => runQuickAction(action.id)}>
                 <View style={[styles.quickActionIconContainer, {backgroundColor: action.iconBg}]}>
                   <Ionicons name={action.icon} size={24} color={action.color} />
                 </View>
@@ -174,7 +184,7 @@ export default function ShopsScreen() {
           {/* Mes shops */}
           <View style={styles.sectionHeaderRow}>
             <Text style={styles.sectionTitle}>Mes shops</Text>
-            <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}}>
+            <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}} onPress={() => setActiveSubNav('shops')}>
               <Text style={styles.showAllText}>Voir tout</Text>
               <Ionicons name="arrow-forward" size={16} color="#1A2840" style={{marginLeft: 4}} />
             </TouchableOpacity>
@@ -182,19 +192,19 @@ export default function ShopsScreen() {
 
           {/* Filters */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>
-            <TouchableOpacity style={styles.filterChipActive}>
+            <TouchableOpacity style={activeFilter === 'Tout' ? styles.filterChipActive : styles.filterChip} onPress={() => setActiveFilter('Tout')}>
               <Ionicons name="location-outline" size={16} color="#FFFFFF" style={{marginRight: 6}} />
-              <Text style={styles.filterChipTextActive}>À proximité</Text>
+              <Text style={activeFilter === 'Tout' ? styles.filterChipTextActive : styles.filterChipText}>À proximité</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.filterChip}>
+            <TouchableOpacity style={activeFilter === 'Mobile' ? styles.filterChipActive : styles.filterChip} onPress={() => setActiveFilter('Mobile')}>
               <Ionicons name="phone-portrait-outline" size={16} color="#8B5CF6" style={{marginRight: 6}} />
               <Text style={styles.filterChipText}>Mobile & Utilities</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.filterChip}>
+            <TouchableOpacity style={activeFilter === 'Électronique' ? styles.filterChipActive : styles.filterChip} onPress={() => setActiveFilter('Électronique')}>
               <Ionicons name="laptop-outline" size={16} color="#3B82F6" style={{marginRight: 6}} />
               <Text style={styles.filterChipText}>Digital & Services</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.filterChip}>
+            <TouchableOpacity style={activeFilter === 'Goods' ? styles.filterChipActive : styles.filterChip} onPress={() => setActiveFilter('Goods')}>
               <Ionicons name="bag-handle-outline" size={16} color="#10B981" style={{marginRight: 6}} />
               <Text style={styles.filterChipText}>Goods</Text>
             </TouchableOpacity>
@@ -211,7 +221,7 @@ export default function ShopsScreen() {
             </View>
           )}
           <View style={styles.shopsList}>
-            {shopsList.map((shop, index) => (
+            {visibleShops.map((shop, index) => (
               <View key={shop.id}>
             <TouchableOpacity style={styles.shopItem} onPress={() => navigation.navigate('ShopDetailsScreen')}>
                   
@@ -252,7 +262,7 @@ export default function ShopsScreen() {
                   </View>
 
                 </TouchableOpacity>
-                {index < shopsList.length - 1 && <View style={styles.divider} />}
+                {index < visibleShops.length - 1 && <View style={styles.divider} />}
               </View>
             ))}
           </View>
@@ -271,7 +281,7 @@ export default function ShopsScreen() {
               </View>
               <View style={styles.promoRight}>
                 <Text style={styles.promoTitle}>DZY Store</Text>
-                <TouchableOpacity style={styles.promoBtn}>
+                <TouchableOpacity style={styles.promoBtn} onPress={() => simulateDownload('DZY Store')}>
                   <Ionicons name="download-outline" size={16} color="#1A2840" />
                 </TouchableOpacity>
               </View>
@@ -284,10 +294,7 @@ export default function ShopsScreen() {
                   USDT, USDC,{'\n'}<Text style={{color: '#3B82F6'}}>EURC</Text>, <Text style={{color: '#F59E0B'}}>DZY</Text> accepted »
                 </Text>
                 <View style={styles.promoTokensIcons}>
-                  <View style={[styles.tokenIcon, {backgroundColor: '#10B981'}]}><Text style={{color:'#FFF', fontSize:10, fontWeight:'bold'}}>₮</Text></View>
-                  <View style={[styles.tokenIcon, {backgroundColor: '#3B82F6'}]}><Text style={{color:'#FFF', fontSize:10, fontWeight:'bold'}}>$</Text></View>
-                  <View style={[styles.tokenIcon, {backgroundColor: '#3B82F6'}]}><Text style={{color:'#FFF', fontSize:10, fontWeight:'bold'}}>€</Text></View>
-                  <View style={[styles.tokenIcon, {backgroundColor: '#0A1128'}]}><Text style={{color:'#FFB800', fontSize:10, fontWeight:'bold'}}>D</Text></View>
+                  {['USDT','USDC','EURC','DZY'].map((symbol) => <CryptoIcon key={symbol} symbol={symbol} size={20} style={{marginHorizontal: 4}} />)}
                 </View>
                 <View style={styles.promoTokensLabels}>
                   <Text style={styles.tokenLabel}>USDT</Text>
@@ -305,7 +312,7 @@ export default function ShopsScreen() {
               </View>
               <View style={styles.promoRight}>
                 <Text style={styles.promoTitle}>Nous sommes ici</Text>
-                <TouchableOpacity style={styles.promoBtn}>
+                <TouchableOpacity style={styles.promoBtn} onPress={() => simulateDownload('Nous sommes ici')}>
                   <Ionicons name="download-outline" size={16} color="#1A2840" />
                 </TouchableOpacity>
               </View>
@@ -317,17 +324,19 @@ export default function ShopsScreen() {
         {/* Shops Sub-nav */}
         <View style={styles.shopsSubNav}>
           <TouchableOpacity style={styles.subNavItem} onPress={() => setActiveSubNav('shops')}>
-            <Ionicons name="storefront-outline" size={20} color="#1A2840" />
-            <Text style={styles.subNavItemTextActive}>Mes shops</Text>
-            <View style={styles.activeLine} />
+            <Ionicons name="storefront-outline" size={20} color={activeSubNav === 'shops' ? '#1A2840' : '#94A3B8'} />
+            <Text style={activeSubNav === 'shops' ? styles.subNavItemTextActive : styles.subNavItemText}>Mes shops</Text>
+            {activeSubNav === 'shops' && <View style={styles.activeLine} />}
           </TouchableOpacity>
           <TouchableOpacity style={styles.subNavItem} onPress={() => setActiveSubNav('new')}>
-            <Ionicons name="business-outline" size={20} color="#94A3B8" />
-            <Text style={styles.subNavItemText}>Nouveaux shops</Text>
+            <Ionicons name="business-outline" size={20} color={activeSubNav === 'new' ? '#1A2840' : '#94A3B8'} />
+            <Text style={activeSubNav === 'new' ? styles.subNavItemTextActive : styles.subNavItemText}>Nouveaux shops</Text>
+            {activeSubNav === 'new' && <View style={styles.activeLine} />}
           </TouchableOpacity>
           <TouchableOpacity style={styles.subNavItem} onPress={() => setActiveSubNav('categories')}>
-            <Ionicons name="grid-outline" size={20} color="#94A3B8" />
-            <Text style={styles.subNavItemText}>Catégories</Text>
+            <Ionicons name="grid-outline" size={20} color={activeSubNav === 'categories' ? '#1A2840' : '#94A3B8'} />
+            <Text style={activeSubNav === 'categories' ? styles.subNavItemTextActive : styles.subNavItemText}>Catégories</Text>
+            {activeSubNav === 'categories' && <View style={styles.activeLine} />}
           </TouchableOpacity>
           <TouchableOpacity style={styles.subNavItem} onPress={() => navigation.navigate('TransactionHistoryScreen')}>
             <Ionicons name="time-outline" size={20} color="#94A3B8" />
@@ -336,6 +345,7 @@ export default function ShopsScreen() {
         </View>
 
         <BottomNavBar activeTab="shops" />
+        {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
       </View>
     </SafeAreaView>
   );
@@ -440,6 +450,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#1A2840',
     padding: 0,
+    outlineStyle: 'none',
   },
   sectionTitle: {
     fontFamily: 'Inter_700Bold',
@@ -759,4 +770,5 @@ const styles = StyleSheet.create({
     height: 2,
     backgroundColor: '#FFB800',
   },
+  toastWrap: { position: 'absolute', left: 14, right: 14, top: 64, zIndex: 50 },
 });

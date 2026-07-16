@@ -66,6 +66,7 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.sizes.xl,
     fontFamily: theme.typography.fontFamily.semiBold,
     color: theme.colors.textPrimary,
+    outlineStyle: 'none',
   },
   inputActive: {
     borderColor: theme.colors.accent,

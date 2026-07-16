@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import CryptoIcon from '../components/CryptoIcon';
 
 export default function OrderVerificationScreen() {
   const navigation = useNavigation();
@@ -140,7 +141,7 @@ export default function OrderVerificationScreen() {
               <View style={[styles.radioOuter, paymentMethod === 'USDT' && styles.radioOuterSelected]}>
                 {paymentMethod === 'USDT' && <View style={styles.radioInner} />}
               </View>
-              <View style={[styles.tokenIcon, {backgroundColor: '#10B981'}]}><Text style={styles.tokenIconText}>₮</Text></View>
+              <CryptoIcon symbol="USDT" size={36} />
               <View style={styles.paymentMethodInfo}>
                 <View style={styles.paymentMethodNameRow}>
                   <Text style={styles.paymentMethodName}>USDT</Text>
@@ -162,7 +163,7 @@ export default function OrderVerificationScreen() {
               <View style={[styles.radioOuter, paymentMethod === 'USDC' && styles.radioOuterSelected]}>
                 {paymentMethod === 'USDC' && <View style={styles.radioInner} />}
               </View>
-              <View style={[styles.tokenIcon, {backgroundColor: '#3B82F6'}]}><Text style={styles.tokenIconText}>$</Text></View>
+              <CryptoIcon symbol="USDC" size={36} />
               <View style={styles.paymentMethodInfo}>
                 <View style={styles.paymentMethodNameRow}>
                   <Text style={styles.paymentMethodName}>USDC</Text>
@@ -184,7 +185,7 @@ export default function OrderVerificationScreen() {
               <View style={[styles.radioOuter, paymentMethod === 'EURC' && styles.radioOuterSelected]}>
                 {paymentMethod === 'EURC' && <View style={styles.radioInner} />}
               </View>
-              <View style={[styles.tokenIcon, {backgroundColor: '#3B82F6'}]}><Text style={styles.tokenIconText}>€</Text></View>
+              <CryptoIcon symbol="EURC" size={36} />
               <View style={styles.paymentMethodInfo}>
                 <View style={styles.paymentMethodNameRow}>
                   <Text style={styles.paymentMethodName}>EURC</Text>
@@ -206,7 +207,7 @@ export default function OrderVerificationScreen() {
               <View style={[styles.radioOuter, paymentMethod === 'DZY' && styles.radioOuterSelected]}>
                 {paymentMethod === 'DZY' && <View style={styles.radioInner} />}
               </View>
-              <View style={[styles.tokenIcon, {backgroundColor: '#0A1128'}]}><Text style={[styles.tokenIconText, {color: '#FFB800'}]}>D</Text></View>
+              <CryptoIcon symbol="DZY" size={36} />
               <View style={styles.paymentMethodInfo}>
                 <View style={styles.paymentMethodNameRow}>
                   <Text style={styles.paymentMethodName}>DZY</Text>
@@ -239,7 +240,7 @@ export default function OrderVerificationScreen() {
               <View style={[styles.radioOuter, network === 'Polygon' && styles.radioOuterSelected, {marginRight: 8}]}>
                 {network === 'Polygon' && <View style={styles.radioInner} />}
               </View>
-              <View style={[styles.networkIcon, {backgroundColor: '#8B5CF6'}]}><Text style={styles.networkIconText}>P</Text></View>
+              <CryptoIcon symbol="POL" size={30} />
               <Text style={styles.networkOptionText}>Polygon</Text>
             </TouchableOpacity>
 
@@ -261,7 +262,7 @@ export default function OrderVerificationScreen() {
               <View style={[styles.radioOuter, network === 'Ethereum' && styles.radioOuterSelected, {marginRight: 8}]}>
                 {network === 'Ethereum' && <View style={styles.radioInner} />}
               </View>
-              <View style={[styles.networkIcon, {backgroundColor: '#1A2840'}]}><Text style={styles.networkIconText}>E</Text></View>
+              <CryptoIcon symbol="ETH" size={30} />
               <Text style={styles.networkOptionText}>Ethereum</Text>
             </TouchableOpacity>
 
@@ -272,7 +273,7 @@ export default function OrderVerificationScreen() {
               <View style={[styles.radioOuter, network === 'Solana' && styles.radioOuterSelected, {marginRight: 8}]}>
                 {network === 'Solana' && <View style={styles.radioInner} />}
               </View>
-              <View style={[styles.networkIcon, {backgroundColor: '#10B981'}]}><Text style={styles.networkIconText}>S</Text></View>
+              <CryptoIcon symbol="SOL" size={30} />
               <Text style={styles.networkOptionText}>Solana</Text>
             </TouchableOpacity>
 

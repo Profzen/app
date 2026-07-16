@@ -2,9 +2,9 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function FeedItem({ icon, iconColor, iconBgColor, title, titleBold, timeAgo, imageColor }) {
+export default function FeedItem({ icon, iconColor, iconBgColor, title, titleBold, timeAgo, imageColor, onPress }) {
   return (
-    <TouchableOpacity style={styles.container}>
+    <TouchableOpacity style={styles.container} onPress={onPress} disabled={!onPress}>
       <View style={[styles.iconContainer, { backgroundColor: iconBgColor }]}>
         <Ionicons name={icon} size={24} color={iconColor} />
       </View>

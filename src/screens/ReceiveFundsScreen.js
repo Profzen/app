@@ -1,12 +1,20 @@
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, ImageBackground, Share } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 import BottomNavBar from '../components/BottomNavBar';
+import AppSelect from '../components/AppSelect';
+import CryptoIcon from '../components/CryptoIcon';
 
 export default function ReceiveFundsScreen() {
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState('adresse');
+  const [selectedChain, setSelectedChain] = useState('POL');
+  const [copied, setCopied] = useState(false);
+  const address = '0xA9651F585c8A8D5dFFE0483d4d36B7Ed80786bC4';
+  const copyAddress = async () => { await Clipboard.setStringAsync(address); setCopied(true); };
+  const shareAddress = () => Share.share({message: `Adresse DizzitUp ${selectedChain}: ${address}`});
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -49,15 +57,13 @@ export default function ReceiveFundsScreen() {
           {/* Blockchain Selector */}
           <View style={styles.blockchainSection}>
             <Text style={styles.sectionLabel}>CHOISIR LA BLOCKCHAIN</Text>
-            <TouchableOpacity style={styles.dropdown}>
-              <View style={styles.dropdownLeft}>
-                <View style={styles.polygonIconBg}>
-                  <Ionicons name="infinite" size={16} color="#FFFFFF" />
-                </View>
-                <Text style={styles.dropdownText}>Polygon</Text>
-              </View>
-              <Ionicons name="chevron-down" size={20} color="#64748B" />
-            </TouchableOpacity>
+            <AppSelect
+              value={selectedChain}
+              options={[{value:'POL',label:'Polygon'},{value:'ETH',label:'Ethereum'},{value:'SOL',label:'Solana'},{value:'BNB',label:'Chaîne BNB'}]}
+              onChange={setSelectedChain}
+              title="Choisir la blockchain"
+              renderLeading={(option) => <CryptoIcon symbol={option.value} size={28} style={{marginRight: 10}} />}
+            />
           </View>
 
           {/* Tabs */}
@@ -119,11 +125,11 @@ export default function ReceiveFundsScreen() {
 
           {/* Action Buttons */}
           <View style={styles.actionBtnsRow}>
-            <TouchableOpacity style={styles.btnCopy}>
+            <TouchableOpacity style={styles.btnCopy} onPress={copyAddress}>
               <Ionicons name="copy-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
-              <Text style={styles.btnCopyText}>COPIER</Text>
+              <Text style={styles.btnCopyText}>{copied ? 'COPIÉ' : 'COPIER'}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.btnShare}>
+            <TouchableOpacity style={styles.btnShare} onPress={shareAddress}>
               <Ionicons name="share-outline" size={20} color="#FFFFFF" style={{marginRight: 8}} />
               <Text style={styles.btnShareText}>PARTAGER</Text>
             </TouchableOpacity>

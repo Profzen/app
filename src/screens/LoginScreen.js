@@ -14,6 +14,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [language, setLanguage] = useState('FR');
 
   const handleLogin = () => {
     if (!email || !password) return; // Basic validation
@@ -44,14 +45,14 @@ export default function LoginScreen() {
           <Ionicons name="arrow-back" size={24} color={theme.colors.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Connexion</Text>
-          <TouchableOpacity style={styles.languageSelector}>
+          <TouchableOpacity style={styles.languageSelector} onPress={() => setLanguage((current) => current === 'FR' ? 'EN' : 'FR')} accessibilityLabel="Changer la langue">
             {/* French flag mockup */}
             <View style={styles.flag}>
               <View style={[styles.flagStripe, {backgroundColor: '#002395'}]} />
               <View style={[styles.flagStripe, {backgroundColor: '#FFFFFF'}]} />
               <View style={[styles.flagStripe, {backgroundColor: '#ED2939'}]} />
             </View>
-            <Text style={styles.languageText}>FR</Text>
+            <Text style={styles.languageText}>{language}</Text>
             <Ionicons name="chevron-down" size={16} color={theme.colors.primary} />
           </TouchableOpacity>
         </View>
@@ -114,6 +115,10 @@ export default function LoginScreen() {
 
           <TouchableOpacity style={styles.forgotPasswordContainer} onPress={() => navigation.navigate('ResetPasswordEmailScreen')}>
             <Text style={styles.forgotPasswordText}>Mot de passe oublié ?</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.forgotPasswordContainer} onPress={() => navigation.navigate('PinCodeScreen')}>
+            <Text style={styles.forgotPasswordText}>Se connecter avec mon code PIN</Text>
           </TouchableOpacity>
 
           <View style={{marginTop: theme.spacing.md}}>

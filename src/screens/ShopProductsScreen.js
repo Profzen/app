@@ -1,58 +1,70 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput, Share, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import CryptoIcon from '../components/CryptoIcon';
+import AppToast from '../components/AppToast';
 
-const { width } = Dimensions.get('window');
-const cardWidth = (Math.min(width, 520) - 48) / 2;
+const categories = ['Tout', 'Téléphones & Tablettes', 'Électronique', 'Maison & Bureau'];
 
 const products = [
   { 
     id: '1', name: 'Samsung Galaxy A14', 
     desc1: 'Smartphone', desc2: '64 Go • 4 Go RAM', 
-    price: '155 000 FCFA', stock: 'En stock' 
+    price: '155 000 FCFA', stock: 'En stock', category: 'Téléphones & Tablettes', priceValue: 155000
   },
   { 
     id: '2', name: 'Écouteurs sans fil', 
     desc1: 'Bluetooth 5.3', desc2: 'Son HD • Réduction\nde bruit', 
-    price: '25 000 FCFA', stock: 'En stock' 
+    price: '25 000 FCFA', stock: 'En stock', category: 'Électronique', priceValue: 25000
   },
   { 
     id: '3', name: 'Montre connectée', 
     desc1: 'Écran tactile 1,9"', desc2: 'Suivi santé • Sport\nÉtanche IP67', 
-    price: '45 000 FCFA', stock: 'En stock' 
+    price: '45 000 FCFA', stock: 'En stock', category: 'Électronique', priceValue: 45000
   },
   { 
     id: '4', name: 'OMO Détergent 2,5kg', 
     desc1: 'Poudre, 2,5 kg', desc2: 'Fraîcheur longue\ndurée', 
-    price: '6 500 FCFA', stock: 'En stock' 
+    price: '6 500 FCFA', stock: 'En stock', category: 'Maison & Bureau', priceValue: 6500
   },
   { 
     id: '5', name: 'HP 250 G9', 
     desc1: 'Intel Core i3', desc2: '8 Go RAM • 256 Go SSD\n15,6" • Windows 11', 
-    price: '310 000 FCFA', stock: 'En stock' 
+    price: '310 000 FCFA', stock: 'En stock', category: 'Électronique', priceValue: 310000
   },
   { 
     id: '6', name: 'Ninja Air Fryer', 
     desc1: '4,7L • 1500W', desc2: 'Cuisson sans huile\nTechnologie AirCrisp', 
-    price: '85 000 FCFA', stock: 'En stock' 
+    price: '85 000 FCFA', stock: 'En stock', category: 'Maison & Bureau', priceValue: 85000
   },
   { 
     id: '7', name: 'Kit Solaire PV 30W', 
     desc1: 'Panneau solaire', desc2: 'Monocristallin\nHaute efficacité', 
-    price: '150 000 FCFA', stock: 'En stock' 
+    price: '150 000 FCFA', stock: 'En stock', category: 'Maison & Bureau', priceValue: 150000
   },
   { 
     id: '8', name: 'Internet package', 
     desc1: 'Forfaits data', desc2: 'valables 1, 2 ou 3\nmois', 
-    price: '15 000 FCFA', stock: 'En stock' 
+    price: '15 000 FCFA', stock: 'En stock', category: 'Électronique', priceValue: 15000
   },
 ];
 
 export default function ShopProductsScreen() {
   const navigation = useNavigation();
+  const { width } = useWindowDimensions();
+  const [favorite, setFavorite] = useState(false);
+  const [favorites, setFavorites] = useState([]);
+  const [activeTab, setActiveTab] = useState('products');
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState('Tout');
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [priceFilter, setPriceFilter] = useState('all');
+  const [toast, setToast] = useState(null);
+  const productWidth = width < 340 ? Math.max(250, width - 40) : (Math.min(width, 520) - 56) / 2;
+  const filteredProducts = useMemo(() => products.filter((product) => (category === 'Tout' || product.category === category) && product.name.toLowerCase().includes(query.trim().toLowerCase()) && (priceFilter === 'all' || (priceFilter === 'low' ? product.priceValue < 50000 : product.priceValue >= 50000))), [category, query, priceFilter]);
+  const shareShop = async () => { try { await Share.share({title: 'Jumia Sénégal', message: 'Découvrez les produits de Jumia Sénégal sur DizzitUp.'}); } finally { setToast({title: 'Partage prêt', message: 'La boutique peut maintenant être envoyée à vos contacts.'}); } };
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -63,13 +75,13 @@ export default function ShopProductsScreen() {
           <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <View style={styles.headerRightIcons}>
-            <TouchableOpacity style={styles.iconBtnRight}>
-              <Ionicons name="heart-outline" size={20} color="#1A2840" />
+            <TouchableOpacity style={styles.iconBtnRight} onPress={() => setFavorite(!favorite)}>
+              <Ionicons name={favorite ? "heart" : "heart-outline"} size={20} color={favorite ? "#EF4444" : "#1A2840"} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnRight}>
+            <TouchableOpacity style={styles.iconBtnRight} onPress={shareShop}>
               <Ionicons name="share-outline" size={20} color="#1A2840" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnRight}>
+            <TouchableOpacity style={styles.iconBtnRight} onPress={() => setToast({title:'Options de la boutique',message:'Les actions supplémentaires sont disponibles.'})}>
               <Ionicons name="ellipsis-horizontal" size={20} color="#1A2840" />
             </TouchableOpacity>
           </View>
@@ -136,23 +148,27 @@ export default function ShopProductsScreen() {
 
           {/* Tabs */}
           <View style={styles.tabsContainer}>
-            <TouchableOpacity style={[styles.tab, styles.tabActive]}>
-              <Ionicons name="bag-handle-outline" size={16} color="#FFB800" style={{marginRight: 6}} />
-              <Text style={styles.tabTextActive}>Produits</Text>
+            <TouchableOpacity style={[styles.tab, activeTab === 'products' && styles.tabActive]} onPress={() => setActiveTab('products')}>
+              <Ionicons name="bag-handle-outline" size={16} color={activeTab === 'products' ? '#FFB800' : '#94A3B8'} style={{marginRight: 6}} />
+              <Text style={activeTab === 'products' ? styles.tabTextActive : styles.tabTextInactive}>Produits</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.tab}>
-              <Ionicons name="star-outline" size={16} color="#94A3B8" style={{marginRight: 6}} />
-              <Text style={styles.tabTextInactive}>Avis</Text>
+            <TouchableOpacity style={[styles.tab, activeTab === 'reviews' && styles.tabActive]} onPress={() => setActiveTab('reviews')}>
+              <Ionicons name="star-outline" size={16} color={activeTab === 'reviews' ? '#FFB800' : '#94A3B8'} style={{marginRight: 6}} />
+              <Text style={activeTab === 'reviews' ? styles.tabTextActive : styles.tabTextInactive}>Avis</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.tab}>
-              <Ionicons name="information-circle-outline" size={16} color="#94A3B8" style={{marginRight: 6}} />
-              <Text style={styles.tabTextInactive}>Infos</Text>
+            <TouchableOpacity style={[styles.tab, activeTab === 'info' && styles.tabActive]} onPress={() => setActiveTab('info')}>
+              <Ionicons name="information-circle-outline" size={16} color={activeTab === 'info' ? '#FFB800' : '#94A3B8'} style={{marginRight: 6}} />
+              <Text style={activeTab === 'info' ? styles.tabTextActive : styles.tabTextInactive}>Infos</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.tab}>
-              <Ionicons name="storefront-outline" size={16} color="#94A3B8" style={{marginRight: 6}} />
-              <Text style={styles.tabTextInactive}>Boutique</Text>
+            <TouchableOpacity style={[styles.tab, activeTab === 'shop' && styles.tabActive]} onPress={() => setActiveTab('shop')}>
+              <Ionicons name="storefront-outline" size={16} color={activeTab === 'shop' ? '#FFB800' : '#94A3B8'} style={{marginRight: 6}} />
+              <Text style={activeTab === 'shop' ? styles.tabTextActive : styles.tabTextInactive}>Boutique</Text>
             </TouchableOpacity>
           </View>
+
+          {activeTab !== 'products' && <ShopTabContent tab={activeTab} onViewShop={() => navigation.navigate('ShopDetailsScreen')} />}
+
+          <View style={activeTab === 'products' ? null : styles.hidden}>
 
           {/* Search & Filter */}
           <View style={styles.searchFilterRow}>
@@ -162,28 +178,20 @@ export default function ShopProductsScreen() {
                 style={styles.searchInput} 
                 placeholder="Rechercher un produit..." 
                 placeholderTextColor="#94A3B8"
+                value={query}
+                onChangeText={setQuery}
               />
             </View>
-            <TouchableOpacity style={styles.btnFilter}>
+            <TouchableOpacity style={styles.btnFilter} onPress={() => setFilterOpen(!filterOpen)}>
               <Ionicons name="options-outline" size={18} color="#3B82F6" style={{marginRight: 6}} />
               <Text style={styles.btnFilterText}>Filtrer</Text>
             </TouchableOpacity>
           </View>
+          {filterOpen && <View style={styles.filterPanel}><Text style={styles.filterPanelTitle}>Prix</Text>{[{value:'all',label:'Tous les prix'},{value:'low',label:'Moins de 50 000 FCFA'},{value:'high',label:'50 000 FCFA et plus'}].map((option) => <TouchableOpacity key={option.value} style={[styles.filterOption, priceFilter === option.value && styles.filterOptionActive]} onPress={() => {setPriceFilter(option.value);setFilterOpen(false)}}><Text style={styles.filterOptionText}>{option.label}</Text>{priceFilter === option.value && <Ionicons name="checkmark" size={18} color="#F59E0B" />}</TouchableOpacity>)}</View>}
 
           {/* Categories */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesScroll}>
-            <TouchableOpacity style={styles.categoryChipActive}>
-              <Text style={styles.categoryChipTextActive}>Tout</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.categoryChip}>
-              <Text style={styles.categoryChipText}>Téléphones & Tablettes</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.categoryChip}>
-              <Text style={styles.categoryChipText}>Électronique</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.categoryChip}>
-              <Text style={styles.categoryChipText}>Maison & Bureau</Text>
-            </TouchableOpacity>
+            {categories.map((item) => <TouchableOpacity key={item} style={category === item ? styles.categoryChipActive : styles.categoryChip} onPress={() => setCategory(item)}><Text style={category === item ? styles.categoryChipTextActive : styles.categoryChipText}>{item}</Text></TouchableOpacity>)}
             <TouchableOpacity style={styles.categoryChip}>
               <Text style={styles.categoryChipTextBlue}>Plus ˅</Text>
             </TouchableOpacity>
@@ -191,10 +199,10 @@ export default function ShopProductsScreen() {
 
           {/* Products Grid */}
           <View style={styles.productsGrid}>
-            {products.map((product) => (
-              <View key={product.id} style={styles.productCard}>
-                <TouchableOpacity style={styles.heartIcon}>
-                  <Ionicons name="heart-outline" size={14} color="#64748B" />
+            {filteredProducts.map((product) => (
+              <View key={product.id} style={[styles.productCard, {width: productWidth}]}>
+                <TouchableOpacity style={styles.heartIcon} onPress={() => setFavorites((items) => items.includes(product.id) ? items.filter((id) => id !== product.id) : [...items, product.id])}>
+                  <Ionicons name={favorites.includes(product.id) ? "heart" : "heart-outline"} size={14} color={favorites.includes(product.id) ? "#EF4444" : "#64748B"} />
                 </TouchableOpacity>
                 <View style={styles.productImgPlaceholder} />
                 <View style={styles.productContent}>
@@ -247,12 +255,20 @@ export default function ShopProductsScreen() {
               </View>
             </View>
           </ScrollView>
+          </View>
 
         </ScrollView>
         <BottomNavBar activeTab="shops" />
+        {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
       </View>
     </SafeAreaView>
   );
+}
+
+function ShopTabContent({ tab, onViewShop }) {
+  if (tab === 'reviews') return <View style={styles.tabPage}><Text style={styles.tabPageTitle}>Avis clients</Text><View style={styles.ratingSummary}><Text style={styles.ratingBig}>4.6</Text><View><Text style={styles.stars}>★★★★★</Text><Text style={styles.tabPageText}>3 235 avis vérifiés</Text></View></View>{['Livraison rapide et produit conforme.', 'Très bon vendeur, je recommande.', 'Service client réactif.'].map((review, index) => <View key={review} style={styles.reviewCard}><View style={styles.reviewAvatar}><Text style={styles.reviewAvatarText}>{['MK','OT','AB'][index]}</Text></View><View style={{flex:1}}><Text style={styles.reviewName}>{['Marie K.','Ousmane T.','Aïssatou B.'][index]}</Text><Text style={styles.tabPageText}>{review}</Text></View></View>)}</View>;
+  if (tab === 'info') return <View style={styles.tabPage}><Text style={styles.tabPageTitle}>Informations pratiques</Text>{[['time-outline','Horaires','Lundi à dimanche, 08:00 – 22:00'],['bus-outline','Livraison','Livraison, retrait et commande en ligne'],['location-outline','Adresse','Dakar, Sénégal'],['shield-checkmark-outline','Vérification','Marchand vérifié depuis 2016']].map(([icon,title,text]) => <View key={title} style={styles.infoRow}><View style={styles.infoIcon}><Ionicons name={icon} size={20} color="#3B82F6" /></View><View><Text style={styles.infoTitle}>{title}</Text><Text style={styles.tabPageText}>{text}</Text></View></View>)}</View>;
+  return <View style={styles.tabPage}><Text style={styles.tabPageTitle}>À propos de la boutique</Text><Text style={styles.tabPageText}>Jumia Sénégal propose des produits électroniques, téléphones, articles pour la maison et de nombreux services avec paiement sécurisé en crypto.</Text><TouchableOpacity style={styles.viewShopButton} onPress={onViewShop}><Ionicons name="storefront-outline" size={19} color="#1A2840" /><Text style={styles.viewShopButtonText}>Voir la fiche complète</Text></TouchableOpacity></View>;
 }
 
 const styles = StyleSheet.create({
@@ -495,6 +511,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_400Regular',
     fontSize: 12,
     color: '#1A2840',
+    outlineStyle: 'none',
     padding: 0,
   },
   btnFilter: {
@@ -554,7 +571,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   productCard: {
-    width: cardWidth,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#F1F5F9',
@@ -564,6 +580,28 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
     position: 'relative',
   },
+  hidden: { display: 'none' },
+  filterPanel: { marginHorizontal: 16, marginBottom: 14, padding: 12, borderRadius: 14, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#E2E8F0' },
+  filterPanelTitle: { fontFamily: 'Inter_700Bold', color: '#1A2840', marginBottom: 6 },
+  filterOption: { height: 42, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 10, borderRadius: 10 },
+  filterOptionActive: { backgroundColor: '#FFF8E6' },
+  filterOptionText: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#1A2840' },
+  tabPage: { margin: 16, padding: 18, backgroundColor: '#FFF', borderRadius: 18, borderWidth: 1, borderColor: '#E2E8F0' },
+  tabPageTitle: { fontFamily: 'Inter_700Bold', fontSize: 19, color: '#1A2840', marginBottom: 14 },
+  tabPageText: { fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 19, color: '#64748B' },
+  ratingSummary: { flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 14, backgroundColor: '#FFF8E6', marginBottom: 12 },
+  ratingBig: { fontFamily: 'Inter_700Bold', fontSize: 34, color: '#1A2840', marginRight: 14 },
+  stars: { color: '#F59E0B', letterSpacing: 2, marginBottom: 3 },
+  reviewCard: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+  reviewAvatar: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#EFF6FF', alignItems: 'center', justifyContent: 'center', marginRight: 10 },
+  reviewAvatarText: { fontFamily: 'Inter_700Bold', color: '#3B82F6' },
+  reviewName: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#1A2840', marginBottom: 3 },
+  infoRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+  infoIcon: { width: 42, height: 42, borderRadius: 12, backgroundColor: '#EFF6FF', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  infoTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#1A2840', marginBottom: 3 },
+  viewShopButton: { marginTop: 18, height: 50, borderRadius: 14, backgroundColor: '#FFB800', flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center' },
+  viewShopButtonText: { fontFamily: 'Inter_700Bold', color: '#1A2840' },
+  toastWrap: { position: 'absolute', left: 14, right: 14, top: 64, zIndex: 40 },
   heartIcon: {
     position: 'absolute',
     top: 6,

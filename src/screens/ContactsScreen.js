@@ -307,6 +307,7 @@ const styles = StyleSheet.create({
     color: '#1A2840',
     marginBottom: 2,
     padding: 0,
+    outlineStyle: 'none',
   },
   searchSubText: {
     fontFamily: 'Inter_400Regular',

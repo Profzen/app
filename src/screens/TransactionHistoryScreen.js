@@ -22,8 +22,8 @@ export default function TransactionHistoryScreen() {
             <TouchableOpacity style={styles.iconBtnSmall}>
               <Ionicons name="help" size={18} color="#1A2840" />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.iconBtnSmall, {marginLeft: 8}]}>
-              <Ionicons name="ellipsis-horizontal" size={18} color="#1A2840" />
+            <TouchableOpacity style={[styles.iconBtnSmall, {marginLeft: 8}]} onPress={() => navigation.navigate('FiltersScreen')}>
+              <Ionicons name="funnel-outline" size={18} color="#1A2840" />
             </TouchableOpacity>
           </View>
         </View>
@@ -93,7 +93,7 @@ export default function TransactionHistoryScreen() {
                 Votre historique apparaîtra ici{'\n'}dès que vous effectuerez des transactions.
               </Text>
 
-              <TouchableOpacity style={styles.btnAction}>
+              <TouchableOpacity style={styles.btnAction} onPress={() => navigation.navigate('HomeScreen')}>
                 <Ionicons name="swap-horizontal" size={20} color="#1A2840" style={{marginRight: 8}} />
                 <Text style={styles.btnActionText}>Effectuer une transaction</Text>
               </TouchableOpacity>

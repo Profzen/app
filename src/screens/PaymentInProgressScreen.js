@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import CryptoIcon from '../components/CryptoIcon';
 
 export default function PaymentInProgressScreen() {
   const navigation = useNavigation();
@@ -79,7 +80,7 @@ export default function PaymentInProgressScreen() {
               <Text style={styles.detailLabel}>Vous payez</Text>
             </View>
             <View style={styles.detailValueRow}>
-              <View style={[styles.tokenIcon, {backgroundColor: '#3B82F6'}]}><Text style={styles.tokenIconText}>$</Text></View>
+              <CryptoIcon symbol="USDC" size={24} />
               <Text style={styles.detailValue}>38,95 USDC</Text>
             </View>
           </View>
@@ -92,7 +93,7 @@ export default function PaymentInProgressScreen() {
               <Text style={styles.detailLabel}>Réseau</Text>
             </View>
             <View style={styles.detailValueRow}>
-              <View style={[styles.tokenIcon, {backgroundColor: '#8B5CF6'}]}><Text style={styles.tokenIconText}>P</Text></View>
+              <CryptoIcon symbol="POL" size={24} />
               <Text style={styles.detailValue}>Polygon</Text>
             </View>
           </View>
@@ -136,7 +137,7 @@ export default function PaymentInProgressScreen() {
           <View style={styles.blockchainHeader}>
             <Text style={styles.cardTitle}>Confirmation blockchain</Text>
             <View style={styles.networkBadge}>
-              <View style={[styles.tokenIconSmall, {backgroundColor: '#8B5CF6'}]}><Text style={styles.tokenIconTextSmall}>P</Text></View>
+              <CryptoIcon symbol="POL" size={20} />
               <Text style={styles.networkBadgeText}>Polygon</Text>
             </View>
           </View>

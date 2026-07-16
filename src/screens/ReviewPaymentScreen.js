@@ -4,10 +4,15 @@ import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Ima
 import { theme } from '../theme/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { DizzitButton } from '../components/DizzitButton';
+import AppSelect from '../components/AppSelect';
+
+const paymentCurrencies = [{value:'USD',label:'🇺🇸  USD'},{value:'EUR',label:'🇪🇺  EUR'},{value:'XOF',label:'🌍  XOF'},{value:'NGN',label:'🇳🇬  NGN'}];
 
 export default function ReviewPaymentScreen() {
   const navigation = useNavigation();
   const [selectedPayment, setSelectedPayment] = useState('card');
+  const [amount, setAmount] = useState('20');
+  const [currency, setCurrency] = useState('USD');
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -86,16 +91,12 @@ export default function ReviewPaymentScreen() {
             <View style={styles.inputContainer}>
               <TextInput 
                 style={styles.amountInput}
-                value="20"
+                value={amount}
+                onChangeText={(text) => setAmount(text.replace(/[^0-9.,]/g, '').slice(0, 10))}
                 keyboardType="numeric"
-                editable={false}
               />
             </View>
-            <TouchableOpacity style={styles.currencySelector}>
-              <Text style={styles.currencyFlag}>🇺🇸</Text>
-              <Text style={styles.currencyText}>USD</Text>
-              <Ionicons name="chevron-down" size={16} color="#1A2840" />
-            </TouchableOpacity>
+            <AppSelect value={currency} options={paymentCurrencies} onChange={setCurrency} title="Choisir la devise" style={styles.currencySelector} textStyle={styles.currencyText} />
           </View>
           <Text style={styles.convertedAmount}>≈ 32,250 NGN</Text>
         </View>
@@ -440,6 +441,7 @@ const styles = StyleSheet.create({
     fontFamily: 'SpaceGrotesk_700Bold',
     fontSize: 18,
     color: '#1A2840',
+    outlineStyle: 'none',
   },
   currencySelector: {
     flexDirection: 'row',

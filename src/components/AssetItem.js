@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
+import CryptoIcon from './CryptoIcon';
 
 export default function AssetItem({ 
   icon,
@@ -24,12 +25,8 @@ export default function AssetItem({
     <View style={styles.container}>
       {/* Icon & Name */}
       <View style={styles.leftSection}>
-        <View style={[styles.iconContainer, !imageUrl && { backgroundColor: iconBgColor }]}>
-          {imageUrl ? (
-            <Image source={typeof imageUrl === 'string' ? { uri: imageUrl } : imageUrl} style={styles.cryptoIcon} />
-          ) : (
-            <Ionicons name={icon} size={20} color={iconColor} />
-          )}
+        <View style={styles.iconContainer}>
+          <CryptoIcon symbol={symbol} size={36} />
         </View>
         <View>
           <Text style={styles.symbol}>{symbol}</Text>

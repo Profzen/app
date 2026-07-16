@@ -374,9 +374,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   actionGridItem: {
-    width: (width - 20) / 4,
+    flexBasis: '25%',
+    maxWidth: '25%',
     alignItems: 'center',
     marginBottom: 24,
+    paddingHorizontal: 2,
   },
   actionGridIcon: {
     width: 48,

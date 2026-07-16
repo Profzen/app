@@ -3,11 +3,16 @@ import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
+import AppSelect from '../components/AppSelect';
+
+const fiatOptions = [{value:'FCFA',label:'🇸🇳  FCFA'},{value:'GHS',label:'🇬🇭  GHS'},{value:'NGN',label:'🇳🇬  NGN'},{value:'USD',label:'🇺🇸  USD'}];
 
 export default function WithdrawFundsScreen() {
   const navigation = useNavigation();
   const [selectedToken, setSelectedToken] = useState('USDC');
   const [selectedNetwork, setSelectedNetwork] = useState('Polygon');
+  const [amount, setAmount] = useState('250 000');
+  const [currency, setCurrency] = useState('FCFA');
 
   const tokens = [
     { id: 'USDC', name: 'USDC', balance: '1 250,00', icon: 'USDC_ICON' },
@@ -92,14 +97,11 @@ export default function WithdrawFundsScreen() {
             <View style={styles.amountInputContainer}>
               <TextInput 
                 style={styles.amountInput}
-                value="250 000"
+                value={amount}
+                onChangeText={(text) => setAmount(text.replace(/\D/g, '').slice(0, 12).replace(/\B(?=(\d{3})+(?!\d))/g, ' '))}
                 keyboardType="numeric"
               />
-              <TouchableOpacity style={styles.currencySelector}>
-                <Text style={styles.flagText}>🇸🇳</Text>
-                <Text style={styles.currencyCode}>FCFA</Text>
-                <Ionicons name="caret-down" size={12} color="#1A2840" style={{marginLeft: 4}} />
-              </TouchableOpacity>
+              <AppSelect value={currency} options={fiatOptions} onChange={setCurrency} title="Choisir la devise" style={styles.currencySelector} textStyle={styles.currencyCode} />
             </View>
             <Text style={styles.equivText}>≈ 417,33 USDC</Text>
 
@@ -299,6 +301,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold',
     fontSize: 24,
     color: '#1A2840',
+    outlineStyle: 'none',
   },
   currencySelector: {
     flexDirection: 'row',

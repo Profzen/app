@@ -52,7 +52,7 @@ export default function FiltersScreen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.iconBtn}>
+          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
             <Ionicons name="close" size={24} color="#1A2840" />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
@@ -170,11 +170,15 @@ export default function FiltersScreen() {
 
         {/* Bottom Actions */}
         <View style={styles.bottomActions}>
-          <TouchableOpacity style={styles.applyBtn}>
+          <TouchableOpacity style={styles.applyBtn} onPress={() => navigation.goBack()}>
             <Ionicons name="funnel-outline" size={20} color="#FFFFFF" style={{marginRight: 8}} />
             <Text style={styles.applyBtnText}>Appliquer les filtres</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.resetBtn}>
+          <TouchableOpacity style={styles.resetBtn} onPress={() => {
+            setSelectedType('all');
+            setSelectedDirection('all');
+            setSelectedPeriod('all');
+          }}>
             <Ionicons name="refresh" size={20} color="#1A2840" style={{marginRight: 8}} />
             <Text style={styles.resetBtnText}>Réinitialiser</Text>
           </TouchableOpacity>

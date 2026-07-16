@@ -2,10 +2,15 @@ import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AppSelect from '../components/AppSelect';
+
+const sendCurrencies = [{value:'Ar',label:'Ar',name:'Ariary malgache'},{value:'XOF',label:'XOF',name:'Franc CFA'},{value:'GHS',label:'GHS',name:'Cedi ghanéen'},{value:'NGN',label:'NGN',name:'Naira nigérian'}];
 
 export default function SendMoneyScreen() {
   const navigation = useNavigation();
   const [amount, setAmount] = useState('4 000');
+  const [currency, setCurrency] = useState('Ar');
+  const selectedCurrency = sendCurrencies.find((item) => item.value === currency);
 
   const handleKeyPress = (key) => {
     if (key === 'backspace') {
@@ -82,11 +87,8 @@ export default function SendMoneyScreen() {
         {/* Amount Card */}
         <View style={styles.amountCard}>
           <View style={styles.currencyRow}>
-            <TouchableOpacity style={styles.currencySelector}>
-              <Text style={styles.currencyCode}>Ar</Text>
-              <Ionicons name="chevron-down" size={16} color="#1A2840" style={{marginLeft: 4}} />
-            </TouchableOpacity>
-            <Text style={styles.currencyName}>Ariary malgache</Text>
+            <AppSelect value={currency} options={sendCurrencies} onChange={setCurrency} title="Choisir la devise" style={styles.currencySelector} textStyle={styles.currencyCode} />
+            <Text style={styles.currencyName}>{selectedCurrency?.name}</Text>
           </View>
           
           <View style={styles.amountDisplay}>
@@ -98,7 +100,7 @@ export default function SendMoneyScreen() {
               placeholder="0"
               placeholderTextColor="#94A3B8"
             />
-            <Text style={styles.amountSymbol}>Ar</Text>
+            <Text style={styles.amountSymbol}>{currency}</Text>
           </View>
           
           <View style={styles.conversionInfo}>
@@ -305,6 +307,7 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
     textAlign: 'center',
     minWidth: 150,
+    outlineStyle: 'none',
   },
   amountSymbol: {
     fontFamily: 'Inter_400Regular',

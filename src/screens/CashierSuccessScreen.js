@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import CryptoIcon from '../components/CryptoIcon';
 import BottomNavBar from '../components/BottomNavBar';
 
 export default function CashierSuccessScreen() {
@@ -57,13 +58,13 @@ export default function CashierSuccessScreen() {
           <View style={styles.amountRight}>
             <Text style={styles.amountLabel}>Vous avez reçu</Text>
             <View style={styles.tokenBadge}>
-              <View style={[styles.tokenIconSmall, {backgroundColor: '#10B981'}]}><Text style={styles.tokenIconTextSmall}>₮</Text></View>
+              <CryptoIcon symbol="USDT" size={28} />
               <Text style={styles.tokenBadgeText}>USDT</Text>
             </View>
             <View style={styles.networkBox}>
               <Text style={styles.networkLabelText}>Réseau</Text>
               <View style={styles.networkContent}>
-                <View style={[styles.tokenIconTiny, {backgroundColor: '#8B5CF6'}]}><Text style={styles.tokenIconTextTiny}>P</Text></View>
+                <CryptoIcon symbol="POL" size={20} />
                 <Text style={styles.networkBoxText}>Polygon</Text>
               </View>
             </View>

@@ -212,6 +212,7 @@ const styles = StyleSheet.create({
     fontFamily: 'SpaceGrotesk_700Bold',
     fontSize: 20,
     color: '#1A2840',
+    outlineStyle: 'none',
   },
   headerSubtitle: {
     fontFamily: 'Inter_400Regular',

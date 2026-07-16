@@ -1,0 +1,40 @@
+const { chromium } = require('playwright');
+const base = process.env.E2E_BASE_URL || 'http://127.0.0.1:8081';
+const visible = (page, value) => page.getByText(value, {exact:true}).filter({visible:true}).last();
+
+(async () => {
+  const browser = await chromium.launch({headless:true, executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
+  const page = await browser.newPage({viewport:{width:430,height:932}});
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto(base, {waitUntil:'domcontentloaded', timeout:60000});
+  await page.locator('input').nth(0).fill('demo@dizzitup.com');
+  await page.locator('input').nth(1).fill('Demo123!');
+  await visible(page, 'Se connecter').click();
+  await visible(page, 'Contacts').click();
+  await visible(page, 'Afficher moins').click();
+  await visible(page, 'John Doe').waitFor();
+  const cdp = await page.context().newCDPSession(page);
+  const swipe = async (fromX, toX, y) => {
+    await cdp.send('Input.dispatchTouchEvent', {type:'touchStart', touchPoints:[{x:fromX,y}]});
+    for (let step=1; step<=10; step+=1) await cdp.send('Input.dispatchTouchEvent', {type:'touchMove', touchPoints:[{x:fromX+((toX-fromX)*step/10),y}]});
+    await cdp.send('Input.dispatchTouchEvent', {type:'touchEnd', touchPoints:[]});
+  };
+  let box = await visible(page, 'John Doe').boundingBox();
+  await swipe(370, 80, box.y + box.height/2);
+  await visible(page, 'Favoris').waitFor();
+  await page.goto(base, {waitUntil:'domcontentloaded', timeout:60000});
+  await page.locator('input').nth(0).fill('demo@dizzitup.com');
+  await page.locator('input').nth(1).fill('Demo123!');
+  await visible(page, 'Se connecter').click();
+  await visible(page, 'Contacts').click();
+  await visible(page, 'Afficher moins').click();
+  await visible(page, 'John Doe').waitFor();
+  box = await visible(page, 'John Doe').boundingBox();
+  await swipe(200, 400, box.y + box.height/2);
+  await visible(page, 'Inviter').waitFor();
+  console.log('SWIPE CONTACTS GAUCHE/DROITE: OK');
+  console.log(`RUNTIME ERRORS: ${errors.length}`);
+  await browser.close();
+  if (errors.length) process.exit(1);
+})().catch((error) => { console.error(error); process.exit(1); });

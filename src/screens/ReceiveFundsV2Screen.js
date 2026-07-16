@@ -6,16 +6,19 @@ import * as Clipboard from 'expo-clipboard';
 import Svg, { Rect } from 'react-native-svg';
 import QRCode from 'qrcode';
 import BottomNavBar from '../components/BottomNavBar';
+import CryptoIcon from '../components/CryptoIcon';
 
 export default function ReceiveFundsV2Screen() {
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState('adresse');
   const [showToast, setShowToast] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedChain, setSelectedChain] = useState('Polygone');
   const address = '0x5C292F468c41b3F2D84D1d888B578aCf4BC339b91';
   const qr = QRCode.create(address, { errorCorrectionLevel: 'M' });
   const copyAddress = () => { setShowToast(true); Clipboard.setStringAsync(address).catch(() => {}); };
-  const shareAddress = async () => { try { await Share.share({ message: `Adresse DizzitUp Polygon : ${address}` }); } catch { await Clipboard.setStringAsync(address); setShowToast(true); } };
+  const shareAddress = async () => { try { await Share.share({ message: `Adresse DizzitUp ${selectedChain} : ${address}` }); } catch { await Clipboard.setStringAsync(address); setShowToast(true); } };
+  const chooseChain = (chain) => { setSelectedChain(chain); setDropdownOpen(false); };
   const RealQrCode = () => <Svg width={180} height={180} viewBox={`0 0 ${qr.modules.size} ${qr.modules.size}`} accessibilityLabel="QR code de l'adresse Polygon"><Rect width={qr.modules.size} height={qr.modules.size} fill="#FFFFFF" />{Array.from(qr.modules.data).map((cell, index) => cell ? <Rect key={index} x={index % qr.modules.size} y={Math.floor(index / qr.modules.size)} width="1" height="1" fill="#071536" /> : null)}</Svg>;
 
   return (
@@ -66,7 +69,7 @@ export default function ReceiveFundsV2Screen() {
                 <View style={styles.polygonIconBg}>
                   <Ionicons name="infinite" size={16} color="#FFFFFF" />
                 </View>
-                <Text style={styles.dropdownText}>Polygone</Text>
+                <Text style={styles.dropdownText}>{selectedChain}</Text>
               </View>
               <Ionicons name={dropdownOpen ? "chevron-up" : "chevron-down"} size={20} color="#1A2840" />
             </TouchableOpacity>
@@ -74,35 +77,31 @@ export default function ReceiveFundsV2Screen() {
             {/* Dropdown Menu */}
             {dropdownOpen && (
               <View style={styles.dropdownMenu}>
-                <TouchableOpacity style={[styles.dropdownItem, styles.dropdownItemActive]}>
+                <TouchableOpacity style={[styles.dropdownItem, selectedChain === 'Polygone' && styles.dropdownItemActive]} onPress={() => chooseChain('Polygone')}>
                   <View style={styles.dropdownItemLeft}>
-                    <View style={styles.polygonIconBg}>
-                      <Ionicons name="infinite" size={16} color="#FFFFFF" />
-                    </View>
+                    <CryptoIcon symbol="POL" size={30} />
                     <View>
                       <Text style={styles.dropdownItemTitle}>Polygone</Text>
                       <Text style={styles.dropdownItemSubYellow}>DÉFAUT</Text>
                     </View>
                   </View>
-                  <Ionicons name="checkmark-circle" size={24} color="#FFB800" />
+                  {selectedChain === 'Polygone' && <Ionicons name="checkmark-circle" size={24} color="#FFB800" />}
                 </TouchableOpacity>
                 <View style={styles.dropdownDivider} />
 
-                <TouchableOpacity style={styles.dropdownItem}>
+                <TouchableOpacity style={[styles.dropdownItem, selectedChain === 'Ethereum' && styles.dropdownItemActive]} onPress={() => chooseChain('Ethereum')}>
                   <View style={styles.dropdownItemLeft}>
-                    <View style={[styles.cryptoIconBg, {backgroundColor: '#627EEA'}]}>
-                      {/* ETH Icon placeholder */}
-                      <Ionicons name="logo-bitcoin" size={16} color="#FFFFFF" />
-                    </View>
+                    <CryptoIcon symbol="ETH" size={30} />
                     <View>
                       <Text style={styles.dropdownItemTitle}>Ethereum</Text>
                       <Text style={styles.dropdownItemSub}>Nœud disponible</Text>
                     </View>
                   </View>
+                  {selectedChain === 'Ethereum' && <Ionicons name="checkmark-circle" size={24} color="#FFB800" />}
                 </TouchableOpacity>
                 <View style={styles.dropdownDivider} />
 
-                <TouchableOpacity style={styles.dropdownItem}>
+                <TouchableOpacity style={[styles.dropdownItem, selectedChain === 'Base' && styles.dropdownItemActive]} onPress={() => chooseChain('Base')}>
                   <View style={styles.dropdownItemLeft}>
                     <View style={[styles.cryptoIconBg, {backgroundColor: '#0052FF'}]}>
                       <View style={{width: 12, height: 12, borderRadius: 6, backgroundColor: '#FFFFFF'}} />
@@ -112,32 +111,31 @@ export default function ReceiveFundsV2Screen() {
                       <Text style={styles.dropdownItemSub}>Nœud disponible</Text>
                     </View>
                   </View>
+                  {selectedChain === 'Base' && <Ionicons name="checkmark-circle" size={24} color="#FFB800" />}
                 </TouchableOpacity>
                 <View style={styles.dropdownDivider} />
 
-                <TouchableOpacity style={styles.dropdownItem}>
+                <TouchableOpacity style={[styles.dropdownItem, selectedChain === 'Solana' && styles.dropdownItemActive]} onPress={() => chooseChain('Solana')}>
                   <View style={styles.dropdownItemLeft}>
-                    <View style={[styles.cryptoIconBg, {backgroundColor: '#000000'}]}>
-                      <Ionicons name="flash" size={14} color="#14F195" />
-                    </View>
+                    <CryptoIcon symbol="SOL" size={30} />
                     <View>
                       <Text style={styles.dropdownItemTitle}>Solana</Text>
                       <Text style={styles.dropdownItemSub}>Nœud disponible</Text>
                     </View>
                   </View>
+                  {selectedChain === 'Solana' && <Ionicons name="checkmark-circle" size={24} color="#FFB800" />}
                 </TouchableOpacity>
                 <View style={styles.dropdownDivider} />
 
-                <TouchableOpacity style={styles.dropdownItem}>
+                <TouchableOpacity style={[styles.dropdownItem, selectedChain === 'Chaîne BNB' && styles.dropdownItemActive]} onPress={() => chooseChain('Chaîne BNB')}>
                   <View style={styles.dropdownItemLeft}>
-                    <View style={[styles.cryptoIconBg, {backgroundColor: '#F3BA2F'}]}>
-                      <Ionicons name="apps" size={14} color="#FFFFFF" />
-                    </View>
+                    <CryptoIcon symbol="BNB" size={30} />
                     <View>
                       <Text style={styles.dropdownItemTitle}>Chaîne BNB</Text>
                       <Text style={styles.dropdownItemSub}>Nœud disponible</Text>
                     </View>
                   </View>
+                  {selectedChain === 'Chaîne BNB' && <Ionicons name="checkmark-circle" size={24} color="#FFB800" />}
                 </TouchableOpacity>
               </View>
             )}

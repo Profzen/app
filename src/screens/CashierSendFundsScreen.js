@@ -3,13 +3,20 @@ import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
+import AppSelect from '../components/AppSelect';
+import CryptoIcon from '../components/CryptoIcon';
+
+const cashierNetworks = ['Polygon','Base','Solana','Ethereum'].map((value) => ({value,label:value,iconName:'git-network'}));
+const cashierTokens = ['USDC','USDT','EURC','DZY'].map((value) => ({value,label:value}));
 
 export default function CashierSendFundsScreen() {
   const [selectedNetwork, setSelectedNetwork] = useState('Polygon');
   const [selectedToken, setSelectedToken] = useState('USDC');
   
-  const toggleNetwork = () => setSelectedNetwork(prev => prev === 'Polygon' ? 'Solana' : 'Polygon');
-  const toggleToken = () => setSelectedToken(prev => prev === 'USDC' ? 'USDT' : 'USDC');
+  const [amount, setAmount] = useState('45');
+  const [recipientVisible, setRecipientVisible] = useState(true);
+  const appendAmount = (value) => setAmount((current) => value === 'backspace' ? current.slice(0, -1) : `${current}${value}`.replace(/^0+(?=\d)/, '').slice(0, 10));
+  const insufficient = Number(amount || 0) > 8.304;
   const navigation = useNavigation();
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -39,7 +46,7 @@ export default function CashierSendFundsScreen() {
         </View>
 
         {/* Top-up Banner */}
-        <TouchableOpacity style={styles.topUpBanner}>
+        <TouchableOpacity style={styles.topUpBanner} onPress={() => navigation.navigate('TopUpWalletScreen')}>
           <View style={styles.topUpLeft}>
             <View style={styles.topUpIconCircle}>
               <Text style={styles.topUpIconText}>D</Text>
@@ -70,29 +77,17 @@ export default function CashierSendFundsScreen() {
           {/* Form */}
           <View style={styles.formGroup}>
             <Text style={styles.inputLabel}>SÉLECTIONNER LA BLOCKCHAIN</Text>
-            <TouchableOpacity style={styles.dropdownInput}>
-              <View style={styles.dropdownLeft}>
-                <View style={[styles.tokenIconSmall, {backgroundColor: '#8B5CF6'}]}><Text style={styles.tokenIconTextSmall}>P</Text></View>
-                <Text style={styles.dropdownText}>{selectedNetwork}</Text>
-              </View>
-              <Ionicons name="chevron-down" size={20} color="#1A2840" />
-            </TouchableOpacity>
+            <AppSelect value={selectedNetwork} options={cashierNetworks} onChange={setSelectedNetwork} title="Sélectionner la blockchain" style={styles.dropdownInput} />
           </View>
 
           <View style={styles.formGroup}>
             <Text style={styles.inputLabel}>JETON</Text>
-            <TouchableOpacity style={styles.dropdownInput} onPress={toggleToken}>
-              <View style={styles.dropdownLeft}>
-                <View style={[styles.tokenIconSmall, {backgroundColor: '#3B82F6'}]}><Text style={styles.tokenIconTextSmall}>$</Text></View>
-                <Text style={styles.dropdownText}>{selectedToken}</Text>
-              </View>
-              <Ionicons name="chevron-down" size={20} color="#1A2840" />
-            </TouchableOpacity>
+            <AppSelect value={selectedToken} options={cashierTokens} onChange={setSelectedToken} title="Sélectionner le jeton" style={styles.dropdownInput} renderLeading={(option) => <CryptoIcon symbol={option.value} size={25} style={{marginRight: 8}} />} />
           </View>
 
           <View style={styles.formGroup}>
             <Text style={styles.inputLabel}>ADRESSE DU DESTINATAIRE</Text>
-            <View style={styles.contactInput}>
+            {recipientVisible ? <View style={styles.contactInput}>
               <View style={styles.contactIcon}>
                 <Ionicons name="person" size={16} color="#3B82F6" />
               </View>
@@ -100,10 +95,10 @@ export default function CashierSendFundsScreen() {
                 <Text style={styles.contactName}>My Business</Text>
                 <Text style={styles.contactAddress}>0x9f6b...6A81</Text>
               </View>
-              <TouchableOpacity style={styles.clearBtn}>
+              <TouchableOpacity style={styles.clearBtn} onPress={() => setRecipientVisible(false)}>
                 <Ionicons name="close" size={16} color="#1A2840" />
               </TouchableOpacity>
-            </View>
+            </View> : <TouchableOpacity style={styles.contactInput} onPress={() => setRecipientVisible(true)}><Ionicons name="person-add-outline" size={20} color="#3B82F6" /><Text style={[styles.contactName,{marginLeft:10}]}>Choisir un destinataire</Text></TouchableOpacity>}
           </View>
 
           <View style={styles.formGroup}>
@@ -114,24 +109,25 @@ export default function CashierSendFundsScreen() {
             <View style={styles.amountInputContainerError}>
               <TextInput 
                 style={styles.amountInputError}
-                value="45"
-                editable={false} // For mockup purposes
+                value={amount}
+                onChangeText={(text) => setAmount(text.replace(/[^0-9.]/g, '').slice(0, 10))}
+                keyboardType="decimal-pad"
               />
               <Text style={styles.amountCurrency}>USDC</Text>
             </View>
           </View>
 
           {/* Error Banner */}
-          <View style={styles.errorBanner}>
+          {insufficient && <View style={styles.errorBanner}>
             <Ionicons name="warning-outline" size={20} color="#EF4444" style={{marginTop: 2, marginRight: 12}} />
             <View style={{flex: 1}}>
               <Text style={styles.errorTitle}>SOLDE INSUFFISANT</Text>
               <Text style={styles.errorText}>Vous n'avez pas assez de fonds pour effectuer cette transaction. Veuillez réduire le montant ou déposer plus de fonds.</Text>
             </View>
-          </View>
+          </View>}
 
           {/* Submit Button Disabled */}
-          <TouchableOpacity style={styles.btnSubmitDisabled} activeOpacity={1}>
+          <TouchableOpacity style={[styles.btnSubmitDisabled, !insufficient && {backgroundColor:'#FFB800'}]} disabled={insufficient || !amount || !recipientVisible} onPress={() => navigation.navigate('SendMoneySuccessScreen')}>
             <Ionicons name="paper-plane-outline" size={18} color="#FFFFFF" style={{marginRight: 8}} />
             <Text style={styles.btnSubmitDisabledText}>Envoyer USDC</Text>
           </TouchableOpacity>
@@ -143,48 +139,48 @@ export default function CashierSendFundsScreen() {
       {/* Mock Numeric Keypad (to match mockup visual exactly) */}
       <View style={styles.keyboardContainer}>
         <View style={styles.keyRow}>
-          <TouchableOpacity style={styles.key}><Text style={styles.keyMain}>1</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.key}>
+          <TouchableOpacity style={styles.key} onPress={() => appendAmount('1')}><Text style={styles.keyMain}>1</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.key} onPress={() => appendAmount('2')}>
             <Text style={styles.keyMain}>2</Text>
             <Text style={styles.keySub}>ABC</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.key}>
+          <TouchableOpacity style={styles.key} onPress={() => appendAmount('3')}>
             <Text style={styles.keyMain}>3</Text>
             <Text style={styles.keySub}>DEF</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.keyRow}>
-          <TouchableOpacity style={styles.key}>
+          <TouchableOpacity style={styles.key} onPress={() => appendAmount('4')}>
             <Text style={styles.keyMain}>4</Text>
             <Text style={styles.keySub}>GHI</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.key}>
+          <TouchableOpacity style={styles.key} onPress={() => appendAmount('5')}>
             <Text style={styles.keyMain}>5</Text>
             <Text style={styles.keySub}>JKL</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.key}>
+          <TouchableOpacity style={styles.key} onPress={() => appendAmount('6')}>
             <Text style={styles.keyMain}>6</Text>
             <Text style={styles.keySub}>MNO</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.keyRow}>
-          <TouchableOpacity style={styles.key}>
+          <TouchableOpacity style={styles.key} onPress={() => appendAmount('7')}>
             <Text style={styles.keyMain}>7</Text>
             <Text style={styles.keySub}>PQRS</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.key}>
+          <TouchableOpacity style={styles.key} onPress={() => appendAmount('8')}>
             <Text style={styles.keyMain}>8</Text>
             <Text style={styles.keySub}>TUV</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.key}>
+          <TouchableOpacity style={styles.key} onPress={() => appendAmount('9')}>
             <Text style={styles.keyMain}>9</Text>
             <Text style={styles.keySub}>WXYZ</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.keyRow}>
-          <TouchableOpacity style={styles.keyEmpty}><Text style={styles.keyMain}>,</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.key}><Text style={styles.keyMain}>0</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.keyEmpty}>
+          <TouchableOpacity style={styles.keyEmpty} onPress={() => appendAmount('.')}><Text style={styles.keyMain}>,</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.key} onPress={() => appendAmount('0')}><Text style={styles.keyMain}>0</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.keyEmpty} onPress={() => appendAmount('backspace')}>
             <Ionicons name="backspace-outline" size={24} color="#1A2840" />
           </TouchableOpacity>
         </View>
@@ -452,6 +448,7 @@ const styles = StyleSheet.create({
     color: '#EF4444',
     padding: 0,
     margin: 0,
+    outlineStyle: 'none',
   },
   amountCurrency: {
     fontFamily: 'Inter_600SemiBold',

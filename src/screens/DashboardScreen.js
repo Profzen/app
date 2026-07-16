@@ -34,7 +34,9 @@ export default function DashboardScreen() {
             <Text style={styles.dizzitText}>Dizzit<Text style={styles.upText}>Up</Text></Text>
           </View>
           <View style={styles.headerRight}>
-            <Image source={{uri: 'https://flagcdn.com/w40/fr.png'}} style={styles.flagIcon} />
+            <TouchableOpacity onPress={() => navigation.navigate('DashboardEngScreen')} accessibilityLabel="Afficher le tableau de bord en anglais">
+              <Image source={{uri: 'https://flagcdn.com/w40/fr.png'}} style={styles.flagIcon} />
+            </TouchableOpacity>
             <TouchableOpacity style={styles.iconBtn}>
               <Ionicons name="notifications-outline" size={22} color="#1A2840" />
               <View style={styles.badge} />

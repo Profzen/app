@@ -3,15 +3,21 @@ import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
+import AppSelect from '../components/AppSelect';
+
+const chainOptions = ['Polygon', 'Ethereum', 'Base', 'Solana', 'BNB Chain'].map((value) => ({value, label: value, iconName: 'git-network'}));
+const tokenOptions = ['DZY', 'USDC', 'USDT', 'POL', 'WBTC', 'ETH', 'SOL'].map((value) => ({value, label: value}));
 
 export default function SwapTokensScreen() {
   const [fromChain, setFromChain] = useState('Polygon');
   const [toChain, setToChain] = useState('Solana');
-  const toggleFromChain = () => setFromChain(prev => prev === 'Polygon' ? 'Ethereum' : 'Polygon');
-  const toggleToChain = () => setToChain(prev => prev === 'Solana' ? 'Base' : 'Solana');
   const navigation = useNavigation();
   const [fromAmount, setFromAmount] = useState('0,00');
   const [toAmount, setToAmount] = useState('0,00');
+  const [fromToken, setFromToken] = useState('USDC');
+  const [toToken, setToToken] = useState('USDT');
+  const chooseQuickToken = (symbol) => setFromToken(symbol);
+  const swapSides = () => { setFromChain(toChain); setToChain(fromChain); setFromToken(toToken); setToToken(fromToken); setFromAmount(toAmount); setToAmount(fromAmount); };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -48,28 +54,12 @@ export default function SwapTokensScreen() {
           <View style={styles.chainRow}>
             <View style={styles.chainCol}>
               <Text style={styles.inputLabel}>DE LA CHAÎNE</Text>
-              <TouchableOpacity style={styles.chainSelector} onPress={toggleFromChain}>
-                <View style={styles.chainLeft}>
-                  <View style={styles.polygonIconSmall}>
-                    <Text style={{color: '#FFF', fontSize: 10, fontWeight: 'bold'}}>∞</Text>
-                  </View>
-                  <Text style={styles.chainName}>{fromChain}</Text>
-                </View>
-                <Ionicons name="chevron-down" size={16} color="#1A2840" />
-              </TouchableOpacity>
+              <AppSelect value={fromChain} options={chainOptions} onChange={setFromChain} title="Choisir la chaîne source" style={styles.chainSelector} textStyle={styles.chainName} />
             </View>
             <View style={{width: 16}} />
             <View style={styles.chainCol}>
               <Text style={styles.inputLabel}>À CHAÎNE</Text>
-              <TouchableOpacity style={styles.chainSelector} onPress={toggleToChain}>
-                <View style={styles.chainLeft}>
-                  <View style={styles.polygonIconSmall}>
-                    <Text style={{color: '#FFF', fontSize: 10, fontWeight: 'bold'}}>∞</Text>
-                  </View>
-                  <Text style={styles.chainName}>{toChain}</Text>
-                </View>
-                <Ionicons name="chevron-down" size={16} color="#1A2840" />
-              </TouchableOpacity>
+              <AppSelect value={toChain} options={chainOptions} onChange={setToChain} title="Choisir la chaîne cible" style={styles.chainSelector} textStyle={styles.chainName} />
             </View>
           </View>
 
@@ -87,35 +77,35 @@ export default function SwapTokensScreen() {
           {/* Quick Selection */}
           <Text style={styles.inputLabel}>SÉLECTION RAPIDE - POLYGON</Text>
           <View style={styles.quickSelectionRow}>
-            <TouchableOpacity style={styles.quickTokenCard}>
+            <TouchableOpacity style={styles.quickTokenCard} onPress={() => chooseQuickToken('DZY')}>
               <View style={[styles.tokenLogoWrapper, {borderColor: '#FFB800'}]}>
                 <CryptoIcon symbol="DZY" size={28} />
               </View>
               <Text style={styles.quickTokenName}>DZY</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickTokenCard}>
+            <TouchableOpacity style={styles.quickTokenCard} onPress={() => chooseQuickToken('USDC')}>
               <View style={[styles.tokenLogoWrapper, {borderColor: '#3B82F6'}]}>
                 <CryptoIcon symbol="USDC" size={28} />
               </View>
               <Text style={styles.quickTokenName}>USDC</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickTokenCard}>
+            <TouchableOpacity style={styles.quickTokenCard} onPress={() => chooseQuickToken('USDT')}>
               <View style={[styles.tokenLogoWrapper, {borderColor: '#10B981'}]}>
                 <CryptoIcon symbol="USDT" size={28} />
               </View>
               <Text style={styles.quickTokenName}>USDT</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickTokenCard}>
+            <TouchableOpacity style={styles.quickTokenCard} onPress={() => chooseQuickToken('POL')}>
               <View style={[styles.tokenLogoWrapper, {borderColor: '#8B5CF6'}]}>
                 <CryptoIcon symbol="POL" size={28} />
               </View>
               <Text style={styles.quickTokenName}>POL</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickTokenCard}>
+            <TouchableOpacity style={styles.quickTokenCard} onPress={() => chooseQuickToken('WBTC')}>
               <View style={[styles.tokenLogoWrapper, {borderColor: '#F59E0B'}]}>
                 <CryptoIcon symbol="WBTC" size={28} />
               </View>
@@ -139,11 +129,7 @@ export default function SwapTokensScreen() {
                 </View>
               </View>
               <View style={styles.inputRow}>
-                <TouchableOpacity style={styles.tokenSelector}>
-                  <CryptoIcon symbol="USDC" size={24} />
-                  <Text style={styles.selectedTokenName}>USDC</Text>
-                  <Ionicons name="chevron-down" size={16} color="#1A2840" />
-                </TouchableOpacity>
+                <AppSelect value={fromToken} options={tokenOptions} onChange={setFromToken} title="Jeton à échanger" style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option.value} size={24} style={{marginRight: 6}} />} />
                 <View style={styles.amountInputContainer}>
                   <TextInput
                     style={styles.amountInput}
@@ -161,7 +147,7 @@ export default function SwapTokensScreen() {
 
             {/* Swap Button (floating) */}
             <View style={styles.swapBtnWrapper}>
-              <TouchableOpacity style={styles.swapBtn}>
+              <TouchableOpacity style={styles.swapBtn} onPress={swapSides}>
                 <Ionicons name="swap-vertical" size={20} color="#1A2840" />
               </TouchableOpacity>
             </View>
@@ -172,11 +158,7 @@ export default function SwapTokensScreen() {
                 <Text style={styles.inputLabel}>À TOKEN (ESTIMATION)</Text>
               </View>
               <View style={styles.inputRow}>
-                <TouchableOpacity style={styles.tokenSelector}>
-                  <CryptoIcon symbol="USDT" size={24} />
-                  <Text style={styles.selectedTokenName}>USDT</Text>
-                  <Ionicons name="chevron-down" size={16} color="#1A2840" />
-                </TouchableOpacity>
+                <AppSelect value={toToken} options={tokenOptions} onChange={setToToken} title="Jeton à recevoir" style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option.value} size={24} style={{marginRight: 6}} />} />
                 <View style={styles.amountInputContainer}>
                   <TextInput
                     style={styles.amountInput}
@@ -490,6 +472,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold',
     fontSize: 24,
     color: '#1A2840',
+    outlineStyle: 'none',
     textAlign: 'right',
     minWidth: 100,
   },

@@ -1,12 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Image, Dimensions, Share } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import CryptoIcon from '../components/CryptoIcon';
+import AppToast from '../components/AppToast';
 
 const { width } = Dimensions.get('window');
 
 export default function ProductDetailsScreen() {
   const navigation = useNavigation();
+  const [favorite, setFavorite] = useState(false);
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+  const [toast, setToast] = useState(null);
+  const shareProduct = async () => { try { await Share.share({title: 'Samsung Galaxy A14', message: 'Découvrez le Samsung Galaxy A14 sur DizzitUp.'}); } finally { setToast({title: 'Produit partagé', message: 'Le partage a été préparé avec succès.'}); } };
   return (
     <SafeAreaView style={styles.safeArea}>
       
@@ -16,10 +22,10 @@ export default function ProductDetailsScreen() {
           <Ionicons name="arrow-back" size={24} color="#1A2840" />
         </TouchableOpacity>
         <View style={styles.headerRightIcons}>
-          <TouchableOpacity style={styles.iconBtnRight}>
-            <Ionicons name="heart-outline" size={20} color="#1A2840" />
+          <TouchableOpacity style={styles.iconBtnRight} onPress={() => setFavorite(!favorite)}>
+            <Ionicons name={favorite ? "heart" : "heart-outline"} size={20} color={favorite ? "#EF4444" : "#1A2840"} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconBtnRight}>
+          <TouchableOpacity style={styles.iconBtnRight} onPress={shareProduct}>
             <Ionicons name="share-outline" size={20} color="#1A2840" />
           </TouchableOpacity>
         </View>
@@ -86,22 +92,7 @@ export default function ProductDetailsScreen() {
             <View style={styles.paymentCard}>
               <Text style={styles.paymentCardTitle}>Moyens de paiement acceptés</Text>
               <View style={styles.paymentIconsRow}>
-                <View style={styles.paymentItem}>
-                  <View style={[styles.tokenIcon, {backgroundColor: '#10B981'}]}><Text style={styles.tokenIconText}>₮</Text></View>
-                  <Text style={styles.tokenLabel}>USDT</Text>
-                </View>
-                <View style={styles.paymentItem}>
-                  <View style={[styles.tokenIcon, {backgroundColor: '#3B82F6'}]}><Text style={styles.tokenIconText}>$</Text></View>
-                  <Text style={styles.tokenLabel}>USDC</Text>
-                </View>
-                <View style={styles.paymentItem}>
-                  <View style={[styles.tokenIcon, {backgroundColor: '#3B82F6'}]}><Text style={styles.tokenIconText}>€</Text></View>
-                  <Text style={styles.tokenLabel}>EURC</Text>
-                </View>
-                <View style={styles.paymentItem}>
-                  <View style={[styles.tokenIcon, {backgroundColor: '#0A1128'}]}><Text style={[styles.tokenIconText, {color: '#FFB800'}]}>D</Text></View>
-                  <Text style={styles.tokenLabel}>DZY</Text>
-                </View>
+                {['USDT', 'USDC', 'EURC', 'DZY'].map((symbol) => <View key={symbol} style={styles.paymentItem}><CryptoIcon symbol={symbol} size={24} /><Text style={styles.tokenLabel}>{symbol}</Text></View>)}
               </View>
             </View>
 
@@ -123,11 +114,11 @@ export default function ProductDetailsScreen() {
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Description</Text>
           <View style={styles.descRow}>
-            <Text style={styles.descText}>
+            <Text style={styles.descText} numberOfLines={descriptionExpanded ? undefined : 3}>
               Le Samsung Galaxy A14 allie performance et élégance. Profitez d'un grand écran immersif, d'une batterie longue durée et d'un design moderne pour vous accompagner au quotidien.
             </Text>
-            <TouchableOpacity style={styles.descChevron}>
-              <Ionicons name="chevron-down" size={20} color="#1A2840" />
+            <TouchableOpacity style={styles.descChevron} onPress={() => setDescriptionExpanded(!descriptionExpanded)}>
+              <Ionicons name={descriptionExpanded ? "chevron-up" : "chevron-down"} size={20} color="#1A2840" />
             </TouchableOpacity>
           </View>
         </View>
@@ -294,7 +285,7 @@ export default function ProductDetailsScreen() {
                 <Text style={styles.vendorReviews}>(3,235 avis)</Text>
               </View>
             </View>
-            <TouchableOpacity style={styles.btnStore}>
+            <TouchableOpacity style={styles.btnStore} onPress={() => navigation.navigate('ShopDetailsScreen')}>
               <Ionicons name="storefront-outline" size={16} color="#1A2840" style={{marginRight: 8}} />
               <Text style={styles.btnStoreText}>Voir la boutique</Text>
               <Ionicons name="chevron-forward" size={16} color="#1A2840" style={{marginLeft: 8}} />
@@ -306,7 +297,7 @@ export default function ProductDetailsScreen() {
 
       {/* Bottom Sticky Action Bar */}
       <View style={styles.bottomActionBar}>
-        <TouchableOpacity style={styles.btnContact}>
+        <TouchableOpacity style={styles.btnContact} onPress={() => setToast({title: 'Contact vendeur', message: 'Une conversation avec Jumia Sénégal a été ouverte.'})}>
           <Ionicons name="chatbubble-outline" size={18} color="#3B82F6" style={{marginRight: 8}} />
           <Text style={styles.btnContactText}>Contacter le vendeur</Text>
         </TouchableOpacity>
@@ -315,6 +306,7 @@ export default function ProductDetailsScreen() {
           <Text style={styles.btnBuyText}>Acheter maintenant</Text>
         </TouchableOpacity>
       </View>
+      {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
 
     </SafeAreaView>
   );
@@ -325,6 +317,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FAFAFA',
   },
+  toastWrap: { position: 'absolute', left: 14, right: 14, top: 64, zIndex: 40 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

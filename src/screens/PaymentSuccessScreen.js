@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Share } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
+import * as Clipboard from 'expo-clipboard';
+import AppToast from '../components/AppToast';
 
 export default function PaymentSuccessScreen() {
   const navigation = useNavigation();
+  const [toast, setToast] = useState(null);
+  const shareReceipt = async () => { try { await Share.share({title:'Reçu DizzitUp',message:'Paiement réussi — 20.50 USD — Transaction DZY20240518104532'}); } finally { setToast({title:'Reçu partagé',message:'Le partage a été préparé.'}); } };
+  const copyTransaction = async () => { await Clipboard.setStringAsync('DZY20240518104532'); setToast({title:'Numéro copié',message:'La référence est dans le presse-papiers.'}); };
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -16,7 +21,7 @@ export default function PaymentSuccessScreen() {
             <Ionicons name="notifications-outline" size={22} color="#1A2840" />
             <View style={styles.badge} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconBtn}>
+          <TouchableOpacity style={styles.iconBtn} onPress={shareReceipt} accessibilityLabel="Partager le reçu">
             <Ionicons name="share-outline" size={22} color="#1A2840" />
           </TouchableOpacity>
         </View>
@@ -102,7 +107,7 @@ export default function PaymentSuccessScreen() {
               <Text style={styles.detailLabel}>Numéro de transaction</Text>
               <View style={styles.txNumberRow}>
                 <Text style={styles.txNumberValue}>DZY20240518104532</Text>
-                <TouchableOpacity style={{marginLeft: 8}}>
+                <TouchableOpacity style={{marginLeft: 8}} onPress={copyTransaction}>
                   <Ionicons name="copy-outline" size={16} color="#6B7280" />
                 </TouchableOpacity>
               </View>
@@ -121,7 +126,7 @@ export default function PaymentSuccessScreen() {
             <View style={styles.rewardContent}>
               <Text style={styles.rewardTitle}>Vous avez gagné <Text style={styles.rewardHighlight}>2.50 DZY</Text> en Cashback !</Text>
               <Text style={styles.rewardSub}>Cette récompense a été créditée dans votre DZYWallet.</Text>
-              <TouchableOpacity style={styles.rewardLink}>
+              <TouchableOpacity style={styles.rewardLink} onPress={() => navigation.navigate('RewardsScreen')}>
                 <Text style={styles.rewardLinkText}>Voir mes Rewards</Text>
                 <Ionicons name="arrow-forward" size={14} color="#1A2840" />
               </TouchableOpacity>
@@ -151,6 +156,7 @@ export default function PaymentSuccessScreen() {
         </ScrollView>
 
         <BottomNavBar activeTab="Accueil" />
+        {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
       </View>
     </SafeAreaView>
   );
@@ -164,6 +170,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  toastWrap: { position: 'absolute', left: 14, right: 14, top: 64, zIndex: 40 },
   headerRight: {
     flexDirection: 'row',
     justifyContent: 'flex-end',

@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Image, Dimensions, Share } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import CryptoIcon from '../components/CryptoIcon';
+import AppToast from '../components/AppToast';
 
 const { width } = Dimensions.get('window');
 
@@ -14,6 +16,11 @@ const popularProducts = [
 
 export default function ShopDetailsScreen() {
   const navigation = useNavigation();
+  const [favorite, setFavorite] = useState(false);
+  const [productFavorites, setProductFavorites] = useState([]);
+  const [aboutExpanded, setAboutExpanded] = useState(false);
+  const [toast, setToast] = useState(null);
+  const shareShop = async () => { try { await Share.share({title: 'Jumia Sénégal', message: 'Découvrez la boutique Jumia Sénégal sur DizzitUp.'}); setToast({title: 'Boutique partagée', message: 'Le partage a été préparé avec succès.'}); } catch { setToast({title: 'Partage simulé', message: 'Le lien de la boutique est prêt à être envoyé.'}); } };
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -24,13 +31,13 @@ export default function ShopDetailsScreen() {
           <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <View style={styles.headerRightIcons}>
-            <TouchableOpacity style={styles.iconBtnRight}>
-              <Ionicons name="heart-outline" size={20} color="#1A2840" />
+            <TouchableOpacity style={styles.iconBtnRight} onPress={() => setFavorite(!favorite)} accessibilityLabel="Ajouter la boutique aux favoris">
+              <Ionicons name={favorite ? "heart" : "heart-outline"} size={20} color={favorite ? "#EF4444" : "#1A2840"} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnRight}>
+            <TouchableOpacity style={styles.iconBtnRight} onPress={shareShop} accessibilityLabel="Partager la boutique">
               <Ionicons name="share-outline" size={20} color="#1A2840" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnRight}>
+            <TouchableOpacity style={styles.iconBtnRight} onPress={() => setToast({title:'Options de la boutique',message:'Les actions supplémentaires sont prêtes pour la simulation.'})}>
               <Ionicons name="ellipsis-horizontal" size={20} color="#1A2840" />
             </TouchableOpacity>
           </View>
@@ -116,23 +123,8 @@ export default function ShopDetailsScreen() {
           <View style={styles.paymentMethodsCard}>
             <Text style={styles.paymentMethodsTitle}>Moyens de paiement acceptés</Text>
             <View style={styles.paymentIconsRow}>
-              <View style={styles.paymentItem}>
-                <View style={[styles.tokenIcon, {backgroundColor: '#10B981'}]}><Text style={styles.tokenIconText}>₮</Text></View>
-                <Text style={styles.tokenLabel}>USDT</Text>
-              </View>
-              <View style={styles.paymentItem}>
-                <View style={[styles.tokenIcon, {backgroundColor: '#3B82F6'}]}><Text style={styles.tokenIconText}>$</Text></View>
-                <Text style={styles.tokenLabel}>USDC</Text>
-              </View>
-              <View style={styles.paymentItem}>
-                <View style={[styles.tokenIcon, {backgroundColor: '#3B82F6'}]}><Text style={styles.tokenIconText}>€</Text></View>
-                <Text style={styles.tokenLabel}>EURC</Text>
-              </View>
-              <View style={styles.paymentItem}>
-                <View style={[styles.tokenIcon, {backgroundColor: '#0A1128'}]}><Text style={[styles.tokenIconText, {color: '#FFB800'}]}>D</Text></View>
-                <Text style={styles.tokenLabel}>DZY</Text>
-              </View>
-              <TouchableOpacity style={styles.paymentItem}>
+              {['USDT', 'USDC', 'EURC', 'DZY'].map((symbol) => <View key={symbol} style={styles.paymentItem}><CryptoIcon symbol={symbol} size={34} /><Text style={styles.tokenLabel}>{symbol}</Text></View>)}
+              <TouchableOpacity style={styles.paymentItem} onPress={() => setToast({title: 'Moyens de paiement', message: 'USDT, USDC, EURC et DZY sont acceptés.'})}>
                 <Text style={styles.plusLink}>+ Plus</Text>
               </TouchableOpacity>
             </View>
@@ -140,7 +132,7 @@ export default function ShopDetailsScreen() {
 
           {/* Action Buttons */}
           <View style={styles.actionButtonsRow}>
-            <TouchableOpacity style={styles.btnContact}>
+            <TouchableOpacity style={styles.btnContact} onPress={() => setToast({title: 'Contact vendeur', message: 'Une conversation avec Jumia Sénégal a été ouverte.'})}>
               <Ionicons name="chatbubble-outline" size={18} color="#3B82F6" style={{marginRight: 8}} />
               <Text style={styles.btnContactText}>Contacter</Text>
             </TouchableOpacity>
@@ -153,7 +145,7 @@ export default function ShopDetailsScreen() {
           {/* Produits populaires */}
           <View style={styles.sectionHeaderRow}>
             <Text style={styles.sectionTitle}>Produits populaires</Text>
-            <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}}>
+            <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}} onPress={() => navigation.navigate('ShopProductsScreen')}>
               <Text style={styles.showAllText}>Voir tout</Text>
               <Ionicons name="arrow-forward" size={16} color="#3B82F6" style={{marginLeft: 4}} />
             </TouchableOpacity>
@@ -162,8 +154,8 @@ export default function ShopDetailsScreen() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.productsScroll}>
             {popularProducts.map(product => (
               <View key={product.id} style={styles.productCard}>
-                <TouchableOpacity style={styles.heartIcon}>
-                  <Ionicons name="heart-outline" size={18} color="#F59E0B" />
+                <TouchableOpacity style={styles.heartIcon} onPress={() => setProductFavorites((items) => items.includes(product.id) ? items.filter((id) => id !== product.id) : [...items, product.id])}>
+                  <Ionicons name={productFavorites.includes(product.id) ? "heart" : "heart-outline"} size={18} color="#F59E0B" />
                 </TouchableOpacity>
                 <View style={styles.productImgPlaceholder} />
                 <View style={styles.productInfo}>
@@ -182,16 +174,17 @@ export default function ShopDetailsScreen() {
           <View style={styles.aboutSection}>
             <Text style={styles.sectionTitle}>À propos de Jumia Sénégal</Text>
             <View style={styles.aboutTextContainer}>
-              <Text style={styles.aboutText}>
+              <Text style={styles.aboutText} numberOfLines={aboutExpanded ? undefined : 3}>
                 Jumia Sénégal est la plateforme de e-commerce numéro 1 au Sénégal. Nous vous proposons des milliers de produits dans plusieurs catégories : électronique, mode, maison, beauté, sport et bien plus encore.
               </Text>
-              <TouchableOpacity style={styles.aboutChevron}>
-                <Ionicons name="chevron-down" size={20} color="#1A2840" />
+              <TouchableOpacity style={styles.aboutChevron} onPress={() => setAboutExpanded(!aboutExpanded)}>
+                <Ionicons name={aboutExpanded ? "chevron-up" : "chevron-down"} size={20} color="#1A2840" />
               </TouchableOpacity>
             </View>
           </View>
 
         </ScrollView>
+        {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
       </View>
     </SafeAreaView>
   );
@@ -205,6 +198,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  toastWrap: { position: 'absolute', left: 14, right: 14, top: 64, zIndex: 40 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

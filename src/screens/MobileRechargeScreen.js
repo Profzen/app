@@ -76,7 +76,7 @@ export default function MobileRechargeScreen() {
             <Text style={styles.serviceTitle}>Recharge mobile</Text>
             <Text style={styles.serviceSubtitle}>Crédits mobiles instantanés pour vos proches.</Text>
           </View>
-          <TouchableOpacity style={styles.changeServiceBtn}>
+          <TouchableOpacity style={styles.changeServiceBtn} onPress={() => navigation.navigate('ChooseServiceScreen')}>
             <Text style={styles.changeServiceText}>Changer</Text>
             <Ionicons name="chevron-down" size={16} color="#1A2840" />
           </TouchableOpacity>

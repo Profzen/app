@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput, Image } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput, Image, PanResponder, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
+import AppToast from '../components/AppToast';
 
 const quickActions = [
   { id: '1', title: "Ajouter\nun bénéficiaire", subtitle: "Ajouter un nouveau\nbénéficiaire", icon: "person-add-outline", color: "#8B5CF6" },
@@ -12,7 +13,7 @@ const quickActions = [
 ];
 
 const contacts = [
-  { id: '1', name: "John Doe", relation: "Frère", location: "Lomé, Togo", flag: "🇹🇬", isBeneficiary: true, isSponsor: true, image: "https://i.pravatar.cc/150?img=11", isSwiped: true },
+  { id: '1', name: "John Doe", relation: "Frère", location: "Lomé, Togo", flag: "🇹🇬", isBeneficiary: true, isSponsor: true, image: "https://i.pravatar.cc/150?img=11" },
   { id: '2', name: "Marie K.", relation: "Sœur", location: "Dakar, Sénégal", flag: "🇸🇳", isBeneficiary: true, isSponsor: true, image: "https://i.pravatar.cc/150?img=5" },
   { id: '3', name: "Ousmane T.", relation: "Ami", location: "Bamako, Mali", flag: "🇲🇱", isBeneficiary: true, isSponsor: false, image: "https://i.pravatar.cc/150?img=12" },
   { id: '4', name: "Aïssatou B.", relation: "Famille", location: "Ouagadougou, Burkina Faso", flag: "🇧🇫", isBeneficiary: true, isSponsor: false, image: "https://i.pravatar.cc/150?img=9" },
@@ -21,6 +22,17 @@ const contacts = [
 
 export default function ContactsManageScreen() {
   const navigation = useNavigation();
+  const [contactItems, setContactItems] = useState(contacts);
+  const [openSwipe, setOpenSwipe] = useState(null);
+  const [bannerVisible, setBannerVisible] = useState(true);
+  const [toast, setToast] = useState(null);
+
+  const quickAction = (id) => {
+    if (id === '1' || id === '2') navigation.navigate('ContactProfileScreen');
+    else if (id === '3') setToast({title: 'Liste actualisée', message: 'Tous vos bénéficiaires sont affichés.'});
+    else navigation.navigate('RewardsScreen');
+  };
+  const removeContact = (id) => { setContactItems((items) => items.filter((item) => item.id !== id)); setOpenSwipe(null); setToast({title: 'Contact supprimé', message: 'La suppression a été simulée avec succès.'}); };
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -66,7 +78,7 @@ export default function ContactsManageScreen() {
           <Text style={styles.sectionTitle}>Actions rapides</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickActionsScroll}>
             {quickActions.map(action => (
-              <TouchableOpacity key={action.id} style={styles.quickActionCard}>
+              <TouchableOpacity key={action.id} style={styles.quickActionCard} onPress={() => quickAction(action.id)}>
                 <View style={styles.quickActionIconContainer}>
                   <Ionicons name={action.icon} size={28} color={action.color} />
                 </View>
@@ -121,89 +133,15 @@ export default function ContactsManageScreen() {
 
           {/* Contacts List */}
           <View style={styles.contactsList}>
-            {contacts.map(contact => {
-              if (contact.isSwiped) {
-                return (
-                  <View key={contact.id} style={styles.swipedContactContainer}>
-                    <View style={styles.swipedContactItem}>
-                      <View style={styles.contactInfoCol}>
-                        <Image source={{uri: contact.image}} style={styles.contactAvatar} />
-                        <View style={styles.contactDetails}>
-                          <Text style={styles.contactName}>{contact.name}</Text>
-                          <Text style={styles.contactRelation}>{contact.relation}</Text>
-                          <Text style={styles.contactLocation}>{contact.flag} {contact.location}</Text>
-                        </View>
-                      </View>
-                    </View>
-                    
-                    <View style={styles.swipeActionsContainer}>
-                      <TouchableOpacity style={styles.swipeActionBtn}>
-                        <Ionicons name="star-outline" size={24} color="#1A2840" />
-                        <Text style={styles.swipeActionText}>Favoris</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity style={styles.swipeActionBtn}>
-                        <Ionicons name="pencil-outline" size={24} color="#1A2840" />
-                        <Text style={styles.swipeActionText}>Modifier</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity style={[styles.swipeActionBtn, {backgroundColor: '#EF4444'}]}>
-                        <Ionicons name="trash-outline" size={24} color="#FFFFFF" />
-                        <Text style={[styles.swipeActionText, {color: '#FFFFFF'}]}>Supprimer</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                );
-              }
-
-              return (
-                <TouchableOpacity key={contact.id} style={styles.contactItem}>
-                  {/* Contact Info */}
-                  <View style={styles.contactInfoCol}>
-                    <Image source={{uri: contact.image}} style={styles.contactAvatar} />
-                    <View style={styles.contactDetails}>
-                      <Text style={styles.contactName}>{contact.name}</Text>
-                      <Text style={styles.contactRelation}>{contact.relation}</Text>
-                      <Text style={styles.contactLocation}>{contact.flag} {contact.location}</Text>
-                    </View>
-                  </View>
-
-                  {/* Bénéficiaire Status */}
-                  <View style={styles.statusCol}>
-                    <Ionicons 
-                      name="person-outline" 
-                      size={20} 
-                      color={contact.isBeneficiary ? '#10B981' : '#94A3B8'} 
-                      style={{marginBottom: 4}}
-                    />
-                    <Text style={[styles.statusText, {color: contact.isBeneficiary ? '#10B981' : '#94A3B8'}]}>
-                      {contact.isBeneficiary ? 'Oui' : 'Non'}
-                    </Text>
-                  </View>
-
-                  {/* Parrain Status */}
-                  <View style={styles.statusCol}>
-                    <Ionicons 
-                      name="heart-outline" // The icon looks like a heart inside a person, or just a heart
-                      size={20} 
-                      color={contact.isSponsor ? '#10B981' : '#94A3B8'} 
-                      style={{marginBottom: 4}}
-                    />
-                    <Text style={[styles.statusText, {color: contact.isSponsor ? '#10B981' : '#94A3B8'}]}>
-                      {contact.isSponsor ? 'Oui' : 'Non'}
-                    </Text>
-                  </View>
-
-                  <Ionicons name="chevron-forward" size={20} color="#1A2840" />
-                </TouchableOpacity>
-              );
-            })}
+            {contactItems.map((contact) => <SwipeContactRow key={contact.id} contact={contact} direction={openSwipe?.id === contact.id ? openSwipe.direction : null} onDirection={(direction) => setOpenSwipe(direction ? {id: contact.id, direction} : null)} onNavigate={(route) => navigation.navigate(route)} onDelete={() => removeContact(contact.id)} onFavorite={() => { setOpenSwipe(null); setToast({title: 'Ajouté aux favoris', message: `${contact.name} est maintenant dans vos favoris.`}); }} />)}
           </View>
 
         </ScrollView>
 
         {/* Invite Banner (Floating) */}
-        <View style={styles.inviteBannerWrapper}>
+        {bannerVisible && <View style={styles.inviteBannerWrapper}>
           <View style={styles.inviteBanner}>
-            <TouchableOpacity style={styles.closeBannerBtn}>
+            <TouchableOpacity style={styles.closeBannerBtn} onPress={() => setBannerVisible(false)} accessibilityLabel="Fermer la bannière d'invitation">
               <Ionicons name="close" size={20} color="#FFFFFF" />
             </TouchableOpacity>
             <View style={styles.inviteBannerLeft}>
@@ -213,7 +151,7 @@ export default function ContactsManageScreen() {
               <Text style={styles.inviteBannerText}>
                 Envoyez de l'argent, achetez, payez des factures et gagnez des récompenses ensemble.
               </Text>
-              <TouchableOpacity style={styles.inviteBtn}>
+              <TouchableOpacity style={styles.inviteBtn} onPress={() => navigation.navigate('RewardsScreen')}>
                 <Text style={styles.inviteBtnText}>Inviter maintenant</Text>
               </TouchableOpacity>
             </View>
@@ -226,12 +164,80 @@ export default function ContactsManageScreen() {
               </View>
             </View>
           </View>
-        </View>
+        </View>}
 
         <BottomNavBar activeTab="contacts" />
+        {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
       </View>
     </SafeAreaView>
   );
+}
+
+function SwipeContactRow({ contact, direction, onDirection, onNavigate, onDelete, onFavorite }) {
+  const translateX = useRef(new Animated.Value(0)).current;
+  const lastSwipeDx = useRef(0);
+  const shouldCaptureSwipe = (_, gesture) => Math.abs(gesture.dx) > 8 && Math.abs(gesture.dx) > Math.abs(gesture.dy);
+  const panResponder = useMemo(() => PanResponder.create({
+    onMoveShouldSetPanResponder: shouldCaptureSwipe,
+    onMoveShouldSetPanResponderCapture: shouldCaptureSwipe,
+    onPanResponderGrant: () => { lastSwipeDx.current = 0; },
+    onPanResponderMove: (_, gesture) => {
+      lastSwipeDx.current = gesture.dx;
+      translateX.setValue(Math.max(-96, Math.min(96, gesture.dx)));
+    },
+    onPanResponderRelease: (_, gesture) => {
+      const dx = Math.abs(gesture.dx) >= Math.abs(lastSwipeDx.current) ? gesture.dx : lastSwipeDx.current;
+      if (dx < -35) onDirection('left');
+      else if (dx > 35) onDirection('right');
+      else if (Math.abs(dx) > 8) onDirection(null);
+      lastSwipeDx.current = 0;
+      Animated.spring(translateX, {toValue: 0, useNativeDriver: true, speed: 24, bounciness: 4}).start();
+    },
+    onPanResponderTerminate: () => Animated.spring(translateX, {toValue: 0, useNativeDriver: true}).start(),
+    onShouldBlockNativeResponder: () => true,
+  }), [onDirection, translateX]);
+
+  const person = <View style={styles.contactInfoCol}><Image source={{uri: contact.image}} style={styles.contactAvatar} /><View style={styles.contactDetails}><Text style={styles.contactName}>{contact.name}</Text><Text style={styles.contactRelation}>{contact.relation}</Text><Text style={styles.contactLocation}>{contact.flag} {contact.location}</Text></View></View>;
+
+  if (direction) {
+    return <View style={styles.swipeRow} {...panResponder.panHandlers}>
+      <TouchableOpacity style={styles.swipePerson} onPress={() => onDirection(null)}>{person}</TouchableOpacity>
+      <View style={styles.swipeReveal}>
+        {direction === 'left' ? <>
+          <SwipeAction icon="star-outline" label="Favoris" onPress={onFavorite} />
+          <SwipeAction icon="pencil-outline" label="Modifier" onPress={() => onNavigate('ContactProfileScreen')} />
+          <SwipeAction icon="trash-outline" label="Supprimer" danger onPress={onDelete} />
+        </> : <>
+          <SwipeAction icon="arrow-up-outline" label={'Envoyer\nde l’argent'} tint="#ECFDF5" onPress={() => onNavigate('SendMoneyScreen')} />
+          <SwipeAction icon="cash-outline" label={'Demander\nde l’argent'} tint="#FFF7E6" onPress={() => onNavigate('ReceiveFundsV2Screen')} />
+          <SwipeAction icon="bag-handle-outline" label={'Payer &\nessentials'} tint="#EFF6FF" onPress={() => onNavigate('ChooseServiceScreen')} />
+          <SwipeAction icon="person-add-outline" label="Inviter" tint="#F5F3FF" onPress={() => onNavigate('RewardsScreen')} />
+        </>}
+      </View>
+    </View>;
+  }
+
+  return <Animated.View style={[styles.contactItem, {transform: [{translateX}]}]} {...panResponder.panHandlers}>
+    <TouchableOpacity style={styles.contactInfoCol} onPress={() => onNavigate('ContactProfileScreen')}>
+      <Image source={{uri: contact.image}} style={styles.contactAvatar} />
+      <View style={styles.contactDetails}><Text style={styles.contactName}>{contact.name}</Text><Text style={styles.contactRelation}>{contact.relation}</Text><Text style={styles.contactLocation}>{contact.flag} {contact.location}</Text></View>
+    </TouchableOpacity>
+    <View style={styles.statusCol}><Ionicons name="person-outline" size={20} color={contact.isBeneficiary ? '#10B981' : '#94A3B8'} /><Text style={[styles.statusText, {color: contact.isBeneficiary ? '#10B981' : '#94A3B8'}]}>{contact.isBeneficiary ? 'Oui' : 'Non'}</Text></View>
+    <View style={styles.statusCol}><Ionicons name="heart-outline" size={20} color={contact.isSponsor ? '#10B981' : '#94A3B8'} /><Text style={[styles.statusText, {color: contact.isSponsor ? '#10B981' : '#94A3B8'}]}>{contact.isSponsor ? 'Oui' : 'Non'}</Text></View>
+    <TouchableOpacity
+      style={styles.swipeHintButton}
+      onPress={() => onDirection('right')}
+      onLongPress={() => onDirection('left')}
+      accessibilityLabel={`Afficher les actions de ${contact.name}`}
+      accessibilityHint="Appuyez pour les actions rapides, maintenez pour modifier ou supprimer"
+    >
+      <Ionicons name="swap-horizontal-outline" size={20} color="#1A2840" />
+    </TouchableOpacity>
+  </Animated.View>;
+}
+
+function SwipeAction({ icon, label, onPress, danger, tint }) {
+  return <TouchableOpacity style={[styles.swipeAction, tint && {backgroundColor: tint}, danger && styles.swipeActionDanger]} onPress={onPress}><Ionicons name={icon} size={22} color={danger ? '#FFF' : '#1A2840'} /><Text style={[styles.swipeActionLabel, danger && {color: '#FFF'}]}>{label}</Text></TouchableOpacity>;
 }
 
 const styles = StyleSheet.create({
@@ -324,6 +330,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_500Medium',
     fontSize: 14,
     color: '#1A2840',
+    outlineStyle: 'none',
     marginBottom: 2,
     padding: 0,
   },
@@ -444,6 +451,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F1F5F9',
     paddingVertical: 12,
+    touchAction: 'pan-y',
   },
   swipedContactContainer: {
     flexDirection: 'row',
@@ -508,6 +516,14 @@ const styles = StyleSheet.create({
     color: '#1A2840',
     marginTop: 4,
   },
+  swipeRow: { minHeight: 82, flexDirection: 'row', overflow: 'hidden', backgroundColor: '#FFF', borderBottomWidth: 1, borderBottomColor: '#F1F5F9', touchAction: 'pan-y' },
+  swipePerson: { width: '34%', paddingHorizontal: 10, justifyContent: 'center', backgroundColor: '#FFF' },
+  swipeReveal: { flex: 1, flexDirection: 'row' },
+  swipeAction: { flex: 1, minWidth: 0, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3, backgroundColor: '#F8FAFC' },
+  swipeActionDanger: { backgroundColor: '#EF4444' },
+  swipeActionLabel: { marginTop: 5, fontFamily: 'Inter_600SemiBold', fontSize: 9, lineHeight: 12, textAlign: 'center', color: '#1A2840' },
+  swipeHintButton: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC' },
+  toastWrap: { position: 'absolute', left: 14, right: 14, top: 70, zIndex: 50 },
   statusCol: {
     flex: 1,
     alignItems: 'center',

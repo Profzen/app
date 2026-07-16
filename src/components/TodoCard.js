@@ -2,9 +2,9 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function TodoCard({ icon, iconColor, iconBgColor, title, subtitle, date }) {
+export default function TodoCard({ icon, iconColor, iconBgColor, title, subtitle, date, onPress }) {
   return (
-    <TouchableOpacity style={styles.card}>
+    <TouchableOpacity style={styles.card} onPress={onPress} disabled={!onPress}>
       <View style={[styles.iconContainer, { backgroundColor: iconBgColor }]}>
         <Ionicons name={icon} size={24} color={iconColor} />
       </View>

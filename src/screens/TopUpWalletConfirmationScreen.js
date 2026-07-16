@@ -3,6 +3,7 @@ import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
+import CryptoIcon from '../components/CryptoIcon';
 
 export default function TopUpWalletConfirmationScreen() {
   const navigation = useNavigation();
@@ -105,9 +106,7 @@ export default function TopUpWalletConfirmationScreen() {
 
             <View style={styles.detailRow}>
               <View style={styles.detailLeft}>
-                <View style={styles.iconWrapper}>
-                  <Text style={{color: '#3B82F6', fontSize: 10, fontWeight: 'bold'}}>USDC</Text>
-                </View>
+                <CryptoIcon symbol="USDC" size={32} />
                 <Text style={styles.detailLabel}>Vous avez reçu</Text>
               </View>
               <Text style={styles.detailValueBold}>10 USDC</Text>

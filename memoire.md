@@ -337,6 +337,86 @@ La `BottomNavBar` a été globalement mise à jour pour s'assurer que ses icône
 
 ---
 
+## Revue exhaustive des interactions et formulaires — 14 juillet 2026
+
+### Demande traitée
+
+- Revue méthodique des champs de saisie, listes déroulantes, boutons, partages, boutiques, contacts et écrans codés mais non reliés.
+- Le champ numéro de carte de `TopUpWalletDetailsScreen` est désormais réellement contrôlé : la valeur de démonstration peut être entièrement effacée ou remplacée, les caractères sont normalisés en groupes de quatre et la saisie reste limitée à 16 chiffres.
+- La date d’expiration accepte toujours la saisie manuelle et possède maintenant un sélecteur mois/année accessible par l’icône calendrier. Une correction `minWidth: 0`/`overflow` empêche le champ CVV de recouvrir cette icône sur les écrans étroits.
+- Les principaux champs montant, téléphone, destinataire et carte ont été rendus contrôlés et modifiables. Les bordures de focus Web noires ont été neutralisées avec `outlineStyle: 'none'` sur les entrées concernées.
+
+### Composants et sélecteurs
+
+- Ajout de `src/components/AppSelect.js`, une liste de choix modale réutilisable et cohérente avec le design system. Elle gère libellé, sous-libellé, élément sélectionné, icône, fermeture et accessibilité.
+- `AppSelect` est utilisé pour les devises, jetons, réseaux, opérateurs et indicatifs dans les parcours recharge carte, recharge Mobile Money, envoi, retrait, swap, vérification de paiement, caisse et réception legacy.
+- Les flèches de choix ne sont plus décoratives sur ces parcours : elles ouvrent réellement une liste et la sélection met l’écran à jour.
+- Le sélecteur de langue de connexion bascule maintenant entre FR et EN. Les connexions sociales affichent une simulation intégrée au lieu de rester sans réaction.
+
+### Contacts
+
+- `ContactsManageScreen` gère maintenant les contacts en état local, la recherche, la fermeture de bannière, la suppression simulée, les favoris et les notifications `AppToast`.
+- Glissement vers la gauche : Favoris, Modifier, Supprimer. Glissement vers la droite : Envoyer, Demander, Payer/essentials, Inviter.
+- Un contrôle discret à deux flèches sert aussi de solution de repli Web/accessibilité : appui simple pour les actions rapides, appui long pour les actions de gestion.
+- Les actions rapides de l’en-tête Contacts ouvrent les parcours correspondants.
+
+### Shops, produits et partage
+
+- `ShopsScreen` : recherche contrôlée, sous-navigation active, filtres simulés, téléchargements DZYStore simulés, raccourcis actifs et retours via `AppToast`.
+- `ShopDetailsScreen` et `ShopProductsScreen` : favoris fonctionnels, partage natif simulé, onglets Produits/Avis/Infos/Boutique réellement interactifs, filtres de catégories et prix, recherche et favoris produit.
+- La grille de produits utilise deux colonnes sur mobile standard et passe à une colonne uniquement sous 340 px afin de conserver des cartes lisibles.
+- `ProductDetailsScreen`, confirmation de commande, succès de paiement et réception de fonds disposent de partages/copiers fonctionnels. Le gestionnaire du bouton Partager du succès de paiement a été replacé sur la bonne icône.
+
+### Logos crypto
+
+- `CryptoIcon` centralise USDT, USDC, EURC, BTC, WBTC, ETH, SOL, Polygon/POL et BNB avec des logos officiels distants.
+- DZY utilise systématiquement `dizzitup logo cercle.png`.
+- Les faux cercles avec lettres ont été remplacés sur les actifs, boutiques, produits, commande, paiement en cours, confirmation de recharge, caisse, scan caisse et succès caisse.
+
+### Écrans auparavant orphelins
+
+- Ajout de `scripts/audit-screen-links.js` pour comparer les 60 routes déclarées aux appels de navigation entrants.
+- Résultat final : 60 routes, aucune route sans point d’entrée explicite et aucune cible de navigation invalide.
+- Rattachements effectués :
+  - `FiltersScreen` depuis l’historique des transactions ;
+  - `CashierSendFundsScreen` depuis la caisse ;
+  - `DashboardEngScreen` depuis le sélecteur de langue/drapeau du tableau de bord ;
+  - `PinCodeScreen` depuis la connexion par code PIN ;
+  - `AssetListPromoScreen` depuis le menu secondaire de la liste des actifs.
+- `ReceiveFundsV2Screen` reste la version de référence. L’ancienne `ReceiveFundsScreen` reste uniquement pour compatibilité mais ses boutons copier/partager et son sélecteur blockchain ont tout de même été rendus fonctionnels.
+
+### Validation finale de cette passe
+
+- Export Expo Web SDK 57 réussi le 14 juillet 2026 : 742 modules assemblés, aucune erreur de compilation.
+- `scripts/audit-screen-links.js` : 60 routes, 0 route orpheline.
+- `scripts/audit-interactions.js` : 121 appels de navigation, aucune cible invalide, 339 contrôles avec gestionnaire. Les 151 candidats sans gestionnaire direct restent une liste de revue statique et non 151 défauts confirmés.
+- `git diff --check` : aucune erreur de contenu ; seuls les avertissements habituels LF/CRLF Windows s’appliquent.
+- Régression Chromium réussie avec zéro erreur JavaScript :
+  - `e2e-smoke.js` : connexion, envoi, retrait et recharge ;
+  - `e2e-commerce.js` : shop → produit → commande → paiement → succès ;
+  - `e2e-requested-fixes.js` : connexion email/téléphone, factures, contacts, sous-navigation Shops, QR/copie ;
+  - `test-topup-branches.js` : branche Carte et branche Mobile Money ;
+  - `test-assets-shortcuts-todos.js` : actifs, menu central, création/sauvegarde To-do ;
+  - nouveau `test-polish-flows.js` : numéro de carte remplaçable, expiration, sélecteurs devise/réseau, onglets/filtres boutique, écran d’actifs secondaire et actions Contacts gauche/droite.
+- La commande groupée de toutes les suites a dépassé son timeout global après avoir validé les premiers scénarios ; les deux scripts restants ont été relancés séparément et ont tous deux réussi. Il ne s’agissait pas d’un défaut applicatif.
+
+### État Git à la fin de la passe
+
+### Ajustements Asset List et swipe Contacts — 14 juillet 2026
+
+- Le texte secondaire du hero `AssetListScreen` a été agrandi : descriptions à 9,5 px avec interligne 15, réseaux à 8,5 px avec interligne 14, largeur utile légèrement augmentée et espace vertical bas exploité. Le portefeuille reste cantonné à la partie droite.
+- Les onglets Tous les actifs / Crypto / Stablecoins / Favoris filtrent maintenant réellement la liste : BTC, ETH, DZY et SOL pour Crypto ; USDC et EURC pour Stablecoins ; état local des étoiles pour Favoris.
+- Les étoiles de chaque actif ajoutent ou retirent immédiatement l’actif des favoris et possèdent un libellé d’accessibilité dynamique.
+- Le swipe Contacts a été repris avec `Animated.Value`, capture horizontale du `PanResponder`, suivi visuel du déplacement et mémorisation du dernier delta du geste.
+- Correction Web déterminante : `touchAction: 'pan-y'` sur les lignes de contact laisse le scroll vertical au navigateur mais réserve le swipe horizontal à l’application. Sans cette règle, le glissement vers la droite pouvait être annulé par le navigateur.
+- Nouveau test ciblé `scripts/test-contact-swipe.js` utilisant de vrais événements tactiles Chromium : swipe gauche → Favoris et swipe droite → Inviter validés, 0 erreur JavaScript.
+- `scripts/test-polish-flows.js` vérifie aussi les filtres Crypto/Stablecoins/Favoris et rejette explicitement tout actif d’une mauvaise catégorie encore visible.
+
+- Ce lot complet a été autorisé pour livraison le 16 juillet 2026, puis commité et poussé sur `origin/develop` après un dernier audit des routes et un nouveau test tactile Contacts réussi.
+- À la prochaine reprise, utiliser `git log -1 --oneline` et `git status` comme source de vérité pour confirmer le commit livré et l’absence de changements locaux supplémentaires.
+
+---
+
 ## Ajustement visuel Asset List — 13 juillet 2026
 
 - Le visuel `ldci.png` du hero DZYwallet a été décalé de 21 px vers la droite (`right: 7` vers `right: -14`) sans modifier sa taille.

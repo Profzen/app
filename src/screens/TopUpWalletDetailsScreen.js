@@ -1,11 +1,42 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput, Modal, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
+import AppSelect from '../components/AppSelect';
+import CryptoIcon from '../components/CryptoIcon';
+
+const currencyOptions = [
+  { value: 'USDC', label: 'USDC', subtitle: 'USD Coin' },
+  { value: 'USDT', label: 'USDT', subtitle: 'Tether' },
+  { value: 'EURC', label: 'EURC', subtitle: 'Euro Coin' },
+  { value: 'DZY', label: 'DZY', subtitle: 'DizzitUp Wallet' },
+];
+const networkOptions = [
+  { value: 'base', label: 'Réseau principal de Base', subtitle: 'Recommandé', iconName: 'radio-button-on', color: '#0052FF' },
+  { value: 'polygon', label: 'Polygon', subtitle: 'Rapide et économique', iconName: 'git-network', color: '#8247E5' },
+  { value: 'ethereum', label: 'Ethereum', subtitle: 'Réseau principal', iconName: 'diamond-outline', color: '#627EEA' },
+  { value: 'solana', label: 'Solana', subtitle: 'Haute performance', iconName: 'flash-outline', color: '#14F195' },
+];
 
 export default function TopUpWalletDetailsScreen() {
   const navigation = useNavigation();
+  const [cardNumber, setCardNumber] = useState('4242 4242 4242 4242');
+  const [expiry, setExpiry] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [cardholder, setCardholder] = useState('Jean Dupont');
+  const [currency, setCurrency] = useState('USDC');
+  const [network, setNetwork] = useState('base');
+  const [expiryPickerOpen, setExpiryPickerOpen] = useState(false);
+  const [pickerMonth, setPickerMonth] = useState('01');
+  const [pickerYear, setPickerYear] = useState(String(new Date().getFullYear()).slice(-2));
+
+  const updateCardNumber = (text) => setCardNumber(text.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim());
+  const updateExpiry = (text) => {
+    const digits = text.replace(/\D/g, '').slice(0, 4);
+    setExpiry(digits.length > 2 ? `${digits.slice(0, 2)} / ${digits.slice(2)}` : digits);
+  };
+  const applyExpiry = () => { setExpiry(`${pickerMonth} / ${pickerYear}`); setExpiryPickerOpen(false); };
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -81,8 +112,11 @@ export default function TopUpWalletDetailsScreen() {
               <Ionicons name="card-outline" size={20} color="#64748B" style={{marginRight: 12}} />
               <TextInput 
                 style={styles.input}
-                value="4242 4242 4242 4242"
+                value={cardNumber}
+                onChangeText={updateCardNumber}
                 keyboardType="numeric"
+                maxLength={19}
+                selectTextOnFocus
               />
               <Text style={styles.visaText}>VISA</Text>
             </View>
@@ -97,7 +131,14 @@ export default function TopUpWalletDetailsScreen() {
                   style={styles.inputRegular}
                   placeholder="MM / AA"
                   placeholderTextColor="#94A3B8"
+                  value={expiry}
+                  onChangeText={updateExpiry}
+                  keyboardType="numeric"
+                  maxLength={7}
                 />
+                <TouchableOpacity style={styles.expiryPickerButton} onPress={() => setExpiryPickerOpen(true)} accessibilityLabel="Choisir le mois et l'année">
+                  <Ionicons name="calendar-outline" size={20} color="#3B82F6" />
+                </TouchableOpacity>
               </View>
             </View>
             
@@ -109,6 +150,10 @@ export default function TopUpWalletDetailsScreen() {
                   placeholder="•••"
                   placeholderTextColor="#1A2840"
                   secureTextEntry
+                  value={cvv}
+                  onChangeText={(text) => setCvv(text.replace(/\D/g, '').slice(0, 4))}
+                  keyboardType="numeric"
+                  maxLength={4}
                 />
                 <Ionicons name="information-circle-outline" size={20} color="#94A3B8" />
               </View>
@@ -122,7 +167,9 @@ export default function TopUpWalletDetailsScreen() {
               <Ionicons name="person-outline" size={20} color="#64748B" style={{marginRight: 12}} />
               <TextInput 
                 style={styles.inputRegular}
-                value="Jean Dupont"
+                value={cardholder}
+                onChangeText={setCardholder}
+                autoCapitalize="words"
               />
             </View>
           </View>
@@ -143,34 +190,13 @@ export default function TopUpWalletDetailsScreen() {
           {/* Form: Devise */}
           <View style={styles.formGroup}>
             <Text style={styles.label}>DEVISE</Text>
-            <TouchableOpacity style={styles.dropdownContainer}>
-              <View style={styles.dropdownLeft}>
-                <View style={styles.tokenIconCircle}>
-                  <Text style={{color: '#FFF', fontSize: 10, fontWeight: 'bold'}}>USDC</Text>
-                </View>
-                <Text style={styles.dropdownText}>USDC</Text>
-              </View>
-              <Ionicons name="chevron-down" size={20} color="#1A2840" />
-            </TouchableOpacity>
+            <AppSelect value={currency} options={currencyOptions} onChange={setCurrency} title="Choisir la devise" renderLeading={(option) => <CryptoIcon symbol={option.value} size={26} style={{marginRight: 12}} />} />
           </View>
 
           {/* Form: Réseau de transaction */}
           <View style={styles.formGroup}>
             <Text style={styles.label}>RÉSEAU DE TRANSACTION</Text>
-            <TouchableOpacity style={styles.dropdownContainer}>
-              <View style={styles.dropdownLeft}>
-                <View style={styles.networkIconCircle}>
-                  <Text style={{color: '#FFF', fontSize: 12, fontWeight: 'bold'}}>b</Text>
-                </View>
-                <Text style={styles.dropdownText}>Réseau principal de base</Text>
-              </View>
-              <View style={styles.dropdownRight}>
-                <View style={styles.recommendedBadge}>
-                  <Text style={styles.recommendedText}>Recommandé</Text>
-                </View>
-                <Ionicons name="chevron-down" size={20} color="#1A2840" />
-              </View>
-            </TouchableOpacity>
+            <AppSelect value={network} options={networkOptions} onChange={setNetwork} title="Choisir le réseau de transaction" renderLeading={(option) => <View style={[styles.networkIconCircle, {backgroundColor: option.color || '#0052FF'}]}><Ionicons name={option.iconName || 'git-network'} size={14} color="#FFF" /></View>} />
           </View>
 
           {/* Continue Button */}
@@ -182,6 +208,20 @@ export default function TopUpWalletDetailsScreen() {
         </ScrollView>
 
         <BottomNavBar />
+        <Modal visible={expiryPickerOpen} transparent animationType="fade" onRequestClose={() => setExpiryPickerOpen(false)}>
+          <View style={styles.pickerOverlay}>
+            <Pressable style={StyleSheet.absoluteFill} onPress={() => setExpiryPickerOpen(false)} />
+            <View style={styles.pickerCard}>
+              <Text style={styles.pickerTitle}>Date d'expiration</Text>
+              <Text style={styles.pickerHint}>Choisissez le mois et l'année</Text>
+              <Text style={styles.pickerSectionTitle}>Mois</Text>
+              <View style={styles.pickerGrid}>{Array.from({length: 12}, (_, i) => String(i + 1).padStart(2, '0')).map((month) => <TouchableOpacity key={month} style={[styles.pickerChoice, pickerMonth === month && styles.pickerChoiceActive]} onPress={() => setPickerMonth(month)}><Text style={[styles.pickerChoiceText, pickerMonth === month && styles.pickerChoiceTextActive]}>{month}</Text></TouchableOpacity>)}</View>
+              <Text style={styles.pickerSectionTitle}>Année</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.yearRow}>{Array.from({length: 12}, (_, i) => String(new Date().getFullYear() + i).slice(-2)).map((year) => <TouchableOpacity key={year} style={[styles.yearChoice, pickerYear === year && styles.pickerChoiceActive]} onPress={() => setPickerYear(year)}><Text style={[styles.pickerChoiceText, pickerYear === year && styles.pickerChoiceTextActive]}>20{year}</Text></TouchableOpacity>)}</ScrollView>
+              <TouchableOpacity style={styles.pickerApply} onPress={applyExpiry}><Text style={styles.pickerApplyText}>Utiliser {pickerMonth} / {pickerYear}</Text></TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </View>
     </SafeAreaView>
   );
@@ -308,6 +348,7 @@ const styles = StyleSheet.create({
   },
   formGroup: {
     marginBottom: 20,
+    minWidth: 0,
   },
   rowFormGroup: {
     flexDirection: 'row',
@@ -328,20 +369,27 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 16,
     height: 56,
+    minWidth: 0,
+    overflow: 'hidden',
   },
   input: {
     flex: 1,
+    minWidth: 0,
     fontFamily: 'Inter_700Bold',
     fontSize: 16,
     color: '#1A2840',
     letterSpacing: 1,
+    outlineStyle: 'none',
   },
   inputRegular: {
     flex: 1,
+    minWidth: 0,
     fontFamily: 'Inter_500Medium',
     fontSize: 15,
     color: '#1A2840',
+    outlineStyle: 'none',
   },
+  expiryPickerButton: { width: 36, height: 36, flexShrink: 0, borderRadius: 18, backgroundColor: '#EFF6FF', alignItems: 'center', justifyContent: 'center' },
   visaText: {
     fontFamily: 'Inter_700Bold',
     fontSize: 16,
@@ -449,4 +497,18 @@ const styles = StyleSheet.create({
     color: '#1A2840',
     marginRight: 8,
   },
+  pickerOverlay: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: 'rgba(10,17,40,0.35)' },
+  pickerCard: { backgroundColor: '#FFF', borderRadius: 22, padding: 20 },
+  pickerTitle: { fontFamily: 'Inter_700Bold', fontSize: 19, color: '#1A2840' },
+  pickerHint: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#64748B', marginTop: 4, marginBottom: 18 },
+  pickerSectionTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#64748B', marginBottom: 8, marginTop: 8 },
+  pickerGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  pickerChoice: { width: '15%', height: 38, borderRadius: 10, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+  pickerChoiceActive: { backgroundColor: '#FFB800' },
+  pickerChoiceText: { fontFamily: 'Inter_600SemiBold', color: '#1A2840', fontSize: 12 },
+  pickerChoiceTextActive: { color: '#0A1128' },
+  yearRow: { paddingBottom: 8 },
+  yearChoice: { paddingHorizontal: 13, height: 38, borderRadius: 10, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center', marginRight: 8 },
+  pickerApply: { marginTop: 14, height: 52, borderRadius: 14, backgroundColor: '#FFB800', alignItems: 'center', justifyContent: 'center' },
+  pickerApplyText: { fontFamily: 'Inter_700Bold', fontSize: 15, color: '#1A2840' },
 });

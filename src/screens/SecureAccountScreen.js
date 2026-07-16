@@ -47,7 +47,7 @@ export default function SecureAccountScreen() {
           </TouchableOpacity>
           <View style={styles.loginLinkContainer}>
             <Text style={styles.loginText}>Déjà un compte ? </Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
               <Text style={styles.loginLink}>Se connecter</Text>
             </TouchableOpacity>
           </View>

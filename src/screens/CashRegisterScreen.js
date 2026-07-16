@@ -3,11 +3,14 @@ import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
+import CryptoIcon from '../components/CryptoIcon';
+import AppSelect from '../components/AppSelect';
 
 export default function CashRegisterScreen() {
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState('qr');
   const [amount, setAmount] = useState('2000');
+  const [currency, setCurrency] = useState('XOF');
 
   const handleKeyPress = (key) => {
     if (key === 'backspace') {
@@ -51,7 +54,7 @@ export default function CashRegisterScreen() {
           <Text style={styles.pageTitle}>
             {activeTab === 'qr' ? 'Caisse (TPE)' : 'Caissier (PDV)'}
           </Text>
-          <TouchableOpacity style={styles.iconBtn}>
+          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('CashierSendFundsScreen')}>
             <Ionicons name="scan" size={20} color="#1A2840" />
           </TouchableOpacity>
         </View>
@@ -94,21 +97,15 @@ export default function CashRegisterScreen() {
               
               <View style={styles.cryptoPillsRow}>
                 <View style={[styles.cryptoPill, styles.cryptoPillActive]}>
-                  <View style={[styles.cryptoIconSmall, {backgroundColor: '#26A17B'}]}>
-                    <Text style={{color: '#FFF', fontSize: 10, fontWeight: 'bold'}}>T</Text>
-                  </View>
+                  <CryptoIcon symbol="USDT" size={22} />
                   <Text style={styles.cryptoPillTextActive}>USDT</Text>
                 </View>
                 <View style={styles.cryptoPill}>
-                  <View style={[styles.cryptoIconSmall, {backgroundColor: '#2775CA'}]}>
-                    <Text style={{color: '#FFF', fontSize: 10, fontWeight: 'bold'}}>G</Text>
-                  </View>
+                  <CryptoIcon symbol="USDC" size={22} />
                   <Text style={styles.cryptoPillText}>USDC</Text>
                 </View>
                 <View style={styles.cryptoPill}>
-                  <View style={[styles.cryptoIconSmall, {backgroundColor: '#05112F'}]}>
-                    <Text style={{color: '#FFB800', fontSize: 10, fontWeight: 'bold'}}>D</Text>
-                  </View>
+                  <CryptoIcon symbol="DZY" size={22} />
                   <Text style={styles.cryptoPillText}>DZY</Text>
                 </View>
               </View>
@@ -116,10 +113,15 @@ export default function CashRegisterScreen() {
 
             {/* Currency Selector */}
             <View style={styles.currencySelectorRow}>
-              <TouchableOpacity style={styles.currencySelectorBtn}>
-                <Text style={styles.currencySelectorText}>XOF</Text>
-                <Ionicons name="chevron-down" size={14} color="#FFB800" style={{marginLeft: 4}} />
-              </TouchableOpacity>
+              <AppSelect
+                value={currency}
+                options={['XOF', 'XAF', 'GHS', 'NGN'].map((value) => ({value, label: value}))}
+                onChange={setCurrency}
+                title="Choisir la devise de la caisse"
+                style={styles.currencySelectorBtn}
+                textStyle={styles.currencySelectorText}
+                chevronColor="#FFB800"
+              />
             </View>
 
             {/* Amount Display */}
@@ -373,6 +375,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
+    minHeight: 34,
+    width: 110,
   },
   currencySelectorText: {
     fontFamily: 'Inter_600SemiBold',

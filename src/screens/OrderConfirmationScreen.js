@@ -1,10 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Share } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
+import CryptoIcon from '../components/CryptoIcon';
+import AppToast from '../components/AppToast';
 
 export default function OrderConfirmationScreen() {
   const navigation = useNavigation();
+  const [toast, setToast] = useState(null);
+  const orderUrl = 'jumia.sn/orders/JM-2026-000152';
+  const shareOrder = async () => { try { await Share.share({title:'Achetez-moi ceci',message:`Pouvez-vous payer ce produit pour moi ? ${orderUrl}`}); } finally { setToast({title:'Commande partagée',message:'La demande de paiement est prête.'}); } };
+  const copyOrder = async () => { await Clipboard.setStringAsync(orderUrl); setToast({title:'Lien copié',message:'Le lien de commande est dans le presse-papiers.'}); };
   return (
     <SafeAreaView style={styles.safeArea}>
       
@@ -69,7 +76,7 @@ export default function OrderConfirmationScreen() {
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Vous payez avec</Text>
             <View style={styles.detailValueRow}>
-              <View style={[styles.tokenIcon, {backgroundColor: '#3B82F6'}]}><Text style={styles.tokenIconText}>$</Text></View>
+              <CryptoIcon symbol="USDC" size={24} />
               <Text style={styles.detailValue}>USDC</Text>
             </View>
           </View>
@@ -79,7 +86,7 @@ export default function OrderConfirmationScreen() {
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Réseau sélectionné</Text>
             <View style={styles.detailValueRow}>
-              <View style={[styles.tokenIcon, {backgroundColor: '#8B5CF6'}]}><Text style={styles.tokenIconText}>P</Text></View>
+              <CryptoIcon symbol="POL" size={24} />
               <Text style={styles.detailValue}>Polygon</Text>
             </View>
           </View>
@@ -158,10 +165,10 @@ export default function OrderConfirmationScreen() {
           
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>URL de la commande</Text>
-            <View style={styles.infoValueRow}>
+            <TouchableOpacity style={styles.infoValueRow} onPress={copyOrder}>
               <Text style={styles.infoValueBlue}>jumia.sn/orders/JM-2026-000152</Text>
               <Ionicons name="copy-outline" size={14} color="#3B82F6" style={{marginLeft: 6}} />
-            </View>
+            </TouchableOpacity>
           </View>
           
           <View style={styles.divider} />
@@ -192,7 +199,7 @@ export default function OrderConfirmationScreen() {
               <Text style={styles.shareText}>Vous pouvez partager cette commande avec un proche qui pourra payer ce produit pour vous.</Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.btnShare}>
+          <TouchableOpacity style={styles.btnShare} onPress={shareOrder}>
             <Ionicons name="arrow-redo-outline" size={16} color="#3B82F6" style={{marginRight: 6}} />
             <Text style={styles.btnShareText}>Envoyer à un contact</Text>
           </TouchableOpacity>
@@ -216,6 +223,7 @@ export default function OrderConfirmationScreen() {
           </View>
         </TouchableOpacity>
       </View>
+      {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
 
     </SafeAreaView>
   );
@@ -226,6 +234,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FAFAFA',
   },
+  toastWrap: { position: 'absolute', left: 14, right: 14, top: 64, zIndex: 40 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

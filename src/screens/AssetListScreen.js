@@ -20,6 +20,16 @@ export default function AssetListScreen() {
   const navigation = useNavigation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('Tous les actifs');
+  const [favorites, setFavorites] = useState(['5']);
+
+  const filteredAssets = ASSETS_DATA.filter((item) => {
+    if (activeTab === 'Crypto') return ['BTC', 'ETH', 'DZY', 'SOL'].includes(item.symbol);
+    if (activeTab === 'Stablecoins') return ['USDC', 'EURC'].includes(item.symbol);
+    if (activeTab === 'Favoris') return favorites.includes(item.id);
+    return true;
+  });
+
+  const toggleFavorite = (id) => setFavorites((current) => current.includes(id) ? current.filter((itemId) => itemId !== id) : [...current, id]);
 
   const renderAssetRow = ({ item }) => (
     <View style={styles.assetRow}>
@@ -52,8 +62,8 @@ export default function AssetListScreen() {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.favButton}>
-        <Ionicons name={item.isFav ? "star" : "star-outline"} size={18} color={item.isFav ? "#F59E0B" : "#A0AABF"} />
+      <TouchableOpacity style={styles.favButton} onPress={() => toggleFavorite(item.id)} accessibilityLabel={`${favorites.includes(item.id) ? 'Retirer' : 'Ajouter'} ${item.symbol} des favoris`}>
+        <Ionicons name={favorites.includes(item.id) ? "star" : "star-outline"} size={18} color={favorites.includes(item.id) ? "#F59E0B" : "#A0AABF"} />
       </TouchableOpacity>
     </View>
   );
@@ -78,7 +88,7 @@ export default function AssetListScreen() {
             <TouchableOpacity style={styles.iconButton}>
               <Ionicons name="gift-outline" size={20} color="#1A2840" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('AssetListPromoScreen')} accessibilityLabel="Voir la présentation détaillée du portefeuille">
               <Ionicons name="ellipsis-horizontal" size={20} color="#1A2840" />
             </TouchableOpacity>
           </View>
@@ -208,7 +218,7 @@ export default function AssetListScreen() {
 
           {/* Asset List */}
           <View style={styles.listContainer}>
-            {ASSETS_DATA.map(item => (
+            {filteredAssets.map(item => (
               <View key={item.id}>
                 {renderAssetRow({ item })}
                 <View style={styles.rowDivider} />
@@ -252,13 +262,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     position: 'relative',
   },
-  ldciCopy: { width: '55%', height: '100%', paddingLeft: 18, paddingTop: 17, zIndex: 6 },
+  ldciCopy: { width: '59%', height: '100%', paddingLeft: 18, paddingTop: 17, paddingBottom: 18, zIndex: 6 },
   ldciBrand: { fontFamily: 'Inter_700Bold', fontSize: 16, color: '#FFFFFF', marginBottom: 12 },
   ldciBrandAccent: { color: '#FFC000' },
   ldciHeadline: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 19, lineHeight: 24, color: '#FFFFFF', marginBottom: 12 },
   ldciHighlight: { color: '#FFC000' },
-  ldciDescription: { width: 215, fontFamily: 'Inter_400Regular', fontSize: 7.5, lineHeight: 13, color: '#FFFFFF', marginBottom: 2 },
-  ldciNetworks: { width: 220, fontFamily: 'Inter_500Medium', fontSize: 7.5, color: '#FFFFFF', marginTop: 7 },
+  ldciDescription: { width: 230, fontFamily: 'Inter_500Medium', fontSize: 9.5, lineHeight: 15, color: '#FFFFFF', marginBottom: 4 },
+  ldciNetworks: { width: 235, fontFamily: 'Inter_600SemiBold', fontSize: 8.5, lineHeight: 14, color: '#FFFFFF', marginTop: 10 },
   ldciDot: { color: '#FFC000' },
   ldciVisual: { position: 'absolute', width: 180, height: 180, right: -14, top: 36, zIndex: 5 },
   ldciArrow: { position: 'absolute', right: 11, top: 11, width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.13)', alignItems: 'center', justifyContent: 'center', zIndex: 7 },
