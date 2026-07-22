@@ -49,3 +49,9 @@ wire_*.js
 generate_navigator.js
 inject_navigation.js
 
+# Maquettes & dossiers de travail locaux
+DizzitApp Business screen/
+maj_aziz/
+dist-ldci-check/
+
+
