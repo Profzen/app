@@ -1,539 +1,369 @@
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Image, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import BottomNavBar from '../components/BottomNavBar';
 
 export default function ContactProfileScreen() {
   const navigation = useNavigation();
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         
-        {/* Header */}
+        {/* Header Top Bar */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#1A2840" />
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={22} color="#1A2840" />
           </TouchableOpacity>
-          <View style={styles.headerRightIcons}>
-            <TouchableOpacity style={styles.iconBtnRight}>
-              <Ionicons name="pencil-outline" size={20} color="#1A2840" />
+          <View style={styles.headerRightActions}>
+            <TouchableOpacity style={styles.actionSquareBtn}>
+              <Ionicons name="pencil-outline" size={18} color="#1A2840" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnRight}>
-              <Ionicons name="ellipsis-horizontal" size={20} color="#1A2840" />
+            <TouchableOpacity style={styles.actionSquareBtn}>
+              <Ionicons name="ellipsis-horizontal" size={18} color="#1A2840" />
             </TouchableOpacity>
           </View>
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          {/* Profile Section */}
-          <View style={styles.profileSection}>
-            <View style={styles.avatarContainer}>
-              <Image source={{uri: 'https://i.pravatar.cc/150?img=11'}} style={styles.avatar} />
-              <View style={styles.verifiedBadge}>
-                <Ionicons name="checkmark-circle" size={24} color="#10B981" />
-                {/* White background behind the checkmark icon */}
-                <View style={styles.verifiedBadgeBg} />
+          {/* Profile Header Section */}
+          <View style={styles.profileHeaderSection}>
+            <View style={styles.avatarWrapper}>
+              <Image source={{ uri: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80' }} style={styles.avatarImage} />
+              <View style={styles.badgeVerified}>
+                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
               </View>
             </View>
 
-            <Text style={styles.profileName}>John Doe</Text>
-
-            <View style={styles.tagsContainer}>
-              <View style={styles.tag}>
-                <Ionicons name="person-outline" size={14} color="#10B981" style={{marginRight: 4}} />
-                <Text style={styles.tagText}>Bénéficiaire</Text>
-              </View>
-              <View style={styles.tag}>
-                <Ionicons name="heart-outline" size={14} color="#10B981" style={{marginRight: 4}} />
-                <Text style={styles.tagText}>Parrain</Text>
-              </View>
+            <Text style={styles.contactName}>John Doe</Text>
+            <Text style={styles.relationText}>Frère</Text>
+            <View style={styles.locationRow}>
+              <Text style={styles.locationFlagText}>🇹🇬  Lomé, Togo</Text>
             </View>
-
-            <Text style={styles.locationText}>🇹🇬 Lomé, Togo</Text>
           </View>
 
-          {/* Quick Actions */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickActionsScroll}>
-            <TouchableOpacity style={styles.quickActionCard} onPress={() => navigation.navigate('SendMoneyScreen')}>
-              <View style={[styles.quickActionIconContainer, {backgroundColor: '#ECFDF5'}]}>
-                <Ionicons name="paper-plane-outline" size={24} color="#10B981" />
+          {/* 2 Tabs Bar */}
+          <View style={styles.tabsRowContainer}>
+            <TouchableOpacity style={[styles.tabButton, styles.tabButtonActive]}>
+              <Text style={styles.tabTextActive}>Informations</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.tabButton} onPress={() => navigation.navigate('ContactHistoryScreen')}>
+              <Text style={styles.tabTextInactive}>Historique</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* 4 Quick Action Cards Grid (Exact Mockup Icons) */}
+          <View style={styles.quickActionsGrid}>
+            
+            {/* Card 1: Envoyer de l'argent (Green Diagonal Arrow ↗) */}
+            <TouchableOpacity style={styles.quickCard} onPress={() => navigation.navigate('SendMoneyScreen')}>
+              <View style={styles.quickCardIconBox}>
+                <Ionicons name="trending-up" size={26} color="#10B981" />
               </View>
-              <Text style={styles.quickActionTitle}>Envoyer{'\n'}des fonds</Text>
+              <Text style={styles.quickCardText}>Envoyer{'\n'}de l'argent</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickActionCard} onPress={() => navigation.navigate('MobileRechargeScreen')}>
-              <View style={[styles.quickActionIconContainer, {backgroundColor: '#FFFBEB'}]}>
-                <Ionicons name="download-outline" size={24} color="#F59E0B" />
+            {/* Card 2: Demander de l'argent (3 Stacked Golden Coins 🪙) */}
+            <TouchableOpacity style={styles.quickCard} onPress={() => navigation.navigate('SendMoneyScreen')}>
+              <View style={styles.quickCardIconBox}>
+                <View style={styles.goldenCoinsStack}>
+                  <View style={[styles.miniCoin, { top: 0, left: 4 }]} />
+                  <View style={[styles.miniCoin, { top: 5, left: 0 }]} />
+                  <View style={[styles.miniCoin, { top: 5, left: 8 }]} />
+                </View>
               </View>
-              <Text style={styles.quickActionTitle}>Demander{'\n'}des fonds</Text>
+              <Text style={styles.quickCardText}>Demander{'\n'}de l'argent</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickActionCard} onPress={() => navigation.navigate('PayBillsScreen')}>
-              <View style={[styles.quickActionIconContainer, {backgroundColor: '#EFF6FF'}]}>
-                <Ionicons name="bag-handle-outline" size={24} color="#3B82F6" />
+            {/* Card 3: Payer & Envoyer essentiels (Solid Blue Shopping Bag 🛍️) */}
+            <TouchableOpacity style={styles.quickCard} onPress={() => navigation.navigate('ShopsScreen')}>
+              <View style={styles.quickCardIconBox}>
+                <Ionicons name="bag-handle" size={26} color="#0052FF" />
               </View>
-              <Text style={styles.quickActionTitle}>Payer &{'\n'}acheter{'\n'}l'essentiel</Text>
+              <Text style={styles.quickCardText}>Payer &{'\n'}Envoyer essentiels</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickActionCard} onPress={() => navigation.navigate('ContactHistoryScreen')}>
-              <View style={[styles.quickActionIconContainer, {backgroundColor: '#F5F3FF'}]}>
-                <Ionicons name="person-add-outline" size={24} color="#8B5CF6" />
+            {/* Card 4: Inviter (Purple Person Plus 👤+) */}
+            <TouchableOpacity style={styles.quickCard} onPress={() => navigation.navigate('ContactsScreen')}>
+              <View style={styles.quickCardIconBox}>
+                <Ionicons name="person-add-outline" size={26} color="#8B5CF6" />
               </View>
-              <Text style={styles.quickActionTitle}>Inviter</Text>
+              <Text style={styles.quickCardText}>Inviter</Text>
             </TouchableOpacity>
-          </ScrollView>
 
-          {/* Info List */}
+          </View>
+
+          {/* Contact Details Information List */}
           <View style={styles.infoListCard}>
             
+            {/* Row 1: Téléphone */}
             <View style={styles.infoRow}>
-              <View style={styles.infoIconCircle}>
-                <Ionicons name="call-outline" size={18} color="#64748B" />
+              <View style={styles.infoIconBox}>
+                <Ionicons name="call-outline" size={18} color="#6B7280" />
               </View>
-              <View style={styles.infoContent}>
+              <View style={styles.infoTextGroup}>
                 <Text style={styles.infoLabel}>Téléphone</Text>
                 <Text style={styles.infoValue}>+228 90 12 34 56</Text>
               </View>
-              <View style={styles.infoActions}>
-                <TouchableOpacity style={styles.infoActionBtn}>
-                  <Ionicons name="call-outline" size={18} color="#1A2840" />
+              <View style={styles.infoActionIcons}>
+                <TouchableOpacity style={styles.actionCircleBtn}>
+                  <Ionicons name="call-outline" size={16} color="#1A2840" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.infoActionBtn}>
-                  <Ionicons name="chatbubble-outline" size={18} color="#1A2840" />
+                <TouchableOpacity style={styles.actionCircleBtn}>
+                  <Ionicons name="chatbubble-outline" size={16} color="#1A2840" />
                 </TouchableOpacity>
               </View>
             </View>
 
-            <View style={styles.divider} />
+            <View style={styles.rowDivider} />
 
+            {/* Row 2: Email */}
             <View style={styles.infoRow}>
-              <View style={styles.infoIconCircle}>
-                <Ionicons name="mail-outline" size={18} color="#64748B" />
+              <View style={styles.infoIconBox}>
+                <Ionicons name="mail-outline" size={18} color="#6B7280" />
               </View>
-              <View style={styles.infoContent}>
+              <View style={styles.infoTextGroup}>
                 <Text style={styles.infoLabel}>Email</Text>
                 <Text style={styles.infoValue}>johndoe@gmail.com</Text>
               </View>
-              <View style={styles.infoActions}>
-                <TouchableOpacity style={styles.infoActionBtn}>
-                  <Ionicons name="mail-outline" size={18} color="#1A2840" />
+              <TouchableOpacity style={styles.actionCircleBtn}>
+                <Ionicons name="mail-outline" size={16} color="#1A2840" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.rowDivider} />
+
+            {/* Row 3: Mobile */}
+            <View style={styles.infoRow}>
+              <View style={styles.infoIconBox}>
+                <Ionicons name="wallet-outline" size={18} color="#6B7280" />
+              </View>
+              <View style={styles.infoTextGroup}>
+                <Text style={styles.infoLabel}>Mobile</Text>
+                <Text style={styles.infoValue}>+228 90 12 34 56</Text>
+              </View>
+              <TouchableOpacity style={styles.actionCircleBtn}>
+                <Ionicons name="copy-outline" size={16} color="#1A2840" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.rowDivider} />
+
+            {/* Row 4: EVM wallet */}
+            <View style={styles.infoRow}>
+              <View style={styles.infoIconBox}>
+                <Ionicons name="logo-ethereum" size={18} color="#6B7280" />
+              </View>
+              <View style={styles.infoTextGroup}>
+                <Text style={styles.infoLabel}>EVM wallet</Text>
+                <Text style={styles.infoValue}>0xA1B2...3C4D5E</Text>
+              </View>
+              <View style={styles.infoActionIcons}>
+                <TouchableOpacity style={styles.actionCircleBtn}>
+                  <Ionicons name="open-outline" size={16} color="#1A2840" />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.actionCircleBtn}>
+                  <Ionicons name="copy-outline" size={16} color="#1A2840" />
                 </TouchableOpacity>
               </View>
             </View>
 
-            <View style={styles.divider} />
+            <View style={styles.rowDivider} />
 
+            {/* Row 5: Solana wallet */}
             <View style={styles.infoRow}>
-              <View style={styles.infoIconCircle}>
-                <Ionicons name="location-outline" size={18} color="#64748B" />
+              <View style={styles.infoIconBox}>
+                <Ionicons name="layers-outline" size={18} color="#6B7280" />
               </View>
-              <View style={styles.infoContent}>
+              <View style={styles.infoTextGroup}>
+                <Text style={styles.infoLabel}>Solana wallet</Text>
+                <Text style={styles.infoValue}>8xZ7...9AbC</Text>
+              </View>
+              <View style={styles.infoActionIcons}>
+                <TouchableOpacity style={styles.actionCircleBtn}>
+                  <Ionicons name="open-outline" size={16} color="#1A2840" />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.actionCircleBtn}>
+                  <Ionicons name="copy-outline" size={16} color="#1A2840" />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.rowDivider} />
+
+            {/* Row 6: Pays */}
+            <View style={styles.infoRow}>
+              <View style={styles.infoIconBox}>
+                <Ionicons name="location-outline" size={18} color="#6B7280" />
+              </View>
+              <View style={styles.infoTextGroup}>
                 <Text style={styles.infoLabel}>Pays</Text>
                 <Text style={styles.infoValue}>Togo</Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#1A2840" />
+              <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
             </View>
 
-            <View style={styles.divider} />
+            <View style={styles.rowDivider} />
 
+            {/* Row 7: Groupe */}
             <View style={styles.infoRow}>
-              <View style={styles.infoIconCircle}>
-                <Ionicons name="people-outline" size={18} color="#64748B" />
+              <View style={styles.infoIconBox}>
+                <Ionicons name="people-outline" size={18} color="#6B7280" />
               </View>
-              <View style={styles.infoContent}>
+              <View style={styles.infoTextGroup}>
                 <Text style={styles.infoLabel}>Groupe</Text>
                 <Text style={styles.infoValue}>Famille</Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#1A2840" />
+              <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
             </View>
 
-            <View style={styles.divider} />
+            <View style={styles.rowDivider} />
 
+            {/* Row 8: Parrain */}
             <View style={styles.infoRow}>
-              <View style={styles.infoIconCircle}>
-                <Ionicons name="heart-outline" size={18} color="#10B981" />
+              <View style={styles.infoIconBox}>
+                <Ionicons name="heart-outline" size={18} color="#6B7280" />
               </View>
-              <View style={styles.infoContent}>
+              <View style={styles.infoTextGroup}>
                 <Text style={styles.infoLabel}>Parrain</Text>
-                <Text style={[styles.infoValue, {color: '#10B981'}]}>Oui</Text>
+                <Text style={[styles.infoValue, { color: '#10B981' }]}>Oui</Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#1A2840" />
+              <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
             </View>
+
           </View>
 
-          {/* Verified Contact Banner */}
-          <View style={styles.verifiedBanner}>
-            <View style={styles.verifiedShield}>
-              <Ionicons name="shield-checkmark-outline" size={24} color="#F59E0B" />
+          {/* Contact vérifié Shield Card Banner */}
+          <View style={styles.verifiedBannerCard}>
+            <View style={styles.verifiedShieldIcon}>
+              <Ionicons name="shield-checkmark-outline" size={22} color="#D97706" />
             </View>
-            <View style={styles.verifiedContent}>
-              <Text style={styles.verifiedTitle}>Contact vérifié</Text>
-              <Text style={styles.verifiedText}>
-                Ce contact est vérifié et peut recevoir{'\n'}de l'argent sur DizzitUp.
+            <View style={styles.verifiedBannerContent}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+                <Text style={styles.verifiedBannerTitle}>Contact vérifié</Text>
+                <Ionicons name="checkmark-circle" size={14} color="#D97706" style={{ marginLeft: 4 }} />
+              </View>
+              <Text style={styles.verifiedBannerSubtext}>
+                Ce contact est vérifié et peut recevoir de l'argent sur DizzitUp.
               </Text>
             </View>
-            <View style={styles.verifiedBadgeIcon}>
-              <Ionicons name="checkmark-circle" size={24} color="#F59E0B" />
+            <View style={styles.verifiedCheckBadge}>
+              <Ionicons name="checkmark" size={14} color="#FFFFFF" />
             </View>
           </View>
 
-          {/* Recent Activity */}
+          {/* Activité récente Section */}
           <View style={styles.activityHeaderRow}>
-            <Text style={styles.activityTitle}>Activité récente</Text>
-            <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}}>
+            <Text style={styles.activityTitleText}>Activité récente</Text>
+            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => navigation.navigate('ContactHistoryScreen')}>
               <Text style={styles.viewAllText}>Voir tout</Text>
-              <Ionicons name="arrow-forward" size={16} color="#1A2840" style={{marginLeft: 4}} />
+              <Ionicons name="arrow-forward" size={14} color="#0052FF" style={{ marginLeft: 4 }} />
             </TouchableOpacity>
           </View>
 
-          <View style={styles.activityList}>
-            {/* Activity 1 */}
-            <TouchableOpacity style={styles.activityItem} onPress={() => navigation.navigate('ContactHistoryScreen')}>
-              <View style={[styles.activityIconCircle, {backgroundColor: '#ECFDF5'}]}>
-                <Ionicons name="arrow-up-outline" size={18} color="#10B981" style={{transform: [{rotate: '45deg'}]}} />
+          <View style={styles.activityContainerCard}>
+            <TouchableOpacity style={styles.activityRow} onPress={() => navigation.navigate('ContactHistoryScreen')}>
+              <View style={[styles.activityIconCircle, { backgroundColor: '#DCFCE7' }]}>
+                <Ionicons name="arrow-up-right-outline" size={18} color="#10B981" />
               </View>
-              <View style={styles.activityContent}>
-                <Text style={styles.activityItemTitle}>Vous avez envoyé des fonds</Text>
-                <Text style={styles.activityDate}>23 avril 2024 • 14:32</Text>
+              <View style={styles.activityMainContent}>
+                <Text style={styles.activityItemTitle}>Vous avez envoyé de l'argent</Text>
+                <Text style={styles.activityDateText}>23 avril 2024 • 14:32</Text>
               </View>
-              <View style={styles.activityRight}>
-                <Text style={styles.activityAmountNegative}>- 50,00 DZ</Text>
-                <Ionicons name="chevron-forward" size={16} color="#64748B" />
-              </View>
+              <Text style={styles.activityAmountNegative}>- 50,00 DZ</Text>
+              <Ionicons name="chevron-forward" size={14} color="#9CA3AF" style={{ marginLeft: 6 }} />
             </TouchableOpacity>
 
-            <View style={styles.divider} />
+            <View style={styles.rowDivider} />
 
-            {/* Activity 2 */}
-            <TouchableOpacity style={styles.activityItem} onPress={() => navigation.navigate('ContactHistoryScreen')}>
-              <View style={[styles.activityIconCircle, {backgroundColor: '#FFFBEB'}]}>
-                <Ionicons name="cash-outline" size={18} color="#F59E0B" />
+            <TouchableOpacity style={styles.activityRow} onPress={() => navigation.navigate('ContactHistoryScreen')}>
+              <View style={[styles.activityIconCircle, { backgroundColor: '#FEF3C7' }]}>
+                <Ionicons name="arrow-down-outline" size={18} color="#D97706" />
               </View>
-              <View style={styles.activityContent}>
-                <Text style={styles.activityItemTitle}>Demande de fonds</Text>
-                <Text style={styles.activityDate}>18 avril 2024 • 09:15</Text>
+              <View style={styles.activityMainContent}>
+                <Text style={styles.activityItemTitle}>Demande d'argent</Text>
+                <Text style={styles.activityDateText}>18 avril 2024 • 09:15</Text>
               </View>
-              <View style={styles.activityRight}>
-                <Text style={styles.activityAmountPositive}>+ 25,00 DZ</Text>
-                <Ionicons name="chevron-forward" size={16} color="#64748B" />
-              </View>
+              <Text style={styles.activityAmountPositive}>+ 25,00 DZ</Text>
+              <Ionicons name="chevron-forward" size={14} color="#9CA3AF" style={{ marginLeft: 6 }} />
             </TouchableOpacity>
           </View>
 
-          {/* Save Button */}
-          <TouchableOpacity style={styles.btnSave} onPress={() => navigation.goBack()}>
-            <Ionicons name="save-outline" size={20} color="#FFFFFF" style={{marginRight: 8}} />
-            <Text style={styles.btnSaveText}>Save</Text>
+          {/* Sticky Action CTA Button */}
+          <TouchableOpacity 
+            style={styles.btnSendMoney} 
+            onPress={() => navigation.navigate('SendMoneyScreen')}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="swap-horizontal" size={18} color="#1A2840" style={{ marginRight: 8 }} />
+            <Text style={styles.btnSendMoneyText}>Envoyer de l'argent</Text>
           </TouchableOpacity>
 
+          <View style={{ height: 20 }} />
         </ScrollView>
+
+        <BottomNavBar activeTab="contacts" />
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#FAFAFA',
-  },
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 12,
-  },
-  iconBtn: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerRightIcons: {
-    flexDirection: 'row',
-  },
-  iconBtnRight: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    marginLeft: 8,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 40,
-  },
-  profileSection: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  avatarContainer: {
-    position: 'relative',
-    marginBottom: 12,
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-  },
-  verifiedBadge: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  verifiedBadgeBg: {
-    position: 'absolute',
-    width: 14,
-    height: 14,
-    backgroundColor: '#FFFFFF',
-    zIndex: -1,
-  },
-  profileName: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 24,
-    color: '#1A2840',
-    marginBottom: 12,
-  },
-  tagsContainer: {
-    flexDirection: 'row',
-    marginBottom: 12,
-  },
-  tag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ECFDF5',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginHorizontal: 4,
-  },
-  tagText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 12,
-    color: '#10B981',
-  },
-  locationText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 14,
-    color: '#475569',
-  },
-  quickActionsScroll: {
-    paddingHorizontal: 16,
-    marginBottom: 24,
-  },
-  quickActionCard: {
-    width: 100,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 8,
-    marginRight: 12,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-  },
-  quickActionIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  quickActionTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-    color: '#1A2840',
-    textAlign: 'center',
-    lineHeight: 16,
-  },
-  infoListCard: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    borderRadius: 16,
-    marginHorizontal: 16,
-    marginBottom: 24,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-  },
-  infoIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F8FAFC',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  infoContent: {
-    flex: 1,
-  },
-  infoLabel: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 11,
-    color: '#64748B',
-    marginBottom: 4,
-  },
-  infoValue: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-    color: '#1A2840',
-  },
-  infoActions: {
-    flexDirection: 'row',
-  },
-  infoActionBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    backgroundColor: '#F8FAFC',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 8,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#F1F5F9',
-    marginHorizontal: 16,
-  },
-  verifiedBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFBEB',
-    borderRadius: 16,
-    padding: 16,
-    marginHorizontal: 16,
-    marginBottom: 32,
-  },
-  verifiedShield: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  verifiedContent: {
-    flex: 1,
-  },
-  verifiedTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 14,
-    color: '#1A2840',
-    marginBottom: 4,
-  },
-  verifiedText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: '#64748B',
-    lineHeight: 18,
-  },
-  verifiedBadgeIcon: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 12,
-  },
-  activityHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 12,
-  },
-  activityTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 16,
-    color: '#1A2840',
-  },
-  viewAllText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
-    color: '#1A2840',
-  },
-  activityList: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    borderRadius: 16,
-    marginHorizontal: 16,
-    marginBottom: 24,
-  },
-  activityItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-  },
-  activityIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  activityContent: {
-    flex: 1,
-  },
-  activityItemTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 13,
-    color: '#1A2840',
-    marginBottom: 4,
-  },
-  activityDate: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 11,
-    color: '#64748B',
-  },
-  activityRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  activityAmountNegative: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 13,
-    color: '#1A2840',
-    marginRight: 8,
-  },
-  activityAmountPositive: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 13,
-    color: '#10B981',
-    marginRight: 8,
-  },
-  btnSave: {
-    flexDirection: 'row',
-    backgroundColor: '#FFB800',
-    marginHorizontal: 16,
-    paddingVertical: 18,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  btnSaveText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 16,
-    color: '#FFFFFF',
-  },
+  safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: Platform.OS === 'android' ? 36 : 10, paddingBottom: 10 },
+  backButton: { padding: 4 },
+  headerRightActions: { flexDirection: 'row', gap: 8 },
+  actionSquareBtn: { width: 38, height: 38, borderRadius: 12, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
+  scrollView: { flex: 1 },
+  scrollContent: { paddingTop: 6, paddingBottom: 30 },
+  profileHeaderSection: { alignItems: 'center', marginBottom: 20, paddingHorizontal: 16 },
+  avatarWrapper: { position: 'relative', marginBottom: 10 },
+  avatarImage: { width: 80, height: 80, borderRadius: 40 },
+  badgeVerified: { position: 'absolute', bottom: 0, right: 0, backgroundColor: '#FFFFFF', borderRadius: 10, padding: 1 },
+  contactName: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 22, color: '#1A2840', marginBottom: 2 },
+  relationText: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#6B7280', marginBottom: 4 },
+  locationRow: { flexDirection: 'row', alignItems: 'center' },
+  locationFlagText: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#1A2840' },
+  tabsRowContainer: { flexDirection: 'row', marginHorizontal: 16, borderBottomWidth: 1, borderBottomColor: '#F3F4F6', marginBottom: 16 },
+  tabButton: { flex: 1, paddingVertical: 12, alignItems: 'center' },
+  tabButtonActive: { borderBottomWidth: 2, borderBottomColor: '#FFC759' },
+  tabTextInactive: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#9CA3AF' },
+  tabTextActive: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840' },
+  quickActionsGrid: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, marginBottom: 16 },
+  quickCard: { flex: 1, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0F2F5', borderRadius: 16, paddingVertical: 12, paddingHorizontal: 4, alignItems: 'center', justifyContent: 'center' },
+  quickCardIconBox: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', marginBottom: 6 },
+  goldenCoinsStack: { width: 24, height: 20, position: 'relative' },
+  miniCoin: { width: 14, height: 11, borderRadius: 5, backgroundColor: '#FFC759', borderWidth: 1.5, borderColor: '#D97706', position: 'absolute' },
+  quickCardText: { fontFamily: 'Inter_500Medium', fontSize: 10, color: '#1A2840', textAlign: 'center', lineHeight: 14 },
+  infoListCard: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0F2F5', borderRadius: 18, marginHorizontal: 16, marginBottom: 16 },
+  infoRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 12 },
+  infoIconBox: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center', marginRight: 10 },
+  infoTextGroup: { flex: 1 },
+  infoLabel: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280', marginBottom: 1 },
+  infoValue: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840' },
+  infoActionIcons: { flexDirection: 'row', gap: 6 },
+  actionCircleBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
+  rowDivider: { height: 1, backgroundColor: '#F3F4F6', marginHorizontal: 14 },
+  verifiedBannerCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFDF0', borderWidth: 1, borderColor: '#FEF3C7', borderRadius: 16, padding: 14, marginHorizontal: 16, marginBottom: 16 },
+  verifiedShieldIcon: { marginRight: 10 },
+  verifiedBannerContent: { flex: 1 },
+  verifiedBannerTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840' },
+  verifiedBannerSubtext: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280', lineHeight: 15 },
+  verifiedCheckBadge: { width: 22, height: 22, borderRadius: 11, backgroundColor: '#FFC759', justifyContent: 'center', alignItems: 'center', marginLeft: 8 },
+  activityHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, marginBottom: 10 },
+  activityTitleText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#1A2840' },
+  viewAllText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#0052FF' },
+  activityContainerCard: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0F2F5', borderRadius: 18, marginHorizontal: 16, marginBottom: 16 },
+  activityRow: { flexDirection: 'row', alignItems: 'center', padding: 14 },
+  activityIconCircle: { width: 38, height: 38, borderRadius: 19, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
+  activityMainContent: { flex: 1 },
+  activityItemTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840', marginBottom: 1 },
+  activityDateText: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#9CA3AF' },
+  activityAmountNegative: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840' },
+  activityAmountPositive: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#10B981' },
+  btnSendMoney: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFC759', height: 48, borderRadius: 12, marginHorizontal: 16, marginBottom: 10 },
+  btnSendMoneyText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#1A2840' }
 });

@@ -3,10 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-na
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
-export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, isMenuOpen }) {
+export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, isMenuOpen, language = 'fr' }) {
   const navigation = useNavigation();
   const [localMenuOpen, setLocalMenuOpen] = useState(false);
   const menuOpen = typeof isMenuOpen === 'boolean' ? isMenuOpen : localMenuOpen;
+  
   const shortcuts = [
     ['briefcase-outline', 'Pay bills & Send essentials', 'ChooseServiceScreen'],
     ['paper-plane-outline', 'Send funds', 'SendMoneyScreen'],
@@ -17,7 +18,13 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
     ['globe-outline', 'Source in Africa', 'ShopsScreen'],
     ['cash-outline', 'Local FIAT ATM', 'WithdrawFundsScreen'],
   ];
-  const closeAndNavigate = (route) => { setLocalMenuOpen(false); navigation.navigate(route); };
+
+  const closeAndNavigate = (route) => {
+    setLocalMenuOpen(false);
+    navigation.navigate(route);
+  };
+
+  const activeTabLower = (activeTab || '').toLowerCase();
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -26,16 +33,32 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
           <Text style={styles.shortcutTitle}>Actions rapides</Text>
           {shortcuts.map(([icon, label, route]) => (
             <TouchableOpacity key={label} style={styles.shortcutItem} onPress={() => closeAndNavigate(route)}>
-              <View style={styles.shortcutIcon}><Ionicons name={icon} size={17} color="#1A2840" /></View>
+              <View style={styles.shortcutIcon}>
+                <Ionicons name={icon} size={17} color="#1A2840" />
+              </View>
               <Text style={styles.shortcutLabel}>{label}</Text>
               <Ionicons name="chevron-forward" size={16} color="#64748B" />
             </TouchableOpacity>
           ))}
         </View>
       )}
+
       <View style={styles.container}>
-        <NavItem icon="home" label="Accueil" isActive={activeTab.toLowerCase() === 'home' || activeTab.toLowerCase() === 'accueil'} onPress={() => navigation.navigate('HomeScreen')} />
-        <NavItem icon="people-outline" label="Contacts" isActive={activeTab.toLowerCase() === 'contacts'} onPress={() => navigation.navigate('ContactsScreen')} />
+        {/* Home */}
+        <NavItem 
+          icon="home" 
+          label={language === 'en' ? 'Home' : 'Accueil'} 
+          isActive={activeTabLower === 'home' || activeTabLower === 'accueil'} 
+          onPress={() => navigation.navigate('HomeScreen')} 
+        />
+
+        {/* Contacts */}
+        <NavItem 
+          icon="people-outline" 
+          label="Contacts" 
+          isActive={activeTabLower === 'contacts'} 
+          onPress={() => navigation.navigate('ContactsScreen')} 
+        />
         
         {/* Center Floating Button */}
         <View style={styles.centerButtonWrapper}>
@@ -59,8 +82,21 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
           </TouchableOpacity>
         </View>
 
-        <NavItem icon="grid-outline" label="Shops" isActive={activeTab.toLowerCase() === 'shops'} onPress={() => navigation.navigate('ShopsScreen')} />
-        <NavItem icon="ellipsis-horizontal" label="More" isActive={activeTab.toLowerCase() === 'more'} onPress={() => navigation.navigate('DashboardScreen')} />
+        {/* Shops */}
+        <NavItem 
+          icon="storefront-outline" 
+          label={language === 'en' ? 'Shop' : 'Boutique'} 
+          isActive={['shops', 'shop', 'boutique', 'boutiques'].includes(activeTabLower)} 
+          onPress={() => navigation.navigate('ShopsScreen')} 
+        />
+
+        {/* More / Settings */}
+        <NavItem 
+          icon="ellipsis-horizontal" 
+          label={language === 'en' ? 'More' : 'Plus'} 
+          isActive={['more', 'plus', 'settings', 'dashboard'].includes(activeTabLower)} 
+          onPress={() => navigation.navigate('DashboardScreen')} 
+        />
       </View>
     </SafeAreaView>
   );
@@ -120,7 +156,7 @@ const styles = StyleSheet.create({
   },
   centerButton: {
     position: 'absolute',
-    bottom: -10, // Elevate above the bar
+    bottom: -10,
     backgroundColor: '#FFC759',
     width: 56,
     height: 56,
@@ -132,5 +168,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 5,
+  },
+  centerButtonActive: {
+    backgroundColor: '#FFB800',
   },
 });

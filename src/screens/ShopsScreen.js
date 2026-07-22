@@ -7,44 +7,44 @@ import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
 
 const quickActions = [
-  { id: '1', title: "Référer\nun business", subtitle: "Participez au\ncommerce", icon: "add", color: "#F59E0B", iconBg: '#FFFBEB' },
+  { id: '1', title: "Réfer a\nbusiness/Shop", subtitle: "Partagez et\nsoutenez le\ncommerce", icon: "add-outline", color: "#F59E0B", iconBg: '#FFFBEB' },
   { id: '2', title: "Mes shops", subtitle: "Voir les shops avec\nlesquels je traite", icon: "bag-handle-outline", color: "#10B981", iconBg: '#ECFDF5' },
   { id: '3', title: "Shops à\nproximité", subtitle: "Découvrez les shops\nprès de vous", icon: "location-outline", color: "#3B82F6", iconBg: '#EFF6FF' },
-  { id: '4', title: "Nouveaux\nshops", subtitle: "Nouveaux shops\nde mes COIs", icon: "storefront-outline", color: "#8B5CF6", iconBg: '#F5F3FF' },
+  { id: '4', title: "Nouveaux\nshops", subtitle: "Nouveaux shops\nde nos CEOs", icon: "storefront-outline", color: "#8B5CF6", iconBg: '#F5F3FF' },
 ];
 
 const shopsList = [
   {
     id: '1',
     name: 'Jumia Sénégal',
-    logoBg: '#FF7A00',
+    logoBg: '#FF5500',
     logoText: 'JUMIA',
-    type: 'Marketplace • Shopping',
+    type: 'Marketplace  •  Shopping',
     location: 'Dakar, Sénégal',
-    distance: '1,5 km',
+    distance: '1.2 km',
     flag: '🇸🇳',
     badges: [
+      { text: 'Pickup', color: '#3B82F6', bg: '#EFF6FF' },
       { text: 'Delivery', color: '#10B981', bg: '#ECFDF5' },
-      { text: 'Picking', color: '#3B82F6', bg: '#EFF6FF' },
-      { text: 'On-line', color: '#8B5CF6', bg: '#F5F3FF' },
+      { text: 'On-site', color: '#8B5CF6', bg: '#F5F3FF' },
     ],
     category: 'Marketplace',
     categoryColor: '#8B5CF6',
     categoryBg: '#F5F3FF',
     rating: '4.6',
-    reviews: '3,235',
+    reviews: '2,219',
   },
   {
     id: '2',
     name: 'Kiwi Cameroun',
     logoBg: '#10B981',
-    logoText: 'KIWI',
-    type: 'Supermarché • Épicerie',
+    logoText: 'kiwi',
+    type: 'Supermarché  •  Épicerie',
     location: 'Douala, Cameroun',
-    distance: '3,5 km',
+    distance: '3.5 km',
     flag: '🇨🇲',
     badges: [
-      { text: 'Picking', color: '#3B82F6', bg: '#EFF6FF' },
+      { text: 'Pickup', color: '#3B82F6', bg: '#EFF6FF' },
       { text: 'Delivery', color: '#10B981', bg: '#ECFDF5' },
       { text: 'On-site', color: '#F59E0B', bg: '#FFFBEB' },
     ],
@@ -52,16 +52,16 @@ const shopsList = [
     categoryColor: '#10B981',
     categoryBg: '#ECFDF5',
     rating: '4.4',
-    reviews: '1,826',
+    reviews: '3,182',
   },
   {
     id: '3',
-    name: 'Mamasita Restaurant',
-    logoBg: '#1A2840',
+    name: 'Mamasita Restaurante',
+    logoBg: '#000000',
     logoText: 'm.',
-    type: 'Restaurant • Cuisine africaine',
+    type: 'Restaurant  •  Cuisine africaine',
     location: "Abidjan, Côte d'Ivoire",
-    distance: '2,1 km',
+    distance: '2.1 km',
     flag: '🇨🇮',
     badges: [
       { text: 'Delivery', color: '#10B981', bg: '#ECFDF5' },
@@ -71,45 +71,44 @@ const shopsList = [
     categoryColor: '#F59E0B',
     categoryBg: '#FFFBEB',
     rating: '4.8',
-    reviews: '948',
+    reviews: '645',
   },
   {
     id: '4',
     name: 'Yello Store Ghana',
-    logoBg: '#FFB800',
+    logoBg: '#FFC759',
     logoText: 'Yello\nStore',
-    type: 'Électronique • High-tech',
+    type: 'Electronique  •  High tech',
     location: 'Accra, Ghana',
-    distance: '4,0 km',
+    distance: '4.0 km',
     flag: '🇬🇭',
     badges: [
-      { text: 'Picking', color: '#3B82F6', bg: '#EFF6FF' },
+      { text: 'Pickup', color: '#3B82F6', bg: '#EFF6FF' },
       { text: 'Delivery', color: '#10B981', bg: '#ECFDF5' },
     ],
     category: 'Électronique',
     categoryColor: '#3B82F6',
     categoryBg: '#EFF6FF',
     rating: '4.5',
-    reviews: '748',
+    reviews: '965',
   },
   {
     id: '5',
     name: 'Pharma Plus',
-    logoBg: '#0A1128',
-    logoText: 'Pharma\nPlus',
-    logoIcon: '+', // simple representation
-    type: 'Santé • Pharmacie',
+    logoBg: '#071D54',
+    logoText: '+ Pharma\nPlus',
+    type: 'Santé  •  Pharmacie',
     location: 'Lagos, Nigeria',
-    distance: '6,3 km',
+    distance: '6.3 km',
     flag: '🇳🇬',
     badges: [
-      { text: 'On-line', color: '#8B5CF6', bg: '#F5F3FF' },
+      { text: 'On-site', color: '#8B5CF6', bg: '#F5F3FF' },
     ],
     category: 'Pharmacie',
     categoryColor: '#10B981',
     categoryBg: '#ECFDF5',
     rating: '4.7',
-    reviews: '1,564',
+    reviews: '1,504',
   },
 ];
 
@@ -119,9 +118,12 @@ export default function ShopsScreen() {
   const [query, setQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('Tout');
   const [toast, setToast] = useState(null);
+  const [isBannerVisible, setIsBannerVisible] = useState(true);
+  const [bannerSlide, setBannerSlide] = useState(1);
+
   const visibleShops = shopsList.filter((shop) => shop.name.toLowerCase().includes(query.trim().toLowerCase()) && (activeFilter === 'Tout' || (activeFilter === 'Électronique' ? shop.category === 'Électronique' : activeFilter === 'Goods' ? ['Marketplace','Supermarché'].includes(shop.category) : true)));
   const runQuickAction = (id) => { if (id === '1') setToast({title: 'Référencement démarré', message: 'Le formulaire de recommandation est prêt.'}); else if (id === '2') setActiveSubNav('shops'); else if (id === '3') {setActiveFilter('Tout');setToast({title: 'À proximité', message: 'Les commerces sont classés selon votre position simulée.'});} else setActiveSubNav('new'); };
-  const simulateDownload = (name) => { setToast({title: 'Téléchargement en cours', message: `${name} est en préparation…`}); setTimeout(() => setToast({title: 'Téléchargement terminé', message: `${name} a été téléchargé (simulation).`}), 900); };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -129,19 +131,19 @@ export default function ShopsScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <Text style={styles.mainTitle}>Shops</Text>
+            <Image source={require('../../dizzitup logo cercle.png')} style={styles.circleLogo} />
           </View>
           <View style={styles.headerRightIcons}>
             <TouchableOpacity style={styles.iconBtnRight}>
               <Ionicons name="notifications-outline" size={20} color="#1A2840" />
               <View style={styles.notificationDot}>
-                <Text style={{color: '#FFFFFF', fontSize: 6, fontWeight: 'bold', textAlign: 'center'}}>1</Text>
+                <Text style={{color: '#FFFFFF', fontSize: 7, fontWeight: 'bold', textAlign: 'center'}}>1</Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnRight}>
+            <TouchableOpacity style={styles.iconBtnRight} onPress={() => navigation.navigate('RewardsScreen')}>
               <Ionicons name="gift-outline" size={20} color="#1A2840" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnRight}>
+            <TouchableOpacity style={styles.iconBtnRight} onPress={() => navigation.navigate('MoreSettingsScreen')}>
               <Ionicons name="ellipsis-horizontal" size={20} color="#1A2840" />
             </TouchableOpacity>
           </View>
@@ -149,18 +151,18 @@ export default function ShopsScreen() {
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          
+          <Text style={styles.mainTitle}>Shops</Text>
           <Text style={styles.subtitle}>Découvrez, payez et soutenez les entreprises africaines.</Text>
           <Text style={styles.acceptedTokensText}>
-            <Text style={{color: '#10B981'}}>USDT</Text>, <Text style={{color: '#3B82F6'}}>USDC</Text>, <Text style={{color: '#3B82F6'}}>EURC</Text>, <Text style={{color: '#F59E0B'}}>DZY</Text> accepted »
+            <Text style={{color: '#3B82F6'}}>Cards</Text>  •  <Text style={{color: '#3B82F6'}}>Stablecoins</Text>  •  <Text style={{color: '#3B82F6'}}>Mobile Money</Text>  accepted
           </Text>
 
           {/* Search Bar */}
           <View style={styles.searchContainer}>
-            <Ionicons name="search-outline" size={20} color="#94A3B8" style={styles.searchIcon} />
+            <Ionicons name="search-outline" size={18} color="#94A3B8" style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Rechercher en Afrique (shops, produits, services...)"
+              placeholder="Meta search en Afrique (shops, produits, services...)"
               placeholderTextColor="#94A3B8"
               value={query}
               onChangeText={setQuery}
@@ -169,65 +171,58 @@ export default function ShopsScreen() {
 
           {/* Actions rapides */}
           <Text style={styles.sectionTitle}>Actions rapides</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickActionsScroll}>
+          <View style={styles.quickActionsGrid}>
             {quickActions.map(action => (
               <TouchableOpacity key={action.id} style={styles.quickActionCard} onPress={() => runQuickAction(action.id)}>
                 <View style={[styles.quickActionIconContainer, {backgroundColor: action.iconBg}]}>
-                  <Ionicons name={action.icon} size={24} color={action.color} />
+                  <Ionicons name={action.icon} size={22} color={action.color} />
                 </View>
                 <Text style={styles.quickActionTitle}>{action.title}</Text>
                 <Text style={styles.quickActionSubtitle}>{action.subtitle}</Text>
               </TouchableOpacity>
             ))}
-          </ScrollView>
+          </View>
 
           {/* Mes shops */}
           <View style={styles.sectionHeaderRow}>
             <Text style={styles.sectionTitle}>Mes shops</Text>
             <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}} onPress={() => setActiveSubNav('shops')}>
               <Text style={styles.showAllText}>Voir tout</Text>
-              <Ionicons name="arrow-forward" size={16} color="#1A2840" style={{marginLeft: 4}} />
+              <Ionicons name="arrow-forward" size={14} color="#1A2840" style={{marginLeft: 4}} />
             </TouchableOpacity>
           </View>
 
           {/* Filters */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>
             <TouchableOpacity style={activeFilter === 'Tout' ? styles.filterChipActive : styles.filterChip} onPress={() => setActiveFilter('Tout')}>
-              <Ionicons name="location-outline" size={16} color="#FFFFFF" style={{marginRight: 6}} />
-              <Text style={activeFilter === 'Tout' ? styles.filterChipTextActive : styles.filterChipText}>À proximité</Text>
+              <Ionicons name="location-outline" size={15} color="#FFFFFF" style={{marginRight: 5}} />
+              <Text style={styles.filterChipTextActive}>À proximité</Text>
             </TouchableOpacity>
             <TouchableOpacity style={activeFilter === 'Mobile' ? styles.filterChipActive : styles.filterChip} onPress={() => setActiveFilter('Mobile')}>
-              <Ionicons name="phone-portrait-outline" size={16} color="#8B5CF6" style={{marginRight: 6}} />
+              <Ionicons name="phone-portrait-outline" size={15} color="#8B5CF6" style={{marginRight: 5}} />
               <Text style={styles.filterChipText}>Mobile & Utilities</Text>
             </TouchableOpacity>
             <TouchableOpacity style={activeFilter === 'Électronique' ? styles.filterChipActive : styles.filterChip} onPress={() => setActiveFilter('Électronique')}>
-              <Ionicons name="laptop-outline" size={16} color="#3B82F6" style={{marginRight: 6}} />
+              <Ionicons name="laptop-outline" size={15} color="#3B82F6" style={{marginRight: 5}} />
               <Text style={styles.filterChipText}>Digital & Services</Text>
             </TouchableOpacity>
             <TouchableOpacity style={activeFilter === 'Goods' ? styles.filterChipActive : styles.filterChip} onPress={() => setActiveFilter('Goods')}>
-              <Ionicons name="bag-handle-outline" size={16} color="#10B981" style={{marginRight: 6}} />
+              <Ionicons name="bag-handle-outline" size={15} color="#10B981" style={{marginRight: 5}} />
               <Text style={styles.filterChipText}>Goods</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.filterChip, {paddingHorizontal: 12}]}>
-              <Ionicons name="options-outline" size={18} color="#1A2840" />
+            <TouchableOpacity style={[styles.filterChip, {paddingHorizontal: 10}]}>
+              <Ionicons name="options-outline" size={16} color="#1A2840" />
             </TouchableOpacity>
           </ScrollView>
 
           {/* Shops List */}
-          {activeSubNav !== 'shops' && (
-            <View style={{marginHorizontal: 16, marginBottom: 12, padding: 12, borderRadius: 12, backgroundColor: '#FFF7E6'}}>
-              <Text style={{fontFamily: 'Inter_700Bold', color: '#1A2840'}}>{activeSubNav === 'new' ? 'Nouveaux shops' : 'Catégories de shops'}</Text>
-              <Text style={{fontFamily: 'Inter_400Regular', color: '#64748B', marginTop: 3}}>{activeSubNav === 'new' ? 'Découvrez les commerces récemment ajoutés.' : 'Parcourez les commerces par catégorie.'}</Text>
-            </View>
-          )}
           <View style={styles.shopsList}>
             {visibleShops.map((shop, index) => (
               <View key={shop.id}>
-            <TouchableOpacity style={styles.shopItem} onPress={() => navigation.navigate('ShopDetailsScreen')}>
+                <TouchableOpacity style={styles.shopItem} onPress={() => navigation.navigate('ShopDetailsScreen')}>
                   
                   {/* Logo */}
                   <View style={[styles.shopLogo, {backgroundColor: shop.logoBg}]}>
-                    {shop.logoIcon && <Text style={{color: '#FFB800', fontSize: 16, fontWeight: 'bold'}}>{shop.logoIcon}</Text>}
                     <Text style={[styles.shopLogoText, shop.id === '4' || shop.id === '5' ? {fontSize: 8} : {}]}>
                       {shop.logoText}
                     </Text>
@@ -237,7 +232,7 @@ export default function ShopsScreen() {
                   <View style={styles.shopContent}>
                     <Text style={styles.shopName}>{shop.name}</Text>
                     <Text style={styles.shopType}>{shop.type}</Text>
-                    <Text style={styles.shopLocation}>{shop.flag} {shop.location} • {shop.distance}</Text>
+                    <Text style={styles.shopLocation}>{shop.flag} {shop.location}  •  {shop.distance}</Text>
                     
                     <View style={styles.badgesContainer}>
                       {shop.badges.map((badge, bIndex) => (
@@ -258,7 +253,7 @@ export default function ShopsScreen() {
                       <Text style={styles.ratingText}> {shop.rating}</Text>
                       <Text style={styles.reviewsText}> ({shop.reviews})</Text>
                     </View>
-                    <Ionicons name="chevron-forward" size={16} color="#1A2840" style={{marginTop: 8}} />
+                    <Ionicons name="chevron-forward" size={16} color="#9CA3AF" style={{marginTop: 10}} />
                   </View>
 
                 </TouchableOpacity>
@@ -267,84 +262,42 @@ export default function ShopsScreen() {
             ))}
           </View>
 
-          {/* Promo Banners */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.promoScroll}>
-            {/* Banner 1 */}
-            <View style={styles.promoCard}>
-              <View style={styles.promoLeft}>
-                {/* Abstract illustration for shop */}
-                <View style={styles.mockShopImg}>
-                  <View style={styles.mockShopRoof} />
-                  <View style={styles.mockShopDoor} />
-                  <View style={styles.mockShopWindow} />
-                </View>
-              </View>
-              <View style={styles.promoRight}>
-                <Text style={styles.promoTitle}>DZY Store</Text>
-                <TouchableOpacity style={styles.promoBtn} onPress={() => simulateDownload('DZY Store')}>
-                  <Ionicons name="download-outline" size={16} color="#1A2840" />
+          {/* Refer Banner CTA at bottom */}
+          {isBannerVisible && (
+            <View style={styles.bannerContainer}>
+              <View style={[styles.inviteBanner, { backgroundColor: '#F0FDF4' }]}>
+                <TouchableOpacity style={styles.closeBannerButton} onPress={() => setIsBannerVisible(false)}>
+                  <Ionicons name="close" size={16} color="#6B7280" />
                 </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Banner 2 */}
-            <View style={styles.promoCard}>
-              <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                <Text style={styles.promoTokensTitle}>
-                  USDT, USDC,{'\n'}<Text style={{color: '#3B82F6'}}>EURC</Text>, <Text style={{color: '#F59E0B'}}>DZY</Text> accepted »
-                </Text>
-                <View style={styles.promoTokensIcons}>
-                  {['USDT','USDC','EURC','DZY'].map((symbol) => <CryptoIcon key={symbol} symbol={symbol} size={20} style={{marginHorizontal: 4}} />)}
+                <View style={styles.inviteContent}>
+                  <Text style={styles.inviteTitle}>Refer a Store or Business{'\n'}and earn <Text style={{ color: '#10B981' }}>$10 in DZY</Text></Text>
+                  <Text style={styles.inviteSubtitle}>Refer a store or business{'\n'}and earn rewards.</Text>
+                  <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#10B981' }]} onPress={() => setToast({title: 'Refer a store', message: 'Formulaire de parrainage prêt.'})}>
+                    <Text style={styles.inviteButtonText}>Refer now</Text>
+                  </TouchableOpacity>
                 </View>
-                <View style={styles.promoTokensLabels}>
-                  <Text style={styles.tokenLabel}>USDT</Text>
-                  <Text style={styles.tokenLabel}>USDC</Text>
-                  <Text style={styles.tokenLabel}>EURC</Text>
-                  <Text style={styles.tokenLabel}>DZY</Text>
+                <View style={styles.storeGraphic}>
+                  <View style={styles.storeBuilding}>
+                    <View style={styles.storeAwning}><Text style={styles.storeAwningText}>DZY</Text></View>
+                    <View style={styles.storeFront}>
+                      <View style={styles.storeDoor} />
+                      <View style={styles.storeWindow} />
+                    </View>
+                  </View>
+                  <View style={styles.storeCoin}><Text style={styles.storeCoinText}>DZY</Text></View>
                 </View>
               </View>
-            </View>
-
-            {/* Banner 3 */}
-            <View style={styles.promoCard}>
-              <View style={styles.promoLeft}>
-                <Ionicons name="location" size={48} color="#FFB800" />
-              </View>
-              <View style={styles.promoRight}>
-                <Text style={styles.promoTitle}>Nous sommes ici</Text>
-                <TouchableOpacity style={styles.promoBtn} onPress={() => simulateDownload('Nous sommes ici')}>
-                  <Ionicons name="download-outline" size={16} color="#1A2840" />
-                </TouchableOpacity>
+              <View style={styles.carouselDotsContainer}>
+                <TouchableOpacity onPress={() => setBannerSlide(0)}><View style={[styles.carouselDot, bannerSlide === 0 ? styles.activeDot : styles.inactiveDot]} /></TouchableOpacity>
+                <TouchableOpacity onPress={() => setBannerSlide(1)}><View style={[styles.carouselDot, bannerSlide === 1 ? styles.activeDot : styles.inactiveDot]} /></TouchableOpacity>
               </View>
             </View>
-          </ScrollView>
+          )}
 
+          <View style={{ height: 40 }} />
         </ScrollView>
 
-        {/* Shops Sub-nav */}
-        <View style={styles.shopsSubNav}>
-          <TouchableOpacity style={styles.subNavItem} onPress={() => setActiveSubNav('shops')}>
-            <Ionicons name="storefront-outline" size={20} color={activeSubNav === 'shops' ? '#1A2840' : '#94A3B8'} />
-            <Text style={activeSubNav === 'shops' ? styles.subNavItemTextActive : styles.subNavItemText}>Mes shops</Text>
-            {activeSubNav === 'shops' && <View style={styles.activeLine} />}
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subNavItem} onPress={() => setActiveSubNav('new')}>
-            <Ionicons name="business-outline" size={20} color={activeSubNav === 'new' ? '#1A2840' : '#94A3B8'} />
-            <Text style={activeSubNav === 'new' ? styles.subNavItemTextActive : styles.subNavItemText}>Nouveaux shops</Text>
-            {activeSubNav === 'new' && <View style={styles.activeLine} />}
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subNavItem} onPress={() => setActiveSubNav('categories')}>
-            <Ionicons name="grid-outline" size={20} color={activeSubNav === 'categories' ? '#1A2840' : '#94A3B8'} />
-            <Text style={activeSubNav === 'categories' ? styles.subNavItemTextActive : styles.subNavItemText}>Catégories</Text>
-            {activeSubNav === 'categories' && <View style={styles.activeLine} />}
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.subNavItem} onPress={() => navigation.navigate('TransactionHistoryScreen')}>
-            <Ionicons name="time-outline" size={20} color="#94A3B8" />
-            <Text style={styles.subNavItemText}>Activité</Text>
-          </TouchableOpacity>
-        </View>
-
-        <BottomNavBar activeTab="shops" />
+        <BottomNavBar activeTab="shops" language="fr" />
         {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
       </View>
     </SafeAreaView>
@@ -352,423 +305,73 @@ export default function ShopsScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#FAFAFA',
-  },
-  container: {
-    flex: 1,
-    position: 'relative',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 12,
-  },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logoImage: {
-    height: 32,
-    width: 120,
-  },
-  headerRightIcons: {
-    flexDirection: 'row',
-  },
-  iconBtnRight: {
-    width: 36,
-    height: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    marginLeft: 8,
-    position: 'relative',
-  },
-  notificationDot: {
-    position: 'absolute',
-    top: -2,
-    right: -2,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: '#F59E0B',
-    borderWidth: 1,
-    borderColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingTop: 8,
-    paddingBottom: 80, // for sub nav
-  },
-  mainTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 24,
-    color: '#0A1128',
-  },
-  subtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    color: '#1A2840',
-    paddingHorizontal: 16,
-    marginBottom: 4,
-  },
-  acceptedTokensText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 13,
-    color: '#1A2840',
-    paddingHorizontal: 16,
-    marginBottom: 20,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    borderRadius: 16,
-    padding: 12,
-    marginHorizontal: 16,
-    marginBottom: 24,
-  },
-  searchIcon: {
-    marginRight: 12,
-  },
-  searchInput: {
-    flex: 1,
-    fontFamily: 'Inter_500Medium',
-    fontSize: 13,
-    color: '#1A2840',
-    padding: 0,
-    outlineStyle: 'none',
-  },
-  sectionTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 16,
-    color: '#1A2840',
-    paddingHorizontal: 16,
-    marginBottom: 12,
-  },
-  quickActionsScroll: {
-    paddingHorizontal: 16,
-    paddingBottom: 24,
-  },
-  quickActionCard: {
-    width: 130,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    borderRadius: 16,
-    padding: 16,
-    marginRight: 12,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-  },
-  quickActionIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  quickActionTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 12,
-    color: '#1A2840',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  quickActionSubtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    color: '#64748B',
-    textAlign: 'center',
-    lineHeight: 14,
-  },
-  sectionHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingRight: 16,
-    marginBottom: 12,
-  },
-  showAllText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 12,
-    color: '#1A2840',
-  },
-  filtersScroll: {
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  filterChipActive: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#0A1128',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    marginRight: 8,
-  },
-  filterChipTextActive: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 13,
-    color: '#FFFFFF',
-  },
-  filterChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    marginRight: 8,
-  },
-  filterChipText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 13,
-    color: '#1A2840',
-  },
-  shopsList: {
-    paddingHorizontal: 16,
-    marginBottom: 24,
-  },
-  shopItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 16,
-  },
-  shopLogo: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  shopLogoText: {
-    color: '#FFFFFF',
-    fontFamily: 'Inter_700Bold',
-    fontSize: 10,
-    textAlign: 'center',
-  },
-  shopContent: {
-    flex: 1,
-  },
-  shopName: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 14,
-    color: '#1A2840',
-    marginBottom: 2,
-  },
-  shopType: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 11,
-    color: '#1A2840',
-    marginBottom: 2,
-  },
-  shopLocation: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 11,
-    color: '#64748B',
-    marginBottom: 8,
-  },
-  badgesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginRight: 6,
-    marginBottom: 4,
-  },
-  badgeText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 9,
-  },
-  shopRight: {
-    alignItems: 'flex-end',
-  },
-  categoryBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  categoryBadgeText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 9,
-  },
-  ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ratingText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 11,
-    color: '#1A2840',
-  },
-  reviewsText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    color: '#94A3B8',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#F1F5F9',
-  },
-  promoScroll: {
-    paddingHorizontal: 16,
-    paddingBottom: 24,
-  },
-  promoCard: {
-    width: 220,
-    height: 100,
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#FDE68A', // yellowish border
-    borderRadius: 16,
-    marginRight: 12,
-    padding: 12,
-  },
-  promoLeft: {
-    width: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  promoRight: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-  },
-  promoTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
-    color: '#1A2840',
-    marginBottom: 12,
-  },
-  promoBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  mockShopImg: {
-    width: 50,
-    height: 60,
-    backgroundColor: '#0A1128',
-    position: 'relative',
-  },
-  mockShopRoof: {
-    position: 'absolute',
-    top: -10,
-    left: -5,
-    right: -5,
-    height: 15,
-    backgroundColor: '#FFB800',
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
-  },
-  mockShopDoor: {
-    position: 'absolute',
-    bottom: 0,
-    left: 5,
-    width: 15,
-    height: 30,
-    backgroundColor: '#FFB800',
-  },
-  mockShopWindow: {
-    position: 'absolute',
-    top: 15,
-    right: 5,
-    width: 15,
-    height: 15,
-    backgroundColor: '#3B82F6',
-  },
-  promoTokensTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 11,
-    color: '#1A2840',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  promoTokensIcons: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 4,
-  },
-  tokenIcon: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 4,
-  },
-  promoTokensLabels: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  tokenLabel: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 8,
-    color: '#1A2840',
-    marginHorizontal: 6,
-  },
-  shopsSubNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-    paddingVertical: 12,
-  },
-  subNavItem: {
-    alignItems: 'center',
-    position: 'relative',
-    flex: 1,
-  },
-  subNavItemTextActive: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 10,
-    color: '#1A2840',
-    marginTop: 4,
-  },
-  subNavItemText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 10,
-    color: '#94A3B8',
-    marginTop: 4,
-  },
-  activeLine: {
-    position: 'absolute',
-    bottom: -12, // adjust based on padding
-    left: '20%',
-    right: '20%',
-    height: 2,
-    backgroundColor: '#FFB800',
-  },
+  safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 6 },
+  logoContainer: { flexDirection: 'row', alignItems: 'center' },
+  circleLogo: { width: 34, height: 34, borderRadius: 17 },
+  headerRightIcons: { flexDirection: 'row' },
+  iconBtnRight: { width: 36, height: 36, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 12, borderWidth: 1, borderColor: '#F3F4F6', marginLeft: 8, position: 'relative' },
+  notificationDot: { position: 'absolute', top: 5, right: 6, width: 12, height: 12, borderRadius: 6, backgroundColor: '#FFC759', borderWidth: 1, borderColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' },
+  scrollView: { flex: 1 },
+  scrollContent: { paddingTop: 4, paddingBottom: 30 },
+  mainTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 26, color: '#1A2840', paddingHorizontal: 16, marginBottom: 2 },
+  subtitle: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#6B7280', paddingHorizontal: 16, marginBottom: 4 },
+  acceptedTokensText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840', paddingHorizontal: 16, marginBottom: 14 },
+  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 20, paddingHorizontal: 14, height: 42, marginHorizontal: 16, marginBottom: 18 },
+  searchIcon: { marginRight: 8 },
+  searchInput: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 12, color: '#1A2840', outlineStyle: 'none' },
+  sectionTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#1A2840', paddingHorizontal: 16, marginBottom: 10 },
+  quickActionsGrid: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 16, marginBottom: 18 },
+  quickActionCard: { width: '23.5%', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F3F7', borderRadius: 14, padding: 8, alignItems: 'center', minHeight: 110, justifyContent: 'flex-start' },
+  quickActionIconContainer: { width: 38, height: 38, borderRadius: 19, justifyContent: 'center', alignItems: 'center', marginBottom: 6 },
+  quickActionTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 10, color: '#1A2840', textAlign: 'center', marginBottom: 2, lineHeight: 12 },
+  quickActionSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 8, color: '#9CA3AF', textAlign: 'center', lineHeight: 10 },
+  sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 16 },
+  showAllText: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#1A2840' },
+  filtersScroll: { paddingHorizontal: 16, marginBottom: 14 },
+  filterChipActive: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A2840', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 18, marginRight: 8 },
+  filterChipTextActive: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#FFFFFF' },
+  filterChip: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 18, marginRight: 8 },
+  filterChipText: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#1A2840' },
+  shopsList: { paddingHorizontal: 16, marginBottom: 16 },
+  shopItem: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#FFFFFF', paddingVertical: 12 },
+  shopLogo: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  shopLogoText: { color: '#FFFFFF', fontFamily: 'SpaceGrotesk_700Bold', fontSize: 9, textAlign: 'center' },
+  shopContent: { flex: 1 },
+  shopName: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#1A2840', marginBottom: 1 },
+  shopType: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#6B7280', marginBottom: 2 },
+  shopLocation: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#9CA3AF', marginBottom: 6 },
+  badgesContainer: { flexDirection: 'row', flexWrap: 'wrap' },
+  badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginRight: 6, marginBottom: 4 },
+  badgeText: { fontFamily: 'Inter_600SemiBold', fontSize: 9 },
+  shopRight: { alignItems: 'flex-end' },
+  categoryBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginBottom: 6 },
+  categoryBadgeText: { fontFamily: 'Inter_600SemiBold', fontSize: 9 },
+  ratingRow: { flexDirection: 'row', alignItems: 'center' },
+  ratingText: { fontFamily: 'Inter_700Bold', fontSize: 11, color: '#1A2840' },
+  reviewsText: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#9CA3AF' },
+  divider: { height: 1, backgroundColor: '#F3F4F6' },
+  bannerContainer: { marginHorizontal: 16, marginTop: 4, position: 'relative' },
+  inviteBanner: { borderRadius: 17, paddingHorizontal: 14, paddingVertical: 14, flexDirection: 'row', overflow: 'hidden', position: 'relative', minHeight: 125 },
+  inviteContent: { flex: 1, zIndex: 2, justifyContent: 'center' },
+  inviteTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#1A2840', lineHeight: 18, marginBottom: 3 },
+  inviteSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280', lineHeight: 13, marginBottom: 8 },
+  inviteButton: { alignSelf: 'flex-start', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 8 },
+  inviteButtonText: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#FFFFFF' },
+  storeGraphic: { width: '45%', height: '100%', position: 'absolute', right: 5, top: 0, justifyContent: 'center', alignItems: 'center', flexDirection: 'row' },
+  storeBuilding: { width: 72, height: 68, backgroundColor: '#FFFFFF', borderRadius: 8, borderWidth: 2, borderColor: '#E5E7EB', overflow: 'hidden', position: 'relative' },
+  storeAwning: { backgroundColor: '#10B981', height: 20, justifyContent: 'center', alignItems: 'center' },
+  storeAwningText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 9, color: '#FFFFFF' },
+  storeFront: { flex: 1, backgroundColor: '#FAFAFA', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', paddingBottom: 4, paddingHorizontal: 6 },
+  storeDoor: { width: 20, height: 30, backgroundColor: '#059669', borderTopLeftRadius: 4, borderTopRightRadius: 4 },
+  storeWindow: { width: 24, height: 22, backgroundColor: '#E0F2FE', borderRadius: 4, borderWidth: 1.5, borderColor: '#38BDF8' },
+  storeCoin: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFC759', borderWidth: 2, borderColor: '#F59E0B', justifyContent: 'center', alignItems: 'center', position: 'absolute', left: 4, bottom: 10 },
+  storeCoinText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#FFFFFF' },
+  closeBannerButton: { position: 'absolute', top: 10, right: 12, zIndex: 10 },
+  carouselDotsContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', position: 'absolute', bottom: 6, left: 0, right: 0, gap: 5 },
+  carouselDot: { width: 6, height: 6, borderRadius: 3 },
+  activeDot: { backgroundColor: '#10B981', width: 7, height: 7, borderRadius: 3.5 },
+  inactiveDot: { backgroundColor: '#D1D5DB' },
   toastWrap: { position: 'absolute', left: 14, right: 14, top: 64, zIndex: 50 },
 });

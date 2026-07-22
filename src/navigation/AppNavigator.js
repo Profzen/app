@@ -19,6 +19,7 @@ import FiltersScreen from '../screens/FiltersScreen';
 import HomeScreen from '../screens/HomeScreen';
 import LoginScreen from '../screens/LoginScreen';
 import MobileRechargeScreen from '../screens/MobileRechargeScreen';
+import MoreSettingsScreen from '../screens/MoreSettingsScreen';
 import OrderConfirmationScreen from '../screens/OrderConfirmationScreen';
 import OrderVerificationScreen from '../screens/OrderVerificationScreen';
 import PayBillsScreen from '../screens/PayBillsScreen';
@@ -88,6 +89,7 @@ export default function AppNavigator() {
       <Stack.Screen name="HomeScreen" component={HomeScreen} />
       <Stack.Screen name="LoginScreen" component={LoginScreen} />
       <Stack.Screen name="MobileRechargeScreen" component={MobileRechargeScreen} />
+      <Stack.Screen name="MoreSettingsScreen" component={MoreSettingsScreen} />
       <Stack.Screen name="OrderConfirmationScreen" component={OrderConfirmationScreen} />
       <Stack.Screen name="OrderVerificationScreen" component={OrderVerificationScreen} />
       <Stack.Screen name="PayBillsScreen" component={PayBillsScreen} />

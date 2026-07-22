@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import CryptoIcon from '../components/CryptoIcon';
@@ -8,22 +8,23 @@ import AppSelect from '../components/AppSelect';
 
 export default function CashRegisterScreen() {
   const navigation = useNavigation();
-  const [activeTab, setActiveTab] = useState('qr');
+  const [activeTab, setActiveTab] = useState('billets');
+  const [selectedToken, setSelectedToken] = useState('USDT');
   const [amount, setAmount] = useState('2000');
   const [currency, setCurrency] = useState('XOF');
 
   const handleKeyPress = (key) => {
     if (key === 'backspace') {
-      setAmount(amount.slice(0, -1));
+      setAmount(prev => prev.length > 1 ? prev.slice(0, -1) : '0');
     } else if (key === ',') {
       if (!amount.includes(',')) {
-        setAmount(amount + ',');
+        setAmount(prev => prev + ',');
       }
     } else {
       if (amount === '0') {
         setAmount(key);
       } else {
-        setAmount(amount + key);
+        setAmount(prev => prev + key);
       }
     }
   };
@@ -35,7 +36,7 @@ export default function CashRegisterScreen() {
       activeOpacity={0.7}
     >
       {icon ? (
-        <Ionicons name={icon} size={24} color="#FFFFFF" />
+        <Ionicons name={icon} size={22} color="#FFFFFF" />
       ) : (
         <Text style={styles.keyText}>{key}</Text>
       )}
@@ -46,158 +47,204 @@ export default function CashRegisterScreen() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         
-        {/* Header */}
+        {/* Header Top Bar */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#1A2840" />
+          <TouchableOpacity style={styles.iconSquareBtn} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={20} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.pageTitle}>
-            {activeTab === 'qr' ? 'Caisse (TPE)' : 'Caissier (PDV)'}
-          </Text>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('CashierSendFundsScreen')}>
-            <Ionicons name="scan" size={20} color="#1A2840" />
+          
+          <View style={styles.headerTitleWrap}>
+            <Text style={styles.pageTitle}>
+              {activeTab === 'billets' ? 'Caissier' : 'Point of Sale (POS/ATM)'}
+            </Text>
+            {activeTab === 'qr' && (
+              <Text style={styles.pageSubtitle}>Caisses (TPE/DAB)</Text>
+            )}
+          </View>
+
+          <TouchableOpacity style={styles.iconSquareBtn} onPress={() => navigation.navigate('CashierSendFundsScreen')}>
+            <Ionicons name="qr-code-outline" size={20} color="#1A2840" />
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={styles.scrollView} contentContainerStyle={[styles.scrollContent, activeTab === 'billets' && {paddingBottom: 0, paddingHorizontal: 0}]} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          {/* Top Switch */}
-          <View style={[styles.switchContainer, activeTab === 'billets' && {marginHorizontal: 16}]}>
+          {/* Top 2 Mode Switcher Tabs Container */}
+          <View style={[styles.modeSwitchContainer, activeTab === 'billets' && styles.modeSwitchContainerDark]}>
             <TouchableOpacity 
-              style={[styles.switchTab, activeTab === 'qr' ? styles.switchTabActiveQR : styles.switchTabInactiveQR]}
+              style={[
+                styles.modeTabBtn, 
+                activeTab === 'qr' && styles.modeTabBtnActiveQR,
+                activeTab === 'billets' && styles.modeTabBtnInactiveQR
+              ]}
               onPress={() => setActiveTab('qr')}
+              activeOpacity={0.8}
             >
-              <Ionicons name={activeTab === 'qr' ? "card-outline" : "wallet-outline"} size={20} color={activeTab === 'qr' ? '#FFB800' : (activeTab === 'billets' ? '#FFFFFF' : '#1A2840')} style={{marginRight: 8}} />
-              <Text style={[styles.switchText, activeTab === 'qr' ? styles.switchTextActiveQR : styles.switchTextInactiveQR]}>
-                {activeTab === 'qr' ? 'Afficher\nle QR Code' : 'Recevoir\nle paiement'}
+              <Ionicons 
+                name="wallet-outline" 
+                size={20} 
+                color={activeTab === 'qr' ? '#FFC759' : '#FFFFFF'} 
+                style={{ marginRight: 8 }} 
+              />
+              <Text style={[styles.modeTabText, activeTab === 'qr' ? styles.modeTabTextActive : { color: '#FFFFFF' }]}>
+                Recevoir{'\n'}le paiement
               </Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity 
-              style={[styles.switchTab, activeTab === 'billets' ? styles.switchTabActiveBillets : styles.switchTabInactiveBillets]}
+              style={[
+                styles.modeTabBtn, 
+                activeTab === 'billets' && styles.modeTabBtnActiveBillets
+              ]}
               onPress={() => setActiveTab('billets')}
+              activeOpacity={0.8}
             >
-              <Ionicons name="scan-outline" size={20} color={activeTab === 'billets' ? '#1A2840' : '#1A2840'} style={{marginRight: 8}} />
-              <Text style={[styles.switchText, activeTab === 'billets' ? styles.switchTextActiveBillets : styles.switchTextInactiveBillets]}>
-                Scanner{'\n'}les billets
+              <Ionicons 
+                name="scan-outline" 
+                size={20} 
+                color={activeTab === 'billets' ? '#1A2840' : '#1A2840'} 
+                style={{ marginRight: 8 }} 
+              />
+              <Text style={[styles.modeTabText, activeTab === 'billets' ? styles.modeTabTextActiveBillets : styles.modeTabText]}>
+                Scanner les{'\n'}billets
               </Text>
             </TouchableOpacity>
           </View>
 
           {activeTab === 'qr' ? (
-            /* Main Card - Caisse TPE */
-            <View style={styles.mainCard}>
-            
-            {/* Top Row: Montant & Cryptos */}
-            <View style={styles.cardTopRow}>
-              <View style={styles.montantLabelRow}>
-                <Ionicons name="arrow-up-right-box-outline" size={18} color="#FFFFFF" style={{marginRight: 6}} />
-                <Text style={styles.montantLabel}>Montant</Text>
-              </View>
+            /* Main Dark Blue Terminal Card */
+            <View style={styles.terminalCard}>
               
-              <View style={styles.cryptoPillsRow}>
-                <View style={[styles.cryptoPill, styles.cryptoPillActive]}>
-                  <CryptoIcon symbol="USDT" size={22} />
-                  <Text style={styles.cryptoPillTextActive}>USDT</Text>
+              {/* Top Row: Montant & Token Pills */}
+              <View style={styles.cardHeaderRow}>
+                <View style={styles.montantLabelGroup}>
+                  <Ionicons name="open-outline" size={16} color="#FFFFFF" style={{ marginRight: 4 }} />
+                  <Text style={styles.montantLabelText}>Montant</Text>
                 </View>
-                <View style={styles.cryptoPill}>
-                  <CryptoIcon symbol="USDC" size={22} />
-                  <Text style={styles.cryptoPillText}>USDC</Text>
+
+                <View style={styles.tokenPillsContainer}>
+                  <TouchableOpacity 
+                    style={[styles.tokenPill, selectedToken === 'USDT' && styles.tokenPillActive]}
+                    onPress={() => setSelectedToken('USDT')}
+                  >
+                    <CryptoIcon symbol="USDT" size={18} />
+                    <Text style={[styles.tokenPillText, selectedToken === 'USDT' && styles.tokenPillTextActive]}>USDT</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity 
+                    style={[styles.tokenPill, selectedToken === 'USDC' && styles.tokenPillActive]}
+                    onPress={() => setSelectedToken('USDC')}
+                  >
+                    <CryptoIcon symbol="USDC" size={18} />
+                    <Text style={[styles.tokenPillText, selectedToken === 'USDC' && styles.tokenPillTextActive]}>USDC</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity 
+                    style={[styles.tokenPill, selectedToken === 'DZY' && styles.tokenPillActive]}
+                    onPress={() => setSelectedToken('DZY')}
+                  >
+                    <CryptoIcon symbol="DZY" size={18} />
+                    <Text style={[styles.tokenPillText, selectedToken === 'DZY' && styles.tokenPillTextActive]}>DZY</Text>
+                  </TouchableOpacity>
                 </View>
-                <View style={styles.cryptoPill}>
-                  <CryptoIcon symbol="DZY" size={22} />
-                  <Text style={styles.cryptoPillText}>DZY</Text>
+              </View>
+
+              {/* Currency Selector Dropdown */}
+              <View style={styles.currencyRow}>
+                <AppSelect
+                  value={currency}
+                  options={['XOF', 'XAF', 'GHS', 'NGN', 'USD'].map((val) => ({ value: val, label: val }))}
+                  onChange={setCurrency}
+                  title="Choisir la devise"
+                  style={styles.currencySelectBtn}
+                  textStyle={styles.currencySelectText}
+                  chevronColor="#FFC759"
+                />
+              </View>
+
+              {/* Amount Display */}
+              <View style={styles.amountDisplayGroup}>
+                <Text style={styles.montantTitleText}>Montant à payer</Text>
+                <Text style={styles.mainAmountText}>{amount || '0'}</Text>
+                <View style={styles.equivBadgePill}>
+                  <Text style={styles.equivBadgeText}>≈ 0,0034 USDT</Text>
                 </View>
               </View>
+
+              {/* Numeric Keypad Grid */}
+              <View style={styles.keypadGrid}>
+                <View style={styles.keypadRow}>
+                  {renderKey('1')}
+                  {renderKey('2')}
+                  {renderKey('3')}
+                </View>
+                <View style={styles.keypadRow}>
+                  {renderKey('4')}
+                  {renderKey('5')}
+                  {renderKey('6')}
+                </View>
+                <View style={styles.keypadRow}>
+                  {renderKey('7')}
+                  {renderKey('8')}
+                  {renderKey('9')}
+                </View>
+                <View style={styles.keypadRow}>
+                  {renderKey(',')}
+                  {renderKey('0')}
+                  {renderKey('backspace', 'backspace-outline')}
+                </View>
+              </View>
+
+              {/* Primary Action Button */}
+              <TouchableOpacity 
+                style={styles.btnReceivePayment} 
+                onPress={() => navigation.navigate('CashierScanScreen')}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="qr-code-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
+                <Text style={styles.btnReceivePaymentText}>Recevoir le paiement</Text>
+              </TouchableOpacity>
+
             </View>
-
-            {/* Currency Selector */}
-            <View style={styles.currencySelectorRow}>
-              <AppSelect
-                value={currency}
-                options={['XOF', 'XAF', 'GHS', 'NGN'].map((value) => ({value, label: value}))}
-                onChange={setCurrency}
-                title="Choisir la devise de la caisse"
-                style={styles.currencySelectorBtn}
-                textStyle={styles.currencySelectorText}
-                chevronColor="#FFB800"
-              />
-            </View>
-
-            {/* Amount Display */}
-            <View style={styles.amountDisplayContainer}>
-              <Text style={styles.amountText}>{amount || '0'}</Text>
-              <View style={styles.equivPill}>
-                <Text style={styles.equivText}>≈ 0,0034 USDT</Text>
-              </View>
-            </View>
-
-            {/* Keypad */}
-            <View style={styles.keypad}>
-              <View style={styles.keypadRow}>
-                {renderKey('1')}
-                {renderKey('2')}
-                {renderKey('3')}
-              </View>
-              <View style={styles.keypadRow}>
-                {renderKey('4')}
-                {renderKey('5')}
-                {renderKey('6')}
-              </View>
-              <View style={styles.keypadRow}>
-                {renderKey('7')}
-                {renderKey('8')}
-                {renderKey('9')}
-              </View>
-              <View style={styles.keypadRow}>
-                {renderKey(',')}
-                {renderKey('0')}
-                {renderKey('backspace', 'backspace-outline')}
-              </View>
-            </View>
-
-            {/* Action Button */}
-              <TouchableOpacity style={styles.btnAction} onPress={() => navigation.navigate('CashierScanScreen')}>
-              <Ionicons name="qr-code" size={24} color="#1A2840" style={{marginRight: 8}} />
-              <Text style={styles.btnActionText}>Afficher le QR Code</Text>
-            </TouchableOpacity>
-
-          </View>
           ) : (
-            /* Main Card - Scanner Billets */
+            /* Scanner Billets Tab View */
             <View style={styles.billetsContainer}>
               <TouchableOpacity style={styles.infoBtnTopRight}>
-                <Ionicons name="information" size={16} color="#FFFFFF" />
+                <Ionicons name="information-circle-outline" size={22} color="#FFFFFF" />
               </TouchableOpacity>
 
               <Text style={styles.billetsTitle}>Scanner de billets d'événements</Text>
-              <Text style={styles.billetsSub}>Scannez les codes QR des billets pour{'\n'}valider leur entrée.</Text>
+              <Text style={styles.billetsSub}>
+                Scannez les codes QR des billets pour{'\n'}valider leur entrée.
+              </Text>
 
-              {/* Scanner Graphic Area */}
+              {/* Scanner Graphic Area with Ticket Icon & Laser */}
               <View style={styles.scannerGraphicArea}>
                 <View style={styles.scannerCircleOuter}>
                   <View style={styles.scannerCircleInner}>
-                    {/* Corners */}
+                    {/* Yellow Corner Brackets */}
                     <View style={[styles.scanCorner, styles.scanCornerTL]} />
                     <View style={[styles.scanCorner, styles.scanCornerTR]} />
                     <View style={[styles.scanCorner, styles.scanCornerBL]} />
                     <View style={[styles.scanCorner, styles.scanCornerBR]} />
-                    
+
                     {/* Center Ticket Icon */}
-                    <Ionicons name="ticket-outline" size={64} color="rgba(255,255,255,0.2)" />
-                    
-                    {/* Laser Line */}
-                    <View style={styles.laserLine}>
-                      <View style={styles.laserGlow} />
-                    </View>
+                    <Ionicons name="ticket-outline" size={68} color="#0052FF" />
+
+                    {/* Horizontal Glowing Laser Beam */}
+                    <View style={styles.laserBeamLine} />
                   </View>
                 </View>
               </View>
 
               {/* Actions */}
               <View style={styles.billetsActions}>
-              <TouchableOpacity style={styles.btnCamera} onPress={() => navigation.navigate('CashierScanScreen')}>
-                  <Ionicons name="camera-outline" size={24} color="#1A2840" style={{marginRight: 8}} />
+                <TouchableOpacity 
+                  style={styles.btnCamera} 
+                  onPress={() => navigation.navigate('CashierScanScreen')}
+                  activeOpacity={0.85}
+                >
+                  <Ionicons name="camera-outline" size={22} color="#1A2840" style={{ marginRight: 8 }} />
                   <Text style={styles.btnCameraText}>Autoriser la caméra</Text>
                 </TouchableOpacity>
 
@@ -207,409 +254,87 @@ export default function CashRegisterScreen() {
                   <View style={styles.separatorLine} />
                 </View>
 
-                <TouchableOpacity style={styles.btnImport}>
-                  <Ionicons name="image-outline" size={24} color="#FFFFFF" style={{marginRight: 8}} />
+                <TouchableOpacity 
+                  style={styles.btnImport}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="image-outline" size={22} color="#FFFFFF" style={{ marginRight: 8 }} />
                   <Text style={styles.btnImportText}>Importer une image</Text>
                 </TouchableOpacity>
               </View>
             </View>
           )}
 
+          <View style={{ height: 20 }} />
         </ScrollView>
 
-        <BottomNavBar />
+        <BottomNavBar activeTab="home" />
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#FAFAFA',
-  },
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 12,
-  },
-  iconBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 16,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  pageTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 18,
-    color: '#1A2840',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 40,
-  },
-  switchContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 4,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-  },
-  switchTab: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: 16,
-  },
-  switchTabActiveQR: {
-    backgroundColor: '#071536',
-  },
-  switchTabInactiveQR: {
-    backgroundColor: '#071536', // when billets is active, left tab is dark blue
-  },
-  switchTabActiveBillets: {
-    backgroundColor: '#FFB800',
-  },
-  switchTabInactiveBillets: {
-    backgroundColor: '#FFFFFF',
-  },
-  switchText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 13,
-  },
-  switchTextActiveQR: {
-    color: '#FFFFFF',
-  },
-  switchTextInactiveQR: {
-    color: '#FFFFFF',
-  },
-  switchTextActiveBillets: {
-    color: '#1A2840',
-  },
-  switchTextInactiveBillets: {
-    color: '#1A2840',
-  },
-  mainCard: {
-    backgroundColor: '#071536',
-    borderRadius: 32,
-    padding: 24,
-    marginHorizontal: 16,
-  },
-  cardTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  montantLabelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  montantLabel: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 16,
-    color: '#FFFFFF',
-  },
-  cryptoPillsRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  cryptoPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  cryptoPillActive: {
-    backgroundColor: '#FFB800',
-  },
-  cryptoIconSmall: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 4,
-  },
-  cryptoPillText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
-    color: '#FFFFFF',
-  },
-  cryptoPillTextActive: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 12,
-    color: '#1A2840',
-  },
-  currencySelectorRow: {
-    alignItems: 'flex-end',
-    marginBottom: 24,
-  },
-  currencySelectorBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: '#FFB800',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    minHeight: 34,
-    width: 110,
-  },
-  currencySelectorText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
-    color: '#FFB800',
-  },
-  amountDisplayContainer: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  amountText: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 64,
-    color: '#FFFFFF',
-    lineHeight: 72,
-    marginBottom: 8,
-  },
-  equivPill: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  equivText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-    color: '#FFB800',
-  },
-  keypad: {
-    marginBottom: 32,
-  },
-  keypadRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  keyBtn: {
-    width: '30%',
-    aspectRatio: 1.5,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  keyText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 24,
-    color: '#FFFFFF',
-  },
-  btnAction: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFB800',
-    paddingVertical: 20,
-    borderRadius: 20,
-  },
-  btnActionText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 16,
-    color: '#1A2840',
-  },
-  billetsContainer: {
-    backgroundColor: '#071536',
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    paddingTop: 32,
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-    flex: 1,
-    minHeight: 600,
-  },
-  infoBtnTopRight: {
-    position: 'absolute',
-    top: 24,
-    right: 24,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  billetsTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 22,
-    color: '#FFFFFF',
-    textAlign: 'center',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  billetsSub: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 14,
-    color: '#94A3B8',
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 40,
-  },
-  scannerGraphicArea: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 40,
-  },
-  scannerCircleOuter: {
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  scannerCircleInner: {
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    borderWidth: 1,
-    borderColor: 'rgba(56,189,248,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-  },
-  scanCorner: {
-    position: 'absolute',
-    width: 32,
-    height: 32,
-    borderColor: '#FFB800',
-    borderWidth: 3,
-  },
-  scanCornerTL: {
-    top: 40,
-    left: 40,
-    borderBottomWidth: 0,
-    borderRightWidth: 0,
-    borderTopLeftRadius: 12,
-  },
-  scanCornerTR: {
-    top: 40,
-    right: 40,
-    borderBottomWidth: 0,
-    borderLeftWidth: 0,
-    borderTopRightRadius: 12,
-  },
-  scanCornerBL: {
-    bottom: 40,
-    left: 40,
-    borderTopWidth: 0,
-    borderRightWidth: 0,
-    borderBottomLeftRadius: 12,
-  },
-  scanCornerBR: {
-    bottom: 40,
-    right: 40,
-    borderTopWidth: 0,
-    borderLeftWidth: 0,
-    borderBottomRightRadius: 12,
-  },
-  laserLine: {
-    position: 'absolute',
-    width: 200,
-    height: 2,
-    backgroundColor: '#38BDF8',
-    top: '50%',
-    shadowColor: '#38BDF8',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-  laserGlow: {
-    position: 'absolute',
-    width: 80,
-    height: 4,
-    backgroundColor: '#FFFFFF',
-    top: -1,
-    left: 60,
-    borderRadius: 2,
-    shadowColor: '#FFFFFF',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-  },
-  billetsActions: {
-    width: '100%',
-  },
-  btnCamera: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFB800',
-    paddingVertical: 18,
-    borderRadius: 16,
-    marginBottom: 16,
-  },
-  btnCameraText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 16,
-    color: '#1A2840',
-  },
-  separatorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  separatorLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-  },
-  separatorText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 12,
-    color: '#94A3B8',
-    marginHorizontal: 16,
-  },
-  btnImport: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    paddingVertical: 18,
-    borderRadius: 16,
-  },
-  btnImportText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 15,
-    color: '#FFFFFF',
-  },
+  safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: Platform.OS === 'android' ? 36 : 10, paddingBottom: 10 },
+  iconSquareBtn: { width: 38, height: 38, borderRadius: 12, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
+  headerTitleWrap: { alignItems: 'center' },
+  pageTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 17, color: '#1A2840' },
+  pageSubtitle: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#6B7280' },
+  scrollView: { flex: 1 },
+  scrollContent: { paddingTop: 6, paddingBottom: 30 },
+  modeSwitchContainer: { flexDirection: 'row', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 18, padding: 4, marginHorizontal: 16, marginBottom: 16 },
+  modeSwitchContainerDark: { backgroundColor: '#071D54', borderColor: '#071D54' },
+  modeTabBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderRadius: 14 },
+  modeTabBtnActiveQR: { backgroundColor: '#071D54' },
+  modeTabBtnInactiveQR: { backgroundColor: 'transparent' },
+  modeTabBtnActiveBillets: { backgroundColor: '#FFC759' },
+  modeTabText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840', textAlign: 'center', lineHeight: 15 },
+  modeTabTextActive: { color: '#FFFFFF' },
+  modeTabTextActiveBillets: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 12, color: '#1A2840', textAlign: 'center', lineHeight: 15 },
+  terminalCard: { backgroundColor: '#071D54', borderRadius: 24, padding: 18, marginHorizontal: 16 },
+  cardHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  montantLabelGroup: { flexDirection: 'row', alignItems: 'center' },
+  montantLabelText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#FFFFFF' },
+  tokenPillsContainer: { flexDirection: 'row', gap: 6 },
+  tokenPill: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 8, paddingVertical: 5, borderRadius: 12 },
+  tokenPillActive: { backgroundColor: '#FFC759' },
+  tokenPillText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#FFFFFF', marginLeft: 4 },
+  tokenPillTextActive: { color: '#1A2840' },
+  currencyRow: { alignItems: 'flex-end', marginBottom: 16 },
+  currencySelectBtn: { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#FFC759', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, minHeight: 30 },
+  currencySelectText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 12, color: '#FFC759' },
+  amountDisplayGroup: { alignItems: 'center', marginBottom: 24 },
+  montantTitleText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#FFC759', marginBottom: 4 },
+  mainAmountText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 48, color: '#FFFFFF', lineHeight: 56, marginBottom: 8 },
+  equivBadgePill: { backgroundColor: 'rgba(255,255,255,0.08)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16 },
+  equivBadgeText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#FFC759' },
+  keypadGrid: { marginBottom: 20 },
+  keypadRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
+  keyBtn: { width: '31%', height: 48, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
+  keyText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 22, color: '#FFFFFF' },
+  btnReceivePayment: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFC759', height: 48, borderRadius: 14 },
+  btnReceivePaymentText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#1A2840' },
+  billetsContainer: { backgroundColor: '#071D54', borderRadius: 24, padding: 20, marginHorizontal: 16 },
+  infoBtnTopRight: { alignSelf: 'flex-end', padding: 4 },
+  billetsTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 22, color: '#FFFFFF', textAlign: 'center', marginBottom: 6 },
+  billetsSub: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#9CA3AF', textAlign: 'center', lineHeight: 18, marginBottom: 24 },
+  scannerGraphicArea: { alignItems: 'center', marginBottom: 28 },
+  scannerCircleOuter: { width: 230, height: 230, borderRadius: 115, borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', justifyContent: 'center', alignItems: 'center' },
+  scannerCircleInner: { width: 190, height: 190, borderRadius: 95, borderWidth: 1, borderColor: 'rgba(0,82,255,0.3)', justifyContent: 'center', alignItems: 'center', position: 'relative' },
+  scanCorner: { position: 'absolute', width: 28, height: 28, borderColor: '#FFC759', borderWidth: 3 },
+  scanCornerTL: { top: 24, left: 24, borderBottomWidth: 0, borderRightWidth: 0, borderTopLeftRadius: 8 },
+  scanCornerTR: { top: 24, right: 24, borderBottomWidth: 0, borderLeftWidth: 0, borderTopRightRadius: 8 },
+  scanCornerBL: { bottom: 24, left: 24, borderTopWidth: 0, borderRightWidth: 0, borderBottomLeftRadius: 8 },
+  scanCornerBR: { bottom: 24, right: 24, borderTopWidth: 0, borderLeftWidth: 0, borderBottomRightRadius: 8 },
+  laserBeamLine: { position: 'absolute', width: 150, height: 2, backgroundColor: '#38BDF8', top: '50%', shadowColor: '#38BDF8', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 8, elevation: 4 },
+  billetsActions: { width: '100%' },
+  btnCamera: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFC759', height: 48, borderRadius: 14, marginBottom: 14 },
+  btnCameraText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#1A2840' },
+  separatorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
+  separatorLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.12)' },
+  separatorText: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#9CA3AF', marginHorizontal: 12 },
+  btnImport: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', height: 48, borderRadius: 14 },
+  btnImportText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#FFFFFF' }
 });

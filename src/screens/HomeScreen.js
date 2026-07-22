@@ -1,46 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, SafeAreaView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import WalletCard from '../components/WalletCard';
 import BottomNavBar from '../components/BottomNavBar';
-import { theme } from '../theme/theme';
-
-const { width } = Dimensions.get('window');
 
 const TODO_LIST = [
-  { id: '1', icon: 'person-outline', iconColor: '#F59E0B', iconBgColor: '#FFFBEB', title: 'Abdou asked you\nto buy something', buttonText: 'View', buttonColor: '#F59E0B', buttonBgColor: '#FFFBEB' },
-  { id: '2', icon: 'warning-outline', iconColor: '#EF4444', iconBgColor: '#FEF2F2', title: 'Low balance,\ntop up your account', buttonText: 'Top up', buttonColor: '#EF4444', buttonBgColor: '#FEF2F2' },
-  { id: '3', icon: 'shield-checkmark-outline', iconColor: '#3B82F6', iconBgColor: '#EFF6FF', title: 'Complete your profile\nfor more security', buttonText: 'Complete', buttonColor: '#3B82F6', buttonBgColor: '#EFF6FF' },
-  { id: '4', icon: 'storefront-outline', iconColor: '#8B5CF6', iconBgColor: '#F5F3FF', title: 'Create your DZYStore\nand start selling', buttonText: 'Create', buttonColor: '#8B5CF6', buttonBgColor: '#F5F3FF' },
+  { id: '1', icon: 'person-outline', iconColor: '#F59E0B', iconBgColor: '#FFFBEB', title: 'Abdou asked you\nto buy something', buttonText: 'View', buttonColor: '#F59E0B', buttonBgColor: '#FFFBEB', route: 'ShopsScreen' },
+  { id: '2', icon: 'warning-outline', iconColor: '#EF4444', iconBgColor: '#FEF2F2', title: 'Low balance,\ntop up your account', buttonText: 'Top up', buttonColor: '#EF4444', buttonBgColor: '#FEF2F2', route: 'TopUpScreen' },
+  { id: '3', icon: 'shield-checkmark-outline', iconColor: '#3B82F6', iconBgColor: '#EFF6FF', title: 'Complete your profile\nfor more security', buttonText: 'Complete', buttonColor: '#3B82F6', buttonBgColor: '#EFF6FF', route: 'SecureAccountScreen' },
+  { id: '4', icon: 'storefront-outline', iconColor: '#8B5CF6', iconBgColor: '#F5F3FF', title: 'Create your DZYStore\nand start selling', buttonText: 'Create', buttonColor: '#8B5CF6', buttonBgColor: '#F5F3FF', route: 'ShopsScreen' },
 ];
 
 const QUICK_ACTIONS = [
-  { id: '1', icon: 'bag-handle-outline', color: '#8B5CF6', bgColor: '#F5F3FF', title: 'Buy goods' },
-  { id: '2', icon: 'document-text-outline', color: '#3B82F6', bgColor: '#EFF6FF', title: 'Pay bills' },
+  { id: '1', icon: 'bag-handle-outline', color: '#3B82F6', bgColor: '#EFF6FF', title: 'Buy goods' },
+  { id: '2', icon: 'document-text-outline', color: '#8B5CF6', bgColor: '#F5F3FF', title: 'Pay bills' },
   { id: '3', icon: 'cart-outline', color: '#F59E0B', bgColor: '#FFFBEB', title: 'Buy / Pay me' },
-  { id: '4', icon: 'paper-plane-outline', color: '#8B5CF6', bgColor: '#F5F3FF', title: 'Send & Request' },
-  { id: '5', icon: 'add-outline', color: '#10B981', bgColor: '#ECFDF5', title: 'Top-up DZYwallet' },
-  { id: '6', icon: 'storefront-outline', color: '#F59E0B', bgColor: '#FFFBEB', title: 'Refer a business' },
-  { id: '7', icon: 'globe-outline', color: '#3B82F6', bgColor: '#EFF6FF', title: 'Source in Africa' },
-  { id: '8', icon: 'business-outline', color: '#0D9488', bgColor: '#F0FDFA', title: 'Distribute cash\nXOF ATM' },
+  { id: '4', icon: 'people-outline', color: '#10B981', bgColor: '#ECFDF5', title: 'Send &\nRequest funds' },
+  { id: '5', icon: 'add-circle-outline', color: '#10B981', bgColor: '#ECFDF5', title: 'Top-up\nDZYwallet' },
+  { id: '6', icon: 'storefront-outline', color: '#F59E0B', bgColor: '#FFFBEB', title: 'Refer\na business' },
+  { id: '7', icon: 'globe-outline', color: '#3B82F6', bgColor: '#EFF6FF', title: 'Source\nin Africa' },
+  { id: '8', icon: 'phone-portrait-outline', color: '#10B981', bgColor: '#F0FDFA', title: 'Personal ATM' },
 ];
 
 export default function HomeScreen() {
   const navigation = useNavigation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isBannerVisible, setIsBannerVisible] = useState(true);
-  const [walletBalances] = useState({ DZY: 125500, GHS: 125000, XOF: 510000 });
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [walletBalances] = useState({ DZY: 125500, GHS: 125500, XOF: 510000 });
+
+  useEffect(() => {
+    if (!isBannerVisible) return;
+    const interval = setInterval(() => {
+      setActiveSlide(prev => (prev === 0 ? 1 : 0));
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [isBannerVisible]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           
-          {/* Header */}
           <View style={styles.header}>
             <View style={styles.userInfo}>
-              <Image source={require('../../dizzitup logo cercle.png')} style={styles.avatarImage} />
+              <View style={styles.avatarWrapper}>
+                <Ionicons name="person" size={22} color="#FFFFFF" />
+                <Image source={{uri: 'https://i.pravatar.cc/120?img=11'}} style={styles.avatarImage} />
+              </View>
               <View>
                 <Text style={styles.greetingText}>Hello,</Text>
                 <Text style={styles.nameText}>David</Text>
@@ -51,7 +59,7 @@ export default function HomeScreen() {
                 <Ionicons name="notifications-outline" size={20} color="#1A2840" />
                 <View style={styles.notificationDot} />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.iconButton}>
+              <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('RewardsScreen')}>
                 <Ionicons name="gift-outline" size={20} color="#1A2840" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('DashboardScreen')}>
@@ -60,57 +68,87 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          {/* Wallet Card */}
           <WalletCard balances={walletBalances} />
 
-          {/* To-do list */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>To-do list</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('TodoListScreen')}>
-              <Text style={styles.viewAllText}>View all</Text>
-            </TouchableOpacity>
-          </View>
-          
-          <View style={styles.todoListContainer}>
-            {TODO_LIST.map(item => (
-              <View key={item.id} style={styles.todoItem}>
-                <View style={[styles.todoIconWrapper, { backgroundColor: item.iconBgColor }]}>
-                  <Ionicons name={item.icon} size={20} color={item.iconColor} />
-                </View>
-                <Text style={styles.todoTitle}>{item.title}</Text>
-                <TouchableOpacity style={[styles.todoButton, { backgroundColor: item.buttonBgColor }]}>
-                  <Text style={[styles.todoButtonText, { color: item.buttonColor }]}>{item.buttonText}</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-          </View>
-
-          {/* Invite Banner */}
-          {isBannerVisible && (<View style={styles.inviteBanner}>
-            <View style={styles.inviteContent}>
-              <Text style={styles.inviteTitle}>Invite friends{'\n'}and earn{'\n'}<Text style={styles.inviteTitleHighlight}>$5 in DZY</Text></Text>
-              <Text style={styles.inviteSubtitle}>Send money, buy goods,{'\n'}pay bills and earn rewards.</Text>
-              <TouchableOpacity style={styles.inviteButton}>
-                <Text style={styles.inviteButtonText}>Invite now</Text>
+          <View style={styles.todoCard}>
+            <View style={[styles.sectionHeader, styles.todoCardHeader]}>
+              <Text style={styles.sectionTitle}>To-do list</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('TodoListScreen')}>
+                <Text style={styles.viewAllText}>View all</Text>
               </TouchableOpacity>
             </View>
-            <View style={styles.inviteGraphic}>
-              {/* Using CSS for a giant coin placeholder instead of image for now */}
-              <View style={styles.giantCoin}>
-                <View style={styles.innerCoin}>
-                  <Text style={styles.coinText}>DZY</Text>
+            <View style={styles.todoListContainer}>
+              {TODO_LIST.map((item, index) => (
+                <View key={item.id} style={[styles.todoItem, index < TODO_LIST.length - 1 && styles.todoItemDivider]}>
+                  <View style={[styles.todoIconWrapper, { backgroundColor: item.iconBgColor }]}>
+                    <Ionicons name={item.icon} size={20} color={item.iconColor} />
+                  </View>
+                  <Text style={styles.todoTitle}>{item.title}</Text>
+                  <TouchableOpacity style={[styles.todoButton, { backgroundColor: item.buttonBgColor }]} onPress={() => navigation.navigate(item.route)}>
+                    <Text style={[styles.todoButtonText, { color: item.buttonColor }]}>{item.buttonText}</Text>
+                  </TouchableOpacity>
                 </View>
-              </View>
-              {/* Little avatars */}
-              <Image source={require('../../dizzitup logo cercle.png')} style={[styles.miniAvatar, { top: 10, right: 10 }]} />
-              <Image source={require('../../dizzitup logo cercle.png')} style={[styles.miniAvatar, { bottom: 10, left: 10 }]} />
-              <TouchableOpacity style={styles.closeBannerButton} onPress={() => setIsBannerVisible(false)}>
-                <Ionicons name="close" size={16} color="#1A2840" />
-              </TouchableOpacity>
+              ))}
             </View>
-          </View>)}
+          </View>
 
-          {/* Quick Actions */}
+          {isBannerVisible && (
+            <View style={styles.bannerContainer}>
+              {activeSlide === 0 ? (
+                <View style={[styles.inviteBanner, { backgroundColor: '#EEF5FF' }]}>
+                  <TouchableOpacity style={styles.closeBannerButton} onPress={() => setIsBannerVisible(false)} accessibilityLabel="Close banner">
+                    <Ionicons name="close" size={16} color="#6B7280" />
+                  </TouchableOpacity>
+                  <View style={styles.inviteContent}>
+                    <Text style={styles.inviteTitle}>Invite friends{'\n'}and earn <Text style={{ color: '#3B82F6' }}>$5 in DZY</Text></Text>
+                    <Text style={styles.inviteSubtitle}>Send money, buy goods,{'\n'}pay bills and earn rewards.</Text>
+                    <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#071D54' }]} onPress={() => navigation.navigate('RewardsScreen')}>
+                      <Text style={styles.inviteButtonText}>Invite now</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.inviteGraphic}>
+                    <View style={styles.inviteOrbitOne} />
+                    <View style={styles.inviteOrbitTwo} />
+                    <View style={styles.giantCoin}>
+                      <View style={styles.innerCoin}>
+                        <Text style={styles.coinText}>DZY</Text>
+                      </View>
+                    </View>
+                    <Image source={{uri: 'https://i.pravatar.cc/100?img=5'}} style={[styles.miniAvatar, { top: 10, right: 12 }]} />
+                    <Image source={{uri: 'https://i.pravatar.cc/100?img=9'}} style={[styles.miniAvatar, { bottom: 12, left: 14 }]} />
+                  </View>
+                </View>
+              ) : (
+                <View style={[styles.inviteBanner, { backgroundColor: '#F0FDF4' }]}>
+                  <TouchableOpacity style={styles.closeBannerButton} onPress={() => setIsBannerVisible(false)} accessibilityLabel="Close banner">
+                    <Ionicons name="close" size={16} color="#6B7280" />
+                  </TouchableOpacity>
+                  <View style={styles.inviteContent}>
+                    <Text style={styles.inviteTitle}>Refer a Store or Business{'\n'}and earn <Text style={{ color: '#10B981' }}>$10 in DZY</Text></Text>
+                    <Text style={styles.inviteSubtitle}>Refer a store or business{'\n'}and earn rewards.</Text>
+                    <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#10B981' }]} onPress={() => navigation.navigate('ShopsScreen')}>
+                      <Text style={styles.inviteButtonText}>Refer now</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.storeGraphic}>
+                    <View style={styles.storeBuilding}>
+                      <View style={styles.storeAwning}><Text style={styles.storeAwningText}>STORE</Text></View>
+                      <View style={styles.storeFront}>
+                        <View style={styles.storeDoor} />
+                        <View style={styles.storeWindow} />
+                      </View>
+                    </View>
+                    <View style={styles.storeCoin}><Text style={styles.storeCoinText}>DZY</Text></View>
+                  </View>
+                </View>
+              )}
+              <View style={styles.carouselDotsContainer}>
+                <TouchableOpacity onPress={() => setActiveSlide(0)}><View style={[styles.carouselDot, activeSlide === 0 ? styles.activeDotSlide0 : styles.inactiveDot]} /></TouchableOpacity>
+                <TouchableOpacity onPress={() => setActiveSlide(1)}><View style={[styles.carouselDot, activeSlide === 1 ? styles.activeDotSlide1 : styles.inactiveDot]} /></TouchableOpacity>
+              </View>
+            </View>
+          )}
+
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Quick actions</Text>
           </View>
@@ -118,22 +156,21 @@ export default function HomeScreen() {
           <View style={styles.quickActionsGrid}>
             {QUICK_ACTIONS.map(action => (
               <TouchableOpacity key={action.id} style={styles.actionGridItem} onPress={() => { if(action.id==='1' || action.id==='3' || action.id==='6' || action.id==='7') navigation.navigate('ShopsScreen'); else if(action.id==='2') navigation.navigate('ChooseServiceScreen'); else if(action.id==='4') navigation.navigate('SendMoneyScreen'); else if(action.id==='5') navigation.navigate('TopUpScreen'); else if(action.id==='8') navigation.navigate('WithdrawFundsScreen'); }}>
-                <View style={[styles.actionGridIcon, { backgroundColor: action.bgColor }]}>
-                  <Ionicons name={action.icon} size={24} color={action.color} />
+                <View style={styles.actionGridIcon}>
+                  <Ionicons name={action.icon} size={27} color={action.color} />
                 </View>
                 <Text style={styles.actionGridText}>{action.title}</Text>
               </TouchableOpacity>
             ))}
           </View>
 
-          {/* Security Banner */}
           <View style={styles.securityBanner}>
             <View style={styles.securityIconWrapper}>
               <Ionicons name="shield-checkmark-outline" size={24} color="#1A2840" />
             </View>
             <View style={styles.securityTextContent}>
               <Text style={styles.securityTitle}>Secure, simple and instant</Text>
-              <Text style={styles.securityDesc}>Your funds are protected by the <Text style={{color: '#F59E0B'}}>DizzitUp</Text> security protocol.</Text>
+              <Text style={styles.securityDesc}>Your funds are protected by the{'\n'}<Text style={{color: '#F59E0B'}}>highest</Text> security protocols.</Text>
             </View>
             <View style={styles.lockIconWrapper}>
               <Ionicons name="lock-closed-outline" size={20} color="#1A2840" />
@@ -145,6 +182,7 @@ export default function HomeScreen() {
         
         <BottomNavBar 
           activeTab="Home" 
+          language="en"
           isMenuOpen={isMenuOpen} 
           onCenterButtonPress={() => setIsMenuOpen(!isMenuOpen)} 
         />
@@ -154,292 +192,67 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  container: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatarImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 12,
-  },
-  greetingText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 14,
-    color: '#1A2840',
-  },
-  nameText: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 20,
-    color: '#1A2840',
-  },
-  headerIcons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 8,
-    position: 'relative',
-    backgroundColor: '#FFFFFF',
-  },
-  notificationDot: {
-    position: 'absolute',
-    top: 6,
-    right: 8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#FFC759',
-    borderWidth: 1,
-    borderColor: '#FFFFFF',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginTop: 24,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 18,
-    color: '#1A2840',
-  },
-  viewAllText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-    color: '#F59E0B',
-  },
-  todoListContainer: {
-    paddingHorizontal: 20,
-  },
-  todoItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  todoIconWrapper: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  todoTitle: {
-    flex: 1,
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 13,
-    color: '#1A2840',
-    lineHeight: 18,
-    paddingRight: 16,
-  },
-  todoButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-  },
-  todoButtonText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
-  },
-  inviteBanner: {
-    backgroundColor: '#EFF6FF',
-    marginHorizontal: 20,
-    marginTop: 16,
-    borderRadius: 16,
-    padding: 20,
-    flexDirection: 'row',
-    overflow: 'hidden',
-  },
-  inviteContent: {
-    flex: 1,
-    zIndex: 2,
-  },
-  inviteTitle: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 18,
-    color: '#1A2840',
-    lineHeight: 24,
-    marginBottom: 8,
-  },
-  inviteTitleHighlight: {
-    color: '#3B82F6',
-  },
-  inviteSubtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: '#6B7280',
-    lineHeight: 16,
-    marginBottom: 16,
-  },
-  inviteButton: {
-    backgroundColor: '#1A2840',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  inviteButtonText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
-    color: '#FFFFFF',
-  },
-  inviteGraphic: {
-    width: 120,
-    height: '100%',
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  giantCoin: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#FCD34D',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 4,
-    borderColor: '#FDE68A',
-    transform: [{ perspective: 800 }, { rotateY: '-20deg' }],
-    shadowColor: '#F59E0B',
-    shadowOffset: { width: -4, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 8,
-  },
-  innerCoin: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#F59E0B',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#FBBF24',
-  },
-  coinText: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 24,
-    color: '#FFFFFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.1)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-  },
-  miniAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    position: 'absolute',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-  },
-  closeBannerButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-  },
-  quickActionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 10,
-  },
-  actionGridItem: {
-    flexBasis: '25%',
-    maxWidth: '25%',
-    alignItems: 'center',
-    marginBottom: 24,
-    paddingHorizontal: 2,
-  },
-  actionGridIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  actionGridText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 11,
-    color: '#1A2840',
-    textAlign: 'center',
-    paddingHorizontal: 4,
-  },
-  securityBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8F9FA',
-    marginHorizontal: 20,
-    borderRadius: 16,
-    padding: 16,
-    marginTop: 8,
-  },
-  securityIconWrapper: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  securityTextContent: {
-    flex: 1,
-  },
-  securityTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 13,
-    color: '#1A2840',
-    marginBottom: 2,
-  },
-  securityDesc: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 11,
-    color: '#6B7280',
-    lineHeight: 16,
-  },
-  lockIconWrapper: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#F3F4F6',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 12,
-  }
+  safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1 },
+  scrollView: { flex: 1 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 10 },
+  userInfo: { flexDirection: 'row', alignItems: 'center' },
+  avatarWrapper: { width: 44, height: 44, borderRadius: 22, marginRight: 12, backgroundColor: '#071D54', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  avatarImage: { ...StyleSheet.absoluteFillObject, width: 44, height: 44, borderRadius: 22 },
+  greetingText: { fontFamily: 'Inter_500Medium', fontSize: 14, color: '#1A2840' },
+  nameText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 20, color: '#1A2840' },
+  headerIcons: { flexDirection: 'row', alignItems: 'center' },
+  iconButton: { width: 36, height: 36, borderRadius: 12, borderWidth: 1, borderColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center', marginLeft: 8, position: 'relative', backgroundColor: '#FFFFFF' },
+  notificationDot: { position: 'absolute', top: 6, right: 8, width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFC759', borderWidth: 1, borderColor: '#FFFFFF' },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginTop: 18, marginBottom: 10 },
+  sectionTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#1A2840' },
+  viewAllText: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#F59E0B' },
+  todoCard: { marginHorizontal: 20, marginTop: 12, borderRadius: 17, borderWidth: 1, borderColor: '#F0F2F6', backgroundColor: '#FFFFFF', shadowColor: '#0A1737', shadowOffset: {width: 0, height: 4}, shadowOpacity: 0.04, shadowRadius: 12, elevation: 1, overflow: 'hidden' },
+  todoCardHeader: { paddingHorizontal: 14, marginTop: 0, marginBottom: 0, paddingVertical: 9 },
+  todoListContainer: { paddingHorizontal: 14 },
+  todoItem: { flexDirection: 'row', alignItems: 'center', minHeight: 42, paddingVertical: 3 },
+  todoItemDivider: { borderBottomWidth: 1, borderBottomColor: '#F1F3F7' },
+  todoIconWrapper: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  todoTitle: { flex: 1, fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840', lineHeight: 15, paddingRight: 16 },
+  todoButton: { minWidth: 66, alignItems: 'center', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8 },
+  todoButtonText: { fontFamily: 'Inter_600SemiBold', fontSize: 12 },
+  bannerContainer: { marginHorizontal: 20, marginTop: 12, position: 'relative' },
+  inviteBanner: { borderRadius: 17, paddingHorizontal: 14, paddingVertical: 14, flexDirection: 'row', overflow: 'hidden', position: 'relative', minHeight: 135 },
+  inviteContent: { flex: 1, zIndex: 2, justifyContent: 'center' },
+  inviteTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#1A2840', lineHeight: 20, marginBottom: 4 },
+  inviteSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280', lineHeight: 14, marginBottom: 10 },
+  inviteButton: { alignSelf: 'flex-start', paddingHorizontal: 16, paddingVertical: 7, borderRadius: 8 },
+  inviteButtonText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#FFFFFF' },
+  inviteGraphic: { width: '45%', height: '100%', position: 'absolute', right: 0, top: 0, justifyContent: 'center', alignItems: 'center' },
+  giantCoin: { width: 68, height: 68, borderRadius: 34, backgroundColor: '#FFC33D', justifyContent: 'center', alignItems: 'center', borderWidth: 4, borderColor: '#FFE078', transform: [{ perspective: 800 }, { rotateY: '-20deg' }], shadowColor: '#F59E0B', shadowOffset: { width: -4, height: 8 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 8 },
+  innerCoin: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#F6A900', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#FBBF24' },
+  coinText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#FFFFFF' },
+  miniAvatar: { width: 30, height: 30, borderRadius: 15, position: 'absolute', borderWidth: 2, borderColor: '#FFFFFF' },
+  inviteOrbitOne: { position: 'absolute', width: 120, height: 58, borderRadius: 60, borderWidth: 1, borderColor: '#3B82F6', borderStyle: 'dashed', transform: [{rotate: '-18deg'}] },
+  inviteOrbitTwo: { position: 'absolute', width: 110, height: 46, borderRadius: 55, borderWidth: 1, borderColor: '#F59E0B', borderStyle: 'dashed', transform: [{rotate: '20deg'}] },
+  storeGraphic: { width: '45%', height: '100%', position: 'absolute', right: 5, top: 0, justifyContent: 'center', alignItems: 'center', flexDirection: 'row' },
+  storeBuilding: { width: 78, height: 72, backgroundColor: '#FFFFFF', borderRadius: 8, borderWidth: 2, borderColor: '#E5E7EB', overflow: 'hidden', position: 'relative', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 6, elevation: 4 },
+  storeAwning: { backgroundColor: '#10B981', height: 22, justifyContent: 'center', alignItems: 'center', borderBottomWidth: 2, borderBottomColor: '#059669' },
+  storeAwningText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 9, color: '#FFFFFF', letterSpacing: 0.5 },
+  storeFront: { flex: 1, backgroundColor: '#FAFAFA', flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', paddingBottom: 6, paddingHorizontal: 8 },
+  storeDoor: { width: 22, height: 32, backgroundColor: '#059669', borderTopLeftRadius: 4, borderTopRightRadius: 4 },
+  storeWindow: { width: 28, height: 24, backgroundColor: '#E0F2FE', borderRadius: 4, borderWidth: 1.5, borderColor: '#38BDF8' },
+  storeCoin: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFC759', borderWidth: 2, borderColor: '#F59E0B', justifyContent: 'center', alignItems: 'center', position: 'absolute', left: 4, bottom: 12, shadowColor: '#F59E0B', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.3, shadowRadius: 5, elevation: 5 },
+  storeCoinText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 12, color: '#FFFFFF' },
+  closeBannerButton: { position: 'absolute', top: 10, right: 12, zIndex: 10 },
+  carouselDotsContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', position: 'absolute', bottom: 8, left: 0, right: 0, gap: 6 },
+  carouselDot: { width: 7, height: 7, borderRadius: 3.5 },
+  activeDotSlide0: { backgroundColor: '#10B981', width: 8, height: 8, borderRadius: 4 },
+  activeDotSlide1: { backgroundColor: '#10B981', width: 8, height: 8, borderRadius: 4 },
+  inactiveDot: { backgroundColor: '#D1D5DB' },
+  quickActionsGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 20 },
+  actionGridItem: { flexBasis: '25%', maxWidth: '25%', alignItems: 'center', minHeight: 86, paddingHorizontal: 3, paddingVertical: 9, borderWidth: 1, borderColor: '#F1F3F7', borderRadius: 14 },
+  actionGridIcon: { width: 36, height: 36, justifyContent: 'center', alignItems: 'center', marginBottom: 3 },
+  actionGridText: { fontFamily: 'Inter_600SemiBold', fontSize: 10, lineHeight: 12, color: '#1A2840', textAlign: 'center', paddingHorizontal: 4 },
+  securityBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8F9FA', marginHorizontal: 20, borderRadius: 16, padding: 12, marginTop: 10 },
+  securityIconWrapper: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', marginRight: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
+  securityTextContent: { flex: 1 },
+  securityTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#1A2840', marginBottom: 2 },
+  securityDesc: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280', lineHeight: 16 },
+  lockIconWrapper: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center', marginLeft: 12 }
 });

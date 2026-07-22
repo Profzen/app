@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Image, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 
@@ -14,9 +14,9 @@ const transactions = [
     amount: '- 50,00 DZ',
     balance: 'Solde : 120,00 DZ',
     isPositive: false,
-    icon: 'arrow-up-outline',
+    icon: 'arrow-up-right-outline',
     iconColor: '#10B981',
-    iconBg: '#ECFDF5',
+    iconBg: '#DCFCE7',
   },
   {
     id: '2',
@@ -28,8 +28,8 @@ const transactions = [
     balance: 'Solde : 170,00 DZ',
     isPositive: true,
     icon: 'arrow-down-outline',
-    iconColor: '#F59E0B',
-    iconBg: '#FFFBEB',
+    iconColor: '#D97706',
+    iconBg: '#FEF3C7',
   },
   {
     id: '3',
@@ -41,7 +41,7 @@ const transactions = [
     balance: 'Solde : 145,00 DZ',
     isPositive: false,
     icon: 'bag-handle-outline',
-    iconColor: '#3B82F6',
+    iconColor: '#0052FF',
     iconBg: '#EFF6FF',
   },
   {
@@ -53,9 +53,9 @@ const transactions = [
     amount: '- 30,00 DZ',
     balance: 'Solde : 160,00 DZ',
     isPositive: false,
-    icon: 'arrow-up-outline',
+    icon: 'arrow-up-right-outline',
     iconColor: '#10B981',
-    iconBg: '#ECFDF5',
+    iconBg: '#DCFCE7',
   },
   {
     id: '5',
@@ -67,8 +67,8 @@ const transactions = [
     balance: 'Solde : 190,00 DZ',
     isPositive: true,
     icon: 'arrow-down-outline',
-    iconColor: '#F59E0B',
-    iconBg: '#FFFBEB',
+    iconColor: '#D97706',
+    iconBg: '#FEF3C7',
   },
   {
     id: '6',
@@ -81,109 +81,106 @@ const transactions = [
     isPositive: true,
     icon: 'person-add-outline',
     iconColor: '#8B5CF6',
-    iconBg: '#F5F3FF',
-    noArrow: true, // For the bonus it doesn't have an arrow next to the amount
+    iconBg: '#F3E8FF',
+    noArrow: true,
   },
 ];
 
 export default function ContactHistoryScreen() {
   const navigation = useNavigation();
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         
-        {/* Header */}
+        {/* Header Top Bar */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#1A2840" />
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={22} color="#1A2840" />
           </TouchableOpacity>
-          <View style={styles.headerRightIcons}>
-            <TouchableOpacity style={styles.iconBtnRight}>
-              <Ionicons name="pencil-outline" size={20} color="#1A2840" />
+          <View style={styles.headerRightActions}>
+            <TouchableOpacity style={styles.actionSquareBtn}>
+              <Ionicons name="pencil-outline" size={18} color="#1A2840" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnRight}>
-              <Ionicons name="ellipsis-horizontal" size={20} color="#1A2840" />
+            <TouchableOpacity style={styles.actionSquareBtn}>
+              <Ionicons name="ellipsis-horizontal" size={18} color="#1A2840" />
             </TouchableOpacity>
           </View>
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          {/* Condensed Profile Section */}
-          <View style={styles.profileSection}>
-            <View style={styles.avatarContainer}>
-              <Image source={{uri: 'https://i.pravatar.cc/150?img=11'}} style={styles.avatar} />
-              <View style={styles.verifiedBadge}>
-                <Ionicons name="checkmark-circle" size={24} color="#10B981" />
-                <View style={styles.verifiedBadgeBg} />
+          {/* Contact Profile Info */}
+          <View style={styles.profileHeaderSection}>
+            <View style={styles.avatarWrapper}>
+              <Image source={{ uri: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80' }} style={styles.avatarImage} />
+              <View style={styles.badgeVerified}>
+                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
               </View>
             </View>
 
-            <Text style={styles.profileName}>John Doe</Text>
-            <Text style={styles.profileRelation}>Frère</Text>
-            <Text style={styles.locationText}>🇹🇬 Lomé, Togo</Text>
+            <Text style={styles.contactName}>John Doe</Text>
+            <Text style={styles.relationText}>Frère</Text>
+            <View style={styles.locationRow}>
+              <Text style={styles.locationFlagText}>🇹🇬  Lomé, Togo</Text>
+            </View>
           </View>
 
-          {/* Tabs */}
-          <View style={styles.tabsContainer}>
-            <TouchableOpacity style={styles.tab}>
+          {/* 2 Tabs Bar */}
+          <View style={styles.tabsRowContainer}>
+            <TouchableOpacity style={styles.tabButton}>
               <Text style={styles.tabTextInactive}>Informations</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.tab, styles.tabActive]}>
+            <TouchableOpacity style={[styles.tabButton, styles.tabButtonActive]}>
               <Text style={styles.tabTextActive}>Historique</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Title & Filters Row */}
-          <View style={styles.historyHeaderRow}>
-            <Text style={styles.historyTitle}>Historique des transactions</Text>
-            <View style={styles.historyHeaderActions}>
-              <TouchableOpacity style={styles.actionBtnSmall}>
-                <Ionicons name="download-outline" size={14} color="#1A2840" style={{marginRight: 4}} />
-                <Text style={styles.actionBtnSmallText}>Télécharger PDF</Text>
+          {/* Transactions Header & Action Buttons */}
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>Historique des transactions</Text>
+            <View style={styles.sectionActions}>
+              <TouchableOpacity style={styles.btnSmallAction}>
+                <Ionicons name="download-outline" size={14} color="#1A2840" style={{ marginRight: 4 }} />
+                <Text style={styles.btnSmallActionText}>Télécharger PDF</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.actionBtnSmall, {marginLeft: 8}]}>
-                <Ionicons name="options-outline" size={14} color="#1A2840" style={{marginRight: 4}} />
-                <Text style={styles.actionBtnSmallText}>Filtres</Text>
+              <TouchableOpacity style={styles.btnSmallAction}>
+                <Ionicons name="options-outline" size={14} color="#1A2840" style={{ marginRight: 4 }} />
+                <Text style={styles.btnSmallActionText}>Filtres</Text>
               </TouchableOpacity>
             </View>
           </View>
 
-          {/* Month Selector */}
-          <View style={styles.monthSelectorCard}>
-            <View style={styles.monthSelectorIcon}>
-              <Ionicons name="calendar-outline" size={20} color="#3B82F6" />
+          {/* Month Selector Dropdown Card */}
+          <View style={styles.monthCard}>
+            <View style={styles.monthIconWrapper}>
+              <Ionicons name="calendar-outline" size={18} color="#0052FF" />
             </View>
-            <View style={styles.monthSelectorContent}>
-              <Text style={styles.monthSelectorLabel}>Historique mensuel</Text>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text style={styles.monthSelectorValue}>Mai 2024</Text>
-                <Ionicons name="chevron-down" size={14} color="#1A2840" style={{marginLeft: 4}} />
-              </View>
+            <View style={styles.monthContent}>
+              <Text style={styles.monthLabel}>Historique mensuel</Text>
+              <TouchableOpacity style={styles.monthDropdownBtn}>
+                <Text style={styles.monthValueText}>Mai 2024</Text>
+                <Ionicons name="chevron-down" size={14} color="#1A2840" style={{ marginLeft: 4 }} />
+              </TouchableOpacity>
             </View>
           </View>
 
           {/* Transactions List */}
-          <View style={styles.transactionsList}>
+          <View style={styles.transactionsContainerCard}>
             {transactions.map((tx, index) => (
-              <View key={tx.id}>
-                <TouchableOpacity style={styles.transactionItem}>
-                  <View style={[styles.txIconCircle, {backgroundColor: tx.iconBg}]}>
-                    <Ionicons 
-                      name={tx.icon} 
-                      size={20} 
-                      color={tx.iconColor} 
-                      style={tx.icon === 'arrow-up-outline' ? {transform: [{rotate: '45deg'}]} : {}} 
-                    />
+              <React.Fragment key={tx.id}>
+                <TouchableOpacity style={styles.txRowItem} activeOpacity={0.75}>
+                  <View style={[styles.txIconBox, { backgroundColor: tx.iconBg }]}>
+                    <Ionicons name={tx.icon} size={18} color={tx.iconColor} />
                   </View>
-                  <View style={styles.txContent}>
-                    <Text style={styles.txTitle}>{tx.title}</Text>
-                    <Text style={styles.txSubtitle}>{tx.subtitle}</Text>
-                    <Text style={styles.txDate}>{tx.date}</Text>
+                  <View style={styles.txMainInfo}>
+                    <Text style={styles.txTitleText}>{tx.title}</Text>
+                    <Text style={styles.txSubText}>{tx.subtitle}</Text>
+                    <Text style={styles.txDateText}>{tx.date}</Text>
                   </View>
-                  <View style={styles.txRight}>
-                    <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 4}}>
-                      <Text style={[styles.txAmount, {color: tx.isPositive ? '#10B981' : '#1A2840'}]}>
+                  <View style={styles.txAmountSection}>
+                    <View style={styles.txAmountRow}>
+                      <Text style={[styles.txAmountText, { color: tx.isPositive ? '#10B981' : '#1A2840' }]}>
                         {tx.amount}
                       </Text>
                       {!tx.noArrow && (
@@ -191,27 +188,28 @@ export default function ContactHistoryScreen() {
                           name={tx.isPositive ? "arrow-down" : "arrow-up"} 
                           size={14} 
                           color={tx.isPositive ? '#10B981' : '#EF4444'} 
-                          style={{marginLeft: 4}}
+                          style={{ marginLeft: 3 }} 
                         />
                       )}
                     </View>
-                    <Text style={styles.txBalance}>{tx.balance}</Text>
+                    <Text style={styles.txBalanceText}>{tx.balance}</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={16} color="#94A3B8" style={{marginLeft: 8}} />
+                  <Ionicons name="chevron-forward" size={14} color="#9CA3AF" style={{ marginLeft: 6 }} />
                 </TouchableOpacity>
-                {index < transactions.length - 1 && <View style={styles.divider} />}
-              </View>
+                {index < transactions.length - 1 && <View style={styles.txDividerLine} />}
+              </React.Fragment>
             ))}
           </View>
 
-          {/* Privacy Banner */}
-          <View style={styles.privacyBanner}>
-            <Ionicons name="lock-closed-outline" size={16} color="#1A2840" style={{marginRight: 8}} />
+          {/* Privacy Security Banner Card */}
+          <View style={styles.privacyBannerCard}>
+            <Ionicons name="lock-closed-outline" size={16} color="#1A2840" style={{ marginRight: 8 }} />
             <Text style={styles.privacyBannerText}>
               Seules vos transactions avec ce contact sont affichées.
             </Text>
           </View>
 
+          <View style={{ height: 20 }} />
         </ScrollView>
 
         <BottomNavBar activeTab="contacts" />
@@ -221,256 +219,50 @@ export default function ContactHistoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#FAFAFA',
-  },
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 0,
-  },
-  iconBtn: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerRightIcons: {
-    flexDirection: 'row',
-  },
-  iconBtnRight: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    marginLeft: 8,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 40,
-  },
-  profileSection: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  avatarContainer: {
-    position: 'relative',
-    marginBottom: 12,
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-  },
-  verifiedBadge: {
-    position: 'absolute',
-    bottom: -4,
-    right: -4,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  verifiedBadgeBg: {
-    position: 'absolute',
-    width: 16,
-    height: 16,
-    backgroundColor: '#FFFFFF',
-    zIndex: -1,
-    borderRadius: 8,
-  },
-  profileName: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 22,
-    color: '#1A2840',
-    marginBottom: 4,
-  },
-  profileRelation: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 14,
-    color: '#1A2840',
-    marginBottom: 4,
-  },
-  locationText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    color: '#475569',
-  },
-  tabsContainer: {
-    flexDirection: 'row',
-    marginHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
-    marginBottom: 20,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  tabActive: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#FFB800',
-  },
-  tabTextInactive: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 14,
-    color: '#94A3B8',
-  },
-  tabTextActive: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-    color: '#1A2840',
-  },
-  historyHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  historyTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 16,
-    color: '#1A2840',
-    flex: 1,
-  },
-  historyHeaderActions: {
-    flexDirection: 'row',
-  },
-  actionBtnSmall: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  actionBtnSmallText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 10,
-    color: '#1A2840',
-  },
-  monthSelectorCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    padding: 12,
-    marginHorizontal: 16,
-    marginBottom: 16,
-  },
-  monthSelectorIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  monthSelectorContent: {
-    flex: 1,
-  },
-  monthSelectorLabel: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: '#1A2840',
-    marginBottom: 2,
-  },
-  monthSelectorValue: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-    color: '#1A2840',
-  },
-  transactionsList: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    borderRadius: 16,
-    marginHorizontal: 16,
-    marginBottom: 20,
-  },
-  transactionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-  },
-  txIconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  txContent: {
-    flex: 1,
-  },
-  txTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 13,
-    color: '#1A2840',
-    marginBottom: 2,
-  },
-  txSubtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: '#64748B',
-    marginBottom: 2,
-  },
-  txDate: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 11,
-    color: '#94A3B8',
-  },
-  txRight: {
-    alignItems: 'flex-end',
-  },
-  txAmount: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-  },
-  txBalance: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 11,
-    color: '#64748B',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#F1F5F9',
-    marginHorizontal: 16,
-  },
-  privacyBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginHorizontal: 16,
-    marginBottom: 40,
-  },
-  privacyBannerText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 11,
-    color: '#1A2840',
-  },
+  safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: Platform.OS === 'android' ? 36 : 10, paddingBottom: 10 },
+  backButton: { padding: 4 },
+  headerRightActions: { flexDirection: 'row', gap: 8 },
+  actionSquareBtn: { width: 38, height: 38, borderRadius: 12, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
+  scrollView: { flex: 1 },
+  scrollContent: { paddingTop: 6, paddingBottom: 30 },
+  profileHeaderSection: { alignItems: 'center', marginBottom: 20, paddingHorizontal: 16 },
+  avatarWrapper: { position: 'relative', marginBottom: 10 },
+  avatarImage: { width: 80, height: 80, borderRadius: 40 },
+  badgeVerified: { position: 'absolute', bottom: 0, right: 0, backgroundColor: '#FFFFFF', borderRadius: 10, padding: 1 },
+  contactName: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 22, color: '#1A2840', marginBottom: 2 },
+  relationText: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#6B7280', marginBottom: 4 },
+  locationRow: { flexDirection: 'row', alignItems: 'center' },
+  locationFlagText: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#1A2840' },
+  tabsRowContainer: { flexDirection: 'row', marginHorizontal: 16, borderBottomWidth: 1, borderBottomColor: '#F3F4F6', marginBottom: 20 },
+  tabButton: { flex: 1, paddingVertical: 12, alignItems: 'center' },
+  tabButtonActive: { borderBottomWidth: 2, borderBottomColor: '#FFC759' },
+  tabTextInactive: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#9CA3AF' },
+  tabTextActive: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840' },
+  sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, marginBottom: 14 },
+  sectionTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#1A2840', flex: 1 },
+  sectionActions: { flexDirection: 'row', gap: 6 },
+  btnSmallAction: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 8, paddingHorizontal: 9, paddingVertical: 5 },
+  btnSmallActionText: { fontFamily: 'Inter_500Medium', fontSize: 10, color: '#1A2840' },
+  monthCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderRadius: 14, padding: 12, marginHorizontal: 16, marginBottom: 16 },
+  monthIconWrapper: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#EFF6FF', justifyContent: 'center', alignItems: 'center', marginRight: 10 },
+  monthContent: { flex: 1 },
+  monthLabel: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280', marginBottom: 1 },
+  monthDropdownBtn: { flexDirection: 'row', alignItems: 'center' },
+  monthValueText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840' },
+  transactionsContainerCard: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0F2F5', borderRadius: 18, marginHorizontal: 16, marginBottom: 16 },
+  txRowItem: { flexDirection: 'row', alignItems: 'center', padding: 14 },
+  txIconBox: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
+  txMainInfo: { flex: 1 },
+  txTitleText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840', marginBottom: 1 },
+  txSubText: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280', marginBottom: 1 },
+  txDateText: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#9CA3AF' },
+  txAmountSection: { alignItems: 'flex-end' },
+  txAmountRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 2 },
+  txAmountText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13 },
+  txBalanceText: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#6B7280' },
+  txDividerLine: { height: 1, backgroundColor: '#F3F4F6', marginHorizontal: 14 },
+  privacyBannerCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F4F8FF', borderRadius: 14, paddingVertical: 12, paddingHorizontal: 16, marginHorizontal: 16, marginBottom: 16 },
+  privacyBannerText: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#1A2840' }
 });

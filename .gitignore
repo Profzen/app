@@ -39,3 +39,13 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Documentation locale
+memoire.md
+
+# Scripts utilitaires locaux
+fix_*.js
+wire_*.js
+generate_navigator.js
+inject_navigation.js
+

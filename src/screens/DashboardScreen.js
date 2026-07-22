@@ -44,7 +44,7 @@ export default function DashboardScreen() {
             <TouchableOpacity style={styles.iconBtn}>
               <Ionicons name="time-outline" size={22} color="#1A2840" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtn}>
+            <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('MoreSettingsScreen')} accessibilityLabel="Ouvrir les paramètres">
               <Ionicons name="settings-outline" size={22} color="#1A2840" />
             </TouchableOpacity>
           </View>

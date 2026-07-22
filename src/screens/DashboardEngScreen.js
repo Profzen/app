@@ -1,670 +1,414 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Dimensions } from 'react-native';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
-
-const { width } = Dimensions.get('window');
-
-const TODO_LIST = [
-  { id: '1', title: 'Abdou asked you\nto buy something', action: 'View', icon: 'person-outline', color: '#F59E0B', bg: '#FEF3C7' },
-  { id: '2', title: 'Low balance,\ntop up your account', action: 'Top up', icon: 'warning-outline', color: '#EF4444', bg: '#FEE2E2' },
-  { id: '3', title: 'Complete your profile\nfor more security', action: 'Complete', icon: 'shield-checkmark-outline', color: '#3B82F6', bg: '#DBEAFE' },
-  { id: '4', title: 'Create your DZYStore\nand start selling', action: 'Create', icon: 'storefront-outline', color: '#8B5CF6', bg: '#EDE9FE' },
-];
-
-const QUICK_ACTIONS = [
-  { id: '1', label: 'Buy goods', icon: 'document-text-outline', color: '#3B82F6' },
-  { id: '2', label: 'Pay bills', icon: 'flash-outline', color: '#8B5CF6' },
-  { id: '3', label: 'Buy / Pay me', icon: 'cart-outline', color: '#F59E0B' },
-  { id: '4', label: 'Send &\nRequest funds', icon: 'people-outline', color: '#10B981' },
-  { id: '5', label: 'Top-up\nDZYwallet', icon: 'add-circle-outline', color: '#10B981' },
-  { id: '6', label: 'Refer\na business', icon: 'storefront-outline', color: '#F59E0B' },
-  { id: '7', label: 'Source\nin Africa', icon: 'earth-outline', color: '#3B82F6' },
-  { id: '8', label: 'Distribute\ncash', icon: 'cash-outline', color: '#10B981' },
-];
 
 export default function DashboardEngScreen() {
   const navigation = useNavigation();
+  const [activeTabMode, setActiveTabMode] = useState('business');
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        {/* Header */}
+        
+        {/* Header Top Bar */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <Image source={{uri: 'https://i.pravatar.cc/100?img=11'}} style={styles.avatar} />
-            <View>
+            <View style={styles.storeIconBox}>
+              <Ionicons name="storefront" size={22} color="#1A2840" />
+            </View>
+            <View style={{ marginLeft: 8 }}>
               <Text style={styles.helloText}>Hello,</Text>
-              <Text style={styles.nameText}>David</Text>
+              <View style={styles.nameBadgeRow}>
+                <Text style={styles.nameText}>ABC Inc</Text>
+                <View style={styles.businessBadge}>
+                  <Text style={styles.businessBadgeText}>Business</Text>
+                </View>
+              </View>
             </View>
           </View>
-          <View style={styles.headerRight}>
-            <TouchableOpacity style={styles.iconBtn}>
-              <Ionicons name="notifications-outline" size={22} color="#1A2840" />
-              <View style={styles.badge} />
+
+          <View style={styles.headerRightActions}>
+            <TouchableOpacity style={styles.iconSquareBtn}>
+              <Ionicons name="notifications-outline" size={20} color="#1A2840" />
+              <View style={styles.yellowBadgeDot} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtn}>
-              <Ionicons name="gift-outline" size={22} color="#1A2840" />
+            <TouchableOpacity style={styles.iconSquareBtn}>
+              <Ionicons name="gift-outline" size={20} color="#1A2840" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnBordered}>
+            <TouchableOpacity style={styles.iconSquareBtn}>
               <Ionicons name="ellipsis-horizontal" size={20} color="#1A2840" />
             </TouchableOpacity>
           </View>
         </View>
 
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          {/* Wallet Card */}
-          <View style={styles.walletCard}>
-            <View style={styles.walletTop}>
-              <View style={styles.walletHeaderLeft}>
-                <Text style={styles.dzyWalletText}>DZYwallet</Text>
-                <Ionicons name="eye" size={16} color="#FFFFFF" style={{marginLeft: 8}} />
+          {/* Top Perso / Business Mode Switcher */}
+          <View style={styles.modeSwitchContainer}>
+            <TouchableOpacity 
+              style={[styles.modeTabBtn, activeTabMode === 'perso' && styles.modeTabBtnActive]}
+              onPress={() => {
+                setActiveTabMode('perso');
+                navigation.navigate('DashboardScreen');
+              }}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.modeTabText, activeTabMode === 'perso' && styles.modeTabTextActive]}>Perso</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.modeTabBtn, activeTabMode === 'business' && styles.modeTabBtnActive]}
+              onPress={() => setActiveTabMode('business')}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.modeTabText, activeTabMode === 'business' && styles.modeTabTextActive]}>Business</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Main Dark Navy Card (DZYwallet Pro) */}
+          <View style={styles.mainNavyCard}>
+            
+            {/* Header Row: DZYwallet Pro & Top-up CTA */}
+            <View style={styles.walletHeaderRow}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.dzyWalletProTitle}>DZYwallet Pro</Text>
+                <Ionicons name="eye-outline" size={16} color="#FFFFFF" style={{ marginLeft: 6 }} />
               </View>
-              <View style={styles.walletHeaderRight}>
-                <TouchableOpacity style={styles.rechargerBtn}>
+
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <TouchableOpacity style={styles.btnTopUp} onPress={() => navigation.navigate('TopUpScreen')}>
                   <Ionicons name="add" size={14} color="#1A2840" />
-                  <Text style={styles.rechargerText}>Top-up</Text>
+                  <Text style={styles.btnTopUpText}>Top-up</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.arrowRightBtn}>
-                  <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
+
+                <TouchableOpacity style={styles.arrowCircleBtn}>
+                  <Ionicons name="arrow-forward" size={14} color="#FFFFFF" />
                 </TouchableOpacity>
               </View>
             </View>
 
-            <View style={styles.walletBody}>
-              <View style={styles.walletBalanceSection}>
-                <Text style={styles.balanceAmount}>125,500.00 <Text style={styles.balanceCurrency}>USD</Text></Text>
-                
-                <View style={styles.conversionsRow}>
-                  <View style={styles.conversionItem}>
-                    <Image source={{uri: 'https://flagcdn.com/w40/gh.png'}} style={styles.countryFlag} />
-                    <View>
-                      <Text style={styles.conversionValue}>≈ 125,500.00 GHS</Text>
-                      <Text style={styles.conversionLabel}>Ghana Cedi</Text>
-                    </View>
-                  </View>
-                  <View style={styles.conversionDivider} />
-                  <View style={styles.conversionItem}>
-                    <Image source={{uri: 'https://flagcdn.com/w40/tg.png'}} style={styles.countryFlag} />
-                    <View>
-                      <Text style={styles.conversionValue}>≈ 510,000.00 XOF</Text>
-                      <Text style={styles.conversionLabel}>CFA Franc (Togo)</Text>
-                    </View>
-                  </View>
+            {/* Main Balance Display */}
+            <View style={styles.balanceRow}>
+              <Image source={require('../../dizzitup logo cercle.png')} style={styles.dzyLogoIcon} resizeMode="contain" />
+              <Text style={styles.balanceAmountText}>125,500.00</Text>
+              <Text style={styles.dzyTagText}>DZY</Text>
+            </View>
+
+            {/* Conversions Row (2 Cols) */}
+            <View style={styles.conversionsGridRow}>
+              <View style={styles.conversionCol}>
+                <Ionicons name="location-outline" size={14} color="#9CA3AF" style={{ marginRight: 4 }} />
+                <Image source={{ uri: 'https://flagcdn.com/w40/gh.png' }} style={styles.flagIconCircle} />
+                <View style={{ marginLeft: 6 }}>
+                  <Text style={styles.conversionValText}>125,500.00 GHS</Text>
+                  <Text style={styles.conversionLabelText}>Ghana Cedi</Text>
                 </View>
               </View>
-              
-              <View style={styles.dzyLogoWrapper}>
-                <Image source={require('../../dizzitup logo cercle.png')} style={styles.dzyLogoImg} resizeMode="contain" />
+
+              <View style={styles.conversionDividerLine} />
+
+              <View style={styles.conversionCol}>
+                <Ionicons name="home-outline" size={14} color="#9CA3AF" style={{ marginRight: 4 }} />
+                <Image source={{ uri: 'https://flagcdn.com/w40/tg.png' }} style={styles.flagIconCircle} />
+                <View style={{ marginLeft: 6 }}>
+                  <Text style={styles.conversionValText}>510,000.00 XOF</Text>
+                  <Text style={styles.conversionLabelText}>CFA Franc (Togo)</Text>
+                </View>
               </View>
             </View>
 
-            {/* Wallet Actions (Inside Dark Card) */}
-            <View style={styles.walletActions}>
-              <TouchableOpacity style={styles.wActionBtn}>
-                <Ionicons name="paper-plane-outline" size={24} color="#FFFFFF" />
-                <Text style={styles.wActionText}>Send</Text>
+            {/* 4 Action Buttons Row */}
+            <View style={styles.cardActionsRow}>
+              <TouchableOpacity style={styles.cardActionItem} onPress={() => navigation.navigate('SendMoneyScreen')}>
+                <Ionicons name="paper-plane-outline" size={20} color="#FFFFFF" />
+                <Text style={styles.cardActionLabel}>Send</Text>
               </TouchableOpacity>
-              
-              <View style={styles.wActionDivider} />
-              
-              <TouchableOpacity style={styles.wActionBtn}>
-                <Ionicons name="arrow-down-outline" size={24} color="#FFFFFF" />
-                <Text style={styles.wActionText}>Receive</Text>
+
+              <View style={styles.actionDividerVertical} />
+
+              <TouchableOpacity style={styles.cardActionItem}>
+                <Ionicons name="layers-outline" size={20} color="#FFFFFF" />
+                <Text style={styles.cardActionLabel}>Mes fonds</Text>
               </TouchableOpacity>
-              
-              <View style={styles.wActionDivider} />
-              
-              <TouchableOpacity style={styles.wActionBtn}>
-                <Ionicons name="time-outline" size={24} color="#FFFFFF" />
-                <Text style={styles.wActionText}>History</Text>
+
+              <View style={styles.actionDividerVertical} />
+
+              <TouchableOpacity style={styles.cardActionItem}>
+                <Ionicons name="time-outline" size={20} color="#FFFFFF" />
+                <Text style={styles.cardActionLabel}>History</Text>
               </TouchableOpacity>
-              
-              <View style={styles.wActionDivider} />
-              
-              <TouchableOpacity style={styles.wActionBtn}>
-                <Ionicons name="scan-outline" size={24} color="#FFFFFF" />
-                <Text style={styles.wActionText}>Cash-out</Text>
+
+              <View style={styles.actionDividerVertical} />
+
+              <TouchableOpacity style={styles.cardActionItem} onPress={() => navigation.navigate('WithdrawFundsScreen')}>
+                <Ionicons name="exit-outline" size={20} color="#FFFFFF" />
+                <Text style={styles.cardActionLabel}>Cash-out</Text>
               </TouchableOpacity>
             </View>
+
           </View>
 
-          {/* To-do list */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>To-do list</Text>
-            <TouchableOpacity>
-              <Text style={styles.viewAllText}>View all</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.todoList}>
-            {TODO_LIST.map((item, index) => (
-              <View key={item.id}>
-                <View style={styles.todoRow}>
-                  <View style={[styles.todoIconBox, {borderColor: item.color, backgroundColor: item.bg}]}>
-                    <Ionicons name={item.icon} size={20} color={item.color} />
-                  </View>
-                  <Text style={styles.todoTitle}>{item.title}</Text>
-                  <TouchableOpacity style={[styles.todoActionBtn, {backgroundColor: item.bg}]}>
-                    <Text style={[styles.todoActionText, {color: item.color}]}>{item.action}</Text>
-                  </TouchableOpacity>
-                </View>
-                {index < TODO_LIST.length - 1 && <View style={styles.todoDivider} />}
-              </View>
-            ))}
-          </View>
-
-          {/* Invite Banner */}
-          <View style={styles.inviteBanner}>
-            <TouchableOpacity style={styles.closeBtn}>
-              <Ionicons name="close" size={16} color="#6B7280" />
-            </TouchableOpacity>
+          {/* Business Analytics Cards Grid (4 Cards) */}
+          <View style={styles.analyticsGrid}>
             
-            <View style={styles.inviteContent}>
-              <Text style={styles.inviteTitle}>Invite friends{'\n'}and earn <Text style={styles.inviteHighlight}>$5 in DZY</Text></Text>
-              <Text style={styles.inviteSub}>Send money, buy goods,{'\n'}pay bills and earn rewards.</Text>
-              <TouchableOpacity style={styles.inviteBtn}>
-                <Text style={styles.inviteBtnText}>Invite now</Text>
-              </TouchableOpacity>
-            </View>
-            
-            <View style={styles.inviteGraphic}>
-              {/* Graphic elements simulation */}
-              <Image source={{uri: 'https://i.pravatar.cc/100?img=5'}} style={[styles.inviteAvatar, {top: 10, right: 10}]} />
-              <Image source={{uri: 'https://i.pravatar.cc/100?img=9'}} style={[styles.inviteAvatar, {bottom: 10, left: 10}]} />
-              
-              <View style={styles.goldCoin}>
-                <View style={styles.goldCoinInner}>
-                  <Text style={styles.goldCoinText}>DZY</Text>
+            {/* Card 1: Today's sales */}
+            <View style={styles.analyticsCard}>
+              <View style={styles.analyticsCardHeader}>
+                <View style={[styles.analyticsIconBox, { backgroundColor: '#DCFCE7' }]}>
+                  <Ionicons name="trending-up" size={18} color="#10B981" />
+                </View>
+                <View style={[styles.badgePill, { backgroundColor: '#DCFCE7' }]}>
+                  <Ionicons name="trending-up" size={10} color="#10B981" style={{ marginRight: 2 }} />
+                  <Text style={[styles.badgePillText, { color: '#10B981' }]}>+12.5%</Text>
                 </View>
               </View>
-              
-              {/* Dotted lines simulation */}
-              <View style={styles.dottedLine1} />
-              <View style={styles.dottedLine2} />
+              <Text style={styles.analyticsCardLabel}>Today's sales</Text>
+              <Text style={styles.analyticsCardMainVal}>0</Text>
+              <Text style={styles.analyticsCardSubVal}>0 DZY • $0</Text>
+            </View>
+
+            {/* Card 2: Pending orders */}
+            <View style={styles.analyticsCard}>
+              <View style={styles.analyticsCardHeader}>
+                <View style={[styles.analyticsIconBox, { backgroundColor: '#EFF6FF' }]}>
+                  <Ionicons name="mail-outline" size={18} color="#0052FF" />
+                </View>
+                <View style={[styles.badgePill, { backgroundColor: '#DCFCE7' }]}>
+                  <Ionicons name="trending-up" size={10} color="#10B981" style={{ marginRight: 2 }} />
+                  <Text style={[styles.badgePillText, { color: '#10B981' }]}>+3</Text>
+                </View>
+              </View>
+              <Text style={styles.analyticsCardLabel}>Pending orders</Text>
+              <Text style={styles.analyticsCardMainVal}>0</Text>
+            </View>
+
+            {/* Card 3: Products */}
+            <View style={styles.analyticsCard}>
+              <View style={styles.analyticsCardHeader}>
+                <View style={[styles.analyticsIconBox, { backgroundColor: '#F3E8FF' }]}>
+                  <Ionicons name="cube-outline" size={18} color="#8B5CF6" />
+                </View>
+                <View style={[styles.badgePill, { backgroundColor: '#FEE2E2' }]}>
+                  <Ionicons name="trending-down" size={10} color="#EF4444" style={{ marginRight: 2 }} />
+                  <Text style={[styles.badgePillText, { color: '#EF4444' }]}>-2</Text>
+                </View>
+              </View>
+              <Text style={styles.analyticsCardLabel}>Products</Text>
+              <Text style={styles.analyticsCardMainVal}>0</Text>
+            </View>
+
+            {/* Card 4: Customer rating */}
+            <View style={styles.analyticsCard}>
+              <View style={styles.analyticsCardHeader}>
+                <View style={[styles.analyticsIconBox, { backgroundColor: '#FEF3C7' }]}>
+                  <Ionicons name="person-outline" size={18} color="#F59E0B" />
+                </View>
+                <View style={[styles.badgePill, { backgroundColor: '#DCFCE7' }]}>
+                  <Ionicons name="trending-up" size={10} color="#10B981" style={{ marginRight: 2 }} />
+                  <Text style={[styles.badgePillText, { color: '#10B981' }]}>+0.2</Text>
+                </View>
+              </View>
+              <Text style={styles.analyticsCardLabel}>Customer rating</Text>
+              <Text style={styles.analyticsCardMainVal}>4.5</Text>
+            </View>
+
+          </View>
+
+          {/* Refer a Store or Business Banner Promo Card */}
+          <View style={styles.referPromoCard}>
+            <TouchableOpacity style={styles.closeBtnTopRight}>
+              <Ionicons name="close" size={16} color="#9CA3AF" />
+            </TouchableOpacity>
+
+            <View style={styles.referCardContent}>
+              <Text style={styles.referCardTitle}>
+                Refer a Store or Business{'\n'}and earn <Text style={{ color: '#10B981' }}>$10 in DZY</Text>
+              </Text>
+              <Text style={styles.referCardSubtitle}>
+                Refer a store or business{'\n'}and earn rewards.
+              </Text>
+              <TouchableOpacity style={styles.btnReferNow}>
+                <Text style={styles.btnReferNowText}>Refer now</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.referCardGraphicBox}>
+              <View style={styles.store3dRoof}>
+                <Text style={styles.storeRoofText}>STORE</Text>
+              </View>
+              <View style={styles.storeBuildingBody}>
+                <View style={styles.storeDoor} />
+              </View>
+              <View style={styles.goldCoin3d}>
+                <Text style={styles.goldCoin3dText}>DZY</Text>
+              </View>
+            </View>
+
+            {/* Pagination Dots */}
+            <View style={styles.dotsRowContainer}>
+              <View style={[styles.dotPill, { backgroundColor: '#10B981' }]} />
+              <View style={[styles.dotPill, { backgroundColor: '#D1D5DB' }]} />
             </View>
           </View>
 
-          {/* Quick actions */}
-          <View style={styles.sectionHeader}>
+          {/* Quick Actions Header */}
+          <View style={styles.sectionHeaderRow}>
             <Text style={styles.sectionTitle}>Quick actions</Text>
           </View>
 
+          {/* Quick Actions 6-Card Grid */}
           <View style={styles.quickActionsGrid}>
-            {QUICK_ACTIONS.map((item) => (
-              <TouchableOpacity key={item.id} style={styles.qActionBtn}>
-                <View style={styles.qActionIconBox}>
-                  <Ionicons name={item.icon} size={24} color={item.color} />
-                </View>
-                <Text style={styles.qActionLabel}>{item.label}</Text>
-              </TouchableOpacity>
-            ))}
+            
+            {/* 1: Invoice & Pay link */}
+            <TouchableOpacity style={styles.qActionCard}>
+              <View style={[styles.qActionIconCircle, { backgroundColor: '#EFF6FF' }]}>
+                <Ionicons name="document-text-outline" size={22} color="#0052FF" />
+              </View>
+              <Text style={styles.qActionCardLabel}>Invoice &{'\n'}Pay link</Text>
+            </TouchableOpacity>
+
+            {/* 2: Cash-in (POS) */}
+            <TouchableOpacity style={styles.qActionCard} onPress={() => navigation.navigate('CashRegisterScreen')}>
+              <View style={[styles.qActionIconCircle, { backgroundColor: '#F3E8FF' }]}>
+                <Ionicons name="hardware-chip-outline" size={22} color="#8B5CF6" />
+              </View>
+              <Text style={styles.qActionCardLabel}>Cash-in{'\n'}(POS)</Text>
+            </TouchableOpacity>
+
+            {/* 3: Send & Request */}
+            <TouchableOpacity style={styles.qActionCard} onPress={() => navigation.navigate('SendMoneyScreen')}>
+              <View style={[styles.qActionIconCircle, { backgroundColor: '#DCFCE7' }]}>
+                <Ionicons name="people-outline" size={22} color="#10B981" />
+              </View>
+              <Text style={styles.qActionCardLabel}>Send &{'\n'}Request</Text>
+            </TouchableOpacity>
+
+            {/* 4: Top-up DZYwallet */}
+            <TouchableOpacity style={styles.qActionCard} onPress={() => navigation.navigate('TopUpScreen')}>
+              <View style={[styles.qActionIconCircle, { backgroundColor: '#DCFCE7' }]}>
+                <Ionicons name="add-circle-outline" size={22} color="#10B981" />
+              </View>
+              <Text style={styles.qActionCardLabel}>Top-up{'\n'}DZYwallet</Text>
+            </TouchableOpacity>
+
+            {/* 5: Cash-out */}
+            <TouchableOpacity style={styles.qActionCard} onPress={() => navigation.navigate('WithdrawFundsScreen')}>
+              <View style={[styles.qActionIconCircle, { backgroundColor: '#FEF3C7' }]}>
+                <Ionicons name="wallet-outline" size={22} color="#F59E0B" />
+              </View>
+              <Text style={styles.qActionCardLabel}>Cash-out</Text>
+            </TouchableOpacity>
+
+            {/* 6: Source in Africa */}
+            <TouchableOpacity style={styles.qActionCard}>
+              <View style={[styles.qActionIconCircle, { backgroundColor: '#EFF6FF' }]}>
+                <Ionicons name="earth-outline" size={22} color="#0052FF" />
+              </View>
+              <Text style={styles.qActionCardLabel}>Source in{'\n'}Africa</Text>
+            </TouchableOpacity>
+
           </View>
 
-          {/* Security Banner */}
-          <View style={styles.securityBanner}>
+          {/* Secure Your Business Card Banner */}
+          <View style={styles.securityBoxBanner}>
             <View style={styles.securityIconBox}>
               <Ionicons name="shield-checkmark-outline" size={24} color="#1A2840" />
             </View>
-            <View style={styles.securityContent}>
-              <Text style={styles.securityTitle}>Secure, simple and instant</Text>
-              <Text style={styles.securitySub}>Your funds are protected by the{'\n'}<Text style={styles.securityHighlight}>highest</Text> security protocols.</Text>
+            <View style={styles.securityContentGroup}>
+              <Text style={styles.securityTitleText}>Secure your business</Text>
+              <Text style={styles.securitySubText}>
+                Your funds and transactions are protected{'\n'}by <Text style={{ color: '#F59E0B', fontWeight: 'bold' }}>enterprise-grade</Text> security.
+              </Text>
             </View>
             <Ionicons name="lock-closed-outline" size={20} color="#1A2840" />
           </View>
 
-          <View style={{ height: 30 }} />
+          <View style={{ height: 20 }} />
         </ScrollView>
 
-        <BottomNavBar activeTab="Accueil" />
+        <BottomNavBar activeTab="home" />
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 12,
-    backgroundColor: '#F8FAFC',
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 10,
-  },
-  helloText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  nameText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 16,
-    color: '#1A2840',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  iconBtn: {
-    position: 'relative',
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  iconBtnBordered: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  badge: {
-    position: 'absolute',
-    top: -2,
-    right: -2,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#F59E0B',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  walletCard: {
-    backgroundColor: '#05112F', // Very dark blue
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderRadius: 20,
-    paddingTop: 20,
-    paddingHorizontal: 20,
-  },
-  walletTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  walletHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  dzyWalletText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-    color: '#FFFFFF',
-  },
-  walletHeaderRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  rechargerBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFC759',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginRight: 8,
-  },
-  rechargerText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
-    color: '#1A2840',
-    marginLeft: 4,
-  },
-  arrowRightBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#1E293B',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  walletBody: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  walletBalanceSection: {
-    flex: 1,
-  },
-  balanceAmount: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 32,
-    color: '#FFFFFF',
-    marginBottom: 12,
-  },
-  balanceCurrency: {
-    fontSize: 18,
-  },
-  conversionsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  conversionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  countryFlag: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    marginRight: 8,
-  },
-  conversionValue: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 10,
-    color: '#E2E8F0',
-  },
-  conversionLabel: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 9,
-    color: '#94A3B8',
-  },
-  conversionDivider: {
-    width: 1,
-    height: 24,
-    backgroundColor: '#334155',
-    marginHorizontal: 12,
-  },
-  dzyLogoWrapper: {
-    width: 72,
-    height: 72,
-    marginLeft: 16,
-  },
-  dzyLogoImg: {
-    width: '100%',
-    height: '100%',
-  },
-  walletActions: {
-    flexDirection: 'row',
-    borderTopWidth: 1,
-    borderTopColor: '#1E293B',
-    paddingVertical: 16,
-    marginHorizontal: -20, // stretch to edges
-  },
-  wActionBtn: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  wActionText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 11,
-    color: '#FFFFFF',
-    marginTop: 8,
-  },
-  wActionDivider: {
-    width: 1,
-    height: '100%',
-    backgroundColor: '#1E293B',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginHorizontal: 16,
-    marginTop: 32,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 15,
-    color: '#1A2840',
-  },
-  viewAllText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
-    color: '#F59E0B',
-  },
-  todoList: {
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 16,
-    borderRadius: 16,
-    paddingHorizontal: 16,
-  },
-  todoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  todoIconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  todoTitle: {
-    flex: 1,
-    fontFamily: 'Inter_500Medium',
-    fontSize: 12,
-    color: '#1A2840',
-    lineHeight: 18,
-  },
-  todoActionBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  todoActionText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-  },
-  todoDivider: {
-    height: 1,
-    backgroundColor: '#F1F5F9',
-  },
-  inviteBanner: {
-    backgroundColor: '#EFF6FF',
-    marginHorizontal: 16,
-    marginTop: 32,
-    borderRadius: 16,
-    padding: 20,
-    flexDirection: 'row',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  closeBtn: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    zIndex: 10,
-  },
-  inviteContent: {
-    flex: 1,
-    zIndex: 2,
-  },
-  inviteTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 15,
-    color: '#1A2840',
-    lineHeight: 22,
-    marginBottom: 8,
-  },
-  inviteHighlight: {
-    color: '#3B82F6',
-  },
-  inviteSub: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 11,
-    color: '#64748B',
-    lineHeight: 16,
-    marginBottom: 16,
-  },
-  inviteBtn: {
-    backgroundColor: '#0F172A',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  inviteBtnText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
-    color: '#FFFFFF',
-  },
-  inviteGraphic: {
-    width: 120,
-    position: 'relative',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  goldCoin: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#FCD34D',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#F59E0B',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-    borderWidth: 2,
-    borderColor: '#FDE68A',
-  },
-  goldCoinInner: {
-    width: 66,
-    height: 66,
-    borderRadius: 33,
-    borderWidth: 1,
-    borderColor: '#D97706',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  goldCoinText: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 22,
-    color: '#B45309',
-  },
-  inviteAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-    position: 'absolute',
-    zIndex: 5,
-  },
-  dottedLine1: {
-    position: 'absolute',
-    width: 60,
-    height: 40,
-    borderTopWidth: 2,
-    borderLeftWidth: 2,
-    borderColor: '#93C5FD',
-    borderStyle: 'dashed',
-    borderRadius: 20,
-    top: 10,
-    left: -20,
-    zIndex: 1,
-  },
-  dottedLine2: {
-    position: 'absolute',
-    width: 60,
-    height: 40,
-    borderBottomWidth: 2,
-    borderRightWidth: 2,
-    borderColor: '#93C5FD',
-    borderStyle: 'dashed',
-    borderRadius: 20,
-    bottom: 10,
-    right: -20,
-    zIndex: 1,
-  },
-  quickActionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginHorizontal: 12,
-  },
-  qActionBtn: {
-    width: '25%',
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  qActionIconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  qActionLabel: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 10,
-    color: '#1A2840',
-    textAlign: 'center',
-    lineHeight: 14,
-  },
-  securityBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    marginHorizontal: 16,
-    marginTop: 32,
-    padding: 16,
-  },
-  securityIconBox: {
-    marginRight: 16,
-  },
-  securityContent: {
-    flex: 1,
-  },
-  securityTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 13,
-    color: '#1A2840',
-    marginBottom: 4,
-  },
-  securitySub: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 11,
-    color: '#64748B',
-    lineHeight: 16,
-  },
-  securityHighlight: {
-    fontFamily: 'Inter_600SemiBold',
-    color: '#F59E0B',
-  },
+  safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: Platform.OS === 'android' ? 36 : 10, paddingBottom: 10 },
+  headerLeft: { flexDirection: 'row', alignItems: 'center' },
+  storeIconBox: { width: 38, height: 38, borderRadius: 12, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
+  helloText: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280' },
+  nameBadgeRow: { flexDirection: 'row', alignItems: 'center' },
+  nameText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#1A2840', marginRight: 6 },
+  businessBadge: { backgroundColor: '#EFF6FF', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
+  businessBadgeText: { fontFamily: 'Inter_600SemiBold', fontSize: 10, color: '#0052FF' },
+  headerRightActions: { flexDirection: 'row', gap: 6 },
+  iconSquareBtn: { width: 38, height: 38, borderRadius: 12, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', position: 'relative' },
+  yellowBadgeDot: { position: 'absolute', top: 8, right: 8, width: 7, height: 7, borderRadius: 4, backgroundColor: '#FFC759' },
+  scrollView: { flex: 1 },
+  scrollContent: { paddingTop: 6, paddingBottom: 30, paddingHorizontal: 16 },
+  modeSwitchContainer: { flexDirection: 'row', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 16, padding: 3, marginBottom: 16 },
+  modeTabBtn: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 12 },
+  modeTabBtnActive: { backgroundColor: '#071D54' },
+  modeTabText: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#6B7280' },
+  modeTabTextActive: { color: '#FFFFFF' },
+  mainNavyCard: { backgroundColor: '#071D54', borderRadius: 20, padding: 16, marginBottom: 16 },
+  walletHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  dzyWalletProTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#FFC759' },
+  btnTopUp: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFC759', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+  btnTopUpText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#1A2840', marginLeft: 2 },
+  arrowCircleBtn: { width: 24, height: 24, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.15)', justifyContent: 'center', alignItems: 'center' },
+  balanceRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
+  dzyLogoIcon: { width: 44, height: 44, marginRight: 8 },
+  balanceAmountText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 28, color: '#FFFFFF', marginRight: 6 },
+  dzyTagText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#FFC759' },
+  conversionsGridRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 12, padding: 10, marginBottom: 16 },
+  conversionCol: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+  flagIconCircle: { width: 18, height: 18, borderRadius: 9 },
+  conversionValText: { fontFamily: 'Inter_600SemiBold', fontSize: 10, color: '#FFFFFF' },
+  conversionLabelText: { fontFamily: 'Inter_400Regular', fontSize: 9, color: '#9CA3AF' },
+  conversionDividerLine: { width: 1, height: 24, backgroundColor: 'rgba(255,255,255,0.15)', marginHorizontal: 8 },
+  cardActionsRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 10, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)' },
+  cardActionItem: { flex: 1, alignItems: 'center' },
+  cardActionLabel: { fontFamily: 'Inter_500Medium', fontSize: 10, color: '#FFFFFF', marginTop: 4 },
+  actionDividerVertical: { width: 1, height: 20, backgroundColor: 'rgba(255,255,255,0.1)' },
+  analyticsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 16 },
+  analyticsCard: { width: '48%', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0F2F5', borderRadius: 16, padding: 12 },
+  analyticsCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  analyticsIconBox: { width: 34, height: 34, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  badgePill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 10 },
+  badgePillText: { fontFamily: 'Inter_600SemiBold', fontSize: 9 },
+  analyticsCardLabel: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280', marginBottom: 2 },
+  analyticsCardMainVal: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 20, color: '#1A2840' },
+  analyticsCardSubVal: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#9CA3AF', marginTop: 2 },
+  referPromoCard: { backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 20, padding: 16, marginBottom: 16, position: 'relative' },
+  closeBtnTopRight: { position: 'absolute', top: 12, right: 12, zIndex: 5 },
+  referCardContent: { width: '60%' },
+  referCardTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#1A2840', lineHeight: 18, marginBottom: 4 },
+  referCardSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#6B7280', lineHeight: 14, marginBottom: 12 },
+  btnReferNow: { backgroundColor: '#10B981', alignSelf: 'flex-start', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 10 },
+  btnReferNowText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#FFFFFF' },
+  referCardGraphicBox: { position: 'absolute', right: 16, top: 16, width: 100, height: 90, alignItems: 'center', justifyContent: 'center' },
+  store3dRoof: { width: 70, height: 20, backgroundColor: '#10B981', borderRadius: 4, justifyContent: 'center', alignItems: 'center' },
+  storeRoofText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 9, color: '#FFFFFF' },
+  storeBuildingBody: { width: 60, height: 45, backgroundColor: '#E5E7EB', borderBottomLeftRadius: 6, borderBottomRightRadius: 6, justifyContent: 'flex-end', alignItems: 'center' },
+  storeDoor: { width: 16, height: 24, backgroundColor: '#9CA3AF', borderTopLeftRadius: 4, borderTopRightRadius: 4 },
+  goldCoin3d: { position: 'absolute', left: 4, bottom: 4, width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFC759', borderWidth: 2, borderColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' },
+  goldCoin3dText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 9, color: '#1A2840' },
+  dotsRowContainer: { flexDirection: 'row', justifyContent: 'center', gap: 4, marginTop: 8 },
+  dotPill: { width: 6, height: 6, borderRadius: 3 },
+  sectionHeaderRow: { marginBottom: 10 },
+  sectionTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#1A2840' },
+  quickActionsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 16 },
+  qActionCard: { width: '31%', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0F2F5', borderRadius: 16, padding: 12, alignItems: 'center' },
+  qActionIconCircle: { width: 38, height: 38, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
+  qActionCardLabel: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#1A2840', textAlign: 'center', lineHeight: 14 },
+  securityBoxBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, padding: 14 },
+  securityIconBox: { marginRight: 10 },
+  securityContentGroup: { flex: 1 },
+  securityTitleText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840', marginBottom: 2 },
+  securitySubText: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280', lineHeight: 15 }
 });
