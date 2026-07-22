@@ -7,16 +7,32 @@ import AppToast from '../components/AppToast';
 
 const { width } = Dimensions.get('window');
 
-export default function ProductDetailsScreen() {
+const defaultProduct = {
+  id: '1',
+  name: 'Samsung Galaxy A14',
+  price: '155 000 FCFA',
+  desc1: 'Smartphone',
+  desc2: '64 Go • 4 Go RAM',
+  stock: 'En stock',
+  category: 'Téléphones & Tablettes'
+};
+
+export default function ProductDetailsScreen({ route }) {
   const navigation = useNavigation();
+  const productParam = route?.params?.product;
+  const product = productParam || defaultProduct;
+  const shop = route?.params?.shop;
+
   const [favorite, setFavorite] = useState(false);
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [toast, setToast] = useState(null);
-  const shareProduct = async () => { try { await Share.share({title: 'Samsung Galaxy A14', message: 'Découvrez le Samsung Galaxy A14 sur DizzitUp.'}); } finally { setToast({title: 'Produit partagé', message: 'Le partage a été préparé avec succès.'}); } };
+
+  const shareProduct = async () => { try { await Share.share({title: product.name, message: `Découvrez le ${product.name} sur DizzitUp.`}); } finally { setToast({title: 'Produit partagé', message: 'Le partage a été préparé avec succès.'}); } };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       
-      {/* Header (Absolute position to overlay or sit at top) */}
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#1A2840" />
@@ -39,32 +55,17 @@ export default function ProductDetailsScreen() {
           {/* Left Column: Images */}
           <View style={styles.leftCol}>
             <View style={styles.mainImageContainer}>
-              {/* Main Image Placeholder */}
-              <View style={styles.mockMainImage} />
-            </View>
-            <View style={styles.thumbnailsRow}>
-              <View style={[styles.thumbnail, styles.thumbnailActive]}>
-                <View style={styles.mockThumbImage} />
-              </View>
-              <View style={styles.thumbnail}>
-                <View style={styles.mockThumbImage} />
-              </View>
-              <View style={styles.thumbnail}>
-                <View style={styles.mockThumbImage} />
-              </View>
-              <View style={styles.thumbnailMore}>
-                <Text style={styles.thumbnailMoreText}>+2</Text>
-              </View>
+              <Image source={require('../../assets/promo_shop.png')} style={{ width: '100%', height: 180, borderRadius: 12 }} resizeMode="contain" />
             </View>
           </View>
 
           {/* Right Column: Product Info */}
           <View style={styles.rightCol}>
             <View style={styles.categoryBadge}>
-              <Text style={styles.categoryBadgeText}>Smartphone</Text>
+              <Text style={styles.categoryBadgeText}>{product.category || product.desc1 || 'High-Tech'}</Text>
             </View>
             
-            <Text style={styles.productTitle}>Samsung Galaxy A14</Text>
+            <Text style={styles.productTitle}>{product.name}</Text>
             
             <View style={styles.ratingRow}>
               <Ionicons name="star" size={14} color="#F59E0B" />
@@ -78,15 +79,10 @@ export default function ProductDetailsScreen() {
 
             <View style={styles.stockBadge}>
               <View style={styles.stockDot} />
-              <Text style={styles.stockText}>En stock</Text>
+              <Text style={styles.stockText}>{product.stock || 'En stock'}</Text>
             </View>
 
-            <Text style={styles.priceText}>155 000 FCFA</Text>
-            
-            <View style={styles.subPriceRow}>
-              <Ionicons name="information-circle-outline" size={14} color="#3B82F6" />
-              <Text style={styles.subPriceText}> ou 38,45 USDT</Text>
-            </View>
+            <Text style={styles.priceText}>{product.price}</Text>
 
             {/* Payment Methods */}
             <View style={styles.paymentCard}>

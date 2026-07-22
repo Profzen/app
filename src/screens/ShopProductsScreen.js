@@ -6,6 +6,8 @@ import BottomNavBar from '../components/BottomNavBar';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
 
+import { SHOPS_MOCK } from '../mocks/shopsMock';
+
 const categories = ['Tout', 'Téléphones & Tablettes', 'Électronique', 'Maison & Bureau'];
 
 const products = [
@@ -51,8 +53,11 @@ const products = [
   },
 ];
 
-export default function ShopProductsScreen() {
+export default function ShopProductsScreen({ route }) {
   const navigation = useNavigation();
+  const shopParam = route?.params?.shop;
+  const shop = shopParam || SHOPS_MOCK[0];
+
   const { width } = useWindowDimensions();
   const [favorite, setFavorite] = useState(false);
   const [favorites, setFavorites] = useState([]);
@@ -215,7 +220,7 @@ export default function ShopProductsScreen() {
                     <Text style={styles.productStock}>{product.stock}</Text>
                   </View>
                   
-              <TouchableOpacity style={styles.btnBuyCeci} onPress={() => navigation.navigate('ProductDetailsScreen')}>
+              <TouchableOpacity style={styles.btnBuyCeci} onPress={() => navigation.navigate('ProductDetailsScreen', { product: product, shop: shop })}>
                     <Ionicons name="cart-outline" size={12} color="#1A2840" style={{marginRight: 4}} />
                     <Text style={styles.btnBuyCeciText}>Achetez-moi ceci</Text>
                   </TouchableOpacity>

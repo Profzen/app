@@ -4,8 +4,12 @@ import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Ima
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 
-export default function ContactProfileScreen() {
+import { CONTACTS_MOCK } from '../mocks/contactsMock';
+
+export default function ContactProfileScreen({ route }) {
   const navigation = useNavigation();
+  const contactParam = route?.params?.contact;
+  const contact = contactParam || CONTACTS_MOCK[0];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -31,16 +35,19 @@ export default function ContactProfileScreen() {
           {/* Profile Header Section */}
           <View style={styles.profileHeaderSection}>
             <View style={styles.avatarWrapper}>
-              <Image source={{ uri: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80' }} style={styles.avatarImage} />
+              <Image 
+                source={typeof contact.avatar === 'number' ? contact.avatar : (contact.image ? { uri: contact.image } : require('../../assets/avatars/david.jpg'))} 
+                style={styles.avatarImage} 
+              />
               <View style={styles.badgeVerified}>
                 <Ionicons name="checkmark-circle" size={20} color="#10B981" />
               </View>
             </View>
 
-            <Text style={styles.contactName}>John Doe</Text>
-            <Text style={styles.relationText}>Frère</Text>
+            <Text style={styles.contactName}>{contact.name}</Text>
+            <Text style={styles.relationText}>{contact.relation}</Text>
             <View style={styles.locationRow}>
-              <Text style={styles.locationFlagText}>🇹🇬  Lomé, Togo</Text>
+              <Text style={styles.locationFlagText}>{contact.flag}  {contact.location}</Text>
             </View>
           </View>
 
@@ -49,7 +56,7 @@ export default function ContactProfileScreen() {
             <TouchableOpacity style={[styles.tabButton, styles.tabButtonActive]}>
               <Text style={styles.tabTextActive}>Informations</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.tabButton} onPress={() => navigation.navigate('ContactHistoryScreen')}>
+            <TouchableOpacity style={styles.tabButton} onPress={() => navigation.navigate('ContactHistoryScreen', { contact: contact })}>
               <Text style={styles.tabTextInactive}>Historique</Text>
             </TouchableOpacity>
           </View>

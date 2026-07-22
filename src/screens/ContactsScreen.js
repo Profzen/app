@@ -127,11 +127,11 @@ export default function ContactsScreen() {
           {/* Contacts List */}
           <View style={styles.contactsList}>
             {contacts.map(contact => (
-              <TouchableOpacity key={contact.id} style={styles.contactItem} onPress={() => navigation.navigate('ContactProfileScreen')}>
+              <TouchableOpacity key={contact.id} style={styles.contactItem} onPress={() => navigation.navigate('ContactProfileScreen', { contact })}>
                 
                 {/* Contact Info */}
                 <View style={styles.contactInfoCol}>
-                  <Image source={{uri: contact.image}} style={styles.contactAvatar} />
+                  <Image source={typeof contact.avatar === 'number' ? contact.avatar : (contact.image ? {uri: contact.image} : require('../../assets/avatars/david.jpg'))} style={styles.contactAvatar} />
                   <View style={styles.contactDetails}>
                     <Text style={styles.contactName}>{contact.name}</Text>
                     <Text style={styles.contactRelation}>{contact.relation}</Text>
@@ -171,7 +171,6 @@ export default function ContactsScreen() {
           </View>
 
         </ScrollView>
-
         {/* Invite Banner (Floating) */}
         {showInvite && <View ref={inviteRef} style={styles.inviteBannerWrapper}>
           <View style={styles.inviteBanner}>

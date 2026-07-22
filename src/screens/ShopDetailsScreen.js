@@ -5,6 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
 
+import { SHOPS_MOCK } from '../mocks/shopsMock';
+
 const { width } = Dimensions.get('window');
 
 const popularProducts = [
@@ -14,8 +16,11 @@ const popularProducts = [
   { id: '4', name: 'OMO Détergent 2,5kg', price: '8 550 FCFA', stock: 'En stock', icon: 'cube-outline' },
 ];
 
-export default function ShopDetailsScreen() {
+export default function ShopDetailsScreen({ route }) {
   const navigation = useNavigation();
+  const shopParam = route?.params?.shop;
+  const shop = shopParam || SHOPS_MOCK[0];
+
   const [favorite, setFavorite] = useState(false);
   const [productFavorites, setProductFavorites] = useState([]);
   const [selectedPayment, setSelectedPayment] = useState('card');
@@ -62,13 +67,14 @@ export default function ShopDetailsScreen() {
           
           {/* Banner Cover Area */}
           <View style={styles.coverContainer}>
+            {/* Cover Banner */}
             <View style={styles.coverBg}>
               <View style={styles.coverTextContent}>
-                <Text style={styles.coverTitle}>JUMIA</Text>
+                <Text style={styles.coverTitle}>{shop.name?.toUpperCase()}</Text>
                 <Text style={styles.coverSubtitle}>Tout ce dont vous{'\n'}avez besoin, livré{'\n'}chez vous.</Text>
               </View>
               <Image 
-                source={{ uri: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80' }} 
+                source={shop.coverImage || require('../../assets/promo_shop.png')} 
                 style={styles.coverImage} 
               />
             </View>
@@ -76,19 +82,20 @@ export default function ShopDetailsScreen() {
             {/* Circular Logo overlay */}
             <View style={styles.logoContainer}>
               <View style={styles.logoCircle}>
-                <Ionicons name="cart-outline" size={24} color="#FFFFFF" style={{ marginBottom: -2 }} />
-                <Text style={styles.logoText}>JUMIA</Text>
+                <Image source={shop.logoImage || require('../../assets/dizzitup logo cercle.png')} style={{width: 36, height: 36}} resizeMode="contain" />
               </View>
-              <View style={styles.verifiedBadge}>
-                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-              </View>
+              {shop.verified && (
+                <View style={styles.verifiedBadge}>
+                  <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                </View>
+              )}
             </View>
           </View>
 
           {/* Shop Metadata */}
           <View style={styles.shopInfoHeader}>
             <View style={styles.shopNameRow}>
-              <Text style={styles.shopName}>Jumia Sénégal</Text>
+              <Text style={styles.shopName}>{shop.name}</Text>
               <Ionicons name="checkmark-circle" size={18} color="#3B82F6" style={{ marginLeft: 6 }} />
             </View>
 
@@ -98,10 +105,10 @@ export default function ShopDetailsScreen() {
               </View>
               <View style={[styles.statusBadge, { backgroundColor: '#F1F5F9' }]}>
                 <Ionicons name="bus-outline" size={12} color="#64748B" style={{ marginRight: 4 }} />
-                <Text style={[styles.statusBadgeText, { color: '#64748B' }]}>Expédie sous 24h</Text>
+                <Text style={[styles.statusBadgeText, { color: '#64748B' }]}>{shop.deliveryTime || '24h'}</Text>
               </View>
               <View style={[styles.statusBadge, { backgroundColor: '#F5F3FF' }]}>
-                <Text style={[styles.statusBadgeText, { color: '#8B5CF6' }]}>Marketplace</Text>
+                <Text style={[styles.statusBadgeText, { color: '#8B5CF6' }]}>{shop.category}</Text>
               </View>
             </View>
 

@@ -219,7 +219,7 @@ export default function ShopsScreen() {
           <View style={styles.shopsList}>
             {visibleShops.map((shop, index) => (
               <View key={shop.id}>
-                <TouchableOpacity style={styles.shopItem} onPress={() => navigation.navigate('ShopDetailsScreen')}>
+                <TouchableOpacity style={styles.shopItem} onPress={() => navigation.navigate('ShopDetailsScreen', { shop: shop })}>
                   
                   {/* Logo */}
                   <View style={[styles.shopLogo, {backgroundColor: shop.logoBg}]}>

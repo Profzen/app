@@ -1,12 +1,23 @@
 import React from 'react';
 import { Image, StyleSheet, View, Text } from 'react-native';
 
-const logos = { USDT: 'https://cryptologos.cc/logos/tether-usdt-logo.png', USDC: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png', EURC: 'https://cryptologos.cc/logos/euro-coin-eurc-logo.png', BTC: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png', WBTC: 'https://cryptologos.cc/logos/wrapped-bitcoin-wbtc-logo.png', ETH: 'https://cryptologos.cc/logos/ethereum-eth-logo.png', SOL: 'https://cryptologos.cc/logos/solana-sol-logo.png', POL: 'https://cryptologos.cc/logos/polygon-matic-logo.png', Polygon: 'https://cryptologos.cc/logos/polygon-matic-logo.png', BNB: 'https://cryptologos.cc/logos/bnb-bnb-logo.png' };
+const localLogos = {
+  USDT: require('../../assets/cryptos/usdt.png'),
+  USDC: require('../../assets/cryptos/usdc.png'),
+  EURC: require('../../assets/cryptos/eurc.png'),
+  BTC: require('../../assets/cryptos/btc.png'),
+  WBTC: require('../../assets/cryptos/wbtc.png'),
+  ETH: require('../../assets/cryptos/eth.png'),
+  SOL: require('../../assets/cryptos/sol.png'),
+  POL: require('../../assets/cryptos/pol.png'),
+  Polygon: require('../../assets/cryptos/pol.png'),
+  BNB: require('../../assets/cryptos/bnb.png'),
+};
 
 export default function CryptoIcon({ symbol, size = 36, style: customStyle }) {
   const iconStyle = { width: size, height: size, borderRadius: size / 2 };
   if (symbol === 'DZY') return <Image source={require('../../dizzitup logo cercle.png')} style={[iconStyle, customStyle]} resizeMode="cover" />;
-  if (logos[symbol]) return <Image source={{ uri: logos[symbol] }} style={[iconStyle, customStyle]} resizeMode="contain" />;
+  if (localLogos[symbol]) return <Image source={localLogos[symbol]} style={[iconStyle, customStyle]} resizeMode="contain" />;
   return <View style={[styles.fallback, iconStyle, customStyle]}><Text style={styles.text}>{symbol?.slice(0, 1)}</Text></View>;
 }
 
