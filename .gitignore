@@ -44,6 +44,7 @@ yarn-error.*
 memoire.md
 
 # Scripts utilitaires locaux
+scripts/
 fix_*.js
 wire_*.js
 generate_navigator.js
