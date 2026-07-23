@@ -16,7 +16,7 @@ const localLogos = {
 
 export default function CryptoIcon({ symbol, size = 36, style: customStyle }) {
   const iconStyle = { width: size, height: size, borderRadius: size / 2 };
-  if (symbol === 'DZY') return <Image source={require('../../dizzitup logo cercle.png')} style={[iconStyle, customStyle]} resizeMode="cover" />;
+  if (symbol === 'DZY') return <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={[iconStyle, customStyle]} resizeMode="cover" />;
   if (localLogos[symbol]) return <Image source={localLogos[symbol]} style={[iconStyle, customStyle]} resizeMode="contain" />;
   return <View style={[styles.fallback, iconStyle, customStyle]}><Text style={styles.text}>{symbol?.slice(0, 1)}</Text></View>;
 }

@@ -30,7 +30,7 @@ export default function DashboardScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <Image source={require('../../dizzitup logo cercle.png')} style={styles.logoCircle} resizeMode="contain" />
+            <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={styles.logoCircle} resizeMode="contain" />
             <Text style={styles.dizzitText}>Dizzit<Text style={styles.upText}>Up</Text></Text>
           </View>
           <View style={styles.headerRight}>
@@ -79,7 +79,7 @@ export default function DashboardScreen() {
               </View>
               
               <View style={styles.bigDzyIcon}>
-                <Image source={require('../../dizzitup logo cercle.png')} style={{width: 80, height: 80}} resizeMode="contain" />
+                <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={{width: 80, height: 80}} resizeMode="contain" />
               </View>
             </View>
           </View>
@@ -137,7 +137,7 @@ export default function DashboardScreen() {
                 <View style={styles.fondItem}>
                   <View style={styles.fondIcon}>
                     {item.isLocal ? (
-                      <Image source={require('../../dizzitup logo cercle.png')} style={{width: 68, height: 68, transform: [{scale: 1.2}]}} resizeMode="contain" />
+                      <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={{width: 68, height: 68, transform: [{scale: 1.2}]}} resizeMode="contain" />
                     ) : item.isCustom ? (
                       <View style={[styles.customFondIcon, {backgroundColor: item.iconColor}]}>
                         <Ionicons name={item.icon} size={24} color="#FFFFFF" />

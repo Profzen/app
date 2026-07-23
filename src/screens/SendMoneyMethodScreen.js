@@ -61,7 +61,7 @@ export default function SendMoneyMethodScreen() {
               activeOpacity={0.8}
             >
               <View style={styles.methodIconWrapper}>
-                <Image source={require('../../dizzitup logo cercle.png')} style={styles.dzyLogo} resizeMode="contain" />
+                <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={styles.dzyLogo} resizeMode="contain" />
               </View>
               
               <View style={styles.methodContent}>

@@ -131,7 +131,7 @@ export default function ShopsScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <Image source={require('../../dizzitup logo cercle.png')} style={styles.circleLogo} />
+            <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={styles.circleLogo} />
           </View>
           <View style={styles.headerRightIcons}>
             <TouchableOpacity style={styles.iconBtnRight}>

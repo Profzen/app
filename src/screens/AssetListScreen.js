@@ -111,7 +111,7 @@ export default function AssetListScreen() {
               <Text style={styles.ldciDescription}>A Non-Custodial, Multi-chain Stablecoins & Crypto Wallet</Text>
               <Text style={styles.ldciNetworks}>Ethereum  <Text style={styles.ldciDot}>•</Text>  Polygon  <Text style={styles.ldciDot}>•</Text>  Base  <Text style={styles.ldciDot}>•</Text>  BSC  <Text style={styles.ldciDot}>•</Text>  Solana</Text>
             </View>
-            <Image source={require('../../ldci.png')} style={styles.ldciVisual} resizeMode="contain" pointerEvents="none" />
+            <Image source={require('../../assets/brand/ldci.png')} style={styles.ldciVisual} resizeMode="contain" pointerEvents="none" />
             <View style={styles.ldciArrow}><Ionicons name="chevron-forward" size={20} color="#FFFFFF" /></View>
           </TouchableOpacity>
 

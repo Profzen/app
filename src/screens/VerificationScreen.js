@@ -59,7 +59,7 @@ export default function VerificationScreen() {
   const DizzitCoinIcon = () => (
     <View style={styles.coinIconContainer}>
       <Image 
-        source={require('../../dizzitup logo cercle.png')} 
+        source={require('../../assets/brand/dizzitup_logo_cercle.png')} 
         style={styles.coinImage}
         resizeMode="contain"
       />
@@ -86,7 +86,7 @@ export default function VerificationScreen() {
         {/* Title Area */}
         <View style={styles.titleContainer}>
           <Image 
-            source={require('../../dizzitup logo.jpeg')} 
+            source={require('../../assets/brand/dizzitup_logo.jpeg')} 
             style={styles.logo} 
             resizeMode="contain"
           />

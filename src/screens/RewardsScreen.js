@@ -85,7 +85,7 @@ export default function RewardsScreen() {
                 </TouchableOpacity>
 
                 <View style={styles.circleLogoBox}>
-                  <Image source={require('../../dizzitup logo cercle.png')} style={styles.dzyCircleLogo} resizeMode="contain" />
+                  <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={styles.dzyCircleLogo} resizeMode="contain" />
                 </View>
 
                 <Text style={styles.cashbackNoteText}>

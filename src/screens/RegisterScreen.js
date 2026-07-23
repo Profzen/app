@@ -79,7 +79,7 @@ export default function RegisterScreen() {
         {/* Title Area */}
         <View style={styles.titleContainer}>
           <Image 
-            source={require('../../dizzitup logo.jpeg')} 
+            source={require('../../assets/brand/dizzitup_logo.jpeg')} 
             style={styles.logo} 
             resizeMode="contain"
           />

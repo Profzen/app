@@ -82,7 +82,7 @@ export default function ShopDetailsScreen({ route }) {
             {/* Circular Logo overlay */}
             <View style={styles.logoContainer}>
               <View style={styles.logoCircle}>
-                <Image source={shop.logoImage || require('../../assets/dizzitup logo cercle.png')} style={{width: 36, height: 36}} resizeMode="contain" />
+                <Image source={shop.logoImage || require('../../assets/brand/dizzitup_logo_cercle.png')} style={{width: 36, height: 36}} resizeMode="contain" />
               </View>
               {shop.verified && (
                 <View style={styles.verifiedBadge}>

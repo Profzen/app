@@ -91,7 +91,7 @@ export default function DashboardEngScreen() {
 
             {/* Main Balance Display */}
             <View style={styles.balanceRow}>
-              <Image source={require('../../dizzitup logo cercle.png')} style={styles.dzyLogoIcon} resizeMode="contain" />
+              <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={styles.dzyLogoIcon} resizeMode="contain" />
               <Text style={styles.balanceAmountText}>125,500.00</Text>
               <Text style={styles.dzyTagText}>DZY</Text>
             </View>
