@@ -191,9 +191,7 @@ export default function ContactsScreen() {
             <View style={styles.inviteBannerRight}>
               {/* Abstract illustration representation */}
               <View style={styles.mockPhoneIllustration}>
-                <View style={styles.mockPhoneIconCircle}>
-                  <Text style={{color: '#FFB800', fontWeight: 'bold', fontSize: 24}}>D</Text>
-                </View>
+                <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={{ width: 44, height: 44 }} resizeMode="contain" />
               </View>
             </View>
           </View>

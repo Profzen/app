@@ -6,13 +6,13 @@ import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
 
 const SETTINGS = [
-  { id: 'account', title: 'Account setting', description: 'Manage your account settings and preferences', icon: 'person-outline', color: '#3B82F6', background: '#EFF6FF', route: 'SecureAccountScreen' },
-  { id: 'personal', title: 'Personal account', description: 'Manage your personal information and verification', icon: 'person-outline', color: '#10B981', background: '#ECFDF5', route: 'SecureAccountScreen' },
-  { id: 'business', title: 'Business account', description: 'Manage your business profile and preferences', icon: 'storefront-outline', color: '#8B5CF6', background: '#F5F3FF', route: 'ShopsScreen' },
-  { id: 'assistant', title: 'Ask Aminata', description: 'Get help and answers from our virtual assistant', icon: 'help-circle-outline', color: '#F59E0B', background: '#FFFBEB' },
-  { id: 'loyalty', title: 'DizzyFamily Loyalty Program', description: 'Earn rewards and enjoy exclusive benefits', icon: 'gift-outline', color: '#EF4444', background: '#FEF2F2', route: 'RewardsScreen' },
-  { id: 'about', title: 'About DizzitUp', description: 'Learn more about us and our mission', icon: 'information-circle-outline', color: '#3B82F6', background: '#EFF6FF' },
-  { id: 'contact', title: 'Contact us', description: 'Get in touch with our support team', icon: 'headset-outline', color: '#10B981', background: '#ECFDF5' },
+  { id: 'account', title: 'Account setting', description: 'Manage your account settings and preferences', icon: 'person-outline', color: '#3B82F6', background: '#EFF6FF', route: 'AccountSettingsScreen' },
+  { id: 'personal', title: 'Personal account', description: 'Manage your personal information and verification', icon: 'person-outline', color: '#10B981', background: '#ECFDF5', route: 'PersonalAccountScreen' },
+  { id: 'business', title: 'Business account', description: 'Manage your business profile and preferences', icon: 'storefront-outline', color: '#8B5CF6', background: '#F5F3FF', route: 'BusinessAccountScreen' },
+  { id: 'assistant', title: 'Ask Aminata', description: 'Get help and answers from our virtual assistant', icon: 'help-circle-outline', color: '#F59E0B', background: '#FFFBEB', route: 'AskAminataScreen' },
+  { id: 'loyalty', title: 'DizzyFamily Loyalty Program', description: 'Earn rewards and enjoy exclusive benefits', icon: 'gift-outline', color: '#EF4444', background: '#FEF2F2', route: 'DizzyFamilyScreen' },
+  { id: 'about', title: 'About DizzitUp', description: 'Learn more about us and our mission', icon: 'information-circle-outline', color: '#3B82F6', background: '#EFF6FF', route: 'AboutDizzitUpScreen' },
+  { id: 'contact', title: 'Contact us', description: 'Get in touch with our support team', icon: 'headset-outline', color: '#10B981', background: '#ECFDF5', route: 'ContactUsScreen' },
 ];
 
 export default function MoreSettingsScreen() {
@@ -32,13 +32,6 @@ export default function MoreSettingsScreen() {
       navigation.navigate(item.route);
       return;
     }
-    const messages = {
-      assistant: ['Ask Aminata', 'The virtual assistant is ready for the client simulation.'],
-      about: ['About DizzitUp', 'Company information and mission opened.'],
-      contact: ['Contact us', 'Support contact options opened.'],
-    };
-    const [title, message] = messages[item.id];
-    setToast({ title, message });
   };
 
   return (
@@ -61,7 +54,7 @@ export default function MoreSettingsScreen() {
           </View>
 
           {/* User Profile Card */}
-          <TouchableOpacity style={styles.profileCard} onPress={() => navigation.navigate('SecureAccountScreen')} accessibilityLabel="Open David Mensah profile">
+          <TouchableOpacity style={styles.profileCard} onPress={() => navigation.navigate('PersonalAccountScreen')} accessibilityLabel="Open David Mensah profile">
             <View style={styles.avatarFallback}>
               <Ionicons name="person" size={22} color="#FFFFFF" />
               <Image source={{ uri: 'https://i.pravatar.cc/120?img=11' }} style={styles.avatar} />

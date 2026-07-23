@@ -62,6 +62,13 @@ import WithdrawFundsMobileMoneySuccessScreen from '../screens/WithdrawFundsMobil
 import WithdrawFundsMobileMoneySummaryScreen from '../screens/WithdrawFundsMobileMoneySummaryScreen';
 import WithdrawFundsScreen from '../screens/WithdrawFundsScreen';
 import TodoListScreen from '../screens/TodoListScreen';
+import AboutDizzitUpScreen from '../screens/AboutDizzitUpScreen';
+import AccountSettingsScreen from '../screens/AccountSettingsScreen';
+import AskAminataScreen from '../screens/AskAminataScreen';
+import BusinessAccountScreen from '../screens/BusinessAccountScreen';
+import ContactUsScreen from '../screens/ContactUsScreen';
+import DizzyFamilyScreen from '../screens/DizzyFamilyScreen';
+import PersonalAccountScreen from '../screens/PersonalAccountScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -71,6 +78,13 @@ export default function AppNavigator() {
       initialRouteName="LoginScreen"
       screenOptions={{ headerShown: false }}
     >
+      <Stack.Screen name="AboutDizzitUpScreen" component={AboutDizzitUpScreen} />
+      <Stack.Screen name="AccountSettingsScreen" component={AccountSettingsScreen} />
+      <Stack.Screen name="AskAminataScreen" component={AskAminataScreen} />
+      <Stack.Screen name="BusinessAccountScreen" component={BusinessAccountScreen} />
+      <Stack.Screen name="ContactUsScreen" component={ContactUsScreen} />
+      <Stack.Screen name="DizzyFamilyScreen" component={DizzyFamilyScreen} />
+      <Stack.Screen name="PersonalAccountScreen" component={PersonalAccountScreen} />
       <Stack.Screen name="AssetListPromoScreen" component={AssetListPromoScreen} />
       <Stack.Screen name="AssetListScreen" component={AssetListScreen} />
       <Stack.Screen name="AssetsListScreen" component={AssetsListScreen} />
