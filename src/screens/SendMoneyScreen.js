@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 import AppSelect from '../components/AppSelect';
 import AppToast from '../components/AppToast';
 import BottomNavBar from '../components/BottomNavBar';
@@ -22,27 +23,70 @@ const CRYPTO_TOKENS = [
   { value: 'BTC', label: 'BTC', name: 'Bitcoin' },
 ];
 
+const RECIPIENTS_LIST = [
+  { id: 'self', name: 'My Account', tag: 'SELF', address: '0x48b373ce0cC446c14FB422267048f638323F6A3d' },
+  { id: 'business', name: 'My Business', tag: 'BUSINESS', address: '0x48b373ce0cC446c14FB422267048f638323F6A3d' },
+  { id: 'mama', name: 'Mama Kemi Adebayo', tag: 'MÈRE', address: '+234 802 123 4567 / 0x71a2...9F1b' },
+  { id: 'marie', name: 'Marie K.', tag: 'SŒUR', address: '+221 77 123 4567 / 0x39b1...4C2e' },
+  { id: 'john', name: 'John Doe', tag: 'FRÈRE', address: '+228 90 12 34 56 / 0x82c4...1A8f' },
+];
+
 export default function SendMoneyScreen() {
   const navigation = useNavigation();
   const route = useRoute();
 
   const [blockchain, setBlockchain] = useState('Polygon');
   const [token, setToken] = useState('USDC');
-  const [recipient, setRecipient] = useState(route.params?.recipient || 'My Account');
-  const [address, setAddress] = useState('0x48b3...6A3d');
+  
+  // Recipient selection states
+  const initialRecipientName = route.params?.recipient || 'My Account';
+  const defaultRecipientObj = RECIPIENTS_LIST.find(r => r.name.toLowerCase() === initialRecipientName.toLowerCase()) || RECIPIENTS_LIST[0];
+  
+  const [selectedRecipient, setSelectedRecipient] = useState(defaultRecipientObj);
+  const [isSearchingRecipient, setIsSearchingRecipient] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  
   const [amount, setAmount] = useState('1');
   const [toast, setToast] = useState(null);
+
+  const handlePasteClipboard = async () => {
+    try {
+      const text = await Clipboard.getStringAsync();
+      if (text) {
+        setSearchQuery(text);
+        setToast({ title: 'Presse-papier collé', message: `Texte collé : ${text.substring(0, 20)}...` });
+      } else {
+        setToast({ title: 'Presse-papier vide', message: 'Aucun texte copié dans le presse-papier.' });
+      }
+    } catch (e) {
+      setToast({ title: 'Presse-papier', message: 'Impossible de lire le presse-papier.' });
+    }
+  };
+
+  const filteredRecipients = RECIPIENTS_LIST.filter(r => {
+    const q = searchQuery.toLowerCase();
+    return r.name.toLowerCase().includes(q) || r.address.toLowerCase().includes(q) || r.tag.toLowerCase().includes(q);
+  });
+
+  const handleSelectRecipient = (item) => {
+    setSelectedRecipient(item);
+    setIsSearchingRecipient(false);
+    setSearchQuery('');
+  };
 
   const handleSend = () => {
     if (!amount || parseFloat(amount) <= 0) {
       setToast({ title: 'Montant invalide', message: 'Veuillez saisir un montant supérieur à 0.' });
       return;
     }
+    const finalName = selectedRecipient ? selectedRecipient.name : (searchQuery || 'My Business');
+    const finalAddress = selectedRecipient ? selectedRecipient.address : '0x48b3...6A3d';
+    
     navigation.navigate('SendMoneySuccessScreen', {
       amount,
       token,
-      recipient: recipient || 'My Business',
-      hash: '91d99789-98cc-44c0-8a14-da693a72e5f1',
+      recipient: finalName,
+      hash: finalAddress,
     });
   };
 
@@ -86,7 +130,9 @@ export default function SendMoneyScreen() {
             {/* Green Alert Banner */}
             <View style={styles.alertBanner}>
               <Ionicons name="information-circle-outline" size={18} color="#15803D" style={{ marginRight: 8 }} />
-              <Text style={styles.alertBannerText}>Destinataire défini : Mon compte</Text>
+              <Text style={styles.alertBannerText}>
+                Destinataire défini : {selectedRecipient ? selectedRecipient.name : (searchQuery || 'Mon compte')}
+              </Text>
             </View>
 
             {/* Section 1: CHOISIR LA BLOCKCHAIN */}
@@ -121,28 +167,102 @@ export default function SendMoneyScreen() {
               />
             </View>
 
-            {/* Section 3: Adresse du destinataire */}
+            {/* Section 3: Adresse du destinataire (Search & Dropdown vs Picked Card) */}
             <Text style={styles.fieldLabel}>Adresse du destinataire</Text>
-            <View style={styles.recipientCard}>
-              <View style={styles.userAvatarCircle}>
-                <Ionicons name="person-outline" size={18} color="#2563EB" />
-              </View>
-              
-              <View style={styles.recipientInfoWrap}>
-                <Text style={styles.recipientName}>{recipient}</Text>
-                <Text style={styles.recipientAddress}>{address}</Text>
-              </View>
 
-              <TouchableOpacity 
-                style={styles.clearRecipientBtn}
-                onPress={() => {
-                  setRecipient('');
-                  setAddress('');
-                }}
-              >
-                <Ionicons name="close" size={16} color="#64748B" />
-              </TouchableOpacity>
-            </View>
+            {(!selectedRecipient || isSearchingRecipient) ? (
+              <View style={styles.searchSectionWrapper}>
+                {/* Search Input Box with PASTE and QR Code buttons */}
+                <View style={styles.searchInputBox}>
+                  <Ionicons name="search-outline" size={20} color="#F59E0B" style={{ marginRight: 8 }} />
+                  <TextInput
+                    style={styles.searchInputField}
+                    placeholder="Rechercher par nom ou téléphone..."
+                    placeholderTextColor="#94A3B8"
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                  />
+
+                  {/* PASTE Button */}
+                  <TouchableOpacity style={styles.pasteButton} onPress={handlePasteClipboard} activeOpacity={0.8}>
+                    <Text style={styles.pasteButtonText}>PASTE</Text>
+                  </TouchableOpacity>
+
+                  {/* QR Code Icon Button */}
+                  <TouchableOpacity style={styles.qrCodeButton} onPress={() => setToast({ title: 'Scanner QR Code', message: 'Ouverture de l\'appareil photo...' })} activeOpacity={0.8}>
+                    <Ionicons name="qr-code-outline" size={18} color="#0F172A" />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Recipient Dropdown List Box */}
+                <View style={styles.dropdownListBox}>
+                  <ScrollView nestedScrollEnabled style={{ maxHeight: 220 }} showsVerticalScrollIndicator={true}>
+                    
+                    {/* Item 0: Ajouter un bénéficiaire permanent */}
+                    <TouchableOpacity 
+                      style={styles.addPermanentItem}
+                      onPress={() => navigation.navigate('ContactsManageScreen')}
+                      activeOpacity={0.8}
+                    >
+                      <View style={styles.addPermanentIconBox}>
+                        <Ionicons name="person-add-outline" size={18} color="#D97706" />
+                      </View>
+                      <View style={styles.recipientTextWrap}>
+                        <Text style={styles.addPermanentTitle}>Ajouter un bénéficiaire permanent</Text>
+                        <Text style={styles.addPermanentSubtitle}>Add to permanent records</Text>
+                      </View>
+                    </TouchableOpacity>
+
+                    {/* Recipient List Items */}
+                    {filteredRecipients.map((item) => (
+                      <TouchableOpacity 
+                        key={item.id}
+                        style={styles.dropdownItemRow}
+                        onPress={() => handleSelectRecipient(item)}
+                        activeOpacity={0.8}
+                      >
+                        <View style={styles.dropdownAvatarCircle}>
+                          <Ionicons name="person-outline" size={18} color="#94A3B8" />
+                        </View>
+                        <View style={styles.recipientTextWrap}>
+                          <Text style={styles.dropdownRecipientName}>{item.name}</Text>
+                          <View style={styles.tagAddressRow}>
+                            <View style={styles.tagBadge}>
+                              <Text style={styles.tagBadgeText}>{item.tag}</Text>
+                            </View>
+                            <Text style={styles.dropdownAddressText} numberOfLines={1} ellipsisMode="middle">
+                              {item.address}
+                            </Text>
+                          </View>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              </View>
+            ) : (
+              /* Selected Recipient Card with Clear (x) Button */
+              <View style={styles.recipientCard}>
+                <View style={styles.userAvatarCircle}>
+                  <Ionicons name="person-outline" size={18} color="#2563EB" />
+                </View>
+                
+                <View style={styles.recipientInfoWrap}>
+                  <Text style={styles.recipientName}>{selectedRecipient.name}</Text>
+                  <Text style={styles.recipientAddress} numberOfLines={1} ellipsisMode="middle">
+                    {selectedRecipient.address}
+                  </Text>
+                </View>
+
+                <TouchableOpacity 
+                  style={styles.clearRecipientBtn}
+                  onPress={() => setIsSearchingRecipient(true)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="close" size={16} color="#64748B" />
+                </TouchableOpacity>
+              </View>
+            )}
 
             {/* Section 4: Montant & Solde disponible */}
             <View style={styles.amountHeaderRow}>
@@ -207,12 +327,37 @@ const styles = StyleSheet.create({
   tokenIconBadge: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
   appSelectFlex: { flex: 1, borderWidth: 0, paddingHorizontal: 0, backgroundColor: 'transparent' },
   selectTextBold: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#0F172A' },
+  
+  /* Recipient Search Section (Exact Mockup Match) */
+  searchSectionWrapper: { marginBottom: 20 },
+  searchInputBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 2, borderColor: '#0F172A', borderRadius: 16, paddingHorizontal: 12, height: 50, marginBottom: 10 },
+  searchInputField: { flex: 1, fontFamily: 'Inter_500Medium', fontSize: 13, color: '#0F172A', outlineStyle: 'none' },
+  pasteButton: { backgroundColor: '#F1F5F9', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, marginRight: 6 },
+  pasteButtonText: { fontFamily: 'Inter_700Bold', fontSize: 10, color: '#475569', letterSpacing: 0.5 },
+  qrCodeButton: { width: 32, height: 32, borderRadius: 8, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
+  dropdownListBox: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 18, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 },
+  addPermanentItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFDF5', paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+  addPermanentIconBox: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#FEF3C7', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  addPermanentTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#0F172A', marginBottom: 2 },
+  addPermanentSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#94A3B8' },
+  dropdownItemRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F8FAFC' },
+  dropdownAvatarCircle: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  recipientTextWrap: { flex: 1 },
+  dropdownRecipientName: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#0F172A', marginBottom: 2 },
+  tagAddressRow: { flexDirection: 'row', alignItems: 'center' },
+  tagBadge: { backgroundColor: '#F1F5F9', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginRight: 6 },
+  tagBadgeText: { fontFamily: 'Inter_700Bold', fontSize: 9, color: '#475569' },
+  dropdownAddressText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 11, color: '#94A3B8' },
+
+  /* Selected Recipient Card */
   recipientCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, padding: 12, marginBottom: 20 },
   userAvatarCircle: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#EFF6FF', borderWidth: 1, borderColor: '#DBEAFE', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   recipientInfoWrap: { flex: 1 },
   recipientName: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#0F172A', marginBottom: 2 },
   recipientAddress: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#64748B' },
   clearRecipientBtn: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center' },
+  
+  /* Amount Section */
   amountHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, marginTop: 4 },
   availableBadge: { backgroundColor: '#FFFBEB', borderWidth: 1, borderColor: '#FDE68A', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
   availableBadgeText: { fontFamily: 'Inter_700Bold', fontSize: 11, color: '#D97706' },
