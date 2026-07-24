@@ -1,121 +1,125 @@
-import React from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 
 export default function SendMoneySuccessScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
+
+  const {
+    blockchain = 'Polygon',
+    token = 'USDC',
+    recipient = 'My Business',
+    amount = '1',
+    txHash = '91d99789-98cc-44c0-8a14-da693...'
+  } = route.params || {};
+
+  const [copied, setCopied] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+
+  const copyToClipboard = async () => {
+    await Clipboard.setStringAsync(txHash);
+    setCopied(true);
+    setToastMessage('L\'adresse a bien été copié !');
+    setTimeout(() => {
+      setCopied(false);
+      setToastMessage('');
+    }, 2500);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <View style={styles.container}>
         
-        {/* Success Animation / Icon */}
-        <View style={styles.iconContainer}>
-          <View style={styles.iconCircleBg}>
-            <View style={styles.iconCircle}>
-              <Ionicons name="checkmark" size={48} color="#FFFFFF" />
-            </View>
-          </View>
-          {/* Decorative particles (simplified with absolute positioning) */}
-          <View style={[styles.particle, { top: 20, left: 20, backgroundColor: '#E2E8F0', transform: [{ rotate: '45deg' }] }]} />
-          <View style={[styles.particle, { top: 10, right: 40, backgroundColor: '#10B981', transform: [{ rotate: '15deg' }] }]} />
-          <View style={[styles.particle, { bottom: 20, left: 30, backgroundColor: '#8B5CF6', transform: [{ rotate: '-20deg' }] }]} />
-          <View style={[styles.particle, { bottom: 40, right: 20, backgroundColor: '#F59E0B', transform: [{ rotate: '60deg' }] }]} />
+        {/* Navigation Bar */}
+        <View style={styles.navBar}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.navigate('HomeScreen')}>
+            <Ionicons name="close" size={24} color="#0F172A" />
+          </TouchableOpacity>
+          <Text style={styles.navTitle}>Confirmation</Text>
+          <View style={{ width: 40 }} />
         </View>
 
-        {/* Titles */}
-        <Text style={styles.pageTitle}>Transaction réussie !</Text>
-        <Text style={styles.pageSubtitle}>Vous avez envoyé de l'argent avec succès.</Text>
+        <ScrollView 
+          style={{ flex: 1 }}
+          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingBottom: 32 }}
+          showsVerticalScrollIndicator={false}
+        >
 
-        {/* Receipt Card */}
-        <View style={styles.receiptCard}>
-          
-          {/* Row 1: Montant envoyé */}
-          <View style={styles.detailRow}>
-            <View style={styles.detailLeft}>
-              <View style={[styles.detailIconBox, {backgroundColor: '#F8F9FE'}]}>
-                <Ionicons name="paper-plane-outline" size={20} color="#1A2840" />
+          {/* Web-Style Header Card */}
+          <View style={styles.headerCard}>
+            <View style={styles.headerCardLeft}>
+              <View style={styles.headerIconBadge}>
+                <Ionicons name="paper-plane" size={20} color="#1A2840" />
               </View>
-              <Text style={styles.detailLabel}>Montant envoyé</Text>
-            </View>
-            <View style={styles.detailRightCol}>
-              <View style={styles.detailRight}>
-                <Text style={styles.detailAmount}>4 000</Text>
-                <Text style={styles.detailCurrency}> Ar</Text>
+              <View style={styles.headerTitles}>
+                <Text style={styles.headerTitleText}>Envoyer des fonds</Text>
+                <View style={styles.secureStatusRow}>
+                  <View style={styles.secureDot} />
+                  <Text style={styles.secureStatusText}>SÉCURISÉ</Text>
+                </View>
               </View>
-              <Text style={styles.detailSubAmount}>≈ 1,03 DZ</Text>
             </View>
           </View>
-          <View style={styles.divider} />
 
-          {/* Row 2: Destinataire */}
-          <View style={styles.detailRow}>
-            <View style={styles.detailLeft}>
-              <View style={[styles.detailIconBox, {backgroundColor: '#F8F9FE'}]}>
-                <Ionicons name="person-outline" size={20} color="#1A2840" />
-              </View>
-              <Text style={styles.detailLabel}>Destinataire</Text>
+          {/* Toast Notification */}
+          {copied && (
+            <View style={styles.toastBox}>
+              <Ionicons name="checkmark-circle" size={18} color="#10B981" style={{ marginRight: 8 }} />
+              <Text style={styles.toastText}>{toastMessage}</Text>
             </View>
-            <Text style={styles.detailValueBold}>Rajo Ratovoniasina</Text>
-          </View>
-          <View style={styles.divider} />
+          )}
 
-          {/* Row 3: Méthode */}
-          <View style={styles.detailRow}>
-            <View style={styles.detailLeft}>
-              <View style={[styles.dzyLogoBox, {marginRight: 12}]}>
-                <Text style={styles.dzyLogoText}>D</Text>
-                <View style={styles.dzyLogoStrike} />
-              </View>
-              <Text style={styles.detailLabel}>Méthode</Text>
+          {/* Success Content Card */}
+          <View style={styles.contentCard}>
+            
+            {/* Big Green Checkmark Badge */}
+            <View style={styles.successIconBadge}>
+              <Ionicons name="checkmark" size={38} color="#FFFFFF" />
             </View>
-            <View style={styles.methodRight}>
-              <View style={[styles.dzyLogoBox, {marginRight: 8}]}>
-                <Text style={styles.dzyLogoText}>D</Text>
-                <View style={styles.dzyLogoStrike} />
-              </View>
-              <Text style={styles.detailValueBold}>Dizzy</Text>
-            </View>
-          </View>
-          <View style={styles.divider} />
 
-          {/* Row 4: Date */}
-          <View style={styles.detailRow}>
-            <View style={styles.detailLeft}>
-              <View style={[styles.detailIconBox, {backgroundColor: '#F8F9FE'}]}>
-                <Ionicons name="calendar-outline" size={20} color="#1A2840" />
-              </View>
-              <Text style={styles.detailLabel}>Date et heure</Text>
-            </View>
-            <Text style={styles.detailValue}>24 juin 2025 • 14:32</Text>
-          </View>
-          <View style={styles.divider} />
+            {/* Title & Green Subtitle */}
+            <Text style={styles.successTitle}>Transaction Soumise !</Text>
+            <Text style={styles.successSubtitle}>
+              Vous avez envoyé avec succès <Text style={{ fontFamily: 'Inter_700Bold' }}>{amount} {token}</Text> à <Text style={{ fontFamily: 'Inter_700Bold' }}>{recipient}</Text>
+            </Text>
 
-          {/* Row 5: Ref */}
-          <View style={styles.detailRow}>
-            <View style={styles.detailLeft}>
-              <View style={[styles.detailIconBox, {backgroundColor: '#F8F9FE'}]}>
-                <Ionicons name="document-text-outline" size={20} color="#1A2840" />
-              </View>
-              <Text style={styles.detailLabel}>Référence</Text>
+            {/* Tx Hash Box with Copy Icon */}
+            <View style={styles.hashBoxContainer}>
+              <Text style={styles.hashText} numberOfLines={1} ellipsisMode="middle">
+                {txHash}
+              </Text>
+              <TouchableOpacity style={styles.copyBtn} onPress={copyToClipboard} activeOpacity={0.7}>
+                <Ionicons 
+                  name={copied ? "checkmark-done" : "copy-outline"} 
+                  size={18} 
+                  color={copied ? "#10B981" : "#64748B"} 
+                />
+              </TouchableOpacity>
             </View>
-            <Text style={styles.detailValue}>DZ-250624-143213</Text>
+
+            {/* Done Action Button */}
+            <TouchableOpacity 
+              style={styles.doneBtn} 
+              onPress={() => navigation.navigate('HomeScreen')}
+              activeOpacity={0.88}
+            >
+              <Text style={styles.doneBtnText}>Done</Text>
+            </TouchableOpacity>
+
           </View>
 
-        </View>
+          {/* Footer Security Badge */}
+          <View style={styles.footerSecurityContainer}>
+            <View style={styles.goldDot} />
+            <Text style={styles.footerSecurityText}>NŒUD DE TRANSACTION SÉCURISÉ</Text>
+          </View>
 
-        {/* Buttons */}
-        <TouchableOpacity style={styles.btnFinish} onPress={() => navigation.navigate('HomeScreen')}>
-          <Text style={styles.btnFinishText}>Terminé</Text>
-        </TouchableOpacity>
+        </ScrollView>
 
-        <TouchableOpacity style={styles.btnDetails} onPress={() => navigation.navigate('TransactionHistoryScreen')}>
-          <Ionicons name="receipt-outline" size={18} color="#0052CC" style={{marginRight: 8}} />
-          <Text style={styles.btnDetailsText}>Voir les détails de la transaction</Text>
-          <Ionicons name="chevron-forward" size={16} color="#0052CC" style={{marginLeft: 4, marginTop: 2}} />
-        </TouchableOpacity>
-
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -123,177 +127,220 @@ export default function SendMoneySuccessScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: '#F8FAFC',
   },
-  scrollView: {
+  container: {
     flex: 1,
   },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 40,
-    alignItems: 'center',
-  },
-  iconContainer: {
-    width: 160,
-    height: 160,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  iconCircleBg: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#FEF3C7', // light yellow background
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  iconCircle: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: '#FFB800', // yellow
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  particle: {
-    position: 'absolute',
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  pageTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 24,
-    color: '#1A2840',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  pageSubtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 14,
-    color: '#64748B',
-    marginBottom: 40,
-    textAlign: 'center',
-  },
-  receiptCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    width: '100%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
-    elevation: 2,
-    marginBottom: 32,
-  },
-  detailRow: {
+  navBar: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
     paddingVertical: 12,
   },
-  detailLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  detailIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
-  detailLabel: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 14,
-    color: '#1A2840',
-  },
-  detailRightCol: {
-    alignItems: 'flex-end',
-  },
-  detailRight: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  detailAmount: {
+  navTitle: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 18,
-    color: '#1A2840',
+    fontSize: 17,
+    color: '#0F172A',
   },
-  detailCurrency: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 14,
-    color: '#64748B',
-  },
-  detailSubAmount: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: '#64748B',
-    marginTop: 2,
-  },
-  detailValueBold: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-    color: '#1A2840',
-  },
-  detailValue: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 14,
-    color: '#64748B',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#F1F5F9',
-  },
-  dzyLogoBox: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#05112F', // Dark blue background
-    justifyContent: 'center',
+  headerCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 20,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  dzyLogoText: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 14,
-    color: '#FFC759',
-    includeFontPadding: false,
-  },
-  dzyLogoStrike: {
-    position: 'absolute',
-    width: 12,
-    height: 1.5,
-    backgroundColor: '#FFC759',
-  },
-  methodRight: {
+  headerCardLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  btnFinish: {
-    width: '100%',
-    backgroundColor: '#FFB800',
-    paddingVertical: 16,
-    borderRadius: 16,
+  headerIconBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#FFC759',
+    justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 14,
+    shadowColor: '#FFC759',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  headerTitles: {
+    justifyContent: 'center',
+  },
+  headerTitleText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 19,
+    color: '#0F172A',
+    marginBottom: 2,
+  },
+  secureStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  secureDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: '#10B981',
+    marginRight: 6,
+  },
+  secureStatusText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 11,
+    color: '#10B981',
+    letterSpacing: 0.6,
+  },
+  toastBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 16,
+    marginBottom: 16,
+    justifyContent: 'center',
+  },
+  toastText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 13,
+    color: '#047857',
+  },
+  contentCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    paddingVertical: 36,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
     marginBottom: 24,
   },
-  btnFinishText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 16,
-    color: '#1A2840',
+  successIconBadge: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#10B981',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 6,
   },
-  btnDetails: {
+  successTitle: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 22,
+    color: '#0F172A',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  successSubtitle: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
+    color: '#10B981',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 28,
+    paddingHorizontal: 10,
+  },
+  hashBoxContainer: {
+    width: '100%',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 28,
   },
-  btnDetailsText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 14,
-    color: '#0052CC',
+  hashText: {
+    flex: 1,
+    fontFamily: 'SpaceGrotesk_600SemiBold',
+    fontSize: 13,
+    color: '#64748B',
+    marginRight: 10,
+  },
+  copyBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  doneBtn: {
+    width: '100%',
+    backgroundColor: '#0B132B',
+    borderRadius: 18,
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#0B132B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  doneBtnText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 16,
+    color: '#FFFFFF',
+  },
+  footerSecurityContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  goldDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FFC759',
+    marginRight: 6,
+  },
+  footerSecurityText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 10,
+    color: '#94A3B8',
+    letterSpacing: 0.8,
   },
 });
