@@ -1,9 +1,10 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Pressable, ScrollView, TextInput, Image, PanResponder, Animated } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Pressable, ScrollView, TextInput, Image, PanResponder, Animated, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
+import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
 
 const quickActions = [
   { id: '1', title: "Payer et\nacheter l'essentiel", subtitle: "Achat de crédit,\ninternet, TV, jeux,\ncrypto et plus", icon: "bag-handle-outline", color: "#8B5CF6" },
@@ -85,7 +86,17 @@ export default function ContactsScreen() {
           <Text style={styles.sectionTitle}>Actions rapides</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickActionsScroll}>
             {quickActions.map(action => (
-              <TouchableOpacity key={action.id} style={styles.quickActionCard} onPress={() => navigation.navigate(actionRoutes[action.id])}>
+              <TouchableOpacity 
+                key={action.id} 
+                style={styles.quickActionCard} 
+                onPress={() => {
+                  if (action.id === '5') {
+                    shareInviteLink();
+                  } else {
+                    navigation.navigate(actionRoutes[action.id]);
+                  }
+                }}
+              >
                 <View style={styles.quickActionIconContainer}>
                   <Ionicons name={action.icon} size={28} color={action.color} />
                 </View>
@@ -166,7 +177,7 @@ export default function ContactsScreen() {
                 <Text style={styles.inviteBannerText}>
                   Envoyez de l'argent, achetez, payez des factures et gagnez des récompenses ensemble.
                 </Text>
-                <TouchableOpacity style={styles.inviteBtn} onPress={() => navigation.navigate('RewardsScreen')}>
+                <TouchableOpacity style={styles.inviteBtn} onPress={() => shareInviteLink()}>
                   <Text style={styles.inviteBtnText}>Inviter maintenant</Text>
                 </TouchableOpacity>
               </View>

@@ -1,9 +1,10 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput, Image, PanResponder, Animated } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput, Image, PanResponder, Animated, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
+import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
 
 const quickActions = [
   { id: '1', title: "Ajouter\nun bénéficiaire", subtitle: "Ajouter un nouveau\nbénéficiaire", icon: "person-add-outline", color: "#8B5CF6" },
@@ -30,7 +31,7 @@ export default function ContactsManageScreen() {
   const quickAction = (id) => {
     if (id === '1' || id === '2') navigation.navigate('ContactProfileScreen');
     else if (id === '3') setToast({title: 'Liste actualisée', message: 'Tous vos bénéficiaires sont affichés.'});
-    else navigation.navigate('RewardsScreen');
+    else shareInviteLink();
   };
   const removeContact = (id) => { setContactItems((items) => items.filter((item) => item.id !== id)); setOpenSwipe(null); setToast({title: 'Contact supprimé', message: 'La suppression a été simulée avec succès.'}); };
   return (

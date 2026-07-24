@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Ima
 import { Ionicons } from '@expo/vector-icons';
 import SelectableContactItem from '../components/SelectableContactItem';
 import AppToast from '../components/AppToast';
+import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
 
 const MOCK_CONTACTS = [
   { id: '1', name: 'Mama Kemi Adebayo', relation: 'Mère', country: 'Lagos, Nigeria', flag: '🇳🇬', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80', statusColor: '#10B981' },
@@ -89,14 +90,14 @@ export default function PayBillsScreen() {
               <Text style={styles.quickActionTitle}>Mes{'\n'}bénéficiaires</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickActionCard} onPress={() => navigation.navigate('RewardsScreen')}>
+            <TouchableOpacity style={styles.quickActionCard} onPress={() => shareInviteLink()}>
               <View style={[styles.quickActionIconBg, { backgroundColor: '#EFF6FF' }]}>
                 <Ionicons name="paper-plane-outline" size={20} color="#3B82F6" />
               </View>
               <Text style={styles.quickActionTitle}>Inviter{'\n'}un ami</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickActionCard} onPress={() => navigation.navigate('ShopsScreen')}>
+            <TouchableOpacity style={styles.quickActionCard} onPress={() => shareShopLink()}>
               <View style={[styles.quickActionIconBg, { backgroundColor: '#F5F3FF' }]}>
                 <Ionicons name="storefront-outline" size={20} color="#8B5CF6" />
               </View>
