@@ -1124,6 +1124,29 @@ Le projet **DizzitUp Mobile App** est à ce jour **100% achevé au niveau Fronte
 
 ---
 
+## 🎨 8. Spécifications d'Adaptation Mobile du Parcours "Envoyer des fonds" (Design System DizzitUp)
+
+Afin d'assurer une parfaite cohérence visuelle et ergonomique avec l'ensemble des 68 écrans de l'application (ex: `TopUpScreen`, `WithdrawFundsScreen`, `PayBillsScreen`), le parcours mobile d'envoi de fonds n'est pas un simple copier-coller des maquettes web, mais une réadaptation directe aux codes du **Design System Mobile DizzitUp** :
+
+### 1. Structure de la Page & En-tête (Header)
+- **Barre supérieure** : Bouton retour `<` à gauche, titre principal centré (`Envoyer des fonds`), et icône d'aide `?` dans un cercle fin à droite.
+- **Barre de progression (Stepper 5 étapes)** :
+  - **Équivalence** : `1. Mode de paiement` -> `2. Détails` -> `3. Résumé` -> `4. Paiement` -> `5. Confirmation`.
+  - **Rendu visuel** : Cercles numérotés reliés par une ligne fine. Étape active/complétée entourée de jaune moutarde (`#FFB800`) avec coche `✓` ou numéro, étapes suivantes en gris clair (`#CBD5E1`).
+
+### 2. Typographie & Formulaires
+- **Grands Titres** : Police `Space Grotesk` / `Inter` Bold (`#0B132B` / `#1E293B`) avec sous-titre explicatif en Inter Regular gris (`#64748B`).
+- **Labels des champs** : Libellés en **MAJUSCULES grises** (`#64748B`, `fontSize: 12`, `fontWeight: 700`) au-dessus de chaque champ (`RÉSEAU DE TRANSACTION`, `JETON`, `DESTINATAIRE`, `MONTANT`).
+- **Champs de saisie (Inputs)** : Conteneurs blancs avec bordure fine sombre (`#E2E8F0`), coins arrondis (`borderRadius: 14`), icônes de réseau/jeton/contact sur la gauche, et flèches de sélection/clear sur la droite.
+- **Badge de solde** : Pastille de solde disponible (`Disponible: 1.0000 USDC`) positionnée à droite au-dessus du champ de montant.
+
+### 3. Réassurance & Boutons d'Action
+- **Bannière de Sécurité** : Carte arrondie bleu très clair (`#F0F7FF`) avec icône de bouclier bleu (`Paiement 100% sécurisé - Vos transactions blockchain sont cryptées`).
+- **Bouton d'Action Principal** : Grand bouton pleine largeur d'un jaune vif DizzitUp (`#FFB800` / `#FFC759`), texte sombre en gras (`Continuer` ou `Envoyer USDC`) et flèche d'action noire à droite `→`.
+- **Bottom Navigation Bar** : Intégration systématique de la barre de navigation à 5 onglets (`Accueil`, `Contacts`, bouton d'échange central jaune `⇆`, `Shops`, `Plus`).
+
+---
+
 ## 📊 État Global Récapitulatif du Projet
 
 | Composant | Statut | Détails & Couverture |
