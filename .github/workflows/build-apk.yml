@@ -11,6 +11,9 @@ jobs:
   build-apk:
     name: Build Android APK File
     runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: "--max-old-space-size=4096"
+      GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m"
 
     steps:
       - name: 📥 Checkout Repository
@@ -46,9 +49,7 @@ jobs:
         run: chmod +x android/gradlew
 
       - name: 🏗️ Build Android APK (Gradle)
-        run: |
-          cd android
-          ./gradlew assembleRelease
+        run: ./android/gradlew -p android assembleRelease --stacktrace
 
       - name: 📦 Locate Compiled APK
         id: find_apk
