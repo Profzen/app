@@ -1108,9 +1108,10 @@ Le projet **DizzitUp Mobile App** est à ce jour **100% achevé au niveau Fronte
 
 - **Workflow GitHub Actions Automatisé** ([`.github/workflows/build-apk.yml`](file:///g:/zen/projets/DizzitApp/app/.github/workflows/build-apk.yml)) :
   - **Déclenchement automatique** : Se lance à chaque `git push` sur les branches `main` et `develop` ou sur déclenchement manuel (`workflow_dispatch`).
-  - **Runner & Environnement** : Exécution sur Ubuntu Latest avec Node.js 20, Java JDK 17 (Temurin) et Android SDK v3.
+  - **Runner & Environnement** : Exécution sur Ubuntu Latest avec Node.js 22 (LTS), Java JDK 17 (Temurin) et Android SDK v3.
   - **Expo Prebuild Natif** : Génération autonome du dossier natif Android via `npx expo prebuild --platform android --clean`.
-  - **Compilation Gradle** : Exécution du build natif via `./gradlew assembleRelease`.
+  - **Résolution du Build AAPT2 (Correctif d'Assets)** : Conversion stricte des 4 images promotionnelles ([`assets/promo_shop.png`](file:///g:/zen/projets/DizzitApp/app/assets/promo_shop.png), [`assets/promo_blue_wallet.png`](file:///g:/zen/projets/DizzitApp/app/assets/promo_blue_wallet.png), [`assets/promo_wallet.png`](file:///g:/zen/projets/DizzitApp/app/assets/promo_wallet.png), [`assets/wallet_banner.png`](file:///g:/zen/projets/DizzitApp/app/assets/wallet_banner.png)) qui possédaient des signatures JPEG masquées. Elles ont été re-converties en format PNG W3C natif (`magic 89504e47`), résolvant le blocage `:app:mergeReleaseResources` / `Aapt2CompileRunnable`.
+  - **Désactivation du Crunching PNG Gradle** : Ajout explicite de `android.enablePngCrunch=false` pour accélérer la compilation Android.
   - **Publication de l'APK** : Export du binaire sous le nom **`DizzitUp-Android-APK`** directement disponible en téléchargement ZIP dans l'onglet **Actions > Artifacts** de GitHub.
 - **Alternative Cloud EAS Build** ([`.github/workflows/eas-build.yml`](file:///g:/zen/projets/DizzitApp/app/.github/workflows/eas-build.yml)) & **Configuration Expo SDK 57** :
   - Création du fichier [`eas.json`](file:///g:/zen/projets/DizzitApp/app/eas.json) pré-configuré avec la clé `"buildType": "apk"` sous le profil `preview`.
