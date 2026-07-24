@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Image, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function SendMoneyMethodScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
   const [selectedMethod, setSelectedMethod] = useState('dizzy');
+
+  const { amount = '4 000', currency = 'Ar' } = route.params || {};
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -14,10 +17,10 @@ export default function SendMoneyMethodScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#1A2840" />
+            <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
-            <Ionicons name="arrow-redo" size={20} color="#1A2840" style={styles.headerIcon} />
+            <Ionicons name="paper-plane-outline" size={18} color="#1A2840" style={styles.headerIcon} />
             <Text style={styles.headerTitle}>Envoyer de l'argent</Text>
           </View>
           <TouchableOpacity style={styles.iconBtn}>
@@ -27,10 +30,7 @@ export default function SendMoneyMethodScreen() {
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          <Text style={styles.pageTitle}>Méthode</Text>
-          <Text style={styles.pageSubtitle}>Comment souhaitez-vous envoyer l'argent ?</Text>
-
-          {/* Stepper */}
+          {/* Stepper (Step 2 Active) */}
           <View style={styles.stepperContainer}>
             <View style={styles.stepItem}>
               <View style={[styles.stepCircle, styles.stepCircleActive]}>
@@ -39,7 +39,7 @@ export default function SendMoneyMethodScreen() {
               <Text style={styles.stepText}>Montant</Text>
             </View>
             
-            <View style={styles.stepLine}>
+            <View style={styles.stepLineTrack}>
               <View style={styles.stepLineActive} />
             </View>
             
@@ -51,6 +51,9 @@ export default function SendMoneyMethodScreen() {
             </View>
           </View>
 
+          <Text style={styles.pageTitle}>Méthode</Text>
+          <Text style={styles.pageSubtitle}>Comment souhaitez-vous envoyer l'argent ?</Text>
+
           {/* Methods List */}
           <View style={styles.methodsContainer}>
             
@@ -58,7 +61,7 @@ export default function SendMoneyMethodScreen() {
             <TouchableOpacity 
               style={[styles.methodCard, selectedMethod === 'dizzy' && styles.methodCardActive]}
               onPress={() => setSelectedMethod('dizzy')}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
             >
               <View style={styles.methodIconWrapper}>
                 <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={styles.dzyLogo} resizeMode="contain" />
@@ -84,10 +87,10 @@ export default function SendMoneyMethodScreen() {
             <TouchableOpacity 
               style={[styles.methodCard, selectedMethod === 'mobile_money' && styles.methodCardActive]}
               onPress={() => setSelectedMethod('mobile_money')}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
             >
               <View style={styles.methodIconWrapperMM}>
-                <Ionicons name="phone-portrait-outline" size={24} color="#1A2840" />
+                <Ionicons name="phone-portrait-outline" size={24} color="#64748B" />
               </View>
               
               <View style={styles.methodContent}>
@@ -108,27 +111,28 @@ export default function SendMoneyMethodScreen() {
 
           </View>
 
-          <View style={styles.spacer} />
+          <View style={{ flex: 1, minHeight: 32 }} />
 
           {/* Security Banner */}
           <View style={styles.securityBanner}>
-            <View style={styles.securityIconWrapper}>
-              <Ionicons name="shield-checkmark-outline" size={24} color="#1A2840" />
+            <View style={styles.securityIconArc}>
+              <Ionicons name="shield-checkmark-outline" size={20} color="#1A2840" />
             </View>
-            <View style={styles.securityContent}>
-              <Text style={styles.securityTitle}>Vos transactions sont sécurisées</Text>
-              <Text style={styles.securityDesc}>Nous protégeons vos fonds et vos informations à chaque étape.</Text>
-            </View>
+            <Text style={styles.securityTitle}>Vos transactions sont sécurisées</Text>
           </View>
 
         </ScrollView>
 
         {/* Action Buttons */}
         <View style={styles.footer}>
-          <TouchableOpacity style={styles.btnPrev} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.btnPrev} onPress={() => navigation.goBack()} activeOpacity={0.8}>
             <Text style={styles.btnPrevText}>Précédent</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.btnNext} onPress={() => navigation.navigate('SendMoneyPinScreen')}>
+          <TouchableOpacity 
+            style={styles.btnNext} 
+            onPress={() => navigation.navigate('SendMoneyPinScreen', { amount, currency, method: selectedMethod })}
+            activeOpacity={0.88}
+          >
             <Text style={styles.btnNextText}>Suivant</Text>
           </TouchableOpacity>
         </View>
@@ -141,7 +145,7 @@ export default function SendMoneyMethodScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: '#F8FAFC',
   },
   container: {
     flex: 1,
@@ -151,7 +155,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: Platform.OS === 'android' ? 36 : 10,
     paddingBottom: 12,
   },
   backBtn: {
@@ -164,7 +168,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerIcon: {
-    marginRight: 8,
+    marginRight: 6,
   },
   headerTitle: {
     fontFamily: 'Inter_700Bold',
@@ -186,29 +190,16 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingTop: 24,
+    paddingTop: 16,
     paddingBottom: 24,
-  },
-  pageTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 24,
-    color: '#1A2840',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  pageSubtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 14,
-    color: '#64748B',
-    textAlign: 'center',
-    marginBottom: 32,
   },
   stepperContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 60,
-    marginBottom: 40,
+    paddingHorizontal: 40,
+    marginTop: 8,
+    marginBottom: 28,
   },
   stepItem: {
     alignItems: 'center',
@@ -221,14 +212,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1F5F9',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   stepCircleActive: {
     backgroundColor: '#FFC759',
   },
   stepNumActive: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 13,
     color: '#1A2840',
   },
   stepText: {
@@ -241,12 +232,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#1A2840',
   },
-  stepLine: {
+  stepLineTrack: {
     flex: 1,
     height: 3,
     backgroundColor: '#F1F5F9',
     marginHorizontal: -10,
-    marginTop: -20, // adjust for step text
+    marginTop: -18,
     borderRadius: 1.5,
   },
   stepLineActive: {
@@ -254,6 +245,20 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: '#FFC759',
     borderRadius: 1.5,
+  },
+  pageTitle: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 22,
+    color: '#1A2840',
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  pageSubtitle: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 14,
+    color: '#64748B',
+    textAlign: 'center',
+    marginBottom: 28,
   },
   methodsContainer: {
     paddingHorizontal: 20,
@@ -263,36 +268,40 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
-    shadowColor: '#000',
+    borderColor: '#E2E8F0',
+    shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
-    shadowRadius: 4,
+    shadowRadius: 6,
     elevation: 2,
   },
   methodCardActive: {
     borderColor: '#FFC759',
+    backgroundColor: '#FFFDF5',
   },
   methodIconWrapper: {
-    width: 56,
-    height: 56,
-    marginRight: 16,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
   },
   dzyLogo: {
-    width: '100%',
-    height: '100%',
+    width: 44,
+    height: 44,
   },
   methodIconWrapperMM: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: '#F1F5F9',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: 14,
   },
   methodContent: {
     flex: 1,
@@ -301,90 +310,78 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold',
     fontSize: 16,
     color: '#1A2840',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   methodDesc: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 13,
+    fontSize: 12,
     color: '#64748B',
   },
   radioWrapper: {
-    marginLeft: 16,
+    marginLeft: 12,
   },
   radioInactive: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 1,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 1.5,
     borderColor: '#CBD5E1',
   },
   radioActive: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     borderWidth: 2,
     borderColor: '#1A2840',
     justifyContent: 'center',
     alignItems: 'center',
   },
   radioInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: '#1A2840',
-  },
-  spacer: {
-    flex: 1,
-    minHeight: 40,
   },
   securityBanner: {
     flexDirection: 'row',
-    backgroundColor: '#F8F9FE',
-    marginHorizontal: 20,
-    padding: 16,
-    borderRadius: 16,
-    alignItems: 'center',
-  },
-  securityIconWrapper: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#EEF2FF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginHorizontal: 20,
+    marginBottom: 8,
   },
-  securityContent: {
-    flex: 1,
+  securityIconArc: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
   },
   securityTitle: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
+    fontSize: 13,
     color: '#1A2840',
-    marginBottom: 4,
-  },
-  securityDesc: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: '#64748B',
-    lineHeight: 18,
   },
   footer: {
     flexDirection: 'row',
     paddingHorizontal: 20,
-    paddingBottom: 24,
-    paddingTop: 16,
-    gap: 16,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 16,
+    paddingTop: 12,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    gap: 12,
   },
   btnPrev: {
     flex: 1,
-    backgroundColor: '#8C94A3',
+    backgroundColor: '#8A94A6',
     paddingVertical: 16,
     borderRadius: 16,
     alignItems: 'center',
   },
   btnPrevText: {
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: 'Inter_700Bold',
     fontSize: 16,
     color: '#FFFFFF',
   },
@@ -396,7 +393,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   btnNextText: {
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: 'Inter_700Bold',
     fontSize: 16,
     color: '#1A2840',
   },

@@ -174,68 +174,121 @@ export default function ContactsManageScreen() {
 function SwipeContactRow({ contact, direction, onDirection, onNavigate, onDelete, onFavorite }) {
   const translateX = useRef(new Animated.Value(0)).current;
   const lastSwipeDx = useRef(0);
-  const shouldCaptureSwipe = (_, gesture) => Math.abs(gesture.dx) > 8 && Math.abs(gesture.dx) > Math.abs(gesture.dy);
-  const panResponder = useMemo(() => PanResponder.create({
-    onMoveShouldSetPanResponder: shouldCaptureSwipe,
-    onMoveShouldSetPanResponderCapture: shouldCaptureSwipe,
-    onPanResponderGrant: () => { lastSwipeDx.current = 0; },
-    onPanResponderMove: (_, gesture) => {
-      lastSwipeDx.current = gesture.dx;
-      translateX.setValue(Math.max(-96, Math.min(96, gesture.dx)));
-    },
-    onPanResponderRelease: (_, gesture) => {
-      const dx = Math.abs(gesture.dx) >= Math.abs(lastSwipeDx.current) ? gesture.dx : lastSwipeDx.current;
-      if (dx < -35) onDirection('left');
-      else if (dx > 35) onDirection('right');
-      else if (Math.abs(dx) > 8) onDirection(null);
-      lastSwipeDx.current = 0;
-      Animated.spring(translateX, {toValue: 0, useNativeDriver: true, speed: 24, bounciness: 4}).start();
-    },
-    onPanResponderTerminate: () => Animated.spring(translateX, {toValue: 0, useNativeDriver: true}).start(),
-    onShouldBlockNativeResponder: () => true,
-  }), [onDirection, translateX]);
 
-  const person = <View style={styles.contactInfoCol}><Image source={{uri: contact.image}} style={styles.contactAvatar} /><View style={styles.contactDetails}><Text style={styles.contactName}>{contact.name}</Text><Text style={styles.contactRelation}>{contact.relation}</Text><Text style={styles.contactLocation}>{contact.flag} {contact.location}</Text></View></View>;
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => false,
+        onStartShouldSetPanResponderCapture: () => false,
+        onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > 5 && Math.abs(gesture.dx) > Math.abs(gesture.dy),
+        onMoveShouldSetPanResponderCapture: (_, gesture) => Math.abs(gesture.dx) > 5 && Math.abs(gesture.dx) > Math.abs(gesture.dy),
+        onPanResponderGrant: () => {
+          lastSwipeDx.current = 0;
+        },
+        onPanResponderMove: (_, gesture) => {
+          lastSwipeDx.current = gesture.dx;
+          translateX.setValue(Math.max(-120, Math.min(120, gesture.dx)));
+        },
+        onPanResponderRelease: (_, gesture) => {
+          const dx = Math.abs(gesture.dx) >= Math.abs(lastSwipeDx.current) ? gesture.dx : lastSwipeDx.current;
+          if (dx < -25) {
+            onDirection('left');
+          } else if (dx > 25) {
+            onDirection('right');
+          } else {
+            onDirection(null);
+          }
+          lastSwipeDx.current = 0;
+          Animated.spring(translateX, { toValue: 0, useNativeDriver: true, speed: 20 }).start();
+        },
+        onPanResponderTerminate: () => {
+          Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
+        },
+      }),
+    [onDirection, translateX]
+  );
+
+  const person = (
+    <View style={styles.contactInfoCol}>
+      <Image source={{ uri: contact.image }} style={styles.contactAvatar} />
+      <View style={styles.contactDetails}>
+        <Text style={styles.contactName}>{contact.name}</Text>
+        <Text style={styles.contactRelation}>{contact.relation}</Text>
+        <Text style={styles.contactLocation}>{contact.flag} {contact.location}</Text>
+      </View>
+    </View>
+  );
 
   if (direction) {
-    return <View style={styles.swipeRow} {...panResponder.panHandlers}>
-      <TouchableOpacity style={styles.swipePerson} onPress={() => onDirection(null)}>{person}</TouchableOpacity>
-      <View style={styles.swipeReveal}>
-        {direction === 'left' ? <>
-          <SwipeAction icon="star-outline" label="Favoris" onPress={onFavorite} />
-          <SwipeAction icon="pencil-outline" label="Modifier" onPress={() => onNavigate('ContactProfileScreen')} />
-          <SwipeAction icon="trash-outline" label="Supprimer" danger onPress={onDelete} />
-        </> : <>
-          <SwipeAction icon="arrow-up-outline" label={'Envoyer\nde l’argent'} tint="#ECFDF5" onPress={() => onNavigate('SendMoneyScreen')} />
-          <SwipeAction icon="cash-outline" label={'Demander\nde l’argent'} tint="#FFF7E6" onPress={() => onNavigate('ReceiveFundsV2Screen')} />
-          <SwipeAction icon="bag-handle-outline" label={'Payer &\nessentials'} tint="#EFF6FF" onPress={() => onNavigate('ChooseServiceScreen')} />
-          <SwipeAction icon="person-add-outline" label="Inviter" tint="#F5F3FF" onPress={() => onNavigate('RewardsScreen')} />
-        </>}
+    return (
+      <View style={styles.swipeRow}>
+        <TouchableOpacity style={styles.swipePerson} onPress={() => onDirection(null)}>
+          {person}
+        </TouchableOpacity>
+        <View style={styles.swipeReveal}>
+          {direction === 'left' ? (
+            <>
+              <SwipeAction icon="star-outline" label="Favoris" onPress={onFavorite} />
+              <SwipeAction icon="pencil-outline" label="Modifier" onPress={() => onNavigate('ContactProfileScreen')} />
+              <SwipeAction icon="trash-outline" label="Supprimer" danger onPress={onDelete} />
+            </>
+          ) : (
+            <>
+              <SwipeAction icon="arrow-up-outline" label={'Envoyer\nde l’argent'} tint="#ECFDF5" onPress={() => onNavigate('SendMoneyScreen')} />
+              <SwipeAction icon="cash-outline" label={'Demander\nde l’argent'} tint="#FFF7E6" onPress={() => onNavigate('ReceiveFundsV2Screen')} />
+              <SwipeAction icon="bag-handle-outline" label={'Payer &\nessentiels'} tint="#EFF6FF" onPress={() => onNavigate('ChooseServiceScreen')} />
+              <SwipeAction icon="person-add-outline" label="Inviter" tint="#F5F3FF" onPress={() => onNavigate('RewardsScreen')} />
+            </>
+          )}
+        </View>
       </View>
-    </View>;
+    );
   }
 
-  return <Animated.View style={[styles.contactItem, {transform: [{translateX}]}]} {...panResponder.panHandlers}>
-    <TouchableOpacity style={styles.contactInfoCol} onPress={() => onNavigate('ContactProfileScreen')}>
-      <Image source={{uri: contact.image}} style={styles.contactAvatar} />
-      <View style={styles.contactDetails}><Text style={styles.contactName}>{contact.name}</Text><Text style={styles.contactRelation}>{contact.relation}</Text><Text style={styles.contactLocation}>{contact.flag} {contact.location}</Text></View>
-    </TouchableOpacity>
-    <View style={styles.statusCol}><Ionicons name="person-outline" size={20} color={contact.isBeneficiary ? '#10B981' : '#94A3B8'} /><Text style={[styles.statusText, {color: contact.isBeneficiary ? '#10B981' : '#94A3B8'}]}>{contact.isBeneficiary ? 'Oui' : 'Non'}</Text></View>
-    <View style={styles.statusCol}><Ionicons name="heart-outline" size={20} color={contact.isSponsor ? '#10B981' : '#94A3B8'} /><Text style={[styles.statusText, {color: contact.isSponsor ? '#10B981' : '#94A3B8'}]}>{contact.isSponsor ? 'Oui' : 'Non'}</Text></View>
-    <TouchableOpacity
-      style={styles.swipeHintButton}
-      onPress={() => onDirection('right')}
-      onLongPress={() => onDirection('left')}
-      accessibilityLabel={`Afficher les actions de ${contact.name}`}
-      accessibilityHint="Appuyez pour les actions rapides, maintenez pour modifier ou supprimer"
-    >
-      <Ionicons name="swap-horizontal-outline" size={20} color="#1A2840" />
-    </TouchableOpacity>
-  </Animated.View>;
+  return (
+    <Animated.View style={[styles.contactItem, { transform: [{ translateX }] }]} {...panResponder.panHandlers}>
+      <TouchableOpacity style={styles.contactInfoCol} onPress={() => onNavigate('ContactProfileScreen')}>
+        <Image source={{ uri: contact.image }} style={styles.contactAvatar} />
+        <View style={styles.contactDetails}>
+          <Text style={styles.contactName}>{contact.name}</Text>
+          <Text style={styles.contactRelation}>{contact.relation}</Text>
+          <Text style={styles.contactLocation}>{contact.flag} {contact.location}</Text>
+        </View>
+      </TouchableOpacity>
+
+      <View style={styles.statusCol}>
+        <Ionicons name="person-outline" size={20} color={contact.isBeneficiary ? '#10B981' : '#94A3B8'} />
+        <Text style={[styles.statusText, { color: contact.isBeneficiary ? '#10B981' : '#94A3B8' }]}>
+          {contact.isBeneficiary ? 'Oui' : 'Non'}
+        </Text>
+      </View>
+
+      <View style={styles.statusCol}>
+        <Ionicons name="heart-outline" size={20} color={contact.isSponsor ? '#10B981' : '#94A3B8'} />
+        <Text style={[styles.statusText, { color: contact.isSponsor ? '#10B981' : '#94A3B8' }]}>
+          {contact.isSponsor ? 'Oui' : 'Non'}
+        </Text>
+      </View>
+
+      <TouchableOpacity
+        style={styles.swipeHintButton}
+        onPress={() => onDirection('right')}
+        onLongPress={() => onDirection('left')}
+        accessibilityLabel={`Afficher les actions de ${contact.name}`}
+      >
+        <Ionicons name="swap-horizontal-outline" size={20} color="#1A2840" />
+      </TouchableOpacity>
+    </Animated.View>
+  );
 }
 
 function SwipeAction({ icon, label, onPress, danger, tint }) {
-  return <TouchableOpacity style={[styles.swipeAction, tint && {backgroundColor: tint}, danger && styles.swipeActionDanger]} onPress={onPress}><Ionicons name={icon} size={22} color={danger ? '#FFF' : '#1A2840'} /><Text style={[styles.swipeActionLabel, danger && {color: '#FFF'}]}>{label}</Text></TouchableOpacity>;
+  return (
+    <TouchableOpacity style={[styles.swipeAction, tint && { backgroundColor: tint }, danger && styles.swipeActionDanger]} onPress={onPress}>
+      <Ionicons name={icon} size={20} color={danger ? '#FFF' : '#1A2840'} />
+      <Text style={[styles.swipeActionLabel, danger && { color: '#FFF' }]}>{label}</Text>
+    </TouchableOpacity>
+  );
 }
 
 const styles = StyleSheet.create({
