@@ -40,8 +40,18 @@ jobs:
       - name: ⚡ Generate Android Project (Expo Prebuild)
         run: npx expo prebuild --platform android --clean
 
-      - name: 🛠️ Configure Gradle Properties
+      - name: 🛠️ Patch Gradle Working Directory for Node Resolutions
         run: |
+          node -e "
+            const fs = require('fs');
+            let sg = fs.readFileSync('android/settings.gradle', 'utf8');
+            sg = sg.replaceAll('workingDir(rootDir)', 'workingDir(rootDir.getParentFile())');
+            fs.writeFileSync('android/settings.gradle', sg);
+
+            let bg = fs.readFileSync('android/app/build.gradle', 'utf8');
+            bg = bg.replaceAll('.execute(null, rootDir)', '.execute(null, rootDir.getParentFile())');
+            fs.writeFileSync('android/app/build.gradle', bg);
+          "
           echo "android.enablePngCrunch=false" >> android/gradle.properties
           echo "android.crunchPngs=false" >> android/gradle.properties
 
