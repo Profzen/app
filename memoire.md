@@ -1100,7 +1100,10 @@ Le projet **DizzitUp Mobile App** est à ce jour **100% achevé au niveau Fronte
 - **6. Correction des liens d'historique et d'actifs** :
   - Le clic sur *"Voir tout"* dans la section **Transactions récentes** de [`DashboardScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/DashboardScreen.js) redirige vers l'écran **[`TransactionHistoryScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/TransactionHistoryScreen.js)**.
   - Le clic sur *"Voir tout"* dans la section **Mes fonds** redirige vers l'écran **[`AssetListScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/AssetListScreen.js)**.
-- **Fichiers modifiés** : [`src/context/AppContext.js`](file:///g:/zen/projets/DizzitApp/app/src/context/AppContext.js), [`src/components/BottomNavBar.js`](file:///g:/zen/projets/DizzitApp/app/src/components/BottomNavBar.js), [`src/components/WalletCard.js`](file:///g:/zen/projets/DizzitApp/app/src/components/WalletCard.js), [`src/screens/BusinessAccountScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/BusinessAccountScreen.js), [`src/screens/DashboardScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/DashboardScreen.js), [`src/screens/DashboardEngScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/DashboardEngScreen.js), [`src/screens/ContactsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactsScreen.js), [`src/screens/ContactsManageScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactsManageScreen.js), [`src/screens/MobileRechargeScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/MobileRechargeScreen.js), [`src/screens/SwapTokensScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SwapTokensScreen.js), [`src/screens/ReceiveFundsV2Screen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ReceiveFundsV2Screen.js), [`src/screens/AssetListScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/AssetListScreen.js), [`src/screens/AssetsListScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/AssetsListScreen.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
+- **7. Refonte du Parcours d'Envoi de Fonds (Alignement Web & Mobile UI)** :
+  - **[`SendMoneyScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneyScreen.js)** : Refonte complète du formulaire d'envoi en intégrant le sélecteur de Blockchain (Polygon, Ethereum, Solana, BNB, BTC), le sélecteur de Jeton (USDC, USDT, DIZ, ETH, BTC), le champ destinataire avec tag de contact (*"My Business"*) et effacement rapide `(x)`, le badge de solde disponible (`Disponible: 1.0000 USDC`), le sélecteur rapide de pourcentage (25%, 50%, 75%, MAX) et le bouton principal d'action bleu nuit (*"Envoyer USDC"*).
+  - **[`SendMoneySuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneySuccessScreen.js)** : Refonte de la confirmation avec le grand badge vert de validation, le sous-titre dynamique en vert (*"Vous avez envoyé avec succès 1 USDC à My Business"*), la boîte de Hash blockchain (`91d99789-98cc...`) avec copie dans le presse-papier et retour Toast (*"L'adresse a bien été copié !"*), et le bouton principal *"Done"* retournant au Dashboard.
+- **Fichiers modifiés** : [`src/context/AppContext.js`](file:///g:/zen/projets/DizzitApp/app/src/context/AppContext.js), [`src/components/BottomNavBar.js`](file:///g:/zen/projets/DizzitApp/app/src/components/BottomNavBar.js), [`src/components/WalletCard.js`](file:///g:/zen/projets/DizzitApp/app/src/components/WalletCard.js), [`src/screens/BusinessAccountScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/BusinessAccountScreen.js), [`src/screens/DashboardScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/DashboardScreen.js), [`src/screens/DashboardEngScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/DashboardEngScreen.js), [`src/screens/ContactsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactsScreen.js), [`src/screens/ContactsManageScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactsManageScreen.js), [`src/screens/MobileRechargeScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/MobileRechargeScreen.js), [`src/screens/SwapTokensScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SwapTokensScreen.js), [`src/screens/ReceiveFundsV2Screen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ReceiveFundsV2Screen.js), [`src/screens/AssetListScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/AssetListScreen.js), [`src/screens/AssetsListScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/AssetsListScreen.js), [`src/screens/SendMoneyScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneyScreen.js), [`src/screens/SendMoneySuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneySuccessScreen.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
 
 ---
 
@@ -1121,29 +1124,6 @@ Le projet **DizzitUp Mobile App** est à ce jour **100% achevé au niveau Fronte
 - **Alternative Cloud EAS Build** ([`.github/workflows/eas-build.yml`](file:///g:/zen/projets/DizzitApp/app/.github/workflows/eas-build.yml)) & **Configuration Expo SDK 57** :
   - Création du fichier [`eas.json`](file:///g:/zen/projets/DizzitApp/app/eas.json) pré-configuré avec la clé `"buildType": "apk"` sous le profil `preview`.
   - Alignement de [`app.json`](file:///g:/zen/projets/DizzitApp/app/app.json) avec le nom de marque `DizzitUp`, le slug `dizzitapp-v2`, et le package Android officiel `com.dizzitup.app`.
-
----
-
-## 🎨 8. Spécifications d'Adaptation Mobile du Parcours "Envoyer des fonds" (Design System DizzitUp)
-
-Afin d'assurer une parfaite cohérence visuelle et ergonomique avec l'ensemble des 68 écrans de l'application (ex: `TopUpScreen`, `WithdrawFundsScreen`, `PayBillsScreen`), le parcours mobile d'envoi de fonds n'est pas un simple copier-coller des maquettes web, mais une réadaptation directe aux codes du **Design System Mobile DizzitUp** :
-
-### 1. Structure de la Page & En-tête (Header)
-- **Barre supérieure** : Bouton retour `<` à gauche, titre principal centré (`Envoyer des fonds`), et icône d'aide `?` dans un cercle fin à droite.
-- **Barre de progression (Stepper 5 étapes)** :
-  - **Équivalence** : `1. Mode de paiement` -> `2. Détails` -> `3. Résumé` -> `4. Paiement` -> `5. Confirmation`.
-  - **Rendu visuel** : Cercles numérotés reliés par une ligne fine. Étape active/complétée entourée de jaune moutarde (`#FFB800`) avec coche `✓` ou numéro, étapes suivantes en gris clair (`#CBD5E1`).
-
-### 2. Typographie & Formulaires
-- **Grands Titres** : Police `Space Grotesk` / `Inter` Bold (`#0B132B` / `#1E293B`) avec sous-titre explicatif en Inter Regular gris (`#64748B`).
-- **Labels des champs** : Libellés en **MAJUSCULES grises** (`#64748B`, `fontSize: 12`, `fontWeight: 700`) au-dessus de chaque champ (`RÉSEAU DE TRANSACTION`, `JETON`, `DESTINATAIRE`, `MONTANT`).
-- **Champs de saisie (Inputs)** : Conteneurs blancs avec bordure fine sombre (`#E2E8F0`), coins arrondis (`borderRadius: 14`), icônes de réseau/jeton/contact sur la gauche, et flèches de sélection/clear sur la droite.
-- **Badge de solde** : Pastille de solde disponible (`Disponible: 1.0000 USDC`) positionnée à droite au-dessus du champ de montant.
-
-### 3. Réassurance & Boutons d'Action
-- **Bannière de Sécurité** : Carte arrondie bleu très clair (`#F0F7FF`) avec icône de bouclier bleu (`Paiement 100% sécurisé - Vos transactions blockchain sont cryptées`).
-- **Bouton d'Action Principal** : Grand bouton pleine largeur d'un jaune vif DizzitUp (`#FFB800` / `#FFC759`), texte sombre en gras (`Continuer` ou `Envoyer USDC`) et flèche d'action noire à droite `→`.
-- **Bottom Navigation Bar** : Intégration systématique de la barre de navigation à 5 onglets (`Accueil`, `Contacts`, bouton d'échange central jaune `⇆`, `Shops`, `Plus`).
 
 ---
 
