@@ -1111,12 +1111,21 @@ Le projet **DizzitUp Mobile App** est à ce jour **100% achevé au niveau Fronte
 - **10. Correction & Activation du Swipe Gauche / Droite sur les Contacts** :
   - **[`ContactsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactsScreen.js) & [`ContactsManageScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactsManageScreen.js)** : Correction de l'interception `PanResponder` pour permettre le glissement latéral sur mobile APK. Le swipe à gauche affiche les actions (*Favoris, Modifier, Supprimer*) et le swipe à droite affiche les actions rapides (*Envoyer de l'argent, Demander de l'argent, Payer & essentiels, Inviter*), avec un bouton de déclenchement rapide contextuel.
 - **12. Remplacement Intégral du Parcours d'Envoi de Fonds selon les Maquettes Exactes de l'Utilisateur** :
-  - **[`SendMoneyScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneyScreen.js) (Formulaire d'Envoi)** :
+  - **[`SendMoneyScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneyScreen.js) (Formulaire d'Envoi & Recherche de Destinataire)** :
     - En-tête avec badge vert `• SÉCURISÉ`.
     - Bandeau d'information vert : `(i) Destinataire défini : Mon compte`.
     - **Sélecteur déroulant de Blockchain** : Polygon (par défaut), Ethereum, Solana, BNB Chain, Bitcoin.
     - **Sélecteur déroulant de Crypto / Jeton** : Liste déroulante interactive permettant de choisir librement entre `USDC`, `USDT`, `DIZ`, `ETH` et `BTC`.
-    - **Carte Destinataire** : Avatar utilisateur avec nom `My Account`, adresse `0x48b3...6A3d` et bouton d'effacement `(x)`.
+    - **Sélecteur & Recherche de Destinataire (Conforme à la Capture)** :
+      - Champ de recherche à bordure noire avec loupe jaune `🔍` et placeholder *"Rechercher par nom ou téléphone..."*.
+      - **Bouton `PASTE`** : Colle instantanément l'adresse ou le numéro depuis le presse-papier via `Clipboard.getStringAsync()`.
+      - **Bouton `QR Code`** : Scanner de QR Code interactif.
+      - **Liste déroulante des destinataires** :
+        1. *Ajouter un bénéficiaire permanent* (`Add to permanent records`).
+        2. *My Account* (Badge `SELF` + adresse blockchain).
+        3. *My Business* (Badge `BUSINESS` + adresse blockchain).
+        4. Contacts enregistrés (*Mama Kemi Adebayo*, *Marie K.*, *John Doe*...).
+    - **Carte Destinataire Sélectionné** : Carte dédiée avec avatar, nom, adresse et bouton de suppression `(x)` pour changer à tout moment de destinataire.
     - **Saisie du Montant & Badge Solde** : Badge gold `Disponible: 1.0000 USDC` et saisie dynamique du montant.
     - **Bouton d'action principal** : Bouton bleu nuit `#071D54` avec icône d'avion de papier (*"Envoyer USDC"*).
   - **[`SendMoneySuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneySuccessScreen.js) (Confirmation de Succès)** :
