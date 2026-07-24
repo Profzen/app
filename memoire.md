@@ -1110,10 +1110,12 @@ Le projet **DizzitUp Mobile App** est à ce jour **100% achevé au niveau Fronte
   - **Déclenchement automatique** : Se lance à chaque `git push` sur les branches `main` et `develop` ou sur déclenchement manuel (`workflow_dispatch`).
   - **Runner & Environnement** : Exécution sur Ubuntu Latest avec Node.js 22 (LTS), Java JDK 17 (Temurin) et Android SDK v3.
   - **Expo Prebuild Natif** : Génération autonome du dossier natif Android via `npx expo prebuild --platform android --clean`.
-  - **Résolution d'Autolinking Node Gradle (`:expo`)** : Correction du chemin d'exécution en exécutant `./android/gradlew -p android assembleRelease` depuis la racine du projet au lieu d'effectuer un `cd android`. Cela permet à `node` conservé à la racine d'accéder au dossier `node_modules` pour résoudre la tâche `:expo` et éviter l'erreur `Process 'command 'node'' finished with non-zero exit value 1`.
-  - **Allocation Mémoire Node & Gradle** : Ajout de `NODE_OPTIONS="--max-old-space-size=4096"` et `GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx4096m"` pour stabiliser la mémoire durant le bundling et l'autolinking.
-  - **Correctif Assets AAPT2** : Conversion des 4 images promotionnelles (`promo_shop`, `promo_blue_wallet`, `promo_wallet`, `wallet_banner`) au format PNG natif W3C (`magic 89504e47`).
-  - **Publication de l'APK** : Export du binaire sous le nom **`DizzitUp-Android-APK`** directement disponible en téléchargement ZIP dans l'onglet **Actions > Artifacts** de GitHub.
+  - **Résolution d'Autolinking Node Gradle (`Process 'command 'node'' finished with non-zero exit value 1`)** :
+    - *Cause Identifiée* : Par défaut, `settings.gradle` et `app/build.gradle` exécutaient les commandes `node` avec `workingDir(rootDir)` (pointant vers le sous-dossier `android/`), où `node_modules` n'existe pas.
+    - *Correctif Automatisé* : Ajout d'une étape de patch dans le workflow qui remplace dynamiquement `workingDir(rootDir)` par `workingDir(rootDir.getParentFile())` et `.execute(null, rootDir)` par `.execute(null, rootDir.getParentFile())` immédiatement après le prebuild Expo.
+    - *Résultat* : `node` s'exécute toujours avec le dossier racine du projet (`/home/runner/work/app/app`) comme répertoire de travail, résolvant avec succès `node_modules` et les dépendances `expo/scripts/resolveAppEntry` et `@react-native/gradle-plugin`.
+  - **Allocation Mémoire Node & Gradle** : Définition de `NODE_OPTIONS="--max-old-space-size=4096"` et `GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx4096m"`.
+  - **Publication de l'APK** : Export du binaire sous le nom **`DizzitUp-Android-APK`** disponible dans les **Artifacts** GitHub.
 - **Alternative Cloud EAS Build** ([`.github/workflows/eas-build.yml`](file:///g:/zen/projets/DizzitApp/app/.github/workflows/eas-build.yml)) & **Configuration Expo SDK 57** :
   - Création du fichier [`eas.json`](file:///g:/zen/projets/DizzitApp/app/eas.json) pré-configuré avec la clé `"buildType": "apk"` sous le profil `preview`.
   - Alignement de [`app.json`](file:///g:/zen/projets/DizzitApp/app/app.json) avec le nom de marque `DizzitUp`, le slug `dizzitapp-v2`, et le package Android officiel `com.dizzitup.app`.
