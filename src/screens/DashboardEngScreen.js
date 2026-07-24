@@ -3,10 +3,12 @@ import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
+import { useApp } from '../context/AppContext';
 
 export default function DashboardEngScreen() {
   const navigation = useNavigation();
   const [activeTabMode, setActiveTabMode] = useState('business');
+  const { setAccountMode } = useApp();
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -34,7 +36,7 @@ export default function DashboardEngScreen() {
               <Ionicons name="notifications-outline" size={20} color="#1A2840" />
               <View style={styles.yellowBadgeDot} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconSquareBtn}>
+            <TouchableOpacity style={styles.iconSquareBtn} onPress={() => navigation.navigate('RewardsScreen')}>
               <Ionicons name="gift-outline" size={20} color="#1A2840" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconSquareBtn}>
@@ -50,6 +52,7 @@ export default function DashboardEngScreen() {
             <TouchableOpacity 
               style={[styles.modeTabBtn, activeTabMode === 'perso' && styles.modeTabBtnActive]}
               onPress={() => {
+                setAccountMode('personal');
                 setActiveTabMode('perso');
                 navigation.navigate('DashboardScreen');
               }}

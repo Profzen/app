@@ -5,9 +5,13 @@ import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import CryptoIcon from './CryptoIcon';
 
+import { useApp } from '../context/AppContext';
+
 export default function WalletCard({ balances }) {
   const navigation = useNavigation();
-  const [isVisible, setIsVisible] = useState(true);
+  const { hideBalance, toggleHideBalance } = useApp();
+
+  const isVisible = !hideBalance;
 
   // Valeurs par défaut sécurisées
   const mainBalance = balances?.DZY || 125500;
@@ -26,7 +30,7 @@ export default function WalletCard({ balances }) {
             <Text style={{ color: '#FFC759', fontFamily: 'SpaceGrotesk_700Bold' }}>DZY</Text>
             <Text style={{ color: '#FFC759', fontFamily: 'Inter_600SemiBold' }}>wallet</Text>
           </Text>
-          <TouchableOpacity onPress={() => setIsVisible(!isVisible)} style={styles.eyeIcon}>
+          <TouchableOpacity onPress={toggleHideBalance} style={styles.eyeIcon}>
             <Ionicons name={isVisible ? "eye-outline" : "eye-off-outline"} size={18} color="#FFFFFF" />
           </TouchableOpacity>
         </View>

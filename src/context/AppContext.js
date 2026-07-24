@@ -20,6 +20,9 @@ export function AppProvider({ children }) {
   const [favorites, setFavorites] = useState(['jumia-sn', '1']);
   const [cart, setCart] = useState([]);
 
+  const [accountMode, setAccountMode] = useState('personal');
+  const [hideBalance, setHideBalance] = useState(false);
+
   const toggleFavorite = (id) => {
     setFavorites(prev => 
       prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
@@ -37,6 +40,8 @@ export function AppProvider({ children }) {
     }));
   };
 
+  const toggleHideBalance = () => setHideBalance(prev => !prev);
+
   return (
     <AppContext.Provider value={{
       user,
@@ -47,7 +52,11 @@ export function AppProvider({ children }) {
       toggleFavorite,
       cart,
       addToCart,
-      updateBalance
+      updateBalance,
+      accountMode,
+      setAccountMode,
+      hideBalance,
+      toggleHideBalance
     }}>
       {children}
     </AppContext.Provider>

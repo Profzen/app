@@ -7,17 +7,19 @@ import Svg, { Rect } from 'react-native-svg';
 import QRCode from 'qrcode';
 import BottomNavBar from '../components/BottomNavBar';
 import CryptoIcon from '../components/CryptoIcon';
+import AppToast from '../components/AppToast';
 
 export default function ReceiveFundsV2Screen() {
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState('adresse');
   const [showToast, setShowToast] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedChain, setSelectedChain] = useState('Polygone');
   const address = '0x5C292F468c41b3F2D84D1d888B578aCf4BC339b91';
   const qr = QRCode.create(address, { errorCorrectionLevel: 'M' });
-  const copyAddress = () => { setShowToast(true); Clipboard.setStringAsync(address).catch(() => {}); };
-  const shareAddress = async () => { try { await Share.share({ message: `Adresse DizzitUp ${selectedChain} : ${address}` }); } catch { await Clipboard.setStringAsync(address); setShowToast(true); } };
+  const copyAddress = () => { setShowToast(true); setCopied(true); Clipboard.setStringAsync(address).catch(() => {}); setTimeout(() => setCopied(false), 2500); };
+  const shareAddress = async () => { try { await Share.share({ message: `Adresse DizzitUp ${selectedChain} : ${address}` }); } catch { await Clipboard.setStringAsync(address); setShowToast(true); setCopied(true); setTimeout(() => setCopied(false), 2500); } };
   const chooseChain = (chain) => { setSelectedChain(chain); setDropdownOpen(false); };
   const RealQrCode = () => <Svg width={180} height={180} viewBox={`0 0 ${qr.modules.size} ${qr.modules.size}`} accessibilityLabel="QR code de l'adresse Polygon"><Rect width={qr.modules.size} height={qr.modules.size} fill="#FFFFFF" />{Array.from(qr.modules.data).map((cell, index) => cell ? <Rect key={index} x={index % qr.modules.size} y={Math.floor(index / qr.modules.size)} width="1" height="1" fill="#071536" /> : null)}</Svg>;
 
@@ -28,7 +30,7 @@ export default function ReceiveFundsV2Screen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={24} color="#1A2840" />
+            <Ionicons name="chevron-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           
           <View style={styles.headerCenter}>
@@ -46,10 +48,10 @@ export default function ReceiveFundsV2Screen() {
                 <Text style={styles.notifText}>1</Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnHeader}>
+            <TouchableOpacity style={styles.iconBtnHeader} onPress={() => navigation.navigate('RewardsScreen')}>
               <Ionicons name="gift-outline" size={20} color="#1A2840" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnHeader}>
+            <TouchableOpacity style={styles.iconBtnHeader} onPress={() => navigation.navigate('MoreSettingsScreen')}>
               <Ionicons name="ellipsis-vertical" size={20} color="#1A2840" />
             </TouchableOpacity>
           </View>
@@ -268,7 +270,7 @@ export default function ReceiveFundsV2Screen() {
               <View style={styles.actionBtnsRow}>
                 <Pressable style={styles.btnCopy} onPress={copyAddress} onPressIn={copyAddress} accessibilityLabel="Copier l'adresse">
                   <Ionicons name="copy-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
-                  <Text style={styles.btnCopyText}>COPIER</Text>
+                  <Text style={styles.btnCopyText}>{copied ? 'COPIÉ ✔' : 'COPIER'}</Text>
                 </Pressable>
                 <TouchableOpacity style={styles.btnShare} onPress={shareAddress}>
                   <Ionicons name="share-outline" size={20} color="#FFFFFF" style={{marginRight: 8}} />

@@ -74,7 +74,7 @@ export default function AssetListScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#1A2840" />
+            <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <Text style={styles.headerTitle}>Liste des actifs</Text>
@@ -85,7 +85,7 @@ export default function AssetListScreen() {
               <Ionicons name="notifications-outline" size={20} color="#1A2840" />
               <View style={styles.notificationDot} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('RewardsScreen')}>
               <Ionicons name="gift-outline" size={20} color="#1A2840" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('AssetListPromoScreen')} accessibilityLabel="Voir la présentation détaillée du portefeuille">

@@ -1,8 +1,9 @@
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Dimensions } from 'react-native';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
+import { useApp } from '../context/AppContext';
 
 const { width } = Dimensions.get('window');
 
@@ -24,6 +25,8 @@ const TRANSACTIONS = [
 
 export default function DashboardScreen() {
   const navigation = useNavigation();
+  const { hideBalance, toggleHideBalance } = useApp();
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -41,7 +44,7 @@ export default function DashboardScreen() {
               <Ionicons name="notifications-outline" size={22} color="#1A2840" />
               <View style={styles.badge} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtn}>
+            <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('TransactionHistoryScreen')}>
               <Ionicons name="time-outline" size={22} color="#1A2840" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('MoreSettingsScreen')} accessibilityLabel="Ouvrir les paramètres">
@@ -55,26 +58,30 @@ export default function DashboardScreen() {
           {/* Wallet Card */}
           <View style={styles.walletCard}>
             <View style={styles.walletHeader}>
-              <View style={styles.walletHeaderLeft}>
+              <TouchableOpacity style={styles.walletHeaderLeft} onPress={toggleHideBalance} activeOpacity={0.7}>
                 <Text style={styles.soldeText}>Solde total</Text>
-                <Ionicons name="eye" size={16} color="#FFFFFF" style={{marginLeft: 8}} />
-              </View>
+                <Ionicons name={hideBalance ? "eye-off" : "eye"} size={18} color="#FFFFFF" style={{marginLeft: 8}} />
+              </TouchableOpacity>
               <TouchableOpacity style={styles.rechargerBtn} onPress={() => navigation.navigate('TopUpScreen')}>
                 <Ionicons name="add" size={14} color="#1A2840" />
                 <Text style={styles.rechargerText}>Recharger</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.arrowRightBtn}>
+              <TouchableOpacity style={styles.arrowRightBtn} onPress={() => navigation.navigate('AssetListScreen')}>
                 <Ionicons name="chevron-forward" size={16} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
 
             <View style={styles.walletBody}>
               <View style={styles.walletBalanceSection}>
-                <Text style={styles.balanceAmount}>125 500 <Text style={styles.balanceCurrency}>DZY</Text></Text>
+                <Text style={styles.balanceAmount}>{hideBalance ? '••••••••' : '125 500'} {!hideBalance && <Text style={styles.balanceCurrency}>DZY</Text>}</Text>
                 <View style={styles.conversionRow}>
-                  <Text style={styles.conversionText}>≈ 191,34 EUR</Text>
-                  <Text style={styles.conversionDivider}>|</Text>
-                  <Text style={styles.conversionText}>≈ 125 120 XAF</Text>
+                  <Text style={styles.conversionText}>{hideBalance ? '••••••••' : '≈ 191,34 EUR'}</Text>
+                  {!hideBalance && (
+                    <>
+                      <Text style={styles.conversionDivider}>|</Text>
+                      <Text style={styles.conversionText}>≈ 125 120 XAF</Text>
+                    </>
+                  )}
                 </View>
               </View>
               
@@ -127,7 +134,8 @@ export default function DashboardScreen() {
           {/* Mes fonds */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Mes fonds</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('AssetListScreen')}><Text style={styles.voirTout}>Voir tout <Ionicons name="arrow-forward" size={14} /></Text>
+            <TouchableOpacity onPress={() => navigation.navigate('AssetListScreen')}>
+              <Text style={styles.voirTout}>Voir tout <Ionicons name="arrow-forward" size={14} /></Text>
             </TouchableOpacity>
           </View>
 
@@ -148,7 +156,7 @@ export default function DashboardScreen() {
                   </View>
                   <Text style={styles.fondSymbol}>{item.symbol}</Text>
                   <Text style={styles.fondSub}>{item.sub}</Text>
-                  <Text style={styles.fondBalance}>{item.balance}</Text>
+                  <Text style={styles.fondBalance}>{hideBalance ? '••••' : item.balance}</Text>
                   <Text style={styles.fondCurrency}>{item.currency}</Text>
                 </View>
                 
@@ -213,7 +221,8 @@ export default function DashboardScreen() {
           {/* Transactions récentes */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Transactions récentes</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('AssetListScreen')}><Text style={styles.voirTout}>Voir tout <Ionicons name="arrow-forward" size={14} /></Text>
+            <TouchableOpacity onPress={() => navigation.navigate('TransactionHistoryScreen')}>
+              <Text style={styles.voirTout}>Voir tout <Ionicons name="arrow-forward" size={14} /></Text>
             </TouchableOpacity>
           </View>
 
@@ -229,10 +238,10 @@ export default function DashboardScreen() {
                 </View>
                 <View style={styles.txAmountCol}>
                   <Text style={[styles.txAmount, tx.isPositive === true ? styles.txGreen : (tx.isPositive === false ? styles.txDark : styles.txDark)]}>
-                    {tx.amount}
+                    {hideBalance ? '••••' : tx.amount}
                   </Text>
                   {tx.amountSub && (
-                    <Text style={styles.txAmountSub}>{tx.amountSub}</Text>
+                    <Text style={styles.txAmountSub}>{hideBalance ? '••••' : tx.amountSub}</Text>
                   )}
                   <Text style={styles.txTime}>{tx.time}</Text>
                 </View>
@@ -251,472 +260,86 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 12,
-    backgroundColor: '#FFFFFF',
-  },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logoCircle: {
-    width: 32,
-    height: 32,
-    marginRight: 6,
-  },
-  dizzitText: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 20,
-    color: '#1A2840',
-  },
-  upText: {
-    color: '#FFC759',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  flagIcon: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  iconBtn: {
-    position: 'relative',
-  },
-  badge: {
-    position: 'absolute',
-    top: -2,
-    right: 0,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#F59E0B',
-    borderWidth: 1,
-    borderColor: '#FFFFFF',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  walletCard: {
-    backgroundColor: '#0F172A',
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  walletHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  walletHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  soldeText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 14,
-    color: '#FFFFFF',
-  },
-  rechargerBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFC759',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginRight: 8,
-  },
-  rechargerText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
-    color: '#1A2840',
-    marginLeft: 4,
-  },
-  arrowRightBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#1E293B',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  walletBody: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-  },
-  balanceAmount: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 32,
-    color: '#FFFFFF',
-    marginBottom: 8,
-  },
-  balanceCurrency: {
-    fontSize: 18,
-  },
-  conversionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  conversionText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: '#94A3B8',
-  },
-  conversionDivider: {
-    color: '#475569',
-    marginHorizontal: 8,
-    fontSize: 12,
-  },
-  bigDzyIcon: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  actionsGrid: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderRadius: 16,
-    paddingVertical: 16,
-    justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  actionItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  actionIconWrapper: {
-    marginBottom: 8,
-  },
-  actionItemText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 11,
-    color: '#1A2840',
-  },
-  verticalDivider: {
-    width: 1,
-    backgroundColor: '#E5E7EB',
-  },
-  actionItemDisabled: {
-    flex: 1.2,
-    alignItems: 'center',
-    position: 'relative',
-  },
-  actionIconWrapperDisabled: {
-    marginBottom: 8,
-  },
-  actionItemTextDisabled: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 11,
-    color: '#6B7280',
-  },
-  unavailableBadge: {
-    backgroundColor: '#F1F5F9',
-    paddingHorizontal: 4,
-    paddingVertical: 2,
-    borderRadius: 4,
-    position: 'absolute',
-    bottom: -16,
-    width: 90,
-  },
-  unavailableText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 7,
-    color: '#64748B',
-    textAlign: 'center',
-    lineHeight: 9,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginHorizontal: 16,
-    marginTop: 32,
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-    color: '#1A2840',
-  },
-  voirTout: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
-    color: '#1A2840',
-  },
-  fondsScroll: {
-    paddingHorizontal: 16,
-    alignItems: 'center',
-  },
-  fondItem: {
-    alignItems: 'center',
-    width: 70,
-  },
-  fondIcon: {
-    width: 48,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  customFondIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  fondSymbol: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-    color: '#1A2840',
-  },
-  fondSub: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    color: '#6B7280',
-    marginBottom: 4,
-    textAlign: 'center',
-  },
-  fondBalance: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 10,
-    color: '#1A2840',
-  },
-  fondCurrency: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    color: '#6B7280',
-  },
-  fondSeparator: {
-    marginHorizontal: 4,
-    marginBottom: 30, // Align with icons
-  },
-  cardPromo: {
-    backgroundColor: '#0F172A',
-    marginHorizontal: 16,
-    marginTop: 32,
-    borderRadius: 16,
-    padding: 20,
-    flexDirection: 'row',
-    overflow: 'hidden',
-  },
-  cardPromoContent: {
-    flex: 1,
-    zIndex: 2,
-    paddingRight: 16,
-    justifyContent: 'space-between',
-  },
-  cardPromoText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    color: '#E2E8F0',
-    lineHeight: 16,
-    marginBottom: 16,
-  },
-  payMethods: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  payBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    borderRadius: 4,
-  },
-  payBadgeText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-    color: '#000000',
-    marginLeft: 4,
-  },
-  dzyCardMockup: {
-    width: 150,
-    height: 100,
-  },
-  dzyCardMockupInner: {
-    flex: 1,
-    backgroundColor: '#0F172A',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#475569',
-    padding: 10,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  cardDotsPattern: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    opacity: 0.1,
-    zIndex: -1,
-  },
-  patternDot: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: '#FFFFFF',
-    margin: 4,
-  },
-  dzyCardMockupHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  dzyCardLogoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  miniDzyLogo: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    borderWidth: 1,
-    borderColor: '#FFC759',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 4,
-  },
-  miniDzyLogoText: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 8,
-    color: '#FFC759',
-  },
-  miniDzyLogoStrike: {
-    position: 'absolute',
-    width: 8,
-    height: 1,
-    backgroundColor: '#FFC759',
-    transform: [{rotate: '-45deg'}],
-  },
-  miniDizzitUp: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 10,
-    color: '#FFFFFF',
-  },
-  dzyCardCurrency: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 12,
-    color: '#FFFFFF',
-  },
-  cardChip: {
-    width: 24,
-    height: 18,
-    borderRadius: 2,
-    marginBottom: 16,
-  },
-  dzyCardMockupFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-  },
-  cardDots: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 10,
-    color: '#FFFFFF',
-    letterSpacing: 2,
-  },
-  visaText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 14,
-    color: '#FFFFFF',
-    fontStyle: 'italic',
-  },
-  transactionsList: {
-    paddingHorizontal: 16,
-  },
-  txRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-  },
-  txIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-    backgroundColor: '#F8FAFC',
-  },
-  txInfo: {
-    flex: 1,
-  },
-  txTitle: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 13,
-    color: '#1A2840',
-  },
-  txSub: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 11,
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  txAmountCol: {
-    alignItems: 'flex-end',
-  },
-  txAmount: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 13,
-  },
-  txGreen: {
-    color: '#10B981',
-  },
-  txDark: {
-    color: '#1A2840',
-  },
-  txAmountSub: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-    color: '#10B981',
-    marginTop: 2,
-  },
-  txTime: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    color: '#A0AABF',
-    marginTop: 4,
-  },
+  safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
+  container: { flex: 1 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, backgroundColor: '#FFFFFF' },
+  logoContainer: { flexDirection: 'row', alignItems: 'center' },
+  logoCircle: { width: 32, height: 32, marginRight: 6 },
+  dizzitText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 20, color: '#1A2840' },
+  upText: { color: '#FFC759' },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  flagIcon: { width: 24, height: 16, borderRadius: 3 },
+  iconBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', position: 'relative' },
+  badge: { position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: '#EF4444' },
+  scrollView: { flex: 1, paddingHorizontal: 16 },
+  walletCard: { backgroundColor: '#071536', borderRadius: 24, padding: 20, marginTop: 12, position: 'relative', overflow: 'hidden' },
+  walletHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  walletHeaderLeft: { flexDirection: 'row', alignItems: 'center' },
+  soldeText: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#94A3B8' },
+  rechargerBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFC759', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, gap: 4 },
+  rechargerText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840' },
+  arrowRightBtn: { width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.1)', justifyContent: 'center', alignItems: 'center' },
+  walletBody: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
+  walletBalanceSection: { flex: 1 },
+  balanceAmount: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 32, color: '#FFFFFF', letterSpacing: -0.5 },
+  balanceCurrency: { fontSize: 20, color: '#FFC759' },
+  conversionRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 6 },
+  conversionText: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#94A3B8' },
+  conversionDivider: { color: '#475569', fontSize: 12 },
+  bigDzyIcon: { opacity: 0.85 },
+  actionsGrid: { flexDirection: 'row', backgroundColor: '#FFFFFF', borderRadius: 16, paddingVertical: 14, marginTop: 14, alignItems: 'center', justifyContent: 'space-around', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 },
+  actionItem: { alignItems: 'center', flex: 1 },
+  actionItemDisabled: { alignItems: 'center', flex: 1, opacity: 0.6 },
+  actionIconWrapper: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center', marginBottom: 6 },
+  actionIconWrapperDisabled: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', marginBottom: 6 },
+  actionItemText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840' },
+  actionItemTextDisabled: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#6B7280' },
+  verticalDivider: { width: 1, height: 32, backgroundColor: '#F1F5F9' },
+  unavailableBadge: { backgroundColor: '#FEF2F2', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginTop: 4 },
+  unavailableText: { fontFamily: 'Inter_400Regular', fontSize: 9, color: '#EF4444', textAlign: 'center' },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 22, marginBottom: 12 },
+  sectionTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#1A2840' },
+  voirTout: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#3B82F6' },
+  fondsScroll: { gap: 12, paddingRight: 16 },
+  fondItem: { width: 100, backgroundColor: '#FFFFFF', borderRadius: 16, padding: 12, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 },
+  fondIcon: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
+  customFondIcon: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
+  fondSymbol: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#1A2840' },
+  fondSub: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#94A3B8', marginBottom: 4 },
+  fondBalance: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840' },
+  fondCurrency: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#64748B' },
+  fondSeparator: { justifyContent: 'center', alignItems: 'center' },
+  cardPromo: { backgroundColor: '#071536', borderRadius: 20, padding: 16, marginTop: 18, flexDirection: 'row', overflow: 'hidden' },
+  cardPromoContent: { flex: 1, paddingRight: 12, justifyContent: 'space-between' },
+  cardPromoText: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#E2E8F0', lineHeight: 18 },
+  payMethods: { flexDirection: 'row', gap: 8, marginTop: 12 },
+  payBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  payBadgeText: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#000000', marginLeft: 2 },
+  dzyCardMockup: { width: 110, height: 74, borderRadius: 10, backgroundColor: '#1E293B', padding: 8, justifyContent: 'space-between' },
+  dzyCardMockupInner: { flex: 1, justifyContent: 'space-between' },
+  dzyCardMockupHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  dzyCardLogoRow: { flexDirection: 'row', alignItems: 'center' },
+  miniDzyLogo: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#FFC759', justifyContent: 'center', alignItems: 'center', marginRight: 2 },
+  miniDzyLogoText: { fontSize: 8, fontWeight: 'bold', color: '#000' },
+  miniDzyLogoStrike: { display: 'none' },
+  miniDizzitUp: { fontSize: 9, fontWeight: 'bold', color: '#FFF' },
+  dzyCardCurrency: { fontSize: 9, fontWeight: 'bold', color: '#FFC759' },
+  cardChip: { width: 14, height: 10, borderRadius: 2 },
+  dzyCardMockupFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  cardDots: { fontSize: 8, color: '#94A3B8' },
+  visaText: { fontSize: 9, fontWeight: 'bold', color: '#FFF', fontStyle: 'italic' },
+  cardDotsPattern: { display: 'none' },
+  patternDot: {},
+  transactionsList: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 12, gap: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 },
+  txRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 4 },
+  txIconBox: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
+  txInfo: { flex: 1 },
+  txTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#1A2840' },
+  txSub: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#94A3B8', marginTop: 2 },
+  txAmountCol: { alignItems: 'flex-end' },
+  txAmount: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13 },
+  txGreen: { color: '#10B981' },
+  txDark: { color: '#1A2840' },
+  txAmountSub: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#3B82F6' },
+  txTime: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#94A3B8', marginTop: 2 },
 });

@@ -3,11 +3,27 @@ import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-na
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
+import { useApp } from '../context/AppContext';
+
 export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, isMenuOpen, language = 'fr' }) {
   const navigation = useNavigation();
   const [localMenuOpen, setLocalMenuOpen] = useState(false);
   const menuOpen = typeof isMenuOpen === 'boolean' ? isMenuOpen : localMenuOpen;
   
+  let accountMode = 'personal';
+  try {
+    const appCtx = useApp();
+    if (appCtx && appCtx.accountMode) accountMode = appCtx.accountMode;
+  } catch (e) {}
+
+  const handleHomePress = () => {
+    if (accountMode === 'business') {
+      navigation.navigate('DashboardEngScreen');
+    } else {
+      navigation.navigate('HomeScreen');
+    }
+  };
+
   const shortcuts = [
     ['briefcase-outline', 'Pay bills & Send essentials', 'ChooseServiceScreen'],
     ['paper-plane-outline', 'Send funds', 'SendMoneyScreen'],
@@ -49,7 +65,7 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
           icon="home" 
           label={language === 'en' ? 'Home' : 'Accueil'} 
           isActive={activeTabLower === 'home' || activeTabLower === 'accueil'} 
-          onPress={() => navigation.navigate('HomeScreen')} 
+          onPress={handleHomePress} 
         />
 
         {/* Contacts */}

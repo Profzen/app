@@ -1,36 +1,23 @@
 import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, Image } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../theme/theme';
-import BottomNavBar from '../components/BottomNavBar';
-import CustomTabs from '../components/CustomTabs';
-import AssetItem from '../components/AssetItem';
+import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import BottomNavBar from '../components/BottomNavBar';
 
 const ASSETS_DATA = [
-  { id: '1', symbol: 'BTC', name: 'Bitcoin', type: 'crypto', price: '$64,019.78', change: -0.40, imageUrl: 'https://cryptologos.cc/logos/bitcoin-btc-logo.png' },
-  { id: '2', symbol: 'ETH', name: 'Ethereum', type: 'crypto', price: '$1,732.30', change: 0.06, imageUrl: 'https://cryptologos.cc/logos/ethereum-eth-logo.png' },
-  { id: '3', symbol: 'USDC', name: 'USD Coin', type: 'stablecoin', price: '$0.9997', change: 0.00, imageUrl: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png' },
-  { id: '4', symbol: 'EURC', name: 'EURC', type: 'stablecoin', price: '$1.14', change: -0.12, imageUrl: 'https://cryptologos.cc/logos/euro-coin-eurc-logo.png' },
-  { id: '5', symbol: 'DZY', name: 'DZY', type: 'crypto', price: '125,500.00', change: 0.35, icon: 'flash-outline', iconColor: '#F59E0B', iconBgColor: '#FFFBEB' },
-  { id: '6', symbol: 'SOL', name: 'Solana', type: 'crypto', price: '$73.73', change: 0.46, imageUrl: 'https://cryptologos.cc/logos/solana-sol-logo.png' },
-];
-
-const TABS = [
-  { id: 'all', label: 'Tous les actifs' },
-  { id: 'crypto', label: 'Crypto' },
-  { id: 'stablecoins', label: 'Stablecoins' },
-  { id: 'favorites', label: 'Favoris' },
+  { id: '1', name: 'USD Coin', symbol: 'USDC', balance: '12 450,00', conversion: '≈ 12 450,00 $US', iconUrl: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png', type: 'stablecoin' },
+  { id: '2', name: 'Tether USD (TRC20)', symbol: 'USDT', balance: '8 750,00', conversion: '≈ 8 750,00 $US', iconUrl: 'https://cryptologos.cc/logos/tether-usdt-logo.png', type: 'stablecoin' },
+  { id: '3', name: 'Euro Coin', symbol: 'EURC', balance: '3 200,00', conversion: '≈ 3 480,00 $US', isCustom: true, icon: 'logo-euro', iconColor: '#2775CA', type: 'stablecoin' },
+  { id: '4', name: 'DizzitUp Token', symbol: 'DZY', balance: '125 500,00', conversion: '≈ 26 355,00 $US', isLocal: true, type: 'crypto' },
+  { id: '5', name: 'Wrapped Bitcoin', symbol: 'WBTC', balance: '0,2450', conversion: '≈ 16 415,00 $US', iconUrl: 'https://cryptologos.cc/logos/wrapped-bitcoin-wbtc-logo.png', type: 'crypto' },
 ];
 
 export default function AssetsListScreen() {
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [favorites, setFavorites] = useState(['5']); // DZY favori par défaut comme sur l'image
-  
-  // Prod behavior for BottomNavBar
+  const [favorites, setFavorites] = useState(['4']);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleFavoriteToggle = (id) => {
@@ -39,33 +26,25 @@ export default function AssetsListScreen() {
     );
   };
 
-  const handleAction = (action, symbol) => {
-    // Prod behavior simulation
-    alert(`Ouverture du module ${action} pour ${symbol}`);
-  };
-
   const filteredAssets = ASSETS_DATA.filter(asset => {
-    // Filter by search
     const matchesSearch = asset.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           asset.symbol.toLowerCase().includes(searchQuery.toLowerCase());
     if (!matchesSearch) return false;
-
-    // Filter by tab
     if (activeTab === 'crypto') return asset.type === 'crypto';
     if (activeTab === 'stablecoins') return asset.type === 'stablecoin';
     if (activeTab === 'favorites') return favorites.includes(asset.id);
-    return true; // 'all'
+    return true;
   });
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         
-        {/* Header (Fixed) */}
+        {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#1A2840" />
+              <Ionicons name="arrow-back" size={24} color="#1A2840" />
             </TouchableOpacity>
             <View>
               <Text style={styles.headerTitle}>Liste des actifs</Text>
@@ -77,10 +56,10 @@ export default function AssetsListScreen() {
               <Ionicons name="notifications-outline" size={22} color="#1A2840" />
               <View style={styles.badge} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtn}>
+            <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('RewardsScreen')}>
               <Ionicons name="gift-outline" size={22} color="#1A2840" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtn}>
+            <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('MoreSettingsScreen')}>
               <Ionicons name="ellipsis-horizontal" size={22} color="#1A2840" />
             </TouchableOpacity>
           </View>
@@ -100,82 +79,77 @@ export default function AssetsListScreen() {
               <Text style={styles.bannerTitle}>Tout votre argent,{'\n'}toujours avec vous.</Text>
               <Text style={styles.bannerSubtitle}>Sécurisé. Simple. Sans frontières.</Text>
             </View>
-            <TouchableOpacity style={styles.bannerAction}>
+            <TouchableOpacity style={styles.bannerAction} onPress={() => navigation.navigate('TopUpWalletScreen')}>
               <Ionicons name="chevron-forward" size={16} color="#FFFFFF" />
             </TouchableOpacity>
-            {/* Simulation de l'illustration avec la vraie image générée */}
-            <View style={styles.bannerIllustration}>
-              <Image 
-                source={require('../../assets/wallet_banner.png')} 
-                style={styles.bannerImage} 
-                resizeMode="contain" 
-              />
-            </View>
           </LinearGradient>
 
-          {/* Search & Sort */}
+          {/* Search & Filter Tabs */}
           <View style={styles.searchSection}>
             <View style={styles.searchBar}>
               <Ionicons name="search" size={20} color="#A0AABF" />
               <TextInput 
                 style={styles.searchInput}
-                placeholder="Rechercher un actif"
+                placeholder="Rechercher un actif..."
                 placeholderTextColor="#A0AABF"
                 value={searchQuery}
                 onChangeText={setSearchQuery}
               />
             </View>
-            <TouchableOpacity style={styles.sortBtn}>
-              <Text style={styles.sortText}>Trier</Text>
-              <Ionicons name="filter" size={16} color="#1A2840" />
-            </TouchableOpacity>
           </View>
 
-          {/* Tabs */}
-          <CustomTabs 
-            tabs={TABS}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-          />
+          <View style={styles.tabsContainer}>
+            {['all', 'crypto', 'stablecoins', 'favorites'].map(tab => (
+              <TouchableOpacity
+                key={tab}
+                style={[styles.tab, activeTab === tab && styles.tabActive]}
+                onPress={() => setActiveTab(tab)}
+              >
+                <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
+                  {tab === 'all' ? 'Tous' : tab === 'crypto' ? 'Cryptos' : tab === 'stablecoins' ? 'Stablecoins' : 'Favoris'}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
           {/* Asset List */}
-          <View style={styles.listContainer}>
+          <View style={styles.assetList}>
             {filteredAssets.map(asset => (
-              <AssetItem
-                key={asset.id}
-                icon={asset.icon}
-                imageUrl={asset.imageUrl}
-                iconColor={asset.iconColor}
-                iconBgColor={asset.iconBgColor}
-                symbol={asset.symbol}
-                name={asset.name}
-                price={asset.price}
-                change={asset.change}
-                isFavorite={favorites.includes(asset.id)}
-                onFavoriteToggle={() => handleFavoriteToggle(asset.id)}
-                onBuy={() => handleAction('Achat', asset.symbol)}
-                onSell={() => handleAction('Vente', asset.symbol)}
-              />
-            ))}
-            
-            {filteredAssets.length === 0 && (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyStateText}>Aucun actif trouvé.</Text>
-              </View>
-            )}
+              <View key={asset.id} style={styles.assetCard}>
+                <View style={styles.assetIconWrapper}>
+                  {asset.isLocal ? (
+                    <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={{width: 36, height: 36}} resizeMode="contain" />
+                  ) : asset.isCustom ? (
+                    <View style={[styles.customIcon, { backgroundColor: asset.iconColor }]}>
+                      <Ionicons name={asset.icon} size={20} color="#FFFFFF" />
+                    </View>
+                  ) : (
+                    <Image source={{ uri: asset.iconUrl }} style={{width: 36, height: 36}} resizeMode="contain" />
+                  )}
+                </View>
 
-            <TouchableOpacity style={styles.addBtn} onPress={() => alert('Ajouter un actif')}>
-              <Ionicons name="add" size={18} color="#1A2840" />
-              <Text style={styles.addBtnText}>Ajouter un actif</Text>
-            </TouchableOpacity>
+                <View style={styles.assetInfo}>
+                  <Text style={styles.assetName}>{asset.name}</Text>
+                  <Text style={styles.assetSymbol}>{asset.symbol}</Text>
+                </View>
+
+                <View style={styles.assetRight}>
+                  <Text style={styles.assetBalance}>{asset.balance}</Text>
+                  <Text style={styles.assetConversion}>{asset.conversion}</Text>
+                </View>
+
+                <TouchableOpacity style={styles.favBtn} onPress={() => handleFavoriteToggle(asset.id)}>
+                  <Ionicons name={favorites.includes(asset.id) ? "star" : "star-outline"} size={18} color={favorites.includes(asset.id) ? "#F59E0B" : "#A0AABF"} />
+                </TouchableOpacity>
+              </View>
+            ))}
           </View>
 
-          <View style={{ height: 40 }} />
+          <View style={{ height: 30 }} />
         </ScrollView>
-        
-        {/* Bottom Nav Bar */}
+
         <BottomNavBar 
-          activeTab="Home" // Keeping Home active visually or "Shops" depending on where this lives
+          activeTab="More" 
           isMenuOpen={isMenuOpen} 
           onCenterButtonPress={() => setIsMenuOpen(!isMenuOpen)} 
         />
@@ -185,186 +159,40 @@ export default function AssetsListScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#F9FAFB',
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  backBtn: {
-    marginRight: 12,
-  },
-  headerTitle: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 20,
-    color: '#1A2840',
-    outlineStyle: 'none',
-  },
-  headerSubtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 8,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-  },
-  badge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#FFC759',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  banner: {
-    marginHorizontal: 20,
-    marginTop: 16,
-    borderRadius: 16,
-    padding: 20,
-    position: 'relative',
-    overflow: 'hidden',
-    minHeight: 140,
-  },
-  bannerContent: {
-    zIndex: 2,
-    width: '70%',
-  },
-  bannerTag: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
-    color: '#10B981',
-    marginBottom: 8,
-  },
-  bannerTitle: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 20,
-    color: '#FFFFFF',
-    marginBottom: 8,
-  },
-  bannerSubtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: '#D1D5DB',
-  },
-  bannerAction: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 2,
-  },
-  bannerIllustration: {
-    position: 'absolute',
-    right: -20,
-    bottom: -20,
-    zIndex: 1,
-  },
-  bannerImage: {
-    width: 140,
-    height: 140,
-    opacity: 0.9,
-  },
-  searchSection: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    marginTop: 24,
-    marginBottom: 16,
-    gap: 12,
-  },
-  searchBar: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    height: 48,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-  },
-  searchInput: {
-    flex: 1,
-    marginLeft: 8,
-    fontFamily: 'Inter_400Regular',
-    fontSize: 14,
-    color: '#1A2840',
-  },
-  sortBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    height: 48,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-    gap: 8,
-  },
-  sortText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 14,
-    color: '#1A2840',
-  },
-  listContainer: {
-    marginTop: 8,
-  },
-  emptyState: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  emptyStateText: {
-    fontFamily: 'Inter_400Regular',
-    color: '#A0AABF',
-  },
-  addBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F3F4F6',
-    marginHorizontal: 20,
-    marginTop: 8,
-    height: 56,
-    borderRadius: 12,
-    gap: 8,
-  },
-  addBtnText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-    color: '#1A2840',
-  }
+  safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
+  container: { flex: 1 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, backgroundColor: '#FFFFFF' },
+  headerLeft: { flexDirection: 'row', alignItems: 'center' },
+  backBtn: { marginRight: 12 },
+  headerTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#1A2840' },
+  headerSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#6B7280' },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  iconBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', position: 'relative' },
+  badge: { position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: '#EF4444' },
+  scrollView: { flex: 1, paddingHorizontal: 16 },
+  banner: { borderRadius: 18, padding: 18, marginTop: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  bannerContent: { flex: 1 },
+  bannerTag: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#FFC759', letterSpacing: 0.5 },
+  bannerTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#FFFFFF', marginTop: 4 },
+  bannerSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#94A3B8', marginTop: 2 },
+  bannerAction: { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.15)', justifyContent: 'center', alignItems: 'center' },
+  searchSection: { marginTop: 16, marginBottom: 12 },
+  searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 12, borderWidth: 1, borderColor: '#E2E8F0', paddingHorizontal: 12, height: 44 },
+  searchInput: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 14, color: '#1A2840', marginLeft: 8 },
+  tabsContainer: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  tab: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0' },
+  tabActive: { backgroundColor: '#FFC759', borderColor: '#FFC759' },
+  tabText: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#6B7280' },
+  tabTextActive: { fontFamily: 'Inter_700Bold', color: '#1A2840' },
+  assetList: { gap: 10 },
+  assetCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#F1F5F9' },
+  assetIconWrapper: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  customIcon: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
+  assetInfo: { flex: 1 },
+  assetName: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#1A2840' },
+  assetSymbol: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#6B7280', marginTop: 2 },
+  assetRight: { alignItems: 'flex-end', marginRight: 12 },
+  assetBalance: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#1A2840' },
+  assetConversion: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#94A3B8', marginTop: 2 },
+  favBtn: { padding: 4 },
 });

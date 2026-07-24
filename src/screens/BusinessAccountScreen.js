@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Switch } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
+import { useApp } from '../context/AppContext';
 
 export default function BusinessAccountScreen() {
   const navigation = useNavigation();
   const [toast, setToast] = useState(null);
+  const { accountMode, setAccountMode } = useApp();
 
-  // Active account mode state: 'personal' | 'business'
-  const [activeAccount, setActiveAccount] = useState('business');
+  const activeAccount = accountMode || 'personal';
+  const [confirmModalTarget, setConfirmModalTarget] = useState(null);
   const [hasBusinessAccount, setHasBusinessAccount] = useState(true);
 
   const handleBack = () => {
@@ -18,11 +20,26 @@ export default function BusinessAccountScreen() {
     else navigation.navigate('MoreSettingsScreen');
   };
 
-  const handleSwitchAccount = (type) => {
-    setActiveAccount(type);
+  const handleRequestSwitch = (type) => {
+    if (type === activeAccount) {
+      setToast({
+        title: 'Compte déjà actif',
+        message: type === 'business' ? 'Vous êtes déjà sur le Compte Business.' : 'Vous êtes déjà sur le Compte Personnel.'
+      });
+      return;
+    }
+    setConfirmModalTarget(type);
+  };
+
+  const handleConfirmSwitch = () => {
+    const target = confirmModalTarget;
+    setAccountMode(target);
+    setConfirmModalTarget(null);
     setToast({
-      title: type === 'business' ? 'Compte Business Actif' : 'Compte Personnel Actif',
-      message: type === 'business' ? 'Vous naviguez en mode Compte Marchand Pro.' : 'Vous naviguez en mode Compte Personnel.'
+      title: target === 'business' ? 'Compte Business Actif' : 'Compte Personnel Actif',
+      message: target === 'business'
+        ? 'Mode Marchand Pro activé. L\'accueil affichera le Dashboard Business.'
+        : 'Mode Personnel activé. L\'accueil affichera la Home standard.'
     });
   };
 
@@ -32,7 +49,7 @@ export default function BusinessAccountScreen() {
 
   const handleAddBusiness = () => {
     setHasBusinessAccount(true);
-    setActiveAccount('business');
+    setAccountMode('business');
     navigation.navigate('CashRegisterScreen');
   };
 
@@ -57,7 +74,7 @@ export default function BusinessAccountScreen() {
           {/* Option 1: Personal Account */}
           <TouchableOpacity
             style={[styles.accountCard, activeAccount === 'personal' && styles.accountCardActive]}
-            onPress={() => handleSwitchAccount('personal')}
+            onPress={() => handleRequestSwitch('personal')}
           >
             <View style={styles.accountCardLeft}>
               <View style={[styles.avatarCircle, { backgroundColor: '#EFF6FF' }]}>
@@ -77,7 +94,7 @@ export default function BusinessAccountScreen() {
           {hasBusinessAccount ? (
             <TouchableOpacity
               style={[styles.accountCard, activeAccount === 'business' && styles.accountCardActive]}
-              onPress={() => handleSwitchAccount('business')}
+              onPress={() => handleRequestSwitch('business')}
             >
               <View style={styles.accountCardLeft}>
                 <View style={[styles.avatarCircle, { backgroundColor: '#F5F3FF' }]}>
@@ -156,6 +173,49 @@ export default function BusinessAccountScreen() {
           <View style={{ height: 30 }} />
         </ScrollView>
 
+        {/* Modal de Confirmation de Basculement */}
+        <Modal
+          visible={confirmModalTarget !== null}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setConfirmModalTarget(null)}
+        >
+          <View style={modalStyles.modalOverlay}>
+            <View style={modalStyles.modalContainer}>
+              <View style={[modalStyles.iconCircle, { backgroundColor: confirmModalTarget === 'business' ? '#F5F3FF' : '#EFF6FF' }]}>
+                <Ionicons
+                  name={confirmModalTarget === 'business' ? "storefront" : "person"}
+                  size={28}
+                  color={confirmModalTarget === 'business' ? "#8B5CF6" : "#3B82F6"}
+                />
+              </View>
+
+              <Text style={modalStyles.modalTitle}>Confirmer le basculement</Text>
+              <Text style={modalStyles.modalMessage}>
+                {confirmModalTarget === 'business'
+                  ? 'Voulez-vous basculer vers votre Compte Business (David\'s Electronics Store) ? L\'interface d\'accueil basculera en mode Marchand Pro.'
+                  : 'Voulez-vous basculer vers votre Compte Personnel ? L\'interface d\'accueil repassera en mode Particulier.'}
+              </Text>
+
+              <View style={modalStyles.modalActions}>
+                <TouchableOpacity
+                  style={modalStyles.cancelBtn}
+                  onPress={() => setConfirmModalTarget(null)}
+                >
+                  <Text style={modalStyles.cancelBtnText}>Annuler</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[modalStyles.confirmBtn, { backgroundColor: confirmModalTarget === 'business' ? '#8B5CF6' : '#3B82F6' }]}
+                  onPress={handleConfirmSwitch}
+                >
+                  <Text style={modalStyles.confirmBtnText}>Oui, basculer</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
         <BottomNavBar activeTab="More" language="fr" />
         <AppToast visible={!!toast} title={toast?.title} message={toast?.message} onClose={() => setToast(null)} />
       </View>
@@ -196,4 +256,82 @@ const styles = StyleSheet.create({
   primaryBizBtnText: { fontFamily: 'Inter_700Bold', fontSize: 15, color: '#1A2840' },
   addBizBtn: { height: 48, borderRadius: 14, backgroundColor: '#F5F3FF', borderWidth: 1, borderColor: '#DDD6FE', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   addBizBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#8B5CF6' },
+});
+
+const modalStyles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  modalContainer: {
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 24,
+    alignItems: 'center',
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+  },
+  iconCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 18,
+    color: '#1A2840',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  modalMessage: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 14,
+    color: '#475569',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 24,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'space-between',
+  },
+  cancelBtn: {
+    flex: 1,
+    height: 46,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  cancelBtnText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
+    color: '#64748B',
+  },
+  confirmBtn: {
+    flex: 1,
+    height: 46,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  confirmBtnText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 14,
+    color: '#FFFFFF',
+  },
 });

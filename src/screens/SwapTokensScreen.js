@@ -26,7 +26,7 @@ export default function SwapTokensScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={24} color="#1A2840" />
+            <Ionicons name="chevron-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <Text style={styles.pageTitle}>Échange de jetons</Text>
@@ -37,17 +37,16 @@ export default function SwapTokensScreen() {
               <Ionicons name="notifications-outline" size={20} color="#1A2840" />
               <View style={styles.notificationDot} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnRight}>
+            <TouchableOpacity style={styles.iconBtnRight} onPress={() => navigation.navigate('RewardsScreen')}>
               <Ionicons name="gift-outline" size={20} color="#1A2840" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnRight}>
+            <TouchableOpacity style={styles.iconBtnRight} onPress={() => navigation.navigate('MoreSettingsScreen')}>
               <Ionicons name="ellipsis-vertical" size={20} color="#1A2840" />
             </TouchableOpacity>
           </View>
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          
           <Text style={styles.introText}>Échangez vos jetons instantanément aux meilleurs taux.</Text>
 
           {/* Chain Selectors */}

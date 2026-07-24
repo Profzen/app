@@ -40,7 +40,7 @@ export default function ContactsScreen() {
               <Ionicons name="notifications-outline" size={20} color="#1A2840" />
               <View style={styles.notificationDot} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnRight}>
+            <TouchableOpacity style={styles.iconBtnRight} onPress={() => navigation.navigate('RewardsScreen')}>
               <Ionicons name="gift-outline" size={20} color="#1A2840" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconBtnRight}>
