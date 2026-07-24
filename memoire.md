@@ -1110,10 +1110,9 @@ Le projet **DizzitUp Mobile App** est à ce jour **100% achevé au niveau Fronte
   - **Déclenchement automatique** : Se lance à chaque `git push` sur les branches `main` et `develop` ou sur déclenchement manuel (`workflow_dispatch`).
   - **Runner & Environnement** : Exécution sur Ubuntu Latest avec Node.js 22 (LTS), Java JDK 17 (Temurin) et Android SDK v3.
   - **Expo Prebuild Natif** : Génération autonome du dossier natif Android via `npx expo prebuild --platform android --clean`.
-  - **Résolution d'Autolinking Node Gradle (`Process 'command 'node'' finished with non-zero exit value 1`)** :
-    - *Cause Identifiée* : Par défaut, `settings.gradle` et `app/build.gradle` exécutaient les commandes `node` avec `workingDir(rootDir)` (pointant vers le sous-dossier `android/`), où `node_modules` n'existe pas.
-    - *Correctif Automatisé* : Ajout d'une étape de patch dans le workflow qui remplace dynamiquement `workingDir(rootDir)` par `workingDir(rootDir.getParentFile())` et `.execute(null, rootDir)` par `.execute(null, rootDir.getParentFile())` immédiatement après le prebuild Expo.
-    - *Résultat* : `node` s'exécute toujours avec le dossier racine du projet (`/home/runner/work/app/app`) comme répertoire de travail, résolvant avec succès `node_modules` et les dépendances `expo/scripts/resolveAppEntry` et `@react-native/gradle-plugin`.
+  - **Résolution d'Autolinking Node Gradle (`ExpoAutolinkingPlugin.kt`)** :
+    - *Cause Identifiée* : `ExpoAutolinkingPlugin.kt` (ligne 59) exécute la commande `node --eval "require('expo/bin/autolinking')"` à l'intérieur du dossier `android/`. Node ne trouvant pas `android/node_modules`, il renvoyait l'erreur `MODULE_NOT_FOUND` / `exit code 1`.
+    - *Solution Définitive* : Exportation de la variable d'environnement `NODE_PATH: ${{ github.workspace }}/node_modules` pendant la tâche de compilation Gradle. Node localise ainsi instantanément tous les scripts d'autolinking Expo et React Native quel que soit le dossier de travail.
   - **Allocation Mémoire Node & Gradle** : Définition de `NODE_OPTIONS="--max-old-space-size=4096"` et `GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx4096m"`.
   - **Publication de l'APK** : Export du binaire sous le nom **`DizzitUp-Android-APK`** disponible dans les **Artifacts** GitHub.
 - **Alternative Cloud EAS Build** ([`.github/workflows/eas-build.yml`](file:///g:/zen/projets/DizzitApp/app/.github/workflows/eas-build.yml)) & **Configuration Expo SDK 57** :
