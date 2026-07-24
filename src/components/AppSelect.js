@@ -34,32 +34,57 @@ export default function AppSelect({
           {renderLeading?.(selected)}
           <Text style={[styles.triggerText, textStyle]} numberOfLines={1}>{selected?.label}</Text>
         </View>
-        <Ionicons name="chevron-down" size={20} color={chevronColor} />
+        <Ionicons name="chevron-down" size={18} color={chevronColor} />
       </TouchableOpacity>
 
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
         <SafeAreaView style={styles.overlay}>
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setOpen(false)} />
-          <View style={styles.sheet}>
-            <View style={styles.sheetHeader}>
-              <Text style={styles.sheetTitle}>{title}</Text>
-              <TouchableOpacity style={styles.close} onPress={() => setOpen(false)} accessibilityLabel="Fermer la liste">
-                <Ionicons name="close" size={22} color="#1A2840" />
+          
+          {/* Floating Discrete Modal Card with Margins */}
+          <View style={styles.modalCard}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitle}>{title}</Text>
+              <TouchableOpacity style={styles.closeBtn} onPress={() => setOpen(false)} accessibilityLabel="Fermer la liste">
+                <Ionicons name="close" size={20} color="#0F172A" />
               </TouchableOpacity>
             </View>
-            <ScrollView style={styles.options} bounces={false}>
+
+            <ScrollView style={styles.optionsScroll} bounces={false} showsVerticalScrollIndicator={false}>
               {options.map((option) => {
                 const active = option.value === selected?.value;
                 return (
-                  <TouchableOpacity key={option.value} style={[styles.option, active && styles.optionActive]} onPress={() => select(option)}>
+                  <TouchableOpacity 
+                    key={option.value} 
+                    style={[styles.optionRow, active && styles.optionRowActive]} 
+                    onPress={() => select(option)}
+                    activeOpacity={0.8}
+                  >
                     <View style={styles.optionContent}>
-                      {option.iconName && <Ionicons name={option.iconName} size={20} color={option.color || '#3B82F6'} />}
-                      <View style={styles.optionCopy}>
-                        <Text style={styles.optionLabel}>{option.label}</Text>
-                        {!!option.subtitle && <Text style={styles.optionSubtitle}>{option.subtitle}</Text>}
+                      {/* Logo Icon Badge */}
+                      {option.iconName ? (
+                        <View style={[styles.iconBadge, { backgroundColor: option.bg || '#3B82F6' }]}>
+                          <Ionicons name={option.iconName} size={16} color={option.color || '#FFFFFF'} />
+                        </View>
+                      ) : (
+                        <View style={[styles.iconBadge, { backgroundColor: '#F1F5F9' }]}>
+                          <Text style={styles.iconBadgeText}>{option.label?.substring(0, 2)}</Text>
+                        </View>
+                      )}
+
+                      <View style={styles.optionTextWrap}>
+                        <Text style={[styles.optionLabel, active && styles.optionLabelActive]}>{option.label}</Text>
+                        {!!(option.subtitle || option.name) && (
+                          <Text style={styles.optionSubtitle}>{option.subtitle || option.name}</Text>
+                        )}
                       </View>
                     </View>
-                    {active && <Ionicons name="checkmark-circle" size={22} color="#F5A900" />}
+                    
+                    {active && (
+                      <View style={styles.activeCheckCircle}>
+                        <Ionicons name="checkmark" size={12} color="#FFFFFF" />
+                      </View>
+                    )}
                   </TouchableOpacity>
                 );
               })}
@@ -72,19 +97,25 @@ export default function AppSelect({
 }
 
 const styles = StyleSheet.create({
-  trigger: { minHeight: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, paddingHorizontal: 16 },
+  trigger: { minHeight: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, paddingHorizontal: 16 },
   triggerLeft: { flex: 1, flexDirection: 'row', alignItems: 'center', marginRight: 10 },
-  triggerText: { flex: 1, fontFamily: 'Inter_600SemiBold', fontSize: 15, color: '#1A2840' },
-  overlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(10,17,40,0.35)' },
-  sheet: { maxHeight: '72%', backgroundColor: '#FFFFFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 18, paddingTop: 16, paddingBottom: 24 },
-  sheetHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
-  sheetTitle: { fontFamily: 'Inter_700Bold', fontSize: 18, color: '#1A2840' },
-  close: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center' },
-  options: { flexGrow: 0 },
-  option: { minHeight: 60, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#F1F5F9', paddingHorizontal: 10, paddingVertical: 10 },
-  optionActive: { backgroundColor: '#FFF8E6', borderRadius: 12, borderBottomColor: 'transparent' },
+  triggerText: { flex: 1, fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#0F172A' },
+  
+  /* Discrete Floating Modal Popup with Margins */
+  overlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(15, 23, 42, 0.45)', paddingHorizontal: 20 },
+  modalCard: { width: '100%', maxWidth: 380, maxHeight: '68%', backgroundColor: '#FFFFFF', borderRadius: 24, paddingHorizontal: 20, paddingTop: 18, paddingBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.15, shadowRadius: 20, elevation: 8 },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
+  cardTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 17, color: '#0F172A' },
+  closeBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' },
+  optionsScroll: { flexGrow: 0 },
+  optionRow: { minHeight: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 10, marginBottom: 8, backgroundColor: '#FFFFFF' },
+  optionRowActive: { backgroundColor: '#FFFDF0', borderColor: '#FFC759' },
   optionContent: { flex: 1, flexDirection: 'row', alignItems: 'center' },
-  optionCopy: { flex: 1, marginLeft: 10 },
-  optionLabel: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#1A2840' },
-  optionSubtitle: { marginTop: 2, fontFamily: 'Inter_400Regular', fontSize: 11, color: '#64748B' },
+  iconBadge: { width: 34, height: 34, borderRadius: 17, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  iconBadgeText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#0F172A' },
+  optionTextWrap: { flex: 1 },
+  optionLabel: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#0F172A' },
+  optionLabelActive: { color: '#0F172A' },
+  optionSubtitle: { marginTop: 1, fontFamily: 'Inter_400Regular', fontSize: 11, color: '#64748B' },
+  activeCheckCircle: { width: 22, height: 22, borderRadius: 11, backgroundColor: '#D97706', justifyContent: 'center', alignItems: 'center' },
 });

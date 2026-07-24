@@ -8,19 +8,19 @@ import AppToast from '../components/AppToast';
 import BottomNavBar from '../components/BottomNavBar';
 
 const BLOCKCHAINS = [
-  { value: 'Polygon', label: 'Polygon', name: 'Polygon Network' },
-  { value: 'Ethereum', label: 'Ethereum', name: 'Ethereum Mainnet' },
-  { value: 'Solana', label: 'Solana', name: 'Solana Network' },
-  { value: 'BNB Chain', label: 'BNB Chain', name: 'BNB Smart Chain' },
-  { value: 'Bitcoin', label: 'Bitcoin', name: 'Bitcoin Network' },
+  { value: 'Polygon', label: 'Polygon', name: 'Polygon Network', iconName: 'cube-outline', color: '#FFFFFF', bg: '#8247E5' },
+  { value: 'Ethereum', label: 'Ethereum', name: 'Ethereum Mainnet', iconName: 'logo-ethereum', color: '#FFFFFF', bg: '#627EEA' },
+  { value: 'Solana', label: 'Solana', name: 'Solana Network', iconName: 'flash-outline', color: '#FFFFFF', bg: '#14F195' },
+  { value: 'BNB Chain', label: 'BNB Chain', name: 'BNB Smart Chain', iconName: 'layers-outline', color: '#FFFFFF', bg: '#F3BA2F' },
+  { value: 'Bitcoin', label: 'Bitcoin', name: 'Bitcoin Network', iconName: 'logo-bitcoin', color: '#FFFFFF', bg: '#F7931A' },
 ];
 
 const CRYPTO_TOKENS = [
-  { value: 'USDC', label: 'USDC', name: 'USD Coin' },
-  { value: 'USDT', label: 'USDT', name: 'Tether USD' },
-  { value: 'DIZ', label: 'DIZ', name: 'DizzitUp Token' },
-  { value: 'ETH', label: 'ETH', name: 'Ethereum' },
-  { value: 'BTC', label: 'BTC', name: 'Bitcoin' },
+  { value: 'USDC', label: 'USDC', name: 'USD Coin', iconName: 'logo-usd', color: '#FFFFFF', bg: '#2775CA', subtitle: 'USD Coin (Stablecoin)' },
+  { value: 'USDT', label: 'USDT', name: 'Tether USD', iconName: 'cash-outline', color: '#FFFFFF', bg: '#26A17B', subtitle: 'Tether USD (Stablecoin)' },
+  { value: 'DIZ', label: 'DIZ', name: 'DizzitUp Token', iconName: 'paper-plane-outline', color: '#0F172A', bg: '#FFC759', subtitle: 'DizzitUp Utility Token' },
+  { value: 'ETH', label: 'ETH', name: 'Ethereum', iconName: 'logo-ethereum', color: '#FFFFFF', bg: '#627EEA', subtitle: 'Ethereum Native Token' },
+  { value: 'BTC', label: 'BTC', name: 'Bitcoin', iconName: 'logo-bitcoin', color: '#FFFFFF', bg: '#F7931A', subtitle: 'Bitcoin Native Token' },
 ];
 
 const RECIPIENTS_LIST = [
