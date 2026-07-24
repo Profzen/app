@@ -40,10 +40,21 @@ jobs:
       - name: ⚡ Generate Android Project (Expo Prebuild)
         run: npx expo prebuild --platform android --clean
 
-      - name: 🛠️ Configure Gradle & Node Environment
+      - name: 🛠️ Configure Gradle & Expo Autolinking Properties
         run: |
           echo "android.enablePngCrunch=false" >> android/gradle.properties
           echo "android.crunchPngs=false" >> android/gradle.properties
+          echo 'expo.inlineModules.watchedDirectories=[]' >> android/gradle.properties
+          node -e "
+            const fs = require('fs');
+            let sg = fs.readFileSync('android/settings.gradle', 'utf8');
+            sg = sg.replaceAll('workingDir(rootDir)', 'workingDir(rootDir.getParentFile())');
+            fs.writeFileSync('android/settings.gradle', sg);
+
+            let bg = fs.readFileSync('android/app/build.gradle', 'utf8');
+            bg = bg.replaceAll('.execute(null, rootDir)', '.execute(null, rootDir.getParentFile())');
+            fs.writeFileSync('android/app/build.gradle', bg);
+          "
 
       - name: 🔑 Set Executable Permission for Gradlew
         run: chmod +x android/gradlew
@@ -52,8 +63,7 @@ jobs:
         env:
           NODE_PATH: ${{ github.workspace }}/node_modules
         run: |
-          cd android
-          ./gradlew assembleRelease --stacktrace
+          ./android/gradlew -p android assembleRelease --stacktrace
 
       - name: 📦 Locate Compiled APK
         id: find_apk
