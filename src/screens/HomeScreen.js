@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, SafeAreaVi
 import { Ionicons } from '@expo/vector-icons';
 import WalletCard from '../components/WalletCard';
 import BottomNavBar from '../components/BottomNavBar';
+import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
 
 const TODO_LIST = [
   { id: '1', icon: 'person-outline', iconColor: '#F59E0B', iconBgColor: '#FFFBEB', title: 'Abdou asked you\nto buy something', buttonText: 'View', buttonColor: '#F59E0B', buttonBgColor: '#FFFBEB', route: 'ShopsScreen' },
