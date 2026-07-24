@@ -1110,9 +1110,12 @@ Le projet **DizzitUp Mobile App** est à ce jour **100% achevé au niveau Fronte
   - **Déclenchement automatique** : Se lance à chaque `git push` sur les branches `main` et `develop` ou sur déclenchement manuel (`workflow_dispatch`).
   - **Runner & Environnement** : Exécution sur Ubuntu Latest avec Node.js 22 (LTS), Java JDK 17 (Temurin) et Android SDK v3.
   - **Expo Prebuild Natif** : Génération autonome du dossier natif Android via `npx expo prebuild --platform android --clean`.
-  - **Résolution d'Autolinking Node Gradle (`ExpoAutolinkingPlugin.kt`)** :
-    - *Cause Identifiée* : `ExpoAutolinkingPlugin.kt` (ligne 59) exécute la commande `node --eval "require('expo/bin/autolinking')"` à l'intérieur du dossier `android/`. Node ne trouvant pas `android/node_modules`, il renvoyait l'erreur `MODULE_NOT_FOUND` / `exit code 1`.
-    - *Solution Définitive* : Exportation de la variable d'environnement `NODE_PATH: ${{ github.workspace }}/node_modules` pendant la tâche de compilation Gradle. Node localise ainsi instantanément tous les scripts d'autolinking Expo et React Native quel que soit le dossier de travail.
+  - **Résolution du Crash Node Gradle (`ExpoAutolinkingPlugin.kt:69`)** :
+    - *Diagnostic Approfondi* : Dans `ExpoAutolinkingPlugin.kt` (lignes 51-69), Gradle cherchait la propriété `expo.inlineModules.watchedDirectories`. En l'absence de cette propriété, Gradle renvoyait une liste vide `emptyList()`. Dans Gradle 9.3.1, passer une liste vide à `commandLine` supprimait la valeur de l'option `--watched-directories-serialized`. Le binaire Node d'autolinking recevait une option sans argument et levait une erreur de parsing JSON (`SyntaxError: Unexpected end of JSON input`), provoquant l'arrêt brutal du build (`exit code 1`).
+    - *Correctif Triple-Sécurité* :
+      1. **Propriété Gradle** : Injection explicite de `expo.inlineModules.watchedDirectories=[]` dans `android/gradle.properties` pour fournir la chaîne JSON valide `"[]"`.
+      2. **Path Patching** : Redirection dynamique des `workingDir` dans `settings.gradle` et `build.gradle` vers la racine du projet (`rootDir.getParentFile()`).
+      3. **Variable `NODE_PATH`** : Export de `NODE_PATH=${{ github.workspace }}/node_modules` pour garantir la résolution des paquets Node.
   - **Allocation Mémoire Node & Gradle** : Définition de `NODE_OPTIONS="--max-old-space-size=4096"` et `GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx4096m"`.
   - **Publication de l'APK** : Export du binaire sous le nom **`DizzitUp-Android-APK`** disponible dans les **Artifacts** GitHub.
 - **Alternative Cloud EAS Build** ([`.github/workflows/eas-build.yml`](file:///g:/zen/projets/DizzitApp/app/.github/workflows/eas-build.yml)) & **Configuration Expo SDK 57** :
