@@ -118,8 +118,102 @@ const shopsList = [
     rating: '4.7',
     reviews: '1,504',
   },
+  {
+    id: '6',
+    name: 'Kemi African Fashion',
+    logoBg: '#EC4899',
+    logoText: 'KEMI',
+    type: 'Mode & Créateur  •  Artisanat',
+    location: "Abidjan, Côte d'Ivoire",
+    distance: '1.8 km',
+    flag: '🇨🇮',
+    badges: [
+      { text: 'Pickup', color: '#3B82F6', bg: '#EFF6FF' },
+      { text: 'Delivery', color: '#10B981', bg: '#ECFDF5' },
+    ],
+    category: 'Goods',
+    categoryColor: '#EC4899',
+    categoryBg: '#FCE7F3',
+    rating: '4.9',
+    reviews: '540',
+  },
+  {
+    id: '7',
+    name: 'Shoprite Ghana',
+    logoBg: '#DC2626',
+    logoText: 'SHOPRITE',
+    type: 'Supermarché  •  Grande Surface',
+    location: 'Accra, Ghana',
+    distance: '4.2 km',
+    flag: '🇬🇭',
+    badges: [
+      { text: 'Delivery', color: '#10B981', bg: '#ECFDF5' },
+      { text: 'On-site', color: '#F59E0B', bg: '#FFFBEB' },
+    ],
+    category: 'Supermarché',
+    categoryColor: '#10B981',
+    categoryBg: '#ECFDF5',
+    rating: '4.6',
+    reviews: '850',
+  },
+  {
+    id: '8',
+    name: 'DZY Official Store',
+    logoBg: '#8B5CF6',
+    logoText: 'DZY\nStore',
+    type: 'Boutique Officielle  •  DizzitUp Partner',
+    location: 'Lomé, Togo & Multi-Pays',
+    distance: '0.5 km',
+    flag: '🇹🇬',
+    badges: [
+      { text: 'Pickup', color: '#3B82F6', bg: '#EFF6FF' },
+      { text: 'Delivery', color: '#10B981', bg: '#ECFDF5' },
+      { text: 'On-site', color: '#8B5CF6', bg: '#F5F3FF' },
+    ],
+    category: 'Électronique',
+    categoryColor: '#8B5CF6',
+    categoryBg: '#F5F3FF',
+    rating: '5.0',
+    reviews: '3,100',
+  },
+  {
+    id: '9',
+    name: 'AfriMarket Cotonou',
+    logoBg: '#059669',
+    logoText: 'Afri\nMarket',
+    type: 'Alimentation  •  Supermarché',
+    location: 'Cotonou, Bénin',
+    distance: '5.1 km',
+    flag: '🇧🇯',
+    badges: [
+      { text: 'Delivery', color: '#10B981', bg: '#ECFDF5' },
+    ],
+    category: 'Goods',
+    categoryColor: '#059669',
+    categoryBg: '#D1FAE5',
+    rating: '4.7',
+    reviews: '412',
+  },
+  {
+    id: '10',
+    name: 'TechHub Mali',
+    logoBg: '#2563EB',
+    logoText: 'Tech\nHub',
+    type: 'High-Tech  •  Services Digital',
+    location: 'Bamako, Mali',
+    distance: '3.8 km',
+    flag: '🇲🇱',
+    badges: [
+      { text: 'Pickup', color: '#3B82F6', bg: '#EFF6FF' },
+      { text: 'On-site', color: '#8B5CF6', bg: '#F5F3FF' },
+    ],
+    category: 'Électronique',
+    categoryColor: '#2563EB',
+    categoryBg: '#DBEAFE',
+    rating: '4.5',
+    reviews: '280',
+  },
 ];
-
 
 export default function ShopsScreen() {
   const navigation = useNavigation();
@@ -130,8 +224,19 @@ export default function ShopsScreen() {
   const [toast, setToast] = useState(null);
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [bannerSlide, setBannerSlide] = useState(1);
+  const [displayedCount, setDisplayedCount] = useState(5);
 
-  const visibleShops = shopsList.filter((shop) => shop.name.toLowerCase().includes(query.trim().toLowerCase()) && (activeFilter === 'Tout' || (activeFilter === 'Électronique' ? shop.category === 'Électronique' : activeFilter === 'Goods' ? ['Marketplace','Supermarché'].includes(shop.category) : true)));
+  const filteredShops = shopsList.filter((shop) => shop.name.toLowerCase().includes(query.trim().toLowerCase()) && (activeFilter === 'Tout' || (activeFilter === 'Électronique' ? shop.category === 'Électronique' : activeFilter === 'Goods' ? ['Marketplace','Supermarché'].includes(shop.category) : true)));
+  const visibleShops = filteredShops.slice(0, displayedCount);
+
+  const handleLoadMore = () => {
+    if (displayedCount >= filteredShops.length) {
+      setToast({ title: language === 'fr' ? 'Toutes les boutiques' : 'All Shops Loaded', message: language === 'fr' ? 'Toutes les boutiques partenaires sont actuellement affichées.' : 'All partner shops are currently displayed.' });
+    } else {
+      setDisplayedCount(prev => prev + 5);
+    }
+  };
+
   const runQuickAction = (id) => { if (id === '1') setToast({title: language === 'fr' ? 'Référencement démarré' : 'Referral started', message: language === 'fr' ? 'Le formulaire de recommandation est prêt.' : 'The referral form is ready.'}); else if (id === '2') setActiveSubNav('shops'); else if (id === '3') {setActiveFilter('Tout');setToast({title: language === 'fr' ? 'À proximité' : 'Nearby', message: language === 'fr' ? 'Les commerces sont classés selon votre position simulée.' : 'Shops sorted by your location.'});} else setActiveSubNav('new'); };
 
   return (
@@ -195,10 +300,10 @@ export default function ShopsScreen() {
 
           {/* Mes shops */}
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>Mes shops</Text>
-            <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}} onPress={() => navigation.navigate('AllShopsScreen')}>
-              <Text style={styles.showAllText}>Voir tout</Text>
-              <Ionicons name="arrow-forward" size={14} color="#1A2840" style={{marginLeft: 4}} />
+            <Text style={styles.sectionTitle}>{language === 'fr' ? 'Mes shops' : 'My Shops'}</Text>
+            <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}} onPress={handleLoadMore}>
+              <Text style={styles.showAllText}>{language === 'fr' ? 'Voir plus' : 'See more'}</Text>
+              <Ionicons name="chevron-down" size={14} color="#1A2840" style={{marginLeft: 4}} />
             </TouchableOpacity>
           </View>
 
@@ -250,11 +355,14 @@ export default function ShopsScreen() {
                     </Text>
                   </View>
 
-                  {/* Content */}
+                  {/* Info Central */}
                   <View style={styles.shopContent}>
-                    <Text style={styles.shopName}>{shop.name}</Text>
-                    <Text style={styles.shopType}>{shop.type}</Text>
-                    <Text style={styles.shopLocation}>{shop.flag} {shop.location}  •  {shop.distance}</Text>
+                    <View style={styles.shopTitleRow}>
+                      <Text style={styles.shopName} numberOfLines={1}>{shop.name}</Text>
+                      <Text style={styles.shopFlag}> {shop.flag}</Text>
+                    </View>
+                    <Text style={styles.shopType} numberOfLines={1}>{shop.type}</Text>
+                    <Text style={styles.shopLocation}>{shop.location} • {shop.distance}</Text>
                     
                     <View style={styles.badgesContainer}>
                       {shop.badges.map((badge, bIndex) => (
@@ -283,6 +391,30 @@ export default function ShopsScreen() {
               </View>
             ))}
           </View>
+
+          {/* Button Voir plus at the bottom of shop list */}
+          {displayedCount < filteredShops.length && (
+            <TouchableOpacity 
+              style={{
+                marginHorizontal: 16,
+                marginVertical: 12,
+                paddingVertical: 12,
+                backgroundColor: '#F1F5F9',
+                borderRadius: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderWidth: 1,
+                borderColor: '#CBD5E1'
+              }}
+              onPress={handleLoadMore}
+            >
+              <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#1E293B', marginRight: 6 }}>
+                {language === 'fr' ? `Voir plus (${filteredShops.length - displayedCount} restantes)` : `See more (${filteredShops.length - displayedCount} remaining)`}
+              </Text>
+              <Ionicons name="chevron-down" size={16} color="#1E293B" />
+            </TouchableOpacity>
+          )}
 
           {/* Refer Banner CTA at bottom */}
           {isBannerVisible && (
