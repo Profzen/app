@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput, Image } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput, Image, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import CryptoIcon from '../components/CryptoIcon';
@@ -11,6 +11,13 @@ const quickActions = [
   { id: '2', title: "Mes shops", subtitle: "Voir les shops avec\nlesquels je traite", icon: "bag-handle-outline", color: "#10B981", iconBg: '#ECFDF5' },
   { id: '3', title: "Shops à\nproximité", subtitle: "Découvrez les shops\nprès de vous", icon: "location-outline", color: "#3B82F6", iconBg: '#EFF6FF' },
   { id: '4', title: "Nouveaux\nshops", subtitle: "Nouveaux shops\nde nos CEOs", icon: "storefront-outline", color: "#8B5CF6", iconBg: '#F5F3FF' },
+];
+
+const FILTER_ITEMS = [
+  { id: 'Tout', label: 'À proximité', icon: 'location-outline', iconColor: '#1A2840' },
+  { id: 'Mobile', label: 'Mobile & Utilities', icon: 'phone-portrait-outline', iconColor: '#8B5CF6' },
+  { id: 'Électronique', label: 'Digital & Services', icon: 'laptop-outline', iconColor: '#3B82F6' },
+  { id: 'Goods', label: 'Goods', icon: 'bag-handle-outline', iconColor: '#10B981' },
 ];
 
 const shopsList = [
@@ -194,23 +201,35 @@ export default function ShopsScreen() {
 
           {/* Filters */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>
-            <TouchableOpacity style={activeFilter === 'Tout' ? styles.filterChipActive : styles.filterChip} onPress={() => setActiveFilter('Tout')}>
-              <Ionicons name="location-outline" size={15} color="#FFFFFF" style={{marginRight: 5}} />
-              <Text style={styles.filterChipTextActive}>À proximité</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={activeFilter === 'Mobile' ? styles.filterChipActive : styles.filterChip} onPress={() => setActiveFilter('Mobile')}>
-              <Ionicons name="phone-portrait-outline" size={15} color="#8B5CF6" style={{marginRight: 5}} />
-              <Text style={styles.filterChipText}>Mobile & Utilities</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={activeFilter === 'Électronique' ? styles.filterChipActive : styles.filterChip} onPress={() => setActiveFilter('Électronique')}>
-              <Ionicons name="laptop-outline" size={15} color="#3B82F6" style={{marginRight: 5}} />
-              <Text style={styles.filterChipText}>Digital & Services</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={activeFilter === 'Goods' ? styles.filterChipActive : styles.filterChip} onPress={() => setActiveFilter('Goods')}>
-              <Ionicons name="bag-handle-outline" size={15} color="#10B981" style={{marginRight: 5}} />
-              <Text style={styles.filterChipText}>Goods</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.filterChip, {paddingHorizontal: 10}]}>
+            {FILTER_ITEMS.map((item) => {
+              const isActive = activeFilter === item.id;
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  style={[
+                    styles.filterChip,
+                    isActive ? styles.filterChipActive : null
+                  ]}
+                  onPress={() => setActiveFilter(item.id)}
+                >
+                  <Ionicons
+                    name={item.icon}
+                    size={15}
+                    color={isActive ? '#FFFFFF' : item.iconColor}
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text
+                    style={[
+                      styles.filterChipText,
+                      isActive ? styles.filterChipTextActive : null
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+            <TouchableOpacity style={[styles.filterChip, { paddingHorizontal: 10 }]}>
               <Ionicons name="options-outline" size={16} color="#1A2840" />
             </TouchableOpacity>
           </ScrollView>
@@ -305,9 +324,9 @@ export default function ShopsScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
+  safeArea: { flex: 1, backgroundColor: '#FFFFFF', paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 0 },
   container: { flex: 1, backgroundColor: '#FFFFFF' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 6 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: Platform.OS === 'android' ? 14 : 10, paddingBottom: 6 },
   logoContainer: { flexDirection: 'row', alignItems: 'center' },
   circleLogo: { width: 34, height: 34, borderRadius: 17 },
   headerRightIcons: { flexDirection: 'row' },

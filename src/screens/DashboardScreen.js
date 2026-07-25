@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Dimensions, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import { useApp } from '../context/AppContext';
@@ -178,11 +178,11 @@ export default function DashboardScreen() {
               
               <View style={styles.payMethods}>
                 <View style={styles.payBadge}>
-                  <Ionicons name="logo-apple" size={14} color="#000" />
+                  <Ionicons name="logo-apple" size={15} color="#000000" />
                   <Text style={styles.payBadgeText}>Pay</Text>
                 </View>
                 <View style={styles.payBadge}>
-                  <Image source={{uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1200px-Google_%22G%22_logo.svg.png'}} style={{width: 14, height: 14, marginRight: 2}} />
+                  <Ionicons name="logo-google" size={14} color="#4285F4" style={{marginRight: 2}} />
                   <Text style={styles.payBadgeText}>Pay</Text>
                 </View>
               </View>
@@ -192,10 +192,7 @@ export default function DashboardScreen() {
               <View style={styles.dzyCardMockupInner}>
                 <View style={styles.dzyCardMockupHeader}>
                   <View style={styles.dzyCardLogoRow}>
-                    <View style={styles.miniDzyLogo}>
-                      <Text style={styles.miniDzyLogoText}>D</Text>
-                      <View style={styles.miniDzyLogoStrike} />
-                    </View>
+                    <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={styles.cardLogoImg} resizeMode="contain" />
                     <Text style={styles.miniDizzitUp}>Dizzit<Text style={{color: '#FFC759'}}>Up</Text></Text>
                   </View>
                   <Text style={styles.dzyCardCurrency}>$US</Text>
@@ -260,9 +257,9 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
+  safeArea: { flex: 1, backgroundColor: '#F8FAFC', paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 0 },
   container: { flex: 1 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12, backgroundColor: '#FFFFFF' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: Platform.OS === 'android' ? 14 : 12, paddingBottom: 12, backgroundColor: '#FFFFFF' },
   logoContainer: { flexDirection: 'row', alignItems: 'center' },
   logoCircle: { width: 32, height: 32, marginRight: 6 },
   dizzitText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 20, color: '#1A2840' },
@@ -319,6 +316,7 @@ const styles = StyleSheet.create({
   dzyCardMockupInner: { flex: 1, justifyContent: 'space-between' },
   dzyCardMockupHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   dzyCardLogoRow: { flexDirection: 'row', alignItems: 'center' },
+  cardLogoImg: { width: 16, height: 16, marginRight: 4 },
   miniDzyLogo: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#FFC759', justifyContent: 'center', alignItems: 'center', marginRight: 2 },
   miniDzyLogoText: { fontSize: 8, fontWeight: 'bold', color: '#000' },
   miniDzyLogoStrike: { display: 'none' },

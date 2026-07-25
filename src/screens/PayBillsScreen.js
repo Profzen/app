@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, TextInput, Platform } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, TextInput, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import SelectableContactItem from '../components/SelectableContactItem';
 import AppToast from '../components/AppToast';
@@ -209,10 +209,10 @@ export default function PayBillsScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
+  safeArea: { flex: 1, backgroundColor: '#FFFFFF', paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 0 },
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   toastWrap: { position: 'absolute', left: 14, right: 14, top: 64, zIndex: 50 },
-  header: { paddingHorizontal: 16, paddingTop: Platform.OS === 'android' ? 36 : 10, paddingBottom: 12 },
+  header: { paddingHorizontal: 16, paddingTop: Platform.OS === 'android' ? 14 : 10, paddingBottom: 12 },
   headerTopRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
   backButton: { padding: 4, marginRight: 4 },
   headerTitleWrap: { flex: 1 },

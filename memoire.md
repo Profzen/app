@@ -1140,6 +1140,131 @@ Le projet **DizzitUp Mobile App** est à ce jour **100% achevé au niveau Fronte
 
 ---
 
+- **Fichiers modifiés** : [`App.js`](file:///g:/zen/projets/DizzitApp/app/App.js), [`src/screens/DashboardScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/DashboardScreen.js), [`src/screens/ShopsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShopsScreen.js), [`src/screens/HomeScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/HomeScreen.js), [`src/screens/MoreSettingsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/MoreSettingsScreen.js), [`src/screens/ContactsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactsScreen.js), [`src/screens/PayBillsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/PayBillsScreen.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
+
+---
+
+## 📂 7. Index Complet des 68 Écrans du Projet
+
+L'ensemble des **68 écrans** ci-dessous est intégralement déclaré dans [`AppNavigator.js`](file:///g:/zen/projets/DizzitApp/app/src/navigation/AppNavigator.js) et interconnecté via `navigation.navigate()` :
+
+### 🔐 1. Authentification, Sécurisation & Inscription (8 écrans)
+- [`LoginScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/LoginScreen.js) : Écran de connexion (Email / Téléphone, Social logins).
+- [`RegisterScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/RegisterScreen.js) : Création de compte (Indicateur de force mot de passe).
+- [`VerificationScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/VerificationScreen.js) : Saisie du code OTP (Chronomètre 45s).
+- [`PinCodeScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/PinCodeScreen.js) : Saisie du code PIN d'accès.
+- [`SecureAccountScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SecureAccountScreen.js) : Configuration du code PIN & Biométrie Face ID / Empreinte.
+- [`ResetPasswordEmailScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ResetPasswordEmailScreen.js) : Saisie email mot de passe oublié.
+- [`ResetPasswordCodeScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ResetPasswordCodeScreen.js) : Saisie du code de réinitialisation OTP.
+- [`ResetPasswordFinalScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ResetPasswordFinalScreen.js) : Nouveau mot de passe & confirmation.
+
+### 🏠 2. Tableaux de Bord & Accueil (5 écrans)
+- [`HomeScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/HomeScreen.js) : Accueil principal Particulier (WalletCard, To-do list, Carrousel promo parrainage/boutique, 8 Quick actions, Bannière sécurité).
+- [`DashboardScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/DashboardScreen.js) : Dashboard global FR (Solde EUR/FCFA, Carte Visa promo, Quick actions, Carrousel fonds, Transactions récentes).
+- [`DashboardEngScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/DashboardEngScreen.js) : Dashboard Marchand / Business Pro en Anglais (Métriques de ventes, To-do list, Quick actions marchand).
+- [`TodoListScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/TodoListScreen.js) : Écran de gestion complète des tâches à faire.
+- [`RewardsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/RewardsScreen.js) : Hub DZY Rewards (Donut chart SVG des acquis et usages, solde DZY).
+
+### 💳 3. Rechargement du Portefeuille / Top-Up (9 écrans)
+- [`TopUpScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/TopUpScreen.js) : Sélection du mode de rechargement (Carte vs Mobile Money).
+- [`TopUpDetailsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/TopUpDetailsScreen.js) : Saisie des informations Mobile Money (Opérateur, montant XOF/USDC).
+- [`TopUpSummaryScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/TopUpSummaryScreen.js) : Résumé de transaction Mobile Money.
+- [`TopUpPaymentScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/TopUpPaymentScreen.js) : Diagramme animé de flux de paiement Mobile Money en cours.
+- [`TopUpWalletScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/TopUpWalletScreen.js) : Sélection de recharge par carte bancaire.
+- [`TopUpWalletDetailsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/TopUpWalletDetailsScreen.js) : Formulaire sécurisé de saisie carte bancaire.
+- [`TopUpWalletPaymentScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/TopUpWalletPaymentScreen.js) : Traitement Crossmint / Carte bancaire en cours.
+- [`TopUpWalletConfirmationScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/TopUpWalletConfirmationScreen.js) : Confirmation finale de recharge réussie.
+- [`MobileRechargeScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/MobileRechargeScreen.js) : Recharge de crédit téléphonique Mobile Money.
+
+### 💸 4. Envoi & Retrait d'Argent / Transactions (11 écrans)
+- [`SendMoneyScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneyScreen.js) : Saisie du montant, choix blockchain & jeton avec pavé numérique interactif.
+- [`SendMoneyMethodScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneyMethodScreen.js) : Choix de la méthode d'envoi (Portefeuille Dizzy vs Mobile Money).
+- [`SendMoneyPinScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneyPinScreen.js) : Saisie du code PIN 6 chiffres de validation de transaction.
+- [`SendMoneySummaryScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneySummaryScreen.js) : Récapitulatif complet de l'envoi.
+- [`SendMoneySuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneySuccessScreen.js) : Succès d'envoi avec Hash blockchain copiable.
+- [`WithdrawFundsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/WithdrawFundsScreen.js) : Retrait de fonds (Choix montant, jeton, réseau).
+- [`WithdrawFundsMethodScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/WithdrawFundsMethodScreen.js) : Choix du mode de réception (Virement, Mobile Money).
+- [`WithdrawFundsMobileMoneySummaryScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/WithdrawFundsMobileMoneySummaryScreen.js) : Résumé du retrait vers Mobile Money.
+- [`WithdrawFundsMobileMoneyProcessingScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/WithdrawFundsMobileMoneyProcessingScreen.js) : Suivi du traitement blockchain Polygon -> Mixx by Yas.
+- [`WithdrawFundsMobileMoneySuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/WithdrawFundsMobileMoneySuccessScreen.js) : Confirmation finale du retrait réussi.
+- [`PaymentSuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/PaymentSuccessScreen.js) : Écran générique de confirmation de paiement.
+
+### 📥 5. Réception de Fonds & Échange / Swap (3 écrans)
+- [`ReceiveFundsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ReceiveFundsScreen.js) : Réception de crypto legacy.
+- [`ReceiveFundsV2Screen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ReceiveFundsV2Screen.js) : Réception V2 de référence (Adresse EVM, QR Code scannable, Copier/Partager fonctionnels).
+- [`SwapTokensScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SwapTokensScreen.js) : Interface d'échange instantané de jetons crypto (DZY, USDC, USDT, POL, WBTC).
+
+### 📈 6. Gestion des Actifs (3 écrans)
+- [`AssetListScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/AssetListScreen.js) : Liste des actifs crypto avec hero promotionnel interactif DZYwallet.
+- [`AssetsListScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/AssetsListScreen.js) : Variante de la liste des actifs.
+- [`AssetListPromoScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/AssetListPromoScreen.js) : Variante promotionnelle de la liste des actifs.
+
+### 🛍️ 7. E-Commerce, Boutiques & Produits (7 écrans)
+- [`ShopsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShopsScreen.js) : Annuaire des boutiques marchandes avec filtres dynamiques et actions rapides.
+- [`ShopDetailsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShopDetailsScreen.js) : Fiche détaillée d'une boutique (Jumia Sénégal, statistiques, QR code shop, produits populaires).
+- [`ShopProductsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShopProductsScreen.js) : Catalogue complet des produits d'une boutique.
+- [`ProductDetailsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ProductDetailsScreen.js) : Fiche produit (Galerie, prix, caractéristiques, achat direct ou "Buy me").
+- [`OrderVerificationScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/OrderVerificationScreen.js) : Vérification de commande (Quantité, livraison, choix crypto/réseau).
+- [`OrderConfirmationScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/OrderConfirmationScreen.js) : Résumé et confirmation de commande.
+- [`PaymentInProgressScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/PaymentInProgressScreen.js) : Suivi smart contract de paiement en cours.
+
+### 🏬 8. Caisse TPE / Point de Vente / POS (4 écrans)
+- [`CashRegisterScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/CashRegisterScreen.js) : Terminal Caisse TPE (Recevoir paiement / Scanner billets).
+- [`CashierScanScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/CashierScanScreen.js) : Écran d'affichage du QR Code pour encaissement client.
+- [`CashierSuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/CashierSuccessScreen.js) : Reçu de paiement caisse réussi.
+- [`CashierSendFundsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/CashierSendFundsScreen.js) : Envoi de fonds depuis l'interface caisse.
+
+### 👤 9. Contacts & Historique (6 écrans)
+- [`ContactsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactsScreen.js) : Annuaire des bénéficiaires avec recherche et swipe tactile latéral.
+- [`ContactsManageScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactsManageScreen.js) : Gestion avancée des contacts (Favoris, modifier, supprimer par glissement).
+- [`ContactProfileScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactProfileScreen.js) : Profil d'un contact (Coordonnées, wallets, actions rapides).
+- [`ContactHistoryScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactHistoryScreen.js) : Historique des transactions échangées avec un contact.
+- [`FiltersScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/FiltersScreen.js) : Modale de filtres d'historique.
+- [`TransactionHistoryScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/TransactionHistoryScreen.js) : Relevé global de toutes les transactions.
+
+### ⚡ 10. Services & Factures (2 écrans)
+- [`ChooseServiceScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ChooseServiceScreen.js) : Grille de sélection des 5 types de services.
+- [`PayBillsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/PayBillsScreen.js) : Paiement de factures & produits essentiels.
+
+### ⚙️ 11. Réglages, Support & Profils (9 écrans)
+- [`MoreSettingsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/MoreSettingsScreen.js) : Hub des paramètres utilisateur ("More").
+- [`AccountSettingsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/AccountSettingsScreen.js) : Préférences du compte (Langue, Devise via `AppSelect`, Sécurité PIN/Biométrie, Toggles notifications).
+- [`PersonalAccountScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/PersonalAccountScreen.js) : Profil d'identité personnelle et pièces KYC.
+- [`BusinessAccountScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/BusinessAccountScreen.js) : Gestion du profil Marchand & modale de bascule Perso/Business.
+- [`AskAminataScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/AskAminataScreen.js) : Chat bot IA d'assistance virtuelle Aminata.
+- [`DizzyFamilyScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/DizzyFamilyScreen.js) : Programme de fidélité Gold/Platinum & code de parrainage.
+- [`AboutDizzitUpScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/AboutDizzitUpScreen.js) : À propos de DizzitUp (Version v2.4.0, CGU, réseaux).
+- [`ContactUsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactUsScreen.js) : Formulaire et canaux de support client.
+- [`SuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SuccessScreen.js) : Confirmation générique d'opération réussie.
+
+---
+
+## 🛠️ 8. Architecture Technique & Composants Centralisés
+
+### 🧩 Composants Réutilisables (`src/components/`)
+- **`AppSelect.js`** : Pop-up modale flottante centrée pour la sélection de devises, réseaux blockchain et jetons crypto avec logos officiels.
+- **`AppToast.js`** : Composant de notification Toast flottant avec animations.
+- **`BottomNavBar.js`** : Barre de navigation inférieure principale avec bascule dynamique de redirection Accueil (Personal Home vs Business Dashboard).
+- **`CryptoIcon.js`** : Composant central d'affichage des icônes officielles de cryptomonnaies (USDT, USDC, EURC, BTC, ETH, SOL, POL, BNB, DZY).
+- **`DizzitInput.js` & `DizzitButton.js`** : Formulaires et boutons standardisés du Design System.
+- **`SocialLogins.js`** : Connexions tiers (Google, Apple, Facebook, X).
+- **`WalletCard.js`** : Carte de portefeuille principale DZYwallet avec masquage de solde et raccourcis.
+
+### ⚡ Gestion d'État Global (`src/context/AppContext.js`)
+L'application utilise le hook `useApp()` pour partager en temps réel :
+- `accountMode` : Mode actif (`'personal'` | `'business'`).
+- `hideBalance` & `toggleHideBalance()` : Masquage/Affichage du solde sur la WalletCard et Dashboard.
+- `favorites` : Liste des boutiques et actifs mis en favoris.
+- `cart` : Panier e-commerce d'articles.
+
+### 📦 Assets Locaux & Hors-Ligne (`assets/`)
+- `assets/brand/` : Logos officiels (`dizzitup_logo_cercle.png`, `dizzitup_logo.jpeg`, `ldci.png`, `google_pay.png`, `apple_pay.png`).
+- `assets/cryptos/` : Logos crypto officiels PNG.
+- `assets/flags/` : Drapeaux de pays africains et internationaux PNG.
+- `assets/avatars/` : Photos de profil utilisateurs PNG.
+
+---
+
 ## 📊 État Global Récapitulatif du Projet
 
 | Composant | Statut | Détails & Couverture |

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, StatusBar } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import AppNavigator from './src/navigation/AppNavigator';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
@@ -28,10 +29,13 @@ export default function App() {
   }
 
   return (
-    <AppProvider>
-      <NavigationContainer>
-        <AppNavigator />
-      </NavigationContainer>
-    </AppProvider>
+    <SafeAreaProvider>
+      <AppProvider>
+        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" translucent={false} />
+        <NavigationContainer>
+          <AppNavigator />
+        </NavigationContainer>
+      </AppProvider>
+    </SafeAreaProvider>
   );
 }
