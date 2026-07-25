@@ -102,7 +102,7 @@ export default function MoreSettingsScreen() {
           <View style={{ height: 20 }} />
         </ScrollView>
 
-        <BottomNavBar activeTab="More" language="fr" />
+        <BottomNavBar activeTab="More" />
         <AppToast visible={!!toast} title={toast?.title} message={toast?.message} onClose={() => setToast(null)} />
       </View>
     </SafeAreaView>

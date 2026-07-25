@@ -224,7 +224,6 @@ export default function BusinessAccountScreen() {
 
         <BottomNavBar activeTab="More" />
         <AppToast visible={!!toast} title={toast?.title} message={toast?.message} onClose={() => setToast(null)} />
-        <AppToast visible={!!toast} title={toast?.title} message={toast?.message} onClose={() => setToast(null)} />
       </View>
     </SafeAreaView>
   );

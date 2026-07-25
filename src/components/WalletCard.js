@@ -9,16 +9,14 @@ import { useApp } from '../context/AppContext';
 
 export default function WalletCard({ balances }) {
   const navigation = useNavigation();
-  const { hideBalance, toggleHideBalance } = useApp();
+  const { hideBalance, toggleHideBalance, language, t } = useApp();
 
   const isVisible = !hideBalance;
 
-  // Valeurs par défaut sécurisées
   const mainBalance = balances?.DZY || 125500;
   const ghsBalance = balances?.GHS || 125500;
   const xofBalance = balances?.XOF || 510000;
 
-  // Formatage des nombres
   const formatNum = (num) => num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
@@ -37,7 +35,7 @@ export default function WalletCard({ balances }) {
         <View style={styles.topRightActions}>
           <TouchableOpacity style={styles.topUpButton} onPress={() => navigation.navigate('TopUpScreen')}>
             <Ionicons name="add" size={16} color="#1A2840" />
-            <Text style={styles.topUpText}>Top-up</Text>
+            <Text style={styles.topUpText}>{language === 'fr' ? 'Recharger' : 'Top-up'}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.arrowButton} onPress={() => navigation.navigate('AssetListScreen')} accessibilityLabel="Voir mes actifs">
             <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
@@ -45,7 +43,7 @@ export default function WalletCard({ balances }) {
         </View>
       </View>
 
-      {/* Main Balance Row - Framed by DizzitUp circle logo on left and DZY in gold on right */}
+      {/* Main Balance Row */}
       <View style={styles.balanceRow}>
         <CryptoIcon symbol="DZY" size={32} style={{ marginRight: 10 }} />
         <Text style={styles.balanceText}>
@@ -77,10 +75,10 @@ export default function WalletCard({ balances }) {
 
       {/* Actions */}
       <View style={styles.actionsRow}>
-        <ActionItem icon="paper-plane-outline" label="Send" divider onPress={() => navigation.navigate('SendMoneyScreen')} />
-        <ActionItem icon="server-outline" label="Mes fonds" divider onPress={() => navigation.navigate('AssetListScreen')} />
-        <ActionItem icon="time-outline" label="History" divider onPress={() => navigation.navigate('TransactionHistoryScreen')} />
-        <ActionItem icon="card-outline" label="Cash-out" onPress={() => navigation.navigate('WithdrawFundsScreen')} />
+        <ActionItem icon="paper-plane-outline" label={language === 'fr' ? 'Envoyer' : 'Send'} divider onPress={() => navigation.navigate('SendMoneyScreen')} />
+        <ActionItem icon="server-outline" label={language === 'fr' ? 'Mes fonds' : 'My Assets'} divider onPress={() => navigation.navigate('AssetListScreen')} />
+        <ActionItem icon="time-outline" label={language === 'fr' ? 'Historique' : 'History'} divider onPress={() => navigation.navigate('TransactionHistoryScreen')} />
+        <ActionItem icon="card-outline" label={language === 'fr' ? 'Retirer' : 'Cash-out'} onPress={() => navigation.navigate('WithdrawFundsScreen')} />
       </View>
     </LinearGradient>
   );

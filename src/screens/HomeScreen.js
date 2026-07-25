@@ -7,24 +7,6 @@ import BottomNavBar from '../components/BottomNavBar';
 import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
 import { useApp } from '../context/AppContext';
 
-const TODO_LIST = [
-  { id: '1', icon: 'person-outline', iconColor: '#F59E0B', iconBgColor: '#FFFBEB', title: 'Abdou asked you\nto buy something', buttonText: 'View', buttonColor: '#F59E0B', buttonBgColor: '#FFFBEB', route: 'ShopsScreen' },
-  { id: '2', icon: 'warning-outline', iconColor: '#EF4444', iconBgColor: '#FEF2F2', title: 'Low balance,\ntop up your account', buttonText: 'Top up', buttonColor: '#EF4444', buttonBgColor: '#FEF2F2', route: 'TopUpScreen' },
-  { id: '3', icon: 'shield-checkmark-outline', iconColor: '#3B82F6', iconBgColor: '#EFF6FF', title: 'Complete your profile\nfor more security', buttonText: 'Complete', buttonColor: '#3B82F6', buttonBgColor: '#EFF6FF', route: 'SecureAccountScreen' },
-  { id: '4', icon: 'storefront-outline', iconColor: '#8B5CF6', iconBgColor: '#F5F3FF', title: 'Create your DZYStore\nand start selling', buttonText: 'Create', buttonColor: '#8B5CF6', buttonBgColor: '#F5F3FF', route: 'ShopsScreen' },
-];
-
-const QUICK_ACTIONS = [
-  { id: '1', icon: 'bag-handle-outline', color: '#3B82F6', bgColor: '#EFF6FF', title: 'Buy goods' },
-  { id: '2', icon: 'document-text-outline', color: '#8B5CF6', bgColor: '#F5F3FF', title: 'Pay bills' },
-  { id: '3', icon: 'cart-outline', color: '#F59E0B', bgColor: '#FFFBEB', title: 'Buy / Pay me' },
-  { id: '4', icon: 'people-outline', color: '#10B981', bgColor: '#ECFDF5', title: 'Send &\nRequest funds' },
-  { id: '5', icon: 'add-circle-outline', color: '#10B981', bgColor: '#ECFDF5', title: 'Top-up\nDZYwallet' },
-  { id: '6', icon: 'storefront-outline', color: '#F59E0B', bgColor: '#FFFBEB', title: 'Refer\na business' },
-  { id: '7', icon: 'globe-outline', color: '#3B82F6', bgColor: '#EFF6FF', title: 'Source\nin Africa' },
-  { id: '8', icon: 'phone-portrait-outline', color: '#10B981', bgColor: '#F0FDFA', title: 'Personal ATM' },
-];
-
 export default function HomeScreen() {
   const navigation = useNavigation();
   const { language, toggleLanguage, t } = useApp();
@@ -32,6 +14,64 @@ export default function HomeScreen() {
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [activeSlide, setActiveSlide] = useState(0);
   const [walletBalances] = useState({ DZY: 125500, GHS: 125500, XOF: 510000 });
+
+  const TODO_LIST = [
+    { 
+      id: '1', 
+      icon: 'person-outline', 
+      iconColor: '#F59E0B', 
+      iconBgColor: '#FFFBEB', 
+      title: language === 'fr' ? 'Abdou vous a demandé\nd\'acheter quelque chose' : 'Abdou asked you\nto buy something', 
+      buttonText: language === 'fr' ? 'Voir' : 'View', 
+      buttonColor: '#F59E0B', 
+      buttonBgColor: '#FFFBEB', 
+      route: 'ShopsScreen' 
+    },
+    { 
+      id: '2', 
+      icon: 'warning-outline', 
+      iconColor: '#EF4444', 
+      iconBgColor: '#FEF2F2', 
+      title: language === 'fr' ? 'Solde faible,\nrechargez votre compte' : 'Low balance,\ntop up your account', 
+      buttonText: language === 'fr' ? 'Recharger' : 'Top up', 
+      buttonColor: '#EF4444', 
+      buttonBgColor: '#FEF2F2', 
+      route: 'TopUpScreen' 
+    },
+    { 
+      id: '3', 
+      icon: 'shield-checkmark-outline', 
+      iconColor: '#3B82F6', 
+      iconBgColor: '#EFF6FF', 
+      title: language === 'fr' ? 'Complétez votre profil\npour plus de sécurité' : 'Complete your profile\nfor more security', 
+      buttonText: language === 'fr' ? 'Compléter' : 'Complete', 
+      buttonColor: '#3B82F6', 
+      buttonBgColor: '#EFF6FF', 
+      route: 'SecureAccountScreen' 
+    },
+    { 
+      id: '4', 
+      icon: 'storefront-outline', 
+      iconColor: '#8B5CF6', 
+      iconBgColor: '#F5F3FF', 
+      title: language === 'fr' ? 'Créez votre DZYStore\net commencez à vendre' : 'Create your DZYStore\nand start selling', 
+      buttonText: language === 'fr' ? 'Créer' : 'Create', 
+      buttonColor: '#8B5CF6', 
+      buttonBgColor: '#F5F3FF', 
+      route: 'ShopsScreen' 
+    },
+  ];
+
+  const QUICK_ACTIONS = [
+    { id: '1', icon: 'bag-handle-outline', color: '#3B82F6', bgColor: '#EFF6FF', title: language === 'fr' ? 'Acheter produits' : 'Buy goods' },
+    { id: '2', icon: 'document-text-outline', color: '#8B5CF6', bgColor: '#F5F3FF', title: language === 'fr' ? 'Payer factures' : 'Pay bills' },
+    { id: '3', icon: 'cart-outline', color: '#F59E0B', bgColor: '#FFFBEB', title: language === 'fr' ? 'Achats / Payer' : 'Buy / Pay me' },
+    { id: '4', icon: 'people-outline', color: '#10B981', bgColor: '#ECFDF5', title: language === 'fr' ? 'Envoyer &\nDemander' : 'Send &\nRequest funds' },
+    { id: '5', icon: 'add-circle-outline', color: '#10B981', bgColor: '#ECFDF5', title: language === 'fr' ? 'Recharger\nDZYwallet' : 'Top-up\nDZYwallet' },
+    { id: '6', icon: 'storefront-outline', color: '#F59E0B', bgColor: '#FFFBEB', title: language === 'fr' ? 'Référencer\nun shop' : 'Refer\na business' },
+    { id: '7', icon: 'globe-outline', color: '#3B82F6', bgColor: '#EFF6FF', title: language === 'fr' ? 'Sourcer en\nAfrique' : 'Source\nin Africa' },
+    { id: '8', icon: 'phone-portrait-outline', color: '#10B981', bgColor: '#F0FDFA', title: language === 'fr' ? 'Guichet Perso' : 'Personal ATM' },
+  ];
 
   useEffect(() => {
     if (!isBannerVisible) return;
@@ -57,7 +97,7 @@ export default function HomeScreen() {
                 <Image source={{uri: 'https://i.pravatar.cc/120?img=11'}} style={styles.avatarImage} />
               </View>
               <View>
-                <Text style={styles.greetingText}>{t('greetingHello', 'Hello,')}</Text>
+                <Text style={styles.greetingText}>{language === 'fr' ? 'Bonjour,' : 'Hello,'}</Text>
                 <Text style={styles.nameText}>David</Text>
               </View>
             </TouchableOpacity>
@@ -82,9 +122,9 @@ export default function HomeScreen() {
 
           <View style={styles.todoCard}>
             <View style={[styles.sectionHeader, styles.todoCardHeader]}>
-              <Text style={styles.sectionTitle}>To-do list</Text>
+              <Text style={styles.sectionTitle}>{language === 'fr' ? 'À faire' : 'To-do list'}</Text>
               <TouchableOpacity onPress={() => navigation.navigate('TodoListScreen')}>
-                <Text style={styles.viewAllText}>View all</Text>
+                <Text style={styles.viewAllText}>{t('viewAll', 'Voir tout')}</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.todoListContainer}>
@@ -110,10 +150,15 @@ export default function HomeScreen() {
                     <Ionicons name="close" size={16} color="#6B7280" />
                   </TouchableOpacity>
                   <View style={styles.inviteContent}>
-                    <Text style={styles.inviteTitle}>Invite friends{'\n'}and earn <Text style={{ color: '#3B82F6' }}>$5 in DZY</Text></Text>
-                    <Text style={styles.inviteSubtitle}>Send money, buy goods,{'\n'}pay bills and earn rewards.</Text>
+                    <Text style={styles.inviteTitle}>
+                      {language === 'fr' ? "Invitez vos amis\net gagnez " : "Invite friends\nand earn "}
+                      <Text style={{ color: '#3B82F6' }}>$5 in DZY</Text>
+                    </Text>
+                    <Text style={styles.inviteSubtitle}>
+                      {language === 'fr' ? "Envoyez des fonds, achetez,\npayez vos factures et gagnez." : "Send money, buy goods,\npay bills and earn rewards."}
+                    </Text>
                     <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#071D54' }]} onPress={() => navigation.navigate('RewardsScreen')}>
-                      <Text style={styles.inviteButtonText}>Invite now</Text>
+                      <Text style={styles.inviteButtonText}>{language === 'fr' ? 'Inviter' : 'Invite now'}</Text>
                     </TouchableOpacity>
                   </View>
                   <View style={styles.inviteGraphic}>
@@ -134,10 +179,15 @@ export default function HomeScreen() {
                     <Ionicons name="close" size={16} color="#6B7280" />
                   </TouchableOpacity>
                   <View style={styles.inviteContent}>
-                    <Text style={styles.inviteTitle}>Refer a Store or Business{'\n'}and earn <Text style={{ color: '#10B981' }}>$10 in DZY</Text></Text>
-                    <Text style={styles.inviteSubtitle}>Refer a store or business{'\n'}and earn rewards.</Text>
+                    <Text style={styles.inviteTitle}>
+                      {language === 'fr' ? "Référencez un commerce\net gagnez " : "Refer a Store or Business\nand earn "}
+                      <Text style={{ color: '#10B981' }}>$10 in DZY</Text>
+                    </Text>
+                    <Text style={styles.inviteSubtitle}>
+                      {language === 'fr' ? "Recommandez un business\net gagnez des récompenses." : "Refer a store or business\nand earn rewards."}
+                    </Text>
                     <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#10B981' }]} onPress={() => navigation.navigate('ShopsScreen')}>
-                      <Text style={styles.inviteButtonText}>Refer now</Text>
+                      <Text style={styles.inviteButtonText}>{language === 'fr' ? 'Référencer' : 'Refer now'}</Text>
                     </TouchableOpacity>
                   </View>
                   <View style={styles.storeGraphic}>
@@ -160,7 +210,7 @@ export default function HomeScreen() {
           )}
 
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Quick actions</Text>
+            <Text style={styles.sectionTitle}>{language === 'fr' ? 'Raccourcis rapides' : 'Quick actions'}</Text>
           </View>
           
           <View style={styles.quickActionsGrid}>
@@ -179,8 +229,12 @@ export default function HomeScreen() {
               <Ionicons name="shield-checkmark-outline" size={24} color="#1A2840" />
             </View>
             <View style={styles.securityTextContent}>
-              <Text style={styles.securityTitle}>Secure, simple and instant</Text>
-              <Text style={styles.securityDesc}>Your funds are protected by the{'\n'}<Text style={{color: '#F59E0B'}}>highest</Text> security protocols.</Text>
+              <Text style={styles.securityTitle}>{language === 'fr' ? 'Sécurisé, simple et instantané' : 'Secure, simple and instant'}</Text>
+              <Text style={styles.securityDesc}>
+                {language === 'fr' ? 'Vos fonds sont protégés par les protocole de sécurité les ' : 'Your funds are protected by the '}
+                <Text style={{color: '#F59E0B'}}>{language === 'fr' ? 'plus élevés.' : 'highest'}</Text>
+                {language === 'fr' ? '' : ' security protocols.'}
+              </Text>
             </View>
             <View style={styles.lockIconWrapper}>
               <Ionicons name="lock-closed-outline" size={20} color="#1A2840" />
@@ -192,7 +246,6 @@ export default function HomeScreen() {
         
         <BottomNavBar 
           activeTab="Home" 
-          language="en"
           isMenuOpen={isMenuOpen} 
           onCenterButtonPress={() => setIsMenuOpen(!isMenuOpen)} 
         />
