@@ -1257,6 +1257,9 @@ L'ensemble des **68 écrans** ci-dessous est intégralement déclaré dans [`App
   - **Drapeaux de changement de langue interactifs** : Les boutons drapeaux présents dans les en-têtes de [`HomeScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/HomeScreen.js), [`DashboardScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/DashboardScreen.js) et [`MoreSettingsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/MoreSettingsScreen.js) affichent dynamiquement le drapeau de la langue active (🇫🇷 ou 🇬🇧) et basculent instantanément la langue de toute l'application au clic.
   - **Puces de langue dans Paramètres (`AccountSettingsScreen.js`)** : Les puces `FR` et `EN` mettent à jour la langue globale en temps réel.
   - **Onglets dynamiques (`BottomNavBar.js`)** : Les libellés basculent automatiquement entre `Accueil`/`Home`, `Boutique`/`Shop`, `Plus`/`More`.
+  - **3. Navigation & Gestion de la Liste des Shops** :
+  - **Suppression de la page dédiée `AllShopsScreen.js`** : À la demande, l'écran séparé a été supprimé du projet et désenregistré du navigateur principal.
+  - **Chargement en ligne "Voir plus" (`ShopsScreen.js`)** : Au clic sur le libellé *"Voir plus"* (en haut dans la section *"Mes shops"* ou au bouton *"Voir plus"* au bas de la liste), de nouvelles boutiques partenaires sont chargées directement sur la même page, conservant le design et la charte graphique d'origine.
 
 ### ⚡ Gestion d'État Global (`src/context/AppContext.js`)
 L'application utilise le hook `useApp()` pour partager en temps réel :
@@ -1274,21 +1277,12 @@ L'application utilise le hook `useApp()` pour partager en temps réel :
 
 ---
 
-## 🎨 Ajustements Navigation Profile, Header Contacts & Création AllShopsScreen (25 juillet 2026)
+## 🎨 Ajustements Navigation Profile, Header Contacts (25 juillet 2026)
 
 - **1. Redirection de l'Avatar / Photo de Profil depuis la Home (`HomeScreen.js`)** :
   - L'avatar utilisateur et le bloc `userInfo` en haut à gauche de la page d'accueil ([`HomeScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/HomeScreen.js)) ont été enveloppés dans un `TouchableOpacity` actif. Le clic redirige immédiatement vers l'écran de profil **[`PersonalAccountScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/PersonalAccountScreen.js)**.
 - **2. En-tête Épuré de l'Écran Contacts (`ContactsScreen.js`)** :
   - Suppression du bouton de retour dans l'en-tête de **[`ContactsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactsScreen.js)** selon le choix du design (titre "Contacts" propre aligné).
-- **3. Création & Intégration de la Page Dédiée "Tous les Shops" (`AllShopsScreen.js`)** :
-  - Création du composant **[`AllShopsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/AllShopsScreen.js)** :
-    - *En-tête* : Titre, sous-titre du nombre de marchands, bouton de retour arrière, notifications, rewards et plus.
-    - *Recherche & Filtres* : Barre de recherche meta instantanée + puces de filtres horizontales (*Tous, À proximité, Marketplace, Supermarchés, Mode, Partenaires DZY*).
-    - *Cartes de boutiques* : Image de couverture, logo merchant, badges de statut (Vérifié, Livraison, Horaires), drapeaux/villes, évaluation étoiles et badges de cryptos acceptées (`CryptoIcon`).
-    - *Bouton d'action* : "Visiter" redirigeant vers `ShopDetailsScreen` avec transmission du shop (`{ shop }`).
-    - *Composants intégrés* : Navigation `BottomNavBar` (`activeTab="shops"`) et notifications `AppToast`.
-  - Enregistrement de la **69ème route** dans **[`AppNavigator.js`](file:///g:/zen/projets/DizzitApp/app/src/navigation/AppNavigator.js)** (`AllShopsScreen`).
-  - Liaison du bouton *"Voir tout"* sur **[`ShopsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShopsScreen.js)** vers `AllShopsScreen`.
 - **4. Système Internationalization Bilingue (FR / EN) & Switchers Réactifs** :
   - **Correction du drapeau de la page de connexion (`LoginScreen.js`)** : Connexion à `useApp()`, remplacement des bandes CSS statiques par une balise `Image` dynamique (drapeau 🇫🇷 ou 🇬🇧) basculant instantanément toute l'application d'une langue à l'autre au clic.
   - **Traduction réactive écran par écran** : Application de `useApp()` et `language` sur l'ensemble des écrans d'authentification et de réglages ([`LoginScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/LoginScreen.js), [`RegisterScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/RegisterScreen.js), [`PersonalAccountScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/PersonalAccountScreen.js), [`BusinessAccountScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/BusinessAccountScreen.js), [`AskAminataScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/AskAminataScreen.js), [`DizzyFamilyScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/DizzyFamilyScreen.js), [`AboutDizzitUpScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/AboutDizzitUpScreen.js), [`ContactUsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactUsScreen.js), [`SocialLogins.js`](file:///g:/zen/projets/DizzitApp/app/src/components/SocialLogins.js), [`FeaturesBanner.js`](file:///g:/zen/projets/DizzitApp/app/src/components/FeaturesBanner.js)).
