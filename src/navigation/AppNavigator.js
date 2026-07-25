@@ -64,6 +64,7 @@ import WithdrawFundsScreen from '../screens/WithdrawFundsScreen';
 import TodoListScreen from '../screens/TodoListScreen';
 import AboutDizzitUpScreen from '../screens/AboutDizzitUpScreen';
 import AccountSettingsScreen from '../screens/AccountSettingsScreen';
+import AllShopsScreen from '../screens/AllShopsScreen';
 import AskAminataScreen from '../screens/AskAminataScreen';
 import BusinessAccountScreen from '../screens/BusinessAccountScreen';
 import ContactUsScreen from '../screens/ContactUsScreen';
@@ -80,6 +81,7 @@ export default function AppNavigator() {
     >
       <Stack.Screen name="AboutDizzitUpScreen" component={AboutDizzitUpScreen} />
       <Stack.Screen name="AccountSettingsScreen" component={AccountSettingsScreen} />
+      <Stack.Screen name="AllShopsScreen" component={AllShopsScreen} />
       <Stack.Screen name="AskAminataScreen" component={AskAminataScreen} />
       <Stack.Screen name="BusinessAccountScreen" component={BusinessAccountScreen} />
       <Stack.Screen name="ContactUsScreen" component={ContactUsScreen} />

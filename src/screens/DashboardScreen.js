@@ -25,7 +25,7 @@ const TRANSACTIONS = [
 
 export default function DashboardScreen() {
   const navigation = useNavigation();
-  const { hideBalance, toggleHideBalance } = useApp();
+  const { hideBalance, toggleHideBalance, language, toggleLanguage, t } = useApp();
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -37,8 +37,8 @@ export default function DashboardScreen() {
             <Text style={styles.dizzitText}>Dizzit<Text style={styles.upText}>Up</Text></Text>
           </View>
           <View style={styles.headerRight}>
-            <TouchableOpacity onPress={() => navigation.navigate('DashboardEngScreen')} accessibilityLabel="Afficher le tableau de bord en anglais">
-              <Image source={{uri: 'https://flagcdn.com/w40/fr.png'}} style={styles.flagIcon} />
+            <TouchableOpacity onPress={toggleLanguage} accessibilityLabel="Changer la langue / Switch language">
+              <Image source={{uri: language === 'fr' ? 'https://flagcdn.com/w40/fr.png' : 'https://flagcdn.com/w40/gb.png'}} style={styles.flagIcon} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconBtn}>
               <Ionicons name="notifications-outline" size={22} color="#1A2840" />

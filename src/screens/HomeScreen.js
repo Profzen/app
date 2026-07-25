@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import WalletCard from '../components/WalletCard';
 import BottomNavBar from '../components/BottomNavBar';
 import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
+import { useApp } from '../context/AppContext';
 
 const TODO_LIST = [
   { id: '1', icon: 'person-outline', iconColor: '#F59E0B', iconBgColor: '#FFFBEB', title: 'Abdou asked you\nto buy something', buttonText: 'View', buttonColor: '#F59E0B', buttonBgColor: '#FFFBEB', route: 'ShopsScreen' },
@@ -26,6 +27,7 @@ const QUICK_ACTIONS = [
 
 export default function HomeScreen() {
   const navigation = useNavigation();
+  const { language, toggleLanguage, t } = useApp();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [activeSlide, setActiveSlide] = useState(0);
@@ -45,17 +47,24 @@ export default function HomeScreen() {
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           
           <View style={styles.header}>
-            <View style={styles.userInfo}>
+            <TouchableOpacity 
+              style={styles.userInfo} 
+              onPress={() => navigation.navigate('PersonalAccountScreen')}
+              activeOpacity={0.7}
+            >
               <View style={styles.avatarWrapper}>
                 <Ionicons name="person" size={22} color="#FFFFFF" />
                 <Image source={{uri: 'https://i.pravatar.cc/120?img=11'}} style={styles.avatarImage} />
               </View>
               <View>
-                <Text style={styles.greetingText}>Hello,</Text>
+                <Text style={styles.greetingText}>{t('greetingHello', 'Hello,')}</Text>
                 <Text style={styles.nameText}>David</Text>
               </View>
-            </View>
+            </TouchableOpacity>
             <View style={styles.headerIcons}>
+              <TouchableOpacity style={styles.iconButton} onPress={toggleLanguage} accessibilityLabel="Switch Language">
+                <Image source={{ uri: language === 'fr' ? 'https://flagcdn.com/w40/fr.png' : 'https://flagcdn.com/w40/gb.png' }} style={{ width: 22, height: 15, borderRadius: 3 }} />
+              </TouchableOpacity>
               <TouchableOpacity style={styles.iconButton}>
                 <Ionicons name="notifications-outline" size={20} color="#1A2840" />
                 <View style={styles.notificationDot} />

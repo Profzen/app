@@ -5,25 +5,11 @@ import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
 import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
-
-const quickActions = [
-  { id: '1', title: "Payer et\nacheter l'essentiel", subtitle: "Achat de crédit,\ninternet, TV, jeux,\ncrypto et plus", icon: "bag-handle-outline", color: "#8B5CF6" },
-  { id: '2', title: "Recharger\nmobile", subtitle: "Achat de crédit\nmobile", icon: "phone-portrait-outline", color: "#10B981" },
-  { id: '3', title: "Payer des\nfactures", subtitle: "Électricité, eau,\ninternet et plus", icon: "receipt-outline", color: "#3B82F6" },
-  { id: '4', title: "Envoyer /\nDemander\ndes fonds", subtitle: "Transferts d'argent\ninstantanés", icon: "swap-horizontal-outline", color: "#F59E0B" },
-  { id: '5', title: "Inviter", subtitle: "Invitez vos amis\net gagnez\n$5 en DZY", icon: "person-add-outline", color: "#8B5CF6" },
-];
-
-const contactsData = [
-  { id: '1', name: "John Doe", relation: "Frère", location: "Lomé, Togo", flag: "🇹🇬", isBeneficiary: true, isSponsor: true, image: "https://i.pravatar.cc/150?img=11" },
-  { id: '2', name: "Marie K.", relation: "Sœur", location: "Dakar, Sénégal", flag: "🇸🇳", isBeneficiary: true, isSponsor: true, image: "https://i.pravatar.cc/150?img=5" },
-  { id: '3', name: "Ousmane T.", relation: "Ami", location: "Bamako, Mali", flag: "🇲🇱", isBeneficiary: true, isSponsor: false, image: "https://i.pravatar.cc/150?img=12" },
-  { id: '4', name: "Aïssatou B.", relation: "Famille", location: "Ouagadougou, Burkina Faso", flag: "🇧🇫", isBeneficiary: true, isSponsor: false, image: "https://i.pravatar.cc/150?img=9" },
-  { id: '5', name: "Kwame A.", relation: "Ami", location: "Accra, Ghana", flag: "🇬🇭", isBeneficiary: false, isSponsor: true, image: "https://i.pravatar.cc/150?img=14" },
-];
+import { useApp } from '../context/AppContext';
 
 export default function ContactsScreen() {
   const navigation = useNavigation();
+  const { language, t } = useApp();
   const [showInvite, setShowInvite] = useState(true);
   const [contactItems, setContactItems] = useState(contactsData);
   const [openSwipe, setOpenSwipe] = useState(null);
@@ -34,7 +20,7 @@ export default function ContactsScreen() {
   const removeContact = (id) => {
     setContactItems((items) => items.filter((item) => item.id !== id));
     setOpenSwipe(null);
-    setToast({ title: 'Contact supprimé', message: 'Le contact a été retiré avec succès.' });
+    setToast({ title: language === 'fr' ? 'Contact supprimé' : 'Contact removed', message: language === 'fr' ? 'Le contact a été retiré avec succès.' : 'Contact has been successfully removed.' });
   };
 
   return (
@@ -44,7 +30,7 @@ export default function ContactsScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <Text style={styles.mainTitle}>Contacts</Text>
+            <Text style={styles.mainTitle}>{t('contactsTitle', 'Contacts')}</Text>
           </View>
           <View style={styles.headerRightIcons}>
             <TouchableOpacity style={styles.iconBtnRight}>
@@ -54,7 +40,7 @@ export default function ContactsScreen() {
             <TouchableOpacity style={styles.iconBtnRight} onPress={() => navigation.navigate('RewardsScreen')}>
               <Ionicons name="gift-outline" size={20} color="#1A2840" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnRight}>
+            <TouchableOpacity style={styles.iconBtnRight} onPress={() => navigation.navigate('MoreSettingsScreen')}>
               <Ionicons name="ellipsis-horizontal" size={20} color="#1A2840" />
             </TouchableOpacity>
           </View>
@@ -62,12 +48,12 @@ export default function ContactsScreen() {
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          <TouchableOpacity style={styles.syncBtn} onPress={() => setToast({ title: 'Synchronisation', message: 'Vos contacts du téléphone ont été synchronisés !' })}>
+          <TouchableOpacity style={styles.syncBtn} onPress={() => setToast({ title: language === 'fr' ? 'Synchronisation' : 'Sync Completed', message: language === 'fr' ? 'Vos contacts du téléphone ont été synchronisés !' : 'Your phone contacts have been synced!' })}>
             <Ionicons name="sync-outline" size={16} color="#3B82F6" style={{ marginRight: 8 }} />
-            <Text style={styles.syncBtnText}>Synchroniser vos contacts</Text>
+            <Text style={styles.syncBtnText}>{t('syncContactsBtn', 'Synchroniser vos contacts')}</Text>
           </TouchableOpacity>
           
-          <Text style={styles.subtitle}>Envoyez de l'argent à vos bénéficiaires à travers l'Afrique.</Text>
+          <Text style={styles.subtitle}>{t('contactsSubtitle', 'Envoyez de l\'argent à vos bénéficiaires à travers l\'Afrique.')}</Text>
 
           {/* Search Bar */}
           <View style={styles.searchContainer}>
@@ -75,10 +61,10 @@ export default function ContactsScreen() {
             <View style={{ flex: 1 }}>
               <TextInput
                 style={styles.searchInput}
-                placeholder="Rechercher un contact"
+                placeholder={t('contactsSearchPlaceholder', 'Rechercher un contact')}
                 placeholderTextColor="#64748B"
               />
-              <Text style={styles.searchSubText}>Nom, téléphone, email, ville ou pays</Text>
+              <Text style={styles.searchSubText}>{language === 'fr' ? 'Nom, téléphone, email, ville ou pays' : 'Name, phone, email, city or country'}</Text>
             </View>
           </View>
 
@@ -326,6 +312,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, position: 'relative' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: Platform.OS === 'android' ? 14 : 10, paddingBottom: 12 },
   logoContainer: { flexDirection: 'row', alignItems: 'center' },
+  backBtnHeader: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#EFF6FF', alignItems: 'center', justifyContent: 'center', marginRight: 10, borderWidth: 1, borderColor: '#DBEAFE' },
   mainTitle: { fontFamily: 'Inter_700Bold', fontSize: 24, color: '#0A1128' },
   headerRightIcons: { flexDirection: 'row' },
   iconBtnRight: { width: 36, height: 36, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 18, borderWidth: 1, borderColor: '#F1F5F9', marginLeft: 8, position: 'relative' },

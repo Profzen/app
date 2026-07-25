@@ -5,15 +5,17 @@ import { useNavigation } from '@react-navigation/native';
 
 import { useApp } from '../context/AppContext';
 
-export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, isMenuOpen, language = 'fr' }) {
+export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, isMenuOpen, language: propLanguage }) {
   const navigation = useNavigation();
   const [localMenuOpen, setLocalMenuOpen] = useState(false);
   const menuOpen = typeof isMenuOpen === 'boolean' ? isMenuOpen : localMenuOpen;
   
   let accountMode = 'personal';
+  let activeLanguage = propLanguage || 'fr';
   try {
     const appCtx = useApp();
     if (appCtx && appCtx.accountMode) accountMode = appCtx.accountMode;
+    if (appCtx && appCtx.language) activeLanguage = appCtx.language;
   } catch (e) {}
 
   const handleHomePress = () => {
@@ -63,7 +65,7 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
         {/* Home */}
         <NavItem 
           icon="home" 
-          label={language === 'en' ? 'Home' : 'Accueil'} 
+          label={activeLanguage === 'en' ? 'Home' : 'Accueil'} 
           isActive={activeTabLower === 'home' || activeTabLower === 'accueil'} 
           onPress={handleHomePress} 
         />
@@ -101,7 +103,7 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
         {/* Shops */}
         <NavItem 
           icon="storefront-outline" 
-          label={language === 'en' ? 'Shop' : 'Boutique'} 
+          label={activeLanguage === 'en' ? 'Shop' : 'Boutique'} 
           isActive={['shops', 'shop', 'boutique', 'boutiques'].includes(activeTabLower)} 
           onPress={() => navigation.navigate('ShopsScreen')} 
         />
@@ -109,7 +111,7 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
         {/* More / Settings */}
         <NavItem 
           icon="ellipsis-horizontal" 
-          label={language === 'en' ? 'More' : 'Plus'} 
+          label={activeLanguage === 'en' ? 'More' : 'Plus'} 
           isActive={['more', 'plus', 'settings', 'dashboard'].includes(activeTabLower)} 
           onPress={() => navigation.navigate('DashboardScreen')} 
         />

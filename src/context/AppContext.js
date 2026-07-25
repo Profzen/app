@@ -1,6 +1,7 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useCallback } from 'react';
 import { SHOPS_MOCK } from '../mocks/shopsMock';
 import { CONTACTS_MOCK } from '../mocks/contactsMock';
+import { TRANSLATIONS } from '../i18n/translations';
 
 const AppContext = createContext();
 
@@ -22,6 +23,16 @@ export function AppProvider({ children }) {
 
   const [accountMode, setAccountMode] = useState('personal');
   const [hideBalance, setHideBalance] = useState(false);
+  const [language, setLanguage] = useState('fr'); // 'fr' | 'en'
+
+  const toggleLanguage = useCallback(() => {
+    setLanguage(prev => (prev === 'fr' ? 'en' : 'fr'));
+  }, []);
+
+  const t = useCallback((key, fallback = '') => {
+    const langDict = TRANSLATIONS[language] || TRANSLATIONS.fr;
+    return langDict[key] || fallback || key;
+  }, [language]);
 
   const toggleFavorite = (id) => {
     setFavorites(prev => 
@@ -56,7 +67,11 @@ export function AppProvider({ children }) {
       accountMode,
       setAccountMode,
       hideBalance,
-      toggleHideBalance
+      toggleHideBalance,
+      language,
+      setLanguage,
+      toggleLanguage,
+      t
     }}>
       {children}
     </AppContext.Provider>

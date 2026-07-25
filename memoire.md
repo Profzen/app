@@ -1199,8 +1199,9 @@ L'ensemble des **68 écrans** ci-dessous est intégralement déclaré dans [`App
 - [`AssetsListScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/AssetsListScreen.js) : Variante de la liste des actifs.
 - [`AssetListPromoScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/AssetListPromoScreen.js) : Variante promotionnelle de la liste des actifs.
 
-### 🛍️ 7. E-Commerce, Boutiques & Produits (7 écrans)
+### 🛍️ 7. E-Commerce, Boutiques & Produits (8 écrans)
 - [`ShopsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShopsScreen.js) : Annuaire des boutiques marchandes avec filtres dynamiques et actions rapides.
+- [`AllShopsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/AllShopsScreen.js) : Page dédiée à tous les shops marchands avec meta-recherche, puces de filtres, cartes avec badges et accès direct aux fiches boutiques.
 - [`ShopDetailsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShopDetailsScreen.js) : Fiche détaillée d'une boutique (Jumia Sénégal, statistiques, QR code shop, produits populaires).
 - [`ShopProductsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShopProductsScreen.js) : Catalogue complet des produits d'une boutique.
 - [`ProductDetailsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ProductDetailsScreen.js) : Fiche produit (Galerie, prix, caractéristiques, achat direct ou "Buy me").
@@ -1250,12 +1251,20 @@ L'ensemble des **68 écrans** ci-dessous est intégralement déclaré dans [`App
 - **`SocialLogins.js`** : Connexions tiers (Google, Apple, Facebook, X).
 - **`WalletCard.js`** : Carte de portefeuille principale DZYwallet avec masquage de solde et raccourcis.
 
+- **4. Système Internationalization Bilingue (FR / EN) & Switchers Réactifs** :
+  - **Dictionnaire centralisé (`src/i18n/translations.js`)** : Traduction intégrale en Français (`fr`) et Anglais (`en`) pour tous les onglets, en-têtes, boutons, cartes, formulaires, placeholders et toasts.
+  - **Gestion d'état réactive (`src/context/AppContext.js`)** : Intégration de `language` (`'fr'` | `'en'`), `setLanguage`, `toggleLanguage` et du helper `t(key, fallback)`.
+  - **Drapeaux de changement de langue interactifs** : Les boutons drapeaux présents dans les en-têtes de [`HomeScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/HomeScreen.js), [`DashboardScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/DashboardScreen.js) et [`MoreSettingsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/MoreSettingsScreen.js) affichent dynamiquement le drapeau de la langue active (🇫🇷 ou 🇬🇧) et basculent instantanément la langue de toute l'application au clic.
+  - **Puces de langue dans Paramètres (`AccountSettingsScreen.js`)** : Les puces `FR` et `EN` mettent à jour la langue globale en temps réel.
+  - **Onglets dynamiques (`BottomNavBar.js`)** : Les libellés basculent automatiquement entre `Accueil`/`Home`, `Boutique`/`Shop`, `Plus`/`More`.
+
 ### ⚡ Gestion d'État Global (`src/context/AppContext.js`)
 L'application utilise le hook `useApp()` pour partager en temps réel :
 - `accountMode` : Mode actif (`'personal'` | `'business'`).
 - `hideBalance` & `toggleHideBalance()` : Masquage/Affichage du solde sur la WalletCard et Dashboard.
 - `favorites` : Liste des boutiques et actifs mis en favoris.
 - `cart` : Panier e-commerce d'articles.
+- `language` : Langue active.
 
 ### 📦 Assets Locaux & Hors-Ligne (`assets/`)
 - `assets/brand/` : Logos officiels (`dizzitup_logo_cercle.png`, `dizzitup_logo.jpeg`, `ldci.png`, `google_pay.png`, `apple_pay.png`).
@@ -1265,12 +1274,30 @@ L'application utilise le hook `useApp()` pour partager en temps réel :
 
 ---
 
+## 🎨 Ajustements Navigation Profile, Header Contacts & Création AllShopsScreen (25 juillet 2026)
+
+- **1. Redirection de l'Avatar / Photo de Profil depuis la Home (`HomeScreen.js`)** :
+  - L'avatar utilisateur et le bloc `userInfo` en haut à gauche de la page d'accueil ([`HomeScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/HomeScreen.js)) ont été enveloppés dans un `TouchableOpacity` actif. Le clic redirige immédiatement vers l'écran de profil **[`PersonalAccountScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/PersonalAccountScreen.js)**.
+- **2. En-tête Épuré de l'Écran Contacts (`ContactsScreen.js`)** :
+  - Suppression du bouton de retour dans l'en-tête de **[`ContactsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactsScreen.js)** selon le choix du design (titre "Contacts" propre aligné).
+- **3. Création & Intégration de la Page Dédiée "Tous les Shops" (`AllShopsScreen.js`)** :
+  - Création du composant **[`AllShopsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/AllShopsScreen.js)** :
+    - *En-tête* : Titre, sous-titre du nombre de marchands, bouton de retour arrière, notifications, rewards et plus.
+    - *Recherche & Filtres* : Barre de recherche meta instantanée + puces de filtres horizontales (*Tous, À proximité, Marketplace, Supermarchés, Mode, Partenaires DZY*).
+    - *Cartes de boutiques* : Image de couverture, logo merchant, badges de statut (Vérifié, Livraison, Horaires), drapeaux/villes, évaluation étoiles et badges de cryptos acceptées (`CryptoIcon`).
+    - *Bouton d'action* : "Visiter" redirigeant vers `ShopDetailsScreen` avec transmission du shop (`{ shop }`).
+    - *Composants intégrés* : Navigation `BottomNavBar` (`activeTab="shops"`) et notifications `AppToast`.
+  - Enregistrement de la **69ème route** dans **[`AppNavigator.js`](file:///g:/zen/projets/DizzitApp/app/src/navigation/AppNavigator.js)** (`AllShopsScreen`).
+  - Liaison du bouton *"Voir tout"* sur **[`ShopsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShopsScreen.js)** vers `AllShopsScreen`.
+
+---
+
 ## 📊 État Global Récapitulatif du Projet
 
 | Composant | Statut | Détails & Couverture |
 | :--- | :--- | :--- |
-| **Écrans Frontend** | **68 / 68 (100%)** | Tous les parcours fonctionnels sans aucun écran orphelin ni lien rompu. |
-| **Navigation & Routing** | **100% Validé** | Script `audit-screen-links.js` valide les 68 routes sans erreur. |
+| **Écrans Frontend** | **69 / 69 (100%)** | Tous les parcours fonctionnels sans aucun écran orphelin ni lien rompu. |
+| **Navigation & Routing** | **100% Validé** | 69 routes fonctionnelles enregistrées dans `AppNavigator.js`. |
 | **Syntaxe JSX & Code** | **100% Valide** | Validation AST Babel complète sur tous les fichiers `src/screens/`. |
 | **Gestion d'État Global** | **Actif (`AppContext.js`)** | Mode de compte (`personal`/`business`), masquage solde (`hideBalance`), favoris, panier et utilisateur. |
 | **CI/CD Build APK** | **Opérationnel** | GitHub Actions `.github/workflows/build-apk.yml` génère automatiquement l'APK téléchargeable. |
@@ -1281,6 +1308,7 @@ L'application utilise le hook `useApp()` pour partager en temps réel :
 ## 🔄 Règle d'Or pour l'IA (Mise à jour Continue du Mémoire)
 
 **RÈGLE STRICTE POUR L'IA** : À la fin de chaque session ou après toute modification majeure (ajout d'écran, ajustement de flux, refactoring, gestion Git), l'IA **DOIT IMPÉRATIVEMENT** mettre à jour ce fichier `memoire.md`. Ainsi, lors de l'ouverture d'une nouvelle session de conversation, la lecture préalable de ce fichier permet de récupérer l'intégralité du contexte, de l'état d'avancement et des règles sans aucune perte d'information ni interruption du workflow.
+
 
 
 

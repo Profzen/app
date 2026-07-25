@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
+import { useApp } from '../context/AppContext';
 
 const quickActions = [
   { id: '1', title: "Réfer a\nbusiness/Shop", subtitle: "Partagez et\nsoutenez le\ncommerce", icon: "add-outline", color: "#F59E0B", iconBg: '#FFFBEB' },
@@ -119,8 +120,10 @@ const shopsList = [
   },
 ];
 
+
 export default function ShopsScreen() {
   const navigation = useNavigation();
+  const { language, t } = useApp();
   const [activeSubNav, setActiveSubNav] = useState('shops');
   const [query, setQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('Tout');
@@ -129,7 +132,7 @@ export default function ShopsScreen() {
   const [bannerSlide, setBannerSlide] = useState(1);
 
   const visibleShops = shopsList.filter((shop) => shop.name.toLowerCase().includes(query.trim().toLowerCase()) && (activeFilter === 'Tout' || (activeFilter === 'Électronique' ? shop.category === 'Électronique' : activeFilter === 'Goods' ? ['Marketplace','Supermarché'].includes(shop.category) : true)));
-  const runQuickAction = (id) => { if (id === '1') setToast({title: 'Référencement démarré', message: 'Le formulaire de recommandation est prêt.'}); else if (id === '2') setActiveSubNav('shops'); else if (id === '3') {setActiveFilter('Tout');setToast({title: 'À proximité', message: 'Les commerces sont classés selon votre position simulée.'});} else setActiveSubNav('new'); };
+  const runQuickAction = (id) => { if (id === '1') setToast({title: language === 'fr' ? 'Référencement démarré' : 'Referral started', message: language === 'fr' ? 'Le formulaire de recommandation est prêt.' : 'The referral form is ready.'}); else if (id === '2') setActiveSubNav('shops'); else if (id === '3') {setActiveFilter('Tout');setToast({title: language === 'fr' ? 'À proximité' : 'Nearby', message: language === 'fr' ? 'Les commerces sont classés selon votre position simulée.' : 'Shops sorted by your location.'});} else setActiveSubNav('new'); };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -158,8 +161,8 @@ export default function ShopsScreen() {
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          <Text style={styles.mainTitle}>Shops</Text>
-          <Text style={styles.subtitle}>Découvrez, payez et soutenez les entreprises africaines.</Text>
+          <Text style={styles.mainTitle}>{t('shopsTitle', 'Shops')}</Text>
+          <Text style={styles.subtitle}>{t('shopsSubtitle', 'Découvrez, payez et soutenez les entreprises africaines.')}</Text>
           <Text style={styles.acceptedTokensText}>
             <Text style={{color: '#3B82F6'}}>Cards</Text>  •  <Text style={{color: '#3B82F6'}}>Stablecoins</Text>  •  <Text style={{color: '#3B82F6'}}>Mobile Money</Text>  accepted
           </Text>
@@ -169,7 +172,7 @@ export default function ShopsScreen() {
             <Ionicons name="search-outline" size={18} color="#94A3B8" style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Meta search en Afrique (shops, produits, services...)"
+              placeholder={t('shopsSearchPlaceholder', 'Rechercher par nom, ville, pays ou catégorie...')}
               placeholderTextColor="#94A3B8"
               value={query}
               onChangeText={setQuery}
@@ -193,7 +196,7 @@ export default function ShopsScreen() {
           {/* Mes shops */}
           <View style={styles.sectionHeaderRow}>
             <Text style={styles.sectionTitle}>Mes shops</Text>
-            <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}} onPress={() => setActiveSubNav('shops')}>
+            <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}} onPress={() => navigation.navigate('AllShopsScreen')}>
               <Text style={styles.showAllText}>Voir tout</Text>
               <Ionicons name="arrow-forward" size={14} color="#1A2840" style={{marginLeft: 4}} />
             </TouchableOpacity>

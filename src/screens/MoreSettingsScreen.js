@@ -5,19 +5,22 @@ import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
 
-const SETTINGS = [
-  { id: 'account', title: 'Account setting', description: 'Manage your account settings and preferences', icon: 'person-outline', color: '#3B82F6', background: '#EFF6FF', route: 'AccountSettingsScreen' },
-  { id: 'personal', title: 'Personal account', description: 'Manage your personal information and verification', icon: 'person-outline', color: '#10B981', background: '#ECFDF5', route: 'PersonalAccountScreen' },
-  { id: 'business', title: 'Business account', description: 'Manage your business profile and preferences', icon: 'storefront-outline', color: '#8B5CF6', background: '#F5F3FF', route: 'BusinessAccountScreen' },
-  { id: 'assistant', title: 'Ask Aminata', description: 'Get help and answers from our virtual assistant', icon: 'help-circle-outline', color: '#F59E0B', background: '#FFFBEB', route: 'AskAminataScreen' },
-  { id: 'loyalty', title: 'DizzyFamily Loyalty Program', description: 'Earn rewards and enjoy exclusive benefits', icon: 'gift-outline', color: '#EF4444', background: '#FEF2F2', route: 'DizzyFamilyScreen' },
-  { id: 'about', title: 'About DizzitUp', description: 'Learn more about us and our mission', icon: 'information-circle-outline', color: '#3B82F6', background: '#EFF6FF', route: 'AboutDizzitUpScreen' },
-  { id: 'contact', title: 'Contact us', description: 'Get in touch with our support team', icon: 'headset-outline', color: '#10B981', background: '#ECFDF5', route: 'ContactUsScreen' },
-];
+import { useApp } from '../context/AppContext';
 
 export default function MoreSettingsScreen() {
   const navigation = useNavigation();
+  const { language, toggleLanguage, t } = useApp();
   const [toast, setToast] = useState(null);
+
+  const SETTINGS = [
+    { id: 'account', title: t('generalSettings', 'Account Settings'), description: language === 'fr' ? 'Gérer les préférences et la sécurité de votre compte' : 'Manage your account settings and preferences', icon: 'person-outline', color: '#3B82F6', background: '#EFF6FF', route: 'AccountSettingsScreen' },
+    { id: 'personal', title: t('personalAccount', 'Personal Account'), description: language === 'fr' ? 'Gérer vos informations personnelles et vérification' : 'Manage your personal information and verification', icon: 'person-outline', color: '#10B981', background: '#ECFDF5', route: 'PersonalAccountScreen' },
+    { id: 'business', title: t('businessAccount', 'Business Account'), description: language === 'fr' ? 'Gérer votre profil marchand et préférences' : 'Manage your business profile and preferences', icon: 'storefront-outline', color: '#8B5CF6', background: '#F5F3FF', route: 'BusinessAccountScreen' },
+    { id: 'assistant', title: t('askAminata', 'Ask Aminata'), description: language === 'fr' ? 'Obtenez de l\'aide auprès de notre assistant virtuel' : 'Get help and answers from our virtual assistant', icon: 'help-circle-outline', color: '#F59E0B', background: '#FFFBEB', route: 'AskAminataScreen' },
+    { id: 'loyalty', title: t('dizzyFamily', 'DizzyFamily Program'), description: language === 'fr' ? 'Gagnez des récompenses et profitez d\'avantages exclusifs' : 'Earn rewards and enjoy exclusive benefits', icon: 'gift-outline', color: '#EF4444', background: '#FEF2F2', route: 'DizzyFamilyScreen' },
+    { id: 'about', title: t('aboutApp', 'About DizzitUp'), description: language === 'fr' ? 'En savoir plus sur nous et notre mission' : 'Learn more about us and our mission', icon: 'information-circle-outline', color: '#3B82F6', background: '#EFF6FF', route: 'AboutDizzitUpScreen' },
+    { id: 'contact', title: t('contactSupport', 'Contact Us'), description: language === 'fr' ? 'Entrez en contact avec notre équipe d\'assistance' : 'Get in touch with our support team', icon: 'headset-outline', color: '#10B981', background: '#ECFDF5', route: 'ContactUsScreen' },
+  ];
 
   const handleBack = () => {
     if (navigation.canGoBack()) {
@@ -44,9 +47,12 @@ export default function MoreSettingsScreen() {
               <Ionicons name="arrow-back" size={22} color="#1A2840" />
             </TouchableOpacity>
             <View style={styles.headerTitleContainer}>
-              <Text style={styles.pageTitle}>Settings</Text>
-              <Text style={styles.pageSubtitle}>Manage your account and preferences</Text>
+              <Text style={styles.pageTitle}>{t('moreTitle', 'Settings')}</Text>
+              <Text style={styles.pageSubtitle}>{t('moreSubtitle', 'Manage your account and preferences')}</Text>
             </View>
+            <TouchableOpacity style={styles.notificationButton} onPress={toggleLanguage} accessibilityLabel="Switch language">
+              <Image source={{ uri: language === 'fr' ? 'https://flagcdn.com/w40/fr.png' : 'https://flagcdn.com/w40/gb.png' }} style={{ width: 22, height: 15, borderRadius: 3 }} />
+            </TouchableOpacity>
             <TouchableOpacity style={styles.notificationButton} accessibilityLabel="Notifications">
               <Ionicons name="notifications-outline" size={20} color="#1A2840" />
               <View style={styles.notificationDot} />
@@ -54,7 +60,7 @@ export default function MoreSettingsScreen() {
           </View>
 
           {/* User Profile Card */}
-          <TouchableOpacity style={styles.profileCard} onPress={() => navigation.navigate('PersonalAccountScreen')} accessibilityLabel="Open David Mensah profile">
+          <TouchableOpacity style={styles.profileCard} onPress={() => navigation.navigate('PersonalAccountScreen')} accessibilityLabel="Open profile">
             <View style={styles.avatarFallback}>
               <Ionicons name="person" size={22} color="#FFFFFF" />
               <Image source={{ uri: 'https://i.pravatar.cc/120?img=11' }} style={styles.avatar} />
@@ -90,7 +96,7 @@ export default function MoreSettingsScreen() {
           {/* Log out Button */}
           <TouchableOpacity style={styles.logoutButton} onPress={() => navigation.reset({ index: 0, routes: [{ name: 'LoginScreen' }] })} accessibilityLabel="Log out">
             <Ionicons name="log-out-outline" size={20} color="#EF4444" style={{ marginRight: 8 }} />
-            <Text style={styles.logoutText}>Log out</Text>
+            <Text style={styles.logoutText}>{t('btnLogOut', 'Log out')}</Text>
           </TouchableOpacity>
 
           <View style={{ height: 20 }} />

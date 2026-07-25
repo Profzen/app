@@ -6,12 +6,14 @@ import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
 import AppSelect from '../components/AppSelect';
 
+import { useApp } from '../context/AppContext';
+
 export default function AccountSettingsScreen() {
   const navigation = useNavigation();
+  const { language, setLanguage, t } = useApp();
   const [toast, setToast] = useState(null);
 
   // State preferences
-  const [language, setLanguage] = useState('fr'); // 'fr' | 'en'
   const [currency, setCurrency] = useState('USD');
   const [showCurrencySelect, setShowCurrencySelect] = useState(false);
 
@@ -50,13 +52,13 @@ export default function AccountSettingsScreen() {
               <Ionicons name="arrow-back" size={22} color="#1A2840" />
             </TouchableOpacity>
             <View style={styles.headerTitleContainer}>
-              <Text style={styles.pageTitle}>Account Settings</Text>
-              <Text style={styles.pageSubtitle}>Gérer vos préférences et sécurité</Text>
+              <Text style={styles.pageTitle}>{t('generalSettings', 'Account Settings')}</Text>
+              <Text style={styles.pageSubtitle}>{language === 'fr' ? 'Gérer vos préférences et sécurité' : 'Manage your preferences and security'}</Text>
             </View>
           </View>
 
           {/* Section 1: Langue et Devise */}
-          <Text style={styles.sectionHeader}>GÉNÉRAL & PRÉFÉRENCES</Text>
+          <Text style={styles.sectionHeader}>{language === 'fr' ? 'GÉNÉRAL & PRÉFÉRENCES' : 'GENERAL & PREFERENCES'}</Text>
           <View style={styles.card}>
             {/* Langue */}
             <View style={styles.row}>
@@ -64,7 +66,7 @@ export default function AccountSettingsScreen() {
                 <Ionicons name="globe-outline" size={20} color="#3B82F6" />
               </View>
               <View style={styles.rowText}>
-                <Text style={styles.rowTitle}>Langue d'affichage</Text>
+                <Text style={styles.rowTitle}>{t('langLabel', 'Langue d\'affichage')}</Text>
                 <Text style={styles.rowDesc}>{language === 'fr' ? 'Français' : 'English'}</Text>
               </View>
               <View style={styles.langSelector}>
