@@ -9,7 +9,7 @@ import { useApp } from '../context/AppContext';
 export default function BusinessAccountScreen() {
   const navigation = useNavigation();
   const [toast, setToast] = useState(null);
-  const { accountMode, setAccountMode } = useApp();
+  const { accountMode, setAccountMode, language, t } = useApp();
 
   const activeAccount = accountMode || 'personal';
   const [confirmModalTarget, setConfirmModalTarget] = useState(null);
@@ -23,8 +23,10 @@ export default function BusinessAccountScreen() {
   const handleRequestSwitch = (type) => {
     if (type === activeAccount) {
       setToast({
-        title: 'Compte déjà actif',
-        message: type === 'business' ? 'Vous êtes déjà sur le Compte Business.' : 'Vous êtes déjà sur le Compte Personnel.'
+        title: language === 'fr' ? 'Compte déjà actif' : 'Account Already Active',
+        message: type === 'business' 
+          ? (language === 'fr' ? 'Vous êtes déjà sur le Compte Business.' : 'You are already on the Business Account.')
+          : (language === 'fr' ? 'Vous êtes déjà sur le Compte Personnel.' : 'You are already on the Personal Account.')
       });
       return;
     }
@@ -36,10 +38,12 @@ export default function BusinessAccountScreen() {
     setAccountMode(target);
     setConfirmModalTarget(null);
     setToast({
-      title: target === 'business' ? 'Compte Business Actif' : 'Compte Personnel Actif',
+      title: target === 'business' 
+        ? (language === 'fr' ? 'Compte Business Actif' : 'Business Account Active') 
+        : (language === 'fr' ? 'Compte Personnel Actif' : 'Personal Account Active'),
       message: target === 'business'
-        ? 'Mode Marchand Pro activé. L\'accueil affichera le Dashboard Business.'
-        : 'Mode Personnel activé. L\'accueil affichera la Home standard.'
+        ? (language === 'fr' ? 'Mode Marchand Pro activé. L\'accueil affichera le Dashboard Business.' : 'Merchant Pro mode activated. Home will show Business Dashboard.')
+        : (language === 'fr' ? 'Mode Personnel activé. L\'accueil affichera la Home standard.' : 'Personal mode activated. Home will show standard view.')
     });
   };
 
@@ -63,13 +67,13 @@ export default function BusinessAccountScreen() {
               <Ionicons name="arrow-back" size={22} color="#1A2840" />
             </TouchableOpacity>
             <View style={styles.headerTitleContainer}>
-              <Text style={styles.pageTitle}>Business Account</Text>
-              <Text style={styles.pageSubtitle}>Gestion du profil marchand & basculement</Text>
+              <Text style={styles.pageTitle}>{t('businessAccount', 'Business Account')}</Text>
+              <Text style={styles.pageSubtitle}>{language === 'fr' ? 'Gestion du profil marchand & basculement' : 'Merchant Profile & Mode Switcher'}</Text>
             </View>
           </View>
 
           {/* Account Mode Switcher */}
-          <Text style={styles.sectionHeader}>COMPTE EN COURS D'UTILISATION</Text>
+          <Text style={styles.sectionHeader}>{language === 'fr' ? "COMPTE EN COURS D'UTILISATION" : 'CURRENT ACTIVE ACCOUNT'}</Text>
           
           {/* Option 1: Personal Account */}
           <TouchableOpacity
@@ -81,7 +85,7 @@ export default function BusinessAccountScreen() {
                 <Ionicons name="person" size={22} color="#3B82F6" />
               </View>
               <View style={styles.accountTextInfo}>
-                <Text style={styles.accountTypeTitle}>Compte Personnel</Text>
+                <Text style={styles.accountTypeTitle}>{language === 'fr' ? 'Compte Personnel' : 'Personal Account'}</Text>
                 <Text style={styles.accountSubText}>David Mensah • david.mensah@email.com</Text>
               </View>
             </View>
@@ -117,39 +121,39 @@ export default function BusinessAccountScreen() {
           ) : (
             <View style={styles.noBusinessCard}>
               <Ionicons name="alert-circle-outline" size={24} color="#F59E0B" />
-              <Text style={styles.noBusinessText}>Aucun compte Business n'est encore enregistré.</Text>
+              <Text style={styles.noBusinessText}>{language === 'fr' ? "Aucun compte Business n'est encore enregistré." : 'No Business Account registered yet.'}</Text>
             </View>
           )}
 
           {/* Business Details & Shortcuts */}
           {hasBusinessAccount && (
             <>
-              <Text style={styles.sectionHeader}>DÉTAILS DU COMPTE BUSINESS</Text>
+              <Text style={styles.sectionHeader}>{language === 'fr' ? 'DÉTAILS DU COMPTE BUSINESS' : 'BUSINESS ACCOUNT DETAILS'}</Text>
               <View style={styles.card}>
                 <View style={styles.infoRow}>
                   <Ionicons name="briefcase-outline" size={18} color="#6B7280" style={styles.rowIcon} />
-                  <Text style={styles.infoLabel}>Nom commercial :</Text>
+                  <Text style={styles.infoLabel}>{language === 'fr' ? 'Nom commercial :' : 'Business Name:'}</Text>
                   <Text style={styles.infoValue}>David's Tech & Electronics</Text>
                 </View>
                 <View style={styles.divider} />
 
                 <View style={styles.infoRow}>
                   <Ionicons name="pricetag-outline" size={18} color="#6B7280" style={styles.rowIcon} />
-                  <Text style={styles.infoLabel}>Catégorie :</Text>
+                  <Text style={styles.infoLabel}>{language === 'fr' ? 'Catégorie :' : 'Category:'}</Text>
                   <Text style={styles.infoValue}>High-Tech & Services Digital</Text>
                 </View>
                 <View style={styles.divider} />
 
                 <View style={styles.infoRow}>
                   <Ionicons name="qr-code-outline" size={18} color="#6B7280" style={styles.rowIcon} />
-                  <Text style={styles.infoLabel}>Caisse TPE / QR Code :</Text>
-                  <Text style={[styles.infoValue, { color: '#10B981', fontWeight: '700' }]}>Actif & Prêt</Text>
+                  <Text style={styles.infoLabel}>{language === 'fr' ? 'Caisse TPE / QR Code :' : 'POS Terminal / QR Code:'}</Text>
+                  <Text style={[styles.infoValue, { color: '#10B981', fontWeight: '700' }]}>{language === 'fr' ? 'Actif & Prêt' : 'Active & Ready'}</Text>
                 </View>
                 <View style={styles.divider} />
 
                 <View style={styles.infoRow}>
                   <Ionicons name="card-outline" size={18} color="#6B7280" style={styles.rowIcon} />
-                  <Text style={styles.infoLabel}>Cryptos acceptées :</Text>
+                  <Text style={styles.infoLabel}>{language === 'fr' ? 'Cryptos acceptées :' : 'Accepted Cryptos:'}</Text>
                   <Text style={styles.infoValue}>USDT, USDC, EURC, DZY</Text>
                 </View>
               </View>
@@ -157,7 +161,7 @@ export default function BusinessAccountScreen() {
               {/* Main Action Button to Business Home */}
               <TouchableOpacity style={styles.primaryBizBtn} onPress={handleGoToBusinessHome}>
                 <Ionicons name="storefront-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
-                <Text style={styles.primaryBizBtnText}>Ouvrir l'Interface Business (Caisse TPE)</Text>
+                <Text style={styles.primaryBizBtnText}>{language === 'fr' ? 'Ouvrir l\'Interface Business (Caisse TPE)' : 'Open Business Interface (POS Cashier)'}</Text>
               </TouchableOpacity>
             </>
           )}
@@ -166,7 +170,9 @@ export default function BusinessAccountScreen() {
           <TouchableOpacity style={styles.addBizBtn} onPress={handleAddBusiness}>
             <Ionicons name="add-circle-outline" size={20} color="#8B5CF6" style={{ marginRight: 8 }} />
             <Text style={styles.addBizBtnText}>
-              {hasBusinessAccount ? 'Ajouter / Configurer un autre compte Business' : 'Créer mon premier compte Business'}
+              {hasBusinessAccount 
+                ? (language === 'fr' ? 'Ajouter / Configurer un autre compte Business' : 'Add / Configure another Business account') 
+                : (language === 'fr' ? 'Créer mon premier compte Business' : 'Create my first Business account')}
             </Text>
           </TouchableOpacity>
 
@@ -190,11 +196,11 @@ export default function BusinessAccountScreen() {
                 />
               </View>
 
-              <Text style={modalStyles.modalTitle}>Confirmer le basculement</Text>
+              <Text style={modalStyles.modalTitle}>{language === 'fr' ? 'Confirmer le basculement' : 'Confirm Account Switch'}</Text>
               <Text style={modalStyles.modalMessage}>
                 {confirmModalTarget === 'business'
-                  ? 'Voulez-vous basculer vers votre Compte Business (David\'s Electronics Store) ? L\'interface d\'accueil basculera en mode Marchand Pro.'
-                  : 'Voulez-vous basculer vers votre Compte Personnel ? L\'interface d\'accueil repassera en mode Particulier.'}
+                  ? (language === 'fr' ? 'Voulez-vous basculer vers votre Compte Business (David\'s Electronics Store) ? L\'interface d\'accueil basculera en mode Marchand Pro.' : 'Switch to your Business Account (David\'s Electronics Store)? Home view will switch to Merchant Pro mode.')
+                  : (language === 'fr' ? 'Voulez-vous basculer vers votre Compte Personnel ? L\'interface d\'accueil repassera en mode Particulier.' : 'Switch back to your Personal Account? Home view will switch to Personal mode.')}
               </Text>
 
               <View style={modalStyles.modalActions}>
@@ -202,21 +208,22 @@ export default function BusinessAccountScreen() {
                   style={modalStyles.cancelBtn}
                   onPress={() => setConfirmModalTarget(null)}
                 >
-                  <Text style={modalStyles.cancelBtnText}>Annuler</Text>
+                  <Text style={modalStyles.cancelBtnText}>{language === 'fr' ? 'Annuler' : 'Cancel'}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[modalStyles.confirmBtn, { backgroundColor: confirmModalTarget === 'business' ? '#8B5CF6' : '#3B82F6' }]}
                   onPress={handleConfirmSwitch}
                 >
-                  <Text style={modalStyles.confirmBtnText}>Oui, basculer</Text>
+                  <Text style={modalStyles.confirmBtnText}>{language === 'fr' ? 'Confirmer' : 'Confirm'}</Text>
                 </TouchableOpacity>
               </View>
             </View>
           </View>
         </Modal>
 
-        <BottomNavBar activeTab="More" language="fr" />
+        <BottomNavBar activeTab="More" />
+        <AppToast visible={!!toast} title={toast?.title} message={toast?.message} onClose={() => setToast(null)} />
         <AppToast visible={!!toast} title={toast?.title} message={toast?.message} onClose={() => setToast(null)} />
       </View>
     </SafeAreaView>

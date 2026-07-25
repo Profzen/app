@@ -2,18 +2,22 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
+import { useApp } from '../context/AppContext';
 
 export const FeaturesBanner = () => {
+  const { language } = useApp();
+
   return (
     <View style={styles.container}>
       <View style={styles.featureItem}>
         <View style={styles.iconContainer}>
           <Ionicons name="shield-checkmark-outline" size={28} color={theme.colors.primary} />
-          {/* Mocking the lock inside the shield with a small absolute icon */}
           <Ionicons name="lock-closed" size={12} color={theme.colors.accent} style={styles.innerIcon} />
         </View>
         <Text style={styles.featureText}>
-          Soutenez vos familles en Afrique tout en sécurisant l'usage de votre argent
+          {language === 'fr' 
+            ? "Soutenez vos familles en Afrique tout en sécurisant l'usage de votre argent" 
+            : "Support your families in Africa while securing the use of your money"}
         </Text>
       </View>
 
@@ -24,7 +28,9 @@ export const FeaturesBanner = () => {
           <Ionicons name="earth-outline" size={28} color={theme.colors.primary} />
         </View>
         <Text style={styles.featureText}>
-          Sur toute l'Afrique{'\n'}(54 pays)
+          {language === 'fr' 
+            ? "Sur toute l'Afrique\n(54 pays)" 
+            : "Across all Africa\n(54 countries)"}
         </Text>
       </View>
 
@@ -35,7 +41,9 @@ export const FeaturesBanner = () => {
           <Ionicons name="globe-outline" size={28} color={theme.colors.primary} />
         </View>
         <Text style={styles.featureText}>
-          Sourcez produits et services en Afrique au meilleur rapport Qualité/Prix
+          {language === 'fr' 
+            ? "Sourcez produits et services en Afrique au meilleur rapport Qualité/Prix" 
+            : "Source products and services in Africa with the best Quality/Price ratio"}
         </Text>
       </View>
     </View>

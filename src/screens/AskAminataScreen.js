@@ -3,25 +3,35 @@ import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, Ima
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
-
-const INITIAL_MESSAGES = [
-  {
-    id: '1',
-    sender: 'aminata',
-    text: "Bonjour David ! 👋 Je suis Aminata, l'assistante virtuelle intelligente de DizzitUp. Comment puis-je vous aider aujourd'hui ?",
-    time: '10:00'
-  }
-];
-
-const SUGGESTED_QUESTIONS = [
-  "Comment recharger par Mobile Money ?",
-  "Quels sont les frais sur DZY ?",
-  "Comment créer un compte Business ?",
-  "Où trouver les boutiques partenaires ?"
-];
+import { useApp } from '../context/AppContext';
 
 export default function AskAminataScreen() {
   const navigation = useNavigation();
+  const { language, t } = useApp();
+
+  const INITIAL_MESSAGES = [
+    {
+      id: '1',
+      sender: 'aminata',
+      text: language === 'fr' 
+        ? "Bonjour David ! 👋 Je suis Aminata, l'assistante virtuelle intelligente de DizzitUp. Comment puis-je vous aider aujourd'hui ?"
+        : "Hello David! 👋 I am Aminata, DizzitUp's AI assistant. How can I help you today?",
+      time: '10:00'
+    }
+  ];
+
+  const SUGGESTED_QUESTIONS = language === 'fr' ? [
+    "Comment recharger par Mobile Money ?",
+    "Quels sont les frais sur DZY ?",
+    "Comment créer un compte Business ?",
+    "Où trouver les boutiques partenaires ?"
+  ] : [
+    "How to top up via Mobile Money?",
+    "What are the fees on DZY?",
+    "How to create a Business account?",
+    "Where to find partner shops?"
+  ];
+
   const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [input, setInput] = useState('');
 
@@ -32,19 +42,29 @@ export default function AskAminataScreen() {
 
   const getAminataResponse = (userText) => {
     const textLower = userText.toLowerCase();
-    if (textLower.includes('recharger') || textLower.includes('mobile money')) {
-      return "Pour recharger votre portefeuille : allez sur l'écran d'accueil, cliquez sur 'Top-up' ou 'Recharger', sélectionnez 'Mobile Money' (Moov, MTN, Mixx), entrez le montant et validez sur votre téléphone !";
+    if (textLower.includes('recharger') || textLower.includes('mobile money') || textLower.includes('top up')) {
+      return language === 'fr' 
+        ? "Pour recharger votre portefeuille : allez sur l'écran d'accueil, cliquez sur 'Top-up' ou 'Recharger', sélectionnez 'Mobile Money' (Moov, MTN, Mixx), entrez le montant et validez sur votre téléphone !"
+        : "To top up your wallet: go to the home screen, tap 'Top-up', select 'Mobile Money', enter the amount and validate on your phone!";
     }
-    if (textLower.includes('frais') || textLower.includes('dzy')) {
-      return "Les paiements et transferts en DZY bénéficient de 0% de frais réseau ! Pour les retours Mobile Money, les frais sont affichés en toute transparence avant validation (1% à 1.5%).";
+    if (textLower.includes('frais') || textLower.includes('dzy') || textLower.includes('fee')) {
+      return language === 'fr'
+        ? "Les paiements et transferts en DZY bénéficient de 0% de frais réseau ! Pour les retraits Mobile Money, les frais sont affichés en toute transparence avant validation (1% à 1.5%)."
+        : "DZY payments and transfers enjoy 0% network fees! For Mobile Money cashouts, transparent fees (1% to 1.5%) are displayed before validation.";
     }
-    if (textLower.includes('business') || textLower.includes('marchand')) {
-      return "Pour ouvrir un compte Business : rendez-vous dans Réglages > Business account, activez votre profil marchand et accédez à votre caisse TPE QR Code instantanée !";
+    if (textLower.includes('business') || textLower.includes('marchand') || textLower.includes('merchant')) {
+      return language === 'fr'
+        ? "Pour ouvrir un compte Business : rendez-vous dans Réglages > Business account, activez votre profil marchand et accédez à votre caisse TPE QR Code instantanée !"
+        : "To open a Business account: go to Settings > Business Account, activate your merchant profile and access your instant QR Code POS Cashier!";
     }
     if (textLower.includes('boutique') || textLower.includes('shop')) {
-      return "Cliquez sur l'onglet 'Boutique' en bas pour explorer les commerces certifiés DizzitUp acceptant les stablecoins (USDT, USDC, EURC, DZY) près de chez vous.";
+      return language === 'fr'
+        ? "Cliquez sur l'onglet 'Boutique' en bas pour explorer les commerces certifiés DizzitUp acceptant les stablecoins (USDT, USDC, EURC, DZY) près de chez vous."
+        : "Tap the 'Shop' tab at the bottom to explore certified DizzitUp merchants accepting stablecoins (USDT, USDC, EURC, DZY) near you.";
     }
-    return "Merci pour votre question ! Je note votre demande. Vous pouvez aussi consulter notre centre d'aide ou contacter le support direct.";
+    return language === 'fr'
+      ? "Merci pour votre question ! Je note votre demande. Vous pouvez aussi consulter notre centre d'aide ou contacter le support direct."
+      : "Thank you for your question! You can also check our help center or contact direct support.";
   };
 
   const handleSendMessage = (textToSend) => {
@@ -89,8 +109,8 @@ export default function AskAminataScreen() {
           </View>
 
           <View style={styles.headerTitleContainer}>
-            <Text style={styles.pageTitle}>Ask Aminata</Text>
-            <Text style={styles.pageSubtitle}>Assistante virtuelle IA • En ligne</Text>
+            <Text style={styles.pageTitle}>{t('askAminata', 'Ask Aminata')}</Text>
+            <Text style={styles.pageSubtitle}>{language === 'fr' ? 'Assistante virtuelle IA • En ligne' : 'AI Virtual Assistant • Online'}</Text>
           </View>
         </View>
 
@@ -131,7 +151,7 @@ export default function AskAminataScreen() {
         <View style={styles.inputBar}>
           <TextInput
             style={styles.textInput}
-            placeholder="Posez votre question à Aminata..."
+            placeholder={language === 'fr' ? "Posez votre question à Aminata..." : "Ask Aminata a question..."}
             placeholderTextColor="#9CA3AF"
             value={input}
             onChangeText={setInput}

@@ -2,16 +2,20 @@ import React, { useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
+import { useApp } from '../context/AppContext';
 
 export const SocialLogins = ({ variant = 'row' }) => {
   const [provider, setProvider] = useState(null);
+  const { language, t } = useApp();
   const simulate = (name) => setProvider(name);
+  const dividerText = language === 'fr' ? 'ou continuer avec' : 'or continue with';
+
   if (variant === 'square') {
     return (
       <View style={styles.container}>
         <View style={styles.dividerContainer}>
           <View style={styles.divider} />
-          <Text style={styles.dividerText}>ou continuer avec</Text>
+          <Text style={styles.dividerText}>{dividerText}</Text>
           <View style={styles.divider} />
         </View>
 
@@ -33,7 +37,7 @@ export const SocialLogins = ({ variant = 'row' }) => {
             <Text style={styles.squareText}>X (Twitter)</Text>
           </TouchableOpacity>
         </View>
-        {!!provider && <Text style={styles.simulationText}>Connexion {provider} simulée — autorisation prête.</Text>}
+        {!!provider && <Text style={styles.simulationText}>{language === 'fr' ? `Connexion ${provider} simulée — autorisation prête.` : `Simulated ${provider} login — authorization ready.`}</Text>}
       </View>
     );
   }
@@ -42,7 +46,7 @@ export const SocialLogins = ({ variant = 'row' }) => {
     <View>
       <View style={styles.dividerContainer}>
         <View style={styles.divider} />
-        <Text style={styles.dividerText}>ou continuer avec</Text>
+        <Text style={styles.dividerText}>{dividerText}</Text>
         <View style={styles.divider} />
       </View>
 

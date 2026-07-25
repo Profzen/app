@@ -7,22 +7,22 @@ import { DizzitInput } from '../components/DizzitInput';
 import { DizzitButton } from '../components/DizzitButton';
 import { SocialLogins } from '../components/SocialLogins';
 import { FeaturesBanner } from '../components/FeaturesBanner';
+import { useApp } from '../context/AppContext';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
+  const { language, toggleLanguage, t } = useApp();
   const [activeTab, setActiveTab] = useState('email'); // 'email' | 'phone'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [language, setLanguage] = useState('FR');
 
   const handleLogin = () => {
     if (!email || !password) return; // Basic validation
     
     setIsLoading(true);
-    // Simulate API call to POST /auth/login
     const payload = {
-      identifier: email, // Could be phone based on activeTab
+      identifier: email,
       password: password
     };
     
@@ -30,7 +30,6 @@ export default function LoginScreen() {
     
     setTimeout(() => {
       setIsLoading(false);
-      // Navigate to Home
       navigation.navigate('HomeScreen');
     }, 1500);
   };
@@ -42,17 +41,15 @@ export default function LoginScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.canGoBack() ? navigation.goBack() : navigation.navigate('HomeScreen')}>
-          <Ionicons name="arrow-back" size={24} color={theme.colors.primary} />
+            <Ionicons name="arrow-back" size={24} color={theme.colors.primary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Connexion</Text>
-          <TouchableOpacity style={styles.languageSelector} onPress={() => setLanguage((current) => current === 'FR' ? 'EN' : 'FR')} accessibilityLabel="Changer la langue">
-            {/* French flag mockup */}
-            <View style={styles.flag}>
-              <View style={[styles.flagStripe, {backgroundColor: '#002395'}]} />
-              <View style={[styles.flagStripe, {backgroundColor: '#FFFFFF'}]} />
-              <View style={[styles.flagStripe, {backgroundColor: '#ED2939'}]} />
-            </View>
-            <Text style={styles.languageText}>{language}</Text>
+          <Text style={styles.headerTitle}>{language === 'fr' ? 'Connexion' : 'Log In'}</Text>
+          <TouchableOpacity style={styles.languageSelector} onPress={toggleLanguage} accessibilityLabel="Changer la langue / Switch language">
+            <Image 
+              source={{ uri: language === 'fr' ? 'https://flagcdn.com/w40/fr.png' : 'https://flagcdn.com/w40/gb.png' }} 
+              style={{ width: 22, height: 15, borderRadius: 3, marginRight: 6 }} 
+            />
+            <Text style={styles.languageText}>{language.toUpperCase()}</Text>
             <Ionicons name="chevron-down" size={16} color={theme.colors.primary} />
           </TouchableOpacity>
         </View>
@@ -64,10 +61,13 @@ export default function LoginScreen() {
             style={styles.logo} 
             resizeMode="contain"
           />
-          <Text style={styles.mainTitle}>Bienvenue !</Text>
+          <Text style={styles.mainTitle}>{language === 'fr' ? 'Bienvenue !' : 'Welcome back!'}</Text>
           <Text style={styles.subTitle}>
-            Connectez-vous à votre compte <Text style={{fontFamily: theme.typography.fontFamily.bold}}>DizzitUp</Text>{'\n'}
-            pour continuer.
+            {language === 'fr' 
+              ? 'Connectez-vous à votre compte ' 
+              : 'Sign in to your '}
+            <Text style={{fontFamily: theme.typography.fontFamily.bold}}>DizzitUp</Text>
+            {language === 'fr' ? ' account\npour continuer.' : ' account\nto continue.'}
           </Text>
         </View>
 
@@ -86,7 +86,7 @@ export default function LoginScreen() {
             onPress={() => setActiveTab('phone')}
           >
             <Text style={[styles.tabText, activeTab === 'phone' && styles.activeTabText]}>
-              Téléphone
+              {language === 'fr' ? 'Téléphone' : 'Phone'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -94,9 +94,9 @@ export default function LoginScreen() {
         {/* Form Container */}
         <View style={styles.formContainer}>
           <DizzitInput 
-            label={activeTab === 'email' ? 'Adresse e-mail' : 'Numéro de téléphone'}
+            label={activeTab === 'email' ? (language === 'fr' ? 'Adresse e-mail' : 'Email address') : (language === 'fr' ? 'Numéro de téléphone' : 'Phone number')}
             iconLeft={<Ionicons name={activeTab === 'email' ? 'mail-outline' : 'call-outline'} size={20} color={theme.colors.primary} />}
-            placeholder={activeTab === 'email' ? 'Entrez votre adresse e-mail' : 'Entrez votre numéro de téléphone'}
+            placeholder={activeTab === 'email' ? (language === 'fr' ? 'Entrez votre adresse e-mail' : 'Enter your email address') : (language === 'fr' ? 'Entrez votre numéro de téléphone' : 'Enter your phone number')}
             value={email}
             onChangeText={setEmail}
             keyboardType={activeTab === 'email' ? 'email-address' : 'phone-pad'}
@@ -104,9 +104,9 @@ export default function LoginScreen() {
 
           <View style={styles.passwordContainer}>
             <DizzitInput 
-              label="Mot de passe"
+              label={language === 'fr' ? 'Mot de passe' : 'Password'}
               iconLeft={<Ionicons name="lock-closed-outline" size={20} color={theme.colors.primary} />}
-              placeholder="Entrez votre mot de passe"
+              placeholder={language === 'fr' ? 'Entrez votre mot de passe' : 'Enter your password'}
               value={password}
               onChangeText={setPassword}
               isPassword={true}
@@ -114,16 +114,16 @@ export default function LoginScreen() {
           </View>
 
           <TouchableOpacity style={styles.forgotPasswordContainer} onPress={() => navigation.navigate('ResetPasswordEmailScreen')}>
-            <Text style={styles.forgotPasswordText}>Mot de passe oublié ?</Text>
+            <Text style={styles.forgotPasswordText}>{language === 'fr' ? 'Mot de passe oublié ?' : 'Forgot password?'}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.forgotPasswordContainer} onPress={() => navigation.navigate('PinCodeScreen')}>
-            <Text style={styles.forgotPasswordText}>Se connecter avec mon code PIN</Text>
+            <Text style={styles.forgotPasswordText}>{language === 'fr' ? 'Se connecter avec mon code PIN' : 'Log in with my PIN code'}</Text>
           </TouchableOpacity>
 
           <View style={{marginTop: theme.spacing.md}}>
             <DizzitButton 
-              title="Se connecter" 
+              title={language === 'fr' ? 'Se connecter' : 'Log in'} 
               onPress={handleLogin}
               isLoading={isLoading}
               disabled={!email || !password}
@@ -138,9 +138,9 @@ export default function LoginScreen() {
 
         {/* Signup Link */}
         <View style={styles.signupContainer}>
-          <Text style={styles.signupText}>Vous n'avez pas de compte ? </Text>
+          <Text style={styles.signupText}>{language === 'fr' ? "Vous n'avez pas de compte ? " : "Don't have an account? "}</Text>
           <TouchableOpacity onPress={() => navigation.navigate('RegisterScreen')}>
-            <Text style={styles.signupLink}>S'inscrire</Text>
+            <Text style={styles.signupLink}>{language === 'fr' ? "S'inscrire" : 'Sign up'}</Text>
           </TouchableOpacity>
         </View>
         

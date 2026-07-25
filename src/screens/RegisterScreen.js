@@ -10,9 +10,11 @@ import { SecurityBanner } from '../components/SecurityBanner';
 import { SocialLogins } from '../components/SocialLogins';
 import { FooterTerms } from '../components/FooterTerms';
 import AppToast from '../components/AppToast';
+import { useApp } from '../context/AppContext';
 
 export default function RegisterScreen() {
   const navigation = useNavigation();
+  const { language, t } = useApp();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [parrain, setParrain] = useState('');
@@ -20,11 +22,11 @@ export default function RegisterScreen() {
   const [showSuccess, setShowSuccess] = useState(false);
 
   const getPasswordStrength = (pass) => {
-    if (!pass) return 0; // Vide = 0 barres
+    if (!pass) return 0;
     let score = 0;
-    if (pass.length >= 6) score = 1; // Faible
-    if (pass.length >= 8 && /[0-9]/.test(pass) && /[A-Za-z]/.test(pass)) score = 2; // Moyen
-    if (score === 2 && /[^A-Za-z0-9]/.test(pass)) score = 3; // Fort
+    if (pass.length >= 6) score = 1;
+    if (pass.length >= 8 && /[0-9]/.test(pass) && /[A-Za-z]/.test(pass)) score = 2;
+    if (score === 2 && /[^A-Za-z0-9]/.test(pass)) score = 3;
     return score;
   };
 
@@ -39,10 +41,9 @@ export default function RegisterScreen() {
   };
 
   const handleRegister = () => {
-    if (!email || !password || strength < 2) return; // Basic validation
+    if (!email || !password || strength < 2) return;
     
     setIsLoading(true);
-    // Simulate API call to POST /auth/register
     const payload = {
       emailOrPhone: email,
       password: password,
@@ -53,7 +54,6 @@ export default function RegisterScreen() {
     
     setTimeout(() => {
       setIsLoading(false);
-      // Navigate to OTP Verification screen
       setShowSuccess(true);
       setTimeout(() => navigation.navigate('VerificationScreen'), 900);
     }, 1500);
@@ -66,12 +66,12 @@ export default function RegisterScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={24} color={theme.colors.primary} />
+            <Ionicons name="chevron-back" size={24} color={theme.colors.primary} />
           </TouchableOpacity>
           <View style={styles.loginLinkContainer}>
-            <Text style={styles.loginText}>Déjà un compte ? </Text>
+            <Text style={styles.loginText}>{language === 'fr' ? 'Déjà un compte ? ' : 'Already have an account? '}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
-              <Text style={styles.loginLink}>Se connecter</Text>
+              <Text style={styles.loginLink}>{language === 'fr' ? 'Se connecter' : 'Log in'}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -83,10 +83,11 @@ export default function RegisterScreen() {
             style={styles.logo} 
             resizeMode="contain"
           />
-          <Text style={styles.mainTitle}>Créez un compte</Text>
+          <Text style={styles.mainTitle}>{language === 'fr' ? 'Créez un compte' : 'Create an account'}</Text>
           <Text style={styles.subTitle}>
-            Rejoignez <Text style={{color: theme.colors.accent}}>DizzitUp</Text> et accédez à tout un{'\n'}
-            écosystème financier et digital.
+            {language === 'fr' 
+              ? 'Rejoignez DizzitUp et accédez à tout un\nécosystème financier et digital.' 
+              : 'Join DizzitUp and access a complete\nfinancial and digital ecosystem.'}
           </Text>
         </View>
 
@@ -96,16 +97,16 @@ export default function RegisterScreen() {
         {/* Form */}
         <View style={styles.formContainer}>
           <DizzitInput
-            label="Entrez votre email ou votre numéro"
-            placeholder="Entrez votre email ou votre numéro"
+            label={language === 'fr' ? 'Entrez votre email ou votre numéro' : 'Enter your email or phone number'}
+            placeholder={language === 'fr' ? 'Entrez votre email ou votre numéro' : 'Enter your email or phone number'}
             value={email}
             onChangeText={setEmail}
             iconLeft={<Ionicons name="mail-outline" size={20} color={theme.colors.primary} />}
           />
           
           <DizzitInput
-            label="Créez votre mot de passe"
-            placeholder="Créez votre mot de passe"
+            label={language === 'fr' ? 'Créez votre mot de passe' : 'Create your password'}
+            placeholder={language === 'fr' ? 'Créez votre mot de passe' : 'Create your password'}
             isPassword
             value={password}
             onChangeText={setPassword}
@@ -120,15 +121,15 @@ export default function RegisterScreen() {
               <View style={[styles.strengthBar, {backgroundColor: getBarColor(2)}]} />
             </View>
             <View style={styles.strengthLabels}>
-              <Text style={[styles.strengthLabel, strength === 1 && {color: theme.colors.error}]}>Faible</Text>
-              <Text style={[styles.strengthLabel, strength === 2 && {color: theme.colors.warning}]}>Moyen</Text>
-              <Text style={[styles.strengthLabel, strength === 3 && {color: theme.colors.success}]}>Fort</Text>
+              <Text style={[styles.strengthLabel, strength === 1 && {color: theme.colors.error}]}>{language === 'fr' ? 'Faible' : 'Weak'}</Text>
+              <Text style={[styles.strengthLabel, strength === 2 && {color: theme.colors.warning}]}>{language === 'fr' ? 'Moyen' : 'Medium'}</Text>
+              <Text style={[styles.strengthLabel, strength === 3 && {color: theme.colors.success}]}>{language === 'fr' ? 'Fort' : 'Strong'}</Text>
             </View>
           </View>
 
           <DizzitInput
-            label="Entrez votre code parrain (optionnel)"
-            placeholder="Entrez votre code parrain si vous en avez un"
+            label={language === 'fr' ? 'Entrez votre code parrain (optionnel)' : 'Enter referral code (optional)'}
+            placeholder={language === 'fr' ? 'Entrez votre code parrain si vous en avez un' : 'Enter referral code if you have one'}
             value={parrain}
             onChangeText={setParrain}
             iconLeft={<Ionicons name="people-outline" size={20} color={theme.colors.primary} />}
@@ -138,7 +139,7 @@ export default function RegisterScreen() {
           <SecurityBanner />
 
           <DizzitButton 
-            title="Continuer" onPress={() => navigation.navigate('VerificationScreen')} 
+            title={t('btnContinue', 'Continuer')}
             icon={<Ionicons name="arrow-forward" size={20} color={theme.colors.textPrimary} />} 
             style={{marginTop: theme.spacing.sm}}
             onPress={handleRegister}
@@ -153,10 +154,9 @@ export default function RegisterScreen() {
         {/* Footer */}
         <FooterTerms />
         
-        {/* Spacer for bottom padding */}
         <View style={{height: 40}} />
       </ScrollView>
-      <AppToast visible={showSuccess} title="Inscription réussie" message="Votre code de vérification est prêt." onClose={() => setShowSuccess(false)} />
+      <AppToast visible={showSuccess} title={language === 'fr' ? 'Inscription réussie' : 'Registration successful'} message={language === 'fr' ? 'Votre code de vérification est prêt.' : 'Your verification code is ready.'} onClose={() => setShowSuccess(false)} />
     </SafeAreaView>
   );
 }

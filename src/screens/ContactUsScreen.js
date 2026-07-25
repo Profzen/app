@@ -4,9 +4,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
+import { useApp } from '../context/AppContext';
 
 export default function ContactUsScreen() {
   const navigation = useNavigation();
+  const { language, t } = useApp();
   const [toast, setToast] = useState(null);
 
   // Support Form State
@@ -20,10 +22,16 @@ export default function ContactUsScreen() {
 
   const handleSendMessage = () => {
     if (!subject.trim() || !message.trim()) {
-      setToast({ title: 'Champ requis', message: 'Veuillez remplir le sujet et votre message.' });
+      setToast({ 
+        title: language === 'fr' ? 'Champ requis' : 'Required Field', 
+        message: language === 'fr' ? 'Veuillez remplir le sujet et votre message.' : 'Please fill in both subject and message.' 
+      });
       return;
     }
-    setToast({ title: 'Message envoyé', message: 'Notre équipe support vous répondra dans les plus brefs délais.' });
+    setToast({ 
+      title: language === 'fr' ? 'Message envoyé' : 'Message Sent', 
+      message: language === 'fr' ? 'Notre équipe support vous répondra dans les plus brefs délais.' : 'Our support team will reply as soon as possible.' 
+    });
     setSubject('');
     setMessage('');
   };
@@ -38,13 +46,13 @@ export default function ContactUsScreen() {
               <Ionicons name="arrow-back" size={22} color="#1A2840" />
             </TouchableOpacity>
             <View style={styles.headerTitleContainer}>
-              <Text style={styles.pageTitle}>Contact Us</Text>
-              <Text style={styles.pageSubtitle}>Assistance & Support client 7j/7</Text>
+              <Text style={styles.pageTitle}>{t('contactUs', 'Contact Us')}</Text>
+              <Text style={styles.pageSubtitle}>{language === 'fr' ? 'Assistance & Support client 7j/7' : 'Assistance & Customer Support 24/7'}</Text>
             </View>
           </View>
 
           {/* Quick Channels Grid */}
-          <Text style={styles.sectionHeader}>CANAUX D'ASSISTANCE RAPIDE</Text>
+          <Text style={styles.sectionHeader}>{language === 'fr' ? "CANAUX D'ASSISTANCE RAPIDE" : 'QUICK SUPPORT CHANNELS'}</Text>
           <View style={styles.channelsGrid}>
             {/* Live Chat AI */}
             <TouchableOpacity style={styles.channelCard} onPress={() => navigation.navigate('AskAminataScreen')}>
@@ -52,7 +60,7 @@ export default function ContactUsScreen() {
                 <Ionicons name="chatbubbles-outline" size={22} color="#3B82F6" />
               </View>
               <Text style={styles.channelTitle}>Chat IA Aminata</Text>
-              <Text style={styles.channelDesc}>Réponse instantanée 24/7</Text>
+              <Text style={styles.channelDesc}>{language === 'fr' ? 'Réponse instantanée 24/7' : 'Instant 24/7 response'}</Text>
             </TouchableOpacity>
 
             {/* Email Support */}
@@ -60,14 +68,14 @@ export default function ContactUsScreen() {
               <View style={[styles.channelIconWrap, { backgroundColor: '#ECFDF5' }]}>
                 <Ionicons name="mail-outline" size={22} color="#10B981" />
               </View>
-              <Text style={styles.channelTitle}>Par Email</Text>
+              <Text style={styles.channelTitle}>{language === 'fr' ? 'Par Email' : 'By Email'}</Text>
               <Text style={styles.channelDesc}>support@dizzitup.com</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.channelsGrid}>
             {/* Phone WhatsApp */}
-            <TouchableOpacity style={styles.channelCard} onPress={() => setToast({ title: 'WhatsApp Support', message: 'Contact +228 90 00 00 00 ouvert' })}>
+            <TouchableOpacity style={styles.channelCard} onPress={() => setToast({ title: 'WhatsApp Support', message: 'Contact +228 90 00 00 00' })}>
               <View style={[styles.channelIconWrap, { backgroundColor: '#FFFBEB' }]}>
                 <Ionicons name="logo-whatsapp" size={22} color="#25D366" />
               </View>
@@ -80,19 +88,19 @@ export default function ContactUsScreen() {
               <View style={[styles.channelIconWrap, { backgroundColor: '#F5F3FF' }]}>
                 <Ionicons name="help-circle-outline" size={22} color="#8B5CF6" />
               </View>
-              <Text style={styles.channelTitle}>Centre d'aide</Text>
-              <Text style={styles.channelDesc}>Guides & FAQ</Text>
+              <Text style={styles.channelTitle}>{language === 'fr' ? "Centre d'aide" : 'Help Center'}</Text>
+              <Text style={styles.channelDesc}>{language === 'fr' ? 'Guides & FAQ' : 'Guides & FAQ'}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Form Section */}
-          <Text style={styles.sectionHeader}>ENVOYER UN MESSAGE AU SUPPORT</Text>
+          <Text style={styles.sectionHeader}>{language === 'fr' ? 'ENVOYER UN MESSAGE AU SUPPORT' : 'SEND A MESSAGE TO SUPPORT'}</Text>
           <View style={styles.card}>
             <View style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>Sujet de votre demande</Text>
+              <Text style={styles.fieldLabel}>{language === 'fr' ? 'Sujet de votre demande' : 'Subject'}</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Ex: Problème de recharge, question sur les frais..."
+                placeholder={language === 'fr' ? "Ex: Problème de recharge, question sur les frais..." : "E.g. Top-up issue, fee question..."}
                 placeholderTextColor="#9CA3AF"
                 value={subject}
                 onChangeText={setSubject}
@@ -100,10 +108,10 @@ export default function ContactUsScreen() {
             </View>
 
             <View style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>Votre message</Text>
+              <Text style={styles.fieldLabel}>{language === 'fr' ? 'Votre message' : 'Your message'}</Text>
               <TextInput
                 style={[styles.input, styles.textArea]}
-                placeholder="Décrivez votre problème ou votre question en détail..."
+                placeholder={language === 'fr' ? "Décrivez votre problème ou votre question en détail..." : "Describe your problem or question in detail..."}
                 placeholderTextColor="#9CA3AF"
                 multiline
                 numberOfLines={5}
@@ -115,14 +123,14 @@ export default function ContactUsScreen() {
 
             <TouchableOpacity style={styles.submitBtn} onPress={handleSendMessage}>
               <Ionicons name="paper-plane-outline" size={18} color="#1A2840" style={{ marginRight: 8 }} />
-              <Text style={styles.submitBtnText}>Envoyer le message</Text>
+              <Text style={styles.submitBtnText}>{t('btnSendMessage', 'Envoyer le message')}</Text>
             </TouchableOpacity>
           </View>
 
           <View style={{ height: 30 }} />
         </ScrollView>
 
-        <BottomNavBar activeTab="More" language="fr" />
+        <BottomNavBar activeTab="More" />
         <AppToast visible={!!toast} title={toast?.title} message={toast?.message} onClose={() => setToast(null)} />
       </View>
     </SafeAreaView>

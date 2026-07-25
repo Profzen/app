@@ -1289,6 +1289,16 @@ L'application utilise le hook `useApp()` pour partager en temps réel :
     - *Composants intégrés* : Navigation `BottomNavBar` (`activeTab="shops"`) et notifications `AppToast`.
   - Enregistrement de la **69ème route** dans **[`AppNavigator.js`](file:///g:/zen/projets/DizzitApp/app/src/navigation/AppNavigator.js)** (`AllShopsScreen`).
   - Liaison du bouton *"Voir tout"* sur **[`ShopsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShopsScreen.js)** vers `AllShopsScreen`.
+- **4. Système Internationalization Bilingue (FR / EN) & Switchers Réactifs** :
+  - **Dictionnaire centralisé (`src/i18n/translations.js`)** : Traduction intégrale en Français (`fr`) et Anglais (`en`) pour tous les onglets, en-têtes, boutons, cartes, formulaires, placeholders et toasts.
+  - **Gestion d'état réactive (`src/context/AppContext.js`)** : Intégration de `language` (`'fr'` | `'en'`), `setLanguage`, `toggleLanguage` et du helper `t(key, fallback)`.
+  - **Drapeaux de changement de langue interactifs** : Les boutons drapeaux présents dans les en-têtes de [`HomeScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/HomeScreen.js), [`DashboardScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/DashboardScreen.js) et [`MoreSettingsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/MoreSettingsScreen.js) affichent dynamiquement le drapeau de la langue active (🇫🇷 ou 🇬🇧) et basculent instantanément la langue de toute l'application au clic.
+  - **Puces de langue dans Paramètres (`AccountSettingsScreen.js`)** : Les puces `FR` et `EN` mettent à jour la langue globale en temps réel.
+  - **Onglets dynamiques (`BottomNavBar.js`)** : Les libellés basculent automatiquement entre `Accueil`/`Home`, `Boutique`/`Shop`, `Plus`/`More`.
+- **5. Synchronisation Git Intégrale des Dépôts Distants (Commit `0e84ee4`)** :
+  - Commit et Push réussis sur **l'ensemble des remotes et branches** :
+    - Dépôt Client (`origin` : `https://github.com/Dizzitup/dizzitapp-v2.git`) → `develop` & `main` (100% synchronisés).
+    - Dépôt Personnel (`personal` : `https://github.com/Profzen/app.git`) → `develop` & `main` (100% synchronisés).
 
 ---
 
