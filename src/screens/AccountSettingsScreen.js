@@ -57,7 +57,7 @@ export default function AccountSettingsScreen() {
             </View>
           </View>
 
-          {/* Section 1: Langue et Devise */}
+          {/* Section 1: Langue */}
           <Text style={styles.sectionHeader}>{language === 'fr' ? 'GÉNÉRAL & PRÉFÉRENCES' : 'GENERAL & PREFERENCES'}</Text>
           <View style={styles.card}>
             {/* Langue */}
@@ -84,32 +84,18 @@ export default function AccountSettingsScreen() {
                 </TouchableOpacity>
               </View>
             </View>
-
-            <View style={styles.divider} />
-
-            {/* Devise */}
-            <TouchableOpacity style={styles.row} onPress={() => setShowCurrencySelect(true)}>
-              <View style={[styles.iconWrap, { backgroundColor: '#ECFDF5' }]}>
-                <Ionicons name="cash-outline" size={20} color="#10B981" />
-              </View>
-              <View style={styles.rowText}>
-                <Text style={styles.rowTitle}>Devise principale</Text>
-                <Text style={styles.rowDesc}>{currency} (Cliquez pour modifier)</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
-            </TouchableOpacity>
           </View>
 
           {/* Section 2: Sécurité */}
-          <Text style={styles.sectionHeader}>SÉCURITÉ & CONFIDENTIALITÉ</Text>
+          <Text style={styles.sectionHeader}>{language === 'fr' ? 'SÉCURITÉ & CONFIDENTIALITÉ' : 'SECURITY & PRIVACY'}</Text>
           <View style={styles.card}>
             <TouchableOpacity style={styles.row} onPress={() => navigation.navigate('SecureAccountScreen')}>
               <View style={[styles.iconWrap, { backgroundColor: '#F5F3FF' }]}>
                 <Ionicons name="shield-checkmark-outline" size={20} color="#8B5CF6" />
               </View>
               <View style={styles.rowText}>
-                <Text style={styles.rowTitle}>Code PIN & Biométrie</Text>
-                <Text style={styles.rowDesc}>Changer le PIN, activer Face ID / Empreinte</Text>
+                <Text style={styles.rowTitle}>{language === 'fr' ? 'Code PIN & Biométrie' : 'PIN Code & Biometrics'}</Text>
+                <Text style={styles.rowDesc}>{language === 'fr' ? 'Changer le PIN, activer Face ID / Empreinte' : 'Change PIN, enable Face ID / Fingerprint'}</Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
             </TouchableOpacity>
@@ -123,8 +109,8 @@ export default function AccountSettingsScreen() {
                 <Ionicons name="notifications-outline" size={20} color="#F59E0B" />
               </View>
               <View style={styles.rowText}>
-                <Text style={styles.rowTitle}>Notifications Push</Text>
-                <Text style={styles.rowDesc}>Alertes d'activités et promos</Text>
+                <Text style={styles.rowTitle}>{language === 'fr' ? 'Notifications Push' : 'Push Notifications'}</Text>
+                <Text style={styles.rowDesc}>{language === 'fr' ? "Alertes d'activités et promos" : "Activity alerts and promos"}</Text>
               </View>
               <Switch value={pushNotifs} onValueChange={setPushNotifs} trackColor={{ false: '#E5E7EB', true: '#FFC759' }} thumbColor="#FFFFFF" />
             </View>
@@ -136,8 +122,8 @@ export default function AccountSettingsScreen() {
                 <Ionicons name="mail-outline" size={20} color="#3B82F6" />
               </View>
               <View style={styles.rowText}>
-                <Text style={styles.rowTitle}>Notifications par email</Text>
-                <Text style={styles.rowDesc}>Reçus de paiement et relevés</Text>
+                <Text style={styles.rowTitle}>{language === 'fr' ? 'Notifications par email' : 'Email Notifications'}</Text>
+                <Text style={styles.rowDesc}>{language === 'fr' ? 'Reçus de paiement et relevés' : 'Payment receipts and statements'}</Text>
               </View>
               <Switch value={emailNotifs} onValueChange={setEmailNotifs} trackColor={{ false: '#E5E7EB', true: '#FFC759' }} thumbColor="#FFFFFF" />
             </View>
@@ -149,38 +135,53 @@ export default function AccountSettingsScreen() {
                 <Ionicons name="flash-outline" size={20} color="#EF4444" />
               </View>
               <View style={styles.rowText}>
-                <Text style={styles.rowTitle}>Alertes de transaction instantanées</Text>
-                <Text style={styles.rowDesc}>Notification lors d'un envoi/réception</Text>
+                <Text style={styles.rowTitle}>{language === 'fr' ? 'Alertes de transaction instantanées' : 'Instant Transaction Alerts'}</Text>
+                <Text style={styles.rowDesc}>{language === 'fr' ? "Notification lors d'un envoi/réception" : "Notifications on send/receive"}</Text>
               </View>
               <Switch value={transactionAlerts} onValueChange={setTransactionAlerts} trackColor={{ false: '#E5E7EB', true: '#FFC759' }} thumbColor="#FFFFFF" />
             </View>
           </View>
 
-          {/* Section 4: Apparence */}
-          <Text style={styles.sectionHeader}>APPARENCE</Text>
+          {/* Section 4: Apparence & Devise */}
+          <Text style={styles.sectionHeader}>{language === 'fr' ? 'APPARENCE & DEVISE' : 'APPEARANCE & CURRENCY'}</Text>
           <View style={styles.card}>
+            {/* Mode Sombre */}
             <View style={styles.row}>
               <View style={[styles.iconWrap, { backgroundColor: '#F3F4F6' }]}>
                 <Ionicons name="moon-outline" size={20} color="#1A2840" />
               </View>
               <View style={styles.rowText}>
-                <Text style={styles.rowTitle}>Mode Sombre (Dark Mode)</Text>
-                <Text style={styles.rowDesc}>Interface sombre reposante</Text>
+                <Text style={styles.rowTitle}>{language === 'fr' ? 'Mode Sombre (Dark Mode)' : 'Dark Mode'}</Text>
+                <Text style={styles.rowDesc}>{language === 'fr' ? 'Interface sombre reposante' : 'Relaxing dark interface'}</Text>
               </View>
               <Switch value={darkMode} onValueChange={(val) => { setDarkMode(val); setToast({ title: 'Mode Sombre', message: val ? 'Mode sombre activé' : 'Mode clair réactivé' }); }} trackColor={{ false: '#E5E7EB', true: '#1A2840' }} thumbColor="#FFFFFF" />
             </View>
+
+            <View style={styles.divider} />
+
+            {/* Devise Principale */}
+            <TouchableOpacity style={styles.row} onPress={() => setShowCurrencySelect(true)}>
+              <View style={[styles.iconWrap, { backgroundColor: '#ECFDF5' }]}>
+                <Ionicons name="cash-outline" size={20} color="#10B981" />
+              </View>
+              <View style={styles.rowText}>
+                <Text style={styles.rowTitle}>{language === 'fr' ? 'Devise principale' : 'Primary Currency'}</Text>
+                <Text style={styles.rowDesc}>{currency} ({language === 'fr' ? 'Cliquez pour modifier' : 'Click to edit'})</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+            </TouchableOpacity>
           </View>
 
           {/* Section 5: Zone de Danger */}
-          <Text style={[styles.sectionHeader, { color: '#EF4444' }]}>ZONE DE DANGER</Text>
+          <Text style={[styles.sectionHeader, { color: '#EF4444' }]}>{language === 'fr' ? 'ZONE DE DANGER' : 'DANGER ZONE'}</Text>
           <View style={[styles.card, { borderColor: '#FEE2E2' }]}>
             <TouchableOpacity style={styles.row} onPress={handleResetApp}>
               <View style={[styles.iconWrap, { backgroundColor: '#FEF2F2' }]}>
                 <Ionicons name="refresh-outline" size={20} color="#EF4444" />
               </View>
               <View style={styles.rowText}>
-                <Text style={[styles.rowTitle, { color: '#EF4444' }]}>Réinitialiser les préférences</Text>
-                <Text style={styles.rowDesc}>Remettre les options par défaut</Text>
+                <Text style={[styles.rowTitle, { color: '#EF4444' }]}>{language === 'fr' ? 'Réinitialiser les préférences' : 'Reset Preferences'}</Text>
+                <Text style={styles.rowDesc}>{language === 'fr' ? 'Remettre les options par défaut' : 'Restore default settings'}</Text>
               </View>
             </TouchableOpacity>
           </View>
