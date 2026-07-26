@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput, Image, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -223,8 +223,16 @@ export default function ShopsScreen() {
   const [activeFilter, setActiveFilter] = useState('Tout');
   const [toast, setToast] = useState(null);
   const [isBannerVisible, setIsBannerVisible] = useState(true);
-  const [bannerSlide, setBannerSlide] = useState(1);
+  const [bannerSlide, setBannerSlide] = useState(0);
   const [displayedCount, setDisplayedCount] = useState(5);
+
+  useEffect(() => {
+    if (!isBannerVisible) return;
+    const interval = setInterval(() => {
+      setBannerSlide(prev => (prev === 0 ? 1 : 0));
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [isBannerVisible]);
 
   const filteredShops = shopsList.filter((shop) => shop.name.toLowerCase().includes(query.trim().toLowerCase()) && (activeFilter === 'Tout' || (activeFilter === 'Électronique' ? shop.category === 'Électronique' : activeFilter === 'Goods' ? ['Marketplace','Supermarché'].includes(shop.category) : true)));
   const visibleShops = filteredShops.slice(0, displayedCount);
@@ -419,24 +427,60 @@ export default function ShopsScreen() {
           {/* Refer Banner CTA at bottom */}
           {isBannerVisible && (
             <View style={styles.bannerContainer}>
-              <View style={[styles.inviteBanner, { backgroundColor: '#F0FDF4' }]}>
-                <TouchableOpacity style={styles.closeBannerButton} onPress={() => setIsBannerVisible(false)}>
-                  <Ionicons name="close" size={16} color="#6B7280" />
-                </TouchableOpacity>
-                <View style={styles.inviteContent}>
-                  <Text style={styles.inviteTitle}>Refer a Store or Business{'\n'}and earn <Text style={{ color: '#10B981' }}>$10 in DZY</Text></Text>
-                  <Text style={styles.inviteSubtitle}>Refer a store or business{'\n'}and earn rewards.</Text>
-                  <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#10B981' }]} onPress={() => setToast({title: 'Refer a store', message: 'Formulaire de parrainage prêt.'})}>
-                    <Text style={styles.inviteButtonText}>Refer now</Text>
+              {bannerSlide === 0 ? (
+                <View style={[styles.inviteBanner, { backgroundColor: '#EEF5FF' }]}>
+                  <TouchableOpacity style={styles.closeBannerButton} onPress={() => setIsBannerVisible(false)} accessibilityLabel="Close banner">
+                    <Ionicons name="close" size={16} color="#6B7280" />
                   </TouchableOpacity>
+                  <View style={styles.inviteContent}>
+                    <Text style={styles.inviteTitle}>
+                      {language === 'fr' ? "Invitez vos amis\net gagnez " : "Invite friends\nand earn "}
+                      <Text style={{ color: '#3B82F6' }}>$5 in DZY</Text>
+                    </Text>
+                    <Text style={styles.inviteSubtitle}>
+                      {language === 'fr' ? "Envoyez des fonds, achetez,\npayez vos factures et gagnez." : "Send money, buy goods,\npay bills and earn rewards."}
+                    </Text>
+                    <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#071D54' }]} onPress={() => navigation.navigate('RewardsScreen')}>
+                      <Text style={styles.inviteButtonText}>{language === 'fr' ? 'Inviter' : 'Invite now'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.inviteGraphic}>
+                    <View style={styles.inviteOrbitOne} />
+                    <View style={styles.inviteOrbitTwo} />
+                    <View style={styles.giantCoin}>
+                      <View style={styles.innerCoin}>
+                        <Text style={styles.coinText}>DZY</Text>
+                      </View>
+                    </View>
+                    <Image source={{uri: 'https://i.pravatar.cc/100?img=5'}} style={[styles.miniAvatar, { top: 10, right: 12 }]} />
+                    <Image source={{uri: 'https://i.pravatar.cc/100?img=9'}} style={[styles.miniAvatar, { bottom: 12, left: 14 }]} />
+                  </View>
                 </View>
-                <View style={styles.storeGraphic}>
-                  <Image source={require('../../assets/brand/dzy_store_icone.png')} style={{ width: 110, height: 95 }} resizeMode="contain" />
+              ) : (
+                <View style={[styles.inviteBanner, { backgroundColor: '#F0FDF4' }]}>
+                  <TouchableOpacity style={styles.closeBannerButton} onPress={() => setIsBannerVisible(false)} accessibilityLabel="Close banner">
+                    <Ionicons name="close" size={16} color="#6B7280" />
+                  </TouchableOpacity>
+                  <View style={styles.inviteContent}>
+                    <Text style={styles.inviteTitle}>
+                      {language === 'fr' ? "Référencez un commerce\net gagnez " : "Refer a Store or Business\nand earn "}
+                      <Text style={{ color: '#10B981' }}>$10 in DZY</Text>
+                    </Text>
+                    <Text style={styles.inviteSubtitle}>
+                      {language === 'fr' ? "Recommandez un business\net gagnez des récompenses." : "Refer a store or business\nand earn rewards."}
+                    </Text>
+                    <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#10B981' }]} onPress={() => setToast({title: language === 'fr' ? 'Référencer un shop' : 'Refer a store', message: language === 'fr' ? 'Formulaire de parrainage prêt.' : 'Referral form ready.'})}>
+                      <Text style={styles.inviteButtonText}>{language === 'fr' ? 'Référencer' : 'Refer now'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.storeGraphic}>
+                    <Image source={require('../../assets/brand/dzy_store_icone.png')} style={{ width: 110, height: 95 }} resizeMode="contain" />
+                  </View>
                 </View>
-              </View>
+              )}
               <View style={styles.carouselDotsContainer}>
-                <TouchableOpacity onPress={() => setBannerSlide(0)}><View style={[styles.carouselDot, bannerSlide === 0 ? styles.activeDot : styles.inactiveDot]} /></TouchableOpacity>
-                <TouchableOpacity onPress={() => setBannerSlide(1)}><View style={[styles.carouselDot, bannerSlide === 1 ? styles.activeDot : styles.inactiveDot]} /></TouchableOpacity>
+                <TouchableOpacity onPress={() => setBannerSlide(0)}><View style={[styles.carouselDot, bannerSlide === 0 ? styles.activeDotSlide0 : styles.inactiveDot]} /></TouchableOpacity>
+                <TouchableOpacity onPress={() => setBannerSlide(1)}><View style={[styles.carouselDot, bannerSlide === 1 ? styles.activeDotSlide1 : styles.inactiveDot]} /></TouchableOpacity>
               </View>
             </View>
           )}
@@ -518,7 +562,16 @@ const styles = StyleSheet.create({
   closeBannerButton: { position: 'absolute', top: 10, right: 12, zIndex: 10 },
   carouselDotsContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', position: 'absolute', bottom: 6, left: 0, right: 0, gap: 5 },
   carouselDot: { width: 6, height: 6, borderRadius: 3 },
+  activeDotSlide0: { backgroundColor: '#3B82F6', width: 7, height: 7, borderRadius: 3.5 },
+  activeDotSlide1: { backgroundColor: '#10B981', width: 7, height: 7, borderRadius: 3.5 },
   activeDot: { backgroundColor: '#10B981', width: 7, height: 7, borderRadius: 3.5 },
   inactiveDot: { backgroundColor: '#D1D5DB' },
+  inviteGraphic: { width: '45%', height: '100%', position: 'absolute', right: 0, top: 0, justifyContent: 'center', alignItems: 'center' },
+  inviteOrbitOne: { width: 90, height: 90, borderRadius: 45, borderWidth: 1, borderColor: 'rgba(59, 130, 246, 0.2)', position: 'absolute' },
+  inviteOrbitTwo: { width: 64, height: 64, borderRadius: 32, borderWidth: 1, borderColor: 'rgba(59, 130, 246, 0.3)', position: 'absolute' },
+  giantCoin: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFC759', justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#F59E0B' },
+  innerCoin: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#F59E0B', justifyContent: 'center', alignItems: 'center' },
+  coinText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 10, color: '#FFFFFF' },
+  miniAvatar: { width: 22, height: 22, borderRadius: 11, position: 'absolute', borderWidth: 1, borderColor: '#FFFFFF' },
   toastWrap: { position: 'absolute', left: 14, right: 14, top: 64, zIndex: 50 },
 });

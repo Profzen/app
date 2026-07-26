@@ -1292,8 +1292,9 @@ L'application utilise le hook `useApp()` pour partager en temps réel :
 - **5. Ajustements UI Finaux & Déroulant de Devise (`AccountSettingsScreen.js` & `ShopsScreen.js`)** :
   - **Correction du libellé d'action rapide (`ShopsScreen.js`)** : Mise à jour du sous-titre de la carte *Nouveaux shops* en `"New Shops & Businesses"`.
   - **Sélecteur de devise autonome (`AccountSettingsScreen.js`)** : Intégration du sélecteur sous forme de bouton déroulant épuré (`USD ($) v`) positionné directement sous la carte *Apparence* et au-dessus de la *Zone de Danger*, conformément aux spécifications exactes de la maquette.
-- **6. Intégration de l'Image Officielle DZY Store (`assets/brand/dzy_store_icone.png`)** :
+- **6. Intégration de l'Image Officielle DZY Store & Carousel Auto-Défilant (`assets/brand/dzy_store_icone.png`)** :
   - **Gestion des Assets** : Déplacement de l'image source PNG `dzy store icone.png` vers le répertoire d'assets officiel `assets/brand/dzy_store_icone.png`.
+  - **Carousel Auto-Défilant sur l'écran Shop (`ShopsScreen.js`)** : Ajout du timer `useEffect` d'alternance automatique toutes les 6 secondes entre le slide 0 (*"Invite friends & earn $5 in DZY"*) et le slide 1 (*"Refer a Store & earn $10 in DZY"*).
   - **Remplacement graphique sur les Slides de Parrainage** : Sur les bannières *"Refer a Store or Business and earn $10 in DZY"* (sur [`HomeScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/HomeScreen.js) et [`ShopsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShopsScreen.js)), le dessin vectoriel simulé a été remplacé par le véritable visuel PNG haute définition rendu avec `<Image source={require('../../assets/brand/dzy_store_icone.png')} resizeMode="contain" />`.
 - **7. Synchronisation Git Intégrale des Dépôts Distants** :
   - Commit et Push réussis sur **l'ensemble des remotes et branches** :
