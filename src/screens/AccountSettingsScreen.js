@@ -142,8 +142,8 @@ export default function AccountSettingsScreen() {
             </View>
           </View>
 
-          {/* Section 4: Apparence & Devise */}
-          <Text style={styles.sectionHeader}>{language === 'fr' ? 'APPARENCE & DEVISE' : 'APPEARANCE & CURRENCY'}</Text>
+          {/* Section 4: Apparence */}
+          <Text style={styles.sectionHeader}>{language === 'fr' ? 'APPARENCE' : 'APPEARANCE'}</Text>
           <View style={styles.card}>
             {/* Mode Sombre */}
             <View style={styles.row}>
@@ -156,21 +156,13 @@ export default function AccountSettingsScreen() {
               </View>
               <Switch value={darkMode} onValueChange={(val) => { setDarkMode(val); setToast({ title: 'Mode Sombre', message: val ? 'Mode sombre activé' : 'Mode clair réactivé' }); }} trackColor={{ false: '#E5E7EB', true: '#1A2840' }} thumbColor="#FFFFFF" />
             </View>
-
-            <View style={styles.divider} />
-
-            {/* Devise Principale */}
-            <TouchableOpacity style={styles.row} onPress={() => setShowCurrencySelect(true)}>
-              <View style={[styles.iconWrap, { backgroundColor: '#ECFDF5' }]}>
-                <Ionicons name="cash-outline" size={20} color="#10B981" />
-              </View>
-              <View style={styles.rowText}>
-                <Text style={styles.rowTitle}>{language === 'fr' ? 'Devise principale' : 'Primary Currency'}</Text>
-                <Text style={styles.rowDesc}>{currency} ({language === 'fr' ? 'Cliquez pour modifier' : 'Click to edit'})</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
-            </TouchableOpacity>
           </View>
+
+          {/* Standalone Currency Dropdown Button */}
+          <TouchableOpacity style={styles.currencyDropdownCard} onPress={() => setShowCurrencySelect(true)} activeOpacity={0.7}>
+            <Text style={styles.currencyDropdownText}>{currencyOptions.find(o => o.value === currency)?.label || `${currency} ($)`}</Text>
+            <Ionicons name="chevron-down" size={20} color="#1A2840" />
+          </TouchableOpacity>
 
           {/* Section 5: Zone de Danger */}
           <Text style={[styles.sectionHeader, { color: '#EF4444' }]}>{language === 'fr' ? 'ZONE DE DANGER' : 'DANGER ZONE'}</Text>
@@ -183,6 +175,7 @@ export default function AccountSettingsScreen() {
                 <Text style={[styles.rowTitle, { color: '#EF4444' }]}>{language === 'fr' ? 'Réinitialiser les préférences' : 'Reset Preferences'}</Text>
                 <Text style={styles.rowDesc}>{language === 'fr' ? 'Remettre les options par défaut' : 'Restore default settings'}</Text>
               </View>
+              <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
             </TouchableOpacity>
           </View>
 
@@ -193,7 +186,7 @@ export default function AccountSettingsScreen() {
 
         <AppSelect
           visible={showCurrencySelect}
-          title="Sélectionner la devise principale"
+          title={language === 'fr' ? 'Sélectionner la devise principale' : 'Select Primary Currency'}
           options={currencyOptions}
           selectedValue={currency}
           onSelect={(val) => { setCurrency(val); setShowCurrencySelect(false); setToast({ title: 'Devise', message: `Devise modifiée en ${val}` }); }}
@@ -228,4 +221,6 @@ const styles = StyleSheet.create({
   langChipActive: { backgroundColor: '#1A2840' },
   langText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#6B7280' },
   langTextActive: { color: '#FFC759' },
+  currencyDropdownCard: { backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#E5E7EB', paddingHorizontal: 16, height: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, marginBottom: 12 },
+  currencyDropdownText: { fontFamily: 'Inter_600SemiBold', fontSize: 15, color: '#1A2840' },
 });

@@ -1289,7 +1289,10 @@ L'application utilise le hook `useApp()` pour partager en temps réel :
   - **Drapeaux de changement de langue interactifs** : Les boutons drapeaux présents dans les en-têtes de [`HomeScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/HomeScreen.js), [`DashboardScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/DashboardScreen.js), [`MoreSettingsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/MoreSettingsScreen.js) et [`LoginScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/LoginScreen.js) basculent instantanément la langue de toute l'application.
   - **Puces de langue dans Paramètres (`AccountSettingsScreen.js`)** : Les puces `FR` et `EN` mettent à jour la langue globale en temps réel.
   - **Onglets dynamiques (`BottomNavBar.js`)** : Les libellés basculent automatiquement entre `Accueil`/`Home`, `Boutique`/`Shop`, `Plus`/`More`.
-- **5. Synchronisation Git Intégrale des Dépôts Distants (Commit `f51c8e1`)** :
+- **5. Ajustements UI Finaux & Déroulant de Devise (`AccountSettingsScreen.js` & `ShopsScreen.js`)** :
+  - **Correction du libellé d'action rapide (`ShopsScreen.js`)** : Mise à jour du sous-titre de la carte *Nouveaux shops* en `"New Shops & Businesses"`.
+  - **Sélecteur de devise autonome (`AccountSettingsScreen.js`)** : Intégration du sélecteur sous forme de bouton déroulant épuré (`USD ($) v`) positionné directement sous la carte *Apparence* et au-dessus de la *Zone de Danger*, conformément aux spécifications exactes de la maquette.
+- **6. Synchronisation Git Intégrale des Dépôts Distants** :
   - Commit et Push réussis sur **l'ensemble des remotes et branches** :
     - Dépôt Client (`origin` : `https://github.com/Dizzitup/dizzitapp-v2.git`) → `develop` & `main` (100% synchronisés).
     - Dépôt Personnel (`personal` : `https://github.com/Profzen/app.git`) → `develop` & `main` (100% synchronisés).
@@ -1297,6 +1300,12 @@ L'application utilise le hook `useApp()` pour partager en temps réel :
 ---
 
 ## 📊 État Global Récapitulatif du Projet
+
+- **Screens totaux fonctionnels** : **68 écrans React Native (Expo)** enregistrés et interconnectés sans aucun lien orphelin.
+- **Support Bilingue** : 100% réactif en Français (`fr`) et Anglais (`en`).
+- **Repositories Distants Synchronisés** :
+  - `origin` (`https://github.com/Dizzitup/dizzitapp-v2.git`) → Branches `develop` & `main`
+  - `personal` (`https://github.com/Profzen/app.git`) → Branches `develop` & `main`
 
 | Composant | Statut | Détails & Couverture |
 | :--- | :--- | :--- |

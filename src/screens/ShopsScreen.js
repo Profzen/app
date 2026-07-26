@@ -11,7 +11,7 @@ const quickActions = [
   { id: '1', title: "Réfer a\nbusiness/Shop", subtitle: "Partagez et\nsoutenez le\ncommerce", icon: "add-outline", color: "#F59E0B", iconBg: '#FFFBEB' },
   { id: '2', title: "Mes shops", subtitle: "Voir les shops avec\nlesquels je traite", icon: "bag-handle-outline", color: "#10B981", iconBg: '#ECFDF5' },
   { id: '3', title: "Shops à\nproximité", subtitle: "Découvrez les shops\nprès de vous", icon: "location-outline", color: "#3B82F6", iconBg: '#EFF6FF' },
-  { id: '4', title: "Nouveaux\nshops", subtitle: "Nouveaux shops\nde nos CEOs", icon: "storefront-outline", color: "#8B5CF6", iconBg: '#F5F3FF' },
+  { id: '4', title: "Nouveaux\nshops", subtitle: "New Shops &\nBusinesses", icon: "storefront-outline", color: "#8B5CF6", iconBg: '#F5F3FF' },
 ];
 
 const FILTER_ITEMS = [
