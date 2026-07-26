@@ -15,7 +15,6 @@ export default function AccountSettingsScreen() {
 
   // State preferences
   const [currency, setCurrency] = useState('USD');
-  const [showCurrencySelect, setShowCurrencySelect] = useState(false);
 
   // Notification Toggles
   const [pushNotifs, setPushNotifs] = useState(true);
@@ -142,7 +141,7 @@ export default function AccountSettingsScreen() {
             </View>
           </View>
 
-          {/* Section 4: Apparence */}
+          {/* Section 4: Apparence & Devise */}
           <Text style={styles.sectionHeader}>{language === 'fr' ? 'APPARENCE' : 'APPEARANCE'}</Text>
           <View style={styles.card}>
             {/* Mode Sombre */}
@@ -158,11 +157,18 @@ export default function AccountSettingsScreen() {
             </View>
           </View>
 
-          {/* Standalone Currency Dropdown Button */}
-          <TouchableOpacity style={styles.currencyDropdownCard} onPress={() => setShowCurrencySelect(true)} activeOpacity={0.7}>
-            <Text style={styles.currencyDropdownText}>{currencyOptions.find(o => o.value === currency)?.label || `${currency} ($)`}</Text>
-            <Ionicons name="chevron-down" size={20} color="#1A2840" />
-          </TouchableOpacity>
+          {/* Single Currency Selector Dropdown */}
+          <View style={{ marginTop: 12 }}>
+            <AppSelect
+              value={currency}
+              options={currencyOptions}
+              onChange={(val) => {
+                setCurrency(val);
+                setToast({ title: 'Devise', message: `Devise modifiée en ${val}` });
+              }}
+              title={language === 'fr' ? 'Sélectionner la devise principale' : 'Select Primary Currency'}
+            />
+          </View>
 
           {/* Section 5: Zone de Danger */}
           <Text style={[styles.sectionHeader, { color: '#EF4444' }]}>{language === 'fr' ? 'ZONE DE DANGER' : 'DANGER ZONE'}</Text>
@@ -183,15 +189,6 @@ export default function AccountSettingsScreen() {
         </ScrollView>
 
         <BottomNavBar activeTab="More" language={language} />
-
-        <AppSelect
-          visible={showCurrencySelect}
-          title={language === 'fr' ? 'Sélectionner la devise principale' : 'Select Primary Currency'}
-          options={currencyOptions}
-          selectedValue={currency}
-          onSelect={(val) => { setCurrency(val); setShowCurrencySelect(false); setToast({ title: 'Devise', message: `Devise modifiée en ${val}` }); }}
-          onClose={() => setShowCurrencySelect(false)}
-        />
 
         <AppToast visible={!!toast} title={toast?.title} message={toast?.message} onClose={() => setToast(null)} />
       </View>
