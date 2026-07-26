@@ -258,7 +258,7 @@ export default function ReviewPaymentScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FFFFFF',
-    paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 0,
+    paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 14,
   },
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   toastWrap: { position: 'absolute', left: 14, right: 14, top: 64, zIndex: 50 },

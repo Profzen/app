@@ -98,7 +98,7 @@ export default function SendMoneySuccessScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FAFAFA',
-    paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 0,
+    paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 14,
   },
   container: { flex: 1, position: 'relative' },
   toastWrap: { position: 'absolute', left: 14, right: 14, top: 50, zIndex: 50 },
