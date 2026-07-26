@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import AppToast from '../components/AppToast';
@@ -97,7 +97,9 @@ export default function SendMoneySuccessScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#FAFAFA' },
+  safeArea: { flex: 1, backgroundColor: '#FAFAFA',
+    paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 0,
+  },
   container: { flex: 1, position: 'relative' },
   toastWrap: { position: 'absolute', left: 14, right: 14, top: 50, zIndex: 50 },
   mainScroll: { flex: 1 },
