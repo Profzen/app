@@ -1313,8 +1313,8 @@ L'application utilise le hook `useApp()` pour partager en temps réel :
 
 | Composant | Statut | Détails & Couverture |
 | :--- | :--- | :--- |
-| **Écrans Frontend** | **69 / 69 (100%)** | Tous les parcours fonctionnels sans aucun écran orphelin ni lien rompu. |
-| **Navigation & Routing** | **100% Validé** | 69 routes fonctionnelles enregistrées dans `AppNavigator.js`. |
+| **Écrans Frontend** | **68 / 68 (100%)** | Tous les parcours fonctionnels sans aucun écran orphelin ni lien rompu. |
+| **Navigation & Routing** | **100% Validé** | 68 routes fonctionnelles enregistrées dans `AppNavigator.js`. |
 | **Syntaxe JSX & Code** | **100% Valide** | Validation AST Babel complète sur tous les fichiers `src/screens/`. |
 | **Gestion d'État Global** | **Actif (`AppContext.js`)** | Mode de compte (`personal`/`business`), masquage solde (`hideBalance`), favoris, panier et utilisateur. |
 | **CI/CD Build APK** | **Opérationnel** | GitHub Actions `.github/workflows/build-apk.yml` génère automatiquement l'APK téléchargeable. |
