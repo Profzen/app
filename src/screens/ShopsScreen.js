@@ -431,14 +431,7 @@ export default function ShopsScreen() {
                   </TouchableOpacity>
                 </View>
                 <View style={styles.storeGraphic}>
-                  <View style={styles.storeBuilding}>
-                    <View style={styles.storeAwning}><Text style={styles.storeAwningText}>DZY</Text></View>
-                    <View style={styles.storeFront}>
-                      <View style={styles.storeDoor} />
-                      <View style={styles.storeWindow} />
-                    </View>
-                  </View>
-                  <View style={styles.storeCoin}><Text style={styles.storeCoinText}>DZY</Text></View>
+                  <Image source={require('../../assets/brand/dzy_store_icone.png')} style={{ width: 110, height: 95 }} resizeMode="contain" />
                 </View>
               </View>
               <View style={styles.carouselDotsContainer}>

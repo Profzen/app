@@ -1292,7 +1292,10 @@ L'application utilise le hook `useApp()` pour partager en temps réel :
 - **5. Ajustements UI Finaux & Déroulant de Devise (`AccountSettingsScreen.js` & `ShopsScreen.js`)** :
   - **Correction du libellé d'action rapide (`ShopsScreen.js`)** : Mise à jour du sous-titre de la carte *Nouveaux shops* en `"New Shops & Businesses"`.
   - **Sélecteur de devise autonome (`AccountSettingsScreen.js`)** : Intégration du sélecteur sous forme de bouton déroulant épuré (`USD ($) v`) positionné directement sous la carte *Apparence* et au-dessus de la *Zone de Danger*, conformément aux spécifications exactes de la maquette.
-- **6. Synchronisation Git Intégrale des Dépôts Distants** :
+- **6. Intégration de l'Image Officielle DZY Store (`assets/brand/dzy_store_icone.png`)** :
+  - **Gestion des Assets** : Déplacement de l'image source PNG `dzy store icone.png` vers le répertoire d'assets officiel `assets/brand/dzy_store_icone.png`.
+  - **Remplacement graphique sur les Slides de Parrainage** : Sur les bannières *"Refer a Store or Business and earn $10 in DZY"* (sur [`HomeScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/HomeScreen.js) et [`ShopsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShopsScreen.js)), le dessin vectoriel simulé a été remplacé par le véritable visuel PNG haute définition rendu avec `<Image source={require('../../assets/brand/dzy_store_icone.png')} resizeMode="contain" />`.
+- **7. Synchronisation Git Intégrale des Dépôts Distants** :
   - Commit et Push réussis sur **l'ensemble des remotes et branches** :
     - Dépôt Client (`origin` : `https://github.com/Dizzitup/dizzitapp-v2.git`) → `develop` & `main` (100% synchronisés).
     - Dépôt Personnel (`personal` : `https://github.com/Profzen/app.git`) → `develop` & `main` (100% synchronisés).
