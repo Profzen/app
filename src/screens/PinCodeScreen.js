@@ -152,8 +152,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 24,
-  },
+    marginBottom: 24, paddingTop: Platform.OS === 'android' ? 36 : 10 },
   loginText: {
     fontFamily: 'Inter_500Medium',
     fontSize: 12,

@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FFFFFF', paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 0 },
   container: { flex: 1 },
   scrollView: { flex: 1 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 10 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: Platform.OS === 'android' ? 36 : 10, paddingBottom: 10 },
   userInfo: { flexDirection: 'row', alignItems: 'center' },
   avatarWrapper: { width: 44, height: 44, borderRadius: 22, marginRight: 12, backgroundColor: '#071D54', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   avatarImage: { ...StyleSheet.absoluteFillObject, width: 44, height: 44, borderRadius: 22 },

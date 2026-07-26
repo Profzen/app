@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: Platform.OS === 'android' ? 36 : 10,
     paddingBottom: 8,
   },
   backButton: {

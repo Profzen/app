@@ -128,8 +128,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 32,
-  },
+    marginBottom: 32, paddingTop: Platform.OS === 'android' ? 36 : 10 },
   headerTitle: {
     fontFamily: 'SpaceGrotesk_700Bold',
     fontSize: 16,

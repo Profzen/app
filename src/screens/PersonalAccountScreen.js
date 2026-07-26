@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, TextInput } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, TextInput, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FAFAFC' },
   container: { flex: 1, backgroundColor: '#FAFAFC' },
   content: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 16 },
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 16, paddingTop: Platform.OS === 'android' ? 36 : 10 },
   backButton: { paddingRight: 14, paddingVertical: 4 },
   headerTitleContainer: { flex: 1 },
   pageTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 22, color: '#1A2840' },

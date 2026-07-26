@@ -127,7 +127,7 @@ export default function MobileRechargeScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
   container: { flex: 1 },
-  header: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
+  header: { paddingHorizontal: 20, paddingTop: Platform.OS === 'android' ? 36 : 10, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
   headerTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   backButton: { padding: 4 },
   headerTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#1A2840' },

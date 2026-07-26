@@ -171,7 +171,7 @@ export default function AskAminataScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FAFAFC' },
   container: { flex: 1, backgroundColor: '#FAFAFC' },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 14, borderBottomWidth: 1, borderBottomColor: '#F0F2F5', backgroundColor: '#FFFFFF' },
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: Platform.OS === 'android' ? 36 : 10, paddingBottom: 14, borderBottomWidth: 1, borderBottomColor: '#F0F2F5', backgroundColor: '#FFFFFF' },
   backButton: { paddingRight: 10, paddingVertical: 4 },
   assistantAvatarWrap: { position: 'relative', marginRight: 10 },
   avatarCircle: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#1A2840', alignItems: 'center', justifyContent: 'center' },

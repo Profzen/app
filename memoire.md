@@ -1296,7 +1296,10 @@ L'application utilise le hook `useApp()` pour partager en temps réel :
   - **Gestion des Assets** : Déplacement de l'image source PNG `dzy store icone.png` vers le répertoire d'assets officiel `assets/brand/dzy_store_icone.png`.
   - **Carousel Auto-Défilant sur l'écran Shop (`ShopsScreen.js`)** : Ajout du timer `useEffect` d'alternance automatique toutes les 6 secondes entre le slide 0 (*"Invite friends & earn $5 in DZY"*) et le slide 1 (*"Refer a Store & earn $10 in DZY"*).
   - **Remplacement graphique sur les Slides de Parrainage** : Sur les bannières *"Refer a Store or Business and earn $10 in DZY"* (sur [`HomeScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/HomeScreen.js) et [`ShopsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShopsScreen.js)), le dessin vectoriel simulé a été remplacé par le véritable visuel PNG haute définition rendu avec `<Image source={require('../../assets/brand/dzy_store_icone.png')} resizeMode="contain" />`.
-- **7. Synchronisation Git Intégrale des Dépôts Distants** :
+- **7. Harmonisation Intégrale des Marges Hautes des En-têtes (68 / 68 Écrans)** :
+  - **Standardisation de l'espacement supérieur (`paddingTop`)** : Application de la marge haute d'en-tête de l'écran modèle *"Envoyer des fonds"* (`paddingTop: Platform.OS === 'android' ? 36 : 10` et `Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 0`) sur **l'intégralité des 68 écrans** de l'application.
+  - **Prise en charge universelle des barres de statut** : Évite tout chevauchement avec l'heure, le niveau de batterie, les encoches ou découpes de caméra sur tous les modèles de smartphones iOS et Android.
+- **8. Synchronisation Git Intégrale des Dépôts Distants** :
   - Commit et Push réussis sur **l'ensemble des remotes et branches** :
     - Dépôt Client (`origin` : `https://github.com/Dizzitup/dizzitapp-v2.git`) → `develop` & `main` (100% synchronisés).
     - Dépôt Personnel (`personal` : `https://github.com/Profzen/app.git`) → `develop` & `main` (100% synchronisés).

@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FAFAFC', paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 0 },
   container: { flex: 1, backgroundColor: '#FAFAFC' },
   content: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 16 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingTop: Platform.OS === 'android' ? 36 : 10 },
   backButton: { paddingRight: 10, paddingVertical: 4 },
   headerTitleContainer: { flex: 1 },
   pageTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 24, color: '#1A2840', lineHeight: 28 },
