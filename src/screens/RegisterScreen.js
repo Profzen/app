@@ -165,6 +165,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.surface,
+    paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 14,
   },
   scrollContent: {
     paddingHorizontal: theme.spacing.lg,
