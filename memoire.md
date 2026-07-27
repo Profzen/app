@@ -1325,11 +1325,194 @@ L'application utilise le hook `useApp()` pour partager en temps réel :
 
 ---
 
+## Ajout CTA Succès — Carte "Partager mon succès" sur SendMoneySuccessScreen (27 juillet 2026)
+
+- **Maquette modifiée** : Écran [`SendMoneySuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneySuccessScreen.js) (*"Envoyer des fonds - Transaction soumise !"*).
+- **Intégration du CTA** :
+  - Ajout de la carte sombre de CTA *"Partager mon succès"* juste au-dessus du bouton *"Terminé"*.
+  - **Design & Contenu** : Fond bleu nuit (`#071D54`), coins arrondis (`18px`), carré blanc d'icône partage avec petits rayons étincelles jaunes (`#FFC759`), titre principal *"Partager mon succès"*, sous-titre *"Gagnez 1 DZY en identifiant @DizzitUp"* avec mise en évidence dorée, sous-titre descriptif *"Publiez une carte DizzitUp personnalisée de cette transaction"* et flèche `>` dorée.
+  - **Action** : Déclenchement de la notification Toast confirmant la préparation de la carte de transaction.
+- **Fichiers modifiés** : [`src/screens/SendMoneySuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneySuccessScreen.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
+
+---
+
+## Ajout CTA Succès — Carte "Partager mon succès" sur PaymentSuccessScreen (27 juillet 2026)
+
+- **Maquette modifiée** : Écran [`PaymentSuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/PaymentSuccessScreen.js) (*"Paiement réussi !"*).
+- **Intégration du CTA** :
+  - Ajout de la carte sombre de CTA *"Partager mon succès"* entre le bandeau de Cashback Rewards et la section des boutons d'actions (*"Voir le reçu"*).
+  - **Design & Contenu** : Fond bleu nuit (`#071D54`), coins arrondis (`18px`), carré blanc d'icône partage avec rayons étincelles jaunes (`#FFC759`), titre principal *"Partager mon succès"*, sous-titre *"Gagnez 1 DZY en identifiant @DizzitUp"* (mise en valeur dorée) et sous-titre descriptif.
+- **Fichiers modifiés** : [`src/screens/PaymentSuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/PaymentSuccessScreen.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
+
+---
+
+## Ajout CTA Succès — Carte "Partager mon succès" sur TopUpWalletConfirmationScreen (27 juillet 2026)
+
+- **Maquette modifiée** : Écran [`TopUpWalletConfirmationScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/TopUpWalletConfirmationScreen.js) (*"Recharger le portefeuille - Confirmation (Étape 5)"*).
+- **Intégration du CTA** :
+  - Ajout de la carte sombre de CTA *"Partager mon succès"* entre la bannière de sécurité *"Transaction sécurisée"* et les boutons principaux (*"Voir mon portefeuille DZYwallet"*).
+  - **Design & Contenu** : Fond bleu nuit (`#071D54`), coins arrondis (`18px`), carré blanc avec icône nœud de partage et étincelles dorées, titre *"Partager mon succès"*, sous-titre *"Gagnez 1 DZY en identifiant @DizzitUp"* (mots clés dorés `#FFC759`), description et flèche `→` dorée.
+  - **Ajustement bouton secondaire** : Mise à jour du contour du bouton *"Effectuer une autre recharge"* avec une bordure jaune/dorée (`#FFC759`) conforme à la maquette.
+- **Fichiers modifiés** : [`src/screens/TopUpWalletConfirmationScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/TopUpWalletConfirmationScreen.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
+
+---
+
+## Ajout CTA Succès — Carte "Partager mon succès" sur WithdrawFundsMobileMoneySuccessScreen (27 juillet 2026)
+
+- **Maquette modifiée** : Écran [`WithdrawFundsMobileMoneySuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/WithdrawFundsMobileMoneySuccessScreen.js) (*"Retirer des fonds vers Mobile Money - Étape 5/5 (Retrait réussi !)"*).
+- **Intégration du CTA** :
+  - Ajout de la carte sombre de CTA *"Partager mon succès"* entre le bloc de notification (*"Vous recevrez une notification..."*) et les boutons d'action du bas.
+  - **Design & Ordre Spécifique** : Fond bleu nuit (`#071D54`), coins arrondis (`18px`), carré blanc avec icône nœud de partage et étincelle dorée, sous-titre de gain *"Gagnez 1 DZY en identifiant @DizzitUp"* positionné au-dessus du titre *"Partager mon succès"* exactement comme sur la maquette, description et flèche `>` dorée.
+  - **Ajustement boutons bas** : Bouton *"Voir l'historique"* (icône horloge, fond blanc + bordure dorée) à gauche, et bouton *"Effectuer un autre retrait"* (icône recharger, fond jaune `#FFC759` plein) à droite.
+- **Fichiers modifiés** : [`src/screens/WithdrawFundsMobileMoneySuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/WithdrawFundsMobileMoneySuccessScreen.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
+
+---
+
+## Ajout CTA Succès — Carte "Partager mon succès" sur CashierSuccessScreen (27 juillet 2026)
+
+- **Maquette modifiée** : Écran [`CashierSuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/CashierSuccessScreen.js) (*"Caisse (TPE) - Paiement reçu avec succès !"*).
+- **Intégration du CTA** :
+  - Ajout de la carte sombre de CTA *"Partager mon succès"* entre la bannière verte de sécurité (*"Transaction sécurisée"*) et les boutons d'actions (*"Voir le reçu"*).
+  - **Design & Contenu** : Fond bleu nuit (`#071D54`), coins arrondis (`18px`), carré blanc d'icône partage avec rayons étincelles dorés (`#FFC759`), titre principal *"Partager mon succès"*, sous-titre *"Gagnez 1 DZY en identifiant @DizzitUp"* (mots clés dorés `#FFC759`), description et flèche `→` dorée.
+- **Fichiers modifiés** : [`src/screens/CashierSuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/CashierSuccessScreen.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
+
+---
+
+## 📲 Flux Partage de Succès — Étape 1 : Sélection Réseau Social (27 juillet 2026)
+
+- **Nouvel Écran Créé** : [`ShareSuccessPlatformScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessPlatformScreen.js) (*"Partager mon succès - Étape 1 : Réseau social"*).
+- **Intégration & Spécifications** :
+  - **En-tête & Stepper** : En-tête bilingue *"Partager mon succès / Choisissez où publier votre carte DizzitUp"* avec Stepper 3 étapes (*1. Réseau social (actif), 2. Visuel, 3. Légende*).
+  - **Bannière Récompense Top** : Carte bleu nuit (`#071D54`) *"Partagez votre succès et gagnez 1 DZY"*.
+  - **Grille de 6 Plateformes** : Grille 2 colonnes avec sélection interactive (WhatsApp, X / Twitter, Facebook, Instagram Story, LinkedIn, Telegram) avec état sélectionné (bordure dorée `#FFC759` + badge coche `✓`).
+  - **Bannières d'Information** : Masquage des données sensibles (bouclier) et lien d'invitation traçable pour rewards (chaîne).
+  - **Actions** : Bouton *"Plus tard"* et bouton *"Continuer"* redirigeant vers l'Étape 2.
+- **Fichiers modifiés/créés** : [`src/screens/ShareSuccessPlatformScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessPlatformScreen.js), [`src/navigation/AppNavigator.js`](file:///g:/zen/projets/DizzitApp/app/src/navigation/AppNavigator.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
+
+---
+
+## 🎨 Flux Partage de Succès — Étape 2 : Aperçu du Visuel Dynamique (27 juillet 2026)
+
+- **Nouvel Écran Créé** : [`ShareSuccessVisualScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessVisualScreen.js) (*"Aperçu de votre visuel - Étape 2 sur 3"*).
+- **Intégration & Spécifications** :
+  - **En-tête** : Titre *"Aperçu de votre visuel"*, badge *"Étape 2 sur 3"* et note explicative.
+  - **Carte Visuelle Template Générée** : Grande carte dynamique bleu nuit (`#071D54`) reprenant le logo DizzitUp, le hashtag `#NoBorderNoMiddleman`, le badge *"Transaction réussie !"*, l'annonce *"J'ai envoyé des fonds / 100 USDC via DZYWallet"*, l'encart De John Mensah (Ghana 🇬🇭) Vers Un bénéficiaire (Togo 🇹🇬), la métadonnée réseau Polygon/date/ID de transaction, et le pied de carte *"Wanna do the same? Join DizzitUp - dizzitup.com/join"*.
+  - **Contrôles Interactifs** : Bouton *"Modifier le visuel"* (changement de thème/fond dynamique) et bouton *"Plein écran"* (ouverture d'une modale de prévisualisation grand format).
+  - **Bannière Protection** : Encart d'information masquant les données sensibles.
+  - **Redirection** : Bouton *"Continuer →"* transmettant la plateforme et les données dynamiques à l'Étape 3.
+- **Fichiers modifiés/créés** : [`src/screens/ShareSuccessVisualScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessVisualScreen.js), [`src/navigation/AppNavigator.js`](file:///g:/zen/projets/DizzitApp/app/src/navigation/AppNavigator.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
+
+---
+
+## ✍️ Flux Partage de Succès — Étape 3 : Rédiger le Message & Partage Final (27 juillet 2026)
+
+- **Nouvel Écran Créé** : [`ShareSuccessCaptionScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessCaptionScreen.js) (*"Rédiger votre message - Étape 3 sur 3"*).
+- **Intégration & Spécifications** :
+  - **En-tête & Stepper** : En-tête avec Stepper 3 étapes (*1. Choisir le réseau (✓), 2. Aperçu du visuel (✓), 3. Rédiger le message (actif)*).
+  - **Aperçu Condensé du Visuel** : Mini-carte du visuel généré.
+  - **Zone de Saisie du Message (Légende)** : Encart de saisie pré-rempli avec le message dynamique (*"I, John from Ghana 🇬🇭, successfully sent 100 USDC..."*), compteur de caractères (`198/280`), et bouton *"✏️ Personnaliser le message"*.
+  - **Déclenchement du Partage Natif & Rewards** : Bouton principal *"Partagez et gagnez 1 DZY"* déclenchant le `Share.share` natif, suivi d'un Toast de confirmation et redirection automatique vers [`RewardsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/RewardsScreen.js) pour que l'utilisateur visualise son gain de 1 DZY.
+  - **Maillage Complet des 5 CTA** : Connexion des 5 écrans de succès ([SendMoneySuccessScreen.js](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneySuccessScreen.js), [PaymentSuccessScreen.js](file:///g:/zen/projets/DizzitApp/app/src/screens/PaymentSuccessScreen.js), [TopUpWalletConfirmationScreen.js](file:///g:/zen/projets/DizzitApp/app/src/screens/TopUpWalletConfirmationScreen.js), [WithdrawFundsMobileMoneySuccessScreen.js](file:///g:/zen/projets/DizzitApp/app/src/screens/WithdrawFundsMobileMoneySuccessScreen.js), [CashierSuccessScreen.js](file:///g:/zen/projets/DizzitApp/app/src/screens/CashierSuccessScreen.js)) pour transmettre leurs données de transaction dynamiques (`route.params`) à [ShareSuccessPlatformScreen.js](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessPlatformScreen.js).
+- **Fichiers modifiés/créés** : [`src/screens/ShareSuccessCaptionScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessCaptionScreen.js), [`src/navigation/AppNavigator.js`](file:///g:/zen/projets/DizzitApp/app/src/navigation/AppNavigator.js), [`src/screens/SendMoneySuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneySuccessScreen.js), [`src/screens/PaymentSuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/PaymentSuccessScreen.js), [`src/screens/TopUpWalletConfirmationScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/TopUpWalletConfirmationScreen.js), [`src/screens/WithdrawFundsMobileMoneySuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/WithdrawFundsMobileMoneySuccessScreen.js), [`src/screens/CashierSuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/CashierSuccessScreen.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
+
+---
+
+## 🛠️ Correction Syntaxe — Propriété Style dans ShareSuccessVisualScreen (27 juillet 2026)
+
+- **Correctif** : Remplacement de la frappe `justify.content: 'center'` par `justifyContent: 'center'` à la ligne 290 de [`ShareSuccessVisualScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessVisualScreen.js).
+- **Résultat** : Suppression de l'erreur Babel/Metro, compilation web 100 % réussie.
+- **Fichiers modifiés** : [`src/screens/ShareSuccessVisualScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessVisualScreen.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
+---
+
+## 🏗️ RÉCAPITULATIF CONSOLIDÉ — Feature « Social Sharing / Partager mon succès » (27 juillet 2026)
+
+### Contexte & Demande Client
+
+Le client a demandé : *"Please, add a Social Sharing CTA on all « Successful transaction » screen report that will post a generic (one DizzitUp branded) image with variable, related to the transaction text inside. Beneficiary name & info contact should be anonymized but not his country."*
+
+Notre réponse technique validée : *"The most logical approach here isn't 'AI image generation,' but rather generating a dynamic visual based on a template. Technically, we can: compose the card using a template, inject the transaction data, convert the rendered output into an image, share the image via the native share sheet."*
+
+### Architecture Complète de la Feature
+
+```
+[5 Écrans de Succès de Transaction]
+  │ (Clic sur CTA "Partager mon succès")
+  │ (Transmission de transactionData via route.params)
+  ▼
+[Étape 1 : ShareSuccessPlatformScreen] ➔ Choix du réseau social (WhatsApp, X, Facebook, Instagram, LinkedIn, Telegram)
+  │ (Clic sur "Continuer")
+  ▼
+[Étape 2 : ShareSuccessVisualScreen]   ➔ Aperçu du visuel DizzitUp brandé + "Modifier le visuel" + "Plein écran"
+  │ (Clic sur "Continuer →")
+  ▼
+[Étape 3 : ShareSuccessCaptionScreen]  ➔ Message pré-rempli + "Personnaliser" + Compteur 280 caractères
+  │ (Clic sur "Partagez et gagnez 1 DZY")
+  ▼
+[Natif Share Sheet (Share.share)] ➔ Toast "1 DZY crédité" ➔ Redirection vers RewardsScreen
+```
+
+### Fichiers Créés (3 nouveaux écrans)
+
+| # | Fichier | Rôle | Route Navigator |
+|---|---------|------|-----------------|
+| 1 | [`ShareSuccessPlatformScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessPlatformScreen.js) | Étape 1 : Sélection réseau social | `ShareSuccessPlatformScreen` |
+| 2 | [`ShareSuccessVisualScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessVisualScreen.js) | Étape 2 : Aperçu visuel dynamique généré | `ShareSuccessVisualScreen` |
+| 3 | [`ShareSuccessCaptionScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessCaptionScreen.js) | Étape 3 : Rédaction message + partage natif | `ShareSuccessCaptionScreen` |
+
+### Fichiers Modifiés (7 fichiers existants)
+
+| # | Fichier | Modification |
+|---|---------|-------------|
+| 1 | [`SendMoneySuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneySuccessScreen.js) | Ajout CTA "Partager mon succès" + navigation vers ShareSuccessPlatformScreen avec données transaction envoi |
+| 2 | [`PaymentSuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/PaymentSuccessScreen.js) | Ajout CTA "Partager mon succès" + navigation vers ShareSuccessPlatformScreen avec données paiement |
+| 3 | [`TopUpWalletConfirmationScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/TopUpWalletConfirmationScreen.js) | Ajout CTA "Partager mon succès" + mise à jour bouton secondaire bordure dorée + navigation |
+| 4 | [`WithdrawFundsMobileMoneySuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/WithdrawFundsMobileMoneySuccessScreen.js) | Ajout CTA "Partager mon succès" + mise à jour boutons bas + navigation avec données retrait |
+| 5 | [`CashierSuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/CashierSuccessScreen.js) | Ajout CTA "Partager mon succès" + navigation avec données encaissement TPE |
+| 6 | [`AppNavigator.js`](file:///g:/zen/projets/DizzitApp/app/src/navigation/AppNavigator.js) | Import et enregistrement des 3 nouvelles routes (74 routes actives au total) |
+| 7 | [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md) | Documentation complète de la feature |
+
+### Design Tokens CTA Card (Partagés entre les 5 écrans)
+
+- `backgroundColor`: `#071D54` (Dark blue night)
+- `borderRadius`: `18`
+- `padding`: `14`
+- Left Icon Square: `width: 50, height: 50, borderRadius: 14, backgroundColor: '#FFFFFF'` avec icône `share-social-outline` en `#071D54`
+- 3 Spark Rays: `backgroundColor: '#FFC759'` (étincelles dorées en haut à droite)
+- Gold Accent Text: `color: '#FFC759', fontFamily: 'Inter_700Bold'` pour `Gagnez 1 DZY` et `@DizzitUp`
+- Arrow Right: `Ionicons name="arrow-forward" size={20} color="#FFC759"`
+
+### Données Dynamiques Transmises (transactionData via route.params)
+
+| Écran Source | type | amount | token | actionType | recipientName |
+|-------------|------|--------|-------|------------|---------------|
+| SendMoneySuccess | `send` | `amount` (variable) | `token` (variable) | `envoyé` | `recipient` (variable) |
+| PaymentSuccess | `payment` | `20.50` | `USD` | `payé` | `Mama Kemi Adebayo` |
+| TopUpWalletConfirmation | `topup` | `10` | `USDC` | `rechargé` | `Mon DZYWallet` |
+| WithdrawFundsMobileMoney | `withdraw` | `250 000 FCFA` | `USDC` | `retiré` | `Mixx by Yas (+228 90 12 34 56)` |
+| CashierSuccess | `cashier` | `2 000 FCFA` | `USDT` | `reçu` | `Caisse (TPE)` |
+
+### Respect de la Demande Client — Checklist
+
+- [x] **CTA Social Sharing sur TOUS les écrans de succès** : 5/5 écrans couverts
+- [x] **Image brandée DizzitUp générique** : Carte visuelle avec logo officiel, couleurs marque, hashtag `#NoBorderNoMiddleman`, slogan `Send More, Get More`, lien `dizzitup.com/join`
+- [x] **Texte variable lié à la transaction** : Montant, token, type d'opération, expéditeur, bénéficiaire, réseau, date, hash — tous injectés dynamiquement
+- [x] **Anonymisation du bénéficiaire** : Nom masqué (*"Un bénéficiaire"*), avatar silhouette neutre, contacts cachés
+- [x] **Pays du bénéficiaire visible** : Pays (*Togo*) et drapeau (*🇹🇬*) restent affichés
+- [x] **Partage natif fonctionnel** : `Share.share` déclenché depuis le bouton *"Partagez et gagnez 1 DZY"*
+- [x] **Données fictives prêtes pour le backend** : Structure `transactionData` en `route.params` prête à recevoir les vraies données du backend
+
+### Prochaines Étapes (Quand Backend Prêt)
+
+1. Remplacer les données mock par les vraies données de transaction depuis l'API backend
+2. Implémenter la capture d'écran réelle de la carte visuelle (via `react-native-view-shot` ou similaire) pour générer le PNG/JPG partageable
+3. Appeler l'API backend pour créditer réellement le 1 DZY après vérification du partage
+4. Stocker l'historique des partages côté backend pour éviter les doublons de récompenses
+
+---
+
 ## 🔄 Règle d'Or pour l'IA (Mise à jour Continue du Mémoire)
 
 **RÈGLE STRICTE POUR L'IA** : À la fin de chaque session ou après toute modification majeure (ajout d'écran, ajustement de flux, refactoring, gestion Git), l'IA **DOIT IMPÉRATIVEMENT** mettre à jour ce fichier `memoire.md`. Ainsi, lors de l'ouverture d'une nouvelle session de conversation, la lecture préalable de ce fichier permet de récupérer l'intégralité du contexte, de l'état d'avancement et des règles sans aucune perte d'information ni interruption du workflow.
-
-
 
 
 

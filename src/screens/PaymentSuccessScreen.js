@@ -133,6 +133,52 @@ export default function PaymentSuccessScreen() {
             </View>
           </View>
 
+          {/* Partager mon succès CTA Card */}
+          <TouchableOpacity 
+            style={styles.shareCtaCard}
+            onPress={() => {
+              navigation.navigate('ShareSuccessPlatformScreen', {
+                transactionData: {
+                  type: 'payment',
+                  amount: '20.50',
+                  token: 'USD',
+                  recipientName: 'Mama Kemi Adebayo',
+                  recipientCountry: 'Nigeria',
+                  recipientFlag: '🇳🇬',
+                  date: '18 Mai 2024 • 10:45 AM',
+                  txHash: 'DZY20240518104532',
+                  actionType: 'payé',
+                },
+              });
+            }}
+            activeOpacity={0.88}
+          >
+            <View style={styles.shareIconWrapper}>
+              {/* Yellow spark rays top right */}
+              <View style={styles.sparkRaysWrap}>
+                <View style={[styles.sparkRay, { transform: [{ rotate: '-30deg' }] }]} />
+                <View style={[styles.sparkRay, { transform: [{ rotate: '0deg' }] }]} />
+                <View style={[styles.sparkRay, { transform: [{ rotate: '30deg' }] }]} />
+              </View>
+              
+              <View style={styles.shareWhiteSquare}>
+                <Ionicons name="share-social-outline" size={24} color="#071D54" />
+              </View>
+            </View>
+
+            <View style={styles.shareTextWrap}>
+              <Text style={styles.shareCtaTitle}>Partager mon succès</Text>
+              <Text style={styles.shareCtaSub1}>
+                <Text style={styles.goldText}>Gagnez 1 DZY</Text> en identifiant <Text style={styles.goldText}>@DizzitUp</Text>
+              </Text>
+              <Text style={styles.shareCtaSub2}>
+                Publiez une carte DizzitUp personnalisée de cette transaction
+              </Text>
+            </View>
+
+            <Ionicons name="chevron-forward" size={20} color="#FFC759" />
+          </TouchableOpacity>
+
           {/* Action Buttons */}
           <View style={styles.actionButtons}>
           <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation.navigate('TransactionHistoryScreen')}>
@@ -454,9 +500,78 @@ const styles = StyleSheet.create({
     color: '#1A2840',
     marginRight: 4,
   },
+  
+  /* Partager mon succès CTA Card Styles */
+  shareCtaCard: {
+    backgroundColor: '#071D54',
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 18,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#071D54',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  shareIconWrapper: {
+    position: 'relative',
+    marginRight: 12,
+  },
+  sparkRaysWrap: {
+    position: 'absolute',
+    top: -6,
+    right: -4,
+    flexDirection: 'row',
+    gap: 2,
+    zIndex: 2,
+  },
+  sparkRay: {
+    width: 2,
+    height: 6,
+    backgroundColor: '#FFC759',
+    borderRadius: 1,
+  },
+  shareWhiteSquare: {
+    width: 50,
+    height: 50,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  shareTextWrap: {
+    flex: 1,
+    paddingRight: 4,
+  },
+  shareCtaTitle: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 15,
+    color: '#FFFFFF',
+    marginBottom: 2,
+  },
+  shareCtaSub1: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11.5,
+    color: '#FFFFFF',
+    marginBottom: 2,
+  },
+  goldText: {
+    color: '#FFC759',
+    fontFamily: 'Inter_700Bold',
+  },
+  shareCtaSub2: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 10.5,
+    color: '#94A3B8',
+    lineHeight: 14,
+  },
+
   actionButtons: {
     paddingHorizontal: 16,
-    marginTop: 24,
+    marginTop: 16,
   },
   primaryBtn: {
     flexDirection: 'row',

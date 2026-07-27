@@ -69,6 +69,9 @@ import BusinessAccountScreen from '../screens/BusinessAccountScreen';
 import ContactUsScreen from '../screens/ContactUsScreen';
 import DizzyFamilyScreen from '../screens/DizzyFamilyScreen';
 import PersonalAccountScreen from '../screens/PersonalAccountScreen';
+import ShareSuccessPlatformScreen from '../screens/ShareSuccessPlatformScreen';
+import ShareSuccessVisualScreen from '../screens/ShareSuccessVisualScreen';
+import ShareSuccessCaptionScreen from '../screens/ShareSuccessCaptionScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -78,6 +81,9 @@ export default function AppNavigator() {
       initialRouteName="LoginScreen"
       screenOptions={{ headerShown: false }}
     >
+      <Stack.Screen name="ShareSuccessPlatformScreen" component={ShareSuccessPlatformScreen} />
+      <Stack.Screen name="ShareSuccessVisualScreen" component={ShareSuccessVisualScreen} />
+      <Stack.Screen name="ShareSuccessCaptionScreen" component={ShareSuccessCaptionScreen} />
       <Stack.Screen name="AboutDizzitUpScreen" component={AboutDizzitUpScreen} />
       <Stack.Screen name="AccountSettingsScreen" component={AccountSettingsScreen} />
       <Stack.Screen name="AskAminataScreen" component={AskAminataScreen} />

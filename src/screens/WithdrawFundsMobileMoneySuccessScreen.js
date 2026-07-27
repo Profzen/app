@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AppToast from '../components/AppToast';
 
 export default function WithdrawFundsMobileMoneySuccessScreen() {
   const navigation = useNavigation();
+  const [toast, setToast] = useState(null);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -211,20 +214,68 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
             </Text>
           </View>
 
+          {/* Partager mon succès CTA Card */}
+          <TouchableOpacity 
+            style={styles.shareCtaCard}
+            onPress={() => {
+              navigation.navigate('ShareSuccessPlatformScreen', {
+                transactionData: {
+                  type: 'withdraw',
+                  amount: '250 000 FCFA',
+                  token: 'USDC',
+                  actionType: 'retiré',
+                  recipientName: 'Mixx by Yas (+228 90 12 34 56)',
+                  recipientCountry: 'Togo',
+                  recipientFlag: '🇹🇬',
+                  date: '30 juin 2025 • 14:32',
+                  txHash: 'DZTR-250630-143245',
+                },
+              });
+            }}
+            activeOpacity={0.88}
+          >
+            <View style={styles.shareIconWrapper}>
+              {/* Yellow spark top left */}
+              <View style={styles.sparkRaysWrap}>
+                <View style={[styles.sparkRay, { transform: [{ rotate: '-30deg' }] }]} />
+                <View style={[styles.sparkRay, { transform: [{ rotate: '0deg' }] }]} />
+                <View style={[styles.sparkRay, { transform: [{ rotate: '30deg' }] }]} />
+              </View>
+              
+              <View style={styles.shareWhiteSquare}>
+                <Ionicons name="share-social-outline" size={24} color="#071D54" />
+              </View>
+            </View>
+
+            <View style={styles.shareTextWrap}>
+              <Text style={styles.shareCtaSub1}>
+                <Text style={styles.goldText}>Gagnez 1 DZY</Text> en identifiant <Text style={styles.goldText}>@DizzitUp</Text>
+              </Text>
+              <Text style={styles.shareCtaTitle}>Partager mon succès</Text>
+              <Text style={styles.shareCtaSub2}>
+                Publiez une carte DizzitUp personnalisée de cette transaction
+              </Text>
+            </View>
+
+            <Ionicons name="chevron-forward" size={20} color="#FFC759" />
+          </TouchableOpacity>
+
           {/* Action Buttons */}
           <View style={styles.actionButtonsContainer}>
             <TouchableOpacity style={styles.btnOutline} onPress={() => navigation.navigate('TransactionHistoryScreen')}>
-              <Ionicons name="time-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
+              <Ionicons name="time-outline" size={18} color="#1A2840" style={{marginRight: 6}} />
               <Text style={styles.btnOutlineText}>Voir l'historique</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.btnPrimary} onPress={() => navigation.navigate('HomeScreen')}>
-              <Ionicons name="refresh" size={20} color="#1A2840" style={{marginRight: 8}} />
-              <Text style={styles.btnPrimaryText}>Retour à l'accueil</Text>
+            <TouchableOpacity style={styles.btnPrimary} onPress={() => navigation.navigate('WithdrawFundsScreen')}>
+              <Ionicons name="refresh-outline" size={18} color="#1A2840" style={{marginRight: 6}} />
+              <Text style={styles.btnPrimaryText}>Effectuer un autre retrait</Text>
             </TouchableOpacity>
           </View>
 
         </ScrollView>
+
+        {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
       </View>
     </SafeAreaView>
   );
@@ -503,7 +554,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
   },
   successBannerIconCircle: {
     marginRight: 12,
@@ -515,9 +566,80 @@ const styles = StyleSheet.create({
     color: '#1A2840',
     lineHeight: 18,
   },
+
+  toastWrap: { position: 'absolute', left: 14, right: 14, top: 60, zIndex: 50 },
+
+  /* Partager mon succès CTA Card Styles */
+  shareCtaCard: {
+    backgroundColor: '#071D54',
+    borderRadius: 18,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    shadowColor: '#071D54',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  shareIconWrapper: {
+    position: 'relative',
+    marginRight: 12,
+  },
+  sparkRaysWrap: {
+    position: 'absolute',
+    top: -6,
+    right: -4,
+    flexDirection: 'row',
+    gap: 2,
+    zIndex: 2,
+  },
+  sparkRay: {
+    width: 2,
+    height: 6,
+    backgroundColor: '#FFC759',
+    borderRadius: 1,
+  },
+  shareWhiteSquare: {
+    width: 50,
+    height: 50,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  shareTextWrap: {
+    flex: 1,
+    paddingRight: 4,
+  },
+  shareCtaTitle: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 15,
+    color: '#FFFFFF',
+    marginBottom: 2,
+  },
+  shareCtaSub1: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11.5,
+    color: '#FFFFFF',
+    marginBottom: 2,
+  },
+  goldText: {
+    color: '#FFC759',
+    fontFamily: 'Inter_700Bold',
+  },
+  shareCtaSub2: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 10.5,
+    color: '#94A3B8',
+    lineHeight: 14,
+  },
+
   actionButtonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: 10,
   },
   btnOutline: {
     flex: 1,
@@ -525,29 +647,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#FFB800',
-    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#FFC759',
+    borderRadius: 14,
     paddingVertical: 14,
-    marginRight: 8,
   },
   btnOutlineText: {
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: 'Inter_700Bold',
     fontSize: 13,
     color: '#1A2840',
   },
   btnPrimary: {
-    flex: 1.3,
+    flex: 1.2,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFB800',
-    borderRadius: 12,
+    backgroundColor: '#FFC759',
+    borderRadius: 14,
     paddingVertical: 14,
-    marginLeft: 8,
   },
   btnPrimaryText: {
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: 'Inter_700Bold',
     fontSize: 13,
     color: '#1A2840',
   },

@@ -71,6 +71,50 @@ export default function SendMoneySuccessScreen() {
               </TouchableOpacity>
             </View>
 
+            {/* Partager mon succès CTA Card */}
+            <TouchableOpacity 
+              style={styles.shareCtaCard}
+              onPress={() => {
+                navigation.navigate('ShareSuccessPlatformScreen', {
+                  transactionData: {
+                    type: 'send',
+                    amount,
+                    token,
+                    recipientName: recipient,
+                    txHash: hash,
+                    date: '30 Mai 2025 • 09:41',
+                    actionType: 'envoyé',
+                  },
+                });
+              }}
+              activeOpacity={0.88}
+            >
+              <View style={styles.shareIconWrapper}>
+                {/* Yellow spark rays top right */}
+                <View style={styles.sparkRaysWrap}>
+                  <View style={[styles.sparkRay, { transform: [{ rotate: '-30deg' }] }]} />
+                  <View style={[styles.sparkRay, { transform: [{ rotate: '0deg' }] }]} />
+                  <View style={[styles.sparkRay, { transform: [{ rotate: '30deg' }] }]} />
+                </View>
+                
+                <View style={styles.shareWhiteSquare}>
+                  <Ionicons name="share-outline" size={24} color="#071D54" />
+                </View>
+              </View>
+
+              <View style={styles.shareTextWrap}>
+                <Text style={styles.shareCtaTitle}>Partager mon succès</Text>
+                <Text style={styles.shareCtaSub1}>
+                  <Text style={styles.goldText}>Gagnez 1 DZY</Text> en identifiant <Text style={styles.goldText}>@DizzitUp</Text>
+                </Text>
+                <Text style={styles.shareCtaSub2}>
+                  Publiez une carte DizzitUp personnalisée de cette transaction
+                </Text>
+              </View>
+
+              <Ionicons name="chevron-forward" size={20} color="#FFC759" />
+            </TouchableOpacity>
+
             {/* Main Action Button */}
             <TouchableOpacity 
               style={styles.doneButton} 
@@ -116,10 +160,23 @@ const styles = StyleSheet.create({
   successCircleWrapper: { alignItems: 'center', marginBottom: 20 },
   successCircle: { width: 84, height: 84, borderRadius: 42, backgroundColor: '#10B981', justifyContent: 'center', alignItems: 'center', shadowColor: '#10B981', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 4 },
   successTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 22, color: '#0F172A', textAlign: 'center', marginBottom: 10 },
-  successSubtitle: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#15803D', textAlign: 'center', paddingHorizontal: 12, lineHeight: 20, marginBottom: 28 },
-  hashBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, paddingLeft: 16, paddingRight: 8, height: 52, marginBottom: 28 },
+  successSubtitle: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#15803D', textAlign: 'center', paddingHorizontal: 12, lineHeight: 20, marginBottom: 24 },
+  hashBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, paddingLeft: 16, paddingRight: 8, height: 52, marginBottom: 16 },
   hashText: { flex: 1, fontFamily: 'Inter_500Medium', fontSize: 13, color: '#475569', marginRight: 8 },
   copyBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#CBD5E1', justifyContent: 'center', alignItems: 'center' },
+  
+  /* Partager mon succès CTA Card Styles */
+  shareCtaCard: { backgroundColor: '#071D54', borderRadius: 18, padding: 14, flexDirection: 'row', alignItems: 'center', marginBottom: 16, shadowColor: '#071D54', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
+  shareIconWrapper: { position: 'relative', marginRight: 12 },
+  sparkRaysWrap: { position: 'absolute', top: -6, right: -4, flexDirection: 'row', gap: 2, zIndex: 2 },
+  sparkRay: { width: 2, height: 6, backgroundColor: '#FFC759', borderRadius: 1 },
+  shareWhiteSquare: { width: 50, height: 50, borderRadius: 14, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' },
+  shareTextWrap: { flex: 1, paddingRight: 4 },
+  shareCtaTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#FFFFFF', marginBottom: 2 },
+  shareCtaSub1: { fontFamily: 'Inter_600SemiBold', fontSize: 11.5, color: '#FFFFFF', marginBottom: 2 },
+  goldText: { color: '#FFC759', fontFamily: 'Inter_700Bold' },
+  shareCtaSub2: { fontFamily: 'Inter_400Regular', fontSize: 10.5, color: '#94A3B8', lineHeight: 14 },
+
   doneButton: { backgroundColor: '#071D54', height: 52, borderRadius: 14, justifyContent: 'center', alignItems: 'center', shadowColor: '#071D54', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 3 },
   doneButtonText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#FFFFFF' },
   securityFooterRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 24 },
