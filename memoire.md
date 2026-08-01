@@ -1510,9 +1510,40 @@ Notre réponse technique validée : *"The most logical approach here isn't 'AI i
 
 ---
 
+## 📱 Déploiement iOS & Configuration TestFlight (1er août 2026)
+
+### État Actuel & Stratégie Retenue
+- **Android** : APK Android déjà compilé et validé via Gradle / GitHub Actions (`build-apk.yml`).
+- **iOS / TestFlight** : Demande du client pour fournir une version iOS accessible sur TestFlight via EAS (Expo Application Services).
+- **Méthode d'Authentification Choisie** : Utilisation d'une **Clé d'API App Store Connect (ASC API Key)** au lieu des identifiants Apple personnels ou du code 2FA.
+  - Avantage : Permet de compiler et publier sur TestFlight en CI/CD (GitHub Actions / EAS CLI) de manière 100 % autonome sans demander de mot de passe ni de code SMS 2FA.
+  - Le développeur utilise son propre compte Expo (EAS), évitant le besoin d'un compte Expo dédié côté client.
+
+### Procédure et Étapes à Suivre (Feuille de Route)
+
+1. **Attente des Éléments Client (En cours)** :
+   Le message explicatif a été transmis au client (`solofo.rafeno@gmail.com`). Le client doit générer la clé sur App Store Connect (*Utilisateurs et accès > Clés d'API*, rôle *App Manager*) et transmettre :
+   - Le fichier de clé `.p8` (ex: `AuthKey_ABC123XYZ.p8`)
+   - Le **Key ID** (ex: `ABC123XYZ`)
+   - L'**Issuer ID** (UUID affiché en haut de la page des clés d'API)
+
+2. **Configuration des Identifiants dans EAS CLI (Dès réception)** :
+   - Connexion au compte Expo : `npx eas login`
+   - Enregistrement de la clé Apple sur EAS : `npx eas credentials` -> Sélectionner `iOS` -> `App Store Connect API Key` -> Charger le fichier `.p8`, le `Key ID`, et l'`Issuer ID`.
+
+3. **Lancement du Build & Soumission TestFlight** :
+   - Commande directe EAS :
+     ```bash
+     npx eas build --platform ios --profile production --auto-submit
+     ```
+   - Ou mise à jour du workflow GitHub Actions (`.github/workflows/eas-build.yml`) pour déclencher la compilation iOS et la soumission automatique à TestFlight dès un push sur `main` / `develop`.
+
+---
+
 ## 🔄 Règle d'Or pour l'IA (Mise à jour Continue du Mémoire)
 
 **RÈGLE STRICTE POUR L'IA** : À la fin de chaque session ou après toute modification majeure (ajout d'écran, ajustement de flux, refactoring, gestion Git), l'IA **DOIT IMPÉRATIVEMENT** mettre à jour ce fichier `memoire.md`. Ainsi, lors de l'ouverture d'une nouvelle session de conversation, la lecture préalable de ce fichier permet de récupérer l'intégralité du contexte, de l'état d'avancement et des règles sans aucune perte d'information ni interruption du workflow.
+
 
 
 
