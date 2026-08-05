@@ -1510,33 +1510,37 @@ Notre réponse technique validée : *"The most logical approach here isn't 'AI i
 
 ---
 
-## 📱 Déploiement iOS & Configuration TestFlight (1er août 2026)
+## 📱 Déploiement iOS & Configuration TestFlight (5 août 2026)
 
-### État Actuel & Stratégie Retenue
-- **Android** : APK Android déjà compilé et validé via Gradle / GitHub Actions (`build-apk.yml`).
-- **iOS / TestFlight** : Demande du client pour fournir une version iOS accessible sur TestFlight via EAS (Expo Application Services).
-- **Méthode d'Authentification Choisie** : Utilisation d'une **Clé d'API App Store Connect (ASC API Key)** au lieu des identifiants Apple personnels ou du code 2FA.
-  - Avantage : Permet de compiler et publier sur TestFlight en CI/CD (GitHub Actions / EAS CLI) de manière 100 % autonome sans demander de mot de passe ni de code SMS 2FA.
-  - Le développeur utilise son propre compte Expo (EAS), évitant le besoin d'un compte Expo dédié côté client.
+### État Actuel & Éléments Configurés
+- **Android** : APK Android 100% compilé et validé via Gradle / GitHub Actions (`build-apk.yml`).
+- **iOS / TestFlight** : Configuration du build cloud EAS et de la soumission automatique sur TestFlight.
+- **Éléments App Store Connect API Key enregistrés** :
+  - **Fichier `.p8`** : `AuthKey_4S4J7Q3V9S.p8` à la racine `app/` (ignoré par Git dans `.gitignore`).
+  - **Key ID** : `4S4J7Q3V9S`
+  - **Issuer ID** : `36e0cd09-4437-4ec4-9269-4b9e474d31f4`
+  - **Nom de la clé sur Expo** : `DizzitUp Key`
+  - **Compte Expo lié** : `profzen` (`profzzen@gmail.com`)
+  - **Projet Expo / EAS** : `@profzen/dizzitapp-v2` (ID : `cb443e23-61ff-47de-8f7d-45919575a57d`, Bundle ID : `com.dizzitup.app`).
+  - **Clé API EAS Submit** : **100% assignée et liée** dans EAS Credentials (`App Store Connect API Key assigned to dizzitapp-v2: com.dizzitup.app for EAS Submit`).
+  - **Conformité TestFlight `app.json`** : `"infoPlist": { "ITSAppUsesNonExemptEncryption": false }` ajouté sous `ios`.
 
-### Procédure et Étapes à Suivre (Feuille de Route)
+### Ce qu'il reste pour lancer le Build iOS
+Pour que le build `.ipa` soit signé pour la première fois, Apple nécessite un **Certificat de Distribution (`.p12`)**. 
+Deux méthodes faciles transmises au client :
+1. **Sur Mac** : Exporter le certificat `.p12` via *Trousseau d'accès (Keychain Access)* après création sur `developer.apple.com`.
+2. **Sur Windows (Sans Mac via OpenSSL)** :
+   ```bash
+   openssl req -newkey rsa:2048 -nodes -keyout private.key -out request.csr -subj "/CN=DizzitUp"
+   # Téléverser request.csr sur developer.apple.com -> Télécharger distribution.cer
+   openssl x509 -in distribution.cer -inform DER -out distribution.pem -outform PEM
+   openssl pkcs12 -export -out distribution.p12 -inkey private.key -in distribution.pem -passout pass:123456
+   ```
 
-1. **Attente des Éléments Client (En cours)** :
-   Le message explicatif a été transmis au client (`solofo.rafeno@gmail.com`). Le client doit générer la clé sur App Store Connect (*Utilisateurs et accès > Clés d'API*, rôle *App Manager*) et transmettre :
-   - Le fichier de clé `.p8` (ex: `AuthKey_ABC123XYZ.p8`)
-   - Le **Key ID** (ex: `ABC123XYZ`)
-   - L'**Issuer ID** (UUID affiché en haut de la page des clés d'API)
-
-2. **Configuration des Identifiants dans EAS CLI (Dès réception)** :
-   - Connexion au compte Expo : `npx eas login`
-   - Enregistrement de la clé Apple sur EAS : `npx eas credentials` -> Sélectionner `iOS` -> `App Store Connect API Key` -> Charger le fichier `.p8`, le `Key ID`, et l'`Issuer ID`.
-
-3. **Lancement du Build & Soumission TestFlight** :
-   - Commande directe EAS :
-     ```bash
-     npx eas build --platform ios --profile production --auto-submit
-     ```
-   - Ou mise à jour du workflow GitHub Actions (`.github/workflows/eas-build.yml`) pour déclencher la compilation iOS et la soumission automatique à TestFlight dès un push sur `main` / `develop`.
+Dès réception du fichier `.p12` ou de sa création, le lancement s'effectue en une commande :
+```powershell
+npx eas-cli build --platform ios --profile production --auto-submit
+```
 
 ---
 

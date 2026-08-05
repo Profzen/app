@@ -8,7 +8,10 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.dizzitup.app"
+      "bundleIdentifier": "com.dizzitup.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.dizzitup.app",
@@ -25,6 +28,12 @@
     "plugins": [
       "expo-font",
       "expo-build-properties"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "cb443e23-61ff-47de-8f7d-45919575a57d"
+      }
+    },
+    "owner": "profzen"
   }
 }
