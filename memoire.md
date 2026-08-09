@@ -1603,21 +1603,6 @@ Tous les éléments requis pour compiler et soumettre sur TestFlight ont été *
 
 ---
 
-### 📋 5. Réception de l'Identifiant App Store Connect (`ascAppId`)
-- **Identifiant Apple de l'app reçu** : **`6799749556`**
-- **Configuration dans `eas.json`** :
-  ```json
-  "submit": {
-    "production": {
-      "ios": {
-        "ascAppId": "6799749556"
-      }
-    }
-  }
-  ```
-
----
-
 ### 🎉 6. Soumission Réussie sur TestFlight (9 août 2026)
 - **Statut de soumission** : ✅ **SUCCÈS TOTAL — BINAIRE TÉLÉVERSÉ SUR TESTFLIGHT !**
 - **Détails de la soumission EAS** : [`https://expo.dev/accounts/profzen/projects/dizzitapp-v2/submissions/18b88131-8107-4fcd-800d-7b0646863989`](https://expo.dev/accounts/profzen/projects/dizzitapp-v2/submissions/18b88131-8107-4fcd-800d-7b0646863989)
