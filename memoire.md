@@ -1544,6 +1544,44 @@ npx eas-cli build --platform ios --profile production --auto-submit
 
 ---
 
+## 📱 Déploiement iOS & Intégration des Identifiants Apple (9 août 2026)
+
+### 🔍 1. Réception & Validation du Fichier `Certificates.p12`
+- **Fichier** : `Certificates.p12` (3,2 Ko) déposé à la racine du projet (sécurisé dans `.gitignore`).
+- **Mot de passe validé** : `DizzitUp2026#`.
+- **Déchiffrement & Données extraites** :
+  - **Type de certificat** : `Apple Development`
+  - **Titulaire (Common Name)** : `Solofo RAFENO (HVTK5MBMJL)`
+  - **Organisation & Apple Team ID** : `DizzitUp` (`948RWU4PMF`)
+  - **Période de validité** : `08/08/2026` au `08/08/2027` (1 an complet conforme Apple).
+
+### ⚙️ 2. Configuration & Importation Réussie sur EAS Cloud
+- **Liaison du Certificat sur EAS** : Exécution de `npx eas-cli credentials -p ios` $\rightarrow$ Import réussi du certificat de distribution pour le projet `@profzen/dizzitapp-v2` (`com.dizzitup.app`) avec l'Apple Team ID `948RWU4PMF`.
+- **Clé API App Store Connect** : `DizzitUp Key` (Key ID `4S4J7Q3V9S`, Issuer ID `36e0cd09-4437-4ec4-9269-4b9e474d31f4`) active et liée.
+- **Mise à jour `eas.json`** : Ajout de `"appVersionSource": "remote"` sous `cli` pour supprimer les avertissements de versionnage.
+
+### 📋 3. En attente : Réception du Provisioning Profile (`.mobileprovision`)
+- Afin de préserver la confidentialité des identifiants Apple personnels du client (sans nécessiter son mot de passe Apple ID / 2FA), la procédure de génération autonome du **Provisioning Profile** lui a été transmise :
+  1. Accès à [developer.apple.com/account/resources/profiles/list](https://developer.apple.com/account/resources/profiles/list)
+  2. Création d'un profil sous **Distribution** (*App Store Connect* ou *iOS App Development*).
+  3. Sélection de l'App ID **`com.dizzitup.app`**.
+  4. Sélection du certificat **`Solofo RAFENO`**.
+  5. Génération et téléchargement du fichier **`.mobileprovision`**.
+
+### 🚀 4. Prochaine Étape Immédiate (Dès Réception du `.mobileprovision`)
+1. Déposer le fichier `.mobileprovision` à la racine de `app/`.
+2. Importer le profil dans EAS :
+   ```powershell
+   npx eas-cli credentials -p ios
+   ```
+   *(Sélectionner `Provisioning Profile` $\rightarrow$ `Upload .mobileprovision file`)*.
+3. Lancer la compilation et la soumission automatique sur TestFlight :
+   ```powershell
+   npx eas-cli build --platform ios --profile production --auto-submit
+   ```
+
+---
+
 ## 🔄 Règle d'Or pour l'IA (Mise à jour Continue du Mémoire)
 
 **RÈGLE STRICTE POUR L'IA** : À la fin de chaque session ou après toute modification majeure (ajout d'écran, ajustement de flux, refactoring, gestion Git), l'IA **DOIT IMPÉRATIVEMENT** mettre à jour ce fichier `memoire.md`. Ainsi, lors de l'ouverture d'une nouvelle session de conversation, la lecture préalable de ce fichier permet de récupérer l'intégralité du contexte, de l'état d'avancement et des règles sans aucune perte d'information ni interruption du workflow.
