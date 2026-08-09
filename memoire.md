@@ -1588,39 +1588,42 @@ Tous les éléments requis pour compiler et soumettre sur TestFlight ont été *
 
 ---
 
-### ⏳ 5. Ce qu'on Attend du Client (Action Client en Attente)
-Pour que la soumission vers TestFlight se fasse automatiquement sans demander d'identifiant Apple personnel :
-1. **Créer la fiche de l'app sur App Store Connect** :
-   - URL : [appstoreconnect.apple.com/apps](https://appstoreconnect.apple.com/apps)
-   - Cliquer sur `+` $\rightarrow$ **Nouvelle app**
-   - **Plateforme** : iOS
-   - **Nom** : `DizzitUp`
-   - **Langue principale** : Français (ou Anglais)
-   - **Bundle ID** : sélectionner `com.dizzitup.app`
-   - **SKU** : `dizzitup-app`
-   - **Accès utilisateur** : Accès complet $\rightarrow$ Cliquer sur **Créer**.
-2. **Fournir l'Identifiant Apple de l'app (`ascAppId`)** :
-   - Aller dans *Général* $\rightarrow$ *Informations sur l'app* $\rightarrow$ copier le numéro dans le champ **Identifiant Apple** (suite de 9 ou 10 chiffres, ex: `6741234567`).
+### 📋 5. Réception de l'Identifiant App Store Connect (`ascAppId`)
+- **Identifiant Apple de l'app reçu** : **`6799749556`**
+- **Configuration dans `eas.json`** :
+  ```json
+  "submit": {
+    "production": {
+      "ios": {
+        "ascAppId": "6799749556"
+      }
+    }
+  }
+  ```
 
 ---
 
-### 📦 6. Prochaine Étape Immédiate (Dès Réception de l'`ascAppId`)
-1. Ajouter l'`ascAppId` dans `eas.json` sous `submit.production.ios` :
-   ```json
-   {
-     "submit": {
-       "production": {
-         "ios": {
-           "ascAppId": "NUMERO_FOURNI_PAR_LE_CLIENT"
-         }
-       }
-     }
-   }
-   ```
-2. Lancer la soumission directe vers TestFlight via la clé API :
-   ```powershell
-   npx eas-cli submit --platform ios --latest
-   ```
+### 📋 5. Réception de l'Identifiant App Store Connect (`ascAppId`)
+- **Identifiant Apple de l'app reçu** : **`6799749556`**
+- **Configuration dans `eas.json`** :
+  ```json
+  "submit": {
+    "production": {
+      "ios": {
+        "ascAppId": "6799749556"
+      }
+    }
+  }
+  ```
+
+---
+
+### 🎉 6. Soumission Réussie sur TestFlight (9 août 2026)
+- **Statut de soumission** : ✅ **SUCCÈS TOTAL — BINAIRE TÉLÉVERSÉ SUR TESTFLIGHT !**
+- **Détails de la soumission EAS** : [`https://expo.dev/accounts/profzen/projects/dizzitapp-v2/submissions/18b88131-8107-4fcd-800d-7b0646863989`](https://expo.dev/accounts/profzen/projects/dizzitapp-v2/submissions/18b88131-8107-4fcd-800d-7b0646863989)
+- **Lien TestFlight App Store Connect** : [`https://appstoreconnect.apple.com/apps/6799749556/testflight/ios`](https://appstoreconnect.apple.com/apps/6799749556/testflight/ios)
+- **App Version** : `1.0.0` (Build `1`)
+- **Traitement Apple** : Le binaire `.ipa` est en cours de traitement automatique par Apple (environ 5 à 10 minutes). Dès que le traitement est terminé, l'application est prête à être testée par les utilisateurs TestFlight.
 
 ---
 
@@ -1630,11 +1633,13 @@ Pour que la soumission vers TestFlight se fasse automatiquement sans demander d'
 | :--- | :--- | :--- |
 | **Nom de l'application** | `DizzitUp` | Défini dans `app.json` |
 | **Bundle ID (iOS) / Package (Android)** | `com.dizzitup.app` | Identifiant unique Apple & Google Play |
+| **Identifiant App Store Connect (`ascAppId`)** | `6799749556` | Identifiant Apple de l'app sur App Store Connect |
+| **Lien TestFlight Direct** | [`TestFlight DizzitUp`](https://appstoreconnect.apple.com/apps/6799749556/testflight/ios) | Console de test TestFlight |
 | **Organisation / Apple Team Name** | `DizzitUp` | Compte Développeur Apple Entreprise |
 | **Apple Team ID** | `948RWU4PMF` | ID officiel de l'équipe Apple Developer |
 | **Compte Expo / EAS** | `profzen` (`profzzen@gmail.com`) | Propriétaire du projet EAS Cloud |
 | **EAS Project ID** | `cb443e23-61ff-47de-8f7d-45919575a57d` | Projet `@profzen/dizzitapp-v2` |
-| **Lien Build EAS Cloud (iOS)** | [`Build 6c170036...`](https://expo.dev/accounts/profzen/projects/dizzitapp-v2/builds/6c170036-c0b9-418f-846a-ec6dac34b9b0) | Build production TestFlight en cours |
+| **Lien Build EAS Cloud (iOS)** | [`Build 6c170036...`](https://expo.dev/accounts/profzen/projects/dizzitapp-v2/builds/6c170036-c0b9-418f-846a-ec6dac34b9b0) | Build production `1.0.0 (1)` terminé |
 | **Mot de passe Certificats `.p12`** | `DizzitUp2026#` | Utilisé pour `Certificates.p12` et `DizzitUp_Distribution.p12` |
 | **Certificat de Distribution iOS** | `iPhone Distribution: DizzitUp (948RWU4PMF)` | S/N: `369BDC522DD7A132C40B781D5254599F` (Expire le **09/08/2027**) |
 | **Certificat de Développement iOS** | `Apple Development: Solofo RAFENO (HVTK5MBMJL)` | Contenu dans `Certificates.p12` (Expire le **08/08/2027**) |
