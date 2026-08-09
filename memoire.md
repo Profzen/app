@@ -1560,25 +1560,89 @@ npx eas-cli build --platform ios --profile production --auto-submit
 - **Clé API App Store Connect** : `DizzitUp Key` (Key ID `4S4J7Q3V9S`, Issuer ID `36e0cd09-4437-4ec4-9269-4b9e474d31f4`) active et liée.
 - **Mise à jour `eas.json`** : Ajout de `"appVersionSource": "remote"` sous `cli` pour supprimer les avertissements de versionnage.
 
-### 📋 3. En attente : Réception du Provisioning Profile (`.mobileprovision`)
-- Afin de préserver la confidentialité des identifiants Apple personnels du client (sans nécessiter son mot de passe Apple ID / 2FA), la procédure de génération autonome du **Provisioning Profile** lui a été transmise :
-  1. Accès à [developer.apple.com/account/resources/profiles/list](https://developer.apple.com/account/resources/profiles/list)
-  2. Création d'un profil sous **Distribution** (*App Store Connect* ou *iOS App Development*).
-  3. Sélection de l'App ID **`com.dizzitup.app`**.
-  4. Sélection du certificat **`Solofo RAFENO`**.
-  5. Génération et téléchargement du fichier **`.mobileprovision`**.
+### 📋 3. Réception & Validation Complète des Fichiers iOS (9 août 2026)
+- **Fichiers reçus et analysés avec succès** :
+  1. `DizzitApp_2026.mobileprovision` (33 Ko) :
+     - Profil de Provisioning officiel **App Store Distribution** pour `com.dizzitup.app`.
+     - Apple Team ID : `948RWU4PMF` (DizzitUp).
+     - Validité : jusqu'au **9 août 2027**.
+  2. `ios_distribution (1).cer` (1,4 Ko) :
+     - Certificat de production **iPhone Distribution: DizzitUp (948RWU4PMF)**.
+     - Validité : du **09/08/2026** au **09/08/2027**.
+  3. `CertificateSigningRequest.certSigningRequest - Azziz` :
+     - CSR correspondant à la clé publique du certificat de distribution.
+  4. `DizzitUp_Distribution.p12` (3,2 Ko) :
+     - Assemblage cryptographique réussi de la **Clé Privée** (issue du trousseau/`Certificates.p12`) et du **Certificat de Distribution**.
+     - Mot de passe : `DizzitUp2026#`.
 
-### 🚀 4. Prochaine Étape Immédiate (Dès Réception du `.mobileprovision`)
-1. Déposer le fichier `.mobileprovision` à la racine de `app/`.
-2. Importer le profil dans EAS :
-   ```powershell
-   npx eas-cli credentials -p ios
+### 🚀 4. Statut Global : 100% CONFIGURÉ & BUILD EN COURS SUR EAS CLOUD !
+Tous les éléments requis pour compiler et soumettre sur TestFlight ont été **synchronisés et validés avec succès** sur les serveurs EAS :
+- [x] **Identifiant d'application (Bundle ID)** : `com.dizzitup.app`
+- [x] **Distribution Certificate** : `iPhone Distribution: DizzitUp (948RWU4PMF)` (S/N: `369BDC522DD7A132C40B781D5254599F`, Expire: `09/08/2027`) — **Actif sur EAS**
+- [x] **Provisioning Profile** : `DizzitApp_2026` (`com.dizzitup.app`, Expire: `09/08/2027`) — **Actif sur EAS**
+- [x] **App Store Connect API Key** : `DizzitUp Key` (ID `4S4J7Q3V9S`, Issuer: `36e0cd09-4437-4ec4-9269-4b9e474d31f4`) — **Actif sur EAS**
+- [x] **Configuration `app.json` & `eas.json`** : `ITSAppUsesNonExemptEncryption: false`, `appVersionSource: "remote"`
+- [x] **Local `credentials.json` & `.gitignore`** : Sécurisé et ignoré par Git.
+- [x] **Build iOS Production** : Lancé avec succès sur EAS Cloud !
+  - **Lien du Build EAS** : [`https://expo.dev/accounts/profzen/projects/dizzitapp-v2/builds/6c170036-c0b9-418f-846a-ec6dac34b9b0`](https://expo.dev/accounts/profzen/projects/dizzitapp-v2/builds/6c170036-c0b9-418f-846a-ec6dac34b9b0)
+
+---
+
+### ⏳ 5. Ce qu'on Attend du Client (Action Client en Attente)
+Pour que la soumission vers TestFlight se fasse automatiquement sans demander d'identifiant Apple personnel :
+1. **Créer la fiche de l'app sur App Store Connect** :
+   - URL : [appstoreconnect.apple.com/apps](https://appstoreconnect.apple.com/apps)
+   - Cliquer sur `+` $\rightarrow$ **Nouvelle app**
+   - **Plateforme** : iOS
+   - **Nom** : `DizzitUp`
+   - **Langue principale** : Français (ou Anglais)
+   - **Bundle ID** : sélectionner `com.dizzitup.app`
+   - **SKU** : `dizzitup-app`
+   - **Accès utilisateur** : Accès complet $\rightarrow$ Cliquer sur **Créer**.
+2. **Fournir l'Identifiant Apple de l'app (`ascAppId`)** :
+   - Aller dans *Général* $\rightarrow$ *Informations sur l'app* $\rightarrow$ copier le numéro dans le champ **Identifiant Apple** (suite de 9 ou 10 chiffres, ex: `6741234567`).
+
+---
+
+### 📦 6. Prochaine Étape Immédiate (Dès Réception de l'`ascAppId`)
+1. Ajouter l'`ascAppId` dans `eas.json` sous `submit.production.ios` :
+   ```json
+   {
+     "submit": {
+       "production": {
+         "ios": {
+           "ascAppId": "NUMERO_FOURNI_PAR_LE_CLIENT"
+         }
+       }
+     }
+   }
    ```
-   *(Sélectionner `Provisioning Profile` $\rightarrow$ `Upload .mobileprovision file`)*.
-3. Lancer la compilation et la soumission automatique sur TestFlight :
+2. Lancer la soumission directe vers TestFlight via la clé API :
    ```powershell
-   npx eas-cli build --platform ios --profile production --auto-submit
+   npx eas-cli submit --platform ios --latest
    ```
+
+---
+
+### 🔐 7. Répertoire Centralisé des Identifiants & Secrets de Production
+
+| Élément / Paramètre | Valeur / Identifiant | Notes & Emplacement |
+| :--- | :--- | :--- |
+| **Nom de l'application** | `DizzitUp` | Défini dans `app.json` |
+| **Bundle ID (iOS) / Package (Android)** | `com.dizzitup.app` | Identifiant unique Apple & Google Play |
+| **Organisation / Apple Team Name** | `DizzitUp` | Compte Développeur Apple Entreprise |
+| **Apple Team ID** | `948RWU4PMF` | ID officiel de l'équipe Apple Developer |
+| **Compte Expo / EAS** | `profzen` (`profzzen@gmail.com`) | Propriétaire du projet EAS Cloud |
+| **EAS Project ID** | `cb443e23-61ff-47de-8f7d-45919575a57d` | Projet `@profzen/dizzitapp-v2` |
+| **Lien Build EAS Cloud (iOS)** | [`Build 6c170036...`](https://expo.dev/accounts/profzen/projects/dizzitapp-v2/builds/6c170036-c0b9-418f-846a-ec6dac34b9b0) | Build production TestFlight en cours |
+| **Mot de passe Certificats `.p12`** | `DizzitUp2026#` | Utilisé pour `Certificates.p12` et `DizzitUp_Distribution.p12` |
+| **Certificat de Distribution iOS** | `iPhone Distribution: DizzitUp (948RWU4PMF)` | S/N: `369BDC522DD7A132C40B781D5254599F` (Expire le **09/08/2027**) |
+| **Certificat de Développement iOS** | `Apple Development: Solofo RAFENO (HVTK5MBMJL)` | Contenu dans `Certificates.p12` (Expire le **08/08/2027**) |
+| **Provisioning Profile iOS** | `DizzitApp_2026` (`DizzitApp_2026.mobileprovision`) | UUID: `b8dfe157-213f-4299-bb7d-ac1212e42134` (Expire le **09/08/2027**) |
+| **App Store Connect Key ID** | `4S4J7Q3V9S` | Clé API pour soumission automatique TestFlight |
+| **App Store Connect Issuer ID** | `36e0cd09-4437-4ec4-9269-4b9e474d31f4` | ID de l'émetteur App Store Connect |
+| **Fichier Clé Privée App Store Connect** | `AuthKey_4S4J7Q3V9S.p8` | Fichier clé API à la racine (ignoré par Git) |
+| **Fichier Local Credentials EAS** | `credentials.json` | Fichier de configuration locale (ignoré par Git) |
 
 ---
 
