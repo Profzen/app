@@ -1,6 +1,7 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Image, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function SendMoneyMethodScreen() {
@@ -272,11 +273,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 6,
-    elevation: 2,
+    boxShadow: '0px 2px 6px #0F172A',
   },
   methodCardActive: {
     borderColor: '#FFC759',

@@ -1,6 +1,7 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
 import BottomNavBar from '../components/BottomNavBar';
@@ -177,7 +178,7 @@ const styles = StyleSheet.create({
   networkValueRow: { flexDirection: 'row', alignItems: 'center' },
   networkNameText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#FFFFFF', marginLeft: 4 },
   qrSectionWrapper: { alignItems: 'center', marginBottom: 20 },
-  qrCardContainer: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 18, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4, marginBottom: 12, borderWidth: 1, borderColor: '#F0F2F5' },
+  qrCardContainer: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 18, boxShadow: '0px 4px 16px #000', marginBottom: 12, borderWidth: 1, borderColor: '#F0F2F5' },
   mockQrGraphic: { justifyContent: 'center', alignItems: 'center' },
   refreshQrBtn: { flexDirection: 'row', alignItems: 'center', paddingVertical: 4 },
   refreshQrText: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#0052FF' },

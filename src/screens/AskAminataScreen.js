@@ -1,5 +1,6 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, TextInput, KeyboardAvoidingView, Platform, StatusBar } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, TextInput, KeyboardAvoidingView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';

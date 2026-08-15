@@ -1,6 +1,7 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, FlatList, Dimensions, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, FlatList, Dimensions, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import CryptoIcon from '../components/CryptoIcon';
@@ -111,7 +112,7 @@ export default function AssetListScreen() {
               <Text style={styles.ldciDescription}>A Non-Custodial, Multi-chain Stablecoins & Crypto Wallet</Text>
               <Text style={styles.ldciNetworks}>Ethereum  <Text style={styles.ldciDot}>•</Text>  Polygon  <Text style={styles.ldciDot}>•</Text>  Base  <Text style={styles.ldciDot}>•</Text>  BSC  <Text style={styles.ldciDot}>•</Text>  Solana</Text>
             </View>
-            <Image source={require('../../assets/brand/ldci.png')} style={styles.ldciVisual} resizeMode="contain" pointerEvents="none" />
+            <Image source={require('../../assets/brand/ldci.png')} style={[styles.ldciVisual, { pointerEvents: 'none' }]} resizeMode="contain" />
             <View style={styles.ldciArrow}><Ionicons name="chevron-forward" size={20} color="#FFFFFF" /></View>
           </TouchableOpacity>
 
@@ -437,11 +438,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 3,
     borderColor: '#FDE68A',
-    shadowColor: '#F59E0B',
-    shadowOffset: { width: -4, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 8,
+    boxShadow: '-4px 8px 10px #F59E0B',
   },
   innerCoin: {
     width: 72,
@@ -697,10 +694,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    boxShadow: '0px 4px 8px #000',
   },
   miniCoin: {
     width: 32,

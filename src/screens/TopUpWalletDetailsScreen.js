@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput, Modal, Pressable, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import AppSelect from '../components/AppSelect';
 import CryptoIcon from '../components/CryptoIcon';
+import { CrossmintEmbeddedCheckout } from '@crossmint/client-sdk-react-native-ui';
+import { useApp } from '../context/AppContext';
+import { theme } from '../theme/theme';
 
 const currencyOptions = [
   { value: 'USDC', label: 'USDC', subtitle: 'USD Coin' },
@@ -12,6 +16,7 @@ const currencyOptions = [
   { value: 'EURC', label: 'EURC', subtitle: 'Euro Coin' },
   { value: 'DZY', label: 'DZY', subtitle: 'DizzitUp Wallet' },
 ];
+
 const networkOptions = [
   { value: 'base', label: 'Réseau principal de Base', subtitle: 'Recommandé', iconName: 'radio-button-on', color: '#0052FF' },
   { value: 'polygon', label: 'Polygon', subtitle: 'Rapide et économique', iconName: 'git-network', color: '#8247E5' },
@@ -21,30 +26,71 @@ const networkOptions = [
 
 export default function TopUpWalletDetailsScreen() {
   const navigation = useNavigation();
-  const [cardNumber, setCardNumber] = useState('4242 4242 4242 4242');
-  const [expiry, setExpiry] = useState('');
-  const [cvv, setCvv] = useState('');
-  const [cardholder, setCardholder] = useState('Jean Dupont');
+  const { session, user } = useApp();
   const [currency, setCurrency] = useState('USDC');
   const [network, setNetwork] = useState('base');
-  const [expiryPickerOpen, setExpiryPickerOpen] = useState(false);
-  const [pickerMonth, setPickerMonth] = useState('01');
-  const [pickerYear, setPickerYear] = useState(String(new Date().getFullYear()).slice(-2));
+  const [orderIdentifier, setOrderIdentifier] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const updateCardNumber = (text) => setCardNumber(text.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim());
-  const updateExpiry = (text) => {
-    const digits = text.replace(/\D/g, '').slice(0, 4);
-    setExpiry(digits.length > 2 ? `${digits.slice(0, 2)} / ${digits.slice(2)}` : digits);
-  };
-  const applyExpiry = () => { setExpiry(`${pickerMonth} / ${pickerYear}`); setExpiryPickerOpen(false); };
+  useEffect(() => {
+    const fetchOrder = async () => {
+      try {
+        if (!session?.access_token) {
+          throw new Error("Veuillez vous connecter pour continuer.");
+        }
+        
+        // This makes a real authenticated call to dizzy-wallet backend!
+        let API_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api/wallet';
+        if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+          try {
+            const urlObj = new URL(API_URL);
+            if (urlObj.hostname === 'localhost') {
+              urlObj.hostname = window.location.hostname;
+              API_URL = urlObj.toString();
+            }
+          } catch (e) {}
+        }
+        
+        const response = await fetch(`${API_URL}/create-order`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({
+            amount: "10.00",
+            currency: currency,
+            network: network,
+            fiatCurrency: "USD"
+          })
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || 'Erreur réseau lors de la création de la commande');
+        }
+
+        const data = await response.json();
+        setOrderIdentifier(data.orderId);
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchOrder();
+  }, [session, currency, network]);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={24} color="#1A2840" />
+            <Ionicons name="chevron-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <Text style={styles.pageTitle}>Recharger le portefeuille</Text>
           <TouchableOpacity style={styles.iconBtn}>
@@ -53,8 +99,7 @@ export default function TopUpWalletDetailsScreen() {
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          
-          {/* Progress Stepper (5 steps) */}
+          {/* Progress Stepper */}
           <View style={styles.stepperContainer}>
             <View style={styles.stepWrapper}>
               <View style={[styles.stepCircle, styles.stepCircleCompleted]}>
@@ -100,92 +145,10 @@ export default function TopUpWalletDetailsScreen() {
           </View>
 
           {/* Titles */}
-          <Text style={styles.mainTitle}>Détails de la carte</Text>
+          <Text style={styles.mainTitle}>Détails du paiement</Text>
           <Text style={styles.mainSubtitle}>
-            Saisissez les informations de votre carte{'\n'}pour effectuer votre recharge en toute sécurité.
+            Effectuez votre paiement en toute sécurité via Crossmint.
           </Text>
-
-          {/* Form: Numéro de carte */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>NUMÉRO DE CARTE</Text>
-            <View style={styles.inputContainer}>
-              <Ionicons name="card-outline" size={20} color="#64748B" style={{marginRight: 12}} />
-              <TextInput 
-                style={styles.input}
-                value={cardNumber}
-                onChangeText={updateCardNumber}
-                keyboardType="numeric"
-                maxLength={19}
-                selectTextOnFocus
-              />
-              <Text style={styles.visaText}>VISA</Text>
-            </View>
-          </View>
-
-          {/* Form: Expiration & CVV */}
-          <View style={styles.rowFormGroup}>
-            <View style={[styles.formGroup, {flex: 1, marginRight: 8}]}>
-              <Text style={styles.label}>DATE D'EXPIRATION</Text>
-              <View style={styles.inputContainer}>
-                <TextInput 
-                  style={styles.inputRegular}
-                  placeholder="MM / AA"
-                  placeholderTextColor="#94A3B8"
-                  value={expiry}
-                  onChangeText={updateExpiry}
-                  keyboardType="numeric"
-                  maxLength={7}
-                />
-                <TouchableOpacity style={styles.expiryPickerButton} onPress={() => setExpiryPickerOpen(true)} accessibilityLabel="Choisir le mois et l'année">
-                  <Ionicons name="calendar-outline" size={20} color="#3B82F6" />
-                </TouchableOpacity>
-              </View>
-            </View>
-            
-            <View style={[styles.formGroup, {flex: 1, marginLeft: 8}]}>
-              <Text style={styles.label}>CVV</Text>
-              <View style={styles.inputContainer}>
-                <TextInput 
-                  style={styles.inputRegular}
-                  placeholder="•••"
-                  placeholderTextColor="#1A2840"
-                  secureTextEntry
-                  value={cvv}
-                  onChangeText={(text) => setCvv(text.replace(/\D/g, '').slice(0, 4))}
-                  keyboardType="numeric"
-                  maxLength={4}
-                />
-                <Ionicons name="information-circle-outline" size={20} color="#94A3B8" />
-              </View>
-            </View>
-          </View>
-
-          {/* Form: Nom sur la carte */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>NOM SUR LA CARTE</Text>
-            <View style={styles.inputContainer}>
-              <Ionicons name="person-outline" size={20} color="#64748B" style={{marginRight: 12}} />
-              <TextInput 
-                style={styles.inputRegular}
-                value={cardholder}
-                onChangeText={setCardholder}
-                autoCapitalize="words"
-              />
-            </View>
-          </View>
-
-          {/* Security Banner Ecobank */}
-          <View style={styles.ecobankBanner}>
-            <View style={styles.ecoShieldContainer}>
-              <Ionicons name="shield-checkmark" size={20} color="#FFFFFF" />
-            </View>
-            <View style={styles.ecoContent}>
-              <Text style={styles.ecoTitle}>Secured payment by Ecobank</Text>
-              <Text style={styles.ecoDesc}>
-                Vos informations bancaires sont protégées{'\n'}et le paiement est sécurisé par Ecobank.
-              </Text>
-            </View>
-          </View>
 
           {/* Form: Devise */}
           <View style={styles.formGroup}>
@@ -199,29 +162,44 @@ export default function TopUpWalletDetailsScreen() {
             <AppSelect value={network} options={networkOptions} onChange={setNetwork} title="Choisir le réseau de transaction" renderLeading={(option) => <View style={[styles.networkIconCircle, {backgroundColor: option.color || '#0052FF'}]}><Ionicons name={option.iconName || 'git-network'} size={14} color="#FFF" /></View>} />
           </View>
 
-          {/* Continue Button */}
-          <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('TopUpWalletPaymentScreen')}>
-            <Text style={styles.btnContinueText}>Continuer</Text>
-            <Ionicons name="arrow-forward" size={20} color="#1A2840" />
-          </TouchableOpacity>
+          {/* Crossmint Embedded Checkout */}
+          <View style={styles.checkoutWrapper}>
+            {isLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#FFB800" />
+                <Text style={styles.loadingText}>Préparation de la transaction...</Text>
+              </View>
+            ) : error ? (
+              <View style={styles.errorContainer}>
+                <Ionicons name="alert-circle" size={48} color="#EF4444" />
+                <Text style={styles.errorText}>{error}</Text>
+                <TouchableOpacity style={styles.retryBtn} onPress={() => navigation.goBack()}>
+                  <Text style={styles.retryText}>Retour</Text>
+                </TouchableOpacity>
+              </View>
+            ) : orderIdentifier ? (
+              <View style={styles.crossmintContainer}>
+                <CrossmintEmbeddedCheckout
+                  paymentMethod="fiat"
+                  orderIdentifier={orderIdentifier}
+                  environment={process.env.EXPO_PUBLIC_CROSSMINT_CLIENT_SIDE_API_KEY?.startsWith('sk_test') ? 'staging' : 'production'}
+                  onEvent={(event) => {
+                    console.log("Crossmint Event:", event);
+                    if (event.type === 'payment:process.succeeded') {
+                      navigation.navigate('TopUpWalletPaymentScreen');
+                    } else if (event.type === 'payment:process.failed') {
+                      setError("Le paiement a échoué. Veuillez réessayer.");
+                    } else if (event.type === 'payment:process.rejected') {
+                       setError("Le paiement a été rejeté par la banque.");
+                    }
+                  }}
+                />
+              </View>
+            ) : null}
+          </View>
 
         </ScrollView>
-
         <BottomNavBar />
-        <Modal visible={expiryPickerOpen} transparent animationType="fade" onRequestClose={() => setExpiryPickerOpen(false)}>
-          <View style={styles.pickerOverlay}>
-            <Pressable style={StyleSheet.absoluteFill} onPress={() => setExpiryPickerOpen(false)} />
-            <View style={styles.pickerCard}>
-              <Text style={styles.pickerTitle}>Date d'expiration</Text>
-              <Text style={styles.pickerHint}>Choisissez le mois et l'année</Text>
-              <Text style={styles.pickerSectionTitle}>Mois</Text>
-              <View style={styles.pickerGrid}>{Array.from({length: 12}, (_, i) => String(i + 1).padStart(2, '0')).map((month) => <TouchableOpacity key={month} style={[styles.pickerChoice, pickerMonth === month && styles.pickerChoiceActive]} onPress={() => setPickerMonth(month)}><Text style={[styles.pickerChoiceText, pickerMonth === month && styles.pickerChoiceTextActive]}>{month}</Text></TouchableOpacity>)}</View>
-              <Text style={styles.pickerSectionTitle}>Année</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.yearRow}>{Array.from({length: 12}, (_, i) => String(new Date().getFullYear() + i).slice(-2)).map((year) => <TouchableOpacity key={year} style={[styles.yearChoice, pickerYear === year && styles.pickerChoiceActive]} onPress={() => setPickerYear(year)}><Text style={[styles.pickerChoiceText, pickerYear === year && styles.pickerChoiceTextActive]}>20{year}</Text></TouchableOpacity>)}</ScrollView>
-              <TouchableOpacity style={styles.pickerApply} onPress={applyExpiry}><Text style={styles.pickerApplyText}>Utiliser {pickerMonth} / {pickerYear}</Text></TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
       </View>
     </SafeAreaView>
   );
@@ -248,47 +226,50 @@ const styles = StyleSheet.create({
     height: 44,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
   pageTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 16,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 18,
     color: '#1A2840',
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 40,
+    paddingHorizontal: 24,
+    paddingBottom: 100,
   },
   stepperContainer: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'flex-start',
-    justifyContent: 'center',
+    marginTop: 16,
     marginBottom: 32,
   },
   stepWrapper: {
     alignItems: 'center',
-    width: 50,
+    width: 48,
   },
   stepCircle: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F1F5F9',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
-    position: 'relative',
   },
   stepCircleActive: {
+    backgroundColor: '#FFFBEB',
+    borderWidth: 2,
     borderColor: '#FFB800',
   },
   stepCircleCompleted: {
-    borderColor: '#FFB800',
+    backgroundColor: '#FFFBEB',
   },
   tinyCheckBadge: {
     position: 'absolute',
@@ -301,7 +282,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#FFFFFF',
+    borderColor: '#FFF',
   },
   stepNumber: {
     fontFamily: 'Inter_600SemiBold',
@@ -324,191 +305,95 @@ const styles = StyleSheet.create({
   stepLine: {
     flex: 1,
     height: 2,
-    backgroundColor: '#E2E8F0',
-    marginTop: 13,
-    marginHorizontal: 2,
+    backgroundColor: '#F1F5F9',
+    marginTop: 14,
+    marginHorizontal: -8,
   },
   stepLineActive: {
     backgroundColor: '#FFB800',
   },
   mainTitle: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 22,
+    fontSize: 24,
     color: '#1A2840',
-    textAlign: 'center',
     marginBottom: 8,
   },
   mainSubtitle: {
     fontFamily: 'Inter_400Regular',
     fontSize: 14,
     color: '#64748B',
-    textAlign: 'center',
     lineHeight: 22,
-    marginBottom: 24,
+    marginBottom: 32,
   },
   formGroup: {
     marginBottom: 20,
-    minWidth: 0,
-  },
-  rowFormGroup: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
   },
   label: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 12,
     color: '#64748B',
+    letterSpacing: 0.5,
     marginBottom: 8,
   },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    height: 56,
-    minWidth: 0,
-    overflow: 'hidden',
-  },
-  input: {
-    flex: 1,
-    minWidth: 0,
-    fontFamily: 'Inter_700Bold',
-    fontSize: 16,
-    color: '#1A2840',
-    letterSpacing: 1,
-    outlineStyle: 'none',
-  },
-  inputRegular: {
-    flex: 1,
-    minWidth: 0,
-    fontFamily: 'Inter_500Medium',
-    fontSize: 15,
-    color: '#1A2840',
-    outlineStyle: 'none',
-  },
-  expiryPickerButton: { width: 36, height: 36, flexShrink: 0, borderRadius: 18, backgroundColor: '#EFF6FF', alignItems: 'center', justifyContent: 'center' },
-  visaText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 16,
-    color: '#1A1F71', // VISA blue
-    fontStyle: 'italic',
-  },
-  ecobankBanner: {
-    flexDirection: 'row',
-    backgroundColor: '#F8FAFC',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 24,
-    alignItems: 'flex-start',
-  },
-  ecoShieldContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#3B82F6',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  ecoContent: {
-    flex: 1,
-  },
-  ecoTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 13,
-    color: '#1A2840',
-    marginBottom: 4,
-  },
-  ecoDesc: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: '#1A2840',
-    lineHeight: 18,
-  },
-  dropdownContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    height: 56,
-  },
-  dropdownLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  tokenIconCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#2775CA', // USDC blue
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
   networkIconCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#0052FF', // Base blue
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
-  dropdownText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 15,
-    color: '#1A2840',
+  checkoutWrapper: {
+    flex: 1,
+    minHeight: 400,
+    marginTop: 20,
   },
-  dropdownRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  recommendedBadge: {
-    backgroundColor: '#DCFCE7', // light green
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    marginRight: 12,
-  },
-  recommendedText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-    color: '#10B981',
-  },
-  btnContinue: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  loadingContainer: {
+    flex: 1,
     justifyContent: 'center',
-    backgroundColor: '#FFB800',
-    paddingVertical: 18,
-    borderRadius: 16,
+    alignItems: 'center',
+    padding: 40,
+  },
+  loadingText: {
     marginTop: 16,
+    fontFamily: 'Inter_500Medium',
+    color: '#64748B',
+    fontSize: 14,
   },
-  btnContinueText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 16,
-    color: '#1A2840',
-    marginRight: 8,
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    backgroundColor: '#FEE2E2',
+    borderRadius: 12,
   },
-  pickerOverlay: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: 'rgba(10,17,40,0.35)' },
-  pickerCard: { backgroundColor: '#FFF', borderRadius: 22, padding: 20 },
-  pickerTitle: { fontFamily: 'Inter_700Bold', fontSize: 19, color: '#1A2840' },
-  pickerHint: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#64748B', marginTop: 4, marginBottom: 18 },
-  pickerSectionTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#64748B', marginBottom: 8, marginTop: 8 },
-  pickerGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  pickerChoice: { width: '15%', height: 38, borderRadius: 10, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
-  pickerChoiceActive: { backgroundColor: '#FFB800' },
-  pickerChoiceText: { fontFamily: 'Inter_600SemiBold', color: '#1A2840', fontSize: 12 },
-  pickerChoiceTextActive: { color: '#0A1128' },
-  yearRow: { paddingBottom: 8 },
-  yearChoice: { paddingHorizontal: 13, height: 38, borderRadius: 10, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center', marginRight: 8 },
-  pickerApply: { marginTop: 14, height: 52, borderRadius: 14, backgroundColor: '#FFB800', alignItems: 'center', justifyContent: 'center' },
-  pickerApplyText: { fontFamily: 'Inter_700Bold', fontSize: 15, color: '#1A2840' },
+  errorText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 14,
+    color: '#991B1B',
+    textAlign: 'center',
+    marginTop: 16,
+    marginBottom: 24,
+  },
+  retryBtn: {
+    backgroundColor: '#DC2626',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryText: {
+    color: '#FFFFFF',
+    fontFamily: 'Inter_600SemiBold',
+  },
+  crossmintContainer: {
+    flex: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 8,
+    minHeight: 500,
+  },
 });

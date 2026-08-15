@@ -1,6 +1,7 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ActivityIndicator, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, StatusBar } from 'react-native';
 import { theme } from '../theme/theme';
 import { Ionicons } from '@expo/vector-icons';
 

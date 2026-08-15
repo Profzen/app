@@ -1,5 +1,6 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Platform, StatusBar } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
@@ -193,6 +194,6 @@ const styles = StyleSheet.create({
   benefitText: { flex: 1 },
   benefitTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#1A2840' },
   benefitDesc: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#6B7280', marginTop: 2 },
-  rewardsLinkBtn: { height: 50, borderRadius: 14, backgroundColor: '#FFC759', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', shadowColor: '#FFC759', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 8, elevation: 2 },
+  rewardsLinkBtn: { height: 50, borderRadius: 14, backgroundColor: '#FFC759', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', boxShadow: '0px 4px 8px #FFC759' },
   rewardsLinkBtnText: { fontFamily: 'Inter_700Bold', fontSize: 14, color: '#1A2840' },
 });

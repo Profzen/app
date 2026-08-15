@@ -1,11 +1,23 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Platform, StatusBar } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
 
 import { useApp } from '../context/AppContext';
+
+
+const getFlagCode = (lang) => {
+  switch(lang) {
+    case 'fr': return 'fr';
+    case 'pt': return 'pt';
+    case 'ar': return 'sa';
+    case 'am': return 'et';
+    default: return 'gb';
+  }
+};
 
 export default function MoreSettingsScreen() {
   const navigation = useNavigation();
@@ -51,7 +63,10 @@ export default function MoreSettingsScreen() {
               <Text style={styles.pageSubtitle}>{t('moreSubtitle', 'Manage your account and preferences')}</Text>
             </View>
             <TouchableOpacity style={styles.notificationButton} onPress={toggleLanguage} accessibilityLabel="Switch language">
-              <Image source={{ uri: language === 'fr' ? 'https://flagcdn.com/w40/fr.png' : 'https://flagcdn.com/w40/gb.png' }} style={{ width: 22, height: 15, borderRadius: 3 }} />
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Text style={{marginRight: 6, fontSize: 12, fontWeight: 'bold', color: '#1A2840'}}>{language.toUpperCase()}</Text>
+                  <Image source={{ uri: `https://flagcdn.com/w40/${getFlagCode(language)}.png` }} style={{ width: 22, height: 15, borderRadius: 3 }} />
+                </View>
             </TouchableOpacity>
             <TouchableOpacity style={styles.notificationButton} accessibilityLabel="Notifications">
               <Ionicons name="notifications-outline" size={20} color="#1A2840" />
@@ -120,13 +135,13 @@ const styles = StyleSheet.create({
   pageSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#6B7280', marginTop: 1 },
   notificationButton: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, borderColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF' },
   notificationDot: { position: 'absolute', top: 10, right: 11, width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFC759', borderWidth: 1, borderColor: '#FFFFFF' },
-  profileCard: { minHeight: 74, borderWidth: 1, borderColor: '#F0F2F5', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', marginBottom: 14, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 8, elevation: 1 },
+  profileCard: { minHeight: 74, borderWidth: 1, borderColor: '#F0F2F5', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', marginBottom: 14, boxShadow: '0px 2px 8px #000' },
   avatarFallback: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#071D54', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', marginRight: 14 },
   avatar: { ...StyleSheet.absoluteFillObject, width: 50, height: 50, borderRadius: 25 },
   profileInfo: { flex: 1 },
   profileName: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 17, color: '#1A2840', marginBottom: 2 },
   profileEmail: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#6B7280' },
-  settingsCard: { borderWidth: 1, borderColor: '#F0F2F5', borderRadius: 16, backgroundColor: '#FFFFFF', paddingHorizontal: 14, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 8, elevation: 1 },
+  settingsCard: { borderWidth: 1, borderColor: '#F0F2F5', borderRadius: 16, backgroundColor: '#FFFFFF', paddingHorizontal: 14, overflow: 'hidden', boxShadow: '0px 2px 8px #000' },
   settingRow: { minHeight: 64, paddingVertical: 10, flexDirection: 'row', alignItems: 'center' },
   settingDivider: { borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
   settingIcon: { width: 42, height: 42, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginRight: 12 },

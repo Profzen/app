@@ -1,6 +1,7 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Image, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import { CONTACTS_MOCK } from '../mocks/contactsMock';
@@ -293,11 +294,7 @@ const styles = StyleSheet.create({
   },
   tabButtonActive: {
     backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    boxShadow: '0px 1px 2px #000',
   },
   tabTextActive: {
     fontSize: 14,

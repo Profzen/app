@@ -1,6 +1,7 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Share, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Share, Platform, StatusBar } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import * as Clipboard from 'expo-clipboard';
@@ -260,11 +261,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: '#F1F5F9',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    boxShadow: '0px 2px 8px #000',
   },
   contactRow: {
     flexDirection: 'row',

@@ -1,6 +1,7 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, TextInput, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import AppSelect from '../components/AppSelect';
@@ -505,11 +506,7 @@ const styles = StyleSheet.create({
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 1,
-    elevation: 2,
+    boxShadow: '0px 1px 1px #000',
   },
   keyEmpty: {
     flex: 1,

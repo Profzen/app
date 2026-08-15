@@ -1,6 +1,7 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
 import { DizzitInput } from '../components/DizzitInput';
@@ -8,6 +9,17 @@ import { DizzitButton } from '../components/DizzitButton';
 import { SocialLogins } from '../components/SocialLogins';
 import { FeaturesBanner } from '../components/FeaturesBanner';
 import { useApp } from '../context/AppContext';
+import { supabase } from '../services/supabaseClient';
+
+const getFlagCode = (lang) => {
+  switch(lang) {
+    case 'fr': return 'fr';
+    case 'pt': return 'pt';
+    case 'ar': return 'sa';
+    case 'am': return 'et';
+    default: return 'gb';
+  }
+};
 
 export default function LoginScreen() {
   const navigation = useNavigation();
@@ -17,21 +29,30 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) return; // Basic validation
     
     setIsLoading(true);
-    const payload = {
-      identifier: email,
-      password: password
-    };
     
-    console.log("Submitting login payload:", payload);
-    
-    setTimeout(() => {
+    try {
+      // Real Supabase Auth
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      console.log("✅ Supabase login successful", data.user.id);
       setIsLoading(false);
       navigation.navigate('HomeScreen');
-    }, 1500);
+    } catch (error) {
+      console.error("❌ Login error:", error.message);
+      setIsLoading(false);
+      // Ideally show an error toast here
+    }
   };
 
   return (
@@ -46,7 +67,7 @@ export default function LoginScreen() {
           <Text style={styles.headerTitle}>{language === 'fr' ? 'Connexion' : 'Log In'}</Text>
           <TouchableOpacity style={styles.languageSelector} onPress={toggleLanguage} accessibilityLabel="Changer la langue / Switch language">
             <Image 
-              source={{ uri: language === 'fr' ? 'https://flagcdn.com/w40/fr.png' : 'https://flagcdn.com/w40/gb.png' }} 
+              source={{ uri: `https://flagcdn.com/w40/${getFlagCode(language)}.png` }} 
               style={{ width: 22, height: 15, borderRadius: 3, marginRight: 6 }} 
             />
             <Text style={styles.languageText}>{language.toUpperCase()}</Text>

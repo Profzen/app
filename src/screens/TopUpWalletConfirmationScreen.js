@@ -1,6 +1,7 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import CryptoIcon from '../components/CryptoIcon';
@@ -338,11 +339,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#10B981',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+    boxShadow: '0px 8px 16px #10B981',
   },
   confetti: {
     position: 'absolute',

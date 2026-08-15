@@ -1,5 +1,6 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, TextInput, Platform, StatusBar } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, TextInput, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
@@ -159,6 +160,6 @@ const styles = StyleSheet.create({
   fieldLabel: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#4B5563', marginBottom: 6 },
   input: { backgroundColor: '#F9FAFB', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 12, height: 46, fontFamily: 'Inter_400Regular', fontSize: 14, color: '#1A2840' },
   textArea: { height: 110, paddingTop: 10 },
-  submitBtn: { height: 50, borderRadius: 14, backgroundColor: '#FFC759', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 4, shadowColor: '#FFC759', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 8, elevation: 2 },
+  submitBtn: { height: 50, borderRadius: 14, backgroundColor: '#FFC759', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 4, boxShadow: '0px 4px 8px #FFC759' },
   submitBtnText: { fontFamily: 'Inter_700Bold', fontSize: 15, color: '#1A2840' },
 });

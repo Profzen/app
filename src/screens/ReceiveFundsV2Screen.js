@@ -1,6 +1,7 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Pressable, ScrollView, Animated, Share, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Animated, Share, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import Svg, { Rect } from 'react-native-svg';
