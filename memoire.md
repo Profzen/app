@@ -1676,6 +1676,48 @@ Pour assurer la continuité du travail en parfaite synchronisation avec Assia (c
 
 ---
 
+## 📱 5. Responsive Mobile Universel & Résolution Crash Localhost (18 août 2026)
+
+### A. Résolution du Crash Écran Blanc sur Navigateur Web (`localhost:8081`)
+1. **Origine du problème** : 
+   - `CrossmintProvider` dans `App.js` plantait au démarrage car `apiKey` attendue par le SDK Crossmint requiert un format d'environnement valide (sinon `API Key not found or malformed`).
+   - Le client Supabase lançait une exception non rattrapée lorsque les variables d'environnement n'étaient pas définies en local.
+2. **Correction apportée** :
+   - Ajout d'une clé Crossmint fallback sécurisée (`ck_live_...` / sandbox) et fallback Supabase dans `src/services/supabaseClient.js`.
+   - Conditionnement du SDK Crossmint pour prévenir tout crash fatal en mode développement web.
+
+### B. Système & Architecture Responsive Multi-Écrans (`src/utils/responsive.js`)
+Pour résoudre les anomalies remontées lors des tests sur iPhone SE (écran 375x667) et petits écrans (icônes décalées, textes écrasés, boutons masqués) :
+- Création du module utilitaire `src/utils/responsive.js` exportant :
+  - `scale(size)`, `verticalScale(size)`, `moderateScale(size, factor)` basés sur les dimensions standards (375x812).
+  - `isSmallScreen` (`width <= 375`) et `isShortScreen` (`height <= 700`).
+  - `getDeviceDimensions()`.
+
+### C. Refonte Responsive des Composants et Écrans Clés
+1. **`BottomNavBar.js`** :
+   - SafeArea intégrée avec `edges={['bottom']}`.
+   - Distribution dynamique `flex: 1` et `justifyContent: 'space-around'` évitant tout débordement d'onglets sur 375px.
+   - Bouton flottant central calé avec `top: -20, width: 52, height: 52`.
+2. **`StepIndicator.js`** :
+   - Remplacement des largeurs fixes en pixels par des pourcentages responsives (`left: '15%', right: '15%'`).
+3. **`PinCodeScreen.js`** :
+   - Intégration de `isShortScreen` pour les marges verticales.
+   - Rangée de boutons d'action "PRÉCÉDENT" et "TERMINER" 100% visible et accessible sans rognage sur iPhone SE.
+4. **`LoginScreen.js` & `RegisterScreen.js`** :
+   - Intégration de `FeaturesBanner` dans le `ScrollView` avec `keyboardShouldPersistTaps="handled"`.
+   - Tous les champs, liens ("Mot de passe oublié ?", "Code PIN") et boutons d'action visibles directement sur l'écran.
+5. **`HomeScreen.js` & `WalletCard.js`** :
+   - En-tête : Réduction intelligente des icônes d'actions (34x34) et `flexShrink: 1` sur le nom d'utilisateur pour garantir zéro passage à la ligne.
+   - Grille d'actions rapides : Séquençage responsive avec `width: '23.5%'` et `justifyContent: 'space-between'`.
+   - Bannières d'invitation et Store adaptées au format mobile compact.
+
+### D. Validation Visuelle Multi-Viewport
+- **iPhone SE (375 x 667)** : Testé et validé (`test_iphone_se_login.png`, `test_iphone_se_pincode.png`, `iphone_se_home_final.png`).
+- **iPhone 14/15/16 Pro (393 x 852)** : Testé et validé (`iphone_pro_home_final.png`).
+- **Android Large (412 x 915)** : Testé et validé (`android_home_final.png`).
+
+---
+
 ## 🔄 Règle d'Or pour l'IA (Mise à jour Continue du Mémoire)
 
 **RÈGLE STRICTE POUR L'IA** : À la fin de chaque session ou après toute modification majeure (ajout d'écran, ajustement de flux, refactoring, gestion Git), l'IA **DOIT IMPÉRATIVEMENT** mettre à jour ce fichier `memoire.md`. Ainsi, lors de l'ouverture d'une nouvelle session de conversation, la lecture préalable de ce fichier permet de récupérer l'intégralité du contexte, de l'état d'avancement et des règles sans aucune perte d'information ni interruption du workflow.
