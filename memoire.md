@@ -1636,12 +1636,46 @@ Tous les éléments requis pour compiler et soumettre sur TestFlight ont été *
 
 ---
 
+## 🔀 Synchronisation Git & Création de la Branche d'Intégration `front-back` (18 août 2026)
+
+### 1. Synchronisation de `main` avec `develop`
+- **État préalable** : `develop` contenait 4 commits d'avance sur `main` (configuration TestFlight finale `ascAppId: 6799749556`, secrets iOS et `memoire.md`).
+- **Action réalisée** : Fast-forward merge de `develop` vers `main` (`a8aa1a4..4cfb425`).
+- **Synchronisation distante** : Push réussi vers les deux dépôts distants :
+  - `origin/main` (`https://github.com/Dizzitup/dizzitapp-v2.git`) ✅
+  - `personal/main` (`https://github.com/Profzen/app.git`) ✅
+
+---
+
+### 2. Création & Fusion Complète sur la Branche `front-back`
+Pour assurer la continuité du travail en parfaite synchronisation avec Assia (chargée de l'intégration Backend) tout en maintenant nos fonctionnalités Frontend & Déploiement :
+- **Création de la branche** : `front-back` (créée à partir de `develop` au commit `4cfb425`).
+- **Fusion de la branche d'Assia** : `origin/feature/backend-integration` fusionnée proprement dans `front-back`.
+- **Résolution des Conflits & Synergie des Fonctionnalités** :
+  1. **Conservation des Intégrations Backend d'Assia** :
+     - **Crossmint SDK** : `@crossmint/client-sdk-react-native-ui`, `<CrossmintProvider>` dans `App.js`, et widget réel de paiement carte `<CrossmintEmbeddedCheckout>` dans `TopUpWalletDetailsScreen.js`.
+     - **Supabase Client** : `src/services/supabaseClient.js` configuré avec `@supabase/supabase-js`, `AsyncStorage`, `react-native-url-polyfill` et sécurisé par des fallbacks d'initialisation en cas d'absence temporaire de `.env`.
+     - **API REST Marchands / "Buy Goods" & Hook** : `src/services/buyGoodsApi.js` et `src/hooks/useBuyGoods.js` connectant `ShopsScreen.js` et `ShopDetailsScreen.js` aux données réelles.
+     - **Internationalisation (i18n) 5 Langues** : Fichiers JSON complets (`fr.json`, `en.json`, `pt.json`, `ar.json`, `am.json`) + fonction `t(key, fallback)` dans `AppContext.js` + sélecteurs de drapeaux interactifs dans l'en-tête de `HomeScreen.js`, `LoginScreen.js`, `MoreSettingsScreen.js`.
+     - **Modernisation des Ombres** : Remplacement global par la syntaxe standard `boxShadow` sur ~70 composants et écrans.
+     - **Assets de marque** : `assets/brand/shop_placeholder.png`, `assets/brand/finalLogo.png`, `assets/brand/dizzitup_logo_cercle_cropped.png`.
+     - **Configuration Metro** : `metro.config.js` avec extensions `.mjs` et `.cjs`.
+  2. **Conservation Intégrale des Fonctionnalités `develop`** :
+     - **Tunnel Social Sharing en 3 étapes** : `ShareSuccessPlatformScreen.js`, `ShareSuccessVisualScreen.js`, `ShareSuccessCaptionScreen.js` avec leurs 5 CTA "Partager mon succès" sur tous les écrans de fin de transaction.
+     - **Configuration de Déploiement iOS & TestFlight** : Clé `"ascAppId": "6799749556"`, profil `preview` APK dans `eas.json` et `"ITSAppUsesNonExemptEncryption": false` dans `app.json`.
+     - **Navigation Globale** : **77 routes actives et interconnectées** dans `AppNavigator.js`.
+
+---
+
+### 3. Validation & Push de la Branche `front-back`
+- **Validation Build Web** : `npx expo export --platform web` exécuté avec succès (**0 erreur**, 80 assets packagés, bundles web assemblés).
+- **Push Distant Réussi** :
+  - `origin/front-back` (`https://github.com/Dizzitup/dizzitapp-v2.git`) ✅
+  - `personal/front-back` (`https://github.com/Profzen/app.git`) ✅
+- **Workflow de Collaboration Actif** : La branche **`front-back`** est désormais notre branche de travail officielle pour suivre et synchroniser en continu les intégrations d'Assia et apporter tous les ajustements UI/UX nécessaires.
+
+---
+
 ## 🔄 Règle d'Or pour l'IA (Mise à jour Continue du Mémoire)
 
 **RÈGLE STRICTE POUR L'IA** : À la fin de chaque session ou après toute modification majeure (ajout d'écran, ajustement de flux, refactoring, gestion Git), l'IA **DOIT IMPÉRATIVEMENT** mettre à jour ce fichier `memoire.md`. Ainsi, lors de l'ouverture d'une nouvelle session de conversation, la lecture préalable de ce fichier permet de récupérer l'intégralité du contexte, de l'état d'avancement et des règles sans aucune perte d'information ni interruption du workflow.
-
-
-
-
-
-
