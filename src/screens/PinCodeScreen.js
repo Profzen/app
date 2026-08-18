@@ -8,6 +8,8 @@ import StepIndicator from '../components/StepIndicator';
 import { DizzitInput } from '../components/DizzitInput';
 import { Ionicons } from '@expo/vector-icons';
 
+import { isSmallScreen, isShortScreen } from '../utils/responsive';
+
 const STEPS = [
   { label: 'Profil' },
   { label: 'Code PIN' },
@@ -49,6 +51,7 @@ export default function PinCodeScreen() {
           contentContainerStyle={styles.innerContainer}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          bounces={false}
         >
           {/* Header */}
           <View style={styles.header}>
@@ -86,7 +89,7 @@ export default function PinCodeScreen() {
               maxLength={6}
             />
             
-            <View style={{ height: 16 }} />
+            <View style={{ height: 12 }} />
             
             <Text style={styles.sectionTitle}>Confirmez votre code PIN</Text>
             <DizzitInput
@@ -103,7 +106,7 @@ export default function PinCodeScreen() {
             ) : null}
           </View>
 
-          {/* Buttons (Dual layout like M16) */}
+          {/* Buttons */}
           <View style={styles.buttonRow}>
             <TouchableOpacity 
               style={[styles.actionButton, styles.previousButton]}
@@ -139,22 +142,23 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 14,
+    paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 10,
   },
   container: {
     flex: 1,
   },
   innerContainer: {
     flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 40,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 24,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 24, },
+    marginBottom: isShortScreen ? 12 : 20,
+  },
   loginText: {
     fontFamily: 'Inter_500Medium',
     fontSize: 12,
@@ -166,40 +170,40 @@ const styles = StyleSheet.create({
   },
   titleSection: {
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: isShortScreen ? 4 : 8,
   },
   shieldIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#FFF8ED',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: isShortScreen ? 8 : 14,
   },
   mainTitle: {
     fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 26,
+    fontSize: isShortScreen ? 22 : 26,
     color: '#1A2840',
-    marginBottom: 12,
+    marginBottom: 6,
   },
   subtitle: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 14,
+    fontSize: 13,
     color: '#6B7280',
     textAlign: 'center',
-    lineHeight: 20,
-    paddingHorizontal: 20,
+    lineHeight: 18,
+    paddingHorizontal: 10,
   },
   formContainer: {
-    marginTop: 8,
-    marginBottom: 32,
+    marginTop: 4,
+    marginBottom: isShortScreen ? 16 : 24,
   },
   sectionTitle: {
     fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 16,
+    fontSize: 15,
     color: '#1A2840',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   errorText: {
     fontFamily: 'Inter_500Medium',
@@ -211,11 +215,12 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 'auto', // pushes buttons to bottom if space available
+    marginTop: isShortScreen ? 12 : 'auto',
+    paddingTop: 8,
   },
   actionButton: {
     flex: 1,
-    height: 56,
+    height: 50,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',

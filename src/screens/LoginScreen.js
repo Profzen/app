@@ -11,6 +11,8 @@ import { FeaturesBanner } from '../components/FeaturesBanner';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../services/supabaseClient';
 
+import { isSmallScreen, isShortScreen } from '../utils/responsive';
+
 const getFlagCode = (lang) => {
   switch(lang) {
     case 'fr': return 'fr';
@@ -57,21 +59,26 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent} 
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        bounces={false}
+      >
         
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.canGoBack() ? navigation.goBack() : navigation.navigate('HomeScreen')}>
-            <Ionicons name="arrow-back" size={24} color={theme.colors.primary} />
+            <Ionicons name="arrow-back" size={22} color={theme.colors.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{language === 'fr' ? 'Connexion' : 'Log In'}</Text>
           <TouchableOpacity style={styles.languageSelector} onPress={toggleLanguage} accessibilityLabel="Changer la langue / Switch language">
             <Image 
               source={{ uri: `https://flagcdn.com/w40/${getFlagCode(language)}.png` }} 
-              style={{ width: 22, height: 15, borderRadius: 3, marginRight: 6 }} 
+              style={{ width: 20, height: 14, borderRadius: 2, marginRight: 5 }} 
             />
             <Text style={styles.languageText}>{language.toUpperCase()}</Text>
-            <Ionicons name="chevron-down" size={16} color={theme.colors.primary} />
+            <Ionicons name="chevron-down" size={14} color={theme.colors.primary} />
           </TouchableOpacity>
         </View>
 
@@ -142,7 +149,7 @@ export default function LoginScreen() {
             <Text style={styles.forgotPasswordText}>{language === 'fr' ? 'Se connecter avec mon code PIN' : 'Log in with my PIN code'}</Text>
           </TouchableOpacity>
 
-          <View style={{marginTop: theme.spacing.md}}>
+          <View style={{marginTop: theme.spacing.sm}}>
             <DizzitButton 
               title={language === 'fr' ? 'Se connecter' : 'Log in'} 
               onPress={handleLogin}
@@ -153,7 +160,7 @@ export default function LoginScreen() {
         </View>
 
         {/* Social Logins */}
-        <View style={{marginTop: theme.spacing.lg}}>
+        <View style={{marginTop: theme.spacing.md}}>
           <SocialLogins variant="square" />
         </View>
 
@@ -165,11 +172,11 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
         
+        {/* Features Banner inside scroll */}
+        <View style={{marginTop: theme.spacing.md}}>
+          <FeaturesBanner />
+        </View>
       </ScrollView>
-
-      {/* Features Banner pinned to bottom */}
-      <FeaturesBanner />
-      
     </SafeAreaView>
   );
 }
@@ -178,18 +185,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.surface,
-    paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 14,
+    paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 10,
   },
   scrollContent: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.md,
-    paddingBottom: 20, // Extra padding before banner
+    flexGrow: 1,
+    paddingHorizontal: isSmallScreen ? 16 : theme.spacing.lg,
+    paddingTop: 8,
+    paddingBottom: 24,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing.xl, },
+    marginBottom: isShortScreen ? 14 : theme.spacing.xl,
+  },
   backButton: {
     padding: 4,
   },
@@ -207,18 +216,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
-  flag: {
-    flexDirection: 'row',
-    width: 18,
-    height: 12,
-    marginRight: 6,
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  flagStripe: {
-    flex: 1,
-    height: '100%',
-  },
   languageText: {
     fontFamily: theme.typography.fontFamily.semiBold,
     fontSize: 12,
@@ -227,35 +224,35 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     alignItems: 'center',
-    marginBottom: theme.spacing.xl,
+    marginBottom: isShortScreen ? 12 : theme.spacing.xl,
   },
   logo: {
-    width: 180,
-    height: 45,
-    marginBottom: theme.spacing.md,
+    width: isShortScreen ? 140 : 180,
+    height: isShortScreen ? 36 : 45,
+    marginBottom: isShortScreen ? 6 : theme.spacing.md,
   },
   mainTitle: {
     fontFamily: theme.typography.fontFamily.heading,
-    fontSize: 32,
+    fontSize: isShortScreen ? 24 : 30,
     color: theme.colors.primary,
-    marginBottom: theme.spacing.sm,
+    marginBottom: 4,
   },
   subTitle: {
     fontFamily: theme.typography.fontFamily.regular,
-    fontSize: theme.typography.sizes.sm,
+    fontSize: isShortScreen ? 12 : theme.typography.sizes.sm,
     color: theme.colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: isShortScreen ? 16 : 22,
   },
   tabsContainer: {
     flexDirection: 'row',
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
-    marginBottom: theme.spacing.xl,
+    marginBottom: isShortScreen ? 14 : theme.spacing.xl,
   },
   tab: {
     flex: 1,
-    paddingVertical: theme.spacing.md,
+    paddingVertical: isShortScreen ? 10 : theme.spacing.md,
     alignItems: 'center',
   },
   activeTab: {
@@ -272,19 +269,19 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
   },
   formContainer: {
-    marginBottom: theme.spacing.md,
+    marginBottom: 8,
   },
   passwordContainer: {
-    marginTop: theme.spacing.md,
+    marginTop: 8,
   },
   forgotPasswordContainer: {
     alignItems: 'flex-end',
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.sm,
+    marginTop: 6,
+    marginBottom: 4,
   },
   forgotPasswordText: {
     fontFamily: theme.typography.fontFamily.medium,
-    fontSize: 13,
+    fontSize: 12,
     color: theme.colors.textSecondary,
     textDecorationLine: 'underline',
   },
@@ -292,8 +289,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: theme.spacing.xl,
-    marginBottom: theme.spacing.lg,
+    marginTop: isShortScreen ? 12 : theme.spacing.xl,
+    marginBottom: isShortScreen ? 8 : theme.spacing.lg,
   },
   signupText: {
     fontFamily: theme.typography.fontFamily.medium,

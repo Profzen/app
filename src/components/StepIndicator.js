@@ -55,36 +55,37 @@ export default function StepIndicator({ currentStep, steps }) {
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 32,
-    marginHorizontal: 40,
+    marginVertical: 20,
+    marginHorizontal: 20,
     position: 'relative',
   },
   line: {
     position: 'absolute',
-    top: 16,
-    left: 40, // Half of stepContainer width (80/2)
-    right: 40,
-    height: 1,
+    top: 15,
+    left: '15%',
+    right: '15%',
+    height: 2,
     backgroundColor: '#E5E7EB',
     zIndex: 1,
   },
   activeLine: {
     position: 'absolute',
-    top: 16,
-    left: 40,
-    right: 40,
-    height: 2, // slightly thicker to stand out
+    top: 15,
+    left: '15%',
+    right: '15%',
+    height: 2,
     backgroundColor: theme.colors.accent,
     zIndex: 2,
   },
   stepsWrapper: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    zIndex: 2,
+    justifyContent: 'space-around',
+    zIndex: 3,
   },
   stepContainer: {
     alignItems: 'center',
-    width: 80, // Giving some width to ensure labels don't overlap easily
+    minWidth: 70,
+    zIndex: 3,
   },
   circle: {
     width: 32,
@@ -92,7 +93,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
+    backgroundColor: '#FFFFFF',
   },
   activeCircle: {
     backgroundColor: theme.colors.accent,
