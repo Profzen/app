@@ -1,6 +1,7 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import CryptoIcon from '../components/CryptoIcon';
@@ -330,7 +331,7 @@ const styles = StyleSheet.create({
   scanCornerTR: { top: 24, right: 24, borderBottomWidth: 0, borderLeftWidth: 0, borderTopRightRadius: 8 },
   scanCornerBL: { bottom: 24, left: 24, borderTopWidth: 0, borderRightWidth: 0, borderBottomLeftRadius: 8 },
   scanCornerBR: { bottom: 24, right: 24, borderTopWidth: 0, borderLeftWidth: 0, borderBottomRightRadius: 8 },
-  laserBeamLine: { position: 'absolute', width: 150, height: 2, backgroundColor: '#38BDF8', top: '50%', shadowColor: '#38BDF8', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 8, elevation: 4 },
+  laserBeamLine: { position: 'absolute', width: 150, height: 2, backgroundColor: '#38BDF8', top: '50%', boxShadow: '0px 0px 8px #38BDF8' },
   billetsActions: { width: '100%' },
   btnCamera: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFC759', height: 48, borderRadius: 14, marginBottom: 14 },
   btnCameraText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#1A2840' },

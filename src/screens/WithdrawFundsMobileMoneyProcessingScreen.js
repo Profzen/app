@@ -1,6 +1,7 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function WithdrawFundsMobileMoneyProcessingScreen() {
@@ -203,7 +204,7 @@ const styles = StyleSheet.create({
   bgDecorativeCircle1: { position: 'absolute', width: 240, height: 240, borderRadius: 120, borderWidth: 1, borderColor: 'rgba(255, 199, 89, 0.12)', borderStyle: 'dashed', top: '15%', left: '50%', marginLeft: -120 },
   bgDecorativeCircle2: { position: 'absolute', width: 160, height: 160, borderRadius: 80, borderWidth: 1, borderColor: 'rgba(255, 199, 89, 0.18)', borderStyle: 'dashed', top: '25%', left: '50%', marginLeft: -80 },
   nodesContainer: { paddingVertical: 10, zIndex: 1 },
-  nodeCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FFFFFF', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#F1F5F9', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 6, elevation: 1 },
+  nodeCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FFFFFF', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#F1F5F9', boxShadow: '0px 2px 6px #000' },
   nodeLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   nodeIconBox: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#FFFDF0', borderWidth: 1, borderColor: '#FEF3C7', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   nodeTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#1A2840', marginBottom: 2 },

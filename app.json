@@ -23,11 +23,12 @@
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/brand/dizzitup_logo_cercle_cropped.png"
     },
     "plugins": [
       "expo-font",
-      "expo-build-properties"
+      "expo-build-properties",
+      "expo-status-bar"
     ],
     "extra": {
       "eas": {

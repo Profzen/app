@@ -1,6 +1,7 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Dimensions, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import { useApp } from '../context/AppContext';
@@ -285,7 +286,7 @@ const styles = StyleSheet.create({
   conversionText: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#94A3B8' },
   conversionDivider: { color: '#475569', fontSize: 12 },
   bigDzyIcon: { opacity: 0.85 },
-  actionsGrid: { flexDirection: 'row', backgroundColor: '#FFFFFF', borderRadius: 16, paddingVertical: 14, marginTop: 14, alignItems: 'center', justifyContent: 'space-around', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 },
+  actionsGrid: { flexDirection: 'row', backgroundColor: '#FFFFFF', borderRadius: 16, paddingVertical: 14, marginTop: 14, alignItems: 'center', justifyContent: 'space-around', boxShadow: '0px 2px 6px #000' },
   actionItem: { alignItems: 'center', flex: 1 },
   actionItemDisabled: { alignItems: 'center', flex: 1, opacity: 0.6 },
   actionIconWrapper: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center', marginBottom: 6 },
@@ -299,7 +300,7 @@ const styles = StyleSheet.create({
   sectionTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#1A2840' },
   voirTout: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#3B82F6' },
   fondsScroll: { gap: 12, paddingRight: 16 },
-  fondItem: { width: 100, backgroundColor: '#FFFFFF', borderRadius: 16, padding: 12, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 },
+  fondItem: { width: 100, backgroundColor: '#FFFFFF', borderRadius: 16, padding: 12, alignItems: 'center', boxShadow: '0px 2px 6px #000' },
   fondIcon: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
   customFondIcon: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
   fondSymbol: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#1A2840' },
@@ -329,7 +330,7 @@ const styles = StyleSheet.create({
   visaText: { fontSize: 9, fontWeight: 'bold', color: '#FFF', fontStyle: 'italic' },
   cardDotsPattern: { display: 'none' },
   patternDot: {},
-  transactionsList: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 12, gap: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 },
+  transactionsList: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 12, gap: 12, boxShadow: '0px 2px 6px #000' },
   txRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 4 },
   txIconBox: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
   txInfo: { flex: 1 },

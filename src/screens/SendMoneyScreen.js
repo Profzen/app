@@ -1,6 +1,7 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import AppSelect from '../components/AppSelect';
@@ -320,7 +321,7 @@ const styles = StyleSheet.create({
   notificationDot: { position: 'absolute', top: 6, right: 6, width: 6, height: 6, borderRadius: 3, backgroundColor: '#FFC759' },
   mainScroll: { flex: 1 },
   scrollContent: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 100 },
-  formCard: { backgroundColor: '#FFFFFF', borderRadius: 24, borderWidth: 1, borderColor: '#F1F5F9', padding: 18, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.03, shadowRadius: 10, elevation: 2 },
+  formCard: { backgroundColor: '#FFFFFF', borderRadius: 24, borderWidth: 1, borderColor: '#F1F5F9', padding: 18, boxShadow: '0px 4px 10px #0F172A' },
   alertBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F0FDF4', borderWidth: 1, borderColor: '#DCFCE7', borderRadius: 14, padding: 12, marginBottom: 20 },
   alertBannerText: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#15803D' },
   fieldLabel: { fontFamily: 'Inter_700Bold', fontSize: 11, color: '#64748B', letterSpacing: 0.5, marginBottom: 8, marginTop: 12, textTransform: 'uppercase' },
@@ -337,7 +338,7 @@ const styles = StyleSheet.create({
   pasteButton: { backgroundColor: '#F1F5F9', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, marginRight: 6 },
   pasteButtonText: { fontFamily: 'Inter_700Bold', fontSize: 10, color: '#475569', letterSpacing: 0.5 },
   qrCodeButton: { width: 32, height: 32, borderRadius: 8, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
-  dropdownListBox: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 18, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 },
+  dropdownListBox: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 18, overflow: 'hidden', boxShadow: '0px 2px 6px #000' },
   addPermanentItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFDF5', paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
   addPermanentIconBox: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#FEF3C7', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   addPermanentTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#0F172A', marginBottom: 2 },
@@ -366,6 +367,6 @@ const styles = StyleSheet.create({
   amountInputRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, paddingHorizontal: 16, height: 54, marginBottom: 24 },
   amountInput: { flex: 1, fontFamily: 'SpaceGrotesk_700Bold', fontSize: 22, color: '#0F172A', outlineStyle: 'none' },
   amountTokenSuffix: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#64748B' },
-  sendCtaBtn: { backgroundColor: '#071D54', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', height: 50, borderRadius: 14, shadowColor: '#071D54', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 3 },
+  sendCtaBtn: { backgroundColor: '#071D54', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', height: 50, borderRadius: 14, boxShadow: '0px 4px 8px #071D54' },
   sendCtaText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#FFFFFF' },
 });

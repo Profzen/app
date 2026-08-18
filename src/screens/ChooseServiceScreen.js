@@ -1,6 +1,7 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, TextInput, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AppToast from '../components/AppToast';
 
@@ -381,12 +382,12 @@ const styles = StyleSheet.create({
   servicesGridContainer: { paddingHorizontal: 16 },
   sectionTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#1A2840', marginBottom: 14 },
   serviceRowTwo: { flexDirection: 'row', gap: 12, marginBottom: 12 },
-  serviceTileHalf: { flex: 1, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0F2F5', borderRadius: 18, padding: 14, minHeight: 140, justifyContent: 'spaceBetween', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 6, elevation: 1 },
+  serviceTileHalf: { flex: 1, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0F2F5', borderRadius: 18, padding: 14, minHeight: 140, justifyContent: 'spaceBetween', boxShadow: '0px 2px 6px #000' },
   tileHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   tileIconBg: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
   tileTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840', marginBottom: 4 },
   tileSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#64748B', lineHeight: 14 },
-  serviceTileFull: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0F2F5', borderRadius: 18, padding: 14, marginBottom: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 6, elevation: 1 },
+  serviceTileFull: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0F2F5', borderRadius: 18, padding: 14, marginBottom: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0px 2px 6px #000' },
   tileFullLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 10 },
   tileIconBgLarge: { width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   multiIconGrid: { flexDirection: 'row', flexWrap: 'wrap', width: 34, height: 34, justifyContent: 'center', alignItems: 'center' },

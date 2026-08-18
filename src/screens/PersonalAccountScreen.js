@@ -1,5 +1,6 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, TextInput, Platform, StatusBar } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, TextInput, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
@@ -168,6 +169,6 @@ const styles = StyleSheet.create({
   docDesc: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280', marginTop: 2 },
   statusVerifiedChip: { backgroundColor: '#ECFDF5', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
   statusVerifiedText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#10B981' },
-  saveButton: { height: 50, borderRadius: 14, backgroundColor: '#FFC759', alignItems: 'center', justifyContent: 'center', shadowColor: '#FFC759', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 2 },
+  saveButton: { height: 50, borderRadius: 14, backgroundColor: '#FFC759', alignItems: 'center', justifyContent: 'center', boxShadow: '0px 4px 8px #FFC759' },
   saveButtonText: { fontFamily: 'Inter_700Bold', fontSize: 15, color: '#1A2840' },
 });

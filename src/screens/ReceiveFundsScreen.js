@@ -1,6 +1,7 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, ImageBackground, Share, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ImageBackground, Share, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import BottomNavBar from '../components/BottomNavBar';
@@ -281,11 +282,7 @@ const styles = StyleSheet.create({
     borderColor: '#F1F5F9',
     borderRadius: 16,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
-    elevation: 2,
+    boxShadow: '0px 2px 4px #000',
   },
   dropdownLeft: {
     flexDirection: 'row',
@@ -320,11 +317,7 @@ const styles = StyleSheet.create({
   },
   tabActive: {
     backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    boxShadow: '0px 2px 4px #000',
     borderBottomWidth: 3,
     borderBottomColor: 'transparent', // Will use absolute indicator
   },
@@ -350,11 +343,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 24,
     marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
+    boxShadow: '0px 8px 12px #000',
     // Add subtle background waves simulation if needed via an image or standard color. Using solid color for now as per simple styling.
   },
   cardTop: {
@@ -450,11 +439,7 @@ const styles = StyleSheet.create({
     borderColor: '#F1F5F9',
     paddingVertical: 16,
     borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
-    elevation: 2,
+    boxShadow: '0px 2px 4px #000',
   },
   btnCopyText: {
     fontFamily: 'Inter_700Bold',
@@ -469,11 +454,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0F1E40',
     paddingVertical: 16,
     borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    boxShadow: '0px 4px 8px #000',
   },
   btnShareText: {
     fontFamily: 'Inter_700Bold',
@@ -499,11 +480,7 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: 'center',
     marginBottom: 32,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 4,
+    boxShadow: '0px 4px 12px #000',
   },
   qrHeader: {
     flexDirection: 'row',

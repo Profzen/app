@@ -1,6 +1,7 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import AppToast from '../components/AppToast';
@@ -148,7 +149,7 @@ const styles = StyleSheet.create({
   toastWrap: { position: 'absolute', left: 14, right: 14, top: 50, zIndex: 50 },
   mainScroll: { flex: 1 },
   scrollContent: { paddingHorizontal: 16, paddingTop: Platform.OS === 'android' ? 44 : 20, paddingBottom: 40, alignItems: 'center' },
-  mainCard: { width: '100%', backgroundColor: '#FFFFFF', borderRadius: 28, borderWidth: 1, borderColor: '#F1F5F9', padding: 20, shadowColor: '#0F172A', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.04, shadowRadius: 16, elevation: 3, marginTop: 10 },
+  mainCard: { width: '100%', backgroundColor: '#FFFFFF', borderRadius: 28, borderWidth: 1, borderColor: '#F1F5F9', padding: 20, boxShadow: '0px 6px 16px #0F172A', marginTop: 10 },
   cardHeaderBox: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
   headerIconSquare: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#FFC759', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   headerTextWrap: { flex: 1 },
@@ -158,15 +159,14 @@ const styles = StyleSheet.create({
   secureTagText: { fontFamily: 'Inter_700Bold', fontSize: 10, color: '#10B981', letterSpacing: 0.5 },
   dividerLine: { height: 1, backgroundColor: '#F1F5F9', marginHorizontal: -20, marginBottom: 32 },
   successCircleWrapper: { alignItems: 'center', marginBottom: 20 },
-  successCircle: { width: 84, height: 84, borderRadius: 42, backgroundColor: '#10B981', justifyContent: 'center', alignItems: 'center', shadowColor: '#10B981', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 4 },
+  successCircle: { width: 84, height: 84, borderRadius: 42, backgroundColor: '#10B981', justifyContent: 'center', alignItems: 'center', boxShadow: '0px 6px 12px #10B981' },
   successTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 22, color: '#0F172A', textAlign: 'center', marginBottom: 10 },
   successSubtitle: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#15803D', textAlign: 'center', paddingHorizontal: 12, lineHeight: 20, marginBottom: 24 },
   hashBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, paddingLeft: 16, paddingRight: 8, height: 52, marginBottom: 16 },
   hashText: { flex: 1, fontFamily: 'Inter_500Medium', fontSize: 13, color: '#475569', marginRight: 8 },
   copyBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#CBD5E1', justifyContent: 'center', alignItems: 'center' },
-  
   /* Partager mon succès CTA Card Styles */
-  shareCtaCard: { backgroundColor: '#071D54', borderRadius: 18, padding: 14, flexDirection: 'row', alignItems: 'center', marginBottom: 16, shadowColor: '#071D54', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
+  shareCtaCard: { backgroundColor: '#071D54', borderRadius: 18, padding: 14, flexDirection: 'row', alignItems: 'center', marginBottom: 16, boxShadow: '0px 4px 8px #071D54' },
   shareIconWrapper: { position: 'relative', marginRight: 12 },
   sparkRaysWrap: { position: 'absolute', top: -6, right: -4, flexDirection: 'row', gap: 2, zIndex: 2 },
   sparkRay: { width: 2, height: 6, backgroundColor: '#FFC759', borderRadius: 1 },
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   goldText: { color: '#FFC759', fontFamily: 'Inter_700Bold' },
   shareCtaSub2: { fontFamily: 'Inter_400Regular', fontSize: 10.5, color: '#94A3B8', lineHeight: 14 },
 
-  doneButton: { backgroundColor: '#071D54', height: 52, borderRadius: 14, justifyContent: 'center', alignItems: 'center', shadowColor: '#071D54', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 3 },
+  doneButton: { backgroundColor: '#071D54', height: 52, borderRadius: 14, justifyContent: 'center', alignItems: 'center', boxShadow: '0px 4px 8px #071D54' },
   doneButtonText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#FFFFFF' },
   securityFooterRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 24 },
   goldDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#FFC759', marginRight: 6 },

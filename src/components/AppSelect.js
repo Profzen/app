@@ -1,5 +1,6 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function AppSelect({
@@ -103,7 +104,7 @@ const styles = StyleSheet.create({
   
   /* Discrete Floating Modal Popup with Margins */
   overlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(15, 23, 42, 0.45)', paddingHorizontal: 20 },
-  modalCard: { width: '100%', maxWidth: 380, maxHeight: '68%', backgroundColor: '#FFFFFF', borderRadius: 24, paddingHorizontal: 20, paddingTop: 18, paddingBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.15, shadowRadius: 20, elevation: 8 },
+  modalCard: { width: '100%', maxWidth: 380, maxHeight: '68%', backgroundColor: '#FFFFFF', borderRadius: 24, paddingHorizontal: 20, paddingTop: 18, paddingBottom: 20, boxShadow: '0px 8px 20px #000' },
   cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
   cardTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 17, color: '#0F172A' },
   closeBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' },

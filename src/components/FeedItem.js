@@ -30,11 +30,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginHorizontal: 20,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    boxShadow: '0px 2px 8px #000',
   },
   iconContainer: {
     width: 48,

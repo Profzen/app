@@ -1,5 +1,6 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Modal, Platform, StatusBar } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Modal, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
@@ -260,7 +261,7 @@ const styles = StyleSheet.create({
   rowIcon: { marginRight: 10 },
   infoLabel: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#6B7280', width: 140 },
   infoValue: { flex: 1, fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#1A2840' },
-  primaryBizBtn: { height: 50, borderRadius: 14, backgroundColor: '#FFC759', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 12, shadowColor: '#FFC759', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 8, elevation: 2 },
+  primaryBizBtn: { height: 50, borderRadius: 14, backgroundColor: '#FFC759', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 12, boxShadow: '0px 4px 8px #FFC759' },
   primaryBizBtnText: { fontFamily: 'Inter_700Bold', fontSize: 15, color: '#1A2840' },
   addBizBtn: { height: 48, borderRadius: 14, backgroundColor: '#F5F3FF', borderWidth: 1, borderColor: '#DDD6FE', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   addBizBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#8B5CF6' },
@@ -281,10 +282,7 @@ const modalStyles = StyleSheet.create({
     padding: 24,
     alignItems: 'center',
     elevation: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
+    boxShadow: '0px 10px 20px #000',
   },
   iconCircle: {
     width: 60,

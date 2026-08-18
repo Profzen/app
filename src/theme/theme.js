@@ -48,32 +48,16 @@ export const theme = {
   },
   shadows: {
     soft: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.1,
-      shadowRadius: 3,
-      elevation: 2,
+      boxShadow: '0px 1px 3px #000',
     },
     floating: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.1,
-      shadowRadius: 6,
-      elevation: 4,
+      boxShadow: '0px 4px 6px #000',
     },
     elevated: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 10 },
-      shadowOpacity: 0.1,
-      shadowRadius: 15,
-      elevation: 8,
+      boxShadow: '0px 10px 15px #000',
     },
     brandGlow: {
-      shadowColor: '#FFC759',
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.3,
-      shadowRadius: 12,
-      elevation: 6,
+      boxShadow: '0px 8px 12px #FFC759',
     }
   }
 };

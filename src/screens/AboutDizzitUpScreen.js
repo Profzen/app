@@ -1,5 +1,6 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Linking, Platform, StatusBar } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Linking, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
@@ -151,6 +152,6 @@ const styles = StyleSheet.create({
   socialRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
   socialBtn: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 1, borderColor: '#F0F2F5', paddingVertical: 12, alignItems: 'center', marginHorizontal: 4 },
   socialName: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#4B5563', marginTop: 4 },
-  contactBtn: { height: 50, borderRadius: 14, backgroundColor: '#FFC759', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', shadowColor: '#FFC759', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 8, elevation: 2 },
+  contactBtn: { height: 50, borderRadius: 14, backgroundColor: '#FFC759', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', boxShadow: '0px 4px 8px #FFC759' },
   contactBtnText: { fontFamily: 'Inter_700Bold', fontSize: 15, color: '#1A2840' },
 });

@@ -84,11 +84,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginHorizontal: 20,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
+    boxShadow: '0px 1px 5px #000',
   },
   leftSection: {
     flexDirection: 'row',

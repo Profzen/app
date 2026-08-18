@@ -1,31 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Image, Dimensions, Share, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Dimensions, Share, Platform, StatusBar, ActivityIndicator, ImageBackground } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
+import { useBuyGoods } from '../hooks/useBuyGoods';
+import { useApp } from '../context/AppContext';
 
-import { SHOPS_MOCK } from '../mocks/shopsMock';
+
 
 const { width } = Dimensions.get('window');
 
-const popularProducts = [
-  { id: '1', name: 'Samsung Galaxy A14', price: '155 000 FCFA', stock: 'En stock', icon: 'hardware-chip-outline' },
-  { id: '2', name: 'Écouteurs Sans fil', price: '25 000 FCFA', stock: 'En stock', icon: 'headset-outline' },
-  { id: '3', name: 'Montre connectée', price: '45 000 FCFA', stock: 'En stock', icon: 'watch-outline' },
-  { id: '4', name: 'OMO Détergent 2,5kg', price: '8 550 FCFA', stock: 'En stock', icon: 'cube-outline' },
-];
+
 
 export default function ShopDetailsScreen({ route }) {
   const navigation = useNavigation();
   const shopParam = route?.params?.shop;
-  const shop = shopParam || SHOPS_MOCK[0];
+  const initialShop = shopParam || {};
+
+  const { t } = useApp();
+  const { fetchStoreDetails, fetchAllProducts } = useBuyGoods();
+
+  const [shop, setShop] = useState(initialShop);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [favorite, setFavorite] = useState(false);
   const [productFavorites, setProductFavorites] = useState([]);
   const [selectedPayment, setSelectedPayment] = useState('card');
   const [aboutExpanded, setAboutExpanded] = useState(false);
   const [toast, setToast] = useState(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      if (initialShop.raw?.slug) {
+        const storeDetails = await fetchStoreDetails(initialShop.raw.slug);
+        if (storeDetails) {
+          setShop(prev => ({ ...prev, ...storeDetails }));
+        }
+      }
+
+      const allProds = await fetchAllProducts();
+      const merchantId = initialShop.raw?.id;
+      const storeProducts = merchantId
+        ? allProds.filter(p => p.merchant_id === merchantId || (p.merchant && p.merchant.id === merchantId))
+        : allProds;
+
+      setProducts(storeProducts);
+      setLoading(false);
+    };
+
+    loadData();
+  }, [initialShop.raw?.slug, initialShop.raw?.id]);
 
   const copyToClipboard = (label, text) => {
     setToast({ title: `${label} copié !`, message: `${text}` });
@@ -43,7 +71,7 @@ export default function ShopDetailsScreen({ route }) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        
+
         {/* Header Top Bar */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
@@ -64,25 +92,25 @@ export default function ShopDetailsScreen({ route }) {
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          
+
           {/* Banner Cover Area */}
           <View style={styles.coverContainer}>
             {/* Cover Banner */}
             <View style={styles.coverBg}>
               <View style={styles.coverTextContent}>
-                <Text style={styles.coverTitle}>{shop.name?.toUpperCase()}</Text>
+                <Text style={styles.coverTitle}>{(shop.shop_name || shop.name || 'Boutique')?.toUpperCase()}</Text>
                 <Text style={styles.coverSubtitle}>Tout ce dont vous{'\n'}avez besoin, livré{'\n'}chez vous.</Text>
               </View>
-              <Image 
-                source={shop.coverImage || require('../../assets/promo_shop.png')} 
-                style={styles.coverImage} 
+              <Image
+                source={shop.shop_banner_url ? { uri: shop.shop_banner_url } : require('../../assets/promo_shop.png')}
+                style={styles.coverImage}
               />
             </View>
 
             {/* Circular Logo overlay */}
             <View style={styles.logoContainer}>
               <View style={styles.logoCircle}>
-                <Image source={shop.logoImage || require('../../assets/brand/dizzitup_logo_cercle.png')} style={{width: 36, height: 36}} resizeMode="contain" />
+                <Image source={shop.logoImage || require('../../assets/brand/dizzitup_logo_cercle.png')} style={{ width: 36, height: 36 }} resizeMode="contain" />
               </View>
               {shop.verified && (
                 <View style={styles.verifiedBadge}>
@@ -95,7 +123,7 @@ export default function ShopDetailsScreen({ route }) {
           {/* Shop Metadata */}
           <View style={styles.shopInfoHeader}>
             <View style={styles.shopNameRow}>
-              <Text style={styles.shopName}>{shop.name}</Text>
+              <Text style={styles.shopName}>{shop.shop_name || shop.name || 'Boutique'}</Text>
               <Ionicons name="checkmark-circle" size={18} color="#3B82F6" style={{ marginLeft: 6 }} />
             </View>
 
@@ -108,7 +136,7 @@ export default function ShopDetailsScreen({ route }) {
                 <Text style={[styles.statusBadgeText, { color: '#64748B' }]}>{shop.deliveryTime || '24h'}</Text>
               </View>
               <View style={[styles.statusBadge, { backgroundColor: '#F5F3FF' }]}>
-                <Text style={[styles.statusBadgeText, { color: '#8B5CF6' }]}>{shop.category}</Text>
+                <Text style={[styles.statusBadgeText, { color: '#8B5CF6' }]}>{shop.shop_categories || shop.category || 'Marketplace'}</Text>
               </View>
             </View>
 
@@ -234,7 +262,7 @@ export default function ShopDetailsScreen({ route }) {
                   <Ionicons name="copy-outline" size={12} color="#9CA3AF" />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.infoRow} onPress={() => copyToClipboard('EVM wallet', '0x7d17...9Fa3c2E')}>
-                  <Ionicons name="logo-polygon" size={14} color="#8B5CF6" />
+                  <Ionicons name="hardware-chip-outline" size={14} color="#8B5CF6" />
                   <View style={{ flex: 1, marginHorizontal: 4 }}>
                     <Text style={styles.infoTextSmall}>EVM wallet</Text>
                     <Text style={styles.infoTextSub}>0x7d17...9Fa3c2E</Text>
@@ -319,7 +347,7 @@ export default function ShopDetailsScreen({ route }) {
           <View style={styles.sectionContainer}>
             <Text style={styles.sectionTitle}>Moyens de paiement acceptés</Text>
             <View style={styles.paymentSelectGrid}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.paymentSelectCard, selectedPayment === 'card' && styles.paymentSelectCardActive]}
                 onPress={() => setSelectedPayment('card')}
               >
@@ -332,7 +360,7 @@ export default function ShopDetailsScreen({ route }) {
                 </View>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.paymentSelectCard, selectedPayment === 'wallet' && styles.paymentSelectCardActive]}
                 onPress={() => setSelectedPayment('wallet')}
               >
@@ -345,7 +373,7 @@ export default function ShopDetailsScreen({ route }) {
                 </View>
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.paymentSelectCard, selectedPayment === 'mobile' && styles.paymentSelectCardActive]}
                 onPress={() => setSelectedPayment('mobile')}
               >
@@ -389,23 +417,29 @@ export default function ShopDetailsScreen({ route }) {
           </View>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.productsScroll}>
-            {popularProducts.map(product => (
+            {loading && <ActivityIndicator size="large" color="#3B82F6" style={{ margin: 20 }} />}
+            {!loading && products.length === 0 && <Text style={{ margin: 20, color: '#64748B' }}>Aucun produit trouvé.</Text>}
+            {products.map(product => (
               <View key={product.id} style={styles.productCard}>
                 <TouchableOpacity style={styles.heartIcon} onPress={() => setProductFavorites((items) => items.includes(product.id) ? items.filter((id) => id !== product.id) : [...items, product.id])}>
                   <Ionicons name={productFavorites.includes(product.id) ? "heart" : "heart-outline"} size={16} color="#F59E0B" />
                 </TouchableOpacity>
-                
-                <View style={styles.productImgPlaceholder}>
-                  <Ionicons name={product.icon} size={32} color="#3B82F6" />
-                </View>
-                
-                <View style={styles.productInfo}>
-                  <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
-                  <Text style={styles.productPrice}>{product.price}</Text>
-                  <Text style={styles.productStock}>{product.stock}</Text>
+
+                <View style={[styles.productImgPlaceholder, { padding: 0, overflow: 'hidden' }]}>
+                  {product.images && product.images.length > 0 ? (
+                    <Image source={{ uri: product.images[0] }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                  ) : (
+                    <Ionicons name="cube-outline" size={32} color="#94A3B8" style={{ alignSelf: 'center', marginTop: 30 }} />
+                  )}
                 </View>
 
-                <TouchableOpacity style={styles.btnBuySmall} onPress={() => navigation.navigate('ProductDetailsScreen')}>
+                <View style={styles.productInfo}>
+                  <Text style={styles.productName} numberOfLines={1}>{product.name || 'Produit'}</Text>
+                  <Text style={styles.productPrice}>{product.price ? product.price.toLocaleString('fr-FR') + ' FCFA' : 'Prix non défini'}</Text>
+                  <Text style={styles.productStock}>{product.stock_quantity > 0 ? t('inStock', 'En stock') : t('outOfStock', 'Rupture')}</Text>
+                </View>
+
+                <TouchableOpacity style={styles.btnBuySmall} onPress={() => navigation.navigate('ProductDetailsScreen', { product })}>
                   <Text style={styles.btnBuySmallText}>Acheter</Text>
                 </TouchableOpacity>
 
@@ -438,7 +472,8 @@ export default function ShopDetailsScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#FFFFFF',
+  safeArea: {
+    flex: 1, backgroundColor: '#FFFFFF',
     paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 14,
   },
   container: { flex: 1, backgroundColor: '#FFFFFF' },
@@ -457,7 +492,7 @@ const styles = StyleSheet.create({
   coverSubtitle: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#FFFFFF', lineHeight: 16 },
   coverImage: { width: 140, height: '120%', position: 'absolute', right: 0, top: 0, borderRadius: 16, opacity: 0.9 },
   logoContainer: { position: 'absolute', bottom: -30, left: 14 },
-  logoCircle: { width: 70, height: 70, borderRadius: 35, backgroundColor: '#FF6B00', borderWidth: 3, borderColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+  logoCircle: { width: 70, height: 70, borderRadius: 35, backgroundColor: '#FF6B00', borderWidth: 3, borderColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', boxShadow: '0px 2px 4px rgba(0,0,0,0.1)', elevation: 3 },
   logoText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#FFFFFF' },
   verifiedBadge: { position: 'absolute', bottom: 2, right: 2, backgroundColor: '#FFFFFF', borderRadius: 10 },
   shopInfoHeader: { paddingHorizontal: 16, marginBottom: 16 },
