@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import CryptoIcon from './CryptoIcon';
 import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
 import { useApp } from '../context/AppContext';
+import { isSmallScreen } from '../utils/responsive';
 
 export default function WalletCard({ balances }) {
   const navigation = useNavigation();
@@ -113,13 +114,13 @@ function ActionItem({ icon, label, onPress, divider }) {
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 20,
-    marginTop: 10,
-    marginBottom: 10,
+    marginHorizontal: isSmallScreen ? 14 : 20,
+    marginTop: 8,
+    marginBottom: 8,
   },
   mainCard: {
-    borderRadius: 22,
-    padding: 16,
+    borderRadius: 20,
+    padding: isSmallScreen ? 14 : 16,
     borderWidth: 1,
     borderColor: 'rgba(255, 199, 89, 0.15)',
     boxShadow: '0px 8px 12px #0A1737',
@@ -128,20 +129,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   titleWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: 'rgba(255, 199, 89, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 10,
     borderWidth: 1,
     borderColor: 'rgba(255, 199, 89, 0.3)',
     boxShadow: '0px 4px 8px #FFC759',
@@ -154,57 +155,57 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 12,
+    fontSize: 11,
     color: 'rgba(255,255,255,0.7)',
-    marginTop: 2,
+    marginTop: 1,
   },
   eyeIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: 'rgba(255,255,255,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   balanceArea: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   bigBalanceText: {
     fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 34,
+    fontSize: isSmallScreen ? 28 : 34,
     color: '#FFFFFF',
-    lineHeight: 40,
+    lineHeight: isSmallScreen ? 34 : 40,
   },
   currencyText: {
     fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 18,
+    fontSize: isSmallScreen ? 16 : 18,
     color: '#FFC759',
   },
   internalFiatRow: {
     flexDirection: 'row',
     backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: 12,
-    padding: 12,
-    marginBottom: 16,
+    padding: 10,
+    marginBottom: 12,
   },
   internalFiatBox: {
     flex: 1,
     justifyContent: 'center',
   },
   tinyFlag: {
-    width: 16,
-    height: 11,
+    width: 15,
+    height: 10,
     borderRadius: 2,
-    marginRight: 6,
+    marginRight: 5,
   },
   fiatCurrencyLabel: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
+    fontSize: 10.5,
     color: 'rgba(255,255,255,0.6)',
   },
   fiatAmount: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 15,
+    fontSize: 14,
     color: '#FFFFFF',
     marginTop: 2,
   },
@@ -213,7 +214,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.1)',
-    paddingTop: 14,
+    paddingTop: 12,
   },
   actionItem: {
     flex: 1,
@@ -226,9 +227,9 @@ const styles = StyleSheet.create({
   },
   actionLabel: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 11,
+    fontSize: 10.5,
     color: 'rgba(255,255,255,0.8)',
-    marginTop: 6,
+    marginTop: 4,
   },
   blurredText: {
     color: 'rgba(255,255,255,0)',

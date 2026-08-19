@@ -46,7 +46,7 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
   const activeTabLower = (activeTab || '').toLowerCase();
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView edges={['bottom']} style={styles.safeArea}>
       {menuOpen && (
         <View style={styles.shortcutMenu}>
           <Text style={styles.shortcutTitle}>Actions rapides</Text>
@@ -95,7 +95,7 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
           >
             <Ionicons 
               name={menuOpen ? "close" : "swap-horizontal"} 
-              size={28} 
+              size={26} 
               color="#1A2840" 
             />
           </TouchableOpacity>
@@ -123,9 +123,9 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
 
 function NavItem({ icon, label, isActive, onPress }) {
   return (
-    <TouchableOpacity style={styles.navItem} onPress={onPress}>
-      <Ionicons name={isActive ? icon.replace('-outline', '') : icon} size={24} color={isActive ? '#3B82F6' : '#A0AABF'} />
-      <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>{label}</Text>
+    <TouchableOpacity style={styles.navItem} onPress={onPress} activeOpacity={0.7}>
+      <Ionicons name={isActive ? icon.replace('-outline', '') : icon} size={22} color={isActive ? '#3B82F6' : '#A0AABF'} />
+      <Text style={[styles.navLabel, isActive && styles.navLabelActive]} numberOfLines={1}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -148,38 +148,41 @@ const styles = StyleSheet.create({
   shortcutLabel: { flex: 1, fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840' },
   container: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    justifyContent: 'space-around',
+    paddingHorizontal: 8,
+    paddingVertical: 6,
     alignItems: 'center',
     position: 'relative',
-    height: 60,
+    height: 58,
   },
   navItem: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    width: 60,
+    paddingVertical: 4,
   },
   navLabel: {
     fontFamily: 'Inter_500Medium',
     fontSize: 10,
     color: '#A0AABF',
-    marginTop: 4,
+    marginTop: 3,
   },
   navLabelActive: {
     color: '#3B82F6',
   },
   centerButtonWrapper: {
-    width: 60,
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
   },
   centerButton: {
     position: 'absolute',
-    bottom: -10,
+    top: -20,
     backgroundColor: '#FFC759',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     justifyContent: 'center',
     alignItems: 'center',
     boxShadow: '0px 4px 8px #FFC759',

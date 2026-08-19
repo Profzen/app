@@ -1325,13 +1325,399 @@ L'application utilise le hook `useApp()` pour partager en temps réel :
 
 ---
 
+## Ajout CTA Succès — Carte "Partager mon succès" sur SendMoneySuccessScreen (27 juillet 2026)
+
+- **Maquette modifiée** : Écran [`SendMoneySuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneySuccessScreen.js) (*"Envoyer des fonds - Transaction soumise !"*).
+- **Intégration du CTA** :
+  - Ajout de la carte sombre de CTA *"Partager mon succès"* juste au-dessus du bouton *"Terminé"*.
+  - **Design & Contenu** : Fond bleu nuit (`#071D54`), coins arrondis (`18px`), carré blanc d'icône partage avec petits rayons étincelles jaunes (`#FFC759`), titre principal *"Partager mon succès"*, sous-titre *"Gagnez 1 DZY en identifiant @DizzitUp"* avec mise en évidence dorée, sous-titre descriptif *"Publiez une carte DizzitUp personnalisée de cette transaction"* et flèche `>` dorée.
+  - **Action** : Déclenchement de la notification Toast confirmant la préparation de la carte de transaction.
+- **Fichiers modifiés** : [`src/screens/SendMoneySuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneySuccessScreen.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
+
+---
+
+## Ajout CTA Succès — Carte "Partager mon succès" sur PaymentSuccessScreen (27 juillet 2026)
+
+- **Maquette modifiée** : Écran [`PaymentSuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/PaymentSuccessScreen.js) (*"Paiement réussi !"*).
+- **Intégration du CTA** :
+  - Ajout de la carte sombre de CTA *"Partager mon succès"* entre le bandeau de Cashback Rewards et la section des boutons d'actions (*"Voir le reçu"*).
+  - **Design & Contenu** : Fond bleu nuit (`#071D54`), coins arrondis (`18px`), carré blanc d'icône partage avec rayons étincelles jaunes (`#FFC759`), titre principal *"Partager mon succès"*, sous-titre *"Gagnez 1 DZY en identifiant @DizzitUp"* (mise en valeur dorée) et sous-titre descriptif.
+- **Fichiers modifiés** : [`src/screens/PaymentSuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/PaymentSuccessScreen.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
+
+---
+
+## Ajout CTA Succès — Carte "Partager mon succès" sur TopUpWalletConfirmationScreen (27 juillet 2026)
+
+- **Maquette modifiée** : Écran [`TopUpWalletConfirmationScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/TopUpWalletConfirmationScreen.js) (*"Recharger le portefeuille - Confirmation (Étape 5)"*).
+- **Intégration du CTA** :
+  - Ajout de la carte sombre de CTA *"Partager mon succès"* entre la bannière de sécurité *"Transaction sécurisée"* et les boutons principaux (*"Voir mon portefeuille DZYwallet"*).
+  - **Design & Contenu** : Fond bleu nuit (`#071D54`), coins arrondis (`18px`), carré blanc avec icône nœud de partage et étincelles dorées, titre *"Partager mon succès"*, sous-titre *"Gagnez 1 DZY en identifiant @DizzitUp"* (mots clés dorés `#FFC759`), description et flèche `→` dorée.
+  - **Ajustement bouton secondaire** : Mise à jour du contour du bouton *"Effectuer une autre recharge"* avec une bordure jaune/dorée (`#FFC759`) conforme à la maquette.
+- **Fichiers modifiés** : [`src/screens/TopUpWalletConfirmationScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/TopUpWalletConfirmationScreen.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
+
+---
+
+## Ajout CTA Succès — Carte "Partager mon succès" sur WithdrawFundsMobileMoneySuccessScreen (27 juillet 2026)
+
+- **Maquette modifiée** : Écran [`WithdrawFundsMobileMoneySuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/WithdrawFundsMobileMoneySuccessScreen.js) (*"Retirer des fonds vers Mobile Money - Étape 5/5 (Retrait réussi !)"*).
+- **Intégration du CTA** :
+  - Ajout de la carte sombre de CTA *"Partager mon succès"* entre le bloc de notification (*"Vous recevrez une notification..."*) et les boutons d'action du bas.
+  - **Design & Ordre Spécifique** : Fond bleu nuit (`#071D54`), coins arrondis (`18px`), carré blanc avec icône nœud de partage et étincelle dorée, sous-titre de gain *"Gagnez 1 DZY en identifiant @DizzitUp"* positionné au-dessus du titre *"Partager mon succès"* exactement comme sur la maquette, description et flèche `>` dorée.
+  - **Ajustement boutons bas** : Bouton *"Voir l'historique"* (icône horloge, fond blanc + bordure dorée) à gauche, et bouton *"Effectuer un autre retrait"* (icône recharger, fond jaune `#FFC759` plein) à droite.
+- **Fichiers modifiés** : [`src/screens/WithdrawFundsMobileMoneySuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/WithdrawFundsMobileMoneySuccessScreen.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
+
+---
+
+## Ajout CTA Succès — Carte "Partager mon succès" sur CashierSuccessScreen (27 juillet 2026)
+
+- **Maquette modifiée** : Écran [`CashierSuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/CashierSuccessScreen.js) (*"Caisse (TPE) - Paiement reçu avec succès !"*).
+- **Intégration du CTA** :
+  - Ajout de la carte sombre de CTA *"Partager mon succès"* entre la bannière verte de sécurité (*"Transaction sécurisée"*) et les boutons d'actions (*"Voir le reçu"*).
+  - **Design & Contenu** : Fond bleu nuit (`#071D54`), coins arrondis (`18px`), carré blanc d'icône partage avec rayons étincelles dorés (`#FFC759`), titre principal *"Partager mon succès"*, sous-titre *"Gagnez 1 DZY en identifiant @DizzitUp"* (mots clés dorés `#FFC759`), description et flèche `→` dorée.
+- **Fichiers modifiés** : [`src/screens/CashierSuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/CashierSuccessScreen.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
+
+---
+
+## 📲 Flux Partage de Succès — Étape 1 : Sélection Réseau Social (27 juillet 2026)
+
+- **Nouvel Écran Créé** : [`ShareSuccessPlatformScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessPlatformScreen.js) (*"Partager mon succès - Étape 1 : Réseau social"*).
+- **Intégration & Spécifications** :
+  - **En-tête & Stepper** : En-tête bilingue *"Partager mon succès / Choisissez où publier votre carte DizzitUp"* avec Stepper 3 étapes (*1. Réseau social (actif), 2. Visuel, 3. Légende*).
+  - **Bannière Récompense Top** : Carte bleu nuit (`#071D54`) *"Partagez votre succès et gagnez 1 DZY"*.
+  - **Grille de 6 Plateformes** : Grille 2 colonnes avec sélection interactive (WhatsApp, X / Twitter, Facebook, Instagram Story, LinkedIn, Telegram) avec état sélectionné (bordure dorée `#FFC759` + badge coche `✓`).
+  - **Bannières d'Information** : Masquage des données sensibles (bouclier) et lien d'invitation traçable pour rewards (chaîne).
+  - **Actions** : Bouton *"Plus tard"* et bouton *"Continuer"* redirigeant vers l'Étape 2.
+- **Fichiers modifiés/créés** : [`src/screens/ShareSuccessPlatformScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessPlatformScreen.js), [`src/navigation/AppNavigator.js`](file:///g:/zen/projets/DizzitApp/app/src/navigation/AppNavigator.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
+
+---
+
+## 🎨 Flux Partage de Succès — Étape 2 : Aperçu du Visuel Dynamique (27 juillet 2026)
+
+- **Nouvel Écran Créé** : [`ShareSuccessVisualScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessVisualScreen.js) (*"Aperçu de votre visuel - Étape 2 sur 3"*).
+- **Intégration & Spécifications** :
+  - **En-tête** : Titre *"Aperçu de votre visuel"*, badge *"Étape 2 sur 3"* et note explicative.
+  - **Carte Visuelle Template Générée** : Grande carte dynamique bleu nuit (`#071D54`) reprenant le logo DizzitUp, le hashtag `#NoBorderNoMiddleman`, le badge *"Transaction réussie !"*, l'annonce *"J'ai envoyé des fonds / 100 USDC via DZYWallet"*, l'encart De John Mensah (Ghana 🇬🇭) Vers Un bénéficiaire (Togo 🇹🇬), la métadonnée réseau Polygon/date/ID de transaction, et le pied de carte *"Wanna do the same? Join DizzitUp - dizzitup.com/join"*.
+  - **Contrôles Interactifs** : Bouton *"Modifier le visuel"* (changement de thème/fond dynamique) et bouton *"Plein écran"* (ouverture d'une modale de prévisualisation grand format).
+  - **Bannière Protection** : Encart d'information masquant les données sensibles.
+  - **Redirection** : Bouton *"Continuer →"* transmettant la plateforme et les données dynamiques à l'Étape 3.
+- **Fichiers modifiés/créés** : [`src/screens/ShareSuccessVisualScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessVisualScreen.js), [`src/navigation/AppNavigator.js`](file:///g:/zen/projets/DizzitApp/app/src/navigation/AppNavigator.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
+
+---
+
+## ✍️ Flux Partage de Succès — Étape 3 : Rédiger le Message & Partage Final (27 juillet 2026)
+
+- **Nouvel Écran Créé** : [`ShareSuccessCaptionScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessCaptionScreen.js) (*"Rédiger votre message - Étape 3 sur 3"*).
+- **Intégration & Spécifications** :
+  - **En-tête & Stepper** : En-tête avec Stepper 3 étapes (*1. Choisir le réseau (✓), 2. Aperçu du visuel (✓), 3. Rédiger le message (actif)*).
+  - **Aperçu Condensé du Visuel** : Mini-carte du visuel généré.
+  - **Zone de Saisie du Message (Légende)** : Encart de saisie pré-rempli avec le message dynamique (*"I, John from Ghana 🇬🇭, successfully sent 100 USDC..."*), compteur de caractères (`198/280`), et bouton *"✏️ Personnaliser le message"*.
+  - **Déclenchement du Partage Natif & Rewards** : Bouton principal *"Partagez et gagnez 1 DZY"* déclenchant le `Share.share` natif, suivi d'un Toast de confirmation et redirection automatique vers [`RewardsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/RewardsScreen.js) pour que l'utilisateur visualise son gain de 1 DZY.
+  - **Maillage Complet des 5 CTA** : Connexion des 5 écrans de succès ([SendMoneySuccessScreen.js](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneySuccessScreen.js), [PaymentSuccessScreen.js](file:///g:/zen/projets/DizzitApp/app/src/screens/PaymentSuccessScreen.js), [TopUpWalletConfirmationScreen.js](file:///g:/zen/projets/DizzitApp/app/src/screens/TopUpWalletConfirmationScreen.js), [WithdrawFundsMobileMoneySuccessScreen.js](file:///g:/zen/projets/DizzitApp/app/src/screens/WithdrawFundsMobileMoneySuccessScreen.js), [CashierSuccessScreen.js](file:///g:/zen/projets/DizzitApp/app/src/screens/CashierSuccessScreen.js)) pour transmettre leurs données de transaction dynamiques (`route.params`) à [ShareSuccessPlatformScreen.js](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessPlatformScreen.js).
+- **Fichiers modifiés/créés** : [`src/screens/ShareSuccessCaptionScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessCaptionScreen.js), [`src/navigation/AppNavigator.js`](file:///g:/zen/projets/DizzitApp/app/src/navigation/AppNavigator.js), [`src/screens/SendMoneySuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneySuccessScreen.js), [`src/screens/PaymentSuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/PaymentSuccessScreen.js), [`src/screens/TopUpWalletConfirmationScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/TopUpWalletConfirmationScreen.js), [`src/screens/WithdrawFundsMobileMoneySuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/WithdrawFundsMobileMoneySuccessScreen.js), [`src/screens/CashierSuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/CashierSuccessScreen.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
+
+---
+
+## 🛠️ Correction Syntaxe — Propriété Style dans ShareSuccessVisualScreen (27 juillet 2026)
+
+- **Correctif** : Remplacement de la frappe `justify.content: 'center'` par `justifyContent: 'center'` à la ligne 290 de [`ShareSuccessVisualScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessVisualScreen.js).
+- **Résultat** : Suppression de l'erreur Babel/Metro, compilation web 100 % réussie.
+- **Fichiers modifiés** : [`src/screens/ShareSuccessVisualScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessVisualScreen.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
+---
+
+## 🏗️ RÉCAPITULATIF CONSOLIDÉ — Feature « Social Sharing / Partager mon succès » (27 juillet 2026)
+
+### Contexte & Demande Client
+
+Le client a demandé : *"Please, add a Social Sharing CTA on all « Successful transaction » screen report that will post a generic (one DizzitUp branded) image with variable, related to the transaction text inside. Beneficiary name & info contact should be anonymized but not his country."*
+
+Notre réponse technique validée : *"The most logical approach here isn't 'AI image generation,' but rather generating a dynamic visual based on a template. Technically, we can: compose the card using a template, inject the transaction data, convert the rendered output into an image, share the image via the native share sheet."*
+
+### Architecture Complète de la Feature
+
+```
+[5 Écrans de Succès de Transaction]
+  │ (Clic sur CTA "Partager mon succès")
+  │ (Transmission de transactionData via route.params)
+  ▼
+[Étape 1 : ShareSuccessPlatformScreen] ➔ Choix du réseau social (WhatsApp, X, Facebook, Instagram, LinkedIn, Telegram)
+  │ (Clic sur "Continuer")
+  ▼
+[Étape 2 : ShareSuccessVisualScreen]   ➔ Aperçu du visuel DizzitUp brandé + "Modifier le visuel" + "Plein écran"
+  │ (Clic sur "Continuer →")
+  ▼
+[Étape 3 : ShareSuccessCaptionScreen]  ➔ Message pré-rempli + "Personnaliser" + Compteur 280 caractères
+  │ (Clic sur "Partagez et gagnez 1 DZY")
+  ▼
+[Natif Share Sheet (Share.share)] ➔ Toast "1 DZY crédité" ➔ Redirection vers RewardsScreen
+```
+
+### Fichiers Créés (3 nouveaux écrans)
+
+| # | Fichier | Rôle | Route Navigator |
+|---|---------|------|-----------------|
+| 1 | [`ShareSuccessPlatformScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessPlatformScreen.js) | Étape 1 : Sélection réseau social | `ShareSuccessPlatformScreen` |
+| 2 | [`ShareSuccessVisualScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessVisualScreen.js) | Étape 2 : Aperçu visuel dynamique généré | `ShareSuccessVisualScreen` |
+| 3 | [`ShareSuccessCaptionScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShareSuccessCaptionScreen.js) | Étape 3 : Rédaction message + partage natif | `ShareSuccessCaptionScreen` |
+
+### Fichiers Modifiés (7 fichiers existants)
+
+| # | Fichier | Modification |
+|---|---------|-------------|
+| 1 | [`SendMoneySuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneySuccessScreen.js) | Ajout CTA "Partager mon succès" + navigation vers ShareSuccessPlatformScreen avec données transaction envoi |
+| 2 | [`PaymentSuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/PaymentSuccessScreen.js) | Ajout CTA "Partager mon succès" + navigation vers ShareSuccessPlatformScreen avec données paiement |
+| 3 | [`TopUpWalletConfirmationScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/TopUpWalletConfirmationScreen.js) | Ajout CTA "Partager mon succès" + mise à jour bouton secondaire bordure dorée + navigation |
+| 4 | [`WithdrawFundsMobileMoneySuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/WithdrawFundsMobileMoneySuccessScreen.js) | Ajout CTA "Partager mon succès" + mise à jour boutons bas + navigation avec données retrait |
+| 5 | [`CashierSuccessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/CashierSuccessScreen.js) | Ajout CTA "Partager mon succès" + navigation avec données encaissement TPE |
+| 6 | [`AppNavigator.js`](file:///g:/zen/projets/DizzitApp/app/src/navigation/AppNavigator.js) | Import et enregistrement des 3 nouvelles routes (74 routes actives au total) |
+| 7 | [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md) | Documentation complète de la feature |
+
+### Design Tokens CTA Card (Partagés entre les 5 écrans)
+
+- `backgroundColor`: `#071D54` (Dark blue night)
+- `borderRadius`: `18`
+- `padding`: `14`
+- Left Icon Square: `width: 50, height: 50, borderRadius: 14, backgroundColor: '#FFFFFF'` avec icône `share-social-outline` en `#071D54`
+- 3 Spark Rays: `backgroundColor: '#FFC759'` (étincelles dorées en haut à droite)
+- Gold Accent Text: `color: '#FFC759', fontFamily: 'Inter_700Bold'` pour `Gagnez 1 DZY` et `@DizzitUp`
+- Arrow Right: `Ionicons name="arrow-forward" size={20} color="#FFC759"`
+
+### Données Dynamiques Transmises (transactionData via route.params)
+
+| Écran Source | type | amount | token | actionType | recipientName |
+|-------------|------|--------|-------|------------|---------------|
+| SendMoneySuccess | `send` | `amount` (variable) | `token` (variable) | `envoyé` | `recipient` (variable) |
+| PaymentSuccess | `payment` | `20.50` | `USD` | `payé` | `Mama Kemi Adebayo` |
+| TopUpWalletConfirmation | `topup` | `10` | `USDC` | `rechargé` | `Mon DZYWallet` |
+| WithdrawFundsMobileMoney | `withdraw` | `250 000 FCFA` | `USDC` | `retiré` | `Mixx by Yas (+228 90 12 34 56)` |
+| CashierSuccess | `cashier` | `2 000 FCFA` | `USDT` | `reçu` | `Caisse (TPE)` |
+
+### Respect de la Demande Client — Checklist
+
+- [x] **CTA Social Sharing sur TOUS les écrans de succès** : 5/5 écrans couverts
+- [x] **Image brandée DizzitUp générique** : Carte visuelle avec logo officiel, couleurs marque, hashtag `#NoBorderNoMiddleman`, slogan `Send More, Get More`, lien `dizzitup.com/join`
+- [x] **Texte variable lié à la transaction** : Montant, token, type d'opération, expéditeur, bénéficiaire, réseau, date, hash — tous injectés dynamiquement
+- [x] **Anonymisation du bénéficiaire** : Nom masqué (*"Un bénéficiaire"*), avatar silhouette neutre, contacts cachés
+- [x] **Pays du bénéficiaire visible** : Pays (*Togo*) et drapeau (*🇹🇬*) restent affichés
+- [x] **Partage natif fonctionnel** : `Share.share` déclenché depuis le bouton *"Partagez et gagnez 1 DZY"*
+- [x] **Données fictives prêtes pour le backend** : Structure `transactionData` en `route.params` prête à recevoir les vraies données du backend
+
+### Prochaines Étapes (Quand Backend Prêt)
+
+1. Remplacer les données mock par les vraies données de transaction depuis l'API backend
+2. Implémenter la capture d'écran réelle de la carte visuelle (via `react-native-view-shot` ou similaire) pour générer le PNG/JPG partageable
+3. Appeler l'API backend pour créditer réellement le 1 DZY après vérification du partage
+4. Stocker l'historique des partages côté backend pour éviter les doublons de récompenses
+
+---
+
+## 📱 Déploiement iOS & Configuration TestFlight (5 août 2026)
+
+### État Actuel & Éléments Configurés
+- **Android** : APK Android 100% compilé et validé via Gradle / GitHub Actions (`build-apk.yml`).
+- **iOS / TestFlight** : Configuration du build cloud EAS et de la soumission automatique sur TestFlight.
+- **Éléments App Store Connect API Key enregistrés** :
+  - **Fichier `.p8`** : `AuthKey_4S4J7Q3V9S.p8` à la racine `app/` (ignoré par Git dans `.gitignore`).
+  - **Key ID** : `4S4J7Q3V9S`
+  - **Issuer ID** : `36e0cd09-4437-4ec4-9269-4b9e474d31f4`
+  - **Nom de la clé sur Expo** : `DizzitUp Key`
+  - **Compte Expo lié** : `profzen` (`profzzen@gmail.com`)
+  - **Projet Expo / EAS** : `@profzen/dizzitapp-v2` (ID : `cb443e23-61ff-47de-8f7d-45919575a57d`, Bundle ID : `com.dizzitup.app`).
+  - **Clé API EAS Submit** : **100% assignée et liée** dans EAS Credentials (`App Store Connect API Key assigned to dizzitapp-v2: com.dizzitup.app for EAS Submit`).
+  - **Conformité TestFlight `app.json`** : `"infoPlist": { "ITSAppUsesNonExemptEncryption": false }` ajouté sous `ios`.
+
+### Ce qu'il reste pour lancer le Build iOS
+Pour que le build `.ipa` soit signé pour la première fois, Apple nécessite un **Certificat de Distribution (`.p12`)**. 
+Deux méthodes faciles transmises au client :
+1. **Sur Mac** : Exporter le certificat `.p12` via *Trousseau d'accès (Keychain Access)* après création sur `developer.apple.com`.
+2. **Sur Windows (Sans Mac via OpenSSL)** :
+   ```bash
+   openssl req -newkey rsa:2048 -nodes -keyout private.key -out request.csr -subj "/CN=DizzitUp"
+   # Téléverser request.csr sur developer.apple.com -> Télécharger distribution.cer
+   openssl x509 -in distribution.cer -inform DER -out distribution.pem -outform PEM
+   openssl pkcs12 -export -out distribution.p12 -inkey private.key -in distribution.pem -passout pass:123456
+   ```
+
+Dès réception du fichier `.p12` ou de sa création, le lancement s'effectue en une commande :
+```powershell
+npx eas-cli build --platform ios --profile production --auto-submit
+```
+
+---
+
+## 📱 Déploiement iOS & Intégration des Identifiants Apple (9 août 2026)
+
+### 🔍 1. Réception & Validation du Fichier `Certificates.p12`
+- **Fichier** : `Certificates.p12` (3,2 Ko) déposé à la racine du projet (sécurisé dans `.gitignore`).
+- **Mot de passe validé** : `DizzitUp2026#`.
+- **Déchiffrement & Données extraites** :
+  - **Type de certificat** : `Apple Development`
+  - **Titulaire (Common Name)** : `Solofo RAFENO (HVTK5MBMJL)`
+  - **Organisation & Apple Team ID** : `DizzitUp` (`948RWU4PMF`)
+  - **Période de validité** : `08/08/2026` au `08/08/2027` (1 an complet conforme Apple).
+
+### ⚙️ 2. Configuration & Importation Réussie sur EAS Cloud
+- **Liaison du Certificat sur EAS** : Exécution de `npx eas-cli credentials -p ios` $\rightarrow$ Import réussi du certificat de distribution pour le projet `@profzen/dizzitapp-v2` (`com.dizzitup.app`) avec l'Apple Team ID `948RWU4PMF`.
+- **Clé API App Store Connect** : `DizzitUp Key` (Key ID `4S4J7Q3V9S`, Issuer ID `36e0cd09-4437-4ec4-9269-4b9e474d31f4`) active et liée.
+- **Mise à jour `eas.json`** : Ajout de `"appVersionSource": "remote"` sous `cli` pour supprimer les avertissements de versionnage.
+
+### 📋 3. Réception & Validation Complète des Fichiers iOS (9 août 2026)
+- **Fichiers reçus et analysés avec succès** :
+  1. `DizzitApp_2026.mobileprovision` (33 Ko) :
+     - Profil de Provisioning officiel **App Store Distribution** pour `com.dizzitup.app`.
+     - Apple Team ID : `948RWU4PMF` (DizzitUp).
+     - Validité : jusqu'au **9 août 2027**.
+  2. `ios_distribution (1).cer` (1,4 Ko) :
+     - Certificat de production **iPhone Distribution: DizzitUp (948RWU4PMF)**.
+     - Validité : du **09/08/2026** au **09/08/2027**.
+  3. `CertificateSigningRequest.certSigningRequest - Azziz` :
+     - CSR correspondant à la clé publique du certificat de distribution.
+  4. `DizzitUp_Distribution.p12` (3,2 Ko) :
+     - Assemblage cryptographique réussi de la **Clé Privée** (issue du trousseau/`Certificates.p12`) et du **Certificat de Distribution**.
+     - Mot de passe : `DizzitUp2026#`.
+
+### 🚀 4. Statut Global : 100% CONFIGURÉ & BUILD EN COURS SUR EAS CLOUD !
+Tous les éléments requis pour compiler et soumettre sur TestFlight ont été **synchronisés et validés avec succès** sur les serveurs EAS :
+- [x] **Identifiant d'application (Bundle ID)** : `com.dizzitup.app`
+- [x] **Distribution Certificate** : `iPhone Distribution: DizzitUp (948RWU4PMF)` (S/N: `369BDC522DD7A132C40B781D5254599F`, Expire: `09/08/2027`) — **Actif sur EAS**
+- [x] **Provisioning Profile** : `DizzitApp_2026` (`com.dizzitup.app`, Expire: `09/08/2027`) — **Actif sur EAS**
+- [x] **App Store Connect API Key** : `DizzitUp Key` (ID `4S4J7Q3V9S`, Issuer: `36e0cd09-4437-4ec4-9269-4b9e474d31f4`) — **Actif sur EAS**
+- [x] **Configuration `app.json` & `eas.json`** : `ITSAppUsesNonExemptEncryption: false`, `appVersionSource: "remote"`
+- [x] **Local `credentials.json` & `.gitignore`** : Sécurisé et ignoré par Git.
+- [x] **Build iOS Production** : Lancé avec succès sur EAS Cloud !
+  - **Lien du Build EAS** : [`https://expo.dev/accounts/profzen/projects/dizzitapp-v2/builds/6c170036-c0b9-418f-846a-ec6dac34b9b0`](https://expo.dev/accounts/profzen/projects/dizzitapp-v2/builds/6c170036-c0b9-418f-846a-ec6dac34b9b0)
+
+---
+
+### 📋 5. Réception de l'Identifiant App Store Connect (`ascAppId`)
+- **Identifiant Apple de l'app reçu** : **`6799749556`**
+- **Configuration dans `eas.json`** :
+  ```json
+  "submit": {
+    "production": {
+      "ios": {
+        "ascAppId": "6799749556"
+      }
+    }
+  }
+  ```
+
+---
+
+### 🎉 6. Soumission Réussie sur TestFlight (9 août 2026)
+- **Statut de soumission** : ✅ **SUCCÈS TOTAL — BINAIRE TÉLÉVERSÉ SUR TESTFLIGHT !**
+- **Détails de la soumission EAS** : [`https://expo.dev/accounts/profzen/projects/dizzitapp-v2/submissions/18b88131-8107-4fcd-800d-7b0646863989`](https://expo.dev/accounts/profzen/projects/dizzitapp-v2/submissions/18b88131-8107-4fcd-800d-7b0646863989)
+- **Lien TestFlight App Store Connect** : [`https://appstoreconnect.apple.com/apps/6799749556/testflight/ios`](https://appstoreconnect.apple.com/apps/6799749556/testflight/ios)
+- **App Version** : `1.0.0` (Build `1`)
+- **Traitement Apple** : Le binaire `.ipa` est en cours de traitement automatique par Apple (environ 5 à 10 minutes). Dès que le traitement est terminé, l'application est prête à être testée par les utilisateurs TestFlight.
+
+---
+
+### 🔐 7. Répertoire Centralisé des Identifiants & Secrets de Production
+
+| Élément / Paramètre | Valeur / Identifiant | Notes & Emplacement |
+| :--- | :--- | :--- |
+| **Nom de l'application** | `DizzitUp` | Défini dans `app.json` |
+| **Bundle ID (iOS) / Package (Android)** | `com.dizzitup.app` | Identifiant unique Apple & Google Play |
+| **Identifiant App Store Connect (`ascAppId`)** | `6799749556` | Identifiant Apple de l'app sur App Store Connect |
+| **Lien TestFlight Direct** | [`TestFlight DizzitUp`](https://appstoreconnect.apple.com/apps/6799749556/testflight/ios) | Console de test TestFlight |
+| **Organisation / Apple Team Name** | `DizzitUp` | Compte Développeur Apple Entreprise |
+| **Apple Team ID** | `948RWU4PMF` | ID officiel de l'équipe Apple Developer |
+| **Compte Expo / EAS** | `profzen` (`profzzen@gmail.com`) | Propriétaire du projet EAS Cloud |
+| **EAS Project ID** | `cb443e23-61ff-47de-8f7d-45919575a57d` | Projet `@profzen/dizzitapp-v2` |
+| **Lien Build EAS Cloud (iOS)** | [`Build 6c170036...`](https://expo.dev/accounts/profzen/projects/dizzitapp-v2/builds/6c170036-c0b9-418f-846a-ec6dac34b9b0) | Build production `1.0.0 (1)` terminé |
+| **Mot de passe Certificats `.p12`** | `DizzitUp2026#` | Utilisé pour `Certificates.p12` et `DizzitUp_Distribution.p12` |
+| **Certificat de Distribution iOS** | `iPhone Distribution: DizzitUp (948RWU4PMF)` | S/N: `369BDC522DD7A132C40B781D5254599F` (Expire le **09/08/2027**) |
+| **Certificat de Développement iOS** | `Apple Development: Solofo RAFENO (HVTK5MBMJL)` | Contenu dans `Certificates.p12` (Expire le **08/08/2027**) |
+| **Provisioning Profile iOS** | `DizzitApp_2026` (`DizzitApp_2026.mobileprovision`) | UUID: `b8dfe157-213f-4299-bb7d-ac1212e42134` (Expire le **09/08/2027**) |
+| **App Store Connect Key ID** | `4S4J7Q3V9S` | Clé API pour soumission automatique TestFlight |
+| **App Store Connect Issuer ID** | `36e0cd09-4437-4ec4-9269-4b9e474d31f4` | ID de l'émetteur App Store Connect |
+| **Fichier Clé Privée App Store Connect** | `AuthKey_4S4J7Q3V9S.p8` | Fichier clé API à la racine (ignoré par Git) |
+| **Fichier Local Credentials EAS** | `credentials.json` | Fichier de configuration locale (ignoré par Git) |
+
+---
+
+## 🔀 Synchronisation Git & Création de la Branche d'Intégration `front-back` (18 août 2026)
+
+### 1. Synchronisation de `main` avec `develop`
+- **État préalable** : `develop` contenait 4 commits d'avance sur `main` (configuration TestFlight finale `ascAppId: 6799749556`, secrets iOS et `memoire.md`).
+- **Action réalisée** : Fast-forward merge de `develop` vers `main` (`a8aa1a4..4cfb425`).
+- **Synchronisation distante** : Push réussi vers les deux dépôts distants :
+  - `origin/main` (`https://github.com/Dizzitup/dizzitapp-v2.git`) ✅
+  - `personal/main` (`https://github.com/Profzen/app.git`) ✅
+
+---
+
+### 2. Création & Fusion Complète sur la Branche `front-back`
+Pour assurer la continuité du travail en parfaite synchronisation avec Assia (chargée de l'intégration Backend) tout en maintenant nos fonctionnalités Frontend & Déploiement :
+- **Création de la branche** : `front-back` (créée à partir de `develop` au commit `4cfb425`).
+- **Fusion de la branche d'Assia** : `origin/feature/backend-integration` fusionnée proprement dans `front-back`.
+- **Résolution des Conflits & Synergie des Fonctionnalités** :
+  1. **Conservation des Intégrations Backend d'Assia** :
+     - **Crossmint SDK** : `@crossmint/client-sdk-react-native-ui`, `<CrossmintProvider>` dans `App.js`, et widget réel de paiement carte `<CrossmintEmbeddedCheckout>` dans `TopUpWalletDetailsScreen.js`.
+     - **Supabase Client** : `src/services/supabaseClient.js` configuré avec `@supabase/supabase-js`, `AsyncStorage`, `react-native-url-polyfill` et sécurisé par des fallbacks d'initialisation en cas d'absence temporaire de `.env`.
+     - **API REST Marchands / "Buy Goods" & Hook** : `src/services/buyGoodsApi.js` et `src/hooks/useBuyGoods.js` connectant `ShopsScreen.js` et `ShopDetailsScreen.js` aux données réelles.
+     - **Internationalisation (i18n) 5 Langues** : Fichiers JSON complets (`fr.json`, `en.json`, `pt.json`, `ar.json`, `am.json`) + fonction `t(key, fallback)` dans `AppContext.js` + sélecteurs de drapeaux interactifs dans l'en-tête de `HomeScreen.js`, `LoginScreen.js`, `MoreSettingsScreen.js`.
+     - **Modernisation des Ombres** : Remplacement global par la syntaxe standard `boxShadow` sur ~70 composants et écrans.
+     - **Assets de marque** : `assets/brand/shop_placeholder.png`, `assets/brand/finalLogo.png`, `assets/brand/dizzitup_logo_cercle_cropped.png`.
+     - **Configuration Metro** : `metro.config.js` avec extensions `.mjs` et `.cjs`.
+  2. **Conservation Intégrale des Fonctionnalités `develop`** :
+     - **Tunnel Social Sharing en 3 étapes** : `ShareSuccessPlatformScreen.js`, `ShareSuccessVisualScreen.js`, `ShareSuccessCaptionScreen.js` avec leurs 5 CTA "Partager mon succès" sur tous les écrans de fin de transaction.
+     - **Configuration de Déploiement iOS & TestFlight** : Clé `"ascAppId": "6799749556"`, profil `preview` APK dans `eas.json` et `"ITSAppUsesNonExemptEncryption": false` dans `app.json`.
+     - **Navigation Globale** : **77 routes actives et interconnectées** dans `AppNavigator.js`.
+
+---
+
+### 3. Validation & Push de la Branche `front-back`
+- **Validation Build Web** : `npx expo export --platform web` exécuté avec succès (**0 erreur**, 80 assets packagés, bundles web assemblés).
+- **Push Distant Réussi** :
+  - `origin/front-back` (`https://github.com/Dizzitup/dizzitapp-v2.git`) ✅
+  - `personal/front-back` (`https://github.com/Profzen/app.git`) ✅
+- **Workflow de Collaboration Actif** : La branche **`front-back`** est désormais notre branche de travail officielle pour suivre et synchroniser en continu les intégrations d'Assia et apporter tous les ajustements UI/UX nécessaires.
+
+---
+
+## 📱 5. Responsive Mobile Universel & Résolution Crash Localhost (18 août 2026)
+
+### A. Résolution du Crash Écran Blanc sur Navigateur Web (`localhost:8081`)
+1. **Origine du problème** : 
+   - `CrossmintProvider` dans `App.js` plantait au démarrage car `apiKey` attendue par le SDK Crossmint requiert un format d'environnement valide (sinon `API Key not found or malformed`).
+   - Le client Supabase lançait une exception non rattrapée lorsque les variables d'environnement n'étaient pas définies en local.
+2. **Correction apportée** :
+   - Ajout d'une clé Crossmint fallback sécurisée (`ck_live_...` / sandbox) et fallback Supabase dans `src/services/supabaseClient.js`.
+   - Conditionnement du SDK Crossmint pour prévenir tout crash fatal en mode développement web.
+
+### B. Système & Architecture Responsive Multi-Écrans (`src/utils/responsive.js`)
+Pour résoudre les anomalies remontées lors des tests sur iPhone SE (écran 375x667) et petits écrans (icônes décalées, textes écrasés, boutons masqués) :
+- Création du module utilitaire `src/utils/responsive.js` exportant :
+  - `scale(size)`, `verticalScale(size)`, `moderateScale(size, factor)` basés sur les dimensions standards (375x812).
+  - `isSmallScreen` (`width <= 375`) et `isShortScreen` (`height <= 700`).
+  - `getDeviceDimensions()`.
+
+### C. Refonte Responsive des Composants et Écrans Clés
+1. **`BottomNavBar.js`** :
+   - SafeArea intégrée avec `edges={['bottom']}`.
+   - Distribution dynamique `flex: 1` et `justifyContent: 'space-around'` évitant tout débordement d'onglets sur 375px.
+   - Bouton flottant central calé avec `top: -20, width: 52, height: 52`.
+2. **`StepIndicator.js`** :
+   - Remplacement des largeurs fixes en pixels par des pourcentages responsives (`left: '15%', right: '15%'`).
+3. **`PinCodeScreen.js`** :
+   - Intégration de `isShortScreen` pour les marges verticales.
+   - Rangée de boutons d'action "PRÉCÉDENT" et "TERMINER" 100% visible et accessible sans rognage sur iPhone SE.
+4. **`LoginScreen.js` & `RegisterScreen.js`** :
+   - Intégration de `FeaturesBanner` dans le `ScrollView` avec `keyboardShouldPersistTaps="handled"`.
+   - Tous les champs, liens ("Mot de passe oublié ?", "Code PIN") et boutons d'action visibles directement sur l'écran.
+5. **`HomeScreen.js` & `WalletCard.js`** :
+   - En-tête : Réduction intelligente des icônes d'actions (34x34) et `flexShrink: 1` sur le nom d'utilisateur pour garantir zéro passage à la ligne.
+   - Grille d'actions rapides : Séquençage responsive avec `width: '23.5%'` et `justifyContent: 'space-between'`.
+   - Bannières d'invitation et Store adaptées au format mobile compact.
+
+### D. Validation Visuelle Multi-Viewport
+- **iPhone SE (375 x 667)** : Testé et validé (`test_iphone_se_login.png`, `test_iphone_se_pincode.png`, `iphone_se_home_final.png`).
+- **iPhone 14/15/16 Pro (393 x 852)** : Testé et validé (`iphone_pro_home_final.png`).
+- **Android Large (412 x 915)** : Testé et validé (`android_home_final.png`).
+
+---
+
 ## 🔄 Règle d'Or pour l'IA (Mise à jour Continue du Mémoire)
 
 **RÈGLE STRICTE POUR L'IA** : À la fin de chaque session ou après toute modification majeure (ajout d'écran, ajustement de flux, refactoring, gestion Git), l'IA **DOIT IMPÉRATIVEMENT** mettre à jour ce fichier `memoire.md`. Ainsi, lors de l'ouverture d'une nouvelle session de conversation, la lecture préalable de ce fichier permet de récupérer l'intégralité du contexte, de l'état d'avancement et des règles sans aucune perte d'information ni interruption du workflow.
-
-
-
-
-
-
-

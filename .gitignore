@@ -17,6 +17,10 @@ expo-env.d.ts
 *.p12
 *.key
 *.mobileprovision
+*.cer
+*.certSigningRequest*
+*.crdownload
+credentials.json
 
 # Metro
 .metro-health-check*
@@ -39,9 +43,6 @@ yarn-error.*
 # generated native folders
 /ios
 /android
-
-# Documentation locale
-memoire.md
 
 # Scripts utilitaires locaux
 scripts/

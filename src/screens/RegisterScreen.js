@@ -13,6 +13,7 @@ import { FooterTerms } from '../components/FooterTerms';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../services/supabaseClient';
+import { isSmallScreen, isShortScreen } from '../utils/responsive';
 
 export default function RegisterScreen() {
   const navigation = useNavigation();
@@ -80,12 +81,17 @@ export default function RegisterScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent} 
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        bounces={false}
+      >
         
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-back" size={24} color={theme.colors.primary} />
+            <Ionicons name="chevron-back" size={22} color={theme.colors.primary} />
           </TouchableOpacity>
           <View style={styles.loginLinkContainer}>
             <Text style={styles.loginText}>{t('auth.alreadyHaveAccount', 'Already have an account? ')}</Text>
@@ -182,17 +188,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.surface,
-    paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 14,
+    paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 10,
   },
   scrollContent: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.md,
+    flexGrow: 1,
+    paddingHorizontal: isSmallScreen ? 16 : theme.spacing.lg,
+    paddingTop: 8,
+    paddingBottom: 24,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing.lg, },
+    marginBottom: isShortScreen ? 10 : theme.spacing.lg,
+  },
   backButton: {
     borderWidth: 1,
     borderColor: theme.colors.accent,
@@ -215,25 +224,25 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     alignItems: 'center',
-    marginBottom: theme.spacing.xl,
+    marginBottom: isShortScreen ? 10 : theme.spacing.xl,
   },
   logo: {
-    width: 200,
-    height: 50,
-    marginBottom: theme.spacing.sm,
+    width: isShortScreen ? 140 : 180,
+    height: isShortScreen ? 36 : 45,
+    marginBottom: isShortScreen ? 4 : theme.spacing.sm,
   },
   mainTitle: {
     fontFamily: theme.typography.fontFamily.heading,
-    fontSize: theme.typography.sizes.heading,
+    fontSize: isShortScreen ? 22 : theme.typography.sizes.heading,
     color: theme.colors.primary,
-    marginBottom: theme.spacing.xs,
+    marginBottom: 4,
   },
   subTitle: {
     fontFamily: theme.typography.fontFamily.regular,
-    fontSize: theme.typography.sizes.sm,
+    fontSize: isShortScreen ? 12 : theme.typography.sizes.sm,
     color: theme.colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: isShortScreen ? 16 : 20,
   },
   stepperContainer: {
     flexDirection: 'row',
