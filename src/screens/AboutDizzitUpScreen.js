@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Linking, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import * as WebBrowser from 'expo-web-browser';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
@@ -17,8 +18,18 @@ export default function AboutDizzitUpScreen() {
     else navigation.navigate('MoreSettingsScreen');
   };
 
-  const openLink = (title, url) => {
-    setToast({ title, message: language === 'fr' ? `Redirection vers ${url}` : `Redirecting to ${url}` });
+  const openLink = async (title, url) => {
+    let fullUrl = url.startsWith('http') ? url : `https://${url}`;
+    try {
+      await WebBrowser.openBrowserAsync(fullUrl, {
+        toolbarColor: '#1A2840',
+        enableBarCollapsing: true,
+        showTitle: true
+      });
+    } catch (error) {
+      console.log('Error opening web browser', error);
+      setToast({ title: "Error", message: "Failed to open link." });
+    }
   };
 
   return (
@@ -31,8 +42,8 @@ export default function AboutDizzitUpScreen() {
               <Ionicons name="arrow-back" size={22} color="#1A2840" />
             </TouchableOpacity>
             <View style={styles.headerTitleContainer}>
-              <Text style={styles.pageTitle}>{t('aboutDizzitUp', 'About DizzitUp')}</Text>
-              <Text style={styles.pageSubtitle}>{language === 'fr' ? 'À propos de notre mission & entreprise' : 'About our mission & company'}</Text>
+              <Text style={styles.pageTitle}>{t('aboutApp.title', 'About DizzitUp')}</Text>
+              <Text style={styles.pageSubtitle}>{t('aboutApp.subtitle', 'About our mission & company')}</Text>
             </View>
           </View>
 
@@ -48,21 +59,19 @@ export default function AboutDizzitUpScreen() {
           </View>
 
           {/* Mission Statement */}
-          <Text style={styles.sectionHeader}>{language === 'fr' ? 'NOTRE MISSION' : 'OUR MISSION'}</Text>
+          <Text style={styles.sectionHeader}>{t('aboutApp.missionTitle', 'OUR MISSION')}</Text>
           <View style={styles.card}>
             <Text style={styles.missionText}>
-              {language === 'fr' 
-                ? "DizzitUp simplifie les paiements transfrontaliers, les envois de fonds, le e-commerce et l'accès aux stablecoins (USDT, USDC, EURC, DZY) en Afrique et dans le monde entier. Notre objectif est d'offrir des transactions instantanées, sécurisées et à frais réduits pour les particuliers et les commerçants." 
-                : "DizzitUp simplifies cross-border payments, remittances, e-commerce, and access to stablecoins (USDT, USDC, EURC, DZY) across Africa and worldwide. Our mission is to offer instant, secure, low-fee transactions for individuals and merchants."}
+              {t('aboutApp.missionText', 'DizzitUp simplifies cross-border payments, remittances, e-commerce, and access to stablecoins (USDT, USDC, EURC, DZY) across Africa and worldwide. Our mission is to offer instant, secure, low-fee transactions for individuals and merchants.')}
             </Text>
           </View>
 
           {/* Information Links */}
-          <Text style={styles.sectionHeader}>{language === 'fr' ? 'INFORMATIONS LÉGALES & SITES' : 'LEGAL INFORMATION & WEBSITES'}</Text>
+          <Text style={styles.sectionHeader}>{t('aboutApp.legalTitle', 'LEGAL INFORMATION & WEBSITES')}</Text>
           <View style={styles.card}>
             <TouchableOpacity style={styles.linkRow} onPress={() => openLink('Site Web', 'https://dizzitup.com')}>
               <Ionicons name="globe-outline" size={20} color="#3B82F6" style={styles.linkIcon} />
-              <Text style={styles.linkText}>{language === 'fr' ? 'Site Officiel DizzitUp (dizzitup.com)' : 'Official DizzitUp Website (dizzitup.com)'}</Text>
+              <Text style={styles.linkText}>{t('aboutApp.website', 'Official DizzitUp Website (dizzitup.com)')}</Text>
               <Ionicons name="open-outline" size={16} color="#9CA3AF" />
             </TouchableOpacity>
 
@@ -70,7 +79,7 @@ export default function AboutDizzitUpScreen() {
 
             <TouchableOpacity style={styles.linkRow} onPress={() => openLink('Conditions d\'utilisation', 'dizzitup.com/terms')}>
               <Ionicons name="document-text-outline" size={20} color="#10B981" style={styles.linkIcon} />
-              <Text style={styles.linkText}>{language === 'fr' ? "Conditions Générales d'Utilisation" : 'Terms of Service'}</Text>
+              <Text style={styles.linkText}>{t('aboutApp.terms', 'Terms of Service')}</Text>
               <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
             </TouchableOpacity>
 
@@ -78,7 +87,7 @@ export default function AboutDizzitUpScreen() {
 
             <TouchableOpacity style={styles.linkRow} onPress={() => openLink('Politique de confidentialité', 'dizzitup.com/privacy')}>
               <Ionicons name="shield-checkmark-outline" size={20} color="#8B5CF6" style={styles.linkIcon} />
-              <Text style={styles.linkText}>{language === 'fr' ? 'Politique de Confidentialité & Données' : 'Privacy & Data Policy'}</Text>
+              <Text style={styles.linkText}>{t('aboutApp.privacy', 'Privacy & Data Policy')}</Text>
               <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
             </TouchableOpacity>
 
@@ -86,13 +95,13 @@ export default function AboutDizzitUpScreen() {
 
             <TouchableOpacity style={styles.linkRow} onPress={() => openLink('Licences', 'dizzitup.com/licenses')}>
               <Ionicons name="ribbon-outline" size={20} color="#F59E0B" style={styles.linkIcon} />
-              <Text style={styles.linkText}>{language === 'fr' ? 'Licences & Conformité Réglementaire' : 'Licenses & Regulatory Compliance'}</Text>
+              <Text style={styles.linkText}>{t('aboutApp.licenses', 'Licenses & Regulatory Compliance')}</Text>
               <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
             </TouchableOpacity>
           </View>
 
           {/* Social Networks */}
-          <Text style={styles.sectionHeader}>{language === 'fr' ? 'REJOIGNEZ LA COMMUNAUTÉ' : 'JOIN THE COMMUNITY'}</Text>
+          <Text style={styles.sectionHeader}>{t('aboutApp.communityTitle', 'JOIN THE COMMUNITY')}</Text>
           <View style={styles.socialRow}>
             <TouchableOpacity style={styles.socialBtn} onPress={() => openLink('X / Twitter', 'x.com/dizzitup')}>
               <Ionicons name="logo-twitter" size={22} color="#1DA1F2" />
@@ -111,7 +120,7 @@ export default function AboutDizzitUpScreen() {
           {/* Contact Support Button */}
           <TouchableOpacity style={styles.contactBtn} onPress={() => navigation.navigate('ContactUsScreen')}>
             <Ionicons name="headset-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
-            <Text style={styles.contactBtnText}>{language === 'fr' ? 'Contacter le Support Client' : 'Contact Customer Support'}</Text>
+            <Text style={styles.contactBtnText}>{t('aboutApp.contactSupport', 'Contact Customer Support')}</Text>
           </TouchableOpacity>
 
           <View style={{ height: 30 }} />

@@ -7,26 +7,30 @@ import HeaderBackButton from '../components/HeaderBackButton';
 import StepIndicator from '../components/StepIndicator';
 import { DizzitInput } from '../components/DizzitInput';
 import { Ionicons } from '@expo/vector-icons';
+import { useApp } from '../context/AppContext';
+import AppToast from '../components/AppToast';
 
-const STEPS = [
-  { label: 'E-mail' },
-  { label: 'Code' },
-  { label: 'Réinitialisation' },
+const STEPS = (t) => [
+  { label: t('auth.email', 'E-mail') },
+  { label: t('auth.code', 'Code') },
+  { label: t('auth.reset', 'Réinitialisation') },
 ];
 
 export default function ResetPasswordFinalScreen() {
+  const { t } = useApp();
   const navigation = useNavigation();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '', type: 'success' });
 
   const handleNext = () => {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      alert('Votre mot de passe a été réinitialisé avec succès !');
-      navigation.navigate('LoginScreen');
+      setToastInfo({ visible: true, title: t('common.success', 'Success'), message: t('auth.passwordResetSuccess', 'Votre mot de passe a été réinitialisé avec succès !'), type: 'success' });
+      setTimeout(() => navigation.navigate('LoginScreen'), 1500);
     }, 1500);
   };
 
@@ -37,9 +41,9 @@ export default function ResetPasswordFinalScreen() {
   // Real-time error logic
   let displayError = '';
   if (confirmPassword.length > 0 && password !== confirmPassword) {
-    displayError = 'Les mots de passe ne correspondent pas.';
+    displayError = t('auth.passwordsDoNotMatch', 'Les mots de passe ne correspondent pas.');
   } else if (password.length > 0 && password.length < 8) {
-    displayError = 'Le mot de passe doit contenir au moins 8 caractères.';
+    displayError = t('auth.passwordMinLength', 'Le mot de passe doit contenir au moins 8 caractères.');
   }
 
   return (
@@ -55,27 +59,27 @@ export default function ResetPasswordFinalScreen() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <HeaderBackButton onPress={() => alert('Retour au code')} />
-            <Text style={styles.headerTitle}>Réinitialiser le mot de passe</Text>
+            <HeaderBackButton onPress={() => navigation.goBack()} />
+            <Text style={styles.headerTitle}>{t('auth.resetPasswordTitle', 'Réinitialiser le mot de passe')}</Text>
             <View style={styles.placeholderBox} />
           </View>
 
           {/* Title Section */}
           <View style={styles.titleSection}>
-            <Text style={styles.mainTitle}>Nouveau mot de passe</Text>
+            <Text style={styles.mainTitle}>{t('auth.newPasswordTitle', 'Nouveau mot de passe')}</Text>
             <Text style={styles.subtitle}>
-              Entrez un nouveau mot de passe pour vous connecter.
+              {t('auth.enterNewPassword', 'Entrez un nouveau mot de passe pour vous connecter.')}
             </Text>
           </View>
 
           {/* Stepper */}
-          <StepIndicator currentStep={3} steps={STEPS} />
+          <StepIndicator currentStep={3} steps={STEPS(t)} />
 
           {/* Form */}
           <View style={styles.formContainer}>
             <DizzitInput
               iconLeft={<Ionicons name="lock-closed-outline" size={20} color={theme.colors.textSecondary} />}
-              placeholder="Nouveau mot de passe"
+              placeholder={t('auth.newPasswordTitle', 'Nouveau mot de passe')}
               value={password}
               onChangeText={(text) => {
                 setPassword(text);
@@ -88,7 +92,7 @@ export default function ResetPasswordFinalScreen() {
             
             <DizzitInput
               iconLeft={<Ionicons name="lock-closed-outline" size={20} color={theme.colors.textSecondary} />}
-              placeholder="Confirmez le nouveau mot de passe"
+              placeholder={t('auth.confirmNewPassword', 'Confirmez le nouveau mot de passe')}
               value={confirmPassword}
               onChangeText={(text) => {
                 setConfirmPassword(text);
@@ -101,7 +105,7 @@ export default function ResetPasswordFinalScreen() {
               <Text style={styles.errorText}>{displayError}</Text>
             ) : (
               <Text style={styles.hintText}>
-                Le mot de passe doit contenir au moins 8 caractères.
+                {t('auth.passwordMinLength', 'Le mot de passe doit contenir au moins 8 caractères.')}
               </Text>
             )}
           </View>
@@ -112,7 +116,7 @@ export default function ResetPasswordFinalScreen() {
               style={[styles.button, styles.buttonPrevious]}
               onPress={() => navigation.goBack()}
             >
-              <Text style={styles.buttonPreviousText}>PRÉCÉDENT</Text>
+              <Text style={styles.buttonPreviousText}>{t('common.previous', 'PRÉCÉDENT')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -131,7 +135,7 @@ export default function ResetPasswordFinalScreen() {
                   styles.buttonNextText,
                   isNextDisabled && styles.buttonNextTextDisabled
                 ]}>
-                  SUIVANT
+                  {t('common.next', 'SUIVANT')}
                 </Text>
               )}
             </TouchableOpacity>
@@ -139,6 +143,7 @@ export default function ResetPasswordFinalScreen() {
 
         </ScrollView>
       </KeyboardAvoidingView>
+      <AppToast visible={toastInfo.visible} title={toastInfo.title} message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ ...toastInfo, visible: false })} />
     </SafeAreaView>
   );
 }

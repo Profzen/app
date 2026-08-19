@@ -36,19 +36,11 @@ export default function HomeScreen() {
     }
   }, [user]);
 
-  const TODO_LIST = [
-    {
-      id: '1',
-      icon: 'person-outline',
-      iconColor: '#F59E0B',
-      iconBgColor: '#FFFBEB',
-      title: language === 'fr' ? 'Abdou vous a demandé\nd\'acheter quelque chose' : 'Abdou asked you\nto buy something',
-      buttonText: language === 'fr' ? 'Voir' : 'View',
-      buttonColor: '#F59E0B',
-      buttonBgColor: '#FFFBEB',
-      route: 'ShopsScreen'
-    },
-    {
+  // Dynamically generate To-Do List based on real user state
+  const TODO_LIST = [];
+  
+  if ((user?.balanceDZY || 0) < 10) {
+    TODO_LIST.push({
       id: '2',
       icon: 'warning-outline',
       iconColor: '#EF4444',
@@ -58,8 +50,11 @@ export default function HomeScreen() {
       buttonColor: '#EF4444',
       buttonBgColor: '#FEF2F2',
       route: 'TopUpScreen'
-    },
-    {
+    });
+  }
+
+  if (!user?.firstName || !user?.lastName || !user?.phone) {
+    TODO_LIST.push({
       id: '3',
       icon: 'shield-checkmark-outline',
       iconColor: '#3B82F6',
@@ -69,8 +64,11 @@ export default function HomeScreen() {
       buttonColor: '#3B82F6',
       buttonBgColor: '#EFF6FF',
       route: 'SecureAccountScreen'
-    },
-    {
+    });
+  }
+
+  // Always show Business/Merchant card as the final call to action
+  TODO_LIST.push({
       id: '4',
       icon: 'storefront-outline',
       iconColor: '#8B5CF6',
@@ -84,8 +82,7 @@ export default function HomeScreen() {
       buttonColor: '#8B5CF6',
       buttonBgColor: '#F5F3FF',
       route: user?.role === 'merchant' ? 'BusinessAccountScreen' : 'ShopsScreen'
-    },
-  ];
+  });
 
   const QUICK_ACTIONS = [
     { id: '1', icon: 'bag-handle-outline', color: '#3B82F6', bgColor: '#EFF6FF', title: t('home.actions.buy_goods', 'Buy goods') },
@@ -117,15 +114,21 @@ export default function HomeScreen() {
               onPress={() => navigation.navigate('PersonalAccountScreen')}
               activeOpacity={0.7}
             >
-              <View style={styles.avatarWrapper}>
-                <Ionicons name="person" size={22} color="#FFFFFF" />
-                {user?.avatar ? (
-                  <Image source={typeof user.avatar === 'string' ? { uri: user.avatar } : user.avatar} style={styles.avatarImage} />
-                ) : null}
+              <View style={[styles.avatarRing, { borderColor: user?.role === 'merchant' ? '#8B5CF6' : '#20365B' }]}>
+                <View style={styles.avatarWrapper}>
+                  <Ionicons name="person" size={20} color="#FFFFFF" />
+                  {user?.avatar ? (
+                    <Image source={typeof user.avatar === 'string' ? { uri: user.avatar } : user.avatar} style={styles.avatarImage} />
+                  ) : null}
+                </View>
               </View>
               <View style={{ flex: 1, paddingRight: 8 }}>
-                <Text style={styles.greetingText}>{language === 'fr' ? 'Bonjour,' : 'Hello,'}</Text>
-                <Text style={styles.nameText} numberOfLines={1}>{(user?.name || 'Utilisateur').split(' ')[0]}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+                  <Text style={styles.greetingText}>{language === 'fr' ? 'Bonjour,' : 'Hello,'}</Text>
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Text style={styles.nameText} numberOfLines={1}>{(user?.name || 'Utilisateur').split(' ')[0]}</Text>
+                </View>
               </View>
             </TouchableOpacity>
             <View style={styles.headerIcons}>
@@ -140,8 +143,8 @@ export default function HomeScreen() {
               <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('RewardsScreen')}>
                 <Ionicons name="gift-outline" size={20} color="#1A2840" />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('DashboardScreen')}>
-                <Ionicons name="ellipsis-horizontal" size={20} color="#1A2840" />
+              <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('MoreSettingsScreen')}>
+                <Ionicons name="settings-outline" size={20} color="#1A2840" />
               </TouchableOpacity>
             </View>
           </View>
@@ -281,10 +284,13 @@ const styles = StyleSheet.create({
   scrollView: { flex: 1 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 10 },
   userInfo: { flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 10 },
-  avatarWrapper: { width: 44, height: 44, borderRadius: 22, marginRight: 12, backgroundColor: '#071D54', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  avatarImage: { ...StyleSheet.absoluteFillObject, width: 44, height: 44, borderRadius: 22 },
+  avatarRing: { width: 50, height: 50, borderRadius: 25, borderWidth: 2.5, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  avatarWrapper: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#071D54', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  avatarImage: { ...StyleSheet.absoluteFillObject, width: 40, height: 40, borderRadius: 20 },
   greetingText: { fontFamily: 'Inter_500Medium', fontSize: 14, color: '#1A2840' },
   nameText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 20, color: '#1A2840' },
+  merchantBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#8B5CF6', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginLeft: 6 },
+  merchantBadgeText: { fontFamily: 'Inter_700Bold', fontSize: 9, color: '#FFFFFF', letterSpacing: 0.5 },
   headerIcons: { flexDirection: 'row', alignItems: 'center' },
   
     langButton: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', paddingHorizontal: 8, paddingVertical: 6, borderRadius: 12, marginLeft: 8, height: 36 },
@@ -344,5 +350,6 @@ iconButton: { width: 36, height: 36, borderRadius: 12, borderWidth: 1, borderCol
   securityDesc: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280', lineHeight: 16 },
   lockIconWrapper: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center', marginLeft: 12 }
 });
+
 
 

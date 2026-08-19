@@ -55,7 +55,7 @@ export default function DashboardEngScreen() {
               onPress={() => {
                 setAccountMode('personal');
                 setActiveTabMode('perso');
-                navigation.navigate('DashboardScreen');
+                navigation.navigate('MoreSettingsScreen');
               }}
               activeOpacity={0.8}
             >
@@ -418,3 +418,4 @@ const styles = StyleSheet.create({
   securityTitleText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840', marginBottom: 2 },
   securitySubText: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280', lineHeight: 15 }
 });
+

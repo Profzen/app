@@ -15,22 +15,22 @@ export const DizzitButton = ({
   if (type === 'primary') {
     return (
       <TouchableOpacity 
-        style={[styles.shadowContainer, theme.shadows.brandGlow, style]}
-        activeOpacity={0.8}
+        style={[styles.shadowContainer, !disabled && theme.shadows.brandGlow, style]}
+        activeOpacity={0.6}
         onPress={onPress}
         disabled={isLoading || disabled}
       >
         <LinearGradient
-          colors={isLoading || disabled ? ['#E5E7EB', '#D1D5DB'] : [theme.colors.accent, '#ffdb8a']}
+          colors={isLoading || disabled ? ['#FDE68A', '#FCD34D'] : [theme.colors.accent, '#FBBF24']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.primaryButton}
         >
           {isLoading ? (
-            <ActivityIndicator color={theme.colors.primary} />
+            <ActivityIndicator color="#1A2840" />
           ) : (
             <React.Fragment>
-              <Text style={[styles.primaryText, (isLoading || disabled) && { color: theme.colors.textSecondary }]}>{title}</Text>
+              <Text style={[styles.primaryText, (isLoading || disabled) && { color: 'rgba(26, 40, 64, 0.5)' }]}>{title}</Text>
               {icon && <React.Fragment>{icon}</React.Fragment>}
             </React.Fragment>
           )}

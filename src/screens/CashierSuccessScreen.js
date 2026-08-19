@@ -4,10 +4,12 @@ import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
+import { useApp } from '../context/AppContext';
 import BottomNavBar from '../components/BottomNavBar';
 
 export default function CashierSuccessScreen() {
   const navigation = useNavigation();
+  const { t } = useApp();
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -18,7 +20,7 @@ export default function CashierSuccessScreen() {
           <TouchableOpacity style={styles.iconSquareBtn} onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={20} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Caisse (TPE)</Text>
+          <Text style={styles.headerTitle}>{t('pos.cash_desks', 'Caisse (TPE)')}</Text>
           <TouchableOpacity style={styles.iconSquareBtn}>
             <Ionicons name="help-circle-outline" size={20} color="#1A2840" />
           </TouchableOpacity>
@@ -31,17 +33,17 @@ export default function CashierSuccessScreen() {
             <View style={styles.iconWrapper}>
               {/* Confetti dots */}
               <View style={[styles.confettiDot, { backgroundColor: '#FFC759', top: 0, left: -16 }]} />
-              <View style={[styles.confettiDot, { backgroundColor: '#0052FF', top: -10, left: 12 }]} />
+              <View style={[styles.confettiDot, { backgroundColor: '#20365B', top: -10, left: 12 }]} />
               <View style={[styles.confettiDot, { backgroundColor: '#10B981', top: 8, right: -12 }]} />
               <View style={[styles.confettiDot, { backgroundColor: '#FFC759', bottom: 6, right: -20 }]} />
-              <View style={[styles.confettiDot, { backgroundColor: '#0052FF', bottom: -4, left: -8 }]} />
+              <View style={[styles.confettiDot, { backgroundColor: '#20365B', bottom: -4, left: -8 }]} />
 
               <View style={styles.successGreenBadge}>
                 <Ionicons name="checkmark" size={36} color="#FFFFFF" />
               </View>
             </View>
 
-            <Text style={styles.successTitleText}>Paiement reçu avec succès !</Text>
+            <Text style={styles.successTitleText}>{t('pos.payment_received_success', 'Paiement reçu avec succès !')}</Text>
             <Text style={styles.successSubtext}>
               Le paiement a été confirmé.{'\n'}Merci.
             </Text>
@@ -51,7 +53,7 @@ export default function CashierSuccessScreen() {
           <View style={styles.summaryCard}>
             {/* Left Column: Montant reçu */}
             <View style={styles.summaryLeftCol}>
-              <Text style={styles.summaryLabel}>Montant reçu</Text>
+              <Text style={styles.summaryLabel}>{t('pos.amount_received', 'Montant reçu')}</Text>
               <Text style={styles.amountMainGreen}>2 000</Text>
               <Text style={styles.amountCurrencyFcfa}>2000 FCFA</Text>
             </View>
@@ -60,14 +62,14 @@ export default function CashierSuccessScreen() {
 
             {/* Right Column: Vous avez reçu & Réseau */}
             <View style={styles.summaryRightCol}>
-              <Text style={styles.summaryLabel}>Vous avez reçu</Text>
+              <Text style={styles.summaryLabel}>{t('pos.you_have_received', 'Vous avez reçu')}</Text>
               <View style={styles.tokenPillBadge}>
                 <CryptoIcon symbol="USDT" size={20} />
                 <Text style={styles.tokenPillText}>USDT</Text>
               </View>
 
               <View style={styles.networkBox}>
-                <Text style={styles.networkLabel}>Réseau</Text>
+                <Text style={styles.networkLabel}>{t('pos.network', 'Réseau')}</Text>
                 <View style={styles.networkValueRow}>
                   <CryptoIcon symbol="POL" size={16} />
                   <Text style={styles.networkNameText}>Polygon</Text>
@@ -78,15 +80,15 @@ export default function CashierSuccessScreen() {
 
           {/* Details Card */}
           <View style={styles.detailsCard}>
-            <Text style={styles.detailsCardTitle}>Détails de la transaction</Text>
+            <Text style={styles.detailsCardTitle}>{t('pos.transaction_details', 'Détails de la transaction')}</Text>
             
             {/* Row 1: Date et heure */}
             <View style={styles.detailRow}>
               <View style={styles.detailLeftGroup}>
                 <View style={styles.detailIconBox}>
-                  <Ionicons name="calendar-outline" size={16} color="#0052FF" />
+                  <Ionicons name="calendar-outline" size={16} color="#20365B" />
                 </View>
-                <Text style={styles.detailLabelText}>Date et heure</Text>
+                <Text style={styles.detailLabelText}>{t('pos.date_time', 'Date et heure')}</Text>
               </View>
               <Text style={styles.detailValueText}>30 Mai 2025 à 09:42</Text>
             </View>
@@ -97,9 +99,9 @@ export default function CashierSuccessScreen() {
             <View style={styles.detailRow}>
               <View style={styles.detailLeftGroup}>
                 <View style={styles.detailIconBox}>
-                  <Ionicons name="pricetag-outline" size={16} color="#0052FF" />
+                  <Ionicons name="pricetag-outline" size={16} color="#20365B" />
                 </View>
-                <Text style={styles.detailLabelText}>ID de transaction</Text>
+                <Text style={styles.detailLabelText}>{t('pos.transaction_id', 'ID de transaction')}</Text>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={styles.detailValueText}>0x7a3f...e9b2c4d</Text>
@@ -115,11 +117,11 @@ export default function CashierSuccessScreen() {
             <View style={styles.detailRow}>
               <View style={styles.detailLeftGroup}>
                 <View style={styles.detailIconBox}>
-                  <Ionicons name="wallet-outline" size={16} color="#0052FF" />
+                  <Ionicons name="wallet-outline" size={16} color="#20365B" />
                 </View>
-                <Text style={styles.detailLabelText}>Méthode de paiement</Text>
+                <Text style={styles.detailLabelText}>{t('pos.payment_method', 'Méthode de paiement')}</Text>
               </View>
-              <Text style={styles.detailValueText}>Caisse (TPE)</Text>
+              <Text style={styles.detailValueText}>{t('pos.cash_desks', 'Caisse (TPE)')}</Text>
             </View>
 
             <View style={styles.rowDivider} />
@@ -128,9 +130,9 @@ export default function CashierSuccessScreen() {
             <View style={styles.detailRow}>
               <View style={styles.detailLeftGroup}>
                 <View style={styles.detailIconBox}>
-                  <Ionicons name="git-network-outline" size={16} color="#0052FF" />
+                  <Ionicons name="git-network-outline" size={16} color="#20365B" />
                 </View>
-                <Text style={styles.detailLabelText}>Réseau</Text>
+                <Text style={styles.detailLabelText}>{t('pos.network', 'Réseau')}</Text>
               </View>
               <Text style={styles.detailValueText}>Polygon</Text>
             </View>
@@ -141,12 +143,12 @@ export default function CashierSuccessScreen() {
             <View style={styles.detailRow}>
               <View style={styles.detailLeftGroup}>
                 <View style={styles.detailIconBox}>
-                  <Ionicons name="document-text-outline" size={16} color="#0052FF" />
+                  <Ionicons name="document-text-outline" size={16} color="#20365B" />
                 </View>
-                <Text style={styles.detailLabelText}>Statut</Text>
+                <Text style={styles.detailLabelText}>{t('pos.status', 'Statut')}</Text>
               </View>
               <View style={styles.statusPillGreen}>
-                <Text style={styles.statusPillTextGreen}>Réussi •</Text>
+                <Text style={styles.statusPillTextGreen}>{t('pos.success_dot', 'Réussi •')}</Text>
               </View>
             </View>
           </View>
@@ -157,7 +159,7 @@ export default function CashierSuccessScreen() {
               <Ionicons name="shield-checkmark-outline" size={22} color="#10B981" />
             </View>
             <View style={styles.securityContentGroup}>
-              <Text style={styles.securityTitleText}>Transaction sécurisée</Text>
+              <Text style={styles.securityTitleText}>{t('pos.secure_transaction', 'Transaction sécurisée')}</Text>
               <Text style={styles.securitySubtextText}>
                 Vos fonds sont protégés par un chiffrement{'\n'}de niveau bancaire et des partenaires de confiance.
               </Text>
@@ -171,7 +173,7 @@ export default function CashierSuccessScreen() {
             activeOpacity={0.85}
           >
             <Ionicons name="receipt-outline" size={18} color="#1A2840" style={{ position: 'absolute', left: 16 }} />
-            <Text style={styles.btnVoirRecuText}>Voir le reçu</Text>
+            <Text style={styles.btnVoirRecuText}>{t('pos.view_receipt', 'Voir le reçu')}</Text>
             <Ionicons name="arrow-forward" size={18} color="#1A2840" style={{ position: 'absolute', right: 16 }} />
           </TouchableOpacity>
 
@@ -180,7 +182,7 @@ export default function CashierSuccessScreen() {
             onPress={() => navigation.navigate('CashierScanScreen')}
             activeOpacity={0.8}
           >
-            <Text style={styles.btnNouvelleTransactionText}>Nouvelle transaction</Text>
+            <Text style={styles.btnNouvelleTransactionText}>{t('pos.new_transaction', 'Nouvelle transaction')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -188,7 +190,7 @@ export default function CashierSuccessScreen() {
             onPress={() => navigation.navigate('CashRegisterScreen')}
             activeOpacity={0.7}
           >
-            <Text style={styles.btnRetourCaisseText}>Retour à la caisse</Text>
+            <Text style={styles.btnRetourCaisseText}>{t('pos.return_to_cashier', 'Retour à la caisse')}</Text>
           </TouchableOpacity>
 
           <View style={{ height: 20 }} />
@@ -216,7 +218,7 @@ const styles = StyleSheet.create({
   confettiDot: { position: 'absolute', width: 6, height: 6, borderRadius: 3 },
   successTitleText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 22, color: '#1A2840', marginBottom: 4, textAlign: 'center' },
   successSubtext: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#6B7280', textAlign: 'center', lineHeight: 18 },
-  summaryCard: { flexDirection: 'row', backgroundColor: '#071D54', borderRadius: 20, padding: 16, marginBottom: 16 },
+  summaryCard: { flexDirection: 'row', backgroundColor: '#20365B', borderRadius: 20, padding: 16, marginBottom: 16 },
   summaryLeftCol: { flex: 1.2, justifyContent: 'center' },
   summaryLabel: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#9CA3AF', marginBottom: 4 },
   amountMainGreen: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 28, color: '#10B981', marginBottom: 2 },

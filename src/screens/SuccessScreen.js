@@ -1,19 +1,24 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, StatusBar } from 'react-native';
 import { theme } from '../theme/theme';
 import { Ionicons } from '@expo/vector-icons';
+import { useApp } from '../context/AppContext';
 
-export default function SuccessScreen({
-  title = "Félicitations !",
-  subtitle = "Votre compte a été créé avec succès.",
-  buttonText = "Se connecter",
-  customIcon,
-  onButtonPress
-}) {
+export default function SuccessScreen(props) {
   const navigation = useNavigation();
+  const route = useRoute();
+  const { t } = useApp();
   const [isLoading, setIsLoading] = useState(false);
+
+  const params = route.params || {};
+  
+  const title = props.title || params.title || t('auth.successTitle', 'Félicitations !');
+  const subtitle = props.subtitle || params.subtitle || t('auth.successSubtitle', 'Votre compte a été créé avec succès.');
+  const buttonText = props.buttonText || params.buttonText || t('auth.loginAction', 'Se connecter');
+  const customIcon = props.customIcon || params.customIcon;
+  const onButtonPress = props.onButtonPress || params.onButtonPress;
 
   const handlePress = () => {
     if (onButtonPress) {

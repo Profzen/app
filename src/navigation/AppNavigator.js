@@ -1,9 +1,10 @@
 import React from 'react';
+import { View, ActivityIndicator } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useApp } from '../context/AppContext';
+import UnlockScreen from '../screens/UnlockScreen';
 
-import AssetListPromoScreen from '../screens/AssetListPromoScreen';
 import AssetListScreen from '../screens/AssetListScreen';
-import AssetsListScreen from '../screens/AssetsListScreen';
 import CashierScanScreen from '../screens/CashierScanScreen';
 import CashierSendFundsScreen from '../screens/CashierSendFundsScreen';
 import CashierSuccessScreen from '../screens/CashierSuccessScreen';
@@ -73,6 +74,24 @@ import PersonalAccountScreen from '../screens/PersonalAccountScreen';
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
+  const { session, isAppLocked, isCheckingLock } = useApp();
+
+  if (isCheckingLock) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFF' }}>
+        <ActivityIndicator size="large" color="#FFC759" />
+      </View>
+    );
+  }
+
+  if (session && isAppLocked) {
+    return (
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="UnlockScreen" component={UnlockScreen} />
+      </Stack.Navigator>
+    );
+  }
+
   return (
     <Stack.Navigator 
       initialRouteName="LoginScreen"
@@ -85,9 +104,7 @@ export default function AppNavigator() {
       <Stack.Screen name="ContactUsScreen" component={ContactUsScreen} />
       <Stack.Screen name="DizzyFamilyScreen" component={DizzyFamilyScreen} />
       <Stack.Screen name="PersonalAccountScreen" component={PersonalAccountScreen} />
-      <Stack.Screen name="AssetListPromoScreen" component={AssetListPromoScreen} />
       <Stack.Screen name="AssetListScreen" component={AssetListScreen} />
-      <Stack.Screen name="AssetsListScreen" component={AssetsListScreen} />
       <Stack.Screen name="CashierScanScreen" component={CashierScanScreen} />
       <Stack.Screen name="CashierSendFundsScreen" component={CashierSendFundsScreen} />
       <Stack.Screen name="CashierSuccessScreen" component={CashierSuccessScreen} />

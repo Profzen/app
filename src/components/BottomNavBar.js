@@ -109,12 +109,12 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
           onPress={() => navigation.navigate('ShopsScreen')} 
         />
 
-        {/* More / Settings */}
+        {/* Wallet / Assets */}
         <NavItem 
-          icon="ellipsis-horizontal" 
-          label={activeLanguage === 'en' ? 'More' : 'Plus'} 
-          isActive={['more', 'plus', 'settings', 'dashboard'].includes(activeTabLower)} 
-          onPress={() => navigation.navigate('DashboardScreen')} 
+          icon="wallet-outline" 
+          label={activeLanguage === 'en' ? 'Wallet' : 'Portefeuille'} 
+          isActive={['wallet', 'portefeuille', 'assets'].includes(activeTabLower)} 
+          onPress={() => navigation.navigate('AssetListScreen')} 
         />
       </View>
     </SafeAreaView>

@@ -1,32 +1,57 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, ActivityIndicator, StatusBar } from 'react-native';
 import { theme } from '../theme/theme';
 import HeaderBackButton from '../components/HeaderBackButton';
 import StepIndicator from '../components/StepIndicator';
 import { OtpInput } from '../components/OtpInput';
 import { Ionicons } from '@expo/vector-icons';
+import { useApp } from '../context/AppContext';
+import { supabase } from '../services/supabaseClient';
+import AppToast from '../components/AppToast';
 
-const STEPS = [
-  { label: 'E-mail' },
-  { label: 'Code' },
-  { label: 'Réinitialiser' },
+const STEPS = (t) => [
+  { label: t('auth.email', 'E-mail') },
+  { label: t('auth.code', 'Code') },
+  { label: t('auth.reset', 'Réinitialiser') },
 ];
 
 export default function ResetPasswordCodeScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
+  const email = route.params?.email || '';
+  const { t } = useApp();
+  
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '', type: 'success' });
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (code.length < 6) return;
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      const { error } = await supabase.auth.verifyOtp({ email, token: code, type: 'recovery' });
+      if (error) throw error;
+      
+      setToastInfo({ visible: true, title: t('common.success', 'Success'), message: t('auth.codeValidated', 'Code validé avec succès !'), type: 'success' });
+      setTimeout(() => navigation.navigate('ResetPasswordFinalScreen'), 1500);
+    } catch (err) {
+      setToastInfo({ visible: true, title: t('common.error', 'Error'), message: err.message, type: 'error' });
+    } finally {
       setIsLoading(false);
-      alert('Code validé avec succès !');
-      navigation.navigate('ResetPasswordFinalScreen');
-    }, 1500);
+    }
+  };
+
+  const handleResend = async () => {
+    if (!email) return;
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) throw error;
+      setToastInfo({ visible: true, title: t('common.success', 'Success'), message: t('auth.resetSent', 'Nouveau code envoyé !'), type: 'success' });
+    } catch (err) {
+      setToastInfo({ visible: true, title: t('common.error', 'Error'), message: err.message, type: 'error' });
+    }
   };
 
   const isNextDisabled = code.length < 6;
@@ -44,21 +69,21 @@ export default function ResetPasswordCodeScreen() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <HeaderBackButton onPress={() => alert('Retour à la saisie email')} />
-            <Text style={styles.headerTitle}>Réinitialiser le mot de passe</Text>
+            <HeaderBackButton onPress={() => navigation.goBack()} />
+            <Text style={styles.headerTitle}>{t('auth.resetPasswordTitle', 'Réinitialiser le mot de passe')}</Text>
             <View style={styles.placeholderBox} />
           </View>
 
           {/* Title Section */}
           <View style={styles.titleSection}>
-            <Text style={styles.mainTitle}>Code de vérification</Text>
+            <Text style={styles.mainTitle}>{t('auth.verificationCodeTitle', 'Code de vérification')}</Text>
             <Text style={styles.subtitle}>
-              Veuillez entrer le code de vérification reçu ci-dessous.
+              {t('auth.enterVerificationCode', 'Veuillez entrer le code de vérification reçu ci-dessous.')}
             </Text>
           </View>
 
           {/* Stepper */}
-          <StepIndicator currentStep={2} steps={STEPS} />
+          <StepIndicator currentStep={2} steps={STEPS(t)} />
 
           {/* OTP Input */}
           <View style={styles.formContainer}>
@@ -71,7 +96,7 @@ export default function ResetPasswordCodeScreen() {
               style={[styles.button, styles.buttonPrevious]}
               onPress={() => navigation.goBack()}
             >
-              <Text style={styles.buttonPreviousText}>PRÉCÉDENT</Text>
+              <Text style={styles.buttonPreviousText}>{t('common.previous', 'PRÉCÉDENT')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -90,7 +115,7 @@ export default function ResetPasswordCodeScreen() {
                   styles.buttonNextText,
                   isNextDisabled && styles.buttonNextTextDisabled
                 ]}>
-                  SUIVANT
+                  {t('common.next', 'SUIVANT')}
                 </Text>
               )}
             </TouchableOpacity>
@@ -99,14 +124,15 @@ export default function ResetPasswordCodeScreen() {
           {/* Resend Link */}
           <TouchableOpacity 
             style={styles.resendContainer}
-            onPress={() => alert('Nouveau code envoyé !')}
+            onPress={handleResend}
           >
             <Ionicons name="refresh" size={20} color="#1A2840" />
-            <Text style={styles.resendText}>Renvoyer le code</Text>
+            <Text style={styles.resendText}>{t('auth.resendCode', 'Renvoyer le code')}</Text>
           </TouchableOpacity>
 
         </ScrollView>
       </KeyboardAvoidingView>
+      <AppToast visible={toastInfo.visible} title={toastInfo.title} message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ ...toastInfo, visible: false })} />
     </SafeAreaView>
   );
 }

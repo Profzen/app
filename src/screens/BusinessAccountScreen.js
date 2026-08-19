@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Modal, Platform, StatusBar } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Modal, Platform, StatusBar, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
@@ -10,42 +10,37 @@ import { useApp } from '../context/AppContext';
 export default function BusinessAccountScreen() {
   const navigation = useNavigation();
   const [toast, setToast] = useState(null);
-  const { accountMode, setAccountMode, language, t } = useApp();
+  const { accountMode, setAccountMode, language, t, user } = useApp();
 
-  const activeAccount = accountMode || 'personal';
-  const [confirmModalTarget, setConfirmModalTarget] = useState(null);
-  const [hasBusinessAccount, setHasBusinessAccount] = useState(true);
+  const isMerchant = user?.role === 'merchant';
+  const hasBusinessAccount = isMerchant && !!user?.merchantProfile;
+  const merchantName = user?.merchantProfile?.shop_name || "David's Electronics Store";
+  const merchantId = user?.merchantProfile?.shop_unique_id || user?.merchantProfile?.id || "N/A";
+  const merchantLocation = user?.merchantProfile ? `${user?.merchantProfile.city_village}, ${user?.merchantProfile.country}` : 'Lomé, Togo';
+  const merchantCategory = user?.merchantProfile?.shop_categories || 'Retail / Services';
+  const linkedPersonalEmail = user?.merchantProfile?.linked_personal_email || t('biz.personal_type', 'Personal');
+
+  const [infoModalVisible, setInfoModalVisible] = useState(false);
+  const [infoModalType, setInfoModalType] = useState(null); // 'merchant' | 'personal'
 
   const handleBack = () => {
     if (navigation.canGoBack()) navigation.goBack();
     else navigation.navigate('MoreSettingsScreen');
   };
 
-  const handleRequestSwitch = (type) => {
-    if (type === activeAccount) {
-      setToast({
-        title: language === 'fr' ? 'Compte déjà actif' : 'Account Already Active',
-        message: type === 'business' 
-          ? (language === 'fr' ? 'Vous êtes déjà sur le Compte Business.' : 'You are already on the Business Account.')
-          : (language === 'fr' ? 'Vous êtes déjà sur le Compte Personnel.' : 'You are already on the Personal Account.')
-      });
-      return;
-    }
-    setConfirmModalTarget(type);
+  const handleShowInfo = (type) => {
+    // If it's already their active role, don't show info
+    if (type === 'merchant' && isMerchant) return;
+    if (type === 'personal' && !isMerchant) return;
+    
+    setInfoModalType(type);
+    setInfoModalVisible(true);
   };
 
-  const handleConfirmSwitch = () => {
-    const target = confirmModalTarget;
-    setAccountMode(target);
-    setConfirmModalTarget(null);
-    setToast({
-      title: target === 'business' 
-        ? (language === 'fr' ? 'Compte Business Actif' : 'Business Account Active') 
-        : (language === 'fr' ? 'Compte Personnel Actif' : 'Personal Account Active'),
-      message: target === 'business'
-        ? (language === 'fr' ? 'Mode Marchand Pro activé. L\'accueil affichera le Dashboard Business.' : 'Merchant Pro mode activated. Home will show Business Dashboard.')
-        : (language === 'fr' ? 'Mode Personnel activé. L\'accueil affichera la Home standard.' : 'Personal mode activated. Home will show standard view.')
-    });
+  const handleLogout = async () => {
+    setInfoModalVisible(false);
+    // Ideally clear Supabase session here
+    navigation.reset({ index: 0, routes: [{ name: 'LoginScreen' }] });
   };
 
   const handleGoToBusinessHome = () => {
@@ -53,9 +48,7 @@ export default function BusinessAccountScreen() {
   };
 
   const handleAddBusiness = () => {
-    setHasBusinessAccount(true);
-    setAccountMode('business');
-    navigation.navigate('CashRegisterScreen');
+    Linking.openURL('https://dizzitup.com/merchant-login-registration?mode=signup');
   };
 
   return (
@@ -68,38 +61,42 @@ export default function BusinessAccountScreen() {
               <Ionicons name="arrow-back" size={22} color="#1A2840" />
             </TouchableOpacity>
             <View style={styles.headerTitleContainer}>
-              <Text style={styles.pageTitle}>{t('businessAccount', 'Business Account')}</Text>
-              <Text style={styles.pageSubtitle}>{language === 'fr' ? 'Gestion du profil marchand & basculement' : 'Merchant Profile & Mode Switcher'}</Text>
+              <Text style={styles.pageTitle}>{t('biz.title', 'Business Account')}</Text>
+              <Text style={styles.pageSubtitle}>{t('biz.subtitle', 'Merchant Profile & Mode Switcher')}</Text>
             </View>
           </View>
 
           {/* Account Mode Switcher */}
-          <Text style={styles.sectionHeader}>{language === 'fr' ? "COMPTE EN COURS D'UTILISATION" : 'CURRENT ACTIVE ACCOUNT'}</Text>
+          <Text style={styles.sectionHeader}>{t('biz.current_active', 'CURRENT ACTIVE ACCOUNT')}</Text>
           
           {/* Option 1: Personal Account */}
           <TouchableOpacity
-            style={[styles.accountCard, activeAccount === 'personal' && styles.accountCardActive]}
-            onPress={() => handleRequestSwitch('personal')}
+            style={[styles.accountCard, !isMerchant && styles.accountCardActive]}
+            onPress={() => handleShowInfo('personal')}
+            activeOpacity={0.8}
           >
             <View style={styles.accountCardLeft}>
               <View style={[styles.avatarCircle, { backgroundColor: '#EFF6FF' }]}>
                 <Ionicons name="person" size={22} color="#3B82F6" />
               </View>
               <View style={styles.accountTextInfo}>
-                <Text style={styles.accountTypeTitle}>{language === 'fr' ? 'Compte Personnel' : 'Personal Account'}</Text>
-                <Text style={styles.accountSubText}>David Mensah • david.mensah@email.com</Text>
+                <Text style={styles.accountTypeTitle}>{t('biz.personal_account', 'Personal Account')}</Text>
+                <Text style={styles.accountSubText}>
+                  {!isMerchant ? (user?.name || 'User') : t('biz.personal_account', 'Personal Account')} • {!isMerchant ? (user?.email || 'user@email.com') : linkedPersonalEmail}
+                </Text>
               </View>
             </View>
             <View style={styles.radioOuter}>
-              {activeAccount === 'personal' && <View style={styles.radioInner} />}
+              {!isMerchant && <View style={styles.radioInner} />}
             </View>
           </TouchableOpacity>
 
-          {/* Option 2: Business Account (Factice) */}
+          {/* Option 2: Business Account */}
           {hasBusinessAccount ? (
             <TouchableOpacity
-              style={[styles.accountCard, activeAccount === 'business' && styles.accountCardActive]}
-              onPress={() => handleRequestSwitch('business')}
+              style={[styles.accountCard, isMerchant && styles.accountCardActive]}
+              onPress={() => handleShowInfo('merchant')}
+              activeOpacity={0.8}
             >
               <View style={styles.accountCardLeft}>
                 <View style={[styles.avatarCircle, { backgroundColor: '#F5F3FF' }]}>
@@ -107,54 +104,64 @@ export default function BusinessAccountScreen() {
                 </View>
                 <View style={styles.accountTextInfo}>
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={styles.accountTypeTitle}>David's Electronics Store</Text>
+                    <Text style={styles.accountTypeTitle}>{merchantName}</Text>
                     <View style={styles.proBadge}>
                       <Text style={styles.proBadgeText}>PRO</Text>
                     </View>
                   </View>
-                  <Text style={styles.accountSubText}>N° ID: DZY-BIZ-8890 • Lomé, Togo</Text>
+                  <Text style={styles.accountSubText}>N° ID: {merchantId} • {merchantLocation}</Text>
                 </View>
               </View>
               <View style={styles.radioOuter}>
-                {activeAccount === 'business' && <View style={styles.radioInner} />}
+                {isMerchant && <View style={styles.radioInner} />}
               </View>
             </TouchableOpacity>
           ) : (
-            <View style={styles.noBusinessCard}>
+            <TouchableOpacity 
+              style={styles.noBusinessCard} 
+              onPress={() => handleShowInfo('merchant')}
+              activeOpacity={0.8}
+            >
               <Ionicons name="alert-circle-outline" size={24} color="#F59E0B" />
-              <Text style={styles.noBusinessText}>{language === 'fr' ? "Aucun compte Business n'est encore enregistré." : 'No Business Account registered yet.'}</Text>
-            </View>
+              <Text style={styles.noBusinessText}>{t('biz.no_business_account', 'No Business Account registered yet.')}</Text>
+            </TouchableOpacity>
           )}
 
           {/* Business Details & Shortcuts */}
           {hasBusinessAccount && (
             <>
-              <Text style={styles.sectionHeader}>{language === 'fr' ? 'DÉTAILS DU COMPTE BUSINESS' : 'BUSINESS ACCOUNT DETAILS'}</Text>
+              <Text style={styles.sectionHeader}>{t('biz.details_title', 'BUSINESS ACCOUNT DETAILS')}</Text>
               <View style={styles.card}>
                 <View style={styles.infoRow}>
                   <Ionicons name="briefcase-outline" size={18} color="#6B7280" style={styles.rowIcon} />
-                  <Text style={styles.infoLabel}>{language === 'fr' ? 'Nom commercial :' : 'Business Name:'}</Text>
-                  <Text style={styles.infoValue}>David's Tech & Electronics</Text>
+                  <Text style={styles.infoLabel}>{t('biz.business_name_label', 'Business Name:')}</Text>
+                  <Text style={styles.infoValue}>{merchantName}</Text>
                 </View>
                 <View style={styles.divider} />
 
                 <View style={styles.infoRow}>
                   <Ionicons name="pricetag-outline" size={18} color="#6B7280" style={styles.rowIcon} />
-                  <Text style={styles.infoLabel}>{language === 'fr' ? 'Catégorie :' : 'Category:'}</Text>
-                  <Text style={styles.infoValue}>High-Tech & Services Digital</Text>
+                  <Text style={styles.infoLabel}>{t('biz.category_label', 'Category:')}</Text>
+                  <View style={styles.categoryPillContainer}>
+                    {merchantCategory.split(',').map((cat, index) => (
+                      <View key={index} style={styles.categoryPill}>
+                        <Text style={styles.categoryPillText}>{cat.trim()}</Text>
+                      </View>
+                    ))}
+                  </View>
                 </View>
                 <View style={styles.divider} />
 
                 <View style={styles.infoRow}>
                   <Ionicons name="qr-code-outline" size={18} color="#6B7280" style={styles.rowIcon} />
-                  <Text style={styles.infoLabel}>{language === 'fr' ? 'Caisse TPE / QR Code :' : 'POS Terminal / QR Code:'}</Text>
-                  <Text style={[styles.infoValue, { color: '#10B981', fontWeight: '700' }]}>{language === 'fr' ? 'Actif & Prêt' : 'Active & Ready'}</Text>
+                  <Text style={styles.infoLabel}>{t('biz.pos_qr_label', 'POS Terminal / QR Code:')}</Text>
+                  <Text style={[styles.infoValue, { color: '#10B981', fontWeight: '700' }]}>{t('biz.active_ready', 'Active & Ready')}</Text>
                 </View>
                 <View style={styles.divider} />
 
                 <View style={styles.infoRow}>
                   <Ionicons name="card-outline" size={18} color="#6B7280" style={styles.rowIcon} />
-                  <Text style={styles.infoLabel}>{language === 'fr' ? 'Cryptos acceptées :' : 'Accepted Cryptos:'}</Text>
+                  <Text style={styles.infoLabel}>{t('biz.stablecoins_crypto_label', 'Stablecoins & Crypto:')}</Text>
                   <Text style={styles.infoValue}>USDT, USDC, EURC, DZY</Text>
                 </View>
               </View>
@@ -162,61 +169,61 @@ export default function BusinessAccountScreen() {
               {/* Main Action Button to Business Home */}
               <TouchableOpacity style={styles.primaryBizBtn} onPress={handleGoToBusinessHome}>
                 <Ionicons name="storefront-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
-                <Text style={styles.primaryBizBtnText}>{language === 'fr' ? 'Ouvrir l\'Interface Business (Caisse TPE)' : 'Open Business Interface (POS Cashier)'}</Text>
+                <Text style={styles.primaryBizBtnText}>{t('biz.open_pos', 'Open Business Interface (POS Cashier)')}</Text>
               </TouchableOpacity>
             </>
           )}
 
           {/* Add / Create New Business Account Button */}
           <TouchableOpacity style={styles.addBizBtn} onPress={handleAddBusiness}>
-            <Ionicons name="add-circle-outline" size={20} color="#8B5CF6" style={{ marginRight: 8 }} />
+            <Ionicons name="add-circle-outline" size={20} color="#FFC759" style={{ marginRight: 8 }} />
             <Text style={styles.addBizBtnText}>
               {hasBusinessAccount 
-                ? (language === 'fr' ? 'Ajouter / Configurer un autre compte Business' : 'Add / Configure another Business account') 
-                : (language === 'fr' ? 'Créer mon premier compte Business' : 'Create my first Business account')}
+                ? t('biz.add_another', 'Add / Configure another Business account') 
+                : t('biz.create_first', 'Create my first Business account')}
             </Text>
           </TouchableOpacity>
 
-          <View style={{ height: 30 }} />
+          <View style={{ height: 100 }} />
         </ScrollView>
 
-        {/* Modal de Confirmation de Basculement */}
+        {/* Modal de Confirmation / Information de Basculement */}
         <Modal
-          visible={confirmModalTarget !== null}
+          visible={infoModalVisible}
           transparent={true}
           animationType="fade"
-          onRequestClose={() => setConfirmModalTarget(null)}
+          onRequestClose={() => setInfoModalVisible(false)}
         >
           <View style={modalStyles.modalOverlay}>
             <View style={modalStyles.modalContainer}>
-              <View style={[modalStyles.iconCircle, { backgroundColor: confirmModalTarget === 'business' ? '#F5F3FF' : '#EFF6FF' }]}>
+              <View style={[modalStyles.iconCircle, { backgroundColor: infoModalType === 'merchant' ? '#F5F3FF' : '#EFF6FF' }]}>
                 <Ionicons
-                  name={confirmModalTarget === 'business' ? "storefront" : "person"}
+                  name={infoModalType === 'merchant' ? "storefront" : "person"}
                   size={28}
-                  color={confirmModalTarget === 'business' ? "#8B5CF6" : "#3B82F6"}
+                  color={infoModalType === 'merchant' ? "#8B5CF6" : "#3B82F6"}
                 />
               </View>
 
-              <Text style={modalStyles.modalTitle}>{language === 'fr' ? 'Confirmer le basculement' : 'Confirm Account Switch'}</Text>
+              <Text style={modalStyles.modalTitle}>{t('biz.switch_informational_title', 'Wallet Separation')}</Text>
               <Text style={modalStyles.modalMessage}>
-                {confirmModalTarget === 'business'
-                  ? (language === 'fr' ? 'Voulez-vous basculer vers votre Compte Business (David\'s Electronics Store) ? L\'interface d\'accueil basculera en mode Marchand Pro.' : 'Switch to your Business Account (David\'s Electronics Store)? Home view will switch to Merchant Pro mode.')
-                  : (language === 'fr' ? 'Voulez-vous basculer vers votre Compte Personnel ? L\'interface d\'accueil repassera en mode Particulier.' : 'Switch back to your Personal Account? Home view will switch to Personal mode.')}
+                {t('biz.switch_informational_msg', 'For security and wallet separation, Merchant and Personal accounts use different logins. Please log out and log back in with your {type} email: {email}')
+                  .replace('{type}', infoModalType === 'merchant' ? t('biz.merchant_type', 'Merchant') : t('biz.personal_type', 'Personal'))
+                  .replace('{email}', infoModalType === 'merchant' ? 'merchant@email.com' : linkedPersonalEmail)}
               </Text>
 
               <View style={modalStyles.modalActions}>
                 <TouchableOpacity
                   style={modalStyles.cancelBtn}
-                  onPress={() => setConfirmModalTarget(null)}
+                  onPress={() => setInfoModalVisible(false)}
                 >
-                  <Text style={modalStyles.cancelBtnText}>{language === 'fr' ? 'Annuler' : 'Cancel'}</Text>
+                  <Text style={modalStyles.cancelBtnText}>{t('biz.close_btn', 'Close')}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[modalStyles.confirmBtn, { backgroundColor: confirmModalTarget === 'business' ? '#8B5CF6' : '#3B82F6' }]}
-                  onPress={handleConfirmSwitch}
+                  style={[modalStyles.confirmBtn, { backgroundColor: infoModalType === 'merchant' ? '#8B5CF6' : '#3B82F6' }]}
+                  onPress={handleLogout}
                 >
-                  <Text style={modalStyles.confirmBtnText}>{language === 'fr' ? 'Confirmer' : 'Confirm'}</Text>
+                  <Text style={modalStyles.confirmBtnText}>{t('biz.logout_btn', 'Log Out Now')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -263,8 +270,11 @@ const styles = StyleSheet.create({
   infoValue: { flex: 1, fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#1A2840' },
   primaryBizBtn: { height: 50, borderRadius: 14, backgroundColor: '#FFC759', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 12, boxShadow: '0px 4px 8px #FFC759' },
   primaryBizBtnText: { fontFamily: 'Inter_700Bold', fontSize: 15, color: '#1A2840' },
-  addBizBtn: { height: 48, borderRadius: 14, backgroundColor: '#F5F3FF', borderWidth: 1, borderColor: '#DDD6FE', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  addBizBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#8B5CF6' },
+  addBizBtn: { height: 48, borderRadius: 14, backgroundColor: '#20365B', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  addBizBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#FFFFFF' },
+  categoryPillContainer: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginVertical: 4 },
+  categoryPill: { backgroundColor: '#F0F2F5', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
+  categoryPillText: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#475569' },
 });
 
 const modalStyles = StyleSheet.create({

@@ -7,34 +7,46 @@ import HeaderBackButton from '../components/HeaderBackButton';
 import StepIndicator from '../components/StepIndicator';
 import { DizzitInput } from '../components/DizzitInput';
 import { DizzitButton } from '../components/DizzitButton';
+import { supabase } from '../services/supabaseClient';
+import AppToast from '../components/AppToast';
+import { useApp } from '../context/AppContext';
 
-const STEPS = [
-  { label: 'E-mail' },
-  { label: 'Code' },
-  { label: 'Réinitialiser' },
+const STEPS = (t) => [
+  { label: t('auth.email', 'E-mail') },
+  { label: t('auth.code', 'Code') },
+  { label: t('auth.reset', 'Réinitialiser') },
 ];
 
 export default function ResetPasswordEmailScreen() {
+  const { t } = useApp();
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '', type: 'success' });
 
-  const handleNext = () => {
+  const handleNext = async () => {
     // Basic validation
     if (!email.trim() || !email.includes('@')) {
-      setError('Veuillez entrer une adresse e-mail valide.');
+      setError(t('auth.registration.errors.invalidEmail', 'Veuillez entrer une adresse e-mail valide.'));
       return;
     }
     setError('');
     
-    // Simulate API call
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) {
+        setError(error.message);
+      } else {
+        setToastInfo({ visible: true, title: t('common.success', 'Success'), message: t('auth.resetSent', 'Code de vérification envoyé à ' + email), type: 'success' });
+        setTimeout(() => navigation.navigate('ResetPasswordCodeScreen', { email }), 1200);
+      }
+    } catch (err) {
+      setError(t('common.error', 'Une erreur est survenue.'));
+    } finally {
       setIsLoading(false);
-      alert('Code de vérification envoyé à ' + email);
-      navigation.navigate('ResetPasswordCodeScreen', { email });
-    }, 1500);
+    }
   };
 
   return (
@@ -52,26 +64,26 @@ export default function ResetPasswordEmailScreen() {
             {/* Header */}
             <View style={styles.header}>
               <HeaderBackButton onPress={() => navigation.goBack()} />
-              <Text style={styles.headerTitle}>Réinitialiser le mot de passe</Text>
+              <Text style={styles.headerTitle}>{t('auth.resetPasswordTitle', 'Réinitialiser le mot de passe')}</Text>
               <View style={styles.placeholderBox} />
             </View>
 
             {/* Title Section */}
             <View style={styles.titleSection}>
-              <Text style={styles.mainTitle}>E-mail</Text>
+              <Text style={styles.mainTitle}>{t('auth.email', 'E-mail')}</Text>
               <Text style={styles.subtitle}>
-                Entrez votre adresse e-mail. Un code de vérification vous sera envoyé.
+                {t('auth.enterEmailReset', 'Entrez votre adresse e-mail. Un code de vérification vous sera envoyé.')}
               </Text>
             </View>
 
             {/* Stepper */}
-            <StepIndicator currentStep={1} steps={STEPS} />
+            <StepIndicator currentStep={1} steps={STEPS(t)} />
 
             {/* Form */}
             <View style={styles.formContainer}>
               <DizzitInput
                 icon="mail-outline"
-                placeholder="E-mail"
+                placeholder={t('auth.email', 'E-mail')}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 value={email}
@@ -86,7 +98,7 @@ export default function ResetPasswordEmailScreen() {
             {/* Button */}
             <View style={styles.buttonContainer}>
               <DizzitButton
-                title="SUIVANT"
+                title={t('common.next', 'SUIVANT')}
                 onPress={handleNext}
                 isLoading={isLoading}
               />
@@ -94,6 +106,7 @@ export default function ResetPasswordEmailScreen() {
 
           </ScrollView>
         </KeyboardAvoidingView>
+        <AppToast visible={toastInfo.visible} title={toastInfo.title} message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ ...toastInfo, visible: false })} />
       </SafeAreaView>
   );
 }

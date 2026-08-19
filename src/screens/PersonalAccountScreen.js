@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, TextInput, Platform, StatusBar } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, TextInput, Platform, StatusBar, KeyboardAvoidingView, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
@@ -9,31 +9,69 @@ import { useApp } from '../context/AppContext';
 
 export default function PersonalAccountScreen() {
   const navigation = useNavigation();
-  const { language, t } = useApp();
+  const { language, t, user, updateUserProfile } = useApp();
   const [toast, setToast] = useState(null);
 
   // Form State
-  const [name, setName] = useState('David Mensah');
-  const [email, setEmail] = useState('david.mensah@email.com');
-  const [phone, setPhone] = useState('+228 90 12 34 56');
-  const [country, setCountry] = useState('Togo / Ghana');
-  const [city, setCity] = useState('Lomé, Quartier Adidogomé');
+  const [name, setName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [phone, setPhone] = useState(user?.phone || '');
+  const [country, setCountry] = useState(user?.country || '');
+  const [city, setCity] = useState(user?.city || '');
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    // When the user context finally loads/updates, sync the local form state
+    if (user) {
+      setName(user.name || '');
+      setEmail(user.email || '');
+      setPhone(user.phone || '');
+      setCountry(user.country || '');
+      setCity(user.city || '');
+    }
+  }, [user]);
 
   const handleBack = () => {
     if (navigation.canGoBack()) navigation.goBack();
     else navigation.navigate('MoreSettingsScreen');
   };
 
-  const handleSave = () => {
-    setToast({ 
-      title: language === 'fr' ? 'Profil mis à jour' : 'Profile Updated', 
-      message: language === 'fr' ? 'Vos informations personnelles ont été enregistrées.' : 'Your personal details have been saved.' 
+  const handleSave = async () => {
+    setIsSaving(true);
+    const first_name = name.split(' ')[0] || '';
+    const last_name = name.split(' ').slice(1).join(' ') || '';
+    
+    const result = await updateUserProfile({
+        first_name,
+        last_name,
+        mobile_number: phone,
+        country_of_residence: country,
+        city_of_residence: city
     });
+    
+    setIsSaving(false);
+    
+    if (result.success) {
+      setToast({ 
+        title: t('personalAccount.saveSuccess', 'Profile Updated'), 
+        message: t('personalAccount.saveSuccessMsg', 'Your details have been saved.'),
+        type: 'success'
+      });
+    } else {
+      setToast({ 
+        title: t('personalAccount.saveError', 'Update Error'), 
+        message: result.error || t('personalAccount.saveErrorMsg', 'Could not update profile.'),
+        type: 'error'
+      });
+    }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+      <KeyboardAvoidingView 
+        style={styles.container} 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           {/* Header */}
           <View style={styles.header}>
@@ -41,47 +79,47 @@ export default function PersonalAccountScreen() {
               <Ionicons name="arrow-back" size={22} color="#1A2840" />
             </TouchableOpacity>
             <View style={styles.headerTitleContainer}>
-              <Text style={styles.pageTitle}>{t('personalAccount', 'Personal Account')}</Text>
-              <Text style={styles.pageSubtitle}>{language === 'fr' ? 'Informations personnelles & Vérification' : 'Personal Details & Verification'}</Text>
+              <Text style={styles.pageTitle}>{t('personalAccount.title', 'Personal Account')}</Text>
+              <Text style={styles.pageSubtitle}>{t('personalAccount.subtitle', 'Personal Details & Verification')}</Text>
             </View>
           </View>
 
           {/* User Header Avatar */}
           <View style={styles.profileHeaderCard}>
             <View style={styles.avatarWrap}>
-              <Image source={{ uri: 'https://i.pravatar.cc/150?img=11' }} style={styles.avatarImage} />
-              <TouchableOpacity style={styles.editAvatarBtn} onPress={() => setToast({ title: language === 'fr' ? 'Photo de profil' : 'Profile Photo', message: language === 'fr' ? 'Sélecteur de photo ouvert' : 'Photo picker opened' })}>
+              <Image source={user?.avatar || require('../../assets/avatars/david.jpg')} style={styles.avatarImage} />
+              <TouchableOpacity style={styles.editAvatarBtn} onPress={() => setToast({ title: t('personalAccount.title', 'Profile Photo'), message: 'Sélecteur de photo ouvert', type: 'info' })}>
                 <Ionicons name="camera" size={14} color="#1A2840" />
               </TouchableOpacity>
             </View>
-            <Text style={styles.profileNameText}>{name}</Text>
+            <Text style={styles.profileNameText}>{name || user?.email}</Text>
             <View style={styles.kycBadge}>
               <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-              <Text style={styles.kycBadgeText}>{language === 'fr' ? 'COMPTE VÉRIFIÉ (NIVEAU 2)' : 'VERIFIED ACCOUNT (LEVEL 2)'}</Text>
+              <Text style={styles.kycBadgeText}>{t('personalAccount.verifiedBadge', 'VERIFIED ACCOUNT (LEVEL 2)')}</Text>
             </View>
           </View>
 
           {/* Form Section */}
-          <Text style={styles.sectionHeader}>{language === 'fr' ? 'INFORMATIONS DU COMPTE' : 'ACCOUNT DETAILS'}</Text>
+          <Text style={styles.sectionHeader}>{t('personalAccount.accountDetails', 'ACCOUNT DETAILS')}</Text>
           <View style={styles.card}>
             <View style={styles.fieldRow}>
-              <Text style={styles.fieldLabel}>{language === 'fr' ? 'Nom complet' : 'Full Name'}</Text>
+              <Text style={styles.fieldLabel}>{t('personalAccount.fullName', 'Full Name')}</Text>
               <View style={styles.inputWrap}>
                 <Ionicons name="person-outline" size={18} color="#6B7280" style={styles.inputIcon} />
-                <TextInput style={styles.input} value={name} onChangeText={setName} placeholder={language === 'fr' ? 'Nom' : 'Name'} />
+                <TextInput style={styles.input} value={name} onChangeText={setName} placeholder={t('personalAccount.fullName', 'Name')} />
               </View>
             </View>
 
             <View style={styles.fieldRow}>
-              <Text style={styles.fieldLabel}>{language === 'fr' ? 'Adresse Email' : 'Email Address'}</Text>
+              <Text style={styles.fieldLabel}>{t('personalAccount.emailAddress', 'Email Address')}</Text>
               <View style={styles.inputWrap}>
                 <Ionicons name="mail-outline" size={18} color="#6B7280" style={styles.inputIcon} />
-                <TextInput style={styles.input} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+                <TextInput style={[styles.input, {color: '#9CA3AF'}]} value={email} editable={false} keyboardType="email-address" autoCapitalize="none" />
               </View>
             </View>
 
             <View style={styles.fieldRow}>
-              <Text style={styles.fieldLabel}>{language === 'fr' ? 'Numéro de téléphone' : 'Phone Number'}</Text>
+              <Text style={styles.fieldLabel}>{t('personalAccount.phoneNumber', 'Phone Number')}</Text>
               <View style={styles.inputWrap}>
                 <Ionicons name="call-outline" size={18} color="#6B7280" style={styles.inputIcon} />
                 <TextInput style={styles.input} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
@@ -89,7 +127,7 @@ export default function PersonalAccountScreen() {
             </View>
 
             <View style={styles.fieldRow}>
-              <Text style={styles.fieldLabel}>{language === 'fr' ? 'Pays de résidence' : 'Country of Residence'}</Text>
+              <Text style={styles.fieldLabel}>{t('personalAccount.country', 'Country of Residence')}</Text>
               <View style={styles.inputWrap}>
                 <Ionicons name="flag-outline" size={18} color="#6B7280" style={styles.inputIcon} />
                 <TextInput style={styles.input} value={country} onChangeText={setCountry} />
@@ -97,7 +135,7 @@ export default function PersonalAccountScreen() {
             </View>
 
             <View style={styles.fieldRow}>
-              <Text style={styles.fieldLabel}>{language === 'fr' ? 'Ville / Adresse' : 'City / Address'}</Text>
+              <Text style={styles.fieldLabel}>{t('personalAccount.city', 'City / Address')}</Text>
               <View style={styles.inputWrap}>
                 <Ionicons name="location-outline" size={18} color="#6B7280" style={styles.inputIcon} />
                 <TextInput style={styles.input} value={city} onChangeText={setCity} />
@@ -106,33 +144,41 @@ export default function PersonalAccountScreen() {
           </View>
 
           {/* Verification / Document Section */}
-          <Text style={styles.sectionHeader}>{language === 'fr' ? "DOCUMENT D'IDENTITÉ" : 'IDENTITY DOCUMENT'}</Text>
+          <Text style={styles.sectionHeader}>{t('personalAccount.identityDoc', 'IDENTITY DOCUMENT')}</Text>
           <View style={styles.card}>
             <View style={styles.docRow}>
               <View style={styles.docIconWrap}>
                 <Ionicons name="card-outline" size={24} color="#3B82F6" />
               </View>
               <View style={styles.docText}>
-                <Text style={styles.docTitle}>{language === 'fr' ? "Carte Nationale d'Identité / Passeport" : 'National ID / Passport'}</Text>
-                <Text style={styles.docDesc}>{language === 'fr' ? 'Document validé le 12 Fév 2026' : 'Document verified on Feb 12, 2026'}</Text>
+                <Text style={styles.docTitle}>{t('personalAccount.idCard', 'National ID / Passport')}</Text>
+                <Text style={styles.docDesc}>{t('personalAccount.docVerified', 'Document verified')} 12 Fév 2026</Text>
               </View>
               <View style={styles.statusVerifiedChip}>
-                <Text style={styles.statusVerifiedText}>{language === 'fr' ? 'Validé' : 'Verified'}</Text>
+                <Text style={styles.statusVerifiedText}>{t('personalAccount.verified', 'Verified')}</Text>
               </View>
             </View>
           </View>
 
           {/* Save Button */}
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-            <Text style={styles.saveButtonText}>{t('btnSave', 'Enregistrer les modifications')}</Text>
+          <TouchableOpacity 
+            style={[styles.saveButton, isSaving && { opacity: 0.7 }]} 
+            onPress={handleSave} 
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <ActivityIndicator color="#1A2840" />
+            ) : (
+              <Text style={styles.saveButtonText}>{t('personalAccount.btnSave', 'Save Changes')}</Text>
+            )}
           </TouchableOpacity>
 
           <View style={{ height: 30 }} />
         </ScrollView>
 
         <BottomNavBar activeTab="More" />
-        <AppToast visible={!!toast} title={toast?.title} message={toast?.message} onClose={() => setToast(null)} />
-      </View>
+        <AppToast visible={!!toast} title={toast?.title} message={toast?.message} type={toast?.type} onClose={() => setToast(null)} />
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -169,6 +215,6 @@ const styles = StyleSheet.create({
   docDesc: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280', marginTop: 2 },
   statusVerifiedChip: { backgroundColor: '#ECFDF5', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
   statusVerifiedText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#10B981' },
-  saveButton: { height: 50, borderRadius: 14, backgroundColor: '#FFC759', alignItems: 'center', justifyContent: 'center', boxShadow: '0px 4px 8px #FFC759' },
+  saveButton: { height: 50, borderRadius: 14, backgroundColor: '#FFC759', alignItems: 'center', justifyContent: 'center', shadowColor: '#FFC759', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
   saveButtonText: { fontFamily: 'Inter_700Bold', fontSize: 15, color: '#1A2840' },
 });

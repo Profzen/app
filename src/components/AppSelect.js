@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function AppSelect({
@@ -63,7 +63,9 @@ export default function AppSelect({
                   >
                     <View style={styles.optionContent}>
                       {/* Logo Icon Badge */}
-                      {option.iconName ? (
+                      {option.flagUrl ? (
+                        <Image source={{ uri: option.flagUrl }} style={{ width: 34, height: 34, borderRadius: 17, marginRight: 12, resizeMode: 'cover', borderWidth: 1, borderColor: '#F1F5F9' }} />
+                      ) : option.iconName ? (
                         <View style={[styles.iconBadge, { backgroundColor: option.bg || '#3B82F6' }]}>
                           <Ionicons name={option.iconName} size={16} color={option.color || '#FFFFFF'} />
                         </View>
@@ -120,3 +122,4 @@ const styles = StyleSheet.create({
   optionSubtitle: { marginTop: 1, fontFamily: 'Inter_400Regular', fontSize: 11, color: '#64748B' },
   activeCheckCircle: { width: 22, height: 22, borderRadius: 11, backgroundColor: '#D97706', justifyContent: 'center', alignItems: 'center' },
 });
+

@@ -8,12 +8,20 @@ import { SpaceGrotesk_400Regular, SpaceGrotesk_500Medium, SpaceGrotesk_600SemiBo
 
 import { AppProvider } from './src/context/AppContext';
 import { CrossmintProvider } from '@crossmint/client-sdk-react-native-ui';
+import * as SplashScreen from 'expo-splash-screen';
+import AnimatedSplashScreen from './src/components/AnimatedSplashScreen';
+import { Modal } from 'react-native';
+
+// Keep the native splash screen visible while fonts are loading
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 const CROSSMINT_API_KEY = process.env.EXPO_PUBLIC_CROSSMINT_CLIENT_SIDE_API_KEY || '';
 
 LogBox.ignoreLogs([
   '"shadow*" style props are deprecated',
   '"textShadow*" style props are deprecated',
+  'props.pointerEvents is deprecated',
+  'setLayoutAnimationEnabledExperimental',
 ]);
 
 export default function App() {
@@ -28,24 +36,41 @@ export default function App() {
     SpaceGrotesk_700Bold,
   });
 
-  if (!fontsLoaded) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#FFC759" />
-      </View>
-    );
+  const [isAppReady, setIsAppReady] = React.useState(false);
+  const [animationComplete, setAnimationComplete] = React.useState(false);
+
+  React.useEffect(() => {
+    if (fontsLoaded) {
+      setIsAppReady(true);
+      // Once fonts are loaded, hide the native splash screen.
+      // This reveals our custom AnimatedSplashScreen which is rendered below.
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [fontsLoaded]);
+
+  if (!isAppReady) {
+    return null; // Return null instead of ActivityIndicator to let Native splash show
   }
 
   return (
-    <SafeAreaProvider>
-      <AppProvider>
-        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" translucent={false} />
-        <CrossmintProvider apiKey={CROSSMINT_API_KEY}>
-          <NavigationContainer>
-            <AppNavigator />
-          </NavigationContainer>
-        </CrossmintProvider>
-      </AppProvider>
-    </SafeAreaProvider>
+    <View style={{ flex: 1 }}>
+      <SafeAreaProvider style={{ flex: 1 }}>
+        <AppProvider>
+          <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" translucent={false} />
+          <CrossmintProvider apiKey={CROSSMINT_API_KEY}>
+            <NavigationContainer>
+              <AppNavigator />
+            </NavigationContainer>
+          </CrossmintProvider>
+        </AppProvider>
+      </SafeAreaProvider>
+      
+      {/* Custom Animated Splash Screen rendered on top of everything using a Modal */}
+      {!animationComplete && (
+        <Modal transparent={true} animationType="none" visible={true} statusBarTranslucent={true}>
+          <AnimatedSplashScreen onAnimationComplete={() => setAnimationComplete(true)} />
+        </Modal>
+      )}
+    </View>
   );
 }

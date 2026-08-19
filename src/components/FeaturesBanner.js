@@ -5,19 +5,16 @@ import { theme } from '../theme/theme';
 import { useApp } from '../context/AppContext';
 
 export const FeaturesBanner = () => {
-  const { language } = useApp();
+  const { t } = useApp();
 
   return (
     <View style={styles.container}>
       <View style={styles.featureItem}>
         <View style={styles.iconContainer}>
-          <Ionicons name="shield-checkmark-outline" size={28} color={theme.colors.primary} />
-          <Ionicons name="lock-closed" size={12} color={theme.colors.accent} style={styles.innerIcon} />
+          <Ionicons name="shield-checkmark-outline" size={22} color={theme.colors.accent} />
         </View>
         <Text style={styles.featureText}>
-          {language === 'fr' 
-            ? "Soutenez vos familles en Afrique tout en sécurisant l'usage de votre argent" 
-            : "Support your families in Africa while securing the use of your money"}
+          {t('features.secureMoney', "Soutenez vos familles en Afrique tout en sécurisant l'usage de votre argent")}
         </Text>
       </View>
 
@@ -25,12 +22,10 @@ export const FeaturesBanner = () => {
 
       <View style={styles.featureItem}>
         <View style={styles.iconContainer}>
-          <Ionicons name="earth-outline" size={28} color={theme.colors.primary} />
+          <Ionicons name="map-outline" size={22} color={theme.colors.accent} />
         </View>
         <Text style={styles.featureText}>
-          {language === 'fr' 
-            ? "Sur toute l'Afrique\n(54 pays)" 
-            : "Across all Africa\n(54 countries)"}
+          {t('features.allAfrica', "Sur toute l'Afrique\n(54 pays)")}
         </Text>
       </View>
 
@@ -38,12 +33,10 @@ export const FeaturesBanner = () => {
 
       <View style={styles.featureItem}>
         <View style={styles.iconContainer}>
-          <Ionicons name="globe-outline" size={28} color={theme.colors.primary} />
+          <Ionicons name="globe-outline" size={22} color={theme.colors.accent} />
         </View>
         <Text style={styles.featureText}>
-          {language === 'fr' 
-            ? "Sourcez produits et services en Afrique au meilleur rapport Qualité/Prix" 
-            : "Source products and services in Africa with the best Quality/Price ratio"}
+          {t('features.bestPrice', "Sourcez produits et services en Afrique au meilleur rapport Qualité/Prix")}
         </Text>
       </View>
     </View>
@@ -53,45 +46,45 @@ export const FeaturesBanner = () => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: '#F9FAFB', // Light grey
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingVertical: theme.spacing.xl,
-    paddingHorizontal: theme.spacing.sm,
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
     justifyContent: 'space-between',
     width: '100%',
     alignItems: 'flex-start',
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 3,
   },
   featureItem: {
     flex: 1,
     alignItems: 'center',
-    paddingHorizontal: theme.spacing.xs,
+    paddingHorizontal: 4,
   },
   iconContainer: {
-    marginBottom: theme.spacing.sm,
-    position: 'relative',
+    marginBottom: 4,
     justifyContent: 'center',
     alignItems: 'center',
-    width: 30, // Force bounding box for web SVGs
-    height: 30,
-  },
-  innerIcon: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: [{ translateX: -6 }, { translateY: -4 }],
+    backgroundColor: '#FFFBEB', // Light yellow for accent
+    width: 36,
+    height: 36,
+    borderRadius: 18,
   },
   featureText: {
     fontFamily: theme.typography.fontFamily.medium,
     fontSize: 9,
-    color: theme.colors.primary,
+    color: theme.colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 14,
+    lineHeight: 12,
   },
   divider: {
     width: 1,
-    height: '60%',
-    backgroundColor: '#E5E7EB',
-    marginTop: theme.spacing.lg,
+    height: '70%',
+    backgroundColor: '#F3F4F6',
+    marginTop: 8,
   }
 });

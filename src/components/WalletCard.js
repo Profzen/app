@@ -39,7 +39,16 @@ export default function WalletCard({ balances }) {
               <Image source={require('../../assets/brand/finalLogo.png')} style={{ width: 36, height: 36 }} resizeMode="contain" />
             </View>
             <View>
-              <Text style={styles.badgeText}>TOTAL DZY INDEX</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.badgeText}>
+                  {user?.role === 'merchant' ? t('wallet.business_wallet', 'BUSINESS WALLET') : 'TOTAL DZY INDEX'}
+                </Text>
+                {user?.role === 'merchant' && (
+                  <View style={{ backgroundColor: '#8B5CF6', borderRadius: 4, paddingHorizontal: 4, paddingVertical: 1, marginLeft: 6 }}>
+                    <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 7, color: '#FFF' }}>PRO</Text>
+                  </View>
+                )}
+              </View>
               <Text style={styles.titleText}>10 DZY = $1.00 USD</Text>
             </View>
           </View>

@@ -82,13 +82,9 @@ export default function LoginScreen() {
             style={styles.logo} 
             resizeMode="contain"
           />
-          <Text style={styles.mainTitle}>{language === 'fr' ? 'Bienvenue !' : 'Welcome back!'}</Text>
+          <Text style={styles.mainTitle}>{t('login.welcome', 'Welcome back!')}</Text>
           <Text style={styles.subTitle}>
-            {language === 'fr' 
-              ? 'Connectez-vous à votre compte ' 
-              : 'Sign in to your '}
-            <Text style={{fontFamily: theme.typography.fontFamily.bold}}>DizzitUp</Text>
-            {language === 'fr' ? ' account\npour continuer.' : ' account\nto continue.'}
+            {t('login.subtitle', 'Sign in to your DizzitUp account to continue.')}
           </Text>
         </View>
 
@@ -99,7 +95,7 @@ export default function LoginScreen() {
             onPress={() => setActiveTab('email')}
           >
             <Text style={[styles.tabText, activeTab === 'email' && styles.activeTabText]}>
-              Email
+              {t('login.email_tab', 'Email')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity 
@@ -107,7 +103,7 @@ export default function LoginScreen() {
             onPress={() => setActiveTab('phone')}
           >
             <Text style={[styles.tabText, activeTab === 'phone' && styles.activeTabText]}>
-              {language === 'fr' ? 'Téléphone' : 'Phone'}
+              {t('login.phone_tab', 'Phone')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -115,9 +111,9 @@ export default function LoginScreen() {
         {/* Form Container */}
         <View style={styles.formContainer}>
           <DizzitInput 
-            label={activeTab === 'email' ? (language === 'fr' ? 'Adresse e-mail' : 'Email address') : (language === 'fr' ? 'Numéro de téléphone' : 'Phone number')}
+            label={activeTab === 'email' ? t('login.email_label', 'Email address') : t('login.phone_label', 'Phone number')}
             iconLeft={<Ionicons name={activeTab === 'email' ? 'mail-outline' : 'call-outline'} size={20} color={theme.colors.primary} />}
-            placeholder={activeTab === 'email' ? (language === 'fr' ? 'Entrez votre adresse e-mail' : 'Enter your email address') : (language === 'fr' ? 'Entrez votre numéro de téléphone' : 'Enter your phone number')}
+            placeholder={activeTab === 'email' ? t('login.email_placeholder', 'Enter your email address') : t('login.phone_placeholder', 'Enter your phone number')}
             value={email}
             onChangeText={setEmail}
             keyboardType={activeTab === 'email' ? 'email-address' : 'phone-pad'}
@@ -125,9 +121,9 @@ export default function LoginScreen() {
 
           <View style={styles.passwordContainer}>
             <DizzitInput 
-              label={language === 'fr' ? 'Mot de passe' : 'Password'}
+              label={t('login.password_label', 'Password')}
               iconLeft={<Ionicons name="lock-closed-outline" size={20} color={theme.colors.primary} />}
-              placeholder={language === 'fr' ? 'Entrez votre mot de passe' : 'Enter your password'}
+              placeholder={t('login.password_placeholder', 'Enter your password')}
               value={password}
               onChangeText={setPassword}
               isPassword={true}
@@ -135,16 +131,14 @@ export default function LoginScreen() {
           </View>
 
           <TouchableOpacity style={styles.forgotPasswordContainer} onPress={() => navigation.navigate('ResetPasswordEmailScreen')}>
-            <Text style={styles.forgotPasswordText}>{language === 'fr' ? 'Mot de passe oublié ?' : 'Forgot password?'}</Text>
+            <Text style={styles.forgotPasswordText}>{t('login.forgot_password', 'Forgot password?')}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.forgotPasswordContainer} onPress={() => navigation.navigate('PinCodeScreen')}>
-            <Text style={styles.forgotPasswordText}>{language === 'fr' ? 'Se connecter avec mon code PIN' : 'Log in with my PIN code'}</Text>
-          </TouchableOpacity>
+          
 
           <View style={{marginTop: theme.spacing.md}}>
             <DizzitButton 
-              title={language === 'fr' ? 'Se connecter' : 'Log in'} 
+              title={t('login.login_button', 'Log in')} 
               onPress={handleLogin}
               isLoading={isLoading}
               disabled={!email || !password}

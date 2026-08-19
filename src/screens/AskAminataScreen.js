@@ -1,74 +1,67 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, TextInput, KeyboardAvoidingView, Platform, StatusBar } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, TextInput, KeyboardAvoidingView, Platform, StatusBar, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Markdown from 'react-native-markdown-display';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
 import { useApp } from '../context/AppContext';
 
 export default function AskAminataScreen() {
   const navigation = useNavigation();
-  const { language, t } = useApp();
+  const { language, t, user } = useApp();
+  const firstName = user?.name ? user.name.split(' ')[0] : (user?.merchantProfile?.shop_name || '');
+  
+  // Create greeting dynamically based on language and user name
+  const rawGreeting = t('askAminata.greeting', 'Hello {{name}}! 👋 I am Aminata, DizzitUp\'s AI assistant. How can I help you today?');
+  const greeting = rawGreeting.replace(/David|ديفيد|ዳዊት|{{name}}/i, firstName ? `${firstName}` : '');
 
   const INITIAL_MESSAGES = [
     {
       id: '1',
       sender: 'aminata',
-      text: language === 'fr' 
-        ? "Bonjour David ! 👋 Je suis Aminata, l'assistante virtuelle intelligente de DizzitUp. Comment puis-je vous aider aujourd'hui ?"
-        : "Hello David! 👋 I am Aminata, DizzitUp's AI assistant. How can I help you today?",
-      time: '10:00'
+      text: greeting,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ];
 
-  const SUGGESTED_QUESTIONS = language === 'fr' ? [
-    "Comment recharger par Mobile Money ?",
-    "Quels sont les frais sur DZY ?",
-    "Comment créer un compte Business ?",
-    "Où trouver les boutiques partenaires ?"
-  ] : [
-    "How to top up via Mobile Money?",
-    "What are the fees on DZY?",
-    "How to create a Business account?",
-    "Where to find partner shops?"
+  const SUGGESTED_QUESTIONS = [
+    t('askAminata.qTopUp', 'How to top up via Mobile Money?'),
+    t('askAminata.qFees', 'What are the fees on DZY?'),
+    t('askAminata.qBusiness', 'How to create a Business account?'),
+    t('askAminata.qShops', 'Where to find partner shops?')
   ];
 
   const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleBack = () => {
     if (navigation.canGoBack()) navigation.goBack();
     else navigation.navigate('MoreSettingsScreen');
   };
 
-  const getAminataResponse = (userText) => {
-    const textLower = userText.toLowerCase();
-    if (textLower.includes('recharger') || textLower.includes('mobile money') || textLower.includes('top up')) {
-      return language === 'fr' 
-        ? "Pour recharger votre portefeuille : allez sur l'écran d'accueil, cliquez sur 'Top-up' ou 'Recharger', sélectionnez 'Mobile Money' (Moov, MTN, Mixx), entrez le montant et validez sur votre téléphone !"
-        : "To top up your wallet: go to the home screen, tap 'Top-up', select 'Mobile Money', enter the amount and validate on your phone!";
+  const handleLinkPress = (url) => {
+    if (url.startsWith('dizzitup://navigate/')) {
+      const withoutScheme = url.replace('dizzitup://navigate/', '');
+      const [screenName, queryString] = withoutScheme.split('?');
+      
+      const params = {};
+      if (queryString) {
+        queryString.split('&').forEach(pair => {
+          const [key, val] = pair.split('=');
+          if (key) params[key] = decodeURIComponent(val || '');
+        });
+      }
+      
+      navigation.navigate(screenName, params);
+      return false; // prevent default behavior
     }
-    if (textLower.includes('frais') || textLower.includes('dzy') || textLower.includes('fee')) {
-      return language === 'fr'
-        ? "Les paiements et transferts en DZY bénéficient de 0% de frais réseau ! Pour les retraits Mobile Money, les frais sont affichés en toute transparence avant validation (1% à 1.5%)."
-        : "DZY payments and transfers enjoy 0% network fees! For Mobile Money cashouts, transparent fees (1% to 1.5%) are displayed before validation.";
-    }
-    if (textLower.includes('business') || textLower.includes('marchand') || textLower.includes('merchant')) {
-      return language === 'fr'
-        ? "Pour ouvrir un compte Business : rendez-vous dans Réglages > Business account, activez votre profil marchand et accédez à votre caisse TPE QR Code instantanée !"
-        : "To open a Business account: go to Settings > Business Account, activate your merchant profile and access your instant QR Code POS Cashier!";
-    }
-    if (textLower.includes('boutique') || textLower.includes('shop')) {
-      return language === 'fr'
-        ? "Cliquez sur l'onglet 'Boutique' en bas pour explorer les commerces certifiés DizzitUp acceptant les stablecoins (USDT, USDC, EURC, DZY) près de chez vous."
-        : "Tap the 'Shop' tab at the bottom to explore certified DizzitUp merchants accepting stablecoins (USDT, USDC, EURC, DZY) near you.";
-    }
-    return language === 'fr'
-      ? "Merci pour votre question ! Je note votre demande. Vous pouvez aussi consulter notre centre d'aide ou contacter le support direct."
-      : "Thank you for your question! You can also check our help center or contact direct support.";
+    Linking.openURL(url);
+    return false;
   };
 
-  const handleSendMessage = (textToSend) => {
+  const handleSendMessage = async (textToSend) => {
     const query = textToSend || input;
     if (!query.trim()) return;
 
@@ -81,16 +74,51 @@ export default function AskAminataScreen() {
 
     setMessages(prev => [...prev, userMsg]);
     if (!textToSend) setInput('');
+    setIsLoading(true);
 
-    setTimeout(() => {
+    try {
+      const cleanHistory = messages.map(m => ({
+        role: m.sender === 'user' ? 'user' : 'model',
+        parts: [{ text: m.text }]
+      }));
+
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BUY_GOODS_API_URL}/public/aminata-chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: query,
+          context: {
+            userRole: user?.role,
+            language: language,
+            platform: 'mobile',
+            userName: firstName,
+            page: 'Aminata Chat Mobile',
+          },
+          history: cleanHistory
+        })
+      });
+
+      const data = await response.json();
+      
       const replyMsg = {
         id: (Date.now() + 1).toString(),
         sender: 'aminata',
-        text: getAminataResponse(query),
+        text: data.text || t('askAminata.errorGeneric', 'Sorry, I couldn\'t respond.'),
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, replyMsg]);
-    }, 600);
+    } catch (error) {
+      console.error('Aminata Chat Error:', error);
+      const errorMsg = {
+        id: (Date.now() + 1).toString(),
+        sender: 'aminata',
+        text: t('askAminata.errorNetwork', 'A network error occurred. Please try again.'),
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setMessages(prev => [...prev, errorMsg]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -104,14 +132,14 @@ export default function AskAminataScreen() {
           
           <View style={styles.assistantAvatarWrap}>
             <View style={styles.avatarCircle}>
-              <Ionicons name="sparkles" size={18} color="#FFC759" />
+              <Image source={require('../../assets/brand/aminata_avatar.jpg')} style={{width: 32, height: 32, borderRadius: 16}} />
             </View>
             <View style={styles.onlineDot} />
           </View>
 
           <View style={styles.headerTitleContainer}>
-            <Text style={styles.pageTitle}>{t('askAminata', 'Ask Aminata')}</Text>
-            <Text style={styles.pageSubtitle}>{language === 'fr' ? 'Assistante virtuelle IA • En ligne' : 'AI Virtual Assistant • Online'}</Text>
+            <Text style={styles.pageTitle}>{t('askAminata.title', 'Ask Aminata')}</Text>
+            <Text style={styles.pageSubtitle}>{t('askAminata.subtitle', 'AI Virtual Assistant • Online')}</Text>
           </View>
         </View>
 
@@ -121,19 +149,35 @@ export default function AskAminataScreen() {
             <View key={item.id} style={[styles.messageBubble, item.sender === 'user' ? styles.userBubble : styles.aminataBubble]}>
               {item.sender === 'aminata' && (
                 <View style={styles.msgAvatarCircle}>
-                  <Ionicons name="sparkles" size={14} color="#FFC759" />
+                  <Image source={require('../../assets/brand/aminata_avatar.jpg')} style={{width: 28, height: 28, borderRadius: 14}} />
                 </View>
               )}
               <View style={[styles.bubbleContent, item.sender === 'user' ? styles.userBubbleContent : styles.aminataBubbleContent]}>
-                <Text style={[styles.msgText, item.sender === 'user' ? styles.userMsgText : styles.aminataMsgText]}>
-                  {item.text}
-                </Text>
+                {item.sender === 'user' ? (
+                  <Text style={styles.userMsgText}>
+                    {item.text}
+                  </Text>
+                ) : (
+                  <Markdown onLinkPress={handleLinkPress} style={markdownStyles}>
+                    {item.text}
+                  </Markdown>
+                )}
                 <Text style={[styles.msgTime, item.sender === 'user' ? styles.userMsgTime : styles.aminataMsgTime]}>
                   {item.time}
                 </Text>
               </View>
             </View>
           ))}
+          {isLoading && (
+            <View style={[styles.messageBubble, styles.aminataBubble]}>
+              <View style={styles.msgAvatarCircle}>
+                <Image source={require('../../assets/brand/aminata_avatar.jpg')} style={{width: 28, height: 28, borderRadius: 14}} />
+              </View>
+              <View style={[styles.bubbleContent, styles.aminataBubbleContent]}>
+                <Text style={styles.aminataMsgText}>...</Text>
+              </View>
+            </View>
+          )}
         </ScrollView>
 
         {/* Suggested Questions Chips */}
@@ -152,7 +196,7 @@ export default function AskAminataScreen() {
         <View style={styles.inputBar}>
           <TextInput
             style={styles.textInput}
-            placeholder={language === 'fr' ? "Posez votre question à Aminata..." : "Ask Aminata a question..."}
+            placeholder={t('askAminata.placeholder', 'Ask Aminata a question...')}
             placeholderTextColor="#9CA3AF"
             value={input}
             onChangeText={setInput}
@@ -163,7 +207,7 @@ export default function AskAminataScreen() {
           </TouchableOpacity>
         </View>
 
-        <BottomNavBar activeTab="More" language="fr" />
+        <BottomNavBar activeTab="More" language={language} />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -203,4 +247,12 @@ const styles = StyleSheet.create({
   inputBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10, backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: '#F0F2F5' },
   textInput: { flex: 1, height: 44, backgroundColor: '#F9FAFB', borderRadius: 22, paddingHorizontal: 16, fontFamily: 'Inter_400Regular', fontSize: 14, color: '#1A2840', borderWidth: 1, borderColor: '#E5E7EB', marginRight: 10 },
   sendButton: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFC759', alignItems: 'center', justifyContent: 'center' },
+});
+
+const markdownStyles = StyleSheet.create({
+  body: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#1A2840', lineHeight: 20 },
+  paragraph: { marginVertical: 4 },
+  link: { color: '#3B82F6', textDecorationLine: 'underline' },
+  strong: { fontFamily: 'Inter_700Bold' },
+  list_item: { marginVertical: 4 }
 });

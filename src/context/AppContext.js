@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useCallback, useEffect } from 'react';
-import { Platform } from 'react-native';
+import { Platform, Alert } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
 import { SHOPS_MOCK } from '../mocks/shopsMock';
 import { CONTACTS_MOCK } from '../mocks/contactsMock';
 import enDict from '../i18n/locales/en.json';
@@ -26,16 +27,42 @@ export function AppProvider({ children }) {
   });
   
   const [session, setSession] = useState(null);
+  const [isAppLocked, setIsAppLocked] = useState(false);
+  const [isCheckingLock, setIsCheckingLock] = useState(true);
+
+  useEffect(() => {
+    const checkLockState = async () => {
+      try {
+        if (Platform.OS !== 'web') {
+          const storedPin = await SecureStore.getItemAsync('user_pin');
+          if (storedPin) {
+            setIsAppLocked(true);
+          }
+        }
+      } catch (error) {
+        console.log("Error checking secure store:", error);
+      } finally {
+        setIsCheckingLock(false);
+      }
+    };
+    checkLockState();
+  }, []);
 
   useEffect(() => {
     const syncUser = async (sessionObj) => {
       setSession(sessionObj);
       if (sessionObj?.user) {
         let fetchedName = sessionObj.user.user_metadata?.full_name || sessionObj.user.email.split('@')[0];
+        let fetchedFirstName = '';
+        let fetchedLastName = '';
         let fetchedRole = 'user';
         let fetchedCountry = '';
+        let fetchedCity = '';
+        let fetchedPhone = '';
         let fetchedAvatar = null;
+        let fetchedMerchantProfile = null;
         let newBalances = { DZY: 0 };
+        let totalUsdValue = 0;
         
         try {
           const { data: profile } = await supabase
@@ -46,20 +73,35 @@ export function AppProvider({ children }) {
 
           if (profile) {
             if (profile.role) fetchedRole = profile.role;
-            if (profile.full_name) fetchedName = profile.full_name;
+            
+            // OPTION 1: Smart Routing. We do NOT block merchants. 
+            // We fetch their profile, and the UI will dynamically show/hide features based on `fetchedRole`.
+
+            if (profile.first_name) fetchedFirstName = profile.first_name;
+            if (profile.last_name) fetchedLastName = profile.last_name;
+
+            if (profile.full_name) {
+               fetchedName = profile.full_name;
+            } else if (fetchedFirstName || fetchedLastName) {
+               fetchedName = `${fetchedFirstName} ${fetchedLastName}`.trim();
+            }
+
             if (profile.country_of_residence) fetchedCountry = profile.country_of_residence;
+            if (profile.city_of_residence) fetchedCity = profile.city_of_residence;
+            if (profile.mobile_number) fetchedPhone = profile.mobile_number;
             if (profile.avatar_url) fetchedAvatar = profile.avatar_url;
             
-            // If they are a merchant, see if they have a shop logo
+            // If they are a merchant, fetch full business profile
             if (fetchedRole === 'merchant') {
               const { data: merchant } = await supabase
                 .from('merchants')
-                .select('shop_logo_url')
+                .select('*')
                 .eq('user_id', profile.id)
                 .maybeSingle();
                 
-              if (merchant?.shop_logo_url) {
-                fetchedAvatar = merchant.shop_logo_url;
+              if (merchant) {
+                if (merchant.shop_logo_url) fetchedAvatar = merchant.shop_logo_url;
+                fetchedMerchantProfile = merchant;
               }
             }
           }
@@ -77,6 +119,9 @@ export function AppProvider({ children }) {
                 DIZZY_URL = urlObj.toString();
               }
             } catch (e) {}
+          } else if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) {
+            // Android emulator maps 10.0.2.2 to the host machine's localhost
+            DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
           }
           const balanceRes = await fetch(`${DIZZY_URL}/wallet/balance`, {
             headers: { 'Authorization': `Bearer ${sessionObj.access_token}` }
@@ -92,6 +137,7 @@ export function AppProvider({ children }) {
             }
             if (bData.totalUsdValue !== undefined) {
               const usdVal = parseFloat(bData.totalUsdValue || 0);
+              totalUsdValue = usdVal;
               // Special conversion: 10 DZY = 1 USD
               newBalances['DZY'] = usdVal * 10;
               newBalances['USD'] = usdVal;
@@ -120,16 +166,24 @@ export function AppProvider({ children }) {
           console.log("Balance fetch failed:", e);
         }
 
-        setUser(prev => ({
-          ...prev,
+        setUser({
           name: fetchedName,
-          email: sessionObj.user.email,
+          firstName: fetchedFirstName,
+          lastName: fetchedLastName,
           role: fetchedRole,
+          id: sessionObj.user.id,
+          email: sessionObj.user.email,
           country: fetchedCountry,
-          balanceDZY: newBalances.DZY || 0,
+          city: fetchedCity,
+          phone: fetchedPhone,
+          avatar: fetchedAvatar ? { uri: fetchedAvatar } : require('../../assets/avatars/david.jpg'),
+          balanceDZY: newBalances.DZY,
+          balanceUSDT: newBalances.USDT,
+          balanceCFA: newBalances.XOF || newBalances.CFA,
+          totalUsdValue: totalUsdValue,
           allBalances: newBalances,
-          ...(fetchedAvatar && { avatar: { uri: fetchedAvatar } }) // Dynamically override if exists
-        }));
+          merchantProfile: fetchedMerchantProfile
+        });
       }
     };
 
@@ -187,6 +241,44 @@ export function AppProvider({ children }) {
     );
   };
 
+  const updateUserProfile = async (payload) => {
+    if (!user?.id) return { success: false, error: "Not logged in" };
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .update(payload)
+        .eq('id', user.id)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      
+      // Update local state smoothly
+      setUser(prev => {
+        const newFirst = payload.first_name !== undefined ? payload.first_name : prev.firstName;
+        const newLast = payload.last_name !== undefined ? payload.last_name : prev.lastName;
+        let newName = prev.name;
+        if (payload.first_name !== undefined || payload.last_name !== undefined) {
+          newName = `${newFirst || ''} ${newLast || ''}`.trim();
+        }
+
+        return {
+          ...prev,
+          firstName: newFirst,
+          lastName: newLast,
+          name: newName,
+          country: payload.country_of_residence !== undefined ? payload.country_of_residence : prev.country,
+          city: payload.city_of_residence !== undefined ? payload.city_of_residence : prev.city,
+          phone: payload.mobile_number !== undefined ? payload.mobile_number : prev.phone,
+        };
+      });
+      return { success: true, data };
+    } catch (e) {
+      console.log("Update profile error:", e);
+      return { success: false, error: e.message };
+    }
+  };
+
   const addToCart = (product) => {
     setCart(prev => [...prev, product]);
   };
@@ -219,7 +311,11 @@ export function AppProvider({ children }) {
       language,
       setLanguage,
       toggleLanguage,
-      t
+      t,
+      isAppLocked,
+      setIsAppLocked,
+      isCheckingLock,
+      updateUserProfile
     }}>
       {children}
     </AppContext.Provider>

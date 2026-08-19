@@ -3,12 +3,43 @@ import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
 import { useApp } from '../context/AppContext';
+import { supabase } from '../services/supabaseClient';
+import AppToast from './AppToast';
 
 export const SocialLogins = ({ variant = 'row' }) => {
-  const [provider, setProvider] = useState(null);
   const { language, t } = useApp();
-  const simulate = (name) => setProvider(name);
-  const dividerText = language === 'fr' ? 'ou continuer avec' : 'or continue with';
+  const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '', type: 'info' });
+  const dividerText = t('auth.orContinueWith', 'or continue with');
+
+  const handleSocialLogin = async (providerName) => {
+    if (providerName === 'Facebook' || providerName === 'X') {
+      setToastInfo({
+        visible: true,
+        title: t('common.comingSoon', 'Coming soon'),
+        message: t('auth.socialLoginComingSoon', `Logging in with ${providerName} will be available soon.`).replace('{{provider}}', providerName),
+        type: 'info'
+      });
+      return;
+    }
+
+    try {
+      const providerId = providerName.toLowerCase();
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: providerId,
+      });
+
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      setToastInfo({
+        visible: true,
+        title: t('auth.loginFailed', 'Login Error'),
+        message: error.message,
+        type: 'error'
+      });
+    }
+  };
 
   if (variant === 'square') {
     return (
@@ -20,24 +51,24 @@ export const SocialLogins = ({ variant = 'row' }) => {
         </View>
 
         <View style={styles.squareContainer}>
-          <TouchableOpacity style={styles.squareButton} onPress={() => simulate('Google')}>
+          <TouchableOpacity style={styles.squareButton} onPress={() => handleSocialLogin('Google')}>
             <Ionicons name="logo-google" size={28} color={theme.colors.textSecondary} />
             <Text style={styles.squareText}>Google</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.squareButton} onPress={() => simulate('Apple')}>
+          <TouchableOpacity style={styles.squareButton} onPress={() => handleSocialLogin('Apple')}>
             <Ionicons name="logo-apple" size={28} color={theme.colors.textPrimary} />
             <Text style={styles.squareText}>Apple</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.squareButton} onPress={() => simulate('Facebook')}>
+          <TouchableOpacity style={styles.squareButton} onPress={() => handleSocialLogin('Facebook')}>
             <Ionicons name="logo-facebook" size={28} color="#1877F2" />
             <Text style={styles.squareText}>Facebook</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.squareButton} onPress={() => simulate('X')}>
+          <TouchableOpacity style={styles.squareButton} onPress={() => handleSocialLogin('X')}>
             <Text style={{fontWeight: 'bold', fontSize: 24, color: theme.colors.textPrimary}}>X</Text>
             <Text style={styles.squareText}>X (Twitter)</Text>
           </TouchableOpacity>
         </View>
-        {!!provider && <Text style={styles.simulationText}>{language === 'fr' ? `Connexion ${provider} simulée — autorisation prête.` : `Simulated ${provider} login — authorization ready.`}</Text>}
+        <AppToast visible={toastInfo.visible} title={toastInfo.title} message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ ...toastInfo, visible: false })} />
       </View>
     );
   }
@@ -51,24 +82,24 @@ export const SocialLogins = ({ variant = 'row' }) => {
       </View>
 
       <View style={styles.socialContainer}>
-        <TouchableOpacity style={styles.socialButton} onPress={() => simulate('Google')}>
+        <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('Google')}>
           <Ionicons name="logo-google" size={24} color={theme.colors.textSecondary} />
           <Text style={styles.socialText}>Google</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.socialButton} onPress={() => simulate('Apple')}>
+        <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('Apple')}>
           <Ionicons name="logo-apple" size={24} color={theme.colors.textPrimary} />
           <Text style={styles.socialText}>Apple</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.socialButton} onPress={() => simulate('Facebook')}>
+        <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('Facebook')}>
           <Ionicons name="logo-facebook" size={24} color="#1877F2" />
           <Text style={styles.socialText}>Facebook</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.socialButton} onPress={() => simulate('X')}>
+        <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('X')}>
           <Text style={styles.xIcon}>X</Text>
           <Text style={styles.socialText}>X (Twitter)</Text>
         </TouchableOpacity>
       </View>
-      {!!provider && <Text style={styles.simulationText}>Connexion {provider} simulée — autorisation prête.</Text>}
+      <AppToast visible={toastInfo.visible} title={toastInfo.title} message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ ...toastInfo, visible: false })} />
     </View>
   );
 };
@@ -140,5 +171,4 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
     marginTop: 4,
   },
-  simulationText: { marginTop: 10, textAlign: 'center', fontFamily: theme.typography.fontFamily.medium, fontSize: 11, color: theme.colors.success },
 });

@@ -1,7 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, StatusBar, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
 import { DizzitInput } from '../components/DizzitInput';
@@ -12,6 +12,7 @@ import { SocialLogins } from '../components/SocialLogins';
 import { FooterTerms } from '../components/FooterTerms';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
+import { supabase } from '../services/supabaseClient';
 
 export default function RegisterScreen() {
   const navigation = useNavigation();
@@ -20,7 +21,7 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [parrain, setParrain] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '', type: 'success' });
 
   const getPasswordStrength = (pass) => {
     if (!pass) return 0;
@@ -41,23 +42,40 @@ export default function RegisterScreen() {
     return theme.colors.border;
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!email || !password || strength < 2) return;
     
     setIsLoading(true);
-    const payload = {
-      emailOrPhone: email,
-      password: password,
-      referralCode: parrain || undefined
-    };
-    
-    console.log("Submitting register payload:", payload);
-    
-    setTimeout(() => {
-      setIsLoading(false);
-      setShowSuccess(true);
-      setTimeout(() => navigation.navigate('VerificationScreen'), 900);
-    }, 1500);
+
+    try {
+      // Basic Supabase signup
+      // If emailOrPhone is a phone number, Supabase requires it in E.164 format via signUp({ phone: ... })
+      // For simplicity here we assume email, but in a robust system we'd detect phone vs email.
+      const isPhone = /^\+?[0-9]{7,15}$/.test(email);
+
+      const credentials = isPhone ? { phone: email, password } : { email, password };
+
+      const { data, error } = await supabase.auth.signUp({
+        ...credentials,
+        options: {
+          data: {
+            referral_code: parrain || undefined
+          }
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      setToastInfo({ visible: true, title: t('common.success', 'Registration successful'), message: t('auth.registrationSuccessMsg', 'Your verification code is ready.'), type: 'success' });
+      setTimeout(() => navigation.navigate('VerificationScreen', { emailOrPhone: email }), 900);
+
+    } catch (error) {
+       setToastInfo({ visible: true, title: t('common.error', 'Error'), message: error.message, type: 'error' });
+    } finally {
+       setIsLoading(false);
+    }
   };
 
   return (
@@ -70,9 +88,9 @@ export default function RegisterScreen() {
             <Ionicons name="chevron-back" size={24} color={theme.colors.primary} />
           </TouchableOpacity>
           <View style={styles.loginLinkContainer}>
-            <Text style={styles.loginText}>{language === 'fr' ? 'Déjà un compte ? ' : 'Already have an account? '}</Text>
+            <Text style={styles.loginText}>{t('auth.alreadyHaveAccount', 'Already have an account? ')}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
-              <Text style={styles.loginLink}>{language === 'fr' ? 'Se connecter' : 'Log in'}</Text>
+              <Text style={styles.loginLink}>{t('auth.login', 'Log in')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -84,11 +102,9 @@ export default function RegisterScreen() {
             style={styles.logo} 
             resizeMode="contain"
           />
-          <Text style={styles.mainTitle}>{language === 'fr' ? 'Créez un compte' : 'Create an account'}</Text>
+          <Text style={styles.mainTitle}>{t('auth.createAccount', 'Create an account')}</Text>
           <Text style={styles.subTitle}>
-            {language === 'fr' 
-              ? 'Rejoignez DizzitUp et accédez à tout un\nécosystème financier et digital.' 
-              : 'Join DizzitUp and access a complete\nfinancial and digital ecosystem.'}
+            {t('auth.signUpSubtitle', 'Join DizzitUp and access a complete\nfinancial and digital ecosystem.')}
           </Text>
         </View>
 
@@ -98,16 +114,16 @@ export default function RegisterScreen() {
         {/* Form */}
         <View style={styles.formContainer}>
           <DizzitInput
-            label={language === 'fr' ? 'Entrez votre email ou votre numéro' : 'Enter your email or phone number'}
-            placeholder={language === 'fr' ? 'Entrez votre email ou votre numéro' : 'Enter your email or phone number'}
+            label={t('auth.enterEmailOrPhone', 'Enter your email or phone number')}
+            placeholder={t('auth.enterEmailOrPhonePlaceholder', 'Enter your email or phone number')}
             value={email}
             onChangeText={setEmail}
             iconLeft={<Ionicons name="mail-outline" size={20} color={theme.colors.primary} />}
           />
           
           <DizzitInput
-            label={language === 'fr' ? 'Créez votre mot de passe' : 'Create your password'}
-            placeholder={language === 'fr' ? 'Créez votre mot de passe' : 'Create your password'}
+            label={t('auth.password', 'Create your password')}
+            placeholder={t('auth.enterPassword', 'Create your password')}
             isPassword
             value={password}
             onChangeText={setPassword}
@@ -122,15 +138,15 @@ export default function RegisterScreen() {
               <View style={[styles.strengthBar, {backgroundColor: getBarColor(2)}]} />
             </View>
             <View style={styles.strengthLabels}>
-              <Text style={[styles.strengthLabel, strength === 1 && {color: theme.colors.error}]}>{language === 'fr' ? 'Faible' : 'Weak'}</Text>
-              <Text style={[styles.strengthLabel, strength === 2 && {color: theme.colors.warning}]}>{language === 'fr' ? 'Moyen' : 'Medium'}</Text>
-              <Text style={[styles.strengthLabel, strength === 3 && {color: theme.colors.success}]}>{language === 'fr' ? 'Fort' : 'Strong'}</Text>
+              <Text style={[styles.strengthLabel, strength === 1 && {color: theme.colors.error}]}>{t('auth.pwdWeak', 'Weak')}</Text>
+              <Text style={[styles.strengthLabel, strength === 2 && {color: theme.colors.warning}]}>{t('auth.pwdMedium', 'Medium')}</Text>
+              <Text style={[styles.strengthLabel, strength === 3 && {color: theme.colors.success}]}>{t('auth.pwdStrong', 'Strong')}</Text>
             </View>
           </View>
 
           <DizzitInput
-            label={language === 'fr' ? 'Entrez votre code parrain (optionnel)' : 'Enter referral code (optional)'}
-            placeholder={language === 'fr' ? 'Entrez votre code parrain si vous en avez un' : 'Enter referral code if you have one'}
+            label={t('auth.referralCodeLabel', 'Enter referral code (optional)')}
+            placeholder={t('auth.referralCodePlaceholder', 'Enter referral code if you have one')}
             value={parrain}
             onChangeText={setParrain}
             iconLeft={<Ionicons name="people-outline" size={20} color={theme.colors.primary} />}
@@ -157,7 +173,7 @@ export default function RegisterScreen() {
         
         <View style={{height: 40}} />
       </ScrollView>
-      <AppToast visible={showSuccess} title={language === 'fr' ? 'Inscription réussie' : 'Registration successful'} message={language === 'fr' ? 'Votre code de vérification est prêt.' : 'Your verification code is ready.'} onClose={() => setShowSuccess(false)} />
+      <AppToast visible={toastInfo.visible} title={toastInfo.title} message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ ...toastInfo, visible: false })} />
     </SafeAreaView>
   );
 }

@@ -13,6 +13,9 @@ if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location.ho
   } catch (e) {
     console.warn('Failed to parse API URL for dynamic host swapping', e);
   }
+} else if (Platform.OS === 'android' && BASE_URL.includes('localhost')) {
+  // Android emulator maps 10.0.2.2 to the host machine's localhost
+  BASE_URL = BASE_URL.replace('localhost', '10.0.2.2');
 }
 
 export const buyGoodsApi = {

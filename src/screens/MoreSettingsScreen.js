@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Platform, StatusBar } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Platform, StatusBar, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
@@ -21,17 +21,17 @@ const getFlagCode = (lang) => {
 
 export default function MoreSettingsScreen() {
   const navigation = useNavigation();
-  const { language, toggleLanguage, t } = useApp();
+  const { language, toggleLanguage, t, user } = useApp();
   const [toast, setToast] = useState(null);
 
   const SETTINGS = [
-    { id: 'account', title: t('generalSettings', 'Account Settings'), description: language === 'fr' ? 'Gérer les préférences et la sécurité de votre compte' : 'Manage your account settings and preferences', icon: 'person-outline', color: '#3B82F6', background: '#EFF6FF', route: 'AccountSettingsScreen' },
-    { id: 'personal', title: t('personalAccount', 'Personal Account'), description: language === 'fr' ? 'Gérer vos informations personnelles et vérification' : 'Manage your personal information and verification', icon: 'person-outline', color: '#10B981', background: '#ECFDF5', route: 'PersonalAccountScreen' },
-    { id: 'business', title: t('businessAccount', 'Business Account'), description: language === 'fr' ? 'Gérer votre profil marchand et préférences' : 'Manage your business profile and preferences', icon: 'storefront-outline', color: '#8B5CF6', background: '#F5F3FF', route: 'BusinessAccountScreen' },
-    { id: 'assistant', title: t('askAminata', 'Ask Aminata'), description: language === 'fr' ? 'Obtenez de l\'aide auprès de notre assistant virtuel' : 'Get help and answers from our virtual assistant', icon: 'help-circle-outline', color: '#F59E0B', background: '#FFFBEB', route: 'AskAminataScreen' },
-    { id: 'loyalty', title: t('dizzyFamily', 'DizzyFamily Program'), description: language === 'fr' ? 'Gagnez des récompenses et profitez d\'avantages exclusifs' : 'Earn rewards and enjoy exclusive benefits', icon: 'gift-outline', color: '#EF4444', background: '#FEF2F2', route: 'DizzyFamilyScreen' },
-    { id: 'about', title: t('aboutApp', 'About DizzitUp'), description: language === 'fr' ? 'En savoir plus sur nous et notre mission' : 'Learn more about us and our mission', icon: 'information-circle-outline', color: '#3B82F6', background: '#EFF6FF', route: 'AboutDizzitUpScreen' },
-    { id: 'contact', title: t('contactSupport', 'Contact Us'), description: language === 'fr' ? 'Entrez en contact avec notre équipe d\'assistance' : 'Get in touch with our support team', icon: 'headset-outline', color: '#10B981', background: '#ECFDF5', route: 'ContactUsScreen' },
+    { id: 'account', title: t('settings.general', 'Account Settings'), description: language === 'fr' ? 'Gérer les préférences et la sécurité de votre compte' : 'Manage your account settings and preferences', icon: 'person-outline', color: '#3B82F6', background: '#EFF6FF', route: 'AccountSettingsScreen' },
+    ...(user?.role !== 'merchant' ? [{ id: 'personal', title: t('settings.personal', 'Personal Account'), description: language === 'fr' ? 'Gérer vos informations personnelles et vérification' : 'Manage your personal information and verification', icon: 'person-outline', color: '#10B981', background: '#ECFDF5', route: 'PersonalAccountScreen' }] : []),
+    ...(user?.role === 'merchant' ? [{ id: 'business', title: t('settings.business', 'Business Account'), description: language === 'fr' ? 'Gérer votre profil marchand et préférences' : 'Manage your business profile and preferences', icon: 'storefront-outline', color: '#8B5CF6', background: '#F5F3FF', route: 'BusinessAccountScreen' }] : []),
+    { id: 'assistant', title: t('askAminata.title', 'Ask Aminata'), description: language === 'fr' ? 'Obtenez de l\'aide auprès de notre assistant virtuel' : 'Get help and answers from our virtual assistant', icon: 'help-circle-outline', color: '#F59E0B', background: '#FFFBEB', route: 'AskAminataScreen' },
+    { id: 'loyalty', title: t('dizzyFamily.title', 'DizzyFamily Program'), description: language === 'fr' ? 'Gagnez des récompenses et profitez d\'avantages exclusifs' : 'Earn rewards and enjoy exclusive benefits', icon: 'gift-outline', color: '#EF4444', background: '#FEF2F2', route: 'DizzyFamilyScreen' },
+    { id: 'about', title: t('aboutApp.title', 'About DizzitUp'), description: language === 'fr' ? 'En savoir plus sur nous et notre mission' : 'Learn more about us and our mission', icon: 'information-circle-outline', color: '#3B82F6', background: '#EFF6FF', route: 'AboutDizzitUpScreen' },
+    { id: 'contact', title: t('contactSupport.title', 'Contact Us'), description: language === 'fr' ? 'Entrez en contact avec notre équipe d\'assistance' : 'Get in touch with our support team', icon: 'headset-outline', color: '#10B981', background: '#ECFDF5', route: 'ContactUsScreen' },
   ];
 
   const handleBack = () => {
@@ -75,14 +75,23 @@ export default function MoreSettingsScreen() {
           </View>
 
           {/* User Profile Card */}
-          <TouchableOpacity style={styles.profileCard} onPress={() => navigation.navigate('PersonalAccountScreen')} accessibilityLabel="Open profile">
+          <TouchableOpacity 
+            style={styles.profileCard} 
+            onPress={() => navigation.navigate(user?.role === 'merchant' ? 'BusinessAccountScreen' : 'PersonalAccountScreen')} 
+            accessibilityLabel="Open profile"
+          >
             <View style={styles.avatarFallback}>
               <Ionicons name="person" size={22} color="#FFFFFF" />
-              <Image source={{ uri: 'https://i.pravatar.cc/120?img=11' }} style={styles.avatar} />
+              {user?.avatar && (
+                <Image 
+                  source={user.avatar} 
+                  style={styles.avatar} 
+                />
+              )}
             </View>
             <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>David Mensah</Text>
-              <Text style={styles.profileEmail}>david.mensah@email.com</Text>
+              <Text style={styles.profileName}>{user?.name || user?.merchantProfile?.shop_name || 'Utilisateur'}</Text>
+              <Text style={styles.profileEmail}>{user?.email || 'email@example.com'}</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
           </TouchableOpacity>
@@ -107,6 +116,24 @@ export default function MoreSettingsScreen() {
               </TouchableOpacity>
             ))}
           </View>
+
+          {/* Become a Merchant Button (Users Only) */}
+          {user?.role !== 'merchant' && (
+            <TouchableOpacity 
+              style={styles.merchantPromoButton} 
+              onPress={() => Linking.openURL('https://dizzitup.com')}
+              accessibilityLabel={t('settings.becomeMerchantTitle', 'Become a Merchant')}
+            >
+              <View style={styles.merchantPromoIconBox}>
+                <Ionicons name="storefront" size={24} color="#F59E0B" />
+              </View>
+              <View style={styles.merchantPromoTextContainer}>
+                <Text style={styles.merchantPromoTitle}>{t('settings.becomeMerchantTitle', 'Become a Merchant')}</Text>
+                <Text style={styles.merchantPromoDesc}>{t('settings.becomeMerchantDesc', 'Open a store and start accepting DizzitUp payments')}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#F59E0B" style={{ opacity: 0.6 }} />
+            </TouchableOpacity>
+          )}
 
           {/* Log out Button */}
           <TouchableOpacity style={styles.logoutButton} onPress={() => navigation.reset({ index: 0, routes: [{ name: 'LoginScreen' }] })} accessibilityLabel="Log out">
@@ -150,6 +177,14 @@ const styles = StyleSheet.create({
   settingDescription: { fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 16, color: '#6B7280' },
   logoutButton: { height: 50, borderRadius: 14, backgroundColor: '#FEF2F2', borderWidth: 1, borderColor: '#FEE2E2', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 14 },
   logoutText: { fontFamily: 'Inter_600SemiBold', fontSize: 15, color: '#EF4444' },
+  merchantPromoButton: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFBEB', borderWidth: 1, borderColor: '#FDE68A', borderRadius: 16, padding: 16, marginTop: 24, boxShadow: '0px 2px 8px rgba(245, 158, 11, 0.15)' },
+  merchantPromoIconBox: { width: 48, height: 48, borderRadius: 14, backgroundColor: '#FEF3C7', alignItems: 'center', justifyContent: 'center', marginRight: 14 },
+  merchantPromoTextContainer: { flex: 1, paddingRight: 8 },
+  merchantPromoTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#92400E', marginBottom: 2 },
+  merchantPromoDesc: { fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 16, color: '#B45309' },
 });
+
+
+
 
 
