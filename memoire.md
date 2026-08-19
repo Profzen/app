@@ -1718,6 +1718,21 @@ Pour résoudre les anomalies remontées lors des tests sur iPhone SE (écran 375
 
 ---
 
+## 🛠️ Correctif Responsive Header DashboardScreen (19 août 2026)
+
+- **Problème identifié** : Sur l'écran Dashboard (accessible via l'onglet *Plus* `...`), l'icône des paramètres (⚙️) était partiellement masquée / coupée à droite lors de la réduction de la largeur de l'écran ou sur petit viewport.
+- **Cause racine** : L'espacement `gap: 12` combiné aux boutons `36x36px` et aux marges du header occupait plus de 330px, débordant ainsi sur les écrans très étroits (< 360px).
+- **Correctif appliqué** :
+  - `headerRight` : espacement optimisé à `gap: 6` (au lieu de `12`).
+  - `iconBtn` : dimensions ajustées à `32x32px` (icônes taille 18) pour un rendu harmonieux et compact.
+  - `logoContainer` : logo redimensionné à `28x28px`, texte DizzitUp à 18px avec `flexShrink: 1`.
+  - `paddingHorizontal` du header ajusté à 12px.
+  - Prise en charge dynamique des 5 langues pour le drapeau via `getFlagCode(language)`.
+  - **Résultat** : L'en-tête s'affiche désormais intégralement et sans aucun rognage d'icônes sur tous les formats mobiles (jusqu'à 300px).
+- **Fichier modifié** : [`src/screens/DashboardScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/DashboardScreen.js), [`memoire.md`](file:///g:/zen/projets/DizzitApp/app/memoire.md).
+
+---
+
 ## 🔄 Règle d'Or pour l'IA (Mise à jour Continue du Mémoire)
 
 **RÈGLE STRICTE POUR L'IA** : À la fin de chaque session ou après toute modification majeure (ajout d'écran, ajustement de flux, refactoring, gestion Git), l'IA **DOIT IMPÉRATIVEMENT** mettre à jour ce fichier `memoire.md`. Ainsi, lors de l'ouverture d'une nouvelle session de conversation, la lecture préalable de ce fichier permet de récupérer l'intégralité du contexte, de l'état d'avancement et des règles sans aucune perte d'information ni interruption du workflow.

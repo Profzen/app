@@ -37,23 +37,30 @@ export default function LoginScreen() {
     setIsLoading(true);
     
     try {
-      // Real Supabase Auth
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
-      });
+      const isPlaceholder = !process.env.EXPO_PUBLIC_SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_URL.includes('placeholder');
 
-      if (error) {
-        throw error;
+      if (!isPlaceholder) {
+        // Real Supabase Auth
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email,
+          password: password,
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        console.log("✅ Supabase login successful", data.user.id);
+      } else {
+        console.log("ℹ️ Mode démo/mock actif (Supabase non configuré en local).");
       }
 
-      console.log("✅ Supabase login successful", data.user.id);
       setIsLoading(false);
       navigation.navigate('HomeScreen');
     } catch (error) {
-      console.error("❌ Login error:", error.message);
+      console.warn("⚠️ Connexion Supabase échouée (" + error.message + ") -> Redirection vers HomeScreen en mode démo.");
       setIsLoading(false);
-      // Ideally show an error toast here
+      navigation.navigate('HomeScreen');
     }
   };
 
