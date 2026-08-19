@@ -63,6 +63,7 @@ export function AppProvider({ children }) {
         let fetchedMerchantProfile = null;
         let newBalances = { DZY: 0 };
         let totalUsdValue = 0;
+        let rawBalancesArray = [];
         
         try {
           const { data: profile } = await supabase
@@ -126,8 +127,6 @@ export function AppProvider({ children }) {
           const balanceRes = await fetch(`${DIZZY_URL}/wallet/balance`, {
             headers: { 'Authorization': `Bearer ${sessionObj.access_token}` }
           });
-          
-          let rawBalancesArray = [];
           if (balanceRes.ok) {
             const bData = await balanceRes.json();
             if (bData.balances) {
