@@ -127,9 +127,11 @@ export function AppProvider({ children }) {
             headers: { 'Authorization': `Bearer ${sessionObj.access_token}` }
           });
           
+          let rawBalancesArray = [];
           if (balanceRes.ok) {
             const bData = await balanceRes.json();
             if (bData.balances) {
+              rawBalancesArray = bData.balances;
               bData.balances.forEach(b => {
                 const cur = (b.currency || b.token || b.symbol || '').toUpperCase();
                 if (cur) newBalances[cur] = parseFloat(b.balance || 0);
@@ -182,6 +184,7 @@ export function AppProvider({ children }) {
           balanceCFA: newBalances.XOF || newBalances.CFA,
           totalUsdValue: totalUsdValue,
           allBalances: newBalances,
+          rawBalances: rawBalancesArray,
           merchantProfile: fetchedMerchantProfile
         });
       }
