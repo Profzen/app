@@ -24,6 +24,16 @@ const TRANSACTIONS = [
   { id: '5', title: 'Conversion DZY → USDC', sub: 'Taux : 1 DZY = 0,00021 USDC', amount: '-50 000 DZY', amountSub: '+37,00 USDC', time: '09 Mai 2024 • 16:05', isPositive: null, icon: 'swap-horizontal-outline', color: '#F59E0B' },
 ];
 
+const getFlagCode = (lang) => {
+  switch (lang) {
+    case 'fr': return 'fr';
+    case 'pt': return 'pt';
+    case 'ar': return 'sa';
+    case 'am': return 'et';
+    default: return 'gb';
+  }
+};
+
 export default function DashboardScreen() {
   const navigation = useNavigation();
   const { hideBalance, toggleHideBalance, language, toggleLanguage, t } = useApp();
@@ -38,18 +48,18 @@ export default function DashboardScreen() {
             <Text style={styles.dizzitText}>Dizzit<Text style={styles.upText}>Up</Text></Text>
           </View>
           <View style={styles.headerRight}>
-            <TouchableOpacity onPress={toggleLanguage} accessibilityLabel="Changer la langue / Switch language">
-              <Image source={{uri: language === 'fr' ? 'https://flagcdn.com/w40/fr.png' : 'https://flagcdn.com/w40/gb.png'}} style={styles.flagIcon} />
+            <TouchableOpacity onPress={toggleLanguage} accessibilityLabel="Changer la langue / Switch language" style={styles.flagBtn}>
+              <Image source={{uri: `https://flagcdn.com/w40/${getFlagCode(language)}.png`}} style={styles.flagIcon} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconBtn}>
-              <Ionicons name="notifications-outline" size={22} color="#1A2840" />
+              <Ionicons name="notifications-outline" size={18} color="#1A2840" />
               <View style={styles.badge} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('TransactionHistoryScreen')}>
-              <Ionicons name="time-outline" size={22} color="#1A2840" />
+              <Ionicons name="time-outline" size={18} color="#1A2840" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('MoreSettingsScreen')} accessibilityLabel="Ouvrir les paramètres">
-              <Ionicons name="settings-outline" size={22} color="#1A2840" />
+              <Ionicons name="settings-outline" size={18} color="#1A2840" />
             </TouchableOpacity>
           </View>
         </View>
@@ -261,15 +271,16 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#F8FAFC', paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 14 },
   container: { flex: 1 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: Platform.OS === 'android' ? 14 : 12, paddingBottom: 12, backgroundColor: '#FFFFFF' },
-  logoContainer: { flexDirection: 'row', alignItems: 'center' },
-  logoCircle: { width: 32, height: 32, marginRight: 6 },
-  dizzitText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 20, color: '#1A2840' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 12, paddingTop: Platform.OS === 'android' ? 14 : 12, paddingBottom: 12, backgroundColor: '#FFFFFF' },
+  logoContainer: { flexDirection: 'row', alignItems: 'center', flexShrink: 1 },
+  logoCircle: { width: 28, height: 28, marginRight: 5 },
+  dizzitText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#1A2840' },
   upText: { color: '#FFC759' },
-  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  flagIcon: { width: 24, height: 16, borderRadius: 3 },
-  iconBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', position: 'relative' },
-  badge: { position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: '#EF4444' },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  flagBtn: { padding: 2 },
+  flagIcon: { width: 22, height: 15, borderRadius: 2 },
+  iconBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', position: 'relative' },
+  badge: { position: 'absolute', top: 4, right: 4, width: 7, height: 7, borderRadius: 3.5, backgroundColor: '#EF4444' },
   scrollView: { flex: 1, paddingHorizontal: 16 },
   walletCard: { backgroundColor: '#071536', borderRadius: 24, padding: 20, marginTop: 12, position: 'relative', overflow: 'hidden' },
   walletHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },

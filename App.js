@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ActivityIndicator, StatusBar, LogBox } from 'react-native';
+import { View, ActivityIndicator, StatusBar, LogBox, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import AppNavigator from './src/navigation/AppNavigator';
@@ -31,6 +31,22 @@ LogBox.ignoreLogs([
   'props.pointerEvents is deprecated',
   'setLayoutAnimationEnabledExperimental',
 ]);
+
+if (Platform.OS === 'web' && typeof console !== 'undefined') {
+  const originalWarn = console.warn;
+  console.warn = (...args) => {
+    const msg = args[0] || '';
+    if (
+      typeof msg === 'string' &&
+      (msg.includes('"shadow*" style props are deprecated') ||
+       msg.includes('"textShadow*" style props are deprecated') ||
+       msg.includes('props.pointerEvents is deprecated'))
+    ) {
+      return;
+    }
+    originalWarn(...args);
+  };
+}
 
 export default function App() {
   let [fontsLoaded] = useFonts({
