@@ -16,7 +16,7 @@ const transactions = [
     amount: '- 50,00 DZ',
     balance: 'Solde : 120,00 DZ',
     isPositive: false,
-    icon: 'arrow-up-right-outline',
+    icon: 'arrow-up-circle-outline',
     iconColor: '#10B981',
     iconBg: '#DCFCE7',
   },

@@ -81,11 +81,11 @@ export default function WalletCard({ balances }) {
           {/* Reference */}
           <View style={[styles.internalFiatBox, { paddingLeft: 12 }]}>
             <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 4}}>
-               <Ionicons name="logo-usd" size={14} color="#FFC759" style={{marginRight: 4}} />
+               <Image source={{ uri: `https://flagcdn.com/w40/${secondaryCountry.code}.png` }} style={styles.tinyFlag} />
                <Text style={styles.fiatCurrencyLabel}>{secondaryCountry.currency}</Text>
             </View>
             <Text style={[styles.fiatAmount, !isVisible && styles.blurredText]} numberOfLines={1} adjustsFontSizeToFit>
-              ${formatNum(secondaryBalance, 2, 2)}
+              {formatNum(secondaryBalance, 2, 2)}
             </Text>
           </View>
         </View>

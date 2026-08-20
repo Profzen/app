@@ -768,7 +768,7 @@
       "total_balance": "ጠቅላላ ቀሪ ሂሳብ",
       "all_assets": "ሁሉም ንብረቶችዎ በአንድ ቦታ",
       "quick_actions": "ፈጣን ተግባራት",
-      "wallet_addresses": "የዋሌት አድራሻዎች",
+      "wallet_addresses": "የኪስ ቦርሳ አድራሻዎች",
       "token_balances": "የቶከን ቀሪ ሂሳቦች",
       "send_funds_subtitle": "Stablecoins ወደ ማንኛውም አድራሻ ወይም ተጠቃሚ ይላኩ",
       "receive_funds_subtitle": "ገንዘብ ለመቀበል አድራሻዎን ወይም የQR ኮድዎን ያጋሩ",
@@ -972,7 +972,13 @@
         "buy": "ግዛ",
         "sell": "ሽጥ"
       },
-      "view_onchain": "አሳሽ"
+      "view_onchain": "አሳሽ",
+      "networks": {
+        "evm": "EVM አውታረ መረቦች",
+        "solana": "Solana አውታረ መረብ"
+      },
+      "synchronizing_addresses": "ደህንነቱ የተጠበቀ የኪስ ቦርሳ ኖዶችን በማመሳሰል ላይ...",
+      "no_addresses_yet": "ደህንነቱ የተጠበቀ የኪስ ቦርሳዎ እየተዘጋጀ ነው። አድራሻዎች በቅርቡ እዚህ ይታያሉ።"
     },
     "previousStep": "ቀዳሚ ደረጃ",
     "optional": "አማራጭ",
@@ -3434,5 +3440,17 @@
     "cancel": "ሰርዝ",
     "confirm": "አረጋግጥ",
     "loginWithBiometrics": "በባዮሜትሪክስ ይግቡ"
+  },
+  "receiveFunds": {
+    "title": "ገንዘብ መቀበል",
+    "secure": "ደህንነቱ የተጠበቀ",
+    "select_blockchain": "ብሎክቼን ይምረጡ",
+    "your_address": "የእርስዎ አድራሻ",
+    "copy": "ቅዳ",
+    "copied": "ተቀድቷል ✔",
+    "share": "አጋራ",
+    "scan_to_pay": "ለመክፈል ስካን ያድርጉ",
+    "view_address": "አድራሻ ይመልከቱ",
+    "scan": "ስካን"
   }
 }

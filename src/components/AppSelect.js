@@ -13,6 +13,7 @@ export default function AppSelect({
   renderLeading,
   accessibilityLabel,
   chevronColor = '#1A2840',
+  renderCustomTrigger,
 }) {
   const [open, setOpen] = useState(false);
   const selected = options.find((option) => option.value === value) || options[0];
@@ -24,19 +25,23 @@ export default function AppSelect({
 
   return (
     <>
-      <TouchableOpacity
-        style={[styles.trigger, style]}
-        onPress={() => setOpen(true)}
-        accessibilityRole="button"
-        accessibilityLabel={accessibilityLabel || title}
-        accessibilityState={{ expanded: open }}
-      >
-        <View style={styles.triggerLeft}>
-          {renderLeading?.(selected)}
-          <Text style={[styles.triggerText, textStyle]} numberOfLines={1}>{selected?.label}</Text>
-        </View>
-        <Ionicons name="chevron-down" size={18} color={chevronColor} />
-      </TouchableOpacity>
+      {renderCustomTrigger ? (
+        renderCustomTrigger({ setOpen, selected })
+      ) : (
+        <TouchableOpacity
+          style={[styles.trigger, style]}
+          onPress={() => setOpen(true)}
+          accessibilityRole="button"
+          accessibilityLabel={accessibilityLabel || title}
+          accessibilityState={{ expanded: open }}
+        >
+          <View style={styles.triggerLeft}>
+            {renderLeading?.(selected)}
+            <Text style={[styles.triggerText, textStyle]} numberOfLines={1}>{selected?.label}</Text>
+          </View>
+          <Ionicons name="chevron-down" size={18} color={chevronColor} />
+        </TouchableOpacity>
+      )}
 
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
         <SafeAreaView style={styles.overlay}>

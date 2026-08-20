@@ -1,11 +1,13 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function WithdrawFundsMethodScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
+  const { amount, currency, selectedToken, selectedNetwork } = route.params || {};
   const [selectedMethod, setSelectedMethod] = useState('bank'); // 'bank' or 'mobile'
 
   return (
@@ -276,7 +278,7 @@ export default function WithdrawFundsMethodScreen() {
           </View>
 
           {/* Continue Button */}
-          <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('WithdrawFundsMobileMoneySummaryScreen')}>
+          <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('WithdrawFundsMobileMoneySummaryScreen', { amount, currency, selectedToken, selectedNetwork, selectedMethod })}>
             <Text style={styles.btnContinueText}>Continuer</Text>
           </TouchableOpacity>
 

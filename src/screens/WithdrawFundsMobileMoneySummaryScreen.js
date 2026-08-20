@@ -1,11 +1,13 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function WithdrawFundsMobileMoneySummaryScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
+  const { amount, currency, selectedToken, selectedNetwork, selectedMethod } = route.params || {};
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -175,7 +177,7 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
           </View>
 
           {/* Continue Button */}
-          <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('WithdrawFundsMobileMoneyProcessingScreen')}>
+          <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('WithdrawFundsMobileMoneyProcessingScreen', { amount, currency, selectedToken, selectedNetwork, selectedMethod })}>
             <Ionicons name="lock-closed" size={18} color="#1A2840" style={{marginRight: 8}} />
             <Text style={styles.btnContinueText}>Confirmer le retrait</Text>
           </TouchableOpacity>

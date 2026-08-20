@@ -116,7 +116,7 @@ export default function HomeScreen() {
               onPress={() => navigation.navigate('PersonalAccountScreen')}
               activeOpacity={0.7}
             >
-              <View style={[styles.avatarRing, { borderColor: user?.role === 'merchant' ? '#8B5CF6' : '#20365B' }]}>
+              <View style={[styles.avatarRing, user?.role === 'merchant' ? styles.merchantRing : styles.userRing]}>
                 <View style={styles.avatarWrapper}>
                   <Ionicons name="person" size={20} color="#FFFFFF" />
                   {user?.avatar ? (
@@ -237,7 +237,7 @@ export default function HomeScreen() {
 
           <View style={styles.quickActionsGrid}>
             {QUICK_ACTIONS.map(action => (
-              <TouchableOpacity key={action.id} style={styles.actionGridItem} onPress={() => { if (action.id === '1' || action.id === '3' || action.id === '6' || action.id === '7') navigation.navigate('ShopsScreen'); else if (action.id === '2') navigation.navigate('ChooseServiceScreen'); else if (action.id === '4') navigation.navigate('SendMoneyScreen'); else if (action.id === '5') navigation.navigate('TopUpScreen'); else if (action.id === '8') navigation.navigate('WithdrawFundsScreen'); }}>
+              <TouchableOpacity key={action.id} style={styles.actionGridItem} onPress={() => { if (action.id === '1' || action.id === '7') navigation.navigate('ShopsScreen'); else if (action.id === '2') navigation.navigate('ChooseServiceScreen'); else if (action.id === '3') navigation.navigate('ReceiveFundsV2Screen'); else if (action.id === '4') navigation.navigate('SendMoneyScreen'); else if (action.id === '5') navigation.navigate('TopUpScreen'); else if (action.id === '6') navigation.navigate('ReferBusinessScreen'); else if (action.id === '8') navigation.navigate('WithdrawFundsScreen'); }}>
                 <View style={styles.actionGridIcon}>
                   <Ionicons name={action.icon} size={24} color={action.color} />
                 </View>
@@ -298,6 +298,8 @@ const styles = StyleSheet.create({
     marginRight: 6 
   },
   avatarRing: { width: 44, height: 44, borderRadius: 22, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginRight: 10 },
+  merchantRing: { borderColor: '#8B5CF6' },
+  userRing: { borderColor: '#3B82F6' },
   avatarWrapper: { 
     width: 38, 
     height: 38, 
@@ -307,7 +309,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center', 
     overflow: 'hidden' 
   },
-  avatarImage: { ...StyleSheet.absoluteFillObject, width: 38, height: 38, borderRadius: 19 },
+  avatarImage: { ...StyleSheet.absoluteFill, width: 38, height: 38, borderRadius: 19 },
   greetingText: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#1A2840' },
   nameText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#1A2840' },
   merchantBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#8B5CF6', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginLeft: 6 },

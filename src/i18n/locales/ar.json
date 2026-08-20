@@ -2400,7 +2400,13 @@
         "buy": "شراء",
         "sell": "بيع"
       },
-      "view_onchain": "المستكشف"
+      "view_onchain": "المستكشف",
+      "networks": {
+        "evm": "شبكات EVM",
+        "solana": "شبكة سولانا"
+      },
+      "synchronizing_addresses": "جاري مزامنة عقد المحفظة الآمنة...",
+      "no_addresses_yet": "يتم إعداد محفظتك الآمنة. ستظهر العناوين هنا قريباً."
     },
     "previousStep": "الخطوة السابقة",
     "optional": "اختياري",
@@ -3464,5 +3470,17 @@
     "cancel": "إلغاء",
     "confirm": "تأكيد",
     "loginWithBiometrics": "تسجيل الدخول باستخدام القياسات الحيوية"
+  },
+  "receiveFunds": {
+    "title": "استلام الأموال",
+    "secure": "آمن",
+    "select_blockchain": "اختر بلوكتشين",
+    "your_address": "عنوانك",
+    "copy": "نسخ",
+    "copied": "تم النسخ ✔",
+    "share": "مشاركة",
+    "scan_to_pay": "امسح للدفع",
+    "view_address": "عرض العنوان",
+    "scan": "مسح"
   }
 }

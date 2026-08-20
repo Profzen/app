@@ -8,6 +8,7 @@ import { DizzitInput } from '../components/DizzitInput';
 import { DizzitButton } from '../components/DizzitButton';
 import { SocialLogins } from '../components/SocialLogins';
 import { FeaturesBanner } from '../components/FeaturesBanner';
+import AppSelect from '../components/AppSelect';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../services/supabaseClient';
 
@@ -25,7 +26,7 @@ const getFlagCode = (lang) => {
 
 export default function LoginScreen() {
   const navigation = useNavigation();
-  const { language, toggleLanguage, t } = useApp();
+  const { language, toggleLanguage, setLanguage, t } = useApp();
   const [activeTab, setActiveTab] = useState('email'); // 'email' | 'phone'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -79,20 +80,34 @@ export default function LoginScreen() {
             <Ionicons name="arrow-back" size={22} color={theme.colors.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{language === 'fr' ? 'Connexion' : 'Log In'}</Text>
-          <TouchableOpacity style={styles.languageSelector} onPress={toggleLanguage} accessibilityLabel="Changer la langue / Switch language">
-            <Image 
-              source={{ uri: `https://flagcdn.com/w40/${getFlagCode(language)}.png` }} 
-              style={{ width: 20, height: 14, borderRadius: 2, marginRight: 5 }} 
-            />
-            <Text style={styles.languageText}>{language.toUpperCase()}</Text>
-            <Ionicons name="chevron-down" size={14} color={theme.colors.primary} />
-          </TouchableOpacity>
+          <AppSelect 
+            value={language}
+            options={[
+              { value: 'en', label: 'English', flagUrl: 'https://flagcdn.com/w40/gb.png' },
+              { value: 'fr', label: 'Français', flagUrl: 'https://flagcdn.com/w40/fr.png' },
+              { value: 'pt', label: 'Português', flagUrl: 'https://flagcdn.com/w40/pt.png' },
+              { value: 'ar', label: 'العربية', flagUrl: 'https://flagcdn.com/w40/sa.png' },
+              { value: 'am', label: 'አማርኛ', flagUrl: 'https://flagcdn.com/w40/et.png' },
+            ]}
+            onChange={(val) => setLanguage && setLanguage(val)}
+            title={language === 'fr' ? 'Changer la langue' : 'Switch Language'}
+            renderCustomTrigger={({ setOpen }) => (
+              <TouchableOpacity style={styles.languageSelector} onPress={() => setOpen(true)} accessibilityLabel="Changer la langue / Switch language">
+                <Image 
+                  source={{ uri: `https://flagcdn.com/w40/${getFlagCode(language)}.png` }} 
+                  style={{ width: 20, height: 14, borderRadius: 2, marginRight: 5 }} 
+                />
+                <Text style={styles.languageText}>{language.toUpperCase()}</Text>
+                <Ionicons name="chevron-down" size={14} color={theme.colors.primary} />
+              </TouchableOpacity>
+            )}
+          />
         </View>
 
         {/* Title Area */}
         <View style={styles.titleContainer}>
           <Image 
-            source={require('../../assets/brand/dizzitup_logo.jpeg')} 
+            source={require('../../assets/brand/dizzitup_logo_cercle_cropped.png')} 
             style={styles.logo} 
             resizeMode="contain"
           />
@@ -216,6 +231,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.radii.sm,
     paddingHorizontal: 8,
     paddingVertical: 4,
+    minHeight: 'auto',
   },
   languageText: {
     fontFamily: theme.typography.fontFamily.semiBold,
@@ -228,9 +244,10 @@ const styles = StyleSheet.create({
     marginBottom: isShortScreen ? 12 : theme.spacing.xl,
   },
   logo: {
-    width: isShortScreen ? 140 : 180,
-    height: isShortScreen ? 36 : 45,
-    marginBottom: isShortScreen ? 6 : theme.spacing.md,
+    width: isShortScreen ? 60 : 80,
+    height: isShortScreen ? 60 : 80,
+    marginBottom: isShortScreen ? 12 : theme.spacing.lg,
+    borderRadius: isShortScreen ? 30 : 40, // Ensure perfect circle
   },
   mainTitle: {
     fontFamily: theme.typography.fontFamily.heading,

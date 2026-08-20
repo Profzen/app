@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Animated, StyleSheet, Easing, Platform } from 'react-native';
+import { View, Text, Animated, StyleSheet, Easing, Platform, Modal } from 'react-native';
 
 export default function AnimatedSplashScreen({ onAnimationComplete }) {
   const pulseAnim = useRef(new Animated.Value(0.8)).current;
@@ -48,37 +48,44 @@ export default function AnimatedSplashScreen({ onAnimationComplete }) {
   }, []);
 
   return (
-    <Animated.View style={[styles.container, { opacity: containerFadeAnim }]}>
-      <View style={styles.content}>
-        <Animated.Image
-          source={require('../../assets/brand/dizzitup_logo_cercle.png')}
-          style={[
-            styles.logo,
-            {
-              opacity: fadeAnim,
-              transform: [{ scale: pulseAnim }],
-            },
-          ]}
-          resizeMode="contain"
-        />
-        <Animated.Text style={[styles.brandText, { opacity: textFadeAnim }]}>
-          DizzitUp
-        </Animated.Text>
-      </View>
-    </Animated.View>
+    <Modal
+      visible
+      animationType="none"
+      transparent={false}
+      statusBarTranslucent
+    >
+      <Animated.View style={[styles.container, { opacity: containerFadeAnim }]}>
+        <View style={styles.content}>
+          <Animated.Image
+            source={require('../../assets/brand/dizzitup_logo_cercle.png')}
+            style={[
+              styles.logo,
+              {
+                opacity: fadeAnim,
+                transform: [{ scale: pulseAnim }],
+              },
+            ]}
+            resizeMode="contain"
+          />
+          <Animated.Text style={[styles.brandText, { opacity: textFadeAnim }]}>
+            DizzitApp
+          </Animated.Text>
+        </View>
+      </Animated.View>
+    </Modal>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
+    flex: 1,
     backgroundColor: '#1A2840', // Deep Blue
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 9999, // Ensure it sits on top of EVERYTHING
   },
   content: {
     alignItems: 'center',
+    justifyContent: 'center',
   },
   logo: {
     width: 140,

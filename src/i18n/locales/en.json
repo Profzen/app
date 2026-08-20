@@ -974,7 +974,9 @@
         "buy": "Buy",
         "sell": "Sell"
       },
-      "view_onchain": "Explorer"
+      "view_onchain": "Explorer",
+      "synchronizing_addresses": "Synchronizing secure wallet nodes...",
+      "no_addresses_yet": "Your secure wallet is being prepared. Addresses will appear here shortly."
     },
     "previousStep": "Previous Step",
     "optional": "Optional",
@@ -3588,5 +3590,17 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "loginWithBiometrics": "Login with Biometrics"
+  },
+  "receiveFunds": {
+    "title": "Receive Funds",
+    "secure": "SECURE",
+    "select_blockchain": "SELECT BLOCKCHAIN",
+    "your_address": "YOUR ADDRESS",
+    "copy": "COPY",
+    "copied": "COPIED ✔",
+    "share": "SHARE",
+    "scan_to_pay": "Scan to Pay",
+    "view_address": "VIEW ADDRESS",
+    "scan": "SCAN"
   }
 }

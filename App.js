@@ -97,11 +97,9 @@ export default function App() {
         </AppProvider>
       </SafeAreaProvider>
       
-      {/* Custom Animated Splash Screen rendered on top of everything using a Modal */}
+      {/* Custom Animated Splash Screen rendered on top of everything without a Modal to prevent Android layout bugs */}
       {!animationComplete && (
-        <Modal transparent={true} animationType="none" visible={true} statusBarTranslucent={true}>
-          <AnimatedSplashScreen onAnimationComplete={() => setAnimationComplete(true)} />
-        </Modal>
+        <AnimatedSplashScreen onAnimationComplete={() => setAnimationComplete(true)} />
       )}
     </View>
   );

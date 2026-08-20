@@ -925,7 +925,13 @@
         "buy": "Comprar",
         "sell": "Vender"
       },
-      "view_onchain": "Explorador"
+      "view_onchain": "Explorador",
+      "networks": {
+        "evm": "Redes EVM",
+        "solana": "Rede Solana"
+      },
+      "synchronizing_addresses": "Sincronizando nós de carteira seguros...",
+      "no_addresses_yet": "Sua carteira segura está sendo preparada. Os endereços aparecerão aqui em breve."
     },
     "previousStep": "Passo Anterior",
     "optional": "Opcional",
@@ -3416,5 +3422,17 @@
     "cancel": "Cancelar",
     "confirm": "Confirmar",
     "loginWithBiometrics": "Login com Biometria"
+  },
+  "receiveFunds": {
+    "title": "Receber Fundos",
+    "secure": "SEGURO",
+    "select_blockchain": "SELECIONAR BLOCKCHAIN",
+    "your_address": "SEU ENDEREÇO",
+    "copy": "COPIAR",
+    "copied": "COPIADO ✔",
+    "share": "COMPARTILHAR",
+    "scan_to_pay": "Escanear para Pagar",
+    "view_address": "VER ENDEREÇO",
+    "scan": "ESCANEAR"
   }
 }

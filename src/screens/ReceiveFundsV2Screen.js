@@ -1,5 +1,5 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Animated, Share, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,20 +9,53 @@ import QRCode from 'qrcode';
 import BottomNavBar from '../components/BottomNavBar';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
+import { useApp } from '../context/AppContext';
 
 export default function ReceiveFundsV2Screen() {
   const navigation = useNavigation();
+  const { session, t } = useApp();
+  const [addresses, setAddresses] = useState({ evm: '', solana: '' });
+
+  useEffect(() => {
+    const fetchAddress = async () => {
+      try {
+        const token = session?.access_token || '';
+        let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
+        if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) {
+          DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
+        }
+        const syncRes = await fetch(`${DIZZY_URL}/wallet/sync-smart-address`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const syncData = await syncRes.json();
+        if (syncRes.ok && syncData.success) {
+          setAddresses({ evm: syncData.evmAddress, solana: syncData.solanaAddress });
+        }
+      } catch (err) {
+        console.error("Failed to fetch address:", err);
+      }
+    };
+    fetchAddress();
+  }, [session]);
   const [activeTab, setActiveTab] = useState('adresse');
   const [showToast, setShowToast] = useState(false);
   const [copied, setCopied] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedChain, setSelectedChain] = useState('Polygone');
-  const address = '0x5C292F468c41b3F2D84D1d888B578aCf4BC339b91';
-  const qr = QRCode.create(address, { errorCorrectionLevel: 'M' });
+  const address = selectedChain === 'Solana' ? (addresses.solana || 'Chargement...') : (addresses.evm || 'Chargement...');
+  const qr = address && address !== 'Chargement...' ? QRCode.create(address, { errorCorrectionLevel: 'M' }) : null;
   const copyAddress = () => { setShowToast(true); setCopied(true); Clipboard.setStringAsync(address).catch(() => {}); setTimeout(() => setCopied(false), 2500); };
   const shareAddress = async () => { try { await Share.share({ message: `Adresse DizzitUp ${selectedChain} : ${address}` }); } catch { await Clipboard.setStringAsync(address); setShowToast(true); setCopied(true); setTimeout(() => setCopied(false), 2500); } };
   const chooseChain = (chain) => { setSelectedChain(chain); setDropdownOpen(false); };
-  const RealQrCode = () => <Svg width={180} height={180} viewBox={`0 0 ${qr.modules.size} ${qr.modules.size}`} accessibilityLabel="QR code de l'adresse Polygon"><Rect width={qr.modules.size} height={qr.modules.size} fill="#FFFFFF" />{Array.from(qr.modules.data).map((cell, index) => cell ? <Rect key={index} x={index % qr.modules.size} y={Math.floor(index / qr.modules.size)} width="1" height="1" fill="#071536" /> : null)}</Svg>;
+  const RealQrCode = () => {
+    if (!qr) return null;
+    return (
+      <Svg width={180} height={180} viewBox={`0 0 ${qr.modules.size} ${qr.modules.size}`} accessibilityLabel="QR code de l'adresse">
+        <Rect width={qr.modules.size} height={qr.modules.size} fill="#FFFFFF" />
+        {Array.from(qr.modules.data).map((cell, index) => cell ? <Rect key={index} x={index % qr.modules.size} y={Math.floor(index / qr.modules.size)} width="1" height="1" fill="#071536" /> : null)}
+      </Svg>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -35,10 +68,10 @@ export default function ReceiveFundsV2Screen() {
           </TouchableOpacity>
           
           <View style={styles.headerCenter}>
-            <Text style={styles.pageTitle}>Recevoir des fonds</Text>
+            <Text style={styles.pageTitle}>{t('receiveFunds.title', 'Recevoir des fonds')}</Text>
             <View style={styles.secureTag}>
               <View style={styles.secureDot} />
-              <Text style={styles.secureText}>SÉCURISÉ</Text>
+              <Text style={styles.secureText}>{t('receiveFunds.secure', 'SÉCURISÉ')}</Text>
             </View>
           </View>
           
@@ -62,7 +95,7 @@ export default function ReceiveFundsV2Screen() {
           
           {/* Blockchain Selector */}
           <View style={styles.blockchainSection}>
-            <Text style={styles.sectionLabel}>SÉLECTIONNER LA BLOCKCHAIN</Text>
+            <Text style={styles.sectionLabel}>{t('receiveFunds.select_blockchain', 'SÉLECTIONNER LA BLOCKCHAIN')}</Text>
             <TouchableOpacity 
               style={[styles.dropdown, dropdownOpen && styles.dropdownOpen]}
               onPress={() => setDropdownOpen(!dropdownOpen)}
@@ -152,7 +185,7 @@ export default function ReceiveFundsV2Screen() {
               activeOpacity={0.8}
             >
               <Ionicons name="wallet-outline" size={18} color={activeTab === 'adresse' ? '#FFFFFF' : '#1A2840'} style={{marginRight: 6}} />
-              <Text style={[styles.tabText, activeTab === 'adresse' ? styles.tabTextActive : styles.tabTextInactive]}>ADRESSE</Text>
+              <Text style={[styles.tabText, activeTab === 'adresse' ? styles.tabTextActive : styles.tabTextInactive]}>{t('receiveFunds.your_address', 'ADRESSE')}</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.tab, activeTab === 'qrcode' ? styles.tabActive : styles.tabInactive]}
@@ -160,7 +193,7 @@ export default function ReceiveFundsV2Screen() {
               activeOpacity={0.8}
             >
               <Ionicons name="scan-outline" size={18} color={activeTab === 'qrcode' ? '#FFFFFF' : '#1A2840'} style={{marginRight: 6}} />
-              <Text style={[styles.tabText, activeTab === 'qrcode' ? styles.tabTextActive : styles.tabTextInactive]}>SCANNER QR</Text>
+              <Text style={[styles.tabText, activeTab === 'qrcode' ? styles.tabTextActive : styles.tabTextInactive]}>{t('receiveFunds.scan', 'SCANNER QR')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -180,15 +213,15 @@ export default function ReceiveFundsV2Screen() {
                   <View style={styles.nodeSecureRow}>
                     <Ionicons name="shield-checkmark-outline" size={14} color="#94A3B8" style={{marginRight: 4}} />
                     <View style={styles.nodeDot} />
-                    <Text style={styles.nodeSecureText}>NOEUD SÉCURISÉ</Text>
+                    <Text style={styles.nodeSecureText}>{t('receiveFunds.secure', 'NOEUD SÉCURISÉ')}</Text>
                   </View>
                 </View>
 
                 {/* Address Area */}
-                <Text style={styles.addressLabel}>VOTRE ADRESSE</Text>
+                <Text style={styles.addressLabel}>{t('receiveFunds.your_address', 'VOTRE ADRESSE')}</Text>
                 <View style={styles.addressRow}>
                   <Text style={styles.addressText}>
-                    0x5C292F468c41b3F2D84D1d88{'\n'}8B578aCf4BC339b91
+                    {address}
                   </Text>
                   <Pressable style={styles.btnCopyIcon} onPress={copyAddress} onPressIn={copyAddress}>
                     <Ionicons name="copy-outline" size={18} color="#FFFFFF" />
@@ -201,11 +234,11 @@ export default function ReceiveFundsV2Screen() {
               <View style={styles.actionBtnsRow}>
                 <Pressable style={styles.btnCopy} onPress={copyAddress} onPressIn={copyAddress} accessibilityLabel="Copier l'adresse">
                   <Ionicons name="copy-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
-                  <Text style={styles.btnCopyText}>COPIER</Text>
+                  <Text style={styles.btnCopyText}>{copied ? t('receiveFunds.copied', 'COPIÉ ✔') : t('receiveFunds.copy', 'COPIER')}</Text>
                 </Pressable>
                 <TouchableOpacity style={styles.btnShare} onPress={shareAddress}>
                   <Ionicons name="share-outline" size={20} color="#FFFFFF" style={{marginRight: 8}} />
-                  <Text style={styles.btnShareText}>PARTAGER</Text>
+                  <Text style={styles.btnShareText}>{t('receiveFunds.share', 'PARTAGER')}</Text>
                 </TouchableOpacity>
               </View>
 
@@ -226,14 +259,14 @@ export default function ReceiveFundsV2Screen() {
                   <View style={styles.nodeSecureRow}>
                     <Ionicons name="shield-checkmark-outline" size={14} color="#94A3B8" style={{marginRight: 4}} />
                     <View style={styles.nodeDot} />
-                    <Text style={styles.nodeSecureText}>NOEUD SÉCURISÉ</Text>
+                    <Text style={styles.nodeSecureText}>{t('receiveFunds.secure', 'NOEUD SÉCURISÉ')}</Text>
                   </View>
                 </View>
 
                 {/* QR Content */}
                 <View style={styles.qrContentWrapper}>
-                  <Text style={styles.qrCardTitle}>Scanner pour payer</Text>
-                  <Text style={styles.qrCardSub}>Ceci est votre adresse dédiée pour Polygon</Text>
+                  <Text style={styles.qrCardTitle}>{t('receiveFunds.scan_to_pay', 'Scanner pour payer')}</Text>
+                  <Text style={styles.qrCardSub}>Ceci est votre adresse dédiée pour {selectedChain}</Text>
                   
                   <View style={styles.qrCodeBox}>
                     <RealQrCode />
@@ -242,12 +275,12 @@ export default function ReceiveFundsV2Screen() {
                   <View style={styles.qrInnerTabs}>
                     <TouchableOpacity style={styles.qrInnerTab} onPress={() => setActiveTab('adresse')}>
                       <Ionicons name="wallet-outline" size={14} color="#FFFFFF" style={{marginRight: 6}} />
-                      <Text style={styles.qrInnerTabText}>VOIR L'ADRESSE</Text>
+                      <Text style={styles.qrInnerTabText}>{t('receiveFunds.view_address', "VOIR L'ADRESSE")}</Text>
                     </TouchableOpacity>
                     <View style={styles.qrInnerTabDivider} />
                     <TouchableOpacity style={styles.qrInnerTab}>
                       <Ionicons name="scan-outline" size={14} color="#FFFFFF" style={{marginRight: 6}} />
-                      <Text style={styles.qrInnerTabText}>SCANNER</Text>
+                      <Text style={styles.qrInnerTabText}>{t('receiveFunds.scan', 'SCANNER')}</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -255,10 +288,10 @@ export default function ReceiveFundsV2Screen() {
                 <View style={styles.cardDivider} />
 
                 {/* Address Area Small */}
-                <Text style={styles.addressLabelSmall}>VOTRE ADRESSE</Text>
+                <Text style={styles.addressLabelSmall}>{t('receiveFunds.your_address', 'VOTRE ADRESSE')}</Text>
                 <View style={styles.addressRow}>
                   <Text style={styles.addressTextSmall} numberOfLines={1} ellipsizeMode="middle">
-                    0x5C292F468c41b3F2D84D1d88B578aCf4BC339b91
+                    {address}
                   </Text>
                   <Pressable style={styles.btnCopyIcon} onPress={copyAddress} onPressIn={copyAddress}>
                     <Ionicons name="copy-outline" size={18} color="#FFFFFF" />
@@ -778,4 +811,20 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginRight: 12,
   },
+  walletAddressesCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 20, shadowColor: '#000', shadowOpacity: 0.05, shadowOffset: {width: 0, height: 4}, shadowRadius: 10, elevation: 3, borderWidth: 1, borderColor: '#F1F5F9' },
+  waHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  waIconBox: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(32,54,91,0.05)', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  waTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#20365B' },
+  waList: { gap: 12 },
+  waItem: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 12, borderWidth: 1, borderColor: '#F1F5F9', shadowColor: '#000', shadowOpacity: 0.05, shadowOffset: {width: 0, height: 2}, shadowRadius: 4, elevation: 2 },
+  waItemContent: { flexDirection: 'row', alignItems: 'center' },
+  waNetworkIconEVM: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  waNetworkIconSOL: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  waTextWrap: { flex: 1 },
+  waNetworkTitle: { fontFamily: 'Inter_700Bold', fontSize: 12, color: '#20365B', textTransform: 'uppercase', marginBottom: 2 },
+  waAddressText: { fontFamily: 'SpaceGrotesk_400Regular', fontSize: 12, color: '#64748B' },
+  waCopyBtnEVM: { width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(255,199,89,0.15)', justifyContent: 'center', alignItems: 'center', marginLeft: 12 },
+  waCopyBtnSOL: { width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(32,54,91,0.1)', justifyContent: 'center', alignItems: 'center', marginLeft: 12 },
+  waEmpty: { backgroundColor: '#F8FAFC', borderRadius: 16, padding: 24, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#F1F5F9' },
+  waEmptyText: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#64748B', textAlign: 'center', marginTop: 12 },
 });

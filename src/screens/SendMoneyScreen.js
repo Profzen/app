@@ -1,12 +1,15 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform, StatusBar, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import AppSelect from '../components/AppSelect';
 import AppToast from '../components/AppToast';
 import BottomNavBar from '../components/BottomNavBar';
+import { useApp } from '../context/AppContext';
+import { useEffect } from 'react';
+import { supabase } from '../services/supabaseClient';
 
 const BLOCKCHAINS = [
   { value: 'Polygon', label: 'Polygon', name: 'Polygon Network', iconName: 'cube-outline', color: '#FFFFFF', bg: '#8247E5' },
@@ -24,27 +27,26 @@ const CRYPTO_TOKENS = [
   { value: 'BTC', label: 'BTC', name: 'Bitcoin', iconName: 'logo-bitcoin', color: '#FFFFFF', bg: '#F7931A', subtitle: 'Bitcoin Native Token' },
 ];
 
-const RECIPIENTS_LIST = [
-  { id: 'self', name: 'My Account', tag: 'SELF', address: '0x48b373ce0cC446c14FB422267048f638323F6A3d' },
-  { id: 'business', name: 'My Business', tag: 'BUSINESS', address: '0x48b373ce0cC446c14FB422267048f638323F6A3d' },
-  { id: 'mama', name: 'Mama Kemi Adebayo', tag: 'MÈRE', address: '+234 802 123 4567 / 0x71a2...9F1b' },
-  { id: 'marie', name: 'Marie K.', tag: 'SŒUR', address: '+221 77 123 4567 / 0x39b1...4C2e' },
-  { id: 'john', name: 'John Doe', tag: 'FRÈRE', address: '+228 90 12 34 56 / 0x82c4...1A8f' },
-];
+
 
 export default function SendMoneyScreen() {
   const navigation = useNavigation();
   const route = useRoute();
+  const { session, user, t } = useApp();
+  const [apiRecipients, setApiRecipients] = useState([]);
+  const [savedBeneficiaries, setSavedBeneficiaries] = useState([]);
+  const [isSending, setIsSending] = useState(false);
+  const [isSearchingApi, setIsSearchingApi] = useState(false);
 
   const [blockchain, setBlockchain] = useState('Polygon');
   const [token, setToken] = useState('USDC');
   
   // Recipient selection states
-  const initialRecipientName = route.params?.recipient || 'My Account';
-  const defaultRecipientObj = RECIPIENTS_LIST.find(r => r.name.toLowerCase() === initialRecipientName.toLowerCase()) || RECIPIENTS_LIST[0];
+  const initialRecipientName = route.params?.recipient || '';
   
-  const [selectedRecipient, setSelectedRecipient] = useState(defaultRecipientObj);
+  const [selectedRecipient, setSelectedRecipient] = useState(null);
   const [isSearchingRecipient, setIsSearchingRecipient] = useState(false);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
   const [amount, setAmount] = useState('1');
@@ -64,31 +66,145 @@ export default function SendMoneyScreen() {
     }
   };
 
-  const filteredRecipients = RECIPIENTS_LIST.filter(r => {
+  // Fetch saved beneficiaries from Supabase
+  useEffect(() => {
+    const fetchBeneficiaries = async () => {
+      if (!session?.user?.id) return;
+      try {
+        const { data, error } = await supabase.from('beneficiaries').select('*').eq('user_id', session.user.id);
+        if (data) {
+          const formatted = data.map(b => ({
+            id: b.id,
+            name: `${b.first_name || ''} ${b.last_name || ''}`.trim(),
+            tag: b.relation || 'BENEFICIARY',
+            address: b.evm_address || b.solana_address || b.phone || b.email,
+            evm_address: b.evm_address,
+            solana_address: b.solana_address,
+            avatar_url: b.avatar_url
+          }));
+          
+          const combined = [];
+          if (user?.role === 'merchant') {
+            combined.push({ id: 'self', name: 'My Account', tag: 'SELF', address: user?.walletAddress || 'My Account' });
+          }
+          setSavedBeneficiaries([...combined, ...formatted]);
+          
+          if (initialRecipientName) {
+            const initialMatch = [...combined, ...formatted].find(r => r.name.toLowerCase() === initialRecipientName.toLowerCase());
+            if (initialMatch) setSelectedRecipient(initialMatch);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching beneficiaries:', err);
+      }
+    };
+    fetchBeneficiaries();
+  }, [session, user?.role, user?.walletAddress, initialRecipientName]);
+
+  useEffect(() => {
+    const fetchApiRecipients = async () => {
+      if (searchQuery.length > 5 && !isNaN(searchQuery.replace(/[^0-9]/g, ''))) {
+        setIsSearchingApi(true);
+        try {
+          let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
+          if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
+          
+          const res = await fetch(`${DIZZY_URL}/wallet/lookup-by-phone?phone=${encodeURIComponent(searchQuery)}`, {
+            headers: { 'Authorization': `Bearer ${session?.access_token}` }
+          });
+          const data = await res.json();
+          if (res.ok && data.matches) {
+            setApiRecipients(data.matches.map(m => ({
+              id: m.id,
+              name: m.name,
+              tag: 'DizzitUp',
+              address: m.phone || m.evm_address || 'Utilisateur',
+              evm_address: m.evm_address,
+              solana_address: m.solana_address
+            })));
+          }
+        } catch (e) {
+          console.error(e);
+        } finally {
+          setIsSearchingApi(false);
+        }
+      } else {
+        setApiRecipients([]);
+      }
+    };
+    const timeout = setTimeout(fetchApiRecipients, 500);
+    return () => clearTimeout(timeout);
+  }, [searchQuery, session]);
+
+  const filteredRecipients = [...apiRecipients, ...savedBeneficiaries].filter(r => {
     const q = searchQuery.toLowerCase();
-    return r.name.toLowerCase().includes(q) || r.address.toLowerCase().includes(q) || r.tag.toLowerCase().includes(q);
+    return r.name.toLowerCase().includes(q) || (r.address && r.address.toLowerCase().includes(q)) || (r.tag && r.tag.toLowerCase().includes(q));
   });
 
   const handleSelectRecipient = (item) => {
     setSelectedRecipient(item);
     setIsSearchingRecipient(false);
+    setIsDropdownVisible(false);
     setSearchQuery('');
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!amount || parseFloat(amount) <= 0) {
-      setToast({ title: 'Montant invalide', message: 'Veuillez saisir un montant supérieur à 0.' });
+      setToast({ title: t('wallet.invalid_amount', 'Montant invalide'), message: t('common.wallet.amount_greater_zero', 'Veuillez saisir un montant supérieur à 0.') });
       return;
     }
-    const finalName = selectedRecipient ? selectedRecipient.name : (searchQuery || 'My Business');
-    const finalAddress = selectedRecipient ? selectedRecipient.address : '0x48b3...6A3d';
     
-    navigation.navigate('SendMoneySuccessScreen', {
-      amount,
-      token,
-      recipient: finalName,
-      hash: finalAddress,
-    });
+    let toAddress = selectedRecipient ? (selectedRecipient.evm_address || selectedRecipient.solana_address || selectedRecipient.address) : searchQuery;
+    if (toAddress === 'My Account') {
+      toAddress = user?.walletAddress;
+      if (!toAddress) {
+        setToast({ title: 'Erreur', message: 'Adresse du compte introuvable.' });
+        return;
+      }
+    }
+    if (!toAddress || toAddress.includes('...')) {
+      setToast({ title: t('wallet.invalid_address', 'Adresse invalide'), message: t('wallet.invalid_address_message', 'Veuillez sélectionner un destinataire valide.') });
+      return;
+    }
+
+    setIsSending(true);
+    try {
+      let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
+      if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
+      
+      const payload = {
+        toAddress,
+        amount: parseFloat(amount),
+        token,
+        chain: blockchain,
+        metadata: { recipientName: selectedRecipient ? selectedRecipient.name : searchQuery }
+      };
+
+      const res = await fetch(`${DIZZY_URL}/wallet/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Erreur lors de l\'envoi');
+      }
+
+      navigation.navigate('SendMoneySuccessScreen', {
+        amount,
+        token,
+        recipient: selectedRecipient ? selectedRecipient.name : searchQuery,
+        hash: data.txHash || data.transaction?.id || 'Transaction validée',
+      });
+    } catch (e) {
+      setToast({ title: 'Erreur', message: e.message });
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -102,10 +218,10 @@ export default function SendMoneyScreen() {
           </TouchableOpacity>
           
           <View style={styles.headerTitleWrap}>
-            <Text style={styles.headerTitle}>Envoyer des fonds</Text>
+            <Text style={styles.headerTitle}>{t('pos.send_funds_title', 'Envoyer des fonds')}</Text>
             <View style={styles.secureTagRow}>
               <View style={styles.greenDot} />
-              <Text style={styles.secureTagText}>SÉCURISÉ</Text>
+              <Text style={styles.secureTagText}>{t('pos.secure_caps', 'SÉCURISÉ')}</Text>
             </View>
           </View>
 
@@ -123,21 +239,20 @@ export default function SendMoneyScreen() {
           </View>
         </View>
 
-        <ScrollView style={styles.mainScroll} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        <ScrollView style={styles.mainScroll} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           
           {/* Main White Form Card */}
           <View style={styles.formCard}>
             
-            {/* Green Alert Banner */}
             <View style={styles.alertBanner}>
               <Ionicons name="information-circle-outline" size={18} color="#15803D" style={{ marginRight: 8 }} />
               <Text style={styles.alertBannerText}>
-                Destinataire défini : {selectedRecipient ? selectedRecipient.name : (searchQuery || 'Mon compte')}
+                Destinataire défini : {selectedRecipient ? selectedRecipient.name : (searchQuery || 'Aucun')}
               </Text>
             </View>
 
             {/* Section 1: CHOISIR LA BLOCKCHAIN */}
-            <Text style={styles.fieldLabel}>CHOISIR LA BLOCKCHAIN</Text>
+            <Text style={styles.fieldLabel}>{t('pos.select_blockchain', 'CHOISIR LA BLOCKCHAIN')}</Text>
             <View style={styles.selectBoxRow}>
               <View style={[styles.tokenIconBadge, { backgroundColor: '#8247E5' }]}>
                 <Ionicons name="cube-outline" size={16} color="#FFFFFF" />
@@ -146,14 +261,14 @@ export default function SendMoneyScreen() {
                 value={blockchain}
                 options={BLOCKCHAINS}
                 onChange={(val) => setBlockchain(val)}
-                title="Sélectionner la Blockchain"
+                title={t('common.wallet.select_chain', 'Sélectionner la Blockchain')}
                 style={styles.appSelectFlex}
                 textStyle={styles.selectTextBold}
               />
             </View>
 
             {/* Section 2: Jeton */}
-            <Text style={styles.fieldLabel}>Jeton</Text>
+            <Text style={styles.fieldLabel}>{t('pos.token_caps', 'JETON')}</Text>
             <View style={styles.selectBoxRow}>
               <View style={[styles.tokenIconBadge, { backgroundColor: '#2775CA' }]}>
                 <Ionicons name="logo-usd" size={16} color="#FFFFFF" />
@@ -162,14 +277,14 @@ export default function SendMoneyScreen() {
                 value={token}
                 options={CRYPTO_TOKENS}
                 onChange={(val) => setToken(val)}
-                title="Sélectionner un jeton crypto"
+                title={t('pos.choose_currency', 'Sélectionner un jeton crypto')}
                 style={styles.appSelectFlex}
                 textStyle={styles.selectTextBold}
               />
             </View>
 
             {/* Section 3: Adresse du destinataire (Search & Dropdown vs Picked Card) */}
-            <Text style={styles.fieldLabel}>Adresse du destinataire</Text>
+            <Text style={styles.fieldLabel}>{t('pos.recipient_address_caps', 'ADRESSE DU DESTINATAIRE')}</Text>
 
             {(!selectedRecipient || isSearchingRecipient) ? (
               <View style={styles.searchSectionWrapper}>
@@ -178,10 +293,12 @@ export default function SendMoneyScreen() {
                   <Ionicons name="search-outline" size={20} color="#F59E0B" style={{ marginRight: 8 }} />
                   <TextInput
                     style={styles.searchInputField}
-                    placeholder="Rechercher par nom ou téléphone..."
+                    placeholder={t('common.wallet.search_beneficiary', 'Rechercher par nom ou téléphone...')}
                     placeholderTextColor="#94A3B8"
                     value={searchQuery}
                     onChangeText={setSearchQuery}
+                    onFocus={() => setIsDropdownVisible(true)}
+                    onBlur={() => setTimeout(() => setIsDropdownVisible(false), 200)}
                   />
 
                   {/* PASTE Button */}
@@ -190,14 +307,16 @@ export default function SendMoneyScreen() {
                   </TouchableOpacity>
 
                   {/* QR Code Icon Button */}
-                  <TouchableOpacity style={styles.qrCodeButton} onPress={() => setToast({ title: 'Scanner QR Code', message: 'Ouverture de l\'appareil photo...' })} activeOpacity={0.8}>
+                  <TouchableOpacity style={styles.qrCodeButton} onPress={() => setToast({ title: t('common.wallet.scan_to_pay', 'Scanner QR Code'), message: 'Ouverture de l\'appareil photo...' })} activeOpacity={0.8}>
                     <Ionicons name="qr-code-outline" size={18} color="#0F172A" />
                   </TouchableOpacity>
                 </View>
 
                 {/* Recipient Dropdown List Box */}
-                <View style={styles.dropdownListBox}>
-                  <ScrollView nestedScrollEnabled style={{ maxHeight: 220 }} showsVerticalScrollIndicator={true}>
+                {isDropdownVisible && (
+                  <View style={styles.dropdownListBox}>
+                    <View style={{ paddingVertical: 8 }}>
+                      {isSearchingApi && <ActivityIndicator color="#0F172A" style={{ marginVertical: 10 }} />}
                     
                     {/* Item 0: Ajouter un bénéficiaire permanent */}
                     <TouchableOpacity 
@@ -209,7 +328,7 @@ export default function SendMoneyScreen() {
                         <Ionicons name="person-add-outline" size={18} color="#D97706" />
                       </View>
                       <View style={styles.recipientTextWrap}>
-                        <Text style={styles.addPermanentTitle}>Ajouter un bénéficiaire permanent</Text>
+                        <Text style={styles.addPermanentTitle}>{t('common.wallet.add_new_beneficiary', 'Ajouter un bénéficiaire permanent')}</Text>
                         <Text style={styles.addPermanentSubtitle}>Add to permanent records</Text>
                       </View>
                     </TouchableOpacity>
@@ -231,15 +350,16 @@ export default function SendMoneyScreen() {
                             <View style={styles.tagBadge}>
                               <Text style={styles.tagBadgeText}>{item.tag}</Text>
                             </View>
-                            <Text style={styles.dropdownAddressText} numberOfLines={1} ellipsisMode="middle">
+                            <Text style={styles.dropdownAddressText} numberOfLines={1} ellipsizeMode="middle">
                               {item.address}
                             </Text>
                           </View>
                         </View>
                       </TouchableOpacity>
                     ))}
-                  </ScrollView>
+                  </View>
                 </View>
+                )}
               </View>
             ) : (
               /* Selected Recipient Card with Clear (x) Button */
@@ -250,14 +370,17 @@ export default function SendMoneyScreen() {
                 
                 <View style={styles.recipientInfoWrap}>
                   <Text style={styles.recipientName}>{selectedRecipient.name}</Text>
-                  <Text style={styles.recipientAddress} numberOfLines={1} ellipsisMode="middle">
+                  <Text style={styles.recipientAddress} numberOfLines={1} ellipsizeMode="middle">
                     {selectedRecipient.address}
                   </Text>
                 </View>
 
                 <TouchableOpacity 
                   style={styles.clearRecipientBtn}
-                  onPress={() => setIsSearchingRecipient(true)}
+                  onPress={() => {
+                    setIsSearchingRecipient(true);
+                    setIsDropdownVisible(true);
+                  }}
                   activeOpacity={0.7}
                 >
                   <Ionicons name="close" size={16} color="#64748B" />
@@ -267,9 +390,9 @@ export default function SendMoneyScreen() {
 
             {/* Section 4: Montant & Solde disponible */}
             <View style={styles.amountHeaderRow}>
-              <Text style={styles.fieldLabelNoMargin}>Montant</Text>
+              <Text style={styles.fieldLabelNoMargin}>{t('common.wallet.amount', 'Montant')}</Text>
               <View style={styles.availableBadge}>
-                <Text style={styles.availableBadgeText}>Disponible: 1.0000 {token}</Text>
+                <Text style={styles.availableBadgeText}>{t('common.wallet.available', 'Disponible')}: 1.0000 {token}</Text>
               </View>
             </View>
 
@@ -286,9 +409,13 @@ export default function SendMoneyScreen() {
             </View>
 
             {/* Main CTA Button */}
-            <TouchableOpacity style={styles.sendCtaBtn} onPress={handleSend} activeOpacity={0.88}>
-              <Ionicons name="paper-plane-outline" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
-              <Text style={styles.sendCtaText}>Envoyer {token}</Text>
+            <TouchableOpacity style={styles.sendCtaBtn} onPress={handleSend} activeOpacity={0.88} disabled={isSending}>
+              {isSending ? <ActivityIndicator color="#FFFFFF" /> : (
+                <>
+                  <Ionicons name="paper-plane-outline" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+                  <Text style={styles.sendCtaText}>{t('pos.send_token', 'Envoyer')} {token}</Text>
+                </>
+              )}
             </TouchableOpacity>
 
           </View>
@@ -334,7 +461,7 @@ const styles = StyleSheet.create({
   /* Recipient Search Section (Exact Mockup Match) */
   searchSectionWrapper: { marginBottom: 20 },
   searchInputBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 2, borderColor: '#0F172A', borderRadius: 16, paddingHorizontal: 12, height: 50, marginBottom: 10 },
-  searchInputField: { flex: 1, fontFamily: 'Inter_500Medium', fontSize: 13, color: '#0F172A', outlineStyle: 'none' },
+  searchInputField: { flex: 1, fontFamily: 'Inter_500Medium', fontSize: 13, color: '#0F172A' },
   pasteButton: { backgroundColor: '#F1F5F9', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, marginRight: 6 },
   pasteButtonText: { fontFamily: 'Inter_700Bold', fontSize: 10, color: '#475569', letterSpacing: 0.5 },
   qrCodeButton: { width: 32, height: 32, borderRadius: 8, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },

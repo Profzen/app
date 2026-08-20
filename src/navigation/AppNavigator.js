@@ -45,6 +45,7 @@ import SendMoneySummaryScreen from '../screens/SendMoneySummaryScreen';
 import ShopDetailsScreen from '../screens/ShopDetailsScreen';
 import ShopProductsScreen from '../screens/ShopProductsScreen';
 import ShopsScreen from '../screens/ShopsScreen';
+import ReferBusinessScreen from '../screens/ReferBusinessScreen';
 import SuccessScreen from '../screens/SuccessScreen';
 import SwapTokensScreen from '../screens/SwapTokensScreen';
 import TopUpDetailsScreen from '../screens/TopUpDetailsScreen';
@@ -136,6 +137,7 @@ export default function AppNavigator() {
       <Stack.Screen name="ProductDetailsScreen" component={ProductDetailsScreen} />
       <Stack.Screen name="ReceiveFundsScreen" component={ReceiveFundsScreen} />
       <Stack.Screen name="ReceiveFundsV2Screen" component={ReceiveFundsV2Screen} />
+      <Stack.Screen name="ReferBusinessScreen" component={ReferBusinessScreen} />
       <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
       <Stack.Screen name="ResetPasswordCodeScreen" component={ResetPasswordCodeScreen} />
       <Stack.Screen name="ResetPasswordEmailScreen" component={ResetPasswordEmailScreen} />

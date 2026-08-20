@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   aminataBubble: { alignSelf: 'flex-start' },
   userBubble: { alignSelf: 'flex-end', flexDirection: 'row-reverse' },
   msgAvatarCircle: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#1A2840', alignItems: 'center', justifyContent: 'center', marginRight: 8, marginTop: 4 },
-  bubbleContent: { borderRadius: 16, paddingHorizontal: 14, paddingVertical: 10 },
+  bubbleContent: { borderRadius: 16, paddingHorizontal: 14, paddingVertical: 10, flexShrink: 1 },
   aminataBubbleContent: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0F2F5' },
   userBubbleContent: { backgroundColor: '#FFC759' },
   msgText: { fontFamily: 'Inter_400Regular', fontSize: 14, lineHeight: 20 },

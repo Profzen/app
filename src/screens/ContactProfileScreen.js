@@ -274,7 +274,7 @@ export default function ContactProfileScreen({ route }) {
           <View style={styles.activityContainerCard}>
             <TouchableOpacity style={styles.activityRow} onPress={() => navigation.navigate('ContactHistoryScreen')}>
               <View style={[styles.activityIconCircle, { backgroundColor: '#DCFCE7' }]}>
-                <Ionicons name="arrow-up-right-outline" size={18} color="#10B981" />
+                <Ionicons name="arrow-up-circle-outline" size={18} color="#10B981" />
               </View>
               <View style={styles.activityMainContent}>
                 <Text style={styles.activityItemTitle}>Vous avez envoyé de l'argent</Text>

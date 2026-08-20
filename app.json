@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "DizzitUp",
+    "name": "DizzitApp",
     "slug": "dizzitapp-v2",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/brand/dizzitup_logo_cercle_cropped.png",
     "splash": {
       "image": "./assets/brand/dizzitup_logo_cercle.png",
       "resizeMode": "contain",

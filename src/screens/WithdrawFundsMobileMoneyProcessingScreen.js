@@ -1,16 +1,88 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useEffect } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useApp } from '../context/AppContext';
 
 export default function WithdrawFundsMobileMoneyProcessingScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
+  const { amount, currency, selectedToken, selectedNetwork, selectedMethod } = route.params || {};
+  const { user, session } = useApp();
 
   useEffect(() => {
-    const timer = setTimeout(() => navigation.navigate('WithdrawFundsMobileMoneySuccessScreen'), 3500);
-    return () => clearTimeout(timer);
-  }, [navigation]);
+    let isMounted = true;
+    const processCashout = async () => {
+      try {
+        const token = session?.access_token || '';
+        let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
+        if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) {
+          DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
+        }
+        
+        // 1. Get Wallet Address
+        const syncRes = await fetch(`${DIZZY_URL}/wallet/sync-smart-address`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const syncData = await syncRes.json();
+        if (!syncRes.ok || !syncData.success) throw new Error('Failed to fetch wallet address');
+        
+        const walletAddress = selectedNetwork?.toLowerCase() === 'solana' ? syncData.solanaAddress : syncData.evmAddress;
+        
+        // 2. Perform Cashout
+        let response;
+        if (selectedMethod === 'mobile') {
+          const phone = user?.phone || "+254712345678";
+          
+          response = await fetch(`${DIZZY_URL}/momo/wallet/cashout`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({
+              amount: parseFloat(amount?.toString().replace(/\s/g, '') || '0'),
+              currency: selectedToken || 'USDC',
+              country: user?.country || 'TG', 
+              walletAddress,
+              payoutMethod: 'momo',
+              payoutDetails: { phoneNumber: phone, network: "momo" }
+            })
+          });
+        } else {
+          response = await fetch(`${DIZZY_URL}/offramp/create-order`, {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+             body: JSON.stringify({
+               amount: parseFloat(amount?.toString().replace(/\s/g, '') || '0'),
+               token: selectedToken || 'USDC',
+               chain: selectedNetwork?.toLowerCase() || 'polygon',
+               walletAddress,
+               email: user?.email,
+               paymentMethod: 'bank'
+             })
+          });
+        }
+        
+        const data = await response.json();
+        if (!response.ok || (data.success === false && !data.comingSoon)) {
+           throw new Error(data.error || data.message || "Failed to create cashout order");
+        }
+        
+        if (isMounted) {
+          navigation.navigate('WithdrawFundsMobileMoneySuccessScreen');
+        }
+      } catch (err) {
+        console.error("Cashout API error:", err);
+        if (isMounted) {
+          Alert.alert("Erreur", err.message || "Le retrait a échoué", [
+            { text: "OK", onPress: () => navigation.goBack() }
+          ]);
+        }
+      }
+    };
+    
+    processCashout();
+    return () => { isMounted = false; };
+  }, [navigation, amount, selectedToken, selectedNetwork, selectedMethod, user, session]);
 
   return (
     <SafeAreaView style={styles.safeArea}>

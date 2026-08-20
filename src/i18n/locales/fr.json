@@ -602,7 +602,7 @@
       "total_balance": "Solde Total",
       "all_assets": "Tous vos actifs au même endroit",
       "quick_actions": "Actions Rapides",
-      "wallet_addresses": "Adresses du Portefeuille",
+      "wallet_addresses": "Adresses du portefeuille",
       "token_balances": "Soldes des Jetons",
       "send_receive": "Envoyer/Recevoir",
       "buy_crypto": "Recharger",
@@ -871,7 +871,9 @@
         "buy": "Acheter",
         "sell": "Vendre"
       },
-      "view_onchain": "Explorateur"
+      "view_onchain": "Explorateur",
+      "synchronizing_addresses": "Synchronisation des nœuds sécurisés...",
+      "no_addresses_yet": "Votre portefeuille sécurisé est en préparation. Les adresses apparaîtront ici sous peu."
     },
     "marketplace": "Marché",
     "search": "Rechercher",
@@ -3631,5 +3633,17 @@
     "cancel": "Annuler",
     "confirm": "Confirmer",
     "loginWithBiometrics": "Se connecter avec la biométrie"
+  },
+  "receiveFunds": {
+    "title": "Recevoir des fonds",
+    "secure": "SÉCURISÉ",
+    "select_blockchain": "SÉLECTIONNER LA BLOCKCHAIN",
+    "your_address": "VOTRE ADRESSE",
+    "copy": "COPIER",
+    "copied": "COPIÉ ✔",
+    "share": "PARTAGER",
+    "scan_to_pay": "Scanner pour payer",
+    "view_address": "VOIR L'ADRESSE",
+    "scan": "SCANNER"
   }
 }
