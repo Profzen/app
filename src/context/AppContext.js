@@ -29,6 +29,28 @@ export function AppProvider({ children }) {
   const [session, setSession] = useState(null);
   const [isAppLocked, setIsAppLocked] = useState(false);
   const [isCheckingLock, setIsCheckingLock] = useState(true);
+  const [appSettings, setAppSettings] = useState({
+    support_email: 'support@dizzitup.com',
+    whatsapp_number: '+228 90 00 00 00',
+    help_center_url: 'dizzitup.com/faq'
+  });
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('app_settings')
+          .select('*')
+          .maybeSingle();
+        if (data && !error) {
+          setAppSettings(prev => ({ ...prev, ...data }));
+        }
+      } catch (err) {
+        console.log("Error fetching app settings:", err);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   useEffect(() => {
     const checkLockState = async () => {
@@ -317,7 +339,8 @@ export function AppProvider({ children }) {
       isAppLocked,
       setIsAppLocked,
       isCheckingLock,
-      updateUserProfile
+      updateUserProfile,
+      appSettings
     }}>
       {children}
     </AppContext.Provider>

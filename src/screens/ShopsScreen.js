@@ -2,7 +2,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Image, ImageBackground, Platform, StatusBar, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Image, ImageBackground, Platform, StatusBar, ActivityIndicator, Dimensions } from 'react-native';
 import { useBuyGoods } from '../hooks/useBuyGoods';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
@@ -11,6 +11,7 @@ import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
 
+const { width } = Dimensions.get('window');
 
 const getFlagCode = (lang) => {
   switch (lang) {
@@ -23,55 +24,72 @@ const getFlagCode = (lang) => {
 };
 
 const getQuickActions = (t) => [
-  { id: '1', title: t('qaReferTitle', 'Réfer a\nbusiness/Shop'), subtitle: t('qaReferSub', 'Partagez et\nsoutenez le\ncommerce'), icon: 'add-outline', color: '#F59E0B', iconBg: '#FFFBEB' },
-  { id: '2', title: t('qaMyShopsTitle', 'Mes shops'), subtitle: t('qaMyShopsSub', 'Voir les shops avec\nlesquels je traite'), icon: 'bag-handle-outline', color: '#10B981', iconBg: '#ECFDF5' },
-  { id: '3', title: t('qaNearbyTitle', 'Shops à\nproximité'), subtitle: t('qaNearbySub', 'Découvrez les shops\nprès de vous'), icon: 'location-outline', color: '#3B82F6', iconBg: '#EFF6FF' },
-  { id: '4', title: t('qaNewShopsTitle', 'Nouveaux\nshops'), subtitle: t('qaNewShopsSub', 'New Shops &\nBusinesses'), icon: 'storefront-outline', color: '#8B5CF6', iconBg: '#F5F3FF' },
+  { id: '1', title: t('qaReferTitle', 'Refer a\nbusiness/Shop'), subtitle: t('qaReferSub', 'Share and\nsupport\ncommerce'), icon: 'add-outline', color: '#F59E0B', iconBg: '#FFFBEB' },
+  { id: '2', title: t('qaMyShopsTitle', 'My Shops'), subtitle: t('qaMyShopsSub', 'View shops I\ndeal with'), icon: 'bag-handle-outline', color: '#10B981', iconBg: '#ECFDF5' },
+  { id: '3', title: t('qaNearbyTitle', 'Nearby\nShops'), subtitle: t('qaNearbySub', 'Discover shops\nnear you'), icon: 'location-outline', color: '#3B82F6', iconBg: '#EFF6FF' },
+  { id: '4', title: t('qaNewShopsTitle', 'New\nShops'), subtitle: t('qaNewShopsSub', 'New Shops &\nBusinesses'), icon: 'storefront-outline', color: '#8B5CF6', iconBg: '#F5F3FF' },
 ];
-
-const FILTER_ITEMS = [
-  { id: 'Tout', label: 'À proximité', icon: 'location-outline', iconColor: '#1A2840' },
-  { id: 'Mobile', label: 'Mobile & Utilities', icon: 'phone-portrait-outline', iconColor: '#8B5CF6' },
-  { id: 'Électronique', label: 'Digital & Services', icon: 'laptop-outline', iconColor: '#3B82F6' },
-  { id: 'Goods', label: 'Goods', icon: 'bag-handle-outline', iconColor: '#10B981' },
-];
-
-
 
 export default function ShopsScreen() {
   const navigation = useNavigation();
   const { language, toggleLanguage, t } = useApp();
   const { loading, error, fetchMerchants } = useBuyGoods();
   const [shopsList, setShopsList] = useState([]);
+  const [categories] = useState([
+    { id: 'Tout', label: t('shopsFilterAll', 'All Shops'), icon: 'apps', iconColor: '#FFC759' },
+    { id: 'Alimentation', label: t('shopsFilterFood', 'Food & Groceries'), icon: 'restaurant-outline', iconColor: '#FFC759' },
+    { id: 'Électronique', label: t('shopsFilterTech', 'Electronics'), icon: 'laptop-outline', iconColor: '#FFC759' },
+    { id: 'Mode', label: t('shopsFilterFashion', 'Fashion'), icon: 'shirt-outline', iconColor: '#FFC759' },
+    { id: 'Services', label: t('shopsFilterServices', 'Services'), icon: 'briefcase-outline', iconColor: '#FFC759' }
+  ]);
   const [activeSubNav, setActiveSubNav] = useState('shops');
   const [query, setQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('Tout');
   const [toast, setToast] = useState(null);
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [bannerSlide, setBannerSlide] = useState(0);
-  const [displayedCount, setDisplayedCount] = useState(5);
+  const [displayedCount, setDisplayedCount] = useState(6);
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
 
   useEffect(() => {
     const loadMerchants = async () => {
       const data = await fetchMerchants(query);
-      const mapped = data.map((m, i) => ({
-        id: m.id || String(i),
-        name: m.shop_name || 'Boutique DizzitUp',
-        logoBg: '#1A2840',
-        logoText: m.shop_name ? m.shop_name.substring(0, 3).toUpperCase() : 'DZY',
-        logoUrl: m.shop_logo_url,
-        type: m.shop_categories || 'Marketplace • Shopping',
-        location: `${m.city_village || 'Local'}, ${m.country || 'Global'}`,
-        distance: 'Local',
-        flag: m.country ? getCountryCurrencyInfo(m.country).code.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)) : '🌍',
-        badges: [{ text: t('shopBadgeDelivery', 'Delivery'), color: '#10B981', bg: '#ECFDF5' }],
-        category: 'Marketplace',
-        categoryColor: '#8B5CF6',
-        categoryBg: '#F5F3FF',
-        rating: '4.8',
-        reviews: '100+',
-        raw: m
-      }));
+      const catsSet = new Set();
+
+      const mapped = data.map((m, i) => {
+        let catArray = ['Marketplace'];
+        if (m.shop_categories) {
+          if (Array.isArray(m.shop_categories)) catArray = m.shop_categories;
+          else if (typeof m.shop_categories === 'string') catArray = m.shop_categories.split(',').map(c => c.trim());
+        }
+        const mainCat = catArray[0] || 'Marketplace';
+        const allCatsString = catArray.join(' ').toLowerCase();
+        catsSet.add(mainCat);
+
+        return {
+          id: m.id || String(i),
+          name: m.shop_name || 'Boutique DizzitUp',
+          logoBg: '#1A2840',
+          logoText: m.shop_name ? m.shop_name.substring(0, 3).toUpperCase() : 'DZY',
+          logoUrl: m.shop_logo_url,
+          bannerUrl: m.shop_banner_url,
+          type: m.shop_categories || 'Marketplace • Shopping',
+          location: `${m.city_village || 'Local'}, ${m.country || 'Global'}`,
+          country: m.country,
+          distance: 'Local',
+          flag: m.country ? getCountryCurrencyInfo(m.country).code.toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)) : '🌍',
+          badges: [{ text: t('shopBadgeDelivery', 'Delivery'), color: '#10B981', bg: '#ECFDF5' }],
+          category: mainCat,
+          allCategories: allCatsString,
+          categoryColor: '#8B5CF6',
+          categoryBg: '#F5F3FF',
+          rating: '4.8',
+          reviews: '100+',
+          createdAt: m.created_at,
+          raw: m
+        };
+      });
+
       setShopsList(mapped);
     };
 
@@ -79,7 +97,7 @@ export default function ShopsScreen() {
       loadMerchants();
     }, 400);
     return () => clearTimeout(timeoutId);
-  }, [query, fetchMerchants]);
+  }, [query, fetchMerchants, t]);
 
   useEffect(() => {
     if (!isBannerVisible) return;
@@ -89,18 +107,58 @@ export default function ShopsScreen() {
     return () => clearInterval(interval);
   }, [isBannerVisible]);
 
-  const filteredShops = shopsList.filter((shop) => shop.name.toLowerCase().includes(query.trim().toLowerCase()) && (activeFilter === 'Tout' || (activeFilter === 'Électronique' ? shop.category === 'Électronique' : activeFilter === 'Goods' ? ['Marketplace', 'Supermarché'].includes(shop.category) : true)));
+  let filteredShops = shopsList.filter((shop) => {
+    const shopCat = (shop.allCategories || shop.category || '').toLowerCase();
+    const matchQuery = shop.name.toLowerCase().includes(query.trim().toLowerCase());
+    
+    let matchFilter = false;
+    if (activeFilter === 'Tout') {
+      matchFilter = true;
+    } else if (activeFilter === 'Alimentation') {
+      matchFilter = ['food', 'restaurant', 'retail', 'merchant', 'agriculture', 'farming', 'supermarché', 'grocer'].some(k => shopCat.includes(k));
+    } else if (activeFilter === 'Électronique') {
+      matchFilter = ['it ', 'software', 'electronic', 'tech', 'solar', 'renewable', 'digital', 'mobile'].some(k => shopCat.includes(k));
+    } else if (activeFilter === 'Mode') {
+      matchFilter = ['fashion', 'clothing', 'beauty', 'cosmetic', 'mode'].some(k => shopCat.includes(k));
+    } else if (activeFilter === 'Services') {
+      matchFilter = ['consulting', 'professional', 'content', 'design', 'influencer', 'accounting', 'finance', 'legal', 'export', 'logistics', 'marketing', 'seo', 'freelance', 'writing', 'translation', 'healthcare', 'medical', 'home', 'furniture', 'education', 'training', 'art', 'creative', 'travel', 'tourism', 'automotive', 'event', 'ticketing', 'hotel', 'b&b', 'service'].some(k => shopCat.includes(k));
+    }
+
+    return matchQuery && matchFilter;
+  });
+
+  if (activeSubNav === 'new') {
+    filteredShops.sort((a, b) => new Date(b.createdAt || 0) > new Date(a.createdAt || 0) ? -1 : 1);
+  } else if (activeSubNav === 'nearby') {
+    filteredShops.sort((a, b) => (a.country || '').localeCompare(b.country || ''));
+  }
+
   const visibleShops = filteredShops.slice(0, displayedCount);
 
   const handleLoadMore = () => {
     if (displayedCount >= filteredShops.length) {
-      setToast({ title: language === 'fr' ? 'Toutes les boutiques' : 'All Shops Loaded', message: language === 'fr' ? 'Toutes les boutiques partenaires sont actuellement affichées.' : 'All partner shops are currently displayed.' });
+      setToast({ title: t('shopsNoMoreTitle', 'All Shops Loaded'), message: t('shopsNoMoreMessage', 'All partner shops are currently displayed.') });
     } else {
-      setDisplayedCount(prev => prev + 5);
+      setDisplayedCount(prev => prev + 6);
     }
   };
 
-  const runQuickAction = (id) => { if (id === '1') setToast({ title: language === 'fr' ? 'Référencement démarré' : 'Referral started', message: language === 'fr' ? 'Le formulaire de recommandation est prêt.' : 'The referral form is ready.' }); else if (id === '2') setActiveSubNav('shops'); else if (id === '3') { setActiveFilter('Tout'); setToast({ title: language === 'fr' ? 'À proximité' : 'Nearby', message: language === 'fr' ? 'Les commerces sont classés selon votre position simulée.' : 'Shops sorted by your location.' }); } else setActiveSubNav('new'); };
+  const runQuickAction = (id) => { 
+    if (id === '1') {
+      navigation.navigate('ReferBusinessScreen');
+    } else if (id === '2') {
+      setActiveSubNav('shops');
+      setActiveFilter('Tout');
+      setQuery('');
+    } else if (id === '3') { 
+      setActiveFilter('Tout'); 
+      setActiveSubNav('nearby');
+      setToast({ title: t('qaNearbyToastTitle', 'Nearby'), message: t('qaNearbyToastMessage', 'Shops sorted by location.') }); 
+    } else {
+      setActiveFilter('Tout');
+      setActiveSubNav('new');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -134,7 +192,7 @@ export default function ShopsScreen() {
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
           <Text style={styles.mainTitle}>{t('shopsTitle', 'Shops')}</Text>
-          <Text style={styles.subtitle}>{t('shopsSubtitle', 'Découvrez, payez et soutenez les entreprises africaines.')}</Text>
+          <Text style={styles.subtitle}>{t('shopsSubtitle', 'Discover, pay and support African businesses.')}</Text>
           <Text style={styles.acceptedTokensText}>
             <Text style={{ color: '#3B82F6' }}>{t('paymentCards', 'Cards')}</Text>  •  <Text style={{ color: '#3B82F6' }}>{t('paymentStablecoins', 'Stablecoins')}</Text>  •  <Text style={{ color: '#3B82F6' }}>{t('paymentMobileMoney', 'Mobile Money')}</Text>  {t('paymentAccepted', 'accepted')}
           </Text>
@@ -144,7 +202,7 @@ export default function ShopsScreen() {
             <Ionicons name="search-outline" size={18} color="#94A3B8" style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
-              placeholder={t('shopsSearchPlaceholder', 'Rechercher par nom, ville, pays ou catégorie...')}
+              placeholder={t('shopsSearchPlaceholder', 'Search by name, city, country or category...')}
               placeholderTextColor="#94A3B8"
               value={query}
               onChangeText={setQuery}
@@ -152,7 +210,7 @@ export default function ShopsScreen() {
           </View>
 
           {/* Actions rapides */}
-          <Text style={styles.sectionTitle}>{t('shopsQuickActions', 'Actions rapides')}</Text>
+          <Text style={styles.sectionTitle}>{t('shopsQuickActions', 'Quick Actions')}</Text>
           <View style={styles.quickActionsGrid}>
             {getQuickActions(t).map(action => (
               <TouchableOpacity key={action.id} style={styles.quickActionCard} onPress={() => runQuickAction(action.id)}>
@@ -165,18 +223,29 @@ export default function ShopsScreen() {
             ))}
           </View>
 
-          {/* Mes shops */}
+          {/* Mes shops & View Toggle */}
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>{language === 'fr' ? 'Mes shops' : 'My Shops'}</Text>
-            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={handleLoadMore}>
-              <Text style={styles.showAllText}>{language === 'fr' ? 'Voir plus' : 'See more'}</Text>
-              <Ionicons name="chevron-down" size={14} color="#1A2840" style={{ marginLeft: 4 }} />
-            </TouchableOpacity>
+            <Text style={styles.sectionTitle}>{activeSubNav === 'new' ? t('qaNewShopsTitle', 'New Shops').replace('\n', ' ') : t('qaMyShopsTitle', 'My Shops')}</Text>
+            
+            <View style={styles.viewToggleContainer}>
+              <TouchableOpacity 
+                style={[styles.viewToggleBtn, viewMode === 'grid' && styles.viewToggleBtnActive]} 
+                onPress={() => setViewMode('grid')}
+              >
+                <Ionicons name="grid" size={14} color={viewMode === 'grid' ? '#FFFFFF' : '#64748B'} />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.viewToggleBtn, viewMode === 'list' && styles.viewToggleBtnActive]} 
+                onPress={() => setViewMode('list')}
+              >
+                <Ionicons name="list" size={16} color={viewMode === 'list' ? '#FFFFFF' : '#64748B'} />
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Filters */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>
-            {FILTER_ITEMS.map((item) => {
+            {categories.map((item) => {
               const isActive = activeFilter === item.id;
               return (
                 <TouchableOpacity
@@ -189,9 +258,9 @@ export default function ShopsScreen() {
                 >
                   <Ionicons
                     name={item.icon}
-                    size={15}
-                    color={isActive ? '#FFFFFF' : item.iconColor}
-                    style={{ marginRight: 6 }}
+                    size={16}
+                    color={isActive ? '#FFC759' : '#FFC759'}
+                    style={{ marginRight: 8 }}
                   />
                   <Text
                     style={[
@@ -204,71 +273,112 @@ export default function ShopsScreen() {
                 </TouchableOpacity>
               );
             })}
-            <TouchableOpacity style={[styles.filterChip, { paddingHorizontal: 10 }]}>
-              <Ionicons name="options-outline" size={16} color="#1A2840" />
-            </TouchableOpacity>
           </ScrollView>
 
           {/* Shops List */}
           {loading && (
             <View style={{ padding: 20 }}>
               <ActivityIndicator size="large" color="#3B82F6" />
+              <Text style={{textAlign: 'center', marginTop: 10, color: '#64748B', fontFamily: 'Inter_500Medium', fontSize: 12}}>{t('shopsLoading', 'Loading...')}</Text>
             </View>
           )}
-          <View style={styles.shopsList}>
-            {visibleShops.map((shop, index) => (
-              <View key={shop.id}>
-                <TouchableOpacity style={styles.shopItem} onPress={() => navigation.navigate('ShopDetailsScreen', { shop: shop })}>
-
-                  {/* Logo */}
-                  {shop.logoUrl ? (
-                    <Image source={{ uri: shop.logoUrl }} style={styles.shopLogo} />
-                  ) : (
-                    <ImageBackground source={require('../../assets/brand/shop_placeholder.png')} style={[styles.shopLogo, { justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }]}>
-                      <Text style={[styles.shopLogoText, { color: '#FFC759', fontSize: 18, fontWeight: '900', letterSpacing: 1, textShadow: '1px 1.5px 5px rgba(0,0,0,0.9)' }]}>
-                        {shop.logoText}
-                      </Text>
-                    </ImageBackground>
-                  )}
-
-                  {/* Info Central */}
-                  <View style={styles.shopContent}>
-                    <View style={styles.shopTitleRow}>
-                      <Text style={styles.shopName} numberOfLines={1}>{shop.name}</Text>
-                      <Text style={styles.shopFlag}> {shop.flag}</Text>
+          
+          <View style={[styles.shopsContainer, viewMode === 'grid' && styles.shopsGridContainer]}>
+            {visibleShops.map((shop, index) => {
+              if (viewMode === 'grid') {
+                return (
+                  <TouchableOpacity key={shop.id} style={styles.shopGridCard} onPress={() => navigation.navigate('ShopDetailsScreen', { shop: shop })}>
+                    <View style={styles.shopGridImageContainer}>
+                      {shop.bannerUrl ? (
+                         <Image source={{ uri: shop.bannerUrl }} style={styles.shopGridBanner} />
+                      ) : (
+                         <View style={[styles.shopGridBanner, { backgroundColor: '#F1F5F9' }]} />
+                      )}
+                      
+                      <View style={styles.shopGridLogoWrapper}>
+                        {shop.logoUrl ? (
+                          <Image source={{ uri: shop.logoUrl }} style={styles.shopGridLogo} />
+                        ) : (
+                          <View style={[styles.shopGridLogo, { backgroundColor: '#1A2840', justifyContent: 'center', alignItems: 'center' }]}>
+                            <Text style={styles.shopLogoText}>{shop.logoText}</Text>
+                          </View>
+                        )}
+                      </View>
+                      
+                      <View style={[styles.categoryBadge, { position: 'absolute', top: 6, right: 6, backgroundColor: 'rgba(255,255,255,0.95)', paddingVertical: 2, paddingHorizontal: 6 }]}>
+                        <Text style={[styles.categoryBadgeText, { color: shop.categoryColor, fontSize: 8 }]} numberOfLines={1}>{shop.category}</Text>
+                      </View>
                     </View>
-                    <Text style={styles.shopType} numberOfLines={1}>{shop.type}</Text>
-                    <Text style={styles.shopLocation}>{shop.location} • {shop.distance}</Text>
+                    
+                    <View style={styles.shopGridContent}>
+                      <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2}}>
+                        <Text style={styles.shopGridName} numberOfLines={1}>{shop.name}</Text>
+                        <Text style={styles.shopFlag}>{shop.flag}</Text>
+                      </View>
+                      <Text style={styles.shopGridLocation} numberOfLines={1}>{shop.location}</Text>
+                      
+                      <View style={[styles.ratingRow, {marginTop: 6}]}>
+                        <Ionicons name="star" size={10} color="#F59E0B" />
+                        <Text style={[styles.ratingText, {fontSize: 10}]}> {shop.rating}</Text>
+                        <Text style={[styles.reviewsText, {fontSize: 9}]}> ({shop.reviews})</Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                );
+              } else {
+                return (
+                  <View key={shop.id}>
+                    <TouchableOpacity style={styles.shopItem} onPress={() => navigation.navigate('ShopDetailsScreen', { shop: shop })}>
+                      {/* Logo */}
+                      {shop.logoUrl ? (
+                        <Image source={{ uri: shop.logoUrl }} style={styles.shopLogo} />
+                      ) : (
+                        <ImageBackground source={require('../../assets/brand/shop_placeholder.png')} style={[styles.shopLogo, { justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }]}>
+                          <Text style={[styles.shopLogoText, { color: '#FFC759', fontSize: 18, fontWeight: '900', letterSpacing: 1 }]}>
+                            {shop.logoText}
+                          </Text>
+                        </ImageBackground>
+                      )}
 
-                    <View style={styles.badgesContainer}>
-                      {shop.badges.map((badge, bIndex) => (
-                        <View key={bIndex} style={[styles.badge, { backgroundColor: badge.bg }]}>
-                          <Text style={[styles.badgeText, { color: badge.color }]}>{badge.text}</Text>
+                      {/* Info Central */}
+                      <View style={styles.shopContent}>
+                        <View style={styles.shopTitleRow}>
+                          <Text style={styles.shopName} numberOfLines={1}>{shop.name}</Text>
+                          <Text style={styles.shopFlag}> {shop.flag}</Text>
                         </View>
-                      ))}
-                    </View>
-                  </View>
+                        <Text style={styles.shopType} numberOfLines={1}>{shop.type}</Text>
+                        <Text style={styles.shopLocation}>{shop.location} • {shop.distance}</Text>
 
-                  {/* Right side (Category, Rating, Chevron) */}
-                  <View style={styles.shopRight}>
-                    <View style={[styles.categoryBadge, { backgroundColor: shop.categoryBg }]}>
-                      <Text style={[styles.categoryBadgeText, { color: shop.categoryColor }]}>{shop.category}</Text>
-                    </View>
-                    <View style={styles.ratingRow}>
-                      <Ionicons name="star" size={12} color="#F59E0B" />
-                      <Text style={styles.ratingText}> {shop.rating}</Text>
-                      <Text style={styles.reviewsText}> ({shop.reviews})</Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={16} color="#9CA3AF" style={{ marginTop: 10 }} />
-                  </View>
+                        <View style={styles.badgesContainer}>
+                          {shop.badges.map((badge, bIndex) => (
+                            <View key={bIndex} style={[styles.badge, { backgroundColor: badge.bg }]}>
+                              <Text style={[styles.badgeText, { color: badge.color }]}>{badge.text}</Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
 
-                </TouchableOpacity>
-                {index < visibleShops.length - 1 && <View style={styles.divider} />}
-              </View>
-            ))}
+                      {/* Right side */}
+                      <View style={styles.shopRight}>
+                        <View style={[styles.categoryBadge, { backgroundColor: shop.categoryBg }]}>
+                          <Text style={[styles.categoryBadgeText, { color: shop.categoryColor }]}>{shop.category}</Text>
+                        </View>
+                        <View style={styles.ratingRow}>
+                          <Ionicons name="star" size={12} color="#F59E0B" />
+                          <Text style={styles.ratingText}> {shop.rating}</Text>
+                          <Text style={styles.reviewsText}> ({shop.reviews})</Text>
+                        </View>
+                        <Ionicons name="chevron-forward" size={16} color="#9CA3AF" style={{ marginTop: 10 }} />
+                      </View>
+                    </TouchableOpacity>
+                    {index < visibleShops.length - 1 && <View style={styles.divider} />}
+                  </View>
+                );
+              }
+            })}
           </View>
 
-          {/* Button Voir plus at the bottom of shop list */}
+          {/* Button Voir plus */}
           {displayedCount < filteredShops.length && (
             <TouchableOpacity
               style={{
@@ -285,8 +395,8 @@ export default function ShopsScreen() {
               }}
               onPress={handleLoadMore}
             >
-              <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#1E293B', marginRight: 6 }}>
-                {language === 'fr' ? `Voir plus (${filteredShops.length - displayedCount} restantes)` : `See more (${filteredShops.length - displayedCount} remaining)`}
+              <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#1E293B', marginRight: 6 }}>
+                {t('shopsSeeMore', 'See more')} ({filteredShops.length - displayedCount} {t('shopsRemaining', 'remaining')})
               </Text>
               <Ionicons name="chevron-down" size={16} color="#1E293B" />
             </TouchableOpacity>
@@ -331,13 +441,13 @@ export default function ShopsScreen() {
                   </TouchableOpacity>
                   <View style={styles.inviteContent}>
                     <Text style={styles.inviteTitle}>
-                      {language === 'fr' ? "Référencez un commerce\net gagnez " : "Refer a Store or Business\nand earn "}
+                      {language === 'fr' ? "Référencez un commerce\net gagnez " : "Refer a Store\nand earn "}
                       <Text style={{ color: '#10B981' }}>$10 in DZY</Text>
                     </Text>
                     <Text style={styles.inviteSubtitle}>
                       {language === 'fr' ? "Recommandez un business\net gagnez des récompenses." : "Refer a store or business\nand earn rewards."}
                     </Text>
-                    <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#10B981' }]} onPress={() => setToast({ title: language === 'fr' ? 'Référencer un shop' : 'Refer a store', message: language === 'fr' ? 'Formulaire de parrainage prêt.' : 'Referral form ready.' })}>
+                    <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#10B981' }]} onPress={() => navigation.navigate('ReferBusinessScreen')}>
                       <Text style={styles.inviteButtonText}>{language === 'fr' ? 'Référencer' : 'Refer now'}</Text>
                     </TouchableOpacity>
                   </View>
@@ -356,7 +466,7 @@ export default function ShopsScreen() {
           <View style={{ height: 40 }} />
         </ScrollView>
 
-        <BottomNavBar activeTab="shops" language="fr" />
+        <BottomNavBar activeTab="shops" language={language} />
         {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
       </View>
     </SafeAreaView>
@@ -368,7 +478,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: Platform.OS === 'android' ? 14 : 10, paddingBottom: 6 },
   logoContainer: { flexDirection: 'row', alignItems: 'center' },
-  circleLogo: { width: 34, height: 34, borderRadius: 17 },
   headerRightIcons: { flexDirection: 'row' },
   iconBtnRight: { width: 36, height: 36, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 12, borderWidth: 1, borderColor: '#F3F4F6', marginLeft: 8, position: 'relative' },
   notificationDot: { position: 'absolute', top: 5, right: 6, width: 12, height: 12, borderRadius: 6, backgroundColor: '#FFC759', borderWidth: 1, borderColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' },
@@ -386,19 +495,29 @@ const styles = StyleSheet.create({
   quickActionIconContainer: { width: 38, height: 38, borderRadius: 19, justifyContent: 'center', alignItems: 'center', marginBottom: 6 },
   quickActionTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 10, color: '#1A2840', textAlign: 'center', marginBottom: 2, lineHeight: 12 },
   quickActionSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 8, color: '#9CA3AF', textAlign: 'center', lineHeight: 10 },
-  sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 16 },
-  showAllText: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#1A2840' },
+  sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 16, marginBottom: 4 },
+  
+  viewToggleContainer: { flexDirection: 'row', backgroundColor: '#F1F5F9', borderRadius: 8, padding: 2 },
+  viewToggleBtn: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, justifyContent: 'center', alignItems: 'center' },
+  viewToggleBtnActive: { backgroundColor: '#1A2840' },
+  
   filtersScroll: { paddingHorizontal: 16, marginBottom: 14 },
-  filterChipActive: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A2840', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 18, marginRight: 8 },
-  filterChipTextActive: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#FFFFFF' },
-  filterChip: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 18, marginRight: 8 },
-  filterChipText: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#1A2840' },
-  shopsList: { paddingHorizontal: 16, marginBottom: 16 },
+  filterChipActive: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A2840', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, marginRight: 10, borderWidth: 1, borderColor: '#1A2840' },
+  filterChipTextActive: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#FFFFFF' },
+  filterChip: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, marginRight: 10 },
+  filterChipText: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#1A2840' },
+  
+  shopsContainer: { paddingHorizontal: 16, marginBottom: 16 },
+  shopsGridContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', paddingHorizontal: 16 },
+  
+  // List Item Styles
   shopItem: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#FFFFFF', paddingVertical: 12 },
   shopLogo: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   shopLogoText: { color: '#FFFFFF', fontFamily: 'SpaceGrotesk_700Bold', fontSize: 9, textAlign: 'center' },
   shopContent: { flex: 1 },
-  shopName: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#1A2840', marginBottom: 1 },
+  shopTitleRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 1 },
+  shopName: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#1A2840' },
+  shopFlag: { fontSize: 12, marginLeft: 4 },
   shopType: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#6B7280', marginBottom: 2 },
   shopLocation: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#9CA3AF', marginBottom: 6 },
   badgesContainer: { flexDirection: 'row', flexWrap: 'wrap' },
@@ -411,6 +530,18 @@ const styles = StyleSheet.create({
   ratingText: { fontFamily: 'Inter_700Bold', fontSize: 11, color: '#1A2840' },
   reviewsText: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#9CA3AF' },
   divider: { height: 1, backgroundColor: '#F3F4F6' },
+  
+  // Grid Item Styles
+  shopGridCard: { width: (width - 44) / 2, backgroundColor: '#FFFFFF', borderRadius: 12, borderWidth: 1, borderColor: '#F1F5F9', marginBottom: 12, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2 },
+  shopGridImageContainer: { height: 80, position: 'relative' },
+  shopGridBanner: { width: '100%', height: '100%' },
+  shopGridLogoWrapper: { position: 'absolute', bottom: -16, left: 12, width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFFFFF', padding: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 2 },
+  shopGridLogo: { width: '100%', height: '100%', borderRadius: 16 },
+  shopGridContent: { padding: 12, paddingTop: 20 },
+  shopGridName: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840', flex: 1 },
+  shopGridType: { fontFamily: 'Inter_500Medium', fontSize: 10, color: '#6B7280', marginTop: 2 },
+  shopGridLocation: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#9CA3AF', marginTop: 2 },
+  
   bannerContainer: { marginHorizontal: 16, marginTop: 4, position: 'relative' },
   inviteBanner: { borderRadius: 17, paddingHorizontal: 14, paddingVertical: 14, flexDirection: 'row', overflow: 'hidden', position: 'relative', minHeight: 125 },
   inviteContent: { flex: 1, zIndex: 2, justifyContent: 'center' },

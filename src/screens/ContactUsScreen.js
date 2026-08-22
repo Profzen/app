@@ -1,16 +1,19 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, TextInput, Platform, StatusBar } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, TextInput, Platform, StatusBar, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
+import { supabase } from '../services/supabaseClient';
+import * as WebBrowser from 'expo-web-browser';
 
 export default function ContactUsScreen() {
   const navigation = useNavigation();
-  const { language, t } = useApp();
+  const { language, t, appSettings, user } = useApp();
   const [toast, setToast] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Support Form State
   const [subject, setSubject] = useState('');
@@ -21,20 +24,54 @@ export default function ContactUsScreen() {
     else navigation.navigate('MoreSettingsScreen');
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!subject.trim() || !message.trim()) {
       setToast({ 
-        title: language === 'fr' ? 'Champ requis' : 'Required Field', 
-        message: language === 'fr' ? 'Veuillez remplir le sujet et votre message.' : 'Please fill in both subject and message.' 
+        title: t('contactScreen.requiredField'), 
+        message: t('contactScreen.fillSubjectMessage') 
       });
       return;
     }
-    setToast({ 
-      title: language === 'fr' ? 'Message envoyé' : 'Message Sent', 
-      message: language === 'fr' ? 'Notre équipe support vous répondra dans les plus brefs délais.' : 'Our support team will reply as soon as possible.' 
-    });
-    setSubject('');
-    setMessage('');
+
+    setIsSubmitting(true);
+    try {
+      // Use the new backend endpoint for sending support messages securely
+      const apiUrl = process.env.EXPO_PUBLIC_BUY_GOODS_API_URL || 'https://buygoods-api.dizzitup.com/api';
+      const response = await fetch(`${apiUrl}/support/message`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: user?.id || null,
+          user_email: user?.email || null,
+          phone: user?.phone || null,
+          subject: subject.trim(),
+          message: message.trim(),
+          target_email: appSettings?.support_email || 'support@dizzitup.com',
+          source: 'app'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send support message');
+      }
+
+      setToast({ 
+        title: t('contactScreen.messageSent'), 
+        message: t('contactScreen.supportWillReply') 
+      });
+      setSubject('');
+      setMessage('');
+    } catch (error) {
+      console.log('Error sending support message:', error);
+      setToast({
+        title: t('contactScreen.error'),
+        message: t('contactScreen.failedToSend')
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -48,12 +85,12 @@ export default function ContactUsScreen() {
             </TouchableOpacity>
             <View style={styles.headerTitleContainer}>
               <Text style={styles.pageTitle}>{t('contactUs', 'Contact Us')}</Text>
-              <Text style={styles.pageSubtitle}>{language === 'fr' ? 'Assistance & Support client 7j/7' : 'Assistance & Customer Support 24/7'}</Text>
+              <Text style={styles.pageSubtitle}>{t('contactScreen.subtitle')}</Text>
             </View>
           </View>
 
           {/* Quick Channels Grid */}
-          <Text style={styles.sectionHeader}>{language === 'fr' ? "CANAUX D'ASSISTANCE RAPIDE" : 'QUICK SUPPORT CHANNELS'}</Text>
+          <Text style={styles.sectionHeader}>{t('contactScreen.quickChannels')}</Text>
           <View style={styles.channelsGrid}>
             {/* Live Chat AI */}
             <TouchableOpacity style={styles.channelCard} onPress={() => navigation.navigate('AskAminataScreen')}>
@@ -61,47 +98,72 @@ export default function ContactUsScreen() {
                 <Ionicons name="chatbubbles-outline" size={22} color="#3B82F6" />
               </View>
               <Text style={styles.channelTitle}>Chat IA Aminata</Text>
-              <Text style={styles.channelDesc}>{language === 'fr' ? 'Réponse instantanée 24/7' : 'Instant 24/7 response'}</Text>
+              <Text style={styles.channelDesc}>{t('contactScreen.instantResponse')}</Text>
             </TouchableOpacity>
 
             {/* Email Support */}
-            <TouchableOpacity style={styles.channelCard} onPress={() => setToast({ title: 'Email Support', message: 'support@dizzitup.com' })}>
+            <TouchableOpacity style={styles.channelCard} onPress={() => {
+              const email = appSettings?.support_email || 'support@dizzitup.com';
+              Linking.openURL(`mailto:${email}`).catch(err => {
+                console.log('Error opening email app:', err);
+                setToast({ title: 'Email Support', message: email });
+              });
+            }}>
               <View style={[styles.channelIconWrap, { backgroundColor: '#ECFDF5' }]}>
                 <Ionicons name="mail-outline" size={22} color="#10B981" />
               </View>
-              <Text style={styles.channelTitle}>{language === 'fr' ? 'Par Email' : 'By Email'}</Text>
-              <Text style={styles.channelDesc}>support@dizzitup.com</Text>
+              <Text style={styles.channelTitle}>{t('contactScreen.byEmail')}</Text>
+              <Text style={styles.channelDesc}>{appSettings?.support_email || 'support@dizzitup.com'}</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.channelsGrid}>
             {/* Phone WhatsApp */}
-            <TouchableOpacity style={styles.channelCard} onPress={() => setToast({ title: 'WhatsApp Support', message: 'Contact +228 90 00 00 00' })}>
+            <TouchableOpacity style={styles.channelCard} onPress={() => {
+              const rawNumber = appSettings?.whatsapp_number || '+228 90 00 00 00';
+              const cleanNumber = rawNumber.replace(/[^0-9+]/g, ''); // Remove spaces, keep +
+              Linking.openURL(`whatsapp://send?phone=${cleanNumber}`).catch(err => {
+                console.log('Error opening whatsapp:', err);
+                setToast({ title: 'WhatsApp Support', message: `Contact ${rawNumber}` });
+              });
+            }}>
               <View style={[styles.channelIconWrap, { backgroundColor: '#FFFBEB' }]}>
                 <Ionicons name="logo-whatsapp" size={22} color="#25D366" />
               </View>
               <Text style={styles.channelTitle}>WhatsApp Pro</Text>
-              <Text style={styles.channelDesc}>+228 90 00 00 00</Text>
+              <Text style={styles.channelDesc}>{appSettings?.whatsapp_number || '+228 90 00 00 00'}</Text>
             </TouchableOpacity>
 
             {/* FAQ Center */}
-            <TouchableOpacity style={styles.channelCard} onPress={() => navigation.navigate('AboutDizzitUpScreen')}>
+            <TouchableOpacity style={styles.channelCard} onPress={async () => {
+              let url = appSettings?.help_center_url || 'dizzitup.com/faq';
+              let fullUrl = url.startsWith('http') ? url : `https://${url}`;
+              try {
+                await WebBrowser.openBrowserAsync(fullUrl, {
+                  toolbarColor: '#1A2840',
+                  enableBarCollapsing: true,
+                  showTitle: true
+                });
+              } catch (e) {
+                console.log(e);
+              }
+            }}>
               <View style={[styles.channelIconWrap, { backgroundColor: '#F5F3FF' }]}>
                 <Ionicons name="help-circle-outline" size={22} color="#8B5CF6" />
               </View>
-              <Text style={styles.channelTitle}>{language === 'fr' ? "Centre d'aide" : 'Help Center'}</Text>
-              <Text style={styles.channelDesc}>{language === 'fr' ? 'Guides & FAQ' : 'Guides & FAQ'}</Text>
+              <Text style={styles.channelTitle}>{t('contactScreen.helpCenter')}</Text>
+              <Text style={styles.channelDesc}>{t('contactScreen.guidesFaq')}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Form Section */}
-          <Text style={styles.sectionHeader}>{language === 'fr' ? 'ENVOYER UN MESSAGE AU SUPPORT' : 'SEND A MESSAGE TO SUPPORT'}</Text>
+          <Text style={styles.sectionHeader}>{t('contactScreen.sendMsgTitle')}</Text>
           <View style={styles.card}>
             <View style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>{language === 'fr' ? 'Sujet de votre demande' : 'Subject'}</Text>
+              <Text style={styles.fieldLabel}>{t('contactScreen.subject')}</Text>
               <TextInput
                 style={styles.input}
-                placeholder={language === 'fr' ? "Ex: Problème de recharge, question sur les frais..." : "E.g. Top-up issue, fee question..."}
+                placeholder={t('contactScreen.subjectPlaceholder')}
                 placeholderTextColor="#9CA3AF"
                 value={subject}
                 onChangeText={setSubject}
@@ -109,10 +171,10 @@ export default function ContactUsScreen() {
             </View>
 
             <View style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>{language === 'fr' ? 'Votre message' : 'Your message'}</Text>
+              <Text style={styles.fieldLabel}>{t('contactScreen.yourMessage')}</Text>
               <TextInput
                 style={[styles.input, styles.textArea]}
-                placeholder={language === 'fr' ? "Décrivez votre problème ou votre question en détail..." : "Describe your problem or question in detail..."}
+                placeholder={t('contactScreen.messagePlaceholder')}
                 placeholderTextColor="#9CA3AF"
                 multiline
                 numberOfLines={5}
@@ -122,9 +184,9 @@ export default function ContactUsScreen() {
               />
             </View>
 
-            <TouchableOpacity style={styles.submitBtn} onPress={handleSendMessage}>
+            <TouchableOpacity style={[styles.submitBtn, isSubmitting && { opacity: 0.7 }]} onPress={handleSendMessage} disabled={isSubmitting}>
               <Ionicons name="paper-plane-outline" size={18} color="#1A2840" style={{ marginRight: 8 }} />
-              <Text style={styles.submitBtnText}>{t('btnSendMessage', 'Envoyer le message')}</Text>
+              <Text style={styles.submitBtnText}>{isSubmitting ? t('contactScreen.sending') : t('contactScreen.btnSendMessage')}</Text>
             </TouchableOpacity>
           </View>
 

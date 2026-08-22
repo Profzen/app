@@ -2,6 +2,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Platform, StatusBar, ActivityIndicator, Alert } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 import AppToast from '../components/AppToast';
@@ -105,58 +106,67 @@ export default function ReferBusinessScreen() {
             </Text>
           </View>
 
-          <Text style={styles.sectionTitle}>{t('referBusiness.yourInfo', 'Your Information')}</Text>
-          
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>{t('referBusiness.firstName', 'First Name')}</Text>
-            <TextInput style={styles.input} value={referrant.firstName} onChangeText={(t) => setReferrant({...referrant, firstName: t})} placeholder="First Name" />
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>{t('referBusiness.yourInfo', 'Your Information')}</Text>
+            
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>{t('referBusiness.firstName', 'First Name')}</Text>
+              <TextInput style={styles.input} value={referrant.firstName} onChangeText={(t) => setReferrant({...referrant, firstName: t})} placeholder="First Name" placeholderTextColor="#94A3B8" />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>{t('referBusiness.lastName', 'Last Name')}</Text>
+              <TextInput style={styles.input} value={referrant.lastName} onChangeText={(t) => setReferrant({...referrant, lastName: t})} placeholder="Last Name" placeholderTextColor="#94A3B8" />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>{t('referBusiness.email', 'Email *')}</Text>
+              <TextInput style={styles.input} value={referrant.email} onChangeText={(t) => setReferrant({...referrant, email: t})} placeholder="Email" keyboardType="email-address" autoCapitalize="none" placeholderTextColor="#94A3B8" />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>{t('referBusiness.mobileNumber', 'Mobile Number')}</Text>
+              <TextInput style={styles.input} value={referrant.mobile} onChangeText={(t) => setReferrant({...referrant, mobile: t})} placeholder="Mobile Number" keyboardType="phone-pad" placeholderTextColor="#94A3B8" />
+            </View>
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>{t('referBusiness.lastName', 'Last Name')}</Text>
-            <TextInput style={styles.input} value={referrant.lastName} onChangeText={(t) => setReferrant({...referrant, lastName: t})} placeholder="Last Name" />
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>{t('referBusiness.referredBusinesses', 'Referred Businesses')}</Text>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>{t('referBusiness.businessName', 'Business Name *')}</Text>
+              <TextInput style={styles.input} value={business.name} onChangeText={(t) => setBusiness({...business, name: t})} placeholder="Business Name" placeholderTextColor="#94A3B8" />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>{t('referBusiness.contactMobile', 'Contact Mobile *')}</Text>
+              <TextInput style={styles.input} value={business.contactMobile} onChangeText={(t) => setBusiness({...business, contactMobile: t})} placeholder="Phone Number" keyboardType="phone-pad" placeholderTextColor="#94A3B8" />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>{t('referBusiness.contactEmail', 'Contact Email')}</Text>
+              <TextInput style={styles.input} value={business.contactEmail} onChangeText={(t) => setBusiness({...business, contactEmail: t})} placeholder="Email (optional)" keyboardType="email-address" autoCapitalize="none" placeholderTextColor="#94A3B8" />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>{t('referBusiness.country', 'Country')}</Text>
+              <TextInput style={styles.input} value={business.country} onChangeText={(t) => setBusiness({...business, country: t})} placeholder="Country" placeholderTextColor="#94A3B8" />
+            </View>
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>{t('referBusiness.email', 'Email *')}</Text>
-            <TextInput style={styles.input} value={referrant.email} onChangeText={(t) => setReferrant({...referrant, email: t})} placeholder="Email" keyboardType="email-address" autoCapitalize="none" />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>{t('referBusiness.mobileNumber', 'Mobile Number')}</Text>
-            <TextInput style={styles.input} value={referrant.mobile} onChangeText={(t) => setReferrant({...referrant, mobile: t})} placeholder="Mobile Number" keyboardType="phone-pad" />
-          </View>
-
-          <View style={styles.divider} />
-
-          <Text style={styles.sectionTitle}>{t('referBusiness.referredBusinesses', 'Referred Businesses')}</Text>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>{t('referBusiness.businessName', 'Business Name *')}</Text>
-            <TextInput style={styles.input} value={business.name} onChangeText={(t) => setBusiness({...business, name: t})} placeholder="Business Name" />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>{t('referBusiness.contactMobile', 'Contact Mobile *')}</Text>
-            <TextInput style={styles.input} value={business.contactMobile} onChangeText={(t) => setBusiness({...business, contactMobile: t})} placeholder="Phone Number" keyboardType="phone-pad" />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>{t('referBusiness.contactEmail', 'Contact Email')}</Text>
-            <TextInput style={styles.input} value={business.contactEmail} onChangeText={(t) => setBusiness({...business, contactEmail: t})} placeholder="Email (optional)" keyboardType="email-address" autoCapitalize="none" />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>{t('referBusiness.country', 'Country')}</Text>
-            <TextInput style={styles.input} value={business.country} onChangeText={(t) => setBusiness({...business, country: t})} placeholder="Country" />
-          </View>
-
-          <TouchableOpacity style={styles.btnPrimary} onPress={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? (
-              <ActivityIndicator color="#1A2840" />
-            ) : (
-              <Text style={styles.btnPrimaryText}>{t('referBusiness.submitReferrals', 'Submit Referrals')}</Text>
-            )}
+          <TouchableOpacity onPress={handleSubmit} disabled={isSubmitting} activeOpacity={0.8} style={styles.btnPrimaryWrapper}>
+            <LinearGradient
+              colors={['#FFD166', '#FF9F1C']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.btnPrimary}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="#1A2840" />
+              ) : (
+                <Text style={styles.btnPrimaryText}>{t('referBusiness.submitReferrals', 'Submit Referrals')}</Text>
+              )}
+            </LinearGradient>
           </TouchableOpacity>
           
           <View style={{height: 40}} />
@@ -179,18 +189,19 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 12 },
   iconCircleBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#F1F5F9' },
-  pageTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#1A2840' },
+  pageTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#20365B' },
   scrollView: { flex: 1 },
   scrollContent: { padding: 20 },
   infoBanner: { flexDirection: 'row', backgroundColor: '#FFFBEB', padding: 14, borderRadius: 12, alignItems: 'center', marginBottom: 24, borderWidth: 1, borderColor: '#FEF3C7' },
   infoBannerText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 12, color: '#92400E', lineHeight: 18 },
-  sectionTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#1A2840', marginBottom: 16 },
-  inputGroup: { marginBottom: 16 },
-  inputLabel: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#475569', marginBottom: 6 },
-  input: { backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontFamily: 'Inter_400Regular', fontSize: 14, color: '#1A2840' },
-  divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 24 },
-  btnPrimary: { backgroundColor: '#FFC759', paddingVertical: 16, borderRadius: 12, alignItems: 'center', marginTop: 12 },
-  btnPrimaryText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#1A2840' },
+  card: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 20, marginBottom: 20, borderWidth: 1, borderColor: '#E2E8F0', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 3 },
+  sectionTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#20365B', marginBottom: 20, borderBottomWidth: 2, borderBottomColor: '#FFC759', alignSelf: 'flex-start', paddingBottom: 4 },
+  inputGroup: { marginBottom: 18 },
+  inputLabel: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#20365B', marginBottom: 8 },
+  input: { backgroundColor: '#F8FAFC', borderWidth: 1.5, borderColor: '#94A3B8', borderRadius: 10, paddingHorizontal: 16, paddingVertical: 14, fontFamily: 'Inter_500Medium', fontSize: 14, color: '#20365B' },
+  btnPrimaryWrapper: { marginTop: 12, borderRadius: 12, shadowColor: '#FF9F1C', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+  btnPrimary: { paddingVertical: 16, borderRadius: 12, alignItems: 'center' },
+  btnPrimaryText: { fontFamily: 'Inter_700Bold', fontSize: 16, color: '#20365B', textShadowColor: 'rgba(255,255,255,0.3)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 },
   successContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   successIconCircle: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#ECFDF5', justifyContent: 'center', alignItems: 'center', marginBottom: 24 },
   successTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 24, color: '#1A2840', marginBottom: 12 },
