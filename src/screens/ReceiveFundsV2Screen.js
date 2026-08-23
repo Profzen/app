@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Animated, Share, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Clipboard from 'expo-clipboard';
 import Svg, { Rect } from 'react-native-svg';
 import QRCode from 'qrcode';
@@ -52,7 +53,7 @@ export default function ReceiveFundsV2Screen() {
     return (
       <Svg width={180} height={180} viewBox={`0 0 ${qr.modules.size} ${qr.modules.size}`} accessibilityLabel="QR code de l'adresse">
         <Rect width={qr.modules.size} height={qr.modules.size} fill="#FFFFFF" />
-        {Array.from(qr.modules.data).map((cell, index) => cell ? <Rect key={index} x={index % qr.modules.size} y={Math.floor(index / qr.modules.size)} width="1" height="1" fill="#071536" /> : null)}
+        {Array.from(qr.modules.data).map((cell, index) => cell ? <Rect key={index} x={index % qr.modules.size} y={Math.floor(index / qr.modules.size)} width="1" height="1" fill="#20365B" /> : null)}
       </Svg>
     );
   };
@@ -200,7 +201,7 @@ export default function ReceiveFundsV2Screen() {
           {activeTab === 'adresse' ? (
             <>
               {/* Address Card */}
-              <View style={styles.addressCard}>
+              <LinearGradient colors={['#2B4C7E', '#20365B']} start={{x: 0, y: 0}} end={{x: 1, y: 1}} style={styles.addressCard}>
                 {/* Top of Card */}
                 <View style={styles.cardTop}>
                   <View style={styles.polygonPill}>
@@ -228,7 +229,7 @@ export default function ReceiveFundsV2Screen() {
                   </Pressable>
                 </View>
 
-              </View>
+              </LinearGradient>
 
               {/* Action Buttons */}
               <View style={styles.actionBtnsRow}>
@@ -246,7 +247,7 @@ export default function ReceiveFundsV2Screen() {
           ) : (
             <>
               {/* QR Code Card */}
-              <View style={styles.addressCard}>
+              <LinearGradient colors={['#2B4C7E', '#20365B']} start={{x: 0, y: 0}} end={{x: 1, y: 1}} style={styles.addressCard}>
                 {/* Top of Card */}
                 <View style={styles.cardTop}>
                   <View style={styles.polygonPill}>
@@ -266,7 +267,7 @@ export default function ReceiveFundsV2Screen() {
                 {/* QR Content */}
                 <View style={styles.qrContentWrapper}>
                   <Text style={styles.qrCardTitle}>{t('receiveFunds.scan_to_pay', 'Scanner pour payer')}</Text>
-                  <Text style={styles.qrCardSub}>Ceci est votre adresse dédiée pour {selectedChain}</Text>
+                  <Text style={styles.qrCardSub}>{t('receiveFunds.dedicatedAddress', 'Ceci est votre adresse dédiée pour {{chain}}').replace('{{chain}}', selectedChain)}</Text>
                   
                   <View style={styles.qrCodeBox}>
                     <RealQrCode />
@@ -298,17 +299,17 @@ export default function ReceiveFundsV2Screen() {
                   </Pressable>
                 </View>
 
-              </View>
+              </LinearGradient>
 
               {/* Action Buttons */}
               <View style={styles.actionBtnsRow}>
                 <Pressable style={styles.btnCopy} onPress={copyAddress} onPressIn={copyAddress} accessibilityLabel="Copier l'adresse">
                   <Ionicons name="copy-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
-                  <Text style={styles.btnCopyText}>{copied ? 'COPIÉ ✔' : 'COPIER'}</Text>
+                  <Text style={styles.btnCopyText}>{copied ? t('receiveFunds.copied', 'COPIÉ ✔') : t('receiveFunds.copy', 'COPIER')}</Text>
                 </Pressable>
                 <TouchableOpacity style={styles.btnShare} onPress={shareAddress}>
                   <Ionicons name="share-outline" size={20} color="#FFFFFF" style={{marginRight: 8}} />
-                  <Text style={styles.btnShareText}>PARTAGER</Text>
+                  <Text style={styles.btnShareText}>{t('receiveFunds.share', 'PARTAGER')}</Text>
                 </TouchableOpacity>
               </View>
             </>
@@ -317,7 +318,7 @@ export default function ReceiveFundsV2Screen() {
           {showToast && (
             <View style={styles.toastCard}>
               <View style={styles.toastIconBg}><Ionicons name="checkmark" size={16} color="#FFFFFF" /></View>
-              <View style={styles.toastContent}><Text style={styles.toastTitle}>Adresse copiée !</Text><Text style={styles.toastDesc}>L'adresse a été copiée dans le presse-papiers.</Text></View>
+              <View style={styles.toastContent}><Text style={styles.toastTitle}>{t('receiveFunds.toastTitle', 'Adresse copiée !')}</Text><Text style={styles.toastDesc}>{t('receiveFunds.toastDesc', "L'adresse a été copiée dans le presse-papiers.")}</Text></View>
               <TouchableOpacity onPress={() => setShowToast(false)}><Ionicons name="close" size={20} color="#94A3B8" /></TouchableOpacity>
             </View>
           )}
@@ -329,8 +330,8 @@ export default function ReceiveFundsV2Screen() {
                 <Ionicons name="shield-checkmark-outline" size={20} color="#FFB800" />
               </View>
               <View style={styles.bottomBannerContent}>
-                <Text style={styles.bottomBannerTitle}>Noeud de transaction sécurisé DizzitUp</Text>
-                <Text style={styles.bottomBannerDesc}>Vos transactions sont protégées par notre infrastructure.</Text>
+                <Text style={styles.bottomBannerTitle}>{t('receiveFunds.bannerTitle', 'Noeud de transaction sécurisé DizzitUp')}</Text>
+                <Text style={styles.bottomBannerDesc}>{t('receiveFunds.bannerDesc', 'Vos transactions sont protégées par notre infrastructure.')}</Text>
               </View>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
@@ -543,7 +544,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   tabActive: {
-    backgroundColor: '#071536',
+    backgroundColor: '#20365B',
   },
   tabInactive: {
     backgroundColor: '#FFFFFF',
@@ -559,7 +560,6 @@ const styles = StyleSheet.create({
     color: '#1A2840',
   },
   addressCard: {
-    backgroundColor: '#071536',
     borderRadius: 24,
     padding: 24,
     marginBottom: 24,
@@ -680,6 +680,36 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     fontSize: 13,
     color: '#FFFFFF',
+  },
+  actionBtnsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 24,
+  },
+  btnCopy: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingVertical: 14,
+    borderRadius: 16,
+  },
+  btnCopyText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
+    color: '#1A2840',
+  },
+  btnShare: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#20365B',
+    paddingVertical: 14,
+    borderRadius: 16,
   },
   btnShareText: {
     fontFamily: 'Inter_700Bold',
@@ -811,12 +841,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginRight: 12,
   },
-  walletAddressesCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 20, shadowColor: '#000', shadowOpacity: 0.05, shadowOffset: {width: 0, height: 4}, shadowRadius: 10, elevation: 3, borderWidth: 1, borderColor: '#F1F5F9' },
+  walletAddressesCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 20, boxShadow: '0px 4px 10px rgba(0,0,0,0.05)', elevation: 3, borderWidth: 1, borderColor: '#F1F5F9' },
   waHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
   waIconBox: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(32,54,91,0.05)', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   waTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#20365B' },
   waList: { gap: 12 },
-  waItem: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 12, borderWidth: 1, borderColor: '#F1F5F9', shadowColor: '#000', shadowOpacity: 0.05, shadowOffset: {width: 0, height: 2}, shadowRadius: 4, elevation: 2 },
+  waItem: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 12, borderWidth: 1, borderColor: '#F1F5F9', boxShadow: '0px 2px 4px rgba(0,0,0,0.05)', elevation: 2 },
   waItemContent: { flexDirection: 'row', alignItems: 'center' },
   waNetworkIconEVM: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   waNetworkIconSOL: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', marginRight: 12 },

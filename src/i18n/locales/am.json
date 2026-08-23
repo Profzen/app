@@ -845,7 +845,11 @@
         "top-up": "መሙላት",
         "cash-out": "ማውጣት",
         "pay": "መክፈል",
-        "sale": "ሽያጭ"
+        "sale": "ሽያጭ",
+        "top_up": "TOP-UP",
+        "stake": "STAKE",
+        "cash_out": "CASH-OUT",
+        "unknown": "UNKNOWN"
       },
       "status_label": {
         "completed": "ተጠናቅቋል",
@@ -978,14 +982,29 @@
         "solana": "Solana አውታረ መረብ"
       },
       "synchronizing_addresses": "ደህንነቱ የተጠበቀ የኪስ ቦርሳ ኖዶችን በማመሳሰል ላይ...",
-      "no_addresses_yet": "ደህንነቱ የተጠበቀ የኪስ ቦርሳዎ እየተዘጋጀ ነው። አድራሻዎች በቅርቡ እዚህ ይታያሉ።"
+      "no_addresses_yet": "ደህንነቱ የተጠበቀ የኪስ ቦርሳዎ እየተዘጋጀ ነው። አድራሻዎች በቅርቡ እዚህ ይታያሉ።",
+      "download_info": "You can download your monthly statement in PDF format.",
+      "filter_title": "Filters",
+      "filter_subtitle": "Refine transaction list",
+      "filter_tx_type": "Transaction type",
+      "filter_all": "All transactions",
+      "filter_pay_bills": "Bill payment (Education, Health, Electricity...)",
+      "filter_mobile_topup": "Mobile top-up",
+      "filter_vouchers": "Buy vouchers (Gift cards, Vouchers)",
+      "filter_goods": "Buy physical goods",
+      "filter_wallet_topup": "DZYWallet top-up",
+      "filter_send": "Send funds",
+      "filter_receive": "Receive funds",
+      "apply_filters": "Apply filters",
+      "reset_filters": "Reset"
     },
     "previousStep": "ቀዳሚ ደረጃ",
     "optional": "አማራጭ",
     "by": "በ",
     "actions": {
       "back": "ተመለስ",
-      "save": "አስቀምጥ"
+      "save": "አስቀምጥ",
+      "make_transaction": "Make a transaction"
     },
     "next_step": "ቀጣይ ደረጃ",
     "remove": "አስወግድ",
@@ -996,7 +1015,11 @@
     "alreadyHavePersonalProfile": "ቀድሞውኑ አለኝ (በቅንብሮች ውስጥ ያገናኙት)",
     "previous": "ቀዳሚ",
     "finish": "ጨርስ",
-    "unlock": "ክፈት"
+    "unlock": "ክፈት",
+    "tabs": {
+      "history": "HISTORY",
+      "statistics": "STATISTICS"
+    }
   },
   "profile": {
     "editProfile": "መገለጫ አስተካክል",
@@ -1726,22 +1749,22 @@
   },
   "marketplace": {
     "title": "የገበያ ቦታ",
-    "searchPlaceholder": "ምርቶችን ይፈልጉ...",
+    "searchPlaceholder": "ምርቶችን፣ አገልግሎቶችን ይፈልጉ...",
     "categories": "ምድቦች",
-    "allItems": "ሁሉም እቃዎች",
+    "allItems": "ሁሉም ዕቃዎች",
     "goods": "እቃዎች",
     "bills": "ክፍያዎች",
     "digitalServices": "ዲጂታል አገልግሎቶች እና ሂሳቦች",
     "browseEverything": "ሁሉንም ያስሱ",
-    "foodGroceries": "ምግብ እና ቅቤ እንቁላል",
+    "foodGroceries": "ሸቀጣሸቀጥ",
     "homeFurniture": "የቤት እቃዎች",
-    "constructionMaterials": "የግንባታ ቁሳቁሶች",
-    "electronicAppliances": "የኤሌክትሮኒክስ መገልገያዎች",
+    "constructionMaterials": "ግንባታ",
+    "electronicAppliances": "ኤሌክትሮኒክስ",
     "healthcareFurniture": "የጤና እንክብካቤ እቃዎች",
     "healthcareServices": "የጤና እንክብካቤ አገልግሎቶች",
     "education": "ትምህርት",
-    "mobileDataAirtime": "ሞባይል ዳታ እና ኤርታይም",
-    "utilities": "ፍጆታዎች",
+    "mobileDataAirtime": "ሞባይል እና አየር ሰዓት",
+    "utilities": "መገልገያዎች",
     "giftCards": "የስጦታ ካርዶች",
     "techITDev": "ቴክኖሎጂ እና የአይቲ ልማት",
     "digitalProfServices": "ዲጂታል እና ፕሮፌሽናል አገልግሎቶች",
@@ -1780,7 +1803,7 @@
     "instantDelivery": "ፈጣን መላኪያ",
     "payBillsInstantly": "ሂሳቦችን በፍጥነት ይክፈሉ",
     "digitalCards": "ዲጂታል ካርዶች",
-    "featured": "የተለየ",
+    "featured": "ተለይቶ የቀረበ",
     "addToCart": "ወደ ቅርጫት አክል",
     "send": "ላክ",
     "localPrice": "የአካባቢ ዋጋ",
@@ -1832,7 +1855,7 @@
     "noCountryFound": "ምንም የአፍሪካ አገር አልተገኘም",
     "deliveryGuaranteed": "ፈጣን እና አስተማማኝ አቅርቦት የተረጋገጠ",
     "exploreAll": "ሁሉንም ያስሱ",
-    "remittance": "ፈጣን እና አስተማማኝ የገንዘብ ዝውውር",
+    "remittance": "የገንዘብ ዝውውር",
     "comingSoon": "በቅርቡ ይደርሳል",
     "local": "አካባቢያዊ",
     "unknownMerchant": "ያልታወቀ ነጋዴ",
@@ -1901,7 +1924,20 @@
     "selectCity": "ከተማ ይምረጡ...",
     "showAllCities": "ሁሉንም ከተሞች አሳይ",
     "noCitiesFound": "ምንም ከተሞች አልተገኙም።",
-    "nowPrioritizing": "አሁን ለነጋዴዎች ቅድሚያ በመስጠት ላይ"
+    "nowPrioritizing": "አሁን ለነጋዴዎች ቅድሚያ በመስጠት ላይ",
+    "healthcare": "የጤና እንክብካቤ",
+    "solarRenewable": "የፀሐይ ኃይል",
+    "chooseGoodsTitle": "ዕቃዎችን እና መገልገያዎችን ይምረጡ",
+    "itemPrice": "የእቃ ዋጋ",
+    "continueBtn": "ይቀጥሉ",
+    "service": "አገልግሎት",
+    "inStockLeft": "የቀረው",
+    "instant": "ቅጽበታዊ",
+    "days12": "1-2 ቀናት",
+    "hours24": "2-4 ሰዓታት",
+    "country": "ሀገር",
+    "cityLabel": "ከተማ",
+    "addCityManual": "+ ከተማን በእጅ ያክሉ"
   },
   "product": {
     "details": "የምርት ዝርዝሮች",
@@ -3270,7 +3306,11 @@
       "refer_business": "ያጣቅሱ\nንግድ",
       "source_africa": "ምንጭ\nበአፍሪካ ውስጥ",
       "personal_atm": "የግል ኤቲኤም"
-    }
+    },
+    "inviteBannerTitle_1": "ጓደኞችዎን ይጋብዙ\nእና ያግኙ ",
+    "inviteBannerTitle_2": "$5 በ DZY",
+    "inviteBannerDesc": "ገንዘብ ይላኩ፣ ይገበያዩ፣ ሂሳቦችን ይክፈሉ እና ሽልማቶችን አብረው ያግኙ።",
+    "btnInviteNow": "አሁን ይጋብዙ"
   },
   "personalAccount": {
     "title": "የግል መለያ",
@@ -3499,5 +3539,109 @@
   "qaNearbyToastTitle": "በአቅራቢያ",
   "qaNearbyToastMessage": "ሱቆች በእርስዎ አካባቢ ተደርድረዋል።",
   "qaReferToastTitle": "ሱቅ ያመልክቱ",
-  "qaReferToastMessage": "የማመልከቻ ቅጽ ዝግጁ ነው።"
+  "qaReferToastMessage": "የማመልከቻ ቅጽ ዝግጁ ነው።",
+  "contacts": {
+    "quick_actions": "ፈጣን እርምጃዎች",
+    "quick_action_1": {
+      "title": "ይክፈሉ እና\nአስፈላጊዎችን ይግዙ",
+      "subtitle": "ክሬዲት፣ ኢንተርኔት፣\nቲቪ፣ ጨዋታዎች፣\nክሪፕቶ እና ሌሎችም"
+    },
+    "quick_action_2": {
+      "title": "የሞባይል\nካርድ",
+      "subtitle": "የሞባይል\nክሬዲት ይግዙ"
+    },
+    "quick_action_3": {
+      "title": "ክፍያዎች\nይክፈሉ",
+      "subtitle": "መብራት፣ ውሃ፣\nኢንተርኔት እና ሌሎችም"
+    },
+    "quick_action_4": {
+      "title": "ገንዘብ\nይላኩ / ይጠይቁ",
+      "subtitle": "ፈጣን የገንዘብ\nዝውውሮች"
+    },
+    "quick_action_5": {
+      "title": "ይጋብዙ",
+      "subtitle": "ጓደኞችዎን ይጋብዙ\nእና $5\nበ DZY ያግኙ"
+    },
+    "my_beneficiaries": "ተጠቃሚዎቼ",
+    "manage_contacts": "እውቂያዎችን አስተዳድር",
+    "filter_nearby": "አቅራቢያ",
+    "filter_favorites": "ከተመረጡ ሀገራት",
+    "filter_africa": "በመላው አፍሪካ",
+    "filter_world": "የተቀረው ዓለም",
+    "col_contact": "እውቂያ",
+    "col_beneficiary": "ተጠቃሚ",
+    "col_sponsor": "ስፖንሰር",
+    "relation": {
+      "friend": "ጓደኛ"
+    },
+    "deleted": "እውቂያ ተሰርዟል",
+    "deleted_desc": "እውቂያ በተሳካ ሁኔታ ተወግዷል።",
+    "delete_error": "ይህን እውቂያ መሰረዝ አይቻልም።",
+    "search_hint": "ስም፣ ስልክ፣ ኢሜይል፣ ከተማ ወይም ሀገር",
+    "add_permanent_sub": "ወደ ቋሚ መዝገቦች አክል",
+    "tab": {
+      "info": "መረጃ",
+      "history": "ታሪክ"
+    },
+    "history": {
+      "title": "የግብይት ታሪክ",
+      "filters": "ማጣሪያዎች",
+      "monthly": "ወርሃዊ ታሪክ",
+      "send_funds": "ገንዘብ መላክ",
+      "transfer_done": "ዝውውር ተጠናቋል",
+      "ref": "ማጣቀሻ፦"
+    }
+  },
+  "beneficiary_management": {
+    "edit": {
+      "edit_title_new": "አዲስ ተጠቃሚ",
+      "edit_title_update": "አስተካክል",
+      "personal_info": "የግል መረጃ",
+      "avatar": "ምስል",
+      "first_name": "ስም",
+      "first_name_placeholder": "ምሳሌ፡ ጆን",
+      "last_name": "የአባት ስም",
+      "last_name_placeholder": "ምሳሌ፡ ዶ",
+      "relation": "ዝምድና",
+      "contact_details": "የመገናኛ ዝርዝሮች",
+      "phone": "ስልክ",
+      "phone_placeholder": "+228...",
+      "email": "ኢሜይል",
+      "email_placeholder": "ምሳሌ፡ email@example.com",
+      "country": "ሀገር",
+      "country_placeholder": "ምሳሌ፡ ቶጎ",
+      "city": "ከተማ",
+      "city_placeholder": "ምሳሌ፡ ሎሜ",
+      "banks_wallets": "ባንኮች እና ዋሌቶች",
+      "bank_name": "የባንክ ስም",
+      "bank_name_placeholder": "ምሳሌ፡ ኢኮባንክ",
+      "bank_account": "የሂሳብ ቁጥር / IBAN",
+      "evm_wallet": "የ EVM ዋሌት",
+      "evm_wallet_placeholder": "0x...",
+      "solana_wallet": "የሶላና ዋሌት",
+      "btn_save": "አስቀምጥ",
+      "relation_family": "ቤተሰብ",
+      "relation_friend": "ጓደኛ",
+      "relation_colleague": "የስራ ባልደረባ",
+      "relation_other": "ሌላ",
+      "sync_success": "ዋሌቶች በተሳካ ሁኔታ ተገናኝተዋል",
+      "sync_error": "የግንኙነት ስህተት",
+      "sync_not_found": "ለዚህ ቁጥር ዋሌት አልተገኘም",
+      "sync_req_phone": "እባክዎ መጀመሪያ ስልክ ቁጥር ያስገቡ",
+      "save_req_name": "ስም ግዴታ ነው",
+      "save_req_contact": "ስልክ ወይም ኢሜይል ግዴታ ነው",
+      "save_success_add": "ተጠቃሚ ተጨምሯል",
+      "save_success_edit": "ተጠቃሚ ተስተካክሏል",
+      "save_error": "ለማስቀመጥ ስህተት ተፈጥሯል"
+    },
+    "profile": {
+      "info_tab": "መረጃ",
+      "history_tab": "ታሪክ",
+      "not_provided": "አልቀረበም",
+      "verified_contact": "የተረጋገጠ እውቂያ",
+      "group": "ቡድን",
+      "sponsor": "ስፖንሰር",
+      "yes": "አዎ"
+    }
+  }
 }

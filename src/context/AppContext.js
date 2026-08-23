@@ -11,6 +11,7 @@ import arDict from '../i18n/locales/ar.json';
 
 const TRANSLATIONS = { en: enDict, fr: frDict, pt: ptDict, am: amDict, ar: arDict };
 import { supabase } from '../services/supabaseClient';
+import { transactionService } from '../services/transactionService';
 
 const AppContext = createContext();
 
@@ -27,12 +28,16 @@ export function AppProvider({ children }) {
   });
   
   const [session, setSession] = useState(null);
+  const [transactions, setTransactions] = useState([]);
+  const [isTransactionsLoading, setIsTransactionsLoading] = useState(false);
   const [isAppLocked, setIsAppLocked] = useState(false);
   const [isCheckingLock, setIsCheckingLock] = useState(true);
   const [appSettings, setAppSettings] = useState({
     support_email: 'support@dizzitup.com',
     whatsapp_number: '+228 90 00 00 00',
-    help_center_url: 'dizzitup.com/faq'
+    help_center_url: 'dizzitup.com/faq',
+    refer_user_reward: 5,
+    refer_business_reward: 10
   });
 
   useEffect(() => {
@@ -189,6 +194,16 @@ export function AppProvider({ children }) {
           console.log("Balance fetch failed:", e);
         }
 
+        try {
+          setIsTransactionsLoading(true);
+          const txs = await transactionService.fetchUnifiedTransactions(sessionObj.user.id, sessionObj.access_token);
+          setTransactions(txs);
+        } catch (e) {
+          console.log("Transaction fetch failed:", e);
+        } finally {
+          setIsTransactionsLoading(false);
+        }
+
         setUser({
           name: fetchedName,
           firstName: fetchedFirstName,
@@ -231,11 +246,38 @@ export function AppProvider({ children }) {
   const [hideBalance, setHideBalance] = useState(false);
   const [language, setLanguage] = useState('fr'); // 'en' | 'fr' | 'pt' | 'am' | 'ar'
 
+  const handleSetLanguage = useCallback((newLang) => {
+    if (typeof newLang === 'function') {
+      setLanguage(prev => {
+        const result = newLang(prev);
+        if (Platform.OS !== 'web') SecureStore.setItemAsync('app_language', result).catch(() => {});
+        return result;
+      });
+    } else {
+      if (Platform.OS !== 'web') SecureStore.setItemAsync('app_language', newLang).catch(() => {});
+      setLanguage(newLang);
+    }
+  }, []);
+
+  useEffect(() => {
+    const loadLanguage = async () => {
+      try {
+        const storedLang = await SecureStore.getItemAsync('app_language');
+        if (storedLang) setLanguage(storedLang);
+      } catch (err) {}
+    };
+    if (Platform.OS !== 'web') loadLanguage();
+  }, []);
+
   const toggleLanguage = useCallback(() => {
     const langs = ['en', 'fr', 'pt', 'ar', 'am'];
     setLanguage(prev => {
       const idx = langs.indexOf(prev);
-      return langs[(idx + 1) % langs.length];
+      const nextLang = langs[(idx + 1) % langs.length];
+      if (Platform.OS !== 'web') {
+        SecureStore.setItemAsync('app_language', nextLang).catch(() => {});
+      }
+      return nextLang;
     });
   }, []);
 
@@ -316,6 +358,19 @@ export function AppProvider({ children }) {
 
   const toggleHideBalance = () => setHideBalance(prev => !prev);
 
+  const refreshTransactions = async () => {
+    if (!session?.user?.id || !session?.access_token) return;
+    try {
+      setIsTransactionsLoading(true);
+      const txs = await transactionService.fetchUnifiedTransactions(session.user.id, session.access_token);
+      setTransactions(txs);
+    } catch (e) {
+      console.log("Manual transaction refresh failed:", e);
+    } finally {
+      setIsTransactionsLoading(false);
+    }
+  };
+
   return (
     <AppContext.Provider value={{
       user,
@@ -323,6 +378,9 @@ export function AppProvider({ children }) {
       session,
       shops,
       contacts,
+      transactions,
+      isTransactionsLoading,
+      refreshTransactions,
       favorites,
       toggleFavorite,
       cart,
@@ -333,7 +391,7 @@ export function AppProvider({ children }) {
       hideBalance,
       toggleHideBalance,
       language,
-      setLanguage,
+      setLanguage: handleSetLanguage,
       toggleLanguage,
       t,
       isAppLocked,

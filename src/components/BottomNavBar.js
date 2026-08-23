@@ -124,7 +124,7 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
 function NavItem({ icon, label, isActive, onPress }) {
   return (
     <TouchableOpacity style={styles.navItem} onPress={onPress} activeOpacity={0.7}>
-      <Ionicons name={isActive ? icon.replace('-outline', '') : icon} size={22} color={isActive ? '#3B82F6' : '#A0AABF'} />
+      <Ionicons name={isActive ? icon.replace('-outline', '') : icon} size={22} color={isActive ? '#20365B' : '#A0AABF'} />
       <Text style={[styles.navLabel, isActive && styles.navLabelActive]} numberOfLines={1}>{label}</Text>
     </TouchableOpacity>
   );
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   navLabelActive: {
-    color: '#3B82F6',
+    color: '#20365B',
   },
   centerButtonWrapper: {
     flex: 1,

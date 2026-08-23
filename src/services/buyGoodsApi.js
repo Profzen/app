@@ -80,5 +80,81 @@ export const buyGoodsApi = {
       console.error('buyGoodsApi.getProductById Error:', error);
       throw error;
     }
+  },
+
+  getUserNotifications: async (userId) => {
+    try {
+      const response = await fetch(`${BASE_URL}/user-notifications/${userId}`);
+      if (!response.ok) throw new Error('Failed to fetch user notifications');
+      const data = await response.json();
+      return data.data || [];
+    } catch (error) {
+      console.error('buyGoodsApi.getUserNotifications Error:', error);
+      throw error;
+    }
+  },
+
+  markUserNotificationAsRead: async (notificationId) => {
+    try {
+      const response = await fetch(`${BASE_URL}/user-notifications/${notificationId}/read`, { method: 'PATCH' });
+      return response.ok;
+    } catch (error) {
+      console.error('buyGoodsApi.markUserNotificationAsRead Error:', error);
+      return false;
+    }
+  },
+
+  markAllUserNotificationsAsRead: async (userId) => {
+    try {
+      const response = await fetch(`${BASE_URL}/user-notifications/user/${userId}/read-all`, { method: 'PATCH' });
+      return response.ok;
+    } catch (error) {
+      console.error('buyGoodsApi.markAllUserNotificationsAsRead Error:', error);
+      return false;
+    }
+  },
+
+  getMerchantNotifications: async (merchantId, token) => {
+    try {
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      const response = await fetch(`${BASE_URL}/merchant/notifications?merchantId=${merchantId}`, { headers });
+      if (!response.ok) throw new Error('Failed to fetch merchant notifications');
+      const data = await response.json();
+      return data.data || [];
+    } catch (error) {
+      console.error('buyGoodsApi.getMerchantNotifications Error:', error);
+      throw error;
+    }
+  },
+
+  markMerchantNotificationAsRead: async (notificationId, token) => {
+    try {
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      const response = await fetch(`${BASE_URL}/merchant/notifications/${notificationId}/read`, { 
+        method: 'PATCH',
+        headers
+      });
+      return response.ok;
+    } catch (error) {
+      console.error('buyGoodsApi.markMerchantNotificationAsRead Error:', error);
+      return false;
+    }
+  },
+
+  markAllMerchantNotificationsAsRead: async (merchantId, token) => {
+    try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      
+      const response = await fetch(`${BASE_URL}/merchant/notifications/read-all`, { 
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ merchantId })
+      });
+      return response.ok;
+    } catch (error) {
+      console.error('buyGoodsApi.markAllMerchantNotificationsAsRead Error:', error);
+      return false;
+    }
   }
 };

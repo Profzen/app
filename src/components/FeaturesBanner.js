@@ -54,10 +54,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     borderTopWidth: 1,
     borderTopColor: '#F3F4F6',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
+    boxShadow: '0px -2px 4px rgba(0,0,0,0.03)',
     elevation: 3,
   },
   featureItem: {

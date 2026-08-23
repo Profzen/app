@@ -5,19 +5,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
-
+import { LanguageSelector } from '../components/LanguageSelector';
 import { useApp } from '../context/AppContext';
 
 
-const getFlagCode = (lang) => {
-  switch(lang) {
-    case 'fr': return 'fr';
-    case 'pt': return 'pt';
-    case 'ar': return 'sa';
-    case 'am': return 'et';
-    default: return 'gb';
-  }
-};
 
 export default function MoreSettingsScreen() {
   const navigation = useNavigation();
@@ -62,12 +53,9 @@ export default function MoreSettingsScreen() {
               <Text style={styles.pageTitle}>{t('moreTitle', 'Settings')}</Text>
               <Text style={styles.pageSubtitle}>{t('moreSubtitle', 'Manage your account and preferences')}</Text>
             </View>
-            <TouchableOpacity style={styles.notificationButton} onPress={toggleLanguage} accessibilityLabel="Switch language">
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Text style={{marginRight: 6, fontSize: 12, fontWeight: 'bold', color: '#1A2840'}}>{language.toUpperCase()}</Text>
-                  <Image source={{ uri: `https://flagcdn.com/w40/${getFlagCode(language)}.png` }} style={{ width: 22, height: 15, borderRadius: 3 }} />
-                </View>
-            </TouchableOpacity>
+            <View style={{ marginRight: 8 }}>
+              <LanguageSelector />
+            </View>
             <TouchableOpacity style={styles.notificationButton} accessibilityLabel="Notifications">
               <Ionicons name="notifications-outline" size={20} color="#1A2840" />
               <View style={styles.notificationDot} />

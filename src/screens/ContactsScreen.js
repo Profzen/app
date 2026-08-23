@@ -1,12 +1,14 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useMemo, useRef, useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, TextInput, Image, PanResponder, Animated, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
+import Avatar from '../components/Avatar';
 import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
 import { useApp } from '../context/AppContext';
+import contactService from '../services/contactService';
 
 const quickActions = [
   { id: '1', title: "Payer et\nacheter l'essentiel", subtitle: "Achat de crédit,\ninternet, TV, jeux,\ncrypto et plus", icon: "bag-handle-outline", color: "#8B5CF6" },
@@ -16,28 +18,69 @@ const quickActions = [
   { id: '5', title: "Inviter", subtitle: "Invitez vos amis\net gagnez\n$5 en DZY", icon: "person-add-outline", color: "#8B5CF6" },
 ];
 
-const contactsData = [
-  { id: '1', name: "John Doe", relation: "Frère", location: "Lomé, Togo", flag: "🇹🇬", isBeneficiary: true, isSponsor: true, image: "https://i.pravatar.cc/150?img=11" },
-  { id: '2', name: "Marie K.", relation: "Sœur", location: "Dakar, Sénégal", flag: "🇸🇳", isBeneficiary: true, isSponsor: true, image: "https://i.pravatar.cc/150?img=5" },
-  { id: '3', name: "Ousmane T.", relation: "Ami", location: "Bamako, Mali", flag: "🇲🇱", isBeneficiary: true, isSponsor: false, image: "https://i.pravatar.cc/150?img=12" },
-  { id: '4', name: "Aïssatou B.", relation: "Famille", location: "Ouagadougou, Burkina Faso", flag: "🇧🇫", isBeneficiary: true, isSponsor: false, image: "https://i.pravatar.cc/150?img=9" },
-  { id: '5', name: "Kwame A.", relation: "Ami", location: "Accra, Ghana", flag: "🇬🇭", isBeneficiary: false, isSponsor: true, image: "https://i.pravatar.cc/150?img=14" },
-];
+
+const getFlagEmoji = (countryCode) => {
+  if (!countryCode) return '🌍';
+  const codePoints = countryCode
+    .toUpperCase()
+    .split('')
+    .map(char => 127397 + char.charCodeAt());
+  return String.fromCodePoint(...codePoints);
+};
 
 export default function ContactsScreen() {
   const navigation = useNavigation();
-  const { language, t } = useApp();
+  const route = useRoute();
+  const { language, t, session } = useApp();
   const [showInvite, setShowInvite] = useState(true);
-  const [contactItems, setContactItems] = useState(contactsData);
+  const [contactItems, setContactItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [openSwipe, setOpenSwipe] = useState(null);
   const [toast, setToast] = useState(null);
 
+  const nextScreen = route.params?.nextScreen;
   const actionRoutes = { '1': 'ChooseServiceScreen', '2': 'MobileRechargeScreen', '3': 'ChooseServiceScreen', '4': 'SendMoneyScreen', '5': 'RewardsScreen' };
 
-  const removeContact = (id) => {
-    setContactItems((items) => items.filter((item) => item.id !== id));
+  const fetchBeneficiaries = async () => {
+    if (!session?.user?.id) {
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    const { success, data } = await contactService.getBeneficiaries(session.user.id);
+    if (success) {
+      const formatted = data.map(b => ({
+        id: b.id,
+        name: b.full_name || `${b.first_name} ${b.last_name || ''}`.trim(),
+        relation: b.relationship || t('contacts.relation.friend', 'Ami'),
+        location: `${b.city ? b.city + ', ' : ''}${b.country_code || ''}`,
+        country: b.country || b.country_name || (b.country_code ? (() => { try { return new Intl.DisplayNames(['en'], {type: 'region'}).of(b.country_code) } catch(e) { return b.country_code } })() : ''),
+        country_code: b.country_code,
+        city: b.city,
+        flag: getFlagEmoji(b.country_code),
+        isBeneficiary: true,
+        isSponsor: false,
+        image: b.avatar_url || null,
+        raw_data: b
+      }));
+      setContactItems(formatted);
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    fetchBeneficiaries();
+  }, [session?.user?.id]);
+
+  const removeContact = async (id) => {
+    const { success, error } = await contactService.deleteBeneficiary(id);
+    if (success) {
+      setContactItems((items) => items.filter((item) => item.id !== id));
+      setToast({ title: t('contacts.deleted', 'Contact supprimé'), message: t('contacts.deleted_desc', 'Le contact a été retiré avec succès.') });
+    } else {
+      setToast({ title: t('common.error', 'Erreur'), message: error || t('contacts.delete_error', 'Impossible de supprimer ce contact.') });
+    }
     setOpenSwipe(null);
-    setToast({ title: language === 'fr' ? 'Contact supprimé' : 'Contact removed', message: language === 'fr' ? 'Le contact a été retiré avec succès.' : 'Contact has been successfully removed.' });
   };
 
   return (
@@ -70,7 +113,11 @@ export default function ContactsScreen() {
             <Text style={styles.syncBtnText}>{t('syncContactsBtn', 'Synchroniser vos contacts')}</Text>
           </TouchableOpacity>
           
-          <Text style={styles.subtitle}>{t('contactsSubtitle', 'Envoyez de l\'argent à vos bénéficiaires à travers l\'Afrique.')}</Text>
+          <Text style={styles.subtitle}>
+            {nextScreen 
+              ? t('contacts.select_beneficiary_action', 'Sélectionnez un bénéficiaire pour continuer.')
+              : t('contactsSubtitle', "Envoyez de l'argent à vos bénéficiaires à travers l'Afrique.")}
+          </Text>
 
           {/* Search Bar */}
           <View style={styles.searchContainer}>
@@ -85,35 +132,51 @@ export default function ContactsScreen() {
             </View>
           </View>
 
-          {/* Actions rapides */}
-          <Text style={styles.sectionTitle}>Actions rapides</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickActionsScroll}>
-            {quickActions.map(action => (
-              <TouchableOpacity 
-                key={action.id} 
-                style={styles.quickActionCard} 
-                onPress={() => {
-                  if (action.id === '5') {
-                    shareInviteLink();
-                  } else {
-                    navigation.navigate(actionRoutes[action.id]);
-                  }
-                }}
-              >
-                <View style={styles.quickActionIconContainer}>
-                  <Ionicons name={action.icon} size={28} color={action.color} />
+          {nextScreen ? (
+            <View style={styles.activeActionBanner}>
+              <View style={styles.activeActionBannerLeft}>
+                <Ionicons name="information-circle" size={24} color="#3B82F6" />
+                <View style={{ marginLeft: 12 }}>
+                  <Text style={styles.activeActionTitle}>{t('contacts.action_selected_title', 'Sélectionnez un bénéficiaire')}</Text>
+                  <Text style={styles.activeActionSub}>{t('contacts.action_selected_sub', 'Appuyez sur un contact ci-dessous pour continuer')}</Text>
                 </View>
-                <Text style={styles.quickActionTitle}>{action.title}</Text>
-                <Text style={styles.quickActionSubtitle}>{action.subtitle}</Text>
+              </View>
+              <TouchableOpacity style={styles.cancelActionBtn} onPress={() => navigation.setParams({ nextScreen: undefined })}>
+                <Text style={styles.cancelActionText}>{t('common.cancel', 'Annuler')}</Text>
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+            </View>
+          ) : (
+            <>
+              <Text style={styles.sectionTitle}>{t('contacts.quick_actions', 'Actions rapides')}</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickActionsScroll}>
+                {quickActions.map(action => (
+                  <TouchableOpacity 
+                    key={action.id} 
+                    style={styles.quickActionCard} 
+                    onPress={() => {
+                      if (action.id === '5') {
+                        shareInviteLink();
+                      } else {
+                        navigation.setParams({ nextScreen: actionRoutes[action.id] });
+                      }
+                    }}
+                  >
+                    <View style={styles.quickActionIconContainer}>
+                      <Ionicons name={action.icon} size={28} color={action.color} />
+                    </View>
+                    <Text style={styles.quickActionTitle}>{t(`contacts.quick_action_${action.id}.title`, action.title)}</Text>
+                    <Text style={styles.quickActionSubtitle}>{t(`contacts.quick_action_${action.id}.subtitle`, action.subtitle)}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </>
+          )}
 
           {/* Mes bénéficiaires */}
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>Mes bénéficiaires</Text>
+            <Text style={styles.sectionTitle}>{t('contacts.my_beneficiaries', 'Mes bénéficiaires')}</Text>
             <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => navigation.navigate('ContactsManageScreen')}>
-              <Text style={styles.showLessText}>Gérer contacts</Text>
+              <Text style={styles.showLessText}>{t('contacts.manage_contacts', 'Gérer contacts')}</Text>
               <Ionicons name="arrow-forward" size={14} color="#64748B" style={{ marginLeft: 4 }} />
             </TouchableOpacity>
           </View>
@@ -122,27 +185,27 @@ export default function ContactsScreen() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>
             <TouchableOpacity style={styles.filterChipActive}>
               <Ionicons name="location-outline" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
-              <Text style={styles.filterChipTextActive}>À proximité</Text>
+              <Text style={styles.filterChipTextActive}>{t('contacts.filter_nearby', 'À proximité')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.filterChip}>
               <Ionicons name="heart-outline" size={16} color="#64748B" style={{ marginRight: 6 }} />
-              <Text style={styles.filterChipText}>De mes pays préférés</Text>
+              <Text style={styles.filterChipText}>{t('contacts.filter_favorites', 'De mes pays préférés')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.filterChip}>
               <Ionicons name="earth-outline" size={16} color="#64748B" style={{ marginRight: 6 }} />
-              <Text style={styles.filterChipText}>De toute l'Afrique</Text>
+              <Text style={styles.filterChipText}>{t('contacts.filter_africa', "De toute l'Afrique")}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.filterChip}>
               <Ionicons name="globe-outline" size={16} color="#64748B" style={{ marginRight: 6 }} />
-              <Text style={styles.filterChipText}>Du reste du monde</Text>
+              <Text style={styles.filterChipText}>{t('contacts.filter_world', 'Du reste du monde')}</Text>
             </TouchableOpacity>
           </ScrollView>
 
           {/* Contacts List Header */}
           <View style={styles.listHeaderRow}>
-            <Text style={[styles.listHeaderText, { flex: 2 }]}>Contact</Text>
-            <Text style={[styles.listHeaderText, { flex: 1, textAlign: 'center' }]}>Bénéficiaire</Text>
-            <Text style={[styles.listHeaderText, { flex: 1, textAlign: 'center' }]}>Parrain</Text>
+            <Text style={[styles.listHeaderText, { flex: 2 }]}>{t('contacts.col_contact', 'Contact')}</Text>
+            <Text style={[styles.listHeaderText, { flex: 1, textAlign: 'center' }]}>{t('contacts.col_beneficiary', 'Bénéficiaire')}</Text>
+            <Text style={[styles.listHeaderText, { flex: 1, textAlign: 'center' }]}>{t('contacts.col_sponsor', 'Parrain')}</Text>
             <View style={{ width: 34 }} />
           </View>
 
@@ -154,12 +217,13 @@ export default function ContactsScreen() {
                 contact={contact}
                 direction={openSwipe?.id === contact.id ? openSwipe.direction : null}
                 onDirection={(direction) => setOpenSwipe(direction ? { id: contact.id, direction } : null)}
-                onNavigate={(route) => navigation.navigate(route)}
+                onNavigate={(routeStr, extraParams = {}) => navigation.navigate(routeStr, { beneficiary: contact, contact, ...extraParams })}
                 onDelete={() => removeContact(contact.id)}
                 onFavorite={() => {
                   setOpenSwipe(null);
                   setToast({ title: 'Ajouté aux favoris', message: `${contact.name} a été ajouté à vos favoris.` });
                 }}
+                defaultRoute={nextScreen || 'ContactProfileScreen'}
               />
             ))}
           </View>
@@ -175,13 +239,13 @@ export default function ContactsScreen() {
               </TouchableOpacity>
               <View style={styles.inviteBannerLeft}>
                 <Text style={styles.inviteBannerTitle}>
-                  Invitez vos amis{'\n'}et gagnez <Text style={{ color: '#FFB800' }}>$5 en DZY</Text>
+                  {t('home.inviteBannerTitle_1', "Invitez vos amis\net gagnez ")}<Text style={{color: '#FFB800'}}>{t('home.inviteBannerTitle_2', "$5 en DZY")}</Text>
                 </Text>
                 <Text style={styles.inviteBannerText}>
-                  Envoyez de l'argent, achetez, payez des factures et gagnez des récompenses ensemble.
+                  {t('home.inviteBannerDesc', "Envoyez de l'argent, achetez, payez des factures et gagnez des récompenses ensemble.")}
                 </Text>
                 <TouchableOpacity style={styles.inviteBtn} onPress={() => shareInviteLink()}>
-                  <Text style={styles.inviteBtnText}>Inviter maintenant</Text>
+                  <Text style={styles.inviteBtnText}>{t('home.btnInviteNow', "Inviter maintenant")}</Text>
                 </TouchableOpacity>
               </View>
               <View style={styles.inviteBannerRight}>
@@ -200,7 +264,8 @@ export default function ContactsScreen() {
   );
 }
 
-function SwipeContactRow({ contact, direction, onDirection, onNavigate, onDelete, onFavorite }) {
+function SwipeContactRow({ contact, direction, onDirection, onNavigate, onDelete, onFavorite, defaultRoute = 'ContactProfileScreen' }) {
+  const { t } = useApp();
   const translateX = useRef(new Animated.Value(0)).current;
   const lastSwipeDx = useRef(0);
 
@@ -239,7 +304,7 @@ function SwipeContactRow({ contact, direction, onDirection, onNavigate, onDelete
 
   const personInfo = (
     <View style={styles.contactInfoCol}>
-      <Image source={typeof contact.avatar === 'number' ? contact.avatar : (contact.image ? { uri: contact.image } : require('../../assets/avatars/david.jpg'))} style={styles.contactAvatar} />
+      <Avatar image={contact.image} name={contact.name} size={40} style={styles.contactAvatar} />
       <View style={styles.contactDetails}>
         <Text style={styles.contactName}>{contact.name}</Text>
         <Text style={styles.contactRelation}>{contact.relation}</Text>
@@ -276,8 +341,8 @@ function SwipeContactRow({ contact, direction, onDirection, onNavigate, onDelete
 
   return (
     <Animated.View style={[styles.contactItem, { transform: [{ translateX }] }]} {...panResponder.panHandlers}>
-      <TouchableOpacity style={styles.contactInfoCol} onPress={() => onNavigate('ContactProfileScreen')}>
-        <Image source={typeof contact.avatar === 'number' ? contact.avatar : (contact.image ? { uri: contact.image } : require('../../assets/avatars/david.jpg'))} style={styles.contactAvatar} />
+      <TouchableOpacity style={styles.contactInfoCol} onPress={() => onNavigate(defaultRoute)}>
+        <Avatar image={contact.image} name={contact.name} size={40} style={styles.contactAvatar} />
         <View style={styles.contactDetails}>
           <Text style={styles.contactName}>{contact.name}</Text>
           <Text style={styles.contactRelation}>{contact.relation}</Text>
@@ -285,19 +350,27 @@ function SwipeContactRow({ contact, direction, onDirection, onNavigate, onDelete
         </View>
       </TouchableOpacity>
 
-      <View style={styles.statusCol}>
+      <TouchableOpacity 
+        style={styles.statusCol}
+        onPress={() => !contact.isBeneficiary && onNavigate('EditBeneficiaryScreen', { isEditing: false, beneficiary: contact })}
+        disabled={contact.isBeneficiary}
+      >
         <Ionicons name="person-outline" size={20} color={contact.isBeneficiary ? '#10B981' : '#94A3B8'} />
         <Text style={[styles.statusText, { color: contact.isBeneficiary ? '#10B981' : '#94A3B8' }]}>
-          {contact.isBeneficiary ? 'Oui' : 'Non'}
+          {contact.isBeneficiary ? t('beneficiary_management.profile.yes', 'Oui') : t('beneficiary_management.profile.no', 'Non')}
         </Text>
-      </View>
+      </TouchableOpacity>
 
-      <View style={styles.statusCol}>
+      <TouchableOpacity 
+        style={styles.statusCol}
+        onPress={() => !contact.isSponsor && onNavigate('RewardsScreen')}
+        disabled={contact.isSponsor}
+      >
         <Ionicons name="person-add-outline" size={20} color={contact.isSponsor ? '#10B981' : '#94A3B8'} />
         <Text style={[styles.statusText, { color: contact.isSponsor ? '#10B981' : '#94A3B8' }]}>
-          {contact.isSponsor ? 'Oui' : 'Non'}
+          {contact.isSponsor ? t('beneficiary_management.profile.yes', 'Oui') : t('beneficiary_management.profile.no', 'Non')}
         </Text>
-      </View>
+      </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.swipeTriggerBtn}
@@ -335,7 +408,7 @@ const styles = StyleSheet.create({
   iconBtnRight: { width: 36, height: 36, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 18, borderWidth: 1, borderColor: '#F1F5F9', marginLeft: 8, position: 'relative' },
   notificationDot: { position: 'absolute', top: 8, right: 8, width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFB800', borderWidth: 1, borderColor: '#FFFFFF' },
   scrollView: { flex: 1 },
-  scrollContent: { paddingTop: 8, paddingBottom: 160 },
+  scrollContent: { paddingTop: 8, paddingBottom: 200 },
   syncBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, marginBottom: 8 },
   syncBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#3B82F6' },
   subtitle: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#64748B', paddingHorizontal: 16, marginBottom: 16 },
@@ -343,6 +416,12 @@ const styles = StyleSheet.create({
   searchIcon: { marginRight: 12 },
   searchInput: { fontFamily: 'Inter_500Medium', fontSize: 14, color: '#1A2840', marginBottom: 2, padding: 0, outlineStyle: 'none' },
   searchSubText: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#94A3B8' },
+  activeActionBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#EFF6FF', borderRadius: 16, padding: 16, marginHorizontal: 16, marginBottom: 24, borderWidth: 1, borderColor: '#BFDBFE', shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 2 },
+  activeActionBannerLeft: { flex: 1, flexDirection: 'row', alignItems: 'center' },
+  activeActionTitle: { fontFamily: 'Inter_700Bold', fontSize: 14, color: '#1E3A8A', marginBottom: 2 },
+  activeActionSub: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#3B82F6' },
+  cancelActionBtn: { backgroundColor: '#FFFFFF', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: '#BFDBFE' },
+  cancelActionText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#EF4444' },
   sectionTitle: { fontFamily: 'Inter_700Bold', fontSize: 16, color: '#1A2840', paddingHorizontal: 16, marginBottom: 12 },
   quickActionsScroll: { paddingHorizontal: 16, paddingBottom: 24 },
   quickActionCard: { width: 140, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, padding: 16, marginRight: 12, alignItems: 'center' },
@@ -377,7 +456,7 @@ const styles = StyleSheet.create({
   swipeTriggerBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F1F5F9' },
   toastWrap: { position: 'absolute', left: 14, right: 14, top: 70, zIndex: 50 },
   inviteBannerWrapper: { position: 'absolute', bottom: 90, left: 16, right: 16 },
-  inviteBanner: { backgroundColor: '#0A1128', borderRadius: 16, padding: 16, flexDirection: 'row', alignItems: 'center', position: 'relative', overflow: 'hidden' },
+  inviteBanner: { backgroundColor: '#20365B', borderRadius: 16, padding: 16, flexDirection: 'row', alignItems: 'center', position: 'relative', overflow: 'hidden' },
   closeBannerBtn: { position: 'absolute', top: 12, right: 12, zIndex: 10 },
   inviteBannerLeft: { flex: 1, zIndex: 2 },
   inviteBannerTitle: { fontFamily: 'Inter_700Bold', fontSize: 16, color: '#FFFFFF', marginBottom: 8, lineHeight: 22 },
@@ -385,5 +464,5 @@ const styles = StyleSheet.create({
   inviteBtn: { backgroundColor: '#FFB800', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8, alignSelf: 'flex-start' },
   inviteBtnText: { fontFamily: 'Inter_700Bold', fontSize: 12, color: '#1A2840' },
   inviteBannerRight: { width: 80, height: 80, justifyContent: 'center', alignItems: 'center', zIndex: 1 },
-  mockPhoneIllustration: { width: 56, height: 80, backgroundColor: '#FFFFFF', borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  mockPhoneIllustration: { width: 64, height: 64, backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 32, justifyContent: 'center', alignItems: 'center' },
 });

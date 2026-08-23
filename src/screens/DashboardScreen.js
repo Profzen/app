@@ -3,40 +3,72 @@ import React from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import BottomNavBar from '../components/BottomNavBar';
+import { LanguageSelector } from '../components/LanguageSelector';
 import { useApp } from '../context/AppContext';
 
 const { width } = Dimensions.get('window');
 
-const FONDS_DATA = [
-  { id: '1', symbol: 'USDC', sub: 'USDC', balance: '12 450,00', currency: 'USDC', iconUrl: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png' },
-  { id: '2', symbol: 'USDT', sub: '(TRC20)', balance: '8 750,00', currency: 'USDT', iconUrl: 'https://cryptologos.cc/logos/tether-usdt-logo.png' },
-  { id: '3', symbol: 'EURC', sub: 'EURC', balance: '3 200,00', currency: 'EURC', isCustom: true, icon: 'logo-euro', iconColor: '#2775CA' },
-  { id: '4', symbol: 'DZY', sub: 'DZY', balance: '125 500,00', currency: 'DZY', isLocal: true },
-  { id: '5', symbol: 'Bitcoin', sub: '(WBTC)', balance: '0,2450', currency: 'WBTC', iconUrl: 'https://cryptologos.cc/logos/wrapped-bitcoin-wbtc-logo.png' },
+const DEFAULT_FONDS = [
+  { id: '1', symbol: 'USDC', sub: 'USDC', balance: '0.00', currency: 'USDC', iconUrl: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png' },
+  { id: '2', symbol: 'USDT', sub: '(TRC20)', balance: '0.00', currency: 'USDT', iconUrl: 'https://cryptologos.cc/logos/tether-usdt-logo.png' },
+  { id: '3', symbol: 'EURC', sub: 'EURC', balance: '0.00', currency: 'EURC', isCustom: true, icon: 'logo-euro', iconColor: '#2775CA' },
+  { id: '4', symbol: 'DZY', sub: 'DZY', balance: '0.00', currency: 'DZY', isLocal: true },
+  { id: '5', symbol: 'Bitcoin', sub: '(WBTC)', balance: '0.00', currency: 'WBTC', iconUrl: 'https://cryptologos.cc/logos/wrapped-bitcoin-wbtc-logo.png' },
 ];
-
-const TRANSACTIONS = [
-  { id: '1', title: 'Achat BuyGoods', sub: 'Supermarket, Yaoundé', amount: '-25 000 DZY', time: '12 Mai 2024 • 11:09', isPositive: false, icon: 'bag-handle-outline', color: '#F59E0B' },
-  { id: '2', title: 'Facture CEET', sub: 'Paiement électricité', amount: '-8 500 DZY', time: '11 Mai 2024 • 18:15', isPositive: false, icon: 'flash-outline', color: '#3B82F6' },
-  { id: '3', title: 'Transfert reçu', sub: 'De : Sarah M.', amount: '+15 000 DZY', time: '11 Mai 2024 • 14:20', isPositive: true, icon: 'download-outline', color: '#10B981' },
-  { id: '4', title: 'Airtime & Data', sub: 'MTN Cameroun', amount: '-2 000 DZY', time: '10 Mai 2024 • 09:15', isPositive: false, icon: 'call-outline', color: '#3B82F6' },
-  { id: '5', title: 'Conversion DZY → USDC', sub: 'Taux : 1 DZY = 0,00021 USDC', amount: '-50 000 DZY', amountSub: '+37,00 USDC', time: '09 Mai 2024 • 16:05', isPositive: null, icon: 'swap-horizontal-outline', color: '#F59E0B' },
-];
-
-const getFlagCode = (lang) => {
-  switch (lang) {
-    case 'fr': return 'fr';
-    case 'pt': return 'pt';
-    case 'ar': return 'sa';
-    case 'am': return 'et';
-    default: return 'gb';
-  }
-};
 
 export default function DashboardScreen() {
   const navigation = useNavigation();
-  const { hideBalance, toggleHideBalance, language, toggleLanguage, t } = useApp();
+  const { hideBalance, toggleHideBalance, language, toggleLanguage, t, transactions, user } = useApp();
+
+  const getDynamicFonds = () => {
+    if (!user?.rawBalances || user.rawBalances.length === 0) return DEFAULT_FONDS;
+    
+    // Map backend balances to our UI format
+    return user.rawBalances.map((item, index) => {
+      const cur = (item.currency || item.token || item.symbol || '').toUpperCase();
+      let uiProps = DEFAULT_FONDS.find(f => f.symbol === cur || f.currency === cur);
+      
+      if (!uiProps) {
+        // Fallback for unknown tokens
+        uiProps = {
+          symbol: cur,
+          sub: item.chain ? `(${item.chain.toUpperCase()})` : cur,
+          currency: cur,
+          isCustom: true,
+          icon: 'wallet-outline',
+          iconColor: '#94A3B8'
+        };
+      }
+
+      return {
+        ...uiProps,
+        id: `f_${index}`,
+        balance: formatAmount(item.balance || 0),
+      };
+    });
+  };
+
+  const dynamicFonds = getDynamicFonds();
+
+  const getTxStyles = (type) => {
+    const t = (type || '').toUpperCase();
+    if (t === 'SEND') return { icon: 'arrow-up-circle-outline', color: '#EF4444' };
+    if (t === 'RECEIVE') return { icon: 'arrow-down-circle-outline', color: '#10B981' };
+    if (t === 'BUY') return { icon: 'cart-outline', color: '#F59E0B' };
+    if (t === 'TOP_UP' || t === 'TOP-UP') return { icon: 'phone-portrait-outline', color: '#34D399' };
+    if (t === 'SWAP') return { icon: 'swap-horizontal-outline', color: '#8B5CF6' };
+    if (t === 'PAY') return { icon: 'flash-outline', color: '#60A5FA' };
+    if (t === 'SALE') return { icon: 'arrow-down-circle-outline', color: '#10B981' };
+    return { icon: 'time-outline', color: '#9CA3AF' };
+  };
+
+  const formatAmount = (amount) => {
+    const num = Number(amount);
+    if (isNaN(num)) return "0.00";
+    return new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 6 }).format(num);
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -48,10 +80,8 @@ export default function DashboardScreen() {
             <Text style={styles.dizzitText}>Dizzit<Text style={styles.upText}>Up</Text></Text>
           </View>
           <View style={styles.headerRight}>
-            <TouchableOpacity onPress={toggleLanguage} accessibilityLabel="Changer la langue / Switch language" style={styles.flagBtn}>
-              <Image source={{uri: `https://flagcdn.com/w40/${getFlagCode(language)}.png`}} style={styles.flagIcon} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtn}>
+            <LanguageSelector />
+            <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('NotificationsScreen')}>
               <Ionicons name="notifications-outline" size={18} color="#1A2840" />
               <View style={styles.badge} />
             </TouchableOpacity>
@@ -67,7 +97,7 @@ export default function DashboardScreen() {
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           
           {/* Wallet Card */}
-          <View style={styles.walletCard}>
+          <LinearGradient colors={['#2B4C7E', '#20365B']} start={{x: 0, y: 0}} end={{x: 1, y: 1}} style={styles.walletCard}>
             <View style={styles.walletHeader}>
               <TouchableOpacity style={styles.walletHeaderLeft} onPress={toggleHideBalance} activeOpacity={0.7}>
                 <Text style={styles.soldeText}>{language === 'fr' ? 'Solde total' : 'Total balance'}</Text>
@@ -100,7 +130,7 @@ export default function DashboardScreen() {
                 <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={{width: 80, height: 80}} resizeMode="contain" />
               </View>
             </View>
-          </View>
+          </LinearGradient>
 
           {/* Quick Actions */}
           <View style={styles.actionsGrid}>
@@ -151,7 +181,7 @@ export default function DashboardScreen() {
           </View>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.fondsScroll}>
-            {FONDS_DATA.map((item, index) => (
+            {dynamicFonds.map((item, index) => (
               <React.Fragment key={item.id}>
                 <View style={styles.fondItem}>
                   <View style={styles.fondIcon}>
@@ -171,7 +201,7 @@ export default function DashboardScreen() {
                   <Text style={styles.fondCurrency}>{item.currency}</Text>
                 </View>
                 
-                {index < FONDS_DATA.length - 1 && (
+                {index < dynamicFonds.length - 1 && (
                   <View style={styles.fondSeparator}>
                     <Ionicons name="chevron-forward" size={16} color="#475569" />
                   </View>
@@ -181,7 +211,7 @@ export default function DashboardScreen() {
           </ScrollView>
 
           {/* DZYCard Promo */}
-          <View style={styles.cardPromo}>
+          <LinearGradient colors={['#2B4C7E', '#20365B']} start={{x: 0, y: 0}} end={{x: 1, y: 1}} style={styles.cardPromo}>
             <View style={styles.cardPromoContent}>
               <Text style={styles.cardPromoText}>
                 {language === 'fr' 
@@ -225,7 +255,7 @@ export default function DashboardScreen() {
                 </View>
               </View>
             </View>
-          </View>
+          </LinearGradient>
 
           {/* Transactions récentes */}
           <View style={styles.sectionHeader}>
@@ -236,27 +266,43 @@ export default function DashboardScreen() {
           </View>
 
           <View style={styles.transactionsList}>
-            {TRANSACTIONS.map((tx) => (
-              <View key={tx.id} style={styles.txRow}>
-                <View style={[styles.txIconBox, {borderColor: tx.color + '40'}]}>
-                  <Ionicons name={tx.icon} size={18} color={tx.color} />
+            {transactions && transactions.length > 0 ? transactions.slice(0, 5).map((tx, idx) => {
+              const { icon, color } = getTxStyles(tx.type);
+              const isPositive = tx.type === 'RECEIVE' || tx.type === 'SALE';
+              const title = t(`common.wallet.tx_type.${(tx.type || 'unknown').toLowerCase()}`, tx.type).toUpperCase();
+              let timeStr = '';
+              try {
+                if (tx.timestamp) {
+                  const d = new Date(tx.timestamp);
+                  timeStr = d.toLocaleDateString() + ' • ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }
+              } catch (e) {}
+
+              return (
+                <View key={tx.id || idx} style={styles.txRow}>
+                  <View style={[styles.txIconBox, {borderColor: color + '40'}]}>
+                    <Ionicons name={icon} size={18} color={color} />
+                  </View>
+                  <View style={styles.txInfo}>
+                    <Text style={styles.txTitle}>{title}</Text>
+                    <Text style={styles.txSub}>{tx.toFrom}</Text>
+                  </View>
+                  <View style={styles.txAmountCol}>
+                    <Text style={[styles.txAmount, isPositive ? styles.txGreen : styles.txDark]}>
+                      {hideBalance ? '••••' : `${isPositive ? '+' : '-'}${formatAmount(tx.amount)} ${tx.currency}`}
+                    </Text>
+                    <Text style={styles.txTime}>{timeStr}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color="#A0AABF" style={{marginLeft: 8}} />
                 </View>
-                <View style={styles.txInfo}>
-                  <Text style={styles.txTitle}>{tx.title}</Text>
-                  <Text style={styles.txSub}>{tx.sub}</Text>
-                </View>
-                <View style={styles.txAmountCol}>
-                  <Text style={[styles.txAmount, tx.isPositive === true ? styles.txGreen : (tx.isPositive === false ? styles.txDark : styles.txDark)]}>
-                    {hideBalance ? '••••' : tx.amount}
-                  </Text>
-                  {tx.amountSub && (
-                    <Text style={styles.txAmountSub}>{hideBalance ? '••••' : tx.amountSub}</Text>
-                  )}
-                  <Text style={styles.txTime}>{tx.time}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={16} color="#A0AABF" style={{marginLeft: 8}} />
+              );
+            }) : (
+              <View style={{ padding: 20, alignItems: 'center' }}>
+                <Text style={{ color: '#94A3B8', fontFamily: 'Inter_500Medium' }}>
+                  {t('common.wallet.no_transactions', 'Aucune transaction')}
+                </Text>
               </View>
-            ))}
+            )}
           </View>
           
           <View style={{ height: 30 }} />
@@ -277,12 +323,10 @@ const styles = StyleSheet.create({
   dizzitText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#1A2840' },
   upText: { color: '#FFC759' },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  flagBtn: { padding: 2 },
-  flagIcon: { width: 22, height: 15, borderRadius: 2 },
   iconBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', position: 'relative' },
   badge: { position: 'absolute', top: 4, right: 4, width: 7, height: 7, borderRadius: 3.5, backgroundColor: '#EF4444' },
   scrollView: { flex: 1, paddingHorizontal: 16 },
-  walletCard: { backgroundColor: '#071536', borderRadius: 24, padding: 20, marginTop: 12, position: 'relative', overflow: 'hidden' },
+  walletCard: { borderRadius: 24, padding: 20, marginTop: 12, position: 'relative', overflow: 'hidden' },
   walletHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   walletHeaderLeft: { flexDirection: 'row', alignItems: 'center' },
   soldeText: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#94A3B8' },
@@ -319,7 +363,7 @@ const styles = StyleSheet.create({
   fondBalance: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840' },
   fondCurrency: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#64748B' },
   fondSeparator: { justifyContent: 'center', alignItems: 'center' },
-  cardPromo: { backgroundColor: '#071536', borderRadius: 20, padding: 16, marginTop: 18, flexDirection: 'row', overflow: 'hidden' },
+  cardPromo: { borderRadius: 20, padding: 16, marginTop: 18, flexDirection: 'row', overflow: 'hidden' },
   cardPromoContent: { flex: 1, paddingRight: 12, justifyContent: 'space-between' },
   cardPromoText: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#E2E8F0', lineHeight: 18 },
   payMethods: { flexDirection: 'row', gap: 8, marginTop: 12 },

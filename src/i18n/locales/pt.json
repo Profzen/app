@@ -798,7 +798,11 @@
         "top-up": "Recarga",
         "cash-out": "Saque",
         "pay": "Pagar",
-        "sale": "Venda"
+        "sale": "Venda",
+        "top_up": "TOP-UP",
+        "stake": "STAKE",
+        "cash_out": "CASH-OUT",
+        "unknown": "UNKNOWN"
       },
       "status_label": {
         "completed": "Concluído",
@@ -931,14 +935,29 @@
         "solana": "Rede Solana"
       },
       "synchronizing_addresses": "Sincronizando nós de carteira seguros...",
-      "no_addresses_yet": "Sua carteira segura está sendo preparada. Os endereços aparecerão aqui em breve."
+      "no_addresses_yet": "Sua carteira segura está sendo preparada. Os endereços aparecerão aqui em breve.",
+      "download_info": "You can download your monthly statement in PDF format.",
+      "filter_title": "Filters",
+      "filter_subtitle": "Refine transaction list",
+      "filter_tx_type": "Transaction type",
+      "filter_all": "All transactions",
+      "filter_pay_bills": "Bill payment (Education, Health, Electricity...)",
+      "filter_mobile_topup": "Mobile top-up",
+      "filter_vouchers": "Buy vouchers (Gift cards, Vouchers)",
+      "filter_goods": "Buy physical goods",
+      "filter_wallet_topup": "DZYWallet top-up",
+      "filter_send": "Send funds",
+      "filter_receive": "Receive funds",
+      "apply_filters": "Apply filters",
+      "reset_filters": "Reset"
     },
     "previousStep": "Passo Anterior",
     "optional": "Opcional",
     "by": "por",
     "actions": {
       "back": "Voltar",
-      "save": "Salvar"
+      "save": "Salvar",
+      "make_transaction": "Make a transaction"
     },
     "next_step": "Próxima Etapa",
     "remove": "Remover",
@@ -949,7 +968,11 @@
     "alreadyHavePersonalProfile": "Já tenho um (Vincular nas Configurações)",
     "previous": "ANTERIOR",
     "finish": "CONCLUIR",
-    "unlock": "DESBLOQUEAR"
+    "unlock": "DESBLOQUEAR",
+    "tabs": {
+      "history": "HISTORY",
+      "statistics": "STATISTICS"
+    }
   },
   "profile": {
     "editProfile": "Editar perfil",
@@ -1705,23 +1728,23 @@
   },
   "marketplace": {
     "title": "Marketplace",
-    "searchPlaceholder": "Pesquisar produtos...",
+    "searchPlaceholder": "Pesquisar produtos, serviços...",
     "categories": "Categorias",
-    "allItems": "Todos os Itens",
+    "allItems": "Todos os itens",
     "goods": "Produtos",
     "bills": "Faturas",
     "digitalServices": "Serviços Digitais e Contas",
     "browseEverything": "Navegar por tudo",
-    "foodGroceries": "Alimentação e Mantimentos",
-    "homeFurniture": "Móveis para Casa",
-    "constructionMaterials": "Materiais de Construção",
-    "electronicAppliances": "Eletrodomésticos",
+    "foodGroceries": "Mantimentos",
+    "homeFurniture": "Móveis",
+    "constructionMaterials": "Construção",
+    "electronicAppliances": "Eletrônicos",
     "healthcareFurniture": "Móveis para Saúde",
     "healthcareServices": "Serviços de Saúde",
     "education": "Educação",
-    "mobileDataAirtime": "Dados Móveis e Recarga",
-    "utilities": "Utilidades",
-    "giftCards": "Cartões-presente",
+    "mobileDataAirtime": "Celular e Crédito",
+    "utilities": "Serviços",
+    "giftCards": "Cartões Presente",
     "techITDev": "Tecnologia e Desenvolvimento TI",
     "digitalProfServices": "Serviços Digitais e Profissionais",
     "logisticsExporters": "Logística e Exportadores",
@@ -1759,7 +1782,7 @@
     "instantDelivery": "Entrega instantânea",
     "payBillsInstantly": "Pague contas instantaneamente",
     "digitalCards": "Cartões digitais",
-    "featured": "Em Destaque",
+    "featured": "Destaque",
     "addToCart": "Adicionar ao Carrinho",
     "send": "Enviar",
     "localPrice": "Preço Local",
@@ -1811,7 +1834,7 @@
     "noCountryFound": "Nenhum país africano encontrado",
     "deliveryGuaranteed": "Entrega Rápida e Segura Garantida",
     "exploreAll": "Explorar Tudo",
-    "remittance": "Remessa Rápida e Segura",
+    "remittance": "Remessa",
     "comingSoon": "Em breve",
     "local": "Local",
     "unknownMerchant": "Comerciante Desconhecido",
@@ -1877,10 +1900,23 @@
     "morePhysicalGoods": "Mais bens físicos disponíveis em {{country}}",
     "beneficiaryCity": "Cidade do Beneficiário",
     "selectWhereBased": "Selecione onde estão baseados",
-    "selectCity": "Selecionar Cidade...",
+    "selectCity": "Selecionar cidade...",
     "showAllCities": "Mostrar todas as cidades",
     "noCitiesFound": "Nenhuma cidade encontrada.",
-    "nowPrioritizing": "Priorizando comerciantes em"
+    "nowPrioritizing": "Priorizando comerciantes em",
+    "healthcare": "Saúde",
+    "solarRenewable": "Energia Solar",
+    "chooseGoodsTitle": "Escolher Produtos e Essenciais",
+    "itemPrice": "Preço do item",
+    "continueBtn": "Continuar",
+    "service": "Serviço",
+    "inStockLeft": "restantes",
+    "instant": "Instantâneo",
+    "days12": "1-2 dias",
+    "hours24": "2-4 horas",
+    "country": "País",
+    "cityLabel": "Cidade",
+    "addCityManual": "+ Adicionar cidade manualmente"
   },
   "product": {
     "details": "Detalhes do Produto",
@@ -3252,7 +3288,11 @@
       "refer_business": "Consulte\num negócio",
       "source_africa": "Fonte\nna África",
       "personal_atm": "Caixa eletrônico pessoal"
-    }
+    },
+    "inviteBannerTitle_1": "Convide amigos\ne ganhe ",
+    "inviteBannerTitle_2": "$5 em DZY",
+    "inviteBannerDesc": "Envie dinheiro, faça compras, pague contas e ganhem recompensas juntos.",
+    "btnInviteNow": "Convidar agora"
   },
   "personalAccount": {
     "title": "Conta Pessoal",
@@ -3481,5 +3521,109 @@
   "qaNearbyToastTitle": "Próximas",
   "qaNearbyToastMessage": "As lojas são classificadas pela sua localização.",
   "qaReferToastTitle": "Indicar uma loja",
-  "qaReferToastMessage": "Formulário de indicação pronto."
+  "qaReferToastMessage": "Formulário de indicação pronto.",
+  "contacts": {
+    "quick_actions": "Ações rápidas",
+    "quick_action_1": {
+      "title": "Pagar &\ncomprar essenciais",
+      "subtitle": "Crédito, internet,\nTV, jogos,\ncripto e mais"
+    },
+    "quick_action_2": {
+      "title": "Recarga\nmóvel",
+      "subtitle": "Comprar crédito\nmóvel"
+    },
+    "quick_action_3": {
+      "title": "Pagar\ncontas",
+      "subtitle": "Eletricidade, água,\ninternet e mais"
+    },
+    "quick_action_4": {
+      "title": "Enviar /\nSolicitar\nfundos",
+      "subtitle": "Transferências\ninstantâneas"
+    },
+    "quick_action_5": {
+      "title": "Convidar",
+      "subtitle": "Convide amigos\ne ganhe\n$5 em DZY"
+    },
+    "my_beneficiaries": "Meus Beneficiários",
+    "manage_contacts": "Gerenciar Contatos",
+    "filter_nearby": "Próximo",
+    "filter_favorites": "De países favoritos",
+    "filter_africa": "Em toda a África",
+    "filter_world": "Resto do mundo",
+    "col_contact": "Contato",
+    "col_beneficiary": "Beneficiário",
+    "col_sponsor": "Padrinho",
+    "relation": {
+      "friend": "Amigo"
+    },
+    "deleted": "Contato removido",
+    "deleted_desc": "Contato foi removido com sucesso.",
+    "delete_error": "Não é possível excluir este contato.",
+    "search_hint": "Nome, telefone, email, cidade ou país",
+    "add_permanent_sub": "Adicionar aos registros permanentes",
+    "tab": {
+      "info": "Informação",
+      "history": "Histórico"
+    },
+    "history": {
+      "title": "Histórico de Transações",
+      "filters": "Filtros",
+      "monthly": "Histórico mensal",
+      "send_funds": "Enviar fundos",
+      "transfer_done": "Transferência concluída",
+      "ref": "Ref:"
+    }
+  },
+  "beneficiary_management": {
+    "edit": {
+      "edit_title_new": "Novo Beneficiário",
+      "edit_title_update": "Editar",
+      "personal_info": "Informações Pessoais",
+      "avatar": "Avatar",
+      "first_name": "Nome",
+      "first_name_placeholder": "Ex: John",
+      "last_name": "Sobrenome",
+      "last_name_placeholder": "Ex: Doe",
+      "relation": "Relação",
+      "contact_details": "Detalhes de Contato",
+      "phone": "Telefone",
+      "phone_placeholder": "+228...",
+      "email": "E-mail",
+      "email_placeholder": "Ex: email@example.com",
+      "country": "País",
+      "country_placeholder": "Ex: Togo",
+      "city": "Cidade",
+      "city_placeholder": "Ex: Lomé",
+      "banks_wallets": "Bancos e Carteiras",
+      "bank_name": "Nome do Banco",
+      "bank_name_placeholder": "Ex: Ecobank",
+      "bank_account": "Número da Conta / IBAN",
+      "evm_wallet": "Carteira EVM",
+      "evm_wallet_placeholder": "0x...",
+      "solana_wallet": "Carteira Solana",
+      "btn_save": "Salvar",
+      "relation_family": "Família",
+      "relation_friend": "Amigo",
+      "relation_colleague": "Colega",
+      "relation_other": "Outro",
+      "sync_success": "Carteiras sincronizadas com sucesso",
+      "sync_error": "Erro de sincronização",
+      "sync_not_found": "Nenhuma carteira encontrada para este número",
+      "sync_req_phone": "Por favor, insira um número de telefone primeiro",
+      "save_req_name": "Nome é obrigatório",
+      "save_req_contact": "Telefone ou e-mail é obrigatório",
+      "save_success_add": "Beneficiário adicionado",
+      "save_success_edit": "Beneficiário atualizado",
+      "save_error": "Erro ao salvar"
+    },
+    "profile": {
+      "info_tab": "Informação",
+      "history_tab": "Histórico",
+      "not_provided": "Não fornecido",
+      "verified_contact": "Contato verificado",
+      "group": "Grupo",
+      "sponsor": "Patrocinador",
+      "yes": "Sim"
+    }
+  }
 }

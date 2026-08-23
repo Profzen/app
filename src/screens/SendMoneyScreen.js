@@ -42,7 +42,7 @@ export default function SendMoneyScreen() {
   const [token, setToken] = useState('USDC');
   
   // Recipient selection states
-  const initialRecipientName = route.params?.recipient || '';
+  const initialRecipientName = route.params?.recipient || route.params?.contact?.name || '';
   
   const [selectedRecipient, setSelectedRecipient] = useState(null);
   const [isSearchingRecipient, setIsSearchingRecipient] = useState(false);
@@ -76,7 +76,7 @@ export default function SendMoneyScreen() {
           const formatted = data.map(b => ({
             id: b.id,
             name: `${b.first_name || ''} ${b.last_name || ''}`.trim(),
-            tag: b.relation || 'BENEFICIARY',
+            tag: b.relationship || t('contacts.relation.friend', 'BENEFICIARY'),
             address: b.evm_address || b.solana_address || b.phone || b.email,
             evm_address: b.evm_address,
             solana_address: b.solana_address,
@@ -329,7 +329,7 @@ export default function SendMoneyScreen() {
                       </View>
                       <View style={styles.recipientTextWrap}>
                         <Text style={styles.addPermanentTitle}>{t('common.wallet.add_new_beneficiary', 'Ajouter un bénéficiaire permanent')}</Text>
-                        <Text style={styles.addPermanentSubtitle}>Add to permanent records</Text>
+                        <Text style={styles.addPermanentSubtitle}>{t('contacts.add_permanent_sub', 'Ajouter aux enregistrements permanents')}</Text>
                       </View>
                     </TouchableOpacity>
 

@@ -466,11 +466,11 @@ const styles = StyleSheet.create({
   btnImport: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', height: 48, borderRadius: 14 },
   btnImportText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#FFFFFF' },
   toastContainer: { position: 'absolute', top: Platform.OS === 'android' ? 60 : 50, left: 20, right: 20, zIndex: 1000, alignItems: 'center' },
-  toastContent: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#20365B', paddingHorizontal: 18, paddingVertical: 14, borderRadius: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 8, borderWidth: 1, borderColor: 'rgba(255, 199, 89, 0.2)' },
+  toastContent: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#20365B', paddingHorizontal: 18, paddingVertical: 14, borderRadius: 16, boxShadow: '0px 6px 10px rgba(0,0,0,0.25)', elevation: 8, borderWidth: 1, borderColor: 'rgba(255, 199, 89, 0.2)' },
   toastText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#FFFFFF', marginLeft: 12 },
 
   modalOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.6)', justifyContent: 'center', alignItems: 'center', padding: 24 },
-  infoModalCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 24, width: '100%', maxWidth: 360, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 20, elevation: 10 },
+  infoModalCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 24, width: '100%', maxWidth: 360, boxShadow: '0px 10px 20px rgba(0,0,0,0.2)', elevation: 10 },
   infoModalHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
   infoModalTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#0F172A', marginLeft: 10 },
   infoModalText: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#475569', lineHeight: 22, marginBottom: 24 },

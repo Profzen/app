@@ -847,7 +847,11 @@
         "top-up": "Top-Up",
         "cash-out": "Cash-Out",
         "pay": "Pay",
-        "sale": "Sale"
+        "sale": "Sale",
+        "top_up": "TOP-UP",
+        "stake": "STAKE",
+        "cash_out": "CASH-OUT",
+        "unknown": "UNKNOWN"
       },
       "status_label": {
         "completed": "Completed",
@@ -976,7 +980,21 @@
       },
       "view_onchain": "Explorer",
       "synchronizing_addresses": "Synchronizing secure wallet nodes...",
-      "no_addresses_yet": "Your secure wallet is being prepared. Addresses will appear here shortly."
+      "no_addresses_yet": "Your secure wallet is being prepared. Addresses will appear here shortly.",
+      "download_info": "You can download your monthly statement in PDF format.",
+      "filter_title": "Filters",
+      "filter_subtitle": "Refine transaction list",
+      "filter_tx_type": "Transaction type",
+      "filter_all": "All transactions",
+      "filter_pay_bills": "Bill payment (Education, Health, Electricity...)",
+      "filter_mobile_topup": "Mobile top-up",
+      "filter_vouchers": "Buy vouchers (Gift cards, Vouchers)",
+      "filter_goods": "Buy physical goods",
+      "filter_wallet_topup": "DZYWallet top-up",
+      "filter_send": "Send funds",
+      "filter_receive": "Receive funds",
+      "apply_filters": "Apply filters",
+      "reset_filters": "Reset"
     },
     "previousStep": "Previous Step",
     "optional": "Optional",
@@ -984,7 +1002,8 @@
     "nextStep": "Next Step",
     "actions": {
       "back": "Back",
-      "save": "Save"
+      "save": "Save",
+      "make_transaction": "Make a transaction"
     },
     "next_step": "Next Step",
     "remove": "Remove",
@@ -995,7 +1014,11 @@
     "alreadyHavePersonalProfile": "I already have one (Link it in Settings)",
     "previous": "PREVIOUS",
     "finish": "FINISH",
-    "unlock": "UNLOCK"
+    "unlock": "UNLOCK",
+    "tabs": {
+      "history": "HISTORY",
+      "statistics": "STATISTICS"
+    }
   },
   "profile": {
     "editProfile": "Edit profile",
@@ -1749,21 +1772,21 @@
   },
   "marketplace": {
     "title": "Marketplace",
-    "searchPlaceholder": "Search for products...",
+    "searchPlaceholder": "Search products, services, remittance...",
     "categories": "Categories",
     "allItems": "All Items",
     "goods": "Goods",
     "bills": "Bills",
     "digitalServices": "Digital Services & Bills",
     "browseEverything": "Browse everything",
-    "foodGroceries": "Food & Groceries",
-    "homeFurniture": "Home Furniture",
-    "constructionMaterials": "Construction Materials",
-    "electronicAppliances": "Electronic Appliances",
+    "foodGroceries": "Groceries",
+    "homeFurniture": "Furniture",
+    "constructionMaterials": "Construction",
+    "electronicAppliances": "Electronics",
     "healthcareFurniture": "Healthcare Furniture",
     "healthcareServices": "Healthcare Services",
     "education": "Education",
-    "mobileDataAirtime": "Mobile Data & Airtime",
+    "mobileDataAirtime": "Mobile & Airtime",
     "utilities": "Utilities",
     "giftCards": "Gift Cards",
     "techITDev": "Tech & IT Development",
@@ -1855,7 +1878,7 @@
     "noCountryFound": "No African country found",
     "deliveryGuaranteed": "Fast & Secure Delivery Guaranteed",
     "exploreAll": "Explore All",
-    "remittance": "Fast & Secure Remittance",
+    "remittance": "Remittance",
     "comingSoon": "Coming soon",
     "local": "Local",
     "unknownMerchant": "Unknown Merchant",
@@ -1876,7 +1899,7 @@
     "tryAnotherSearch": "Or try another search",
     "reloadProducts": "RELOAD PRODUCTS",
     "viewAllMarkets": "VIEW ALL MARKETS",
-    "solarRenewable": "Solar & Renewable Energy",
+    "solarRenewable": "Solar Energy",
     "fashionClothing": "Fashion & Clothing",
     "automotive": "Automotive",
     "agricultureFarming": "Agriculture & Farming",
@@ -1932,10 +1955,22 @@
     "morePhysicalGoods": "More physical goods available in {{country}}",
     "beneficiaryCity": "Beneficiary's City",
     "selectWhereBased": "Select where they are based",
-    "selectCity": "Select City...",
+    "selectCity": "Select city...",
     "showAllCities": "Show All Cities",
     "noCitiesFound": "No cities found.",
-    "nowPrioritizing": "Now prioritizing merchants in"
+    "nowPrioritizing": "Now prioritizing merchants in",
+    "healthcare": "Healthcare",
+    "chooseGoodsTitle": "Choose Goods and Essentials",
+    "itemPrice": "Item Price",
+    "continueBtn": "Continue",
+    "service": "Service",
+    "inStockLeft": "left",
+    "instant": "Instant",
+    "days12": "1-2 days",
+    "hours24": "2-4 hours",
+    "country": "Country",
+    "cityLabel": "City",
+    "addCityManual": "+ Add city manually"
   },
   "product": {
     "details": "Product Details",
@@ -3420,7 +3455,11 @@
       "refer_business": "Refer\na business",
       "source_africa": "Source\nin Africa",
       "personal_atm": "Personal ATM"
-    }
+    },
+    "inviteBannerTitle_1": "Invite friends\nand earn ",
+    "inviteBannerTitle_2": "$5 in DZY",
+    "inviteBannerDesc": "Send money, shop, pay bills, and earn rewards together.",
+    "btnInviteNow": "Invite now"
   },
   "personalAccount": {
     "title": "Personal Account",
@@ -3649,5 +3688,109 @@
   "qaNearbyToastTitle": "Nearby",
   "qaNearbyToastMessage": "Shops are sorted by your location.",
   "qaReferToastTitle": "Refer a store",
-  "qaReferToastMessage": "Referral form ready."
+  "qaReferToastMessage": "Referral form ready.",
+  "contacts": {
+    "quick_actions": "Quick Actions",
+    "quick_action_1": {
+      "title": "Pay &\nbuy essentials",
+      "subtitle": "Credit, internet,\nTV, games,\ncrypto & more"
+    },
+    "quick_action_2": {
+      "title": "Mobile\nrecharge",
+      "subtitle": "Buy mobile\ncredit"
+    },
+    "quick_action_3": {
+      "title": "Pay\nbills",
+      "subtitle": "Electricity, water,\ninternet & more"
+    },
+    "quick_action_4": {
+      "title": "Send /\nRequest\nfunds",
+      "subtitle": "Instant money\ntransfers"
+    },
+    "quick_action_5": {
+      "title": "Invite",
+      "subtitle": "Invite friends\nand earn\n$5 in DZY"
+    },
+    "my_beneficiaries": "My Beneficiaries",
+    "manage_contacts": "Manage Contacts",
+    "filter_nearby": "Nearby",
+    "filter_favorites": "From favorite countries",
+    "filter_africa": "All over Africa",
+    "filter_world": "Rest of the world",
+    "col_contact": "Contact",
+    "col_beneficiary": "Beneficiary",
+    "col_sponsor": "Sponsor",
+    "relation": {
+      "friend": "Friend"
+    },
+    "deleted": "Contact removed",
+    "deleted_desc": "Contact has been successfully removed.",
+    "delete_error": "Cannot delete this contact.",
+    "search_hint": "Name, phone, email, city or country",
+    "add_permanent_sub": "Add to permanent records",
+    "tab": {
+      "info": "Information",
+      "history": "History"
+    },
+    "history": {
+      "title": "Transaction History",
+      "filters": "Filters",
+      "monthly": "Monthly history",
+      "send_funds": "Send funds",
+      "transfer_done": "Transfer complete",
+      "ref": "Ref :"
+    }
+  },
+  "beneficiary_management": {
+    "edit": {
+      "edit_title_new": "New Beneficiary",
+      "edit_title_update": "Edit",
+      "personal_info": "Personal Information",
+      "avatar": "Avatar",
+      "first_name": "First Name",
+      "first_name_placeholder": "Ex: John",
+      "last_name": "Last Name",
+      "last_name_placeholder": "Ex: Doe",
+      "relation": "Relation",
+      "contact_details": "Contact Details",
+      "phone": "Phone",
+      "phone_placeholder": "+228...",
+      "email": "Email",
+      "email_placeholder": "Ex: email@example.com",
+      "country": "Country",
+      "country_placeholder": "Ex: Togo",
+      "city": "City",
+      "city_placeholder": "Ex: Lomé",
+      "banks_wallets": "Banks & Wallets",
+      "bank_name": "Bank Name",
+      "bank_name_placeholder": "Ex: Ecobank",
+      "bank_account": "Account Number / IBAN",
+      "evm_wallet": "EVM Wallet",
+      "evm_wallet_placeholder": "0x...",
+      "solana_wallet": "Solana Wallet",
+      "btn_save": "Save",
+      "relation_family": "Family",
+      "relation_friend": "Friend",
+      "relation_colleague": "Colleague",
+      "relation_other": "Other",
+      "sync_success": "Wallets successfully synced",
+      "sync_error": "Sync error",
+      "sync_not_found": "No wallet found for this number",
+      "sync_req_phone": "Please enter a phone number first",
+      "save_req_name": "Name is required",
+      "save_req_contact": "Phone or email is required",
+      "save_success_add": "Beneficiary added",
+      "save_success_edit": "Beneficiary updated",
+      "save_error": "Error saving"
+    },
+    "profile": {
+      "info_tab": "Information",
+      "history_tab": "History",
+      "not_provided": "Not provided",
+      "verified_contact": "Verified contact",
+      "group": "Group",
+      "sponsor": "Sponsor",
+      "yes": "Yes"
+    }
+  }
 }

@@ -14,6 +14,8 @@ import ContactHistoryScreen from '../screens/ContactHistoryScreen';
 import ContactProfileScreen from '../screens/ContactProfileScreen';
 import ContactsManageScreen from '../screens/ContactsManageScreen';
 import ContactsScreen from '../screens/ContactsScreen';
+import EditBeneficiaryScreen from '../screens/EditBeneficiaryScreen';
+import ServiceCheckoutScreen from '../screens/ServiceCheckoutScreen';
 import DashboardEngScreen from '../screens/DashboardEngScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import FiltersScreen from '../screens/FiltersScreen';
@@ -45,6 +47,7 @@ import SendMoneySummaryScreen from '../screens/SendMoneySummaryScreen';
 import ShopDetailsScreen from '../screens/ShopDetailsScreen';
 import ShopProductsScreen from '../screens/ShopProductsScreen';
 import ShopsScreen from '../screens/ShopsScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
 import ReferBusinessScreen from '../screens/ReferBusinessScreen';
 import SuccessScreen from '../screens/SuccessScreen';
 import SwapTokensScreen from '../screens/SwapTokensScreen';
@@ -121,6 +124,12 @@ export default function AppNavigator() {
       <Stack.Screen name="ContactProfileScreen" component={ContactProfileScreen} />
       <Stack.Screen name="ContactsManageScreen" component={ContactsManageScreen} />
       <Stack.Screen name="ContactsScreen" component={ContactsScreen} />
+      <Stack.Screen name="EditBeneficiaryScreen" component={EditBeneficiaryScreen} />
+      <Stack.Screen 
+        name="ServiceCheckoutScreen" 
+        component={ServiceCheckoutScreen} 
+        options={{ presentation: 'transparentModal', animation: 'slide_from_bottom' }}
+      />
       <Stack.Screen name="DashboardEngScreen" component={DashboardEngScreen} />
       <Stack.Screen name="DashboardScreen" component={DashboardScreen} />
       <Stack.Screen name="FiltersScreen" component={FiltersScreen} />
@@ -153,6 +162,7 @@ export default function AppNavigator() {
       <Stack.Screen name="ShopDetailsScreen" component={ShopDetailsScreen} />
       <Stack.Screen name="ShopProductsScreen" component={ShopProductsScreen} />
       <Stack.Screen name="ShopsScreen" component={ShopsScreen} />
+      <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
       <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
       <Stack.Screen name="SwapTokensScreen" component={SwapTokensScreen} />
       <Stack.Screen name="TopUpDetailsScreen" component={TopUpDetailsScreen} />

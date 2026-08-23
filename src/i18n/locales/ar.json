@@ -2273,7 +2273,11 @@
         "top-up": "تعبئة",
         "cash-out": "سحب",
         "pay": "دفع",
-        "sale": "بيع"
+        "sale": "بيع",
+        "top_up": "TOP-UP",
+        "stake": "STAKE",
+        "cash_out": "CASH-OUT",
+        "unknown": "UNKNOWN"
       },
       "status_label": {
         "completed": "مكتمل",
@@ -2406,14 +2410,29 @@
         "solana": "شبكة سولانا"
       },
       "synchronizing_addresses": "جاري مزامنة عقد المحفظة الآمنة...",
-      "no_addresses_yet": "يتم إعداد محفظتك الآمنة. ستظهر العناوين هنا قريباً."
+      "no_addresses_yet": "يتم إعداد محفظتك الآمنة. ستظهر العناوين هنا قريباً.",
+      "download_info": "You can download your monthly statement in PDF format.",
+      "filter_title": "Filters",
+      "filter_subtitle": "Refine transaction list",
+      "filter_tx_type": "Transaction type",
+      "filter_all": "All transactions",
+      "filter_pay_bills": "Bill payment (Education, Health, Electricity...)",
+      "filter_mobile_topup": "Mobile top-up",
+      "filter_vouchers": "Buy vouchers (Gift cards, Vouchers)",
+      "filter_goods": "Buy physical goods",
+      "filter_wallet_topup": "DZYWallet top-up",
+      "filter_send": "Send funds",
+      "filter_receive": "Receive funds",
+      "apply_filters": "Apply filters",
+      "reset_filters": "Reset"
     },
     "previousStep": "الخطوة السابقة",
     "optional": "اختياري",
     "by": "بواسطة",
     "actions": {
       "back": "رجوع",
-      "save": "حفظ"
+      "save": "حفظ",
+      "make_transaction": "Make a transaction"
     },
     "next_step": "الخطوة التالية",
     "remove": "إزالة",
@@ -2424,7 +2443,11 @@
     "alreadyHavePersonalProfile": "لدي واحد بالفعل (ربطه في الإعدادات)",
     "previous": "السابق",
     "finish": "إنهاء",
-    "unlock": "فتح القفل"
+    "unlock": "فتح القفل",
+    "tabs": {
+      "history": "HISTORY",
+      "statistics": "STATISTICS"
+    }
   },
   "beneficiary": {
     "form": {
@@ -2477,23 +2500,23 @@
   },
   "marketplace": {
     "title": "المتجر",
-    "searchPlaceholder": "ابحث عن منتجات...",
+    "searchPlaceholder": "ابحث عن المنتجات والخدمات...",
     "categories": "الفئات",
-    "allItems": "جميع المواد",
+    "allItems": "جميع المنتجات",
     "goods": "بضائع",
     "bills": "فواتير",
     "digitalServices": "الخدمات الرقمية والفواتير",
     "browseEverything": "تصفح كل شيء",
-    "foodGroceries": "الغذاء والبقالة",
-    "homeFurniture": "أثاث المنزل",
-    "constructionMaterials": "مواد البناء",
-    "electronicAppliances": "الأجهزة الإلكترونية",
+    "foodGroceries": "بقالة",
+    "homeFurniture": "أثاث",
+    "constructionMaterials": "بناء",
+    "electronicAppliances": "إلكترونيات",
     "healthcareFurniture": "الأثاث الطبي",
     "healthcareServices": "الخدمات الصحية",
-    "education": "التعليم",
-    "mobileDataAirtime": "رصيد الجوال والبيانات",
-    "utilities": "المرافق العامة",
-    "giftCards": "بطاقات الهدايا",
+    "education": "تعليم",
+    "mobileDataAirtime": "الهاتف والرصيد",
+    "utilities": "المرافق",
+    "giftCards": "بطاقات هدايا",
     "techITDev": "تطوير التكنولوجيا وتكنولوجيا المعلومات",
     "digitalProfServices": "الخدمات الرقمية والمهنية",
     "logisticsExporters": "الخدمات اللوجستية والمصدرين",
@@ -2607,7 +2630,21 @@
     "selectCity": "اختر مدينة...",
     "showAllCities": "عرض كل المدن",
     "noCitiesFound": "لم يتم العثور على مدن.",
-    "nowPrioritizing": "يتم الآن إعطاء الأولوية للتجار في"
+    "nowPrioritizing": "يتم الآن إعطاء الأولوية للتجار في",
+    "remittance": "تحويل الأموال",
+    "healthcare": "الرعاية الصحية",
+    "solarRenewable": "طاقة شمسية",
+    "chooseGoodsTitle": "اختر السلع والخدمات",
+    "itemPrice": "سعر السلعة",
+    "continueBtn": "متابعة",
+    "service": "خدمة",
+    "inStockLeft": "متبقي",
+    "instant": "فوري",
+    "days12": "1-2 أيام",
+    "hours24": "2-4 ساعات",
+    "country": "بلد",
+    "cityLabel": "مدينة",
+    "addCityManual": "+ إضافة مدينة يدويا"
   },
   "footer": {
     "newsletterTitle": "ابق على اطلاع",
@@ -3300,7 +3337,11 @@
       "refer_business": "الرجوع\nعمل",
       "source_africa": "المصدر\nفي أفريقيا",
       "personal_atm": "أجهزة الصراف الآلي الشخصية"
-    }
+    },
+    "inviteBannerTitle_1": "قم بدعوة أصدقائك\nواكسب ",
+    "inviteBannerTitle_2": "$5 في DZY",
+    "inviteBannerDesc": "أرسل الأموال، تسوق، وادفع الفواتير، واكسب المكافآت معًا.",
+    "btnInviteNow": "ادعُ الآن"
   },
   "personalAccount": {
     "title": "حساب شخصي",
@@ -3529,5 +3570,109 @@
   "qaNearbyToastTitle": "بالقرب منك",
   "qaNearbyToastMessage": "تم فرز المتاجر حسب موقعك.",
   "qaReferToastTitle": "إحالة متجر",
-  "qaReferToastMessage": "نموذج الإحالة جاهز."
+  "qaReferToastMessage": "نموذج الإحالة جاهز.",
+  "contacts": {
+    "quick_actions": "إجراءات سريعة",
+    "quick_action_1": {
+      "title": "دفع وشراء\nالأساسيات",
+      "subtitle": "رصيد، إنترنت،\nتلفزيون، ألعاب،\nعملات والمزيد"
+    },
+    "quick_action_2": {
+      "title": "شحن\nالرصيد",
+      "subtitle": "شراء رصيد\nالهاتف المحمول"
+    },
+    "quick_action_3": {
+      "title": "دفع\nالفواتير",
+      "subtitle": "كهرباء، مياه،\nإنترنت والمزيد"
+    },
+    "quick_action_4": {
+      "title": "إرسال /\nطلب\nأموال",
+      "subtitle": "تحويلات مالية\nفورية"
+    },
+    "quick_action_5": {
+      "title": "دعوة",
+      "subtitle": "ادع أصدقاءك\nواكسب\n5$ من DZY"
+    },
+    "my_beneficiaries": "المستفيدون",
+    "manage_contacts": "إدارة جهات الاتصال",
+    "filter_nearby": "قريب",
+    "filter_favorites": "من الدول المفضلة",
+    "filter_africa": "جميع أنحاء إفريقيا",
+    "filter_world": "باقي العالم",
+    "col_contact": "جهة اتصال",
+    "col_beneficiary": "مستفيد",
+    "col_sponsor": "كفيل",
+    "relation": {
+      "friend": "صديق"
+    },
+    "deleted": "تم حذف جهة الاتصال",
+    "deleted_desc": "تمت إزالة جهة الاتصال بنجاح.",
+    "delete_error": "لا يمكن حذف جهة الاتصال هذه.",
+    "search_hint": "الاسم، الهاتف، البريد، المدينة أو البلد",
+    "add_permanent_sub": "إضافة إلى السجلات الدائمة",
+    "tab": {
+      "info": "معلومات",
+      "history": "سجل"
+    },
+    "history": {
+      "title": "سجل المعاملات",
+      "filters": "فلاتر",
+      "monthly": "سجل شهري",
+      "send_funds": "إرسال أموال",
+      "transfer_done": "اكتمل التحويل",
+      "ref": "المرجع:"
+    }
+  },
+  "beneficiary_management": {
+    "edit": {
+      "edit_title_new": "مستفيد جديد",
+      "edit_title_update": "تعديل",
+      "personal_info": "معلومات شخصية",
+      "avatar": "الصورة الرمزية",
+      "first_name": "الاسم الأول",
+      "first_name_placeholder": "مثال: John",
+      "last_name": "اسم العائلة",
+      "last_name_placeholder": "مثال: Doe",
+      "relation": "الصلة",
+      "contact_details": "تفاصيل الاتصال",
+      "phone": "الهاتف",
+      "phone_placeholder": "+228...",
+      "email": "البريد الإلكتروني",
+      "email_placeholder": "مثال: email@example.com",
+      "country": "البلد",
+      "country_placeholder": "مثال: توغو",
+      "city": "المدينة",
+      "city_placeholder": "مثال: لومي",
+      "banks_wallets": "البنوك والمحافظ",
+      "bank_name": "اسم البنك",
+      "bank_name_placeholder": "مثال: Ecobank",
+      "bank_account": "رقم الحساب / IBAN",
+      "evm_wallet": "محفظة EVM",
+      "evm_wallet_placeholder": "0x...",
+      "solana_wallet": "محفظة سولانا",
+      "btn_save": "حفظ",
+      "relation_family": "عائلة",
+      "relation_friend": "صديق",
+      "relation_colleague": "زميل",
+      "relation_other": "آخر",
+      "sync_success": "تمت مزامنة المحافظ بنجاح",
+      "sync_error": "خطأ في المزامنة",
+      "sync_not_found": "لم يتم العثور على محفظة لهذا الرقم",
+      "sync_req_phone": "يرجى إدخال رقم الهاتف أولاً",
+      "save_req_name": "الاسم مطلوب",
+      "save_req_contact": "الهاتف أو البريد الإلكتروني مطلوب",
+      "save_success_add": "تمت إضافة المستفيد",
+      "save_success_edit": "تم تحديث المستفيد",
+      "save_error": "خطأ في الحفظ"
+    },
+    "profile": {
+      "info_tab": "معلومات",
+      "history_tab": "تاريخ",
+      "not_provided": "غير متوفر",
+      "verified_contact": "جهة اتصال موثقة",
+      "group": "مجموعة",
+      "sponsor": "الراعي",
+      "yes": "نعم"
+    }
+  }
 }

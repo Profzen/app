@@ -36,7 +36,8 @@
       "expo-status-bar",
       "expo-secure-store",
       "expo-web-browser",
-      "expo-splash-screen"
+      "expo-splash-screen",
+      "expo-sharing"
     ],
     "extra": {
       "eas": {

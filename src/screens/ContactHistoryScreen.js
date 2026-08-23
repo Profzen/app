@@ -1,71 +1,52 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
-import { CONTACTS_MOCK } from '../mocks/contactsMock';
 
-const transactions = [
-  {
-    id: '1',
-    type: 'envoi',
-    title: 'Envoi de fonds',
-    subtitle: 'Transfert effectué',
-    date: '23 mai 2024 • 14:32',
-    amount: '- 50,00 DZ',
-    balance: 'Solde : 120,00 DZ',
-    isPositive: false,
-    icon: 'arrow-up-circle-outline',
-    iconColor: '#10B981',
-    iconBg: '#DCFCE7',
-  },
-  {
-    id: '2',
-    type: 'demande',
-    title: 'Demande de fonds',
-    subtitle: 'Reçue',
-    date: '18 mai 2024 • 09:15',
-    amount: '+ 25,00 DZ',
-    balance: 'Solde : 170,00 DZ',
-    isPositive: true,
-    icon: 'arrow-down-outline',
-    iconColor: '#D97706',
-    iconBg: '#FEF3C7',
-  },
-  {
-    id: '3',
-    type: 'paiement',
-    title: 'Paiement & achat essentiel',
-    subtitle: 'Paiement chez DZY Store',
-    date: '15 mai 2024 • 16:45',
-    amount: '- 15,00 DZ',
-    balance: 'Solde : 145,00 DZ',
-    isPositive: false,
-    icon: 'bag-handle-outline',
-    iconColor: '#0052FF',
-    iconBg: '#EFF6FF',
-  },
-  {
-    id: '4',
-    type: 'invitation',
-    title: 'Invitation acceptée',
-    subtitle: 'A rejoint DizzitUp',
-    date: '01 mai 2024 • 18:30',
-    amount: '+ 10,00 DZ',
-    balance: 'Bonus',
-    isPositive: true,
-    icon: 'person-add-outline',
-    iconColor: '#8B5CF6',
-    iconBg: '#F3E8FF',
-    noArrow: true,
-  },
-];
+import AppToast from '../components/AppToast';
+import contactService from '../services/contactService';
+import { useApp } from '../context/AppContext';
+import { useEffect, useState } from 'react';
+import { format } from 'date-fns';
+import { fr, enUS } from 'date-fns/locale';
+
 
 export default function ContactHistoryScreen({ route }) {
   const navigation = useNavigation();
-  const contactParam = route?.params?.contact;
-  const contact = contactParam || CONTACTS_MOCK[0];
+  const { language, t } = useApp();
+  const contact = route?.params?.contact;
+  if (!contact) return null;
+
+  const [transactions, setTransactions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTx = async () => {
+      if (!contact?.id || !contact.id.includes('-')) return;
+      setIsLoading(true);
+      const { success, data } = await contactService.getBeneficiaryHistory(contact.id);
+      if (success) {
+        const formatted = data.map(tx => ({
+          id: tx.id,
+          type: 'envoi', // Adjust based on logic if needed
+          title: t('contacts.history.send_funds', 'Envoi de fonds'),
+          subtitle: t('contacts.history.transfer_done', 'Transfert effectué'),
+          date: format(new Date(tx.created_at), 'dd MMM yyyy • HH:mm', { locale: language === 'fr' ? fr : enUS }),
+          amount: `- ${tx.send_amount} ${tx.send_currency}`,
+          balance: `${t('contacts.history.ref', 'Réf :')} ${tx.reference_number || 'N/A'}`,
+          isPositive: false,
+          icon: 'arrow-up-circle-outline',
+          iconColor: '#10B981',
+          iconBg: '#DCFCE7',
+        }));
+        setTransactions(formatted);
+      }
+      setIsLoading(false);
+    };
+    fetchTx();
+  }, [contact?.id]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -74,14 +55,15 @@ export default function ContactHistoryScreen({ route }) {
         {/* Header Top Bar */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={22} color="#1A2840" />
+            <Ionicons name="arrow-back" size={20} color="#20365B" />
           </TouchableOpacity>
-          <View style={styles.headerRightActions}>
-            <TouchableOpacity style={styles.actionSquareBtn}>
-              <Ionicons name="pencil-outline" size={18} color="#1A2840" />
+          <View style={styles.headerRightActionsPill}>
+            <TouchableOpacity style={styles.actionPillBtn} onPress={() => navigation.navigate('EditBeneficiaryScreen', { isEditing: true, beneficiary: contact })}>
+              <Ionicons name="pencil-outline" size={18} color="#20365B" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionSquareBtn}>
-              <Ionicons name="ellipsis-horizontal" size={18} color="#1A2840" />
+            <View style={styles.pillDivider} />
+            <TouchableOpacity style={styles.actionPillBtn} onPress={() => AppToast.showInfo('Options en cours de développement')}>
+              <Ionicons name="ellipsis-horizontal" size={18} color="#20365B" />
             </TouchableOpacity>
           </View>
         </View>
@@ -110,24 +92,24 @@ export default function ContactHistoryScreen({ route }) {
           {/* 2 Tabs Bar */}
           <View style={styles.tabsRowContainer}>
             <TouchableOpacity style={styles.tabButton} onPress={() => navigation.navigate('ContactProfileScreen', { contact })}>
-              <Text style={styles.tabTextInactive}>Informations</Text>
+              <Text style={styles.tabTextInactive}>{t('contacts.tab.info', 'Informations')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.tabButton, styles.tabButtonActive]}>
-              <Text style={styles.tabTextActive}>Historique</Text>
+              <Text style={styles.tabTextActive}>{t('contacts.tab.history', 'Historique')}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Transactions Header & Action Buttons */}
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>Historique des transactions</Text>
+            <Text style={styles.sectionTitle}>{t('contacts.history.title', 'Historique des transactions')}</Text>
             <View style={styles.sectionActions}>
-              <TouchableOpacity style={styles.btnSmallAction}>
+              <TouchableOpacity style={styles.btnSmallAction} onPress={() => AppToast.showInfo("Fonctionnalité en cours de développement")}>
                 <Ionicons name="download-outline" size={14} color="#1A2840" style={{ marginRight: 4 }} />
                 <Text style={styles.btnSmallActionText}>PDF</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.btnSmallAction} onPress={() => navigation.navigate('FiltersScreen')}>
                 <Ionicons name="options-outline" size={14} color="#1A2840" style={{ marginRight: 4 }} />
-                <Text style={styles.btnSmallActionText}>Filtres</Text>
+                <Text style={styles.btnSmallActionText}>{t('contacts.history.filters', 'Filtres')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -138,9 +120,9 @@ export default function ContactHistoryScreen({ route }) {
               <Ionicons name="calendar-outline" size={18} color="#0052FF" />
             </View>
             <View style={styles.monthContent}>
-              <Text style={styles.monthLabel}>Historique mensuel</Text>
+              <Text style={styles.monthLabel}>{t('contacts.history.monthly', 'Historique mensuel')}</Text>
               <TouchableOpacity style={styles.monthDropdownBtn}>
-                <Text style={styles.monthValueText}>Juillet 2026</Text>
+                <Text style={styles.monthValueText}>{format(new Date(), 'MMMM yyyy', { locale: language === 'fr' ? fr : enUS })}</Text>
                 <Ionicons name="chevron-down" size={14} color="#1A2840" style={{ marginLeft: 4 }} />
               </TouchableOpacity>
             </View>
@@ -218,16 +200,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
   },
-  actionSquareBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  
   scrollView: {
     flex: 1,
   },

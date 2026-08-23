@@ -8,21 +8,12 @@ import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Platform, 
 import { Ionicons } from '@expo/vector-icons';
 import WalletCard from '../components/WalletCard';
 import BottomNavBar from '../components/BottomNavBar';
+import { LanguageSelector } from '../components/LanguageSelector';
 import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
 import { useApp } from '../context/AppContext';
 
 
 import { isSmallScreen, isShortScreen } from '../utils/responsive';
-
-const getFlagCode = (lang) => {
-  switch (lang) {
-    case 'fr': return 'fr';
-    case 'pt': return 'pt';
-    case 'ar': return 'sa';
-    case 'am': return 'et';
-    default: return 'gb';
-  }
-};
 
 export default function HomeScreen() {
   const navigation = useNavigation();
@@ -130,10 +121,7 @@ export default function HomeScreen() {
               </View>
             </TouchableOpacity>
             <View style={styles.headerIcons}>
-              <TouchableOpacity style={styles.langButton} onPress={toggleLanguage} accessibilityLabel="Switch Language">
-                <Text style={styles.langText}>{language.toUpperCase()}</Text>
-                <Image source={{ uri: `https://flagcdn.com/w40/${getFlagCode(language)}.png` }} style={styles.langFlag} />
-              </TouchableOpacity>
+              <LanguageSelector />
               <TouchableOpacity style={styles.iconButton}>
                 <Ionicons name="notifications-outline" size={18} color="#1A2840" />
                 <View style={styles.notificationDot} />
@@ -237,7 +225,7 @@ export default function HomeScreen() {
 
           <View style={styles.quickActionsGrid}>
             {QUICK_ACTIONS.map(action => (
-              <TouchableOpacity key={action.id} style={styles.actionGridItem} onPress={() => { if (action.id === '1' || action.id === '7') navigation.navigate('ShopsScreen'); else if (action.id === '2') navigation.navigate('ChooseServiceScreen'); else if (action.id === '3') navigation.navigate('ReceiveFundsV2Screen'); else if (action.id === '4') navigation.navigate('SendMoneyScreen'); else if (action.id === '5') navigation.navigate('TopUpScreen'); else if (action.id === '6') navigation.navigate('ReferBusinessScreen'); else if (action.id === '8') navigation.navigate('WithdrawFundsScreen'); }}>
+              <TouchableOpacity key={action.id} style={styles.actionGridItem} onPress={() => { if (action.id === '1' || action.id === '7') navigation.navigate('ShopsScreen'); else if (action.id === '2') navigation.navigate('ContactsScreen', { nextScreen: 'ChooseServiceScreen' }); else if (action.id === '3') navigation.navigate('ReceiveFundsV2Screen'); else if (action.id === '4') navigation.navigate('ContactsScreen', { nextScreen: 'SendMoneyScreen' }); else if (action.id === '5') navigation.navigate('TopUpScreen'); else if (action.id === '6') navigation.navigate('ReferBusinessScreen'); else if (action.id === '8') navigation.navigate('WithdrawFundsScreen'); }}>
                 <View style={styles.actionGridIcon}>
                   <Ionicons name={action.icon} size={24} color={action.color} />
                 </View>
@@ -314,20 +302,7 @@ const styles = StyleSheet.create({
   nameText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#1A2840' },
   merchantBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#8B5CF6', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginLeft: 6 },
   merchantBadgeText: { fontFamily: 'Inter_700Bold', fontSize: 9, color: '#FFFFFF', letterSpacing: 0.5 },
-  headerIcons: { flexDirection: 'row', alignItems: 'center' },
-  
-  langButton: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    backgroundColor: '#F3F4F6', 
-    paddingHorizontal: isSmallScreen ? 6 : 8, 
-    paddingVertical: 5, 
-    borderRadius: 10, 
-    marginLeft: isSmallScreen ? 4 : 8, 
-    height: 34 
-  },
-  langText: { marginRight: 4, fontSize: 11, fontFamily: 'Inter_700Bold', color: '#1A2840' },
-  langFlag: { width: 16, height: 12, borderRadius: 2 },
+  headerIcons: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   iconButton: { 
     width: 34, 
     height: 34, 

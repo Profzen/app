@@ -561,10 +561,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
-    shadowColor: '#071D54',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    boxShadow: '0px 4px 8px rgba(7,29,84,0.2)',
     elevation: 4,
   },
   shareIconWrapper: {

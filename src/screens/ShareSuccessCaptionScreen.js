@@ -362,10 +362,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
     marginBottom: 20,
-    shadowColor: '#071D54',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
+    boxShadow: '0px 4px 12px rgba(7,29,84,0.25)',
     elevation: 4,
   },
   visualHeaderRow: {
@@ -631,10 +628,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     height: 52,
     marginBottom: 16,
-    shadowColor: '#FFC759',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    boxShadow: '0px 4px 8px rgba(255,199,89,0.3)',
     elevation: 3,
   },
   btnPrimaryShareText: {

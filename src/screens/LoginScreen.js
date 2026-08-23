@@ -8,21 +8,11 @@ import { DizzitInput } from '../components/DizzitInput';
 import { DizzitButton } from '../components/DizzitButton';
 import { SocialLogins } from '../components/SocialLogins';
 import { FeaturesBanner } from '../components/FeaturesBanner';
-import AppSelect from '../components/AppSelect';
+import { LanguageSelector } from '../components/LanguageSelector';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../services/supabaseClient';
 
 import { isSmallScreen, isShortScreen } from '../utils/responsive';
-
-const getFlagCode = (lang) => {
-  switch(lang) {
-    case 'fr': return 'fr';
-    case 'pt': return 'pt';
-    case 'ar': return 'sa';
-    case 'am': return 'et';
-    default: return 'gb';
-  }
-};
 
 export default function LoginScreen() {
   const navigation = useNavigation();
@@ -80,28 +70,7 @@ export default function LoginScreen() {
             <Ionicons name="arrow-back" size={22} color={theme.colors.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{language === 'fr' ? 'Connexion' : 'Log In'}</Text>
-          <AppSelect 
-            value={language}
-            options={[
-              { value: 'en', label: 'English', flagUrl: 'https://flagcdn.com/w40/gb.png' },
-              { value: 'fr', label: 'Français', flagUrl: 'https://flagcdn.com/w40/fr.png' },
-              { value: 'pt', label: 'Português', flagUrl: 'https://flagcdn.com/w40/pt.png' },
-              { value: 'ar', label: 'العربية', flagUrl: 'https://flagcdn.com/w40/sa.png' },
-              { value: 'am', label: 'አማርኛ', flagUrl: 'https://flagcdn.com/w40/et.png' },
-            ]}
-            onChange={(val) => setLanguage && setLanguage(val)}
-            title={language === 'fr' ? 'Changer la langue' : 'Switch Language'}
-            renderCustomTrigger={({ setOpen }) => (
-              <TouchableOpacity style={styles.languageSelector} onPress={() => setOpen(true)} accessibilityLabel="Changer la langue / Switch language">
-                <Image 
-                  source={{ uri: `https://flagcdn.com/w40/${getFlagCode(language)}.png` }} 
-                  style={{ width: 20, height: 14, borderRadius: 2, marginRight: 5 }} 
-                />
-                <Text style={styles.languageText}>{language.toUpperCase()}</Text>
-                <Ionicons name="chevron-down" size={14} color={theme.colors.primary} />
-              </TouchableOpacity>
-            )}
-          />
+          <LanguageSelector />
         </View>
 
         {/* Title Area */}
@@ -222,22 +191,6 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.fontFamily.semiBold,
     fontSize: theme.typography.sizes.base,
     color: theme.colors.primary,
-  },
-  languageSelector: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radii.sm,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    minHeight: 'auto',
-  },
-  languageText: {
-    fontFamily: theme.typography.fontFamily.semiBold,
-    fontSize: 12,
-    color: theme.colors.primary,
-    marginRight: 4,
   },
   titleContainer: {
     alignItems: 'center',

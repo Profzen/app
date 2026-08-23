@@ -1,16 +1,43 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar, Linking, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
+import AppToast from '../components/AppToast';
+import Avatar from '../components/Avatar';
 
-import { CONTACTS_MOCK } from '../mocks/contactsMock';
+import * as Clipboard from 'expo-clipboard';
+
+import { useApp } from '../context/AppContext';
 
 export default function ContactProfileScreen({ route }) {
+  const { t } = useApp();
   const navigation = useNavigation();
-  const contactParam = route?.params?.contact;
-  const contact = contactParam || CONTACTS_MOCK[0];
+  const contact = route?.params?.contact;
+
+  if (!contact) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+          <Text style={styles.contactName}>Contact introuvable</Text>
+          <TouchableOpacity style={styles.btnSendMoney} onPress={() => navigation.goBack()}>
+             <Text style={styles.btnSendMoneyText}>Retour</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const handleCopy = async (text, type) => {
+    if (!text) return;
+    await Clipboard.setStringAsync(text);
+    AppToast.showSuccess(`${type} copié!`);
+  };
+
+  const handleLink = (url) => {
+    Linking.openURL(url).catch(() => AppToast.showError("Impossible d'ouvrir le lien"));
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -19,14 +46,15 @@ export default function ContactProfileScreen({ route }) {
         {/* Header Top Bar */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={22} color="#1A2840" />
+            <Ionicons name="arrow-back" size={20} color="#20365B" />
           </TouchableOpacity>
-          <View style={styles.headerRightActions}>
-            <TouchableOpacity style={styles.actionSquareBtn}>
-              <Ionicons name="pencil-outline" size={18} color="#1A2840" />
+          <View style={styles.headerRightActionsPill}>
+            <TouchableOpacity style={styles.actionPillBtn} onPress={() => navigation.navigate('EditBeneficiaryScreen', { isEditing: true, beneficiary: contact })}>
+              <Ionicons name="pencil-outline" size={18} color="#20365B" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionSquareBtn}>
-              <Ionicons name="ellipsis-horizontal" size={18} color="#1A2840" />
+            <View style={styles.pillDivider} />
+            <TouchableOpacity style={styles.actionPillBtn} onPress={() => Alert.alert('Options', 'Voulez-vous bloquer ou supprimer ce contact?', [{text: 'Annuler', style: 'cancel'}, {text: 'Supprimer', style: 'destructive', onPress: () => AppToast.showInfo('Fonctionnalité en cours de développement') }])}>
+              <Ionicons name="ellipsis-horizontal" size={18} color="#20365B" />
             </TouchableOpacity>
           </View>
         </View>
@@ -36,10 +64,7 @@ export default function ContactProfileScreen({ route }) {
           {/* Profile Header Section */}
           <View style={styles.profileHeaderSection}>
             <View style={styles.avatarWrapper}>
-              <Image 
-                source={typeof contact.avatar === 'number' ? contact.avatar : (contact.image ? { uri: contact.image } : require('../../assets/avatars/david.jpg'))} 
-                style={styles.avatarImage} 
-              />
+              <Avatar image={contact.avatar_url || contact.image} name={contact.first_name ? `${contact.first_name} ${contact.last_name}` : contact.name} size={90} style={styles.avatarImage} />
               <View style={styles.badgeVerified}>
                 <Ionicons name="checkmark-circle" size={20} color="#10B981" />
               </View>
@@ -66,15 +91,15 @@ export default function ContactProfileScreen({ route }) {
           <View style={styles.quickActionsGrid}>
             
             {/* Card 1: Envoyer de l'argent (Green Diagonal Arrow ↗) */}
-            <TouchableOpacity style={styles.quickCard} onPress={() => navigation.navigate('SendMoneyScreen')}>
+            <TouchableOpacity style={styles.quickCard} onPress={() => navigation.navigate('SendMoneyScreen', { contact })}>
               <View style={styles.quickCardIconBox}>
                 <Ionicons name="trending-up" size={26} color="#10B981" />
               </View>
-              <Text style={styles.quickCardText}>Envoyer{'\n'}de l'argent</Text>
+              <Text style={styles.quickCardText}>{t('home.actions.send_request', "Envoyer\nde l'argent")}</Text>
             </TouchableOpacity>
 
             {/* Card 2: Demander de l'argent (3 Stacked Golden Coins 🪙) */}
-            <TouchableOpacity style={styles.quickCard} onPress={() => navigation.navigate('SendMoneyScreen')}>
+            <TouchableOpacity style={styles.quickCard} onPress={() => navigation.navigate('ReceiveFundsV2Screen', { contact })}>
               <View style={styles.quickCardIconBox}>
                 <View style={styles.goldenCoinsStack}>
                   <View style={[styles.miniCoin, { top: 0, left: 4 }]} />
@@ -82,7 +107,7 @@ export default function ContactProfileScreen({ route }) {
                   <View style={[styles.miniCoin, { top: 5, left: 8 }]} />
                 </View>
               </View>
-              <Text style={styles.quickCardText}>Demander{'\n'}de l'argent</Text>
+              <Text style={styles.quickCardText}>{t('contacts.quick_action_request_money', "Demander\nde l'argent")}</Text>
             </TouchableOpacity>
 
             {/* Card 3: Payer & Envoyer essentiels (Solid Blue Shopping Bag 🛍️) */}
@@ -90,15 +115,15 @@ export default function ContactProfileScreen({ route }) {
               <View style={styles.quickCardIconBox}>
                 <Ionicons name="bag-handle" size={26} color="#0052FF" />
               </View>
-              <Text style={styles.quickCardText}>Payer &{'\n'}Envoyer essentiels</Text>
+              <Text style={styles.quickCardText}>{t('contacts.quick_action_1.title', "Payer &\nEnvoyer essentiels")}</Text>
             </TouchableOpacity>
 
             {/* Card 4: Inviter (Purple Person Plus 👤+) */}
-            <TouchableOpacity style={styles.quickCard} onPress={() => navigation.navigate('ContactsScreen')}>
+            <TouchableOpacity style={styles.quickCard} onPress={() => navigation.navigate('RewardsScreen')}>
               <View style={styles.quickCardIconBox}>
                 <Ionicons name="person-add-outline" size={26} color="#8B5CF6" />
               </View>
-              <Text style={styles.quickCardText}>Inviter</Text>
+              <Text style={styles.quickCardText}>{t('contacts.quick_action_5.title', 'Inviter')}</Text>
             </TouchableOpacity>
 
           </View>
@@ -113,13 +138,13 @@ export default function ContactProfileScreen({ route }) {
               </View>
               <View style={styles.infoTextGroup}>
                 <Text style={styles.infoLabel}>Téléphone</Text>
-                <Text style={styles.infoValue}>+228 90 12 34 56</Text>
+                <Text style={styles.infoValue}>{(contact.phone || contact.raw_data?.phone) || 'Non renseigné'}</Text>
               </View>
               <View style={styles.infoActionIcons}>
-                <TouchableOpacity style={styles.actionCircleBtn}>
+                <TouchableOpacity style={styles.actionCircleBtn} onPress={() => handleLink(`tel:${(contact.phone || contact.raw_data?.phone)}`)}>
                   <Ionicons name="call-outline" size={16} color="#1A2840" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.actionCircleBtn}>
+                <TouchableOpacity style={styles.actionCircleBtn} onPress={() => handleLink(`sms:${(contact.phone || contact.raw_data?.phone)}`)}>
                   <Ionicons name="chatbubble-outline" size={16} color="#1A2840" />
                 </TouchableOpacity>
               </View>
@@ -134,45 +159,29 @@ export default function ContactProfileScreen({ route }) {
               </View>
               <View style={styles.infoTextGroup}>
                 <Text style={styles.infoLabel}>Email</Text>
-                <Text style={styles.infoValue}>johndoe@gmail.com</Text>
+                <Text style={styles.infoValue}>{(contact.email || contact.raw_data?.email) || 'Non renseigné'}</Text>
               </View>
-              <TouchableOpacity style={styles.actionCircleBtn}>
+              <TouchableOpacity style={styles.actionCircleBtn} onPress={() => handleLink(`mailto:${(contact.email || contact.raw_data?.email)}`)}>
                 <Ionicons name="mail-outline" size={16} color="#1A2840" />
               </TouchableOpacity>
             </View>
 
             <View style={styles.rowDivider} />
 
-            {/* Row 3: Mobile */}
+            {/* Row 3: EVM wallet */}
             <View style={styles.infoRow}>
               <View style={styles.infoIconBox}>
                 <Ionicons name="wallet-outline" size={18} color="#6B7280" />
               </View>
               <View style={styles.infoTextGroup}>
-                <Text style={styles.infoLabel}>Mobile</Text>
-                <Text style={styles.infoValue}>+228 90 12 34 56</Text>
-              </View>
-              <TouchableOpacity style={styles.actionCircleBtn}>
-                <Ionicons name="copy-outline" size={16} color="#1A2840" />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.rowDivider} />
-
-            {/* Row 4: EVM wallet */}
-            <View style={styles.infoRow}>
-              <View style={styles.infoIconBox}>
-                <Ionicons name="logo-ethereum" size={18} color="#6B7280" />
-              </View>
-              <View style={styles.infoTextGroup}>
                 <Text style={styles.infoLabel}>EVM wallet</Text>
-                <Text style={styles.infoValue}>0xA1B2...3C4D5E</Text>
+                <Text style={styles.infoValue}>{(contact.evm_address || contact.raw_data?.evm_address) ? `${(contact.evm_address || contact.raw_data?.evm_address).substring(0, 6)}...${(contact.evm_address || contact.raw_data?.evm_address).substring((contact.evm_address || contact.raw_data?.evm_address).length - 4)}` : 'Non renseigné'}</Text>
               </View>
               <View style={styles.infoActionIcons}>
-                <TouchableOpacity style={styles.actionCircleBtn}>
+                <TouchableOpacity style={styles.actionCircleBtn} onPress={() => handleLink(`https://polygonscan.com/address/${(contact.evm_address || contact.raw_data?.evm_address)}`)}>
                   <Ionicons name="open-outline" size={16} color="#1A2840" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.actionCircleBtn}>
+                <TouchableOpacity style={styles.actionCircleBtn} onPress={() => handleCopy((contact.evm_address || contact.raw_data?.evm_address), 'Valeur')}>
                   <Ionicons name="copy-outline" size={16} color="#1A2840" />
                 </TouchableOpacity>
               </View>
@@ -180,20 +189,20 @@ export default function ContactProfileScreen({ route }) {
 
             <View style={styles.rowDivider} />
 
-            {/* Row 5: Solana wallet */}
+            {/* Row 4: Solana wallet */}
             <View style={styles.infoRow}>
               <View style={styles.infoIconBox}>
                 <Ionicons name="layers-outline" size={18} color="#6B7280" />
               </View>
               <View style={styles.infoTextGroup}>
                 <Text style={styles.infoLabel}>Solana wallet</Text>
-                <Text style={styles.infoValue}>8xZ7...9AbC</Text>
+                <Text style={styles.infoValue}>{(contact.solana_address || contact.raw_data?.solana_address) ? `${(contact.solana_address || contact.raw_data?.solana_address).substring(0, 4)}...${(contact.solana_address || contact.raw_data?.solana_address).substring((contact.solana_address || contact.raw_data?.solana_address).length - 4)}` : 'Non renseigné'}</Text>
               </View>
               <View style={styles.infoActionIcons}>
-                <TouchableOpacity style={styles.actionCircleBtn}>
+                <TouchableOpacity style={styles.actionCircleBtn} onPress={() => handleLink(`https://solscan.io/account/${(contact.solana_address || contact.raw_data?.solana_address)}`)}>
                   <Ionicons name="open-outline" size={16} color="#1A2840" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.actionCircleBtn}>
+                <TouchableOpacity style={styles.actionCircleBtn} onPress={() => handleCopy((contact.solana_address || contact.raw_data?.solana_address), 'Valeur')}>
                   <Ionicons name="copy-outline" size={16} color="#1A2840" />
                 </TouchableOpacity>
               </View>
@@ -201,42 +210,42 @@ export default function ContactProfileScreen({ route }) {
 
             <View style={styles.rowDivider} />
 
-            {/* Row 6: Pays */}
+            {/* Row 5: Pays */}
             <View style={styles.infoRow}>
               <View style={styles.infoIconBox}>
                 <Ionicons name="location-outline" size={18} color="#6B7280" />
               </View>
               <View style={styles.infoTextGroup}>
                 <Text style={styles.infoLabel}>Pays</Text>
-                <Text style={styles.infoValue}>Togo</Text>
+                <Text style={styles.infoValue}>{contact.location || 'Non renseigné'}</Text>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
             </View>
 
             <View style={styles.rowDivider} />
 
-            {/* Row 7: Groupe */}
+            {/* Row 6: Groupe */}
             <View style={styles.infoRow}>
               <View style={styles.infoIconBox}>
                 <Ionicons name="people-outline" size={18} color="#6B7280" />
               </View>
               <View style={styles.infoTextGroup}>
                 <Text style={styles.infoLabel}>Groupe</Text>
-                <Text style={styles.infoValue}>Famille</Text>
+                <Text style={styles.infoValue}>{contact.relation || 'Non renseigné'}</Text>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
             </View>
 
             <View style={styles.rowDivider} />
 
-            {/* Row 8: Parrain */}
+            {/* Row 7: Parrain */}
             <View style={styles.infoRow}>
               <View style={styles.infoIconBox}>
                 <Ionicons name="heart-outline" size={18} color="#6B7280" />
               </View>
               <View style={styles.infoTextGroup}>
                 <Text style={styles.infoLabel}>Parrain</Text>
-                <Text style={[styles.infoValue, { color: '#10B981' }]}>Oui</Text>
+                <Text style={[styles.infoValue, { color: contact.isSponsor ? '#10B981' : '#6B7280' }]}>{contact.isSponsor ? 'Oui' : 'Non'}</Text>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
             </View>
@@ -250,11 +259,11 @@ export default function ContactProfileScreen({ route }) {
             </View>
             <View style={styles.verifiedBannerContent}>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-                <Text style={styles.verifiedBannerTitle}>Contact vérifié</Text>
+                <Text style={styles.verifiedBannerTitle}>{t('beneficiary_management.profile.verified_contact', 'Contact vérifié')}</Text>
                 <Ionicons name="checkmark-circle" size={14} color="#D97706" style={{ marginLeft: 4 }} />
               </View>
               <Text style={styles.verifiedBannerSubtext}>
-                Ce contact est vérifié et peut recevoir de l'argent sur DizzitUp.
+                {t('beneficiary_management.profile.verified_desc', "Ce contact est vérifié et peut recevoir de l'argent sur DizzitUp.")}
               </Text>
             </View>
             <View style={styles.verifiedCheckBadge}>
@@ -262,51 +271,14 @@ export default function ContactProfileScreen({ route }) {
             </View>
           </View>
 
-          {/* Activité récente Section */}
-          <View style={styles.activityHeaderRow}>
-            <Text style={styles.activityTitleText}>Activité récente</Text>
-            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => navigation.navigate('ContactHistoryScreen')}>
-              <Text style={styles.viewAllText}>Voir tout</Text>
-              <Ionicons name="arrow-forward" size={14} color="#0052FF" style={{ marginLeft: 4 }} />
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.activityContainerCard}>
-            <TouchableOpacity style={styles.activityRow} onPress={() => navigation.navigate('ContactHistoryScreen')}>
-              <View style={[styles.activityIconCircle, { backgroundColor: '#DCFCE7' }]}>
-                <Ionicons name="arrow-up-circle-outline" size={18} color="#10B981" />
-              </View>
-              <View style={styles.activityMainContent}>
-                <Text style={styles.activityItemTitle}>Vous avez envoyé de l'argent</Text>
-                <Text style={styles.activityDateText}>23 avril 2024 • 14:32</Text>
-              </View>
-              <Text style={styles.activityAmountNegative}>- 50,00 DZ</Text>
-              <Ionicons name="chevron-forward" size={14} color="#9CA3AF" style={{ marginLeft: 6 }} />
-            </TouchableOpacity>
-
-            <View style={styles.rowDivider} />
-
-            <TouchableOpacity style={styles.activityRow} onPress={() => navigation.navigate('ContactHistoryScreen')}>
-              <View style={[styles.activityIconCircle, { backgroundColor: '#FEF3C7' }]}>
-                <Ionicons name="arrow-down-outline" size={18} color="#D97706" />
-              </View>
-              <View style={styles.activityMainContent}>
-                <Text style={styles.activityItemTitle}>Demande d'argent</Text>
-                <Text style={styles.activityDateText}>18 avril 2024 • 09:15</Text>
-              </View>
-              <Text style={styles.activityAmountPositive}>+ 25,00 DZ</Text>
-              <Ionicons name="chevron-forward" size={14} color="#9CA3AF" style={{ marginLeft: 6 }} />
-            </TouchableOpacity>
-          </View>
-
           {/* Sticky Action CTA Button */}
           <TouchableOpacity 
             style={styles.btnSendMoney} 
-            onPress={() => navigation.navigate('SendMoneyScreen')}
+            onPress={() => navigation.navigate('SendMoneyScreen', { contact })}
             activeOpacity={0.8}
           >
             <Ionicons name="swap-horizontal" size={18} color="#1A2840" style={{ marginRight: 8 }} />
-            <Text style={styles.btnSendMoneyText}>Envoyer de l'argent</Text>
+            <Text style={styles.btnSendMoneyText}>{t('wallet.actions.send', "Envoyer de l'argent")}</Text>
           </TouchableOpacity>
 
           <View style={{ height: 20 }} />
@@ -324,9 +296,11 @@ const styles = StyleSheet.create({
   },
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 10 },
-  backButton: { padding: 4 },
-  headerRightActions: { flexDirection: 'row', gap: 8 },
-  actionSquareBtn: { width: 38, height: 38, borderRadius: 12, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
+  backButton: { width: 42, height: 42, borderRadius: 21, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', shadowColor: '#20365B', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 },
+  headerRightActionsPill: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 24, paddingHorizontal: 4, paddingVertical: 4, shadowColor: '#20365B', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 },
+  actionPillBtn: { width: 34, height: 34, borderRadius: 17, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8FAFC' },
+  pillDivider: { width: 1, height: 18, backgroundColor: '#E2E8F0', marginHorizontal: 2 },
+  
   scrollView: { flex: 1 },
   scrollContent: { paddingTop: 6, paddingBottom: 30 },
   profileHeaderSection: { alignItems: 'center', marginBottom: 20, paddingHorizontal: 16 },
@@ -363,17 +337,6 @@ const styles = StyleSheet.create({
   verifiedBannerTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840' },
   verifiedBannerSubtext: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280', lineHeight: 15 },
   verifiedCheckBadge: { width: 22, height: 22, borderRadius: 11, backgroundColor: '#FFC759', justifyContent: 'center', alignItems: 'center', marginLeft: 8 },
-  activityHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, marginBottom: 10 },
-  activityTitleText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#1A2840' },
-  viewAllText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#0052FF' },
-  activityContainerCard: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0F2F5', borderRadius: 18, marginHorizontal: 16, marginBottom: 16 },
-  activityRow: { flexDirection: 'row', alignItems: 'center', padding: 14 },
-  activityIconCircle: { width: 38, height: 38, borderRadius: 19, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
-  activityMainContent: { flex: 1 },
-  activityItemTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840', marginBottom: 1 },
-  activityDateText: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#9CA3AF' },
-  activityAmountNegative: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840' },
-  activityAmountPositive: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#10B981' },
   btnSendMoney: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFC759', height: 48, borderRadius: 12, marginHorizontal: 16, marginBottom: 10 },
   btnSendMoneyText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#1A2840' }
 });
