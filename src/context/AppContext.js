@@ -88,7 +88,14 @@ export function AppProvider({ children }) {
         let fetchedPhone = '';
         let fetchedAvatar = null;
         let fetchedMerchantProfile = null;
+        let fetchedEvmAddress = '';
+        let fetchedSolanaAddress = '';
+        let fetchedBusinessEvmAddress = '';
+        let fetchedBusinessSolanaAddress = '';
+        let fetchedDizzyToken = '';
+        let fetchedBusinessDizzyToken = '';
         let newBalances = { DZY: 0 };
+        let businessBalances = { DZY: 0 };
         let totalUsdValue = 0;
         let rawBalancesArray = [];
         
@@ -118,6 +125,8 @@ export function AppProvider({ children }) {
             if (profile.city_of_residence) fetchedCity = profile.city_of_residence;
             if (profile.mobile_number) fetchedPhone = profile.mobile_number;
             if (profile.avatar_url) fetchedAvatar = profile.avatar_url;
+            if (profile.evm_wallet_address) fetchedEvmAddress = profile.evm_wallet_address;
+            if (profile.solana_wallet_address) fetchedSolanaAddress = profile.solana_wallet_address;
             
             // If they are a merchant, fetch full business profile
             if (fetchedRole === 'merchant') {
@@ -137,6 +146,78 @@ export function AppProvider({ children }) {
           console.log("Profile fetch failed:", e);
         }
 
+        fetchedDizzyToken = sessionObj.access_token; // Fallback
+        try {
+          let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
+          if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+            try {
+              const urlObj = new URL(DIZZY_URL);
+              if (urlObj.hostname === 'localhost') {
+                urlObj.hostname = window.location.hostname;
+                DIZZY_URL = urlObj.toString();
+              }
+            } catch (e) {}
+          } else if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) {
+            DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
+          }
+
+          console.log("calling sync-buygoods for email:", sessionObj.user.email);
+          const syncRes = await fetch(`${DIZZY_URL}/auth/sync-buygoods`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: sessionObj.user.email,
+              supabaseUserId: sessionObj.user.id,
+              authProvider: 'EMAIL'
+            })
+          });
+          if (syncRes.ok) {
+            const syncData = await syncRes.json();
+            console.log("sync-buygoods success, evmAddress:", syncData.user?.evmAddress);
+            if (syncData.token) {
+              fetchedDizzyToken = syncData.token;
+            }
+            if (syncData.user) {
+              fetchedEvmAddress = syncData.user.evmAddress || syncData.user.walletAddress || fetchedEvmAddress;
+              fetchedSolanaAddress = syncData.user.solanaAddress || fetchedSolanaAddress;
+            }
+          } else {
+            console.log("sync-buygoods failed with status:", syncRes.status);
+          }
+
+          console.log("fetchedRole:", fetchedRole, "merchantProfile:", !!fetchedMerchantProfile);
+          if (fetchedRole === 'merchant' && fetchedMerchantProfile && fetchedMerchantProfile.id) {
+            console.log("calling sync-crossmint for biz_" + fetchedMerchantProfile.id);
+            const bizSyncRes = await fetch(`${DIZZY_URL}/auth/sync-crossmint`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                supabaseUserId: 'biz_' + fetchedMerchantProfile.id,
+                email: sessionObj.user.email,
+                authProvider: 'EMAIL',
+                allowWalletCreation: true
+              })
+            });
+            if (bizSyncRes.ok) {
+              const bizSyncData = await bizSyncRes.json();
+              console.log("sync-crossmint success, evmAddress:", bizSyncData.user?.evmAddress);
+              if (bizSyncData.token) {
+                fetchedBusinessDizzyToken = bizSyncData.token;
+              }
+              if (bizSyncData.user) {
+                fetchedBusinessEvmAddress = bizSyncData.user.evmAddress || bizSyncData.user.walletAddress || '';
+                fetchedBusinessSolanaAddress = bizSyncData.user.solanaAddress || '';
+              }
+            } else {
+              console.log("sync-crossmint failed with status:", bizSyncRes.status);
+              const errData = await bizSyncRes.text();
+              console.log("sync-crossmint error response:", errData);
+            }
+          }
+        } catch (e) {
+          console.log("Failed to fetch dizzyToken:", e);
+        }
+
         try {
           let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
           if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
@@ -151,42 +232,69 @@ export function AppProvider({ children }) {
             // Android emulator maps 10.0.2.2 to the host machine's localhost
             DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
           }
-          const balanceRes = await fetch(`${DIZZY_URL}/wallet/balance`, {
-            headers: { 'Authorization': `Bearer ${sessionObj.access_token}` }
-          });
-          if (balanceRes.ok) {
-            const bData = await balanceRes.json();
-            if (bData.balances) {
-              rawBalancesArray = bData.balances;
-              bData.balances.forEach(b => {
-                const cur = (b.currency || b.token || b.symbol || '').toUpperCase();
-                if (cur) newBalances[cur] = parseFloat(b.balance || 0);
-              });
+          const fetchBalance = async (token) => {
+            const res = await fetch(`${DIZZY_URL}/wallet/balance`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+              return await res.json();
             }
-            if (bData.totalUsdValue !== undefined) {
-              const usdVal = parseFloat(bData.totalUsdValue || 0);
-              totalUsdValue = usdVal;
-              // Special conversion: 10 DZY = 1 USD
-              newBalances['DZY'] = usdVal * 10;
-              newBalances['USD'] = usdVal;
-              
-              // Fetch live exchange rates to populate local fiat balances
-              try {
-                const rateRes = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-                if (rateRes.ok) {
-                  const rateData = await rateRes.json();
-                  const rates = rateData.rates || {};
-                  
-                  // Pre-calculate ALL global currencies for the wallet card
-                  Object.keys(rates).forEach(fiat => {
-                    newBalances[fiat] = usdVal * rates[fiat];
-                  });
+            return null;
+          };
+
+          // Fetch personal balance using dizzyToken
+          if (fetchedDizzyToken) {
+            const bData = await fetchBalance(fetchedDizzyToken);
+            if (bData) {
+              if (bData.balances) {
+                rawBalancesArray = bData.balances;
+                bData.balances.forEach(b => {
+                  const cur = (b.currency || b.token || b.symbol || '').toUpperCase();
+                  if (cur) newBalances[cur] = parseFloat(b.balance || 0);
+                });
+              }
+              if (bData.totalUsdValue !== undefined) {
+                const usdVal = parseFloat(bData.totalUsdValue || 0);
+                totalUsdValue = usdVal;
+                newBalances['DZY'] = usdVal * 10;
+                newBalances['USD'] = usdVal;
+                try {
+                  const rateRes = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+                  if (rateRes.ok) {
+                    const rateData = await rateRes.json();
+                    const rates = rateData.rates || {};
+                    Object.keys(rates).forEach(fiat => {
+                      newBalances[fiat] = usdVal * rates[fiat];
+                    });
+                  }
+                } catch (rateErr) {
+                  newBalances['UGX'] = usdVal * 3750;
+                  newBalances['EUR'] = usdVal * 0.92;
+                  newBalances['XOF'] = usdVal * 605;
                 }
-              } catch (rateErr) {
-                console.log("Exchange rate fetch failed, using fallbacks");
-                newBalances['UGX'] = usdVal * 3750;
-                newBalances['EUR'] = usdVal * 0.92;
-                newBalances['XOF'] = usdVal * 605;
+              }
+            }
+          }
+
+          // Fetch business balance if merchant
+          if (fetchedBusinessDizzyToken) {
+            const bData = await fetchBalance(fetchedBusinessDizzyToken);
+            if (bData) {
+              if (bData.balances) {
+                bData.balances.forEach(b => {
+                  const cur = (b.currency || b.token || b.symbol || '').toUpperCase();
+                  if (cur) businessBalances[cur] = parseFloat(b.balance || 0);
+                });
+              }
+              if (bData.totalUsdValue !== undefined) {
+                const usdVal = parseFloat(bData.totalUsdValue || 0);
+                businessBalances['DZY'] = usdVal * 10;
+                businessBalances['USD'] = usdVal;
+                Object.keys(newBalances).forEach(key => {
+                  if (key !== 'DZY' && key !== 'USD' && newBalances[key]) {
+                     businessBalances[key] = (newBalances[key] / (newBalances['USD'] || 1)) * usdVal;
+                  }
+                });
               }
             }
           }
@@ -196,7 +304,7 @@ export function AppProvider({ children }) {
 
         try {
           setIsTransactionsLoading(true);
-          const txs = await transactionService.fetchUnifiedTransactions(sessionObj.user.id, sessionObj.access_token);
+          const txs = await transactionService.fetchUnifiedTransactions(sessionObj.user.id, fetchedDizzyToken);
           setTransactions(txs);
         } catch (e) {
           console.log("Transaction fetch failed:", e);
@@ -221,7 +329,14 @@ export function AppProvider({ children }) {
           totalUsdValue: totalUsdValue,
           allBalances: newBalances,
           rawBalances: rawBalancesArray,
-          merchantProfile: fetchedMerchantProfile
+          merchantProfile: fetchedMerchantProfile,
+          evmAddress: fetchedEvmAddress,
+          solanaAddress: fetchedSolanaAddress,
+          businessEvmAddress: fetchedBusinessEvmAddress,
+          businessSolanaAddress: fetchedBusinessSolanaAddress,
+          dizzyToken: fetchedDizzyToken,
+          businessDizzyToken: fetchedBusinessDizzyToken,
+          businessBalances: businessBalances
         });
       }
     };
@@ -359,10 +474,11 @@ export function AppProvider({ children }) {
   const toggleHideBalance = () => setHideBalance(prev => !prev);
 
   const refreshTransactions = async () => {
-    if (!session?.user?.id || !session?.access_token) return;
+    if (!session?.user?.id) return;
     try {
       setIsTransactionsLoading(true);
-      const txs = await transactionService.fetchUnifiedTransactions(session.user.id, session.access_token);
+      const tokenToUse = user?.dizzyToken || session?.access_token;
+      const txs = await transactionService.fetchUnifiedTransactions(session.user.id, tokenToUse);
       setTransactions(txs);
     } catch (e) {
       console.log("Manual transaction refresh failed:", e);

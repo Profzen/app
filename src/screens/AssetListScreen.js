@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, StatusBar, LayoutAnimation, UIManager } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, StatusBar, LayoutAnimation, UIManager, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -27,10 +27,17 @@ const WEB_DEFAULT_TOKENS = [
 
 const CAN_BUY_SELL = ['USDC', 'USDT'];
 
+import * as Clipboard from 'expo-clipboard';
+
 export default function AssetListScreen() {
   const navigation = useNavigation();
   const { t, user, language } = useApp();
   const [expandedTokens, setExpandedTokens] = useState({});
+
+  const copyToClipboard = async (text) => {
+    await Clipboard.setStringAsync(text);
+    // You could add a toast here
+  };
 
   const totalUsdValue = user?.totalUsdValue || 0;
   
@@ -93,6 +100,9 @@ export default function AssetListScreen() {
     }));
   };
 
+  const displayEvmAddress = user?.role === 'merchant' && user?.businessEvmAddress ? user.businessEvmAddress : user?.evmAddress;
+  const displaySolanaAddress = user?.role === 'merchant' && user?.businessSolanaAddress ? user.businessSolanaAddress : user?.solanaAddress;
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
@@ -104,6 +114,49 @@ export default function AssetListScreen() {
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        
+        {/* Wallet Addresses Section */}
+        <View style={styles.addressesContainer}>
+          <Text style={styles.addressesTitle}>{t('wallet.my_addresses', 'My Wallet Addresses')}</Text>
+          
+          <View style={styles.addressBox}>
+            <View style={styles.addressLeft}>
+              <View style={styles.networkLogoContainer}>
+                <Image source={require('../../assets/cryptos/pol.png')} style={styles.networkLogo} />
+              </View>
+              <View style={styles.addressInfo}>
+                <Text style={styles.addressLabel}>Polygon / Base / BSC (EVM)</Text>
+                <Text style={styles.addressText} numberOfLines={1} ellipsizeMode="middle">
+                  {displayEvmAddress || 'Not created yet'}
+                </Text>
+              </View>
+            </View>
+            {displayEvmAddress && (
+              <TouchableOpacity onPress={() => copyToClipboard(displayEvmAddress)} style={styles.copyBtn}>
+                <Ionicons name="copy-outline" size={18} color="#20365B" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <View style={styles.addressBox}>
+            <View style={styles.addressLeft}>
+              <View style={styles.networkLogoContainer}>
+                <Image source={require('../../assets/cryptos/sol.png')} style={styles.networkLogo} />
+              </View>
+              <View style={styles.addressInfo}>
+                <Text style={styles.addressLabel}>Solana</Text>
+                <Text style={styles.addressText} numberOfLines={1} ellipsizeMode="middle">
+                  {displaySolanaAddress || 'Not created yet'}
+                </Text>
+              </View>
+            </View>
+            {displaySolanaAddress && (
+              <TouchableOpacity onPress={() => copyToClipboard(displaySolanaAddress)} style={styles.copyBtn}>
+                <Ionicons name="copy-outline" size={18} color="#20365B" />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
         
         <View style={styles.sectionHeader}>
            <View style={styles.sectionIconWrapper}>
@@ -239,6 +292,80 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  addressesContainer: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#F0F2F6',
+  },
+  addressesTitle: {
+    fontFamily: theme.typography.fontFamily.bold,
+    fontSize: 14,
+    color: '#1A2840',
+    marginBottom: 12,
+  },
+  addressBox: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#F0F2F6',
+  },
+  addressLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 12,
+  },
+  addressInfo: {
+    marginLeft: 10,
+    flex: 1,
+  },
+  networkLogoContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#E8ECEF',
+  },
+  networkLogo: {
+    width: 20,
+    height: 20,
+    resizeMode: 'contain',
+  },
+  addressLabel: {
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: 11,
+    color: '#878FA4',
+    marginBottom: 2,
+  },
+  addressText: {
+    fontFamily: theme.typography.fontFamily.semiBold,
+    fontSize: 12,
+    color: '#1A2840',
+  },
+  copyBtn: {
+    padding: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   sectionHeader: {
     flexDirection: 'row',

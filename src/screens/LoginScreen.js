@@ -21,11 +21,13 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const handleLogin = async () => {
-    if (!email || !password) return; // Basic validation
+    if (!email || !password) return;
     
     setIsLoading(true);
+    setErrorMessage(null);
     
     try {
       const isPlaceholder = !process.env.EXPO_PUBLIC_SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_URL.includes('placeholder');
@@ -49,9 +51,9 @@ export default function LoginScreen() {
       setIsLoading(false);
       navigation.navigate('HomeScreen');
     } catch (error) {
-      console.warn("⚠️ Connexion Supabase échouée (" + error.message + ") -> Redirection vers HomeScreen en mode démo.");
+      console.warn("⚠️ Connexion Supabase échouée (" + error.message + ")");
       setIsLoading(false);
-      navigation.navigate('HomeScreen');
+      setErrorMessage(language === 'fr' ? 'Échec de connexion : ' + error.message : 'Login failed: ' + error.message);
     }
   };
 
@@ -132,7 +134,11 @@ export default function LoginScreen() {
             <Text style={styles.forgotPasswordText}>{t('login.forgot_password', 'Forgot password?')}</Text>
           </TouchableOpacity>
 
-          
+          {errorMessage && (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{errorMessage}</Text>
+            </View>
+          )}
 
           <View style={{marginTop: theme.spacing.sm}}>
             <DizzitButton 
@@ -255,6 +261,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: theme.colors.textSecondary,
     textDecorationLine: 'underline',
+  },
+  errorContainer: {
+    backgroundColor: '#FEE2E2',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  errorText: {
+    color: '#DC2626',
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: 12,
+    textAlign: 'center',
   },
   signupContainer: {
     flexDirection: 'row',

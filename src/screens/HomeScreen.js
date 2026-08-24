@@ -24,8 +24,12 @@ export default function HomeScreen() {
   const [walletBalances, setWalletBalances] = useState({});
 
   useEffect(() => {
-    if (user && user.allBalances) {
-      setWalletBalances(user.allBalances);
+    if (user) {
+      if (user.role === 'merchant' && user.businessBalances) {
+        setWalletBalances(user.businessBalances);
+      } else if (user.allBalances) {
+        setWalletBalances(user.allBalances);
+      }
     }
   }, [user]);
 
