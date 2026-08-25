@@ -1733,6 +1733,136 @@ Pour résoudre les anomalies remontées lors des tests sur iPhone SE (écran 375
 
 ---
 
+## 🔀 Synchronisation Git `front-back` & Pull des mises à jour d'Assia (20 août 2026)
+
+- **Récupération des modifications d'Assia** : `git pull origin front-back` effectué avec succès (Fast-forward `0b6098f` -> `8bb3846`).
+- **Mises à jour reçues et validées** :
+  - `AssetListScreen` : intégration des soldes `WalletContext` en direct, UI accordéon réseaux crypto et affichage des tokens web.
+  - Consolidations d'écrans (fusion des variantes d'écrans d'actifs), `AnimatedSplashScreen`, écran de déverrouillage sécurisé (`UnlockScreen.js`).
+  - Amélioration de l'initialisation Supabase & dictionnaire de traductions révisé en 5 langues (`am`, `ar`, `en`, `fr`, `pt`).
+  - Corrections du scope `rawBalancesArray` dans `AppContext.js`.
+  - Installation des dépendances associées (`npm install` : `expo-secure-store`, `expo-web-browser`, `expo-splash-screen`).
+- **Rappel workflow d'équipe** : Effectuer systématiquement un `git pull origin front-back` au début de chaque journée/session de travail afin d'assurer une parfaite convergence avec les commits d'Assia et Nathan.
+
+---
+
+## 📱 Point de Situation Responsive & Coordination UI/UX (20 août 2026)
+
+### 1. Contexte & Échanges avec l'Équipe Backend (Assia)
+- **Rôle d'Assia** : Concentrée en priorité sur la finalisation de l'intégration Backend ce mois-ci, avec reprise élargie du Frontend prévue par la suite aux côtés de Nathan.
+- **Remarque soulevée** : Assia a mentionné de potentiels points d'ajustements responsive persistants sur petits écrans (notamment iPhone SE).
+
+### 2. Vérification & Tests sur Émulation iPhone SE (375 × 667 px)
+- **Procédure de test exécutée** :
+  - Lancement du serveur de développement Expo Web (`http://localhost:8081`).
+  - Émulation active sous viewport standard **iPhone SE (375 × 667 px, DPR 2.0)**.
+  - Parcours des écrans clés (`HomeScreen`, `DashboardScreen`, `LoginScreen`, `RegisterScreen`, `PinCodeScreen`, `BottomNavBar`, etc.).
+- **Constat** :
+  - L'affichage global et les composants principaux s'adaptent de manière fluide et lisible sans décalage bloquant ni chevauchement grâce aux utilitaires [`src/utils/responsive.js`](file:///g:/zen/projets/DizzitApp/app/src/utils/responsive.js) et à la normalisation des paddings de safe area.
+
+### 3. Feuille de Route pour le Traitement du Google Doc Audit
+- **Méthodologie convenue** : Assia finalise un **Google Doc d'audit exhaustif** répertoriant écran par écran les captures d'anomalies spécifiques qu'elle aurait identifiées sur des formulaires ou flux profonds.
+- **Plan d'action dès réception du document** :
+  1. Examiner précisément chaque écran ou composant mentionné dans le Google Doc.
+  2. Ajuster au millimètre les hauteurs/paddings fixes et s'assurer de la présence de `ScrollView` avec `keyboardShouldPersistTaps="handled"` sur tous les formulaires longs.
+  3. Valider visuellement sur viewport 375 × 667 px avant commit et push sur `origin/front-back`.
+
+---
+
+## 🔐 Configuration Environnement Backend, Intégration `.env` & Préparation TestFlight (25 août 2026)
+
+### 1. Transmission des clés et endpoints par l'équipe Backend (Assia)
+- **Objectif** : Brancher l'application sur les microservices et l'infrastructure Supabase & Crossmint officielle.
+- **Fichier local créé** : [`.env`](file:///g:/zen/projets/DizzitApp/app/.env) (protégé par le `.gitignore`).
+- **Détail des configurations et variables d'environnement (`.env`)** :
+  - **Crossmint SDK** (`EXPO_PUBLIC_CROSSMINT_CLIENT_SIDE_API_KEY`) : Clé client-side production `ck_production_...` pour l'onramp et la gestion des wallets embarqués.
+  - **1. Wallet Backend** (`EXPO_PUBLIC_DIZZY_WALLET_API_URL`) : Gestion crypto, onramp, P2P, DZY rewards.
+    - Local Web/iOS : `http://localhost:5000/api`
+    - Émulateur Android : `http://10.0.2.2:5000/api`
+    - Production HTTPS : `https://wallet.dizzitup.com/api`
+  - **2. Buy Goods Backend** (`EXPO_PUBLIC_BUY_GOODS_API_URL`) : Gestion des commerces locaux, marchands, POS/TPE.
+    - Local Web/iOS : `http://localhost:3001/api`
+    - Émulateur Android : `http://10.0.2.2:3001/api`
+    - Production HTTPS : `https://buygoods-api.dizzitup.com/api`
+  - **3. Pay Bills Backend** (`EXPO_PUBLIC_PAY_BILLS_API_URL`) : Gestion Mobile Money, recharges Airtime, factures utilities.
+    - Local Web/iOS : `http://localhost:4000/api`
+    - Émulateur Android : `http://10.0.2.2:4000/api`
+    - Production HTTPS : `https://api.dizzitup.com/api`
+  - **4. Medusa Marketplace Backend** (`EXPO_PUBLIC_MEDUSA_API_URL`) : E-commerce global et catalogue produits.
+    - Local Web/iOS : `http://localhost:9000/store`
+    - Émulateur Android : `http://10.0.2.2:9000/store`
+    - Production HTTPS : `https://medusa.dizzitup.com/store`
+  - **Supabase Configuration** :
+    - `EXPO_PUBLIC_SUPABASE_URL` : `https://sdnpjglhcauispfrrhwh.supabase.co`
+    - `EXPO_PUBLIC_SUPABASE_ANON_KEY` : Clé anon officielle du projet.
+
+### 2. Bonnes pratiques de test & Session
+- **Types de comptes** : Possibilité de tester indifféremment avec un compte utilisateur (*User*) ou commerçant (*Merchant*).
+- **Consigne cache/stockage** : Lors du changement de type de compte, impérativement purger le cache / AsyncStorage de l'application afin d'éviter tout conflit de session ou de token d'authentification.
+
+### 3. Feuille de route Déploiement TestFlight (Demande Solofo & Assia)
+- **Contexte** : Solofo et Assia ont sollicité Aziz pour pousser une nouvelle version fonctionnelle de DizzitApp sur **Apple TestFlight** (suite au déploiement initial de la version statique).
+- **Plan d'action pour le build TestFlight** :
+  1. Basculer les 4 variables d'API dans `.env` / EAS Secrets vers les endpoints de production HTTPS (`wallet.dizzitup.com`, `buygoods-api.dizzitup.com`, `api.dizzitup.com`, `medusa.dizzitup.com`).
+  2. Valider auprès d'Assia que les microservices de production sont actifs et sécurisés avec CORS configuré pour l'app mobile.
+  3. Lancer le build EAS iOS (`eas build --platform ios`) et soumettre le bundle à TestFlight (`eas submit --platform ios`).
+
+---
+
+## 🌳 Audit Exhaustif des Branches Git & Synchronisation `front-back` (25 août 2026)
+
+### 1. Analyse Comparative des Branches
+Un audit complet des branches locales et distantes a été effectué (`origin/front-back`, `origin/feature/backend-integration`, `origin/develop`) :
+- **`front-back` (Branche Reine / Source de Vérité)** :
+  - Contient **100%** de l'historique de `develop` (version déployée sur TestFlight le 19 août) + **100%** des commits de `feature/backend-integration`.
+  - Assia a directement basculé et pushé tous ses travaux récents sur `front-back` (commits `f4c4d6c` -> `fd85f6f` du 20 au 25 août).
+  - C'est **la branche la plus avancée et complète de tout le projet**.
+- **`feature/backend-integration` (Branche Obsolète)** :
+  - Tous ses commits (jusqu'à `6865379`) ont été fusionnés dans `front-back` (`c7a8f9b`). Aucun commit n'est orphelin sur cette branche.
+- **`develop` (Ancienne Branche TestFlight)** :
+  - Arrêtée au commit `4cfb425` (19 août). Pour préparer la nouvelle mise en production TestFlight demandée par Solofo, `front-back` sera la base de référence (soit en mergeant `front-back` -> `develop`, soit en déployant directement `front-back`).
+
+### 2. Dernières Fonctionnalités Intégrées par Assia (Pull Fast-Forward `fd85f6f`)
+- **🔑 Gestion des Identités & Wallets (`AppContext.js`, `AssetListScreen.js`)** :
+  - Résolution des collisions d'identités marchands vs utilisateurs personnels.
+  - Activation de `allowWalletCreation` pour la récupération Crossmint autoritaire.
+  - Affichage précis des feedbacks d'erreurs UI lors de la connexion.
+- **🌐 Internationalisation (i18n) en 5 Langues** :
+  - Traduction et synchronisation complètes des dictionnaires : Anglais (`en`), Français (`fr`), Arabe (`ar`), Portugais (`pt`), Amharique (`am`).
+  - Nouveau composant sélecteur [`src/components/LanguageSelector.js`](file:///g:/zen/projets/DizzitApp/app/src/components/LanguageSelector.js).
+- **🚀 Nouveaux Écrans Développés** :
+  - [`src/screens/EditBeneficiaryScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/EditBeneficiaryScreen.js) : Édition complète des informations de bénéficiaires.
+  - [`src/screens/NotificationsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/NotificationsScreen.js) : Centre de notifications in-app.
+  - [`src/screens/ReferBusinessScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ReferBusinessScreen.js) : Programme d'affiliation et parrainage de commerces.
+  - [`src/screens/ServiceCheckoutScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ServiceCheckoutScreen.js) : Paiement de services et factures via webview intégrée.
+- **🛠️ Services & Utilitaires Ajoutés** :
+  - [`src/services/contactService.js`](file:///g:/zen/projets/DizzitApp/app/src/services/contactService.js) : API bénéficiaires et contacts.
+  - [`src/services/transactionService.js`](file:///g:/zen/projets/DizzitApp/app/src/services/transactionService.js) : Historique et données transactionnelles.
+  - [`src/utils/pdfGenerator.js`](file:///g:/zen/projets/DizzitApp/app/src/utils/pdfGenerator.js) : Génération et export des reçus de paiement en PDF.
+  - [`src/utils/statisticsHelper.js`](file:///g:/zen/projets/DizzitApp/app/src/utils/statisticsHelper.js) & [`src/utils/transactionMapper.js`](file:///g:/zen/projets/DizzitApp/app/src/utils/transactionMapper.js).
+- **🎨 Nouveaux Logos & Assets Réseaux** :
+  - Ajout des logos natifs : Base, BNB, DAI, Polygon, Solana, WETH.
+
+---
+
+## 🚀 Plan d'Action & Synchronisation `front-back` ➔ `develop` pour TestFlight (25 août 2026)
+
+### Stratégie d'Exécution Validée
+1. **Étape 1 : Récupération & Consolidation `front-back` (Terminé ✅)**
+   - Pull complet de `origin/front-back` (commit `fd85f6f`).
+   - Configuration du fichier local [`.env`](file:///g:/zen/projets/DizzitApp/app/.env) avec les clés Crossmint, Supabase et les 4 endpoints d'API.
+2. **Étape 2 : Fusion et Push vers `develop` (En cours 🔄)**
+   - Fusionner l'arbre complet de `front-back` dans la branche `develop` (branche de release TestFlight).
+   - Pusher `develop` sur `origin/develop` pour assurer la synchronisation parfaite de l'équipe et préparer le build EAS TestFlight.
+3. **Étape 3 : Traitement des retours d'Audit Google Doc d'Assia**
+   - Dès réception des remarques et captures d'écran listées par Assia dans le Google Doc :
+     - Traitement méthodique écran par écran (ajustements Pixel-Perfect, formulaires, Safe Area, claviers, iPhone SE).
+     - Validation visuelle continue avant les prochains pushs.
+
+---
+
 ## 🔄 Règle d'Or pour l'IA (Mise à jour Continue du Mémoire)
 
 **RÈGLE STRICTE POUR L'IA** : À la fin de chaque session ou après toute modification majeure (ajout d'écran, ajustement de flux, refactoring, gestion Git), l'IA **DOIT IMPÉRATIVEMENT** mettre à jour ce fichier `memoire.md`. Ainsi, lors de l'ouverture d'une nouvelle session de conversation, la lecture préalable de ce fichier permet de récupérer l'intégralité du contexte, de l'état d'avancement et des règles sans aucune perte d'information ni interruption du workflow.
+
+
