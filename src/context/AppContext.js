@@ -28,6 +28,7 @@ export function AppProvider({ children }) {
   });
   
   const [session, setSession] = useState(null);
+  const [isUserLoading, setIsUserLoading] = useState(true);
   const [transactions, setTransactions] = useState([]);
   const [isTransactionsLoading, setIsTransactionsLoading] = useState(false);
   const [isAppLocked, setIsAppLocked] = useState(false);
@@ -78,6 +79,7 @@ export function AppProvider({ children }) {
   useEffect(() => {
     const syncUser = async (sessionObj) => {
       setSession(sessionObj);
+      setIsUserLoading(true);
       if (sessionObj?.user) {
         let fetchedName = sessionObj.user.user_metadata?.full_name || sessionObj.user.email.split('@')[0];
         let fetchedFirstName = '';
@@ -339,6 +341,7 @@ export function AppProvider({ children }) {
           businessBalances: businessBalances
         });
       }
+      setIsUserLoading(false);
     };
 
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -491,6 +494,7 @@ export function AppProvider({ children }) {
     <AppContext.Provider value={{
       user,
       setUser,
+      isUserLoading,
       session,
       shops,
       contacts,

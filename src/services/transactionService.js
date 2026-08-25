@@ -118,5 +118,39 @@ export const transactionService = {
       console.error("Unified transaction fetch error:", error);
       return [];
     }
+  },
+
+  createMoMoOnrampOrder: async (dizzyToken, payload) => {
+    if (!dizzyToken) throw new Error('Authentication required');
+    const response = await fetch(`${WALLET_API}/momo/wallet/topup`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${dizzyToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || data.message || 'MoMo Top-Up Failed');
+    }
+    return data;
+  },
+
+  createCrossmintOnrampOrder: async (dizzyToken, payload) => {
+    if (!dizzyToken) throw new Error('Authentication required');
+    const response = await fetch(`${WALLET_API}/onramp/public/create-order`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${dizzyToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || 'Crossmint Top-Up Failed');
+    }
+    return data;
   }
 };

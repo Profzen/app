@@ -1,88 +1,81 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar, ActivityIndicator, TextInput, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import AppSelect from '../components/AppSelect';
 import CryptoIcon from '../components/CryptoIcon';
 import { CrossmintEmbeddedCheckout } from '@crossmint/client-sdk-react-native-ui';
 import { useApp } from '../context/AppContext';
+import { transactionService } from '../services/transactionService';
 import { theme } from '../theme/theme';
 
-const currencyOptions = [
+// Dynamic options will be mapped inside the component to use `t()`
+const getCurrencyOptions = (t) => [
   { value: 'USDC', label: 'USDC', subtitle: 'USD Coin' },
   { value: 'USDT', label: 'USDT', subtitle: 'Tether' },
   { value: 'EURC', label: 'EURC', subtitle: 'Euro Coin' },
   { value: 'DZY', label: 'DZY', subtitle: 'DizzitUp Wallet' },
 ];
 
-const networkOptions = [
-  { value: 'base', label: 'Réseau principal de Base', subtitle: 'Recommandé', iconName: 'radio-button-on', color: '#0052FF' },
-  { value: 'polygon', label: 'Polygon', subtitle: 'Rapide et économique', iconName: 'git-network', color: '#8247E5' },
-  { value: 'ethereum', label: 'Ethereum', subtitle: 'Réseau principal', iconName: 'diamond-outline', color: '#627EEA' },
-  { value: 'solana', label: 'Solana', subtitle: 'Haute performance', iconName: 'flash-outline', color: '#14F195' },
+const getNetworkOptions = (t) => [
+  { value: 'base', label: 'Base', subtitle: 'Recommandé', iconSymbol: 'BASE', color: '#0052FF' },
+  { value: 'polygon', label: 'Polygon', subtitle: 'Rapide et économique', iconSymbol: 'MATIC', color: '#8247E5' },
+  { value: 'ethereum', label: 'Ethereum', subtitle: 'Réseau principal', iconSymbol: 'ETH', color: '#627EEA' },
+  { value: 'solana', label: 'Solana', subtitle: 'Haute performance', iconSymbol: 'SOL', color: '#14F195' },
 ];
 
 export default function TopUpWalletDetailsScreen() {
   const navigation = useNavigation();
-  const { session, user } = useApp();
+  const { session, user, t } = useApp();
+  const evmAddress = user?.evmAddress || user?.businessEvmAddress || '';
+  
+  const currencyOptions = getCurrencyOptions(t);
+  const networkOptions = getNetworkOptions(t);
+  const [amount, setAmount] = useState('10');
   const [currency, setCurrency] = useState('USDC');
   const [network, setNetwork] = useState('base');
   const [orderIdentifier, setOrderIdentifier] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchOrder = async () => {
-      try {
-        if (!session?.access_token) {
-          throw new Error("Veuillez vous connecter pour continuer.");
-        }
-        
-        // This makes a real authenticated call to dizzy-wallet backend!
-        let API_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api/wallet';
-        if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-          try {
-            const urlObj = new URL(API_URL);
-            if (urlObj.hostname === 'localhost') {
-              urlObj.hostname = window.location.hostname;
-              API_URL = urlObj.toString();
-            }
-          } catch (e) {}
-        }
-        
-        const response = await fetch(`${API_URL}/create-order`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
-          },
-          body: JSON.stringify({
-            amount: "10.00",
-            currency: currency,
-            network: network,
-            fiatCurrency: "USD"
-          })
-        });
-
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.error || 'Erreur réseau lors de la création de la commande');
-        }
-
-        const data = await response.json();
-        setOrderIdentifier(data.orderId);
-      } catch (err) {
-        console.error(err);
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
+  const handleGenerateOrder = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      if (!session?.access_token) {
+        throw new Error(t('topup.login_required', 'Login required'));
       }
-    };
+      
+      const userEmail = user?.email || session?.user?.email;
+      if (!evmAddress) {
+        throw new Error('Wallet address is missing from your profile. Please refresh the app.');
+      }
+      if (!userEmail) {
+        throw new Error('Email address is missing from your profile. Please refresh the app.');
+      }
+      
+      const payload = {
+        amount: parseFloat(amount || '10').toFixed(2), // Crossmint often expects 2 decimals like "10.00"
+        walletAddress: evmAddress,
+        email: userEmail,
+        token: currency,
+        chain: network,
+        billingCountry: user?.country || 'TG',
+        source: 'dizzitapp',
+        userType: 'user'
+      };
 
-    fetchOrder();
-  }, [session, currency, network]);
+      const result = await transactionService.createCrossmintOnrampOrder(session.access_token, payload);
+      setOrderIdentifier(result.orderId);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || t('topup.network_error'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -92,7 +85,7 @@ export default function TopUpWalletDetailsScreen() {
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
             <Ionicons name="chevron-back" size={24} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.pageTitle}>Recharger le portefeuille</Text>
+          <Text style={styles.pageTitle}>{t('topup.title')}</Text>
           <TouchableOpacity style={styles.iconBtn}>
             <Ionicons name="help-circle-outline" size={24} color="#1A2840" />
           </TouchableOpacity>
@@ -108,7 +101,7 @@ export default function TopUpWalletDetailsScreen() {
                   <Ionicons name="checkmark" size={8} color="#FFFFFF" />
                 </View>
               </View>
-              <Text style={styles.stepText}>Mode de paiement</Text>
+              <Text style={styles.stepText}>{t('topup.payment_method')}</Text>
             </View>
             <View style={[styles.stepLine, styles.stepLineActive]} />
             
@@ -116,7 +109,7 @@ export default function TopUpWalletDetailsScreen() {
               <View style={[styles.stepCircle, styles.stepCircleActive]}>
                 <Text style={[styles.stepNumber, styles.stepNumberActive]}>2</Text>
               </View>
-              <Text style={[styles.stepText, styles.stepTextActive]}>Détails</Text>
+              <Text style={[styles.stepText, styles.stepTextActive]}>{t('topup.details')}</Text>
             </View>
             <View style={styles.stepLine} />
             
@@ -124,7 +117,7 @@ export default function TopUpWalletDetailsScreen() {
               <View style={styles.stepCircle}>
                 <Text style={styles.stepNumber}>3</Text>
               </View>
-              <Text style={styles.stepText}>Résumé</Text>
+              <Text style={styles.stepText}>{t('topup.summary')}</Text>
             </View>
             <View style={styles.stepLine} />
             
@@ -132,7 +125,7 @@ export default function TopUpWalletDetailsScreen() {
               <View style={styles.stepCircle}>
                 <Text style={styles.stepNumber}>4</Text>
               </View>
-              <Text style={styles.stepText}>Paiement</Text>
+              <Text style={styles.stepText}>{t('topup.payment')}</Text>
             </View>
             <View style={styles.stepLine} />
 
@@ -140,41 +133,64 @@ export default function TopUpWalletDetailsScreen() {
               <View style={styles.stepCircle}>
                 <Text style={styles.stepNumber}>5</Text>
               </View>
-              <Text style={styles.stepText}>Confirmation</Text>
+              <Text style={styles.stepText}>{t('topup.confirmation')}</Text>
             </View>
           </View>
 
           {/* Titles */}
-          <Text style={styles.mainTitle}>Détails du paiement</Text>
+          <Text style={styles.mainTitle}>{t('topup.payment_details')}</Text>
           <Text style={styles.mainSubtitle}>
-            Effectuez votre paiement en toute sécurité via Crossmint.
+            {t('topup.crossmint_secure')}
           </Text>
+
+          {/* Form: Montant */}
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>{t('topup.amount_usd')}</Text>
+            <View style={styles.inputContainer}>
+              <TextInput 
+                style={styles.input}
+                value={amount}
+                onChangeText={(text) => setAmount(text.replace(/[^0-9.,]/g, '').replace(',', '.').slice(0, 10))}
+                keyboardType="numeric"
+                placeholder="10.00"
+                editable={!orderIdentifier}
+              />
+              <Text style={styles.currencyText}>USD</Text>
+            </View>
+          </View>
 
           {/* Form: Devise */}
           <View style={styles.formGroup}>
-            <Text style={styles.label}>DEVISE</Text>
-            <AppSelect value={currency} options={currencyOptions} onChange={setCurrency} title="Choisir la devise" renderLeading={(option) => <CryptoIcon symbol={option.value} size={26} style={{marginRight: 12}} />} />
+            <Text style={styles.label}>{t('topup.crypto_currency')}</Text>
+            <AppSelect value={currency} options={currencyOptions} onChange={setCurrency} title={t('topup.choose_currency')} renderLeading={(option) => <CryptoIcon symbol={option.value} size={26} style={{marginRight: 12}} />} />
           </View>
 
           {/* Form: Réseau de transaction */}
           <View style={styles.formGroup}>
-            <Text style={styles.label}>RÉSEAU DE TRANSACTION</Text>
-            <AppSelect value={network} options={networkOptions} onChange={setNetwork} title="Choisir le réseau de transaction" renderLeading={(option) => <View style={[styles.networkIconCircle, {backgroundColor: option.color || '#0052FF'}]}><Ionicons name={option.iconName || 'git-network'} size={14} color="#FFF" /></View>} />
+            <Text style={styles.label}>{t('topup.transaction_network')}</Text>
+            <AppSelect value={network} options={networkOptions} onChange={setNetwork} title={t('topup.choose_network')} renderLeading={(option) => <CryptoIcon symbol={option.iconSymbol} size={26} style={{marginRight: 12}} />} />
           </View>
 
           {/* Crossmint Embedded Checkout */}
           <View style={styles.checkoutWrapper}>
+            {!orderIdentifier && !isLoading && !error && (
+              <TouchableOpacity style={styles.btnContinue} onPress={handleGenerateOrder}>
+                <Text style={styles.btnContinueText}>{t('topup.continue_crossmint')}</Text>
+                <Ionicons name="arrow-forward" size={20} color="#1A2840" />
+              </TouchableOpacity>
+            )}
+
             {isLoading ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#FFB800" />
-                <Text style={styles.loadingText}>Préparation de la transaction...</Text>
+                <Text style={styles.loadingText}>{t('topup.preparing_transaction')}</Text>
               </View>
             ) : error ? (
               <View style={styles.errorContainer}>
                 <Ionicons name="alert-circle" size={48} color="#EF4444" />
                 <Text style={styles.errorText}>{error}</Text>
-                <TouchableOpacity style={styles.retryBtn} onPress={() => navigation.goBack()}>
-                  <Text style={styles.retryText}>Retour</Text>
+                <TouchableOpacity style={styles.retryBtn} onPress={() => setError(null)}>
+                  <Text style={styles.retryText}>{t('topup.retry')}</Text>
                 </TouchableOpacity>
               </View>
             ) : orderIdentifier ? (
@@ -186,11 +202,11 @@ export default function TopUpWalletDetailsScreen() {
                   onEvent={(event) => {
                     console.log("Crossmint Event:", event);
                     if (event.type === 'payment:process.succeeded') {
-                      navigation.navigate('TopUpWalletPaymentScreen');
+                      navigation.navigate('TopUpWalletPaymentScreen'); // success screen
                     } else if (event.type === 'payment:process.failed') {
-                      setError("Le paiement a échoué. Veuillez réessayer.");
+                      setError(t('topup.payment_failed'));
                     } else if (event.type === 'payment:process.rejected') {
-                       setError("Le paiement a été rejeté par la banque.");
+                       setError(t('topup.payment_rejected'));
                     }
                   }}
                 />
@@ -347,6 +363,43 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 400,
     marginTop: 20,
+  },
+  btnContinue: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFB800',
+    paddingVertical: 18,
+    borderRadius: 16,
+    marginBottom: 24,
+  },
+  btnContinueText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 16,
+    color: '#1A2840',
+    marginRight: 8,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    height: 56,
+  },
+  input: {
+    flex: 1,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 18,
+    color: '#1A2840',
+    outlineStyle: 'none',
+  },
+  currencyText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
+    color: '#64748B',
   },
   loadingContainer: {
     flex: 1,

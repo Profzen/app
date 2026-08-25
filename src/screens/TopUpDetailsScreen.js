@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import AppSelect from '../components/AppSelect';
 import CryptoIcon from '../components/CryptoIcon';
+import { useApp } from '../context/AppContext';
 
 const countryOptions = [
   { value: '+228', label: '🇹🇬  +228', subtitle: 'Togo' },
@@ -23,6 +24,7 @@ const tokenOptions = ['USDC', 'USDT', 'EURC', 'DZY'].map((value) => ({ value, la
 
 export default function TopUpDetailsScreen() {
   const navigation = useNavigation();
+  const { t } = useApp();
   const [phone, setPhone] = useState('90 12 34 56');
   const [countryCode, setCountryCode] = useState('+228');
   const [operator, setOperator] = useState('mixx');
@@ -38,7 +40,7 @@ export default function TopUpDetailsScreen() {
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={24} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.pageTitle}>Recharger</Text>
+          <Text style={styles.pageTitle}>{t('topup.title')}</Text>
           <TouchableOpacity style={styles.iconBtn}>
             <Ionicons name="help-circle-outline" size={24} color="#1A2840" />
           </TouchableOpacity>
@@ -46,61 +48,27 @@ export default function TopUpDetailsScreen() {
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          {/* Progress Stepper */}
-          <View style={styles.stepperContainer}>
-            <View style={styles.stepWrapper}>
-              <View style={[styles.stepCircle, styles.stepCircleCompleted]}>
-                <Ionicons name="checkmark" size={16} color="#FFB800" />
-                <View style={styles.tinyCheckBadge}>
-                  <Ionicons name="checkmark" size={8} color="#FFFFFF" />
-                </View>
-              </View>
-              <Text style={styles.stepText}>Mode de paiement</Text>
-            </View>
-            <View style={[styles.stepLine, styles.stepLineActive]} />
-            
-            <View style={styles.stepWrapper}>
-              <View style={[styles.stepCircle, styles.stepCircleActive]}>
-                <Text style={[styles.stepNumber, styles.stepNumberActive]}>2</Text>
-              </View>
-              <Text style={[styles.stepText, styles.stepTextActive]}>Détails</Text>
-            </View>
-            <View style={styles.stepLine} />
-            
-            <View style={styles.stepWrapper}>
-              <View style={styles.stepCircle}>
-                <Text style={styles.stepNumber}>3</Text>
-              </View>
-              <Text style={styles.stepText}>Résumé</Text>
-            </View>
-            <View style={styles.stepLine} />
-            
-            <View style={styles.stepWrapper}>
-              <View style={styles.stepCircle}>
-                <Text style={styles.stepNumber}>4</Text>
-              </View>
-              <Text style={styles.stepText}>Paiement</Text>
-            </View>
-          </View>
-
           {/* Titles */}
-          <Text style={styles.mainTitle}>Entrez vos informations</Text>
           <Text style={styles.mainSubtitle}>
-            Saisissez les informations pour effectuer{'\n'}votre recharge via Mobile Money.
+            {t('topup.enter_info_desc', 'Enter the information to complete your top-up via Mobile Money.')}
           </Text>
 
           {/* Form: Numéro Mobile Money */}
           <View style={styles.formGroup}>
             <View style={styles.labelRow}>
-              <Text style={styles.label}>NUMÉRO MOBILE MONEY</Text>
+              <Text style={styles.label}>{t('topup.momo_number', 'MOBILE MONEY NUMBER')}</Text>
               <TouchableOpacity style={styles.modifierBtn}>
-                <Ionicons name="pencil-outline" size={14} color="#3B82F6" style={{marginRight: 4}} />
-                <Text style={styles.modifierText}>Modifier</Text>
+                <Ionicons name="pencil-outline" size={14} color="#0052FF" style={{marginRight: 4}} />
+                <Text style={styles.modifierText}>{t('topup.modify', 'Modify')}</Text>
               </TouchableOpacity>
             </View>
             
             <View style={styles.inputContainer}>
-              <AppSelect value={countryCode} options={countryOptions} onChange={setCountryCode} title="Choisir le pays" style={styles.countryInlineSelect} textStyle={styles.countryInlineText} />
+              <TouchableOpacity style={styles.countrySelector}>
+                <Text style={styles.countryFlag}>🇹🇬</Text>
+                <Text style={styles.countryCodeText}>+228</Text>
+                <Ionicons name="chevron-down" size={16} color="#1A2840" style={{marginLeft: 4}} />
+              </TouchableOpacity>
               
               <View style={styles.verticalDivider} />
               
@@ -109,32 +77,40 @@ export default function TopUpDetailsScreen() {
                 value={phone}
                 onChangeText={formatPhone}
                 keyboardType="phone-pad"
+                placeholder="90 12 34 56"
+                placeholderTextColor="#9CA3AF"
               />
               
               <TouchableOpacity style={styles.contactBtn}>
-                <Ionicons name="person-outline" size={18} color="#1A2840" />
+                <Ionicons name="person-outline" size={20} color="#6B7280" />
               </TouchableOpacity>
             </View>
             
             <View style={styles.successMessageRow}>
-              <Ionicons name="checkmark-circle" size={14} color="#10B981" style={{marginRight: 6}} />
-              <Text style={styles.successMessageText}>Numéro de profil connecté et vérifié</Text>
+              <Ionicons name="checkmark-circle" size={16} color="#10B981" style={{marginRight: 6}} />
+              <Text style={styles.successMessageText}>{t('topup.profile_verified', 'Connected and verified profile number')}</Text>
             </View>
           </View>
 
           {/* Form: Opérateur Détecté */}
           <View style={styles.formGroup}>
-            <Text style={styles.label}>OPÉRATEUR DÉTECTÉ</Text>
+            <Text style={styles.label}>{t('topup.operator_detected', 'DETECTED OPERATOR')}</Text>
             
-            <AppSelect value={operator} options={operatorOptions} onChange={setOperator} title="Choisir l'opérateur" renderLeading={() => <View style={styles.operatorLogoMock}><Text style={{color: '#FFF', fontSize: 10, fontWeight: 'bold'}}>{operator}</Text></View>} />
+            <View style={styles.dropdownContainer}>
+              <View style={styles.operatorLogoMock}>
+                <Text style={{color: '#FFF', fontSize: 10, fontWeight: 'bold'}}>{operator}</Text>
+              </View>
+              <Text style={styles.dropdownText}>Mixx by Yas</Text>
+              <Ionicons name="chevron-down" size={20} color="#1A2840" />
+            </View>
           </View>
 
           {/* Form: Montant & Token */}
           <View style={styles.rowFormGroup}>
             <View style={[styles.formGroup, {flex: 1, marginRight: 8}]}>
               <View style={styles.labelRowLeft}>
-                <Text style={styles.label}>MONTANT À PAYER</Text>
-                <Ionicons name="information-circle-outline" size={14} color="#94A3B8" style={{marginLeft: 4, marginTop: 2}} />
+                <Text style={styles.label}>{t('topup.amount_to_pay', 'AMOUNT TO PAY')}</Text>
+                <Ionicons name="information-circle-outline" size={14} color="#94A3B8" style={{marginLeft: 6}} />
               </View>
               
               <View style={styles.amountInputContainer}>
@@ -143,6 +119,8 @@ export default function TopUpDetailsScreen() {
                   value={amount}
                   onChangeText={(text) => setAmount(text.replace(/[^0-9.,]/g, '').replace(',', '.').slice(0, 10))}
                   keyboardType="numeric"
+                  placeholder="10"
+                  placeholderTextColor="#9CA3AF"
                 />
                 <Text style={styles.currencyText}>USD</Text>
               </View>
@@ -151,28 +129,42 @@ export default function TopUpDetailsScreen() {
             </View>
             
             <View style={[styles.formGroup, {flex: 1, marginLeft: 8}]}>
-              <Text style={styles.label}>TOKEN À ACHETER</Text>
+              <Text style={styles.label}>{t('topup.token_to_buy', 'TOKEN TO BUY')}</Text>
               
-              <AppSelect value={token} options={tokenOptions} onChange={setToken} title="Choisir le token" renderLeading={(option) => <CryptoIcon symbol={option.value} size={26} style={{marginRight: 8}} />} />
+              <View style={styles.dropdownContainer}>
+                <CryptoIcon symbol={token} size={24} style={{marginRight: 8}} />
+                <Text style={styles.dropdownText}>{token}</Text>
+                <Ionicons name="chevron-down" size={20} color="#1A2840" />
+              </View>
             </View>
           </View>
 
           {/* Security Banner */}
           <View style={styles.securityBanner}>
             <View style={styles.shieldContainer}>
-              <Ionicons name="shield-half" size={32} color="#FFB800" />
+              <Ionicons name="shield-half" size={36} color="#F59E0B" />
             </View>
             <View style={styles.securityContent}>
-              <Text style={styles.securityTitle}>Paiements sécurisés et instantanés</Text>
+              <Text style={styles.securityTitle}>{t('topup.secure_payments', 'Secure and instant payments')}</Text>
               <Text style={styles.securityDesc}>
-                Aucune carte bancaire requise. Vos fonds sont{'\n'}protégés par un chiffrement de niveau bancaire.
+                {t('topup.no_card_required', 'No credit card required. Your funds are protected by bank-grade encryption.')}
               </Text>
             </View>
           </View>
 
           {/* Continue Button */}
-          <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('TopUpSummaryScreen')}>
-            <Text style={styles.btnContinueText}>Continuer</Text>
+          <TouchableOpacity 
+            style={styles.btnContinue} 
+            onPress={() => navigation.navigate('TopUpSummaryScreen', {
+              phone,
+              countryCode,
+              operator,
+              amount,
+              token,
+              paymentMethod: 'momo'
+            })}
+          >
+            <Text style={styles.btnContinueText}>{t('topup.continue')}</Text>
             <Ionicons name="arrow-forward" size={20} color="#1A2840" />
           </TouchableOpacity>
 
@@ -215,97 +207,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 24,
     paddingTop: 16,
     paddingBottom: 40,
   },
-  stepperContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    marginBottom: 32,
-    paddingHorizontal: 10,
-  },
-  stepWrapper: {
-    alignItems: 'center',
-    width: 60,
-  },
-  stepCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-    position: 'relative',
-  },
-  stepCircleActive: {
-    borderColor: '#FFB800',
-  },
-  stepCircleCompleted: {
-    borderColor: '#FFB800',
-  },
-  tinyCheckBadge: {
-    position: 'absolute',
-    bottom: -2,
-    right: -2,
-    backgroundColor: '#FFB800',
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#FFFFFF',
-  },
-  stepNumber: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-    color: '#94A3B8',
-  },
-  stepNumberActive: {
-    color: '#FFB800',
-  },
-  stepText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 11,
-    color: '#94A3B8',
-    textAlign: 'center',
-  },
-  stepTextActive: {
-    color: '#FFB800',
-    fontFamily: 'Inter_600SemiBold',
-  },
-  stepLine: {
-    flex: 1,
-    height: 2,
-    backgroundColor: '#E2E8F0',
-    marginTop: 15,
-    marginHorizontal: 4,
-  },
-  stepLineActive: {
-    backgroundColor: '#FFB800',
-  },
-  mainTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 22,
-    color: '#1A2840',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
   mainSubtitle: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 15,
-    color: '#64748B',
+    fontSize: 14,
+    color: '#6B7280',
     textAlign: 'center',
-    lineHeight: 22,
     marginBottom: 32,
+    lineHeight: 22,
+    paddingHorizontal: 16,
   },
   formGroup: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   labelRow: {
     flexDirection: 'row',
@@ -321,7 +237,8 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 12,
-    color: '#64748B',
+    color: '#6B7280',
+    letterSpacing: 0.5,
   },
   modifierBtn: {
     flexDirection: 'row',
@@ -330,38 +247,36 @@ const styles = StyleSheet.create({
   modifierText: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 13,
-    color: '#3B82F6',
+    color: '#0052FF',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E2E8F0',
     borderRadius: 16,
-    paddingHorizontal: 12,
     height: 56,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 12,
   },
-  countryCodeBtn: {
+  countrySelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 12,
   },
-  flagText: {
+  countryFlag: {
     fontSize: 18,
     marginRight: 6,
   },
   countryCodeText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 15,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
     color: '#1A2840',
-    marginRight: 4,
   },
   verticalDivider: {
     width: 1,
     height: 24,
     backgroundColor: '#E2E8F0',
-    marginRight: 12,
+    marginHorizontal: 12,
   },
   input: {
     flex: 1,
@@ -374,11 +289,10 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
+    marginLeft: 8,
   },
   successMessageRow: {
     flexDirection: 'row',
@@ -387,67 +301,48 @@ const styles = StyleSheet.create({
   },
   successMessageText: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 13,
+    fontSize: 12,
     color: '#10B981',
   },
-  operatorDropdown: {
+  dropdownContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#FAFAFA',
     borderWidth: 1,
     borderColor: '#E2E8F0',
     borderRadius: 16,
-    padding: 12,
-  },
-  operatorLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    height: 56,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
   },
   operatorLogoMock: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: '#0033A0', // Mixx blue
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#1E3A8A',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
-  operatorName: {
+  dropdownText: {
+    flex: 1,
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 15,
+    fontSize: 16,
     color: '#1A2840',
-  },
-  operatorRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  recommendedBadge: {
-    backgroundColor: '#DCFCE7', // light green
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    marginRight: 12,
-  },
-  recommendedText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-    color: '#10B981',
   },
   rowFormGroup: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 8,
   },
   amountInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FAFAFA',
     borderWidth: 1,
     borderColor: '#E2E8F0',
     borderRadius: 16,
-    paddingHorizontal: 16,
     height: 56,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
   },
   amountInput: {
     flex: 1,
@@ -456,60 +351,28 @@ const styles = StyleSheet.create({
     color: '#1A2840',
     outlineStyle: 'none',
   },
-  countryInlineSelect: { width: 118, minHeight: 52, borderWidth: 0, paddingHorizontal: 0, backgroundColor: 'transparent' },
-  countryInlineText: { fontSize: 13 },
   currencyText: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 14,
-    color: '#64748B',
+    color: '#6B7280',
   },
   equivText: {
     fontFamily: 'Inter_500Medium',
     fontSize: 12,
-    color: '#94A3B8',
-    marginTop: 8,
-  },
-  tokenDropdown: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FAFAFA',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    height: 56,
-  },
-  tokenLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  tokenIconCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#2775CA', // USDC blue
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  tokenName: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 15,
-    color: '#1A2840',
+    color: '#9CA3AF',
+    marginTop: 6,
   },
   securityBanner: {
     flexDirection: 'row',
-    backgroundColor: '#FFFBEB', // light yellow
-    borderWidth: 1,
-    borderColor: '#FEF3C7',
+    backgroundColor: '#FFFBEB',
     borderRadius: 16,
     padding: 16,
     marginBottom: 24,
-    alignItems: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#FEF3C7',
   },
   shieldContainer: {
-    marginRight: 12,
+    marginRight: 16,
     marginTop: 2,
   },
   securityContent: {
@@ -524,16 +387,17 @@ const styles = StyleSheet.create({
   securityDesc: {
     fontFamily: 'Inter_400Regular',
     fontSize: 13,
-    color: '#1A2840',
-    lineHeight: 18,
+    color: '#4B5563',
+    lineHeight: 20,
   },
   btnContinue: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFB800',
-    paddingVertical: 18,
+    height: 56,
     borderRadius: 16,
+    marginBottom: 10,
   },
   btnContinueText: {
     fontFamily: 'Inter_700Bold',

@@ -1,12 +1,48 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
+import React, { useState, useContext } from 'react';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
+import { AppContext } from '../context/AppContext';
+import { transactionService } from '../services/transactionService';
 
 export default function TopUpSummaryScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
+  const { phone, countryCode, operator, amount, token, paymentMethod } = route.params || {};
+  const { dizzyToken, userProfile, evmAddress, t } = useContext(AppContext);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleConfirm = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const payload = {
+        amount: parseFloat(amount || '10'),
+        walletAddress: evmAddress,
+        country: userProfile?.country_of_residence || 'TG',
+        paymentMethod: paymentMethod === 'momo' ? 'momo' : 'card',
+        phoneNumber: `${countryCode}${phone}`.replace(/\s+/g, ''),
+        token: token || 'USDC',
+        chain: 'base'
+      };
+
+      const result = await transactionService.createMoMoOnrampOrder(dizzyToken, payload);
+      
+      if (result.success && result.paymentUrl) {
+        navigation.navigate('TopUpPaymentScreen', { paymentUrl: result.paymentUrl });
+      } else {
+        throw new Error(result.message || "Unable to get payment URL.");
+      }
+    } catch (err) {
+      setError(err.message || "An error occurred.");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <SafeAreaView style={styles.safeArea}>
       
@@ -15,7 +51,7 @@ export default function TopUpSummaryScreen() {
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={24} color="#1A2840" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Recharger le portefeuille</Text>
+        <Text style={styles.headerTitle}>{t('topup.title')}</Text>
         <TouchableOpacity style={styles.iconBtn}>
           <Ionicons name="help-circle-outline" size={24} color="#1A2840" />
         </TouchableOpacity>
@@ -29,7 +65,7 @@ export default function TopUpSummaryScreen() {
             <View style={[styles.stepCircle, styles.stepCircleCompleted]}>
               <Ionicons name="checkmark" size={16} color="#FFB800" />
             </View>
-            <Text style={styles.stepTextCompleted}>Mode de paiement</Text>
+            <Text style={styles.stepTextCompleted}>{t('topup.payment_method')}</Text>
           </View>
           <View style={[styles.stepLine, styles.stepLineCompleted]} />
           
@@ -37,7 +73,7 @@ export default function TopUpSummaryScreen() {
             <View style={[styles.stepCircle, styles.stepCircleCompleted]}>
               <Ionicons name="checkmark" size={16} color="#FFB800" />
             </View>
-            <Text style={styles.stepTextCompleted}>Détails</Text>
+            <Text style={styles.stepTextCompleted}>{t('topup.details')}</Text>
           </View>
           <View style={[styles.stepLine, styles.stepLineCompleted]} />
           
@@ -45,7 +81,7 @@ export default function TopUpSummaryScreen() {
             <View style={[styles.stepCircle, styles.stepCircleActive]}>
               <Text style={styles.stepTextInsideActive}>3</Text>
             </View>
-            <Text style={styles.stepTextActive}>Résumé</Text>
+            <Text style={styles.stepTextActive}>{t('topup.summary')}</Text>
           </View>
           <View style={[styles.stepLine, styles.stepLinePending]} />
           
@@ -53,7 +89,7 @@ export default function TopUpSummaryScreen() {
             <View style={[styles.stepCircle, styles.stepCirclePending]}>
               <Text style={styles.stepTextInsidePending}>4</Text>
             </View>
-            <Text style={styles.stepTextPending}>Paiement</Text>
+            <Text style={styles.stepTextPending}>{t('topup.payment')}</Text>
           </View>
           <View style={[styles.stepLine, styles.stepLinePending]} />
           
@@ -61,14 +97,14 @@ export default function TopUpSummaryScreen() {
             <View style={[styles.stepCircle, styles.stepCirclePending]}>
               <Text style={styles.stepTextInsidePending}>5</Text>
             </View>
-            <Text style={styles.stepTextPending}>Confirmation</Text>
+            <Text style={styles.stepTextPending}>{t('topup.confirmation')}</Text>
           </View>
         </View>
 
         {/* Title */}
         <View style={styles.titleSection}>
-          <Text style={styles.mainTitle}>Vérifiez et confirmez</Text>
-          <Text style={styles.subTitle}>Vérifiez les détails de votre transaction avant de procéder au paiement.</Text>
+          <Text style={styles.mainTitle}>{t('topup.verify_confirm')}</Text>
+          <Text style={styles.subTitle}>{t('topup.verify_desc')}</Text>
         </View>
 
         {/* Détails de la transaction */}
@@ -77,96 +113,79 @@ export default function TopUpSummaryScreen() {
             <View style={styles.cardHeaderIcon}>
               <Ionicons name="document-text" size={16} color="#3B82F6" />
             </View>
-            <Text style={styles.cardHeaderTitle}>DÉTAILS DE LA TRANSACTION</Text>
+            <Text style={styles.cardHeaderTitle}>{t('topup.transaction_details')}</Text>
           </View>
 
           <View style={styles.detailRowMain}>
-            <Text style={styles.detailLabelMain}>Vous achetez</Text>
+            <Text style={styles.detailLabelMain}>{t('topup.you_buy')}</Text>
             <View style={styles.detailValueCol}>
-              <Text style={styles.detailValueMain}>10 USDC</Text>
-              <Text style={styles.detailValueSub}>≈ 6 500 XOF</Text>
+              <Text style={styles.detailValueMain}>{amount || '10'} {token || 'USDC'}</Text>
             </View>
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Réseau</Text>
+            <Text style={styles.detailLabel}>{t('topup.network')}</Text>
             <View style={styles.networkRow}>
-              <Text style={styles.networkName}>Réseau principal de base</Text>
+              <Text style={styles.networkName}>Base</Text>
               <View style={styles.networkIconCircle}>
                 <Ionicons name="aperture" size={14} color="#3B82F6" />
               </View>
-              <Text style={styles.networkToken}>USDC</Text>
+              <Text style={styles.networkToken}>{token || 'USDC'}</Text>
             </View>
           </View>
 
           <View style={styles.detailRowWithIcon}>
             <View style={styles.labelWithIcon}>
-              <Text style={styles.detailLabel}>Stablecoin acheté</Text>
+              <Text style={styles.detailLabel}>{t('topup.stablecoin_bought')}</Text>
               <Ionicons name="information-circle-outline" size={14} color="#94A3B8" style={{marginLeft: 4}} />
             </View>
-            <Text style={styles.detailValue}>+ 10,00 USDC</Text>
-          </View>
-
-          <View style={styles.detailRowWithIcon}>
-            <View style={styles.labelWithIcon}>
-              <Text style={styles.detailLabel}>Frais DizzitUp</Text>
-              <Ionicons name="information-circle-outline" size={14} color="#94A3B8" style={{marginLeft: 4}} />
-            </View>
-            <Text style={styles.detailValue}>+ 0,50 USDC</Text>
-          </View>
-
-          <View style={styles.detailRowWithIcon}>
-            <View style={styles.labelWithIcon}>
-              <Text style={styles.detailLabel}>Frais réseau</Text>
-              <Ionicons name="information-circle-outline" size={14} color="#94A3B8" style={{marginLeft: 4}} />
-            </View>
-            <Text style={styles.detailValue}>+ 0,00 USDC</Text>
+            <Text style={styles.detailValue}>+ {amount || '10'} {token || 'USDC'}</Text>
           </View>
 
           <View style={styles.divider} />
 
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Total à payer</Text>
-            <Text style={styles.totalValue}>10,50 USD</Text>
+            <Text style={styles.totalLabel}>{t('topup.estimated_total')}</Text>
+            <Text style={styles.totalValue}>{amount || '10'} {token || 'USDC'}</Text>
           </View>
-
-          <View style={styles.infoBox}>
-            <Ionicons name="information-circle-outline" size={24} color="#3B82F6" style={{marginRight: 12}} />
-            <Text style={styles.infoBoxText}>
-              Vous avez payé <Text style={{fontFamily: 'Inter_700Bold'}}>10,50 €</Text> et recevrez <Text style={{fontFamily: 'Inter_700Bold'}}>10,00 USDC</Text>
-            </Text>
-          </View>
+          
+          {error && <Text style={{ color: 'red', marginTop: 10, textAlign: 'center', fontFamily: 'Inter_600SemiBold', fontSize: 13 }}>{error}</Text>}
         </View>
 
         {/* Méthode de paiement */}
         <View style={styles.paymentMethodCard}>
           <View style={styles.paymentMethodLeft}>
             <View style={styles.cardIconBox}>
-              <Ionicons name="card" size={24} color="#FFFFFF" />
-              <View style={styles.cardIconDot} />
+              <Ionicons name="phone-portrait-outline" size={24} color="#FFFFFF" />
             </View>
             <View>
-              <Text style={styles.paymentMethodTitle}>Méthode de paiement</Text>
-              <Text style={styles.paymentMethodSub}>Carte bancaire •••• 4242</Text>
+              <Text style={styles.paymentMethodTitle}>{t('topup.payment_method')}</Text>
+              <Text style={styles.paymentMethodSub}>{t('topup.mobile_money')} • {operator || 'Mixx'}</Text>
             </View>
           </View>
-          <Text style={styles.visaText}>VISA</Text>
+          <Text style={styles.visaText}>{countryCode} {phone}</Text>
         </View>
 
         {/* Security Banner */}
         <View style={styles.securityBanner}>
           <Ionicons name="shield-checkmark" size={24} color="#3B82F6" style={{marginRight: 12}} />
           <View style={{flex: 1}}>
-            <Text style={styles.securityBannerTitle}>Paiement 100% sécurisé</Text>
-            <Text style={styles.securityBannerText}>Nous n'enregistrons et ne stockons pas vos moyens de paiement. Toutes vos données sont chiffrées.</Text>
+            <Text style={styles.securityBannerTitle}>{t('topup.secure_payments')}</Text>
+            <Text style={styles.securityBannerText}>{t('topup.no_card_required')}</Text>
           </View>
         </View>
 
         {/* Confirm Button */}
-        <TouchableOpacity style={styles.btnConfirm} onPress={() => navigation.navigate('TopUpPaymentScreen')}>
-          <Ionicons name="lock-closed-outline" size={20} color="#1A2840" />
-          <Text style={styles.btnConfirmText}>Confirmer le paiement</Text>
-          <Ionicons name="arrow-forward" size={20} color="#1A2840" />
+        <TouchableOpacity style={styles.btnConfirm} onPress={handleConfirm} disabled={loading}>
+          {loading ? (
+            <ActivityIndicator color="#1A2840" />
+          ) : (
+            <>
+              <Ionicons name="lock-closed-outline" size={20} color="#1A2840" />
+              <Text style={styles.btnConfirmText}>{t('topup.confirm_payment')}</Text>
+              <Ionicons name="arrow-forward" size={20} color="#1A2840" />
+            </>
+          )}
         </TouchableOpacity>
 
       </ScrollView>

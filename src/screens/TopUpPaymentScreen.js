@@ -1,17 +1,42 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useEffect } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
+import * as WebBrowser from 'expo-web-browser';
+import { useApp } from '../context/AppContext';
 
 export default function TopUpPaymentScreen() {
   const navigation = useNavigation();
+  const { t } = useApp();
+  const route = useRoute();
+  const { paymentUrl } = route.params || {};
+  const [hasOpened, setHasOpened] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => navigation.navigate('TopUpWalletConfirmationScreen'), 3500);
-    return () => clearTimeout(timer);
-  }, [navigation]);
+    if (paymentUrl && !hasOpened) {
+      setHasOpened(true);
+      
+      const openPayment = async () => {
+        try {
+          await WebBrowser.openBrowserAsync(paymentUrl, {
+            presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
+          });
+          navigation.navigate('TopUpWalletConfirmationScreen');
+        } catch (error) {
+          console.error("Failed to open browser:", error);
+          navigation.navigate('TopUpWalletConfirmationScreen');
+        }
+      };
+      
+      openPayment();
+    } else if (!paymentUrl) {
+      // Fallback if no paymentUrl provided
+      const timer = setTimeout(() => navigation.navigate('TopUpWalletConfirmationScreen'), 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [paymentUrl, hasOpened, navigation]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -22,7 +47,7 @@ export default function TopUpPaymentScreen() {
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
             <Ionicons name="chevron-back" size={22} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.pageTitle}>Recharger</Text>
+          <Text style={styles.pageTitle}>{t('topup.title')}</Text>
           <TouchableOpacity style={styles.helpButton}>
             <Ionicons name="help-circle-outline" size={22} color="#1A2840" />
           </TouchableOpacity>
@@ -36,7 +61,7 @@ export default function TopUpPaymentScreen() {
               <View style={[styles.stepCircle, styles.stepCircleDone]}>
                 <Ionicons name="checkmark" size={12} color="#FFFFFF" />
               </View>
-              <Text style={styles.stepTextDone}>Mode de paiement</Text>
+              <Text style={styles.stepTextDone}>{t('topup.payment_method')}</Text>
             </View>
             <View style={[styles.stepLine, styles.stepLineDone]} />
             
@@ -44,7 +69,7 @@ export default function TopUpPaymentScreen() {
               <View style={[styles.stepCircle, styles.stepCircleDone]}>
                 <Ionicons name="checkmark" size={12} color="#FFFFFF" />
               </View>
-              <Text style={styles.stepTextDone}>Détails</Text>
+              <Text style={styles.stepTextDone}>{t('topup.details')}</Text>
             </View>
             <View style={[styles.stepLine, styles.stepLineDone]} />
             
@@ -52,7 +77,7 @@ export default function TopUpPaymentScreen() {
               <View style={[styles.stepCircle, styles.stepCircleDone]}>
                 <Ionicons name="checkmark" size={12} color="#FFFFFF" />
               </View>
-              <Text style={styles.stepTextDone}>Résumé</Text>
+              <Text style={styles.stepTextDone}>{t('topup.summary')}</Text>
             </View>
             <View style={[styles.stepLine, styles.stepLineDone]} />
             
@@ -60,14 +85,14 @@ export default function TopUpPaymentScreen() {
               <View style={[styles.stepCircle, styles.stepCircleActive]}>
                 <Text style={styles.stepNumberActive}>4</Text>
               </View>
-              <Text style={styles.stepTextActive}>Paiement</Text>
+              <Text style={styles.stepTextActive}>{t('topup.payment')}</Text>
             </View>
           </View>
 
           {/* Title & Subtitle */}
-          <Text style={styles.mainTitle}>Paiement en cours</Text>
+          <Text style={styles.mainTitle}>{t('topup.payment_in_progress')}</Text>
           <Text style={styles.mainSubtitle}>
-            Nous envoyons votre demande de paiement{'\n'}à Mixx by Yas.{'\n'}Veuillez valider le paiement sur votre téléphone.
+            {t('topup.payment_in_progress_desc')}
           </Text>
 
           {/* Vertical Transaction Flow Card Container */}
@@ -80,7 +105,7 @@ export default function TopUpPaymentScreen() {
                 <Text style={styles.mixxSubText}>by yas</Text>
               </View>
               <Text style={styles.nodeTitle}>Mixx by Yas</Text>
-              <Text style={styles.nodeSubtitle}>Source des fonds</Text>
+              <Text style={styles.nodeSubtitle}>{t('topup.fund_source')}</Text>
             </View>
 
             {/* Vertical Dotted Connector */}
@@ -99,8 +124,8 @@ export default function TopUpPaymentScreen() {
                     <Ionicons name="phone-portrait-outline" size={24} color="#F59E0B" />
                     <Ionicons name="wifi-outline" size={14} color="#F59E0B" style={{ position: 'absolute', top: -6 }} />
                   </View>
-                  <Text style={styles.gaugeMainText}>En attente de{'\n'}confirmation</Text>
-                  <Text style={styles.gaugeSubText}>sur votre téléphone</Text>
+                  <Text style={styles.gaugeMainText}>{t('topup.waiting_confirmation')}</Text>
+                  <Text style={styles.gaugeSubText}>{t('topup.on_your_phone')}</Text>
                 </View>
               </View>
             </View>
@@ -118,7 +143,7 @@ export default function TopUpPaymentScreen() {
                 <Ionicons name="wallet-outline" size={22} color="#FFFFFF" />
               </View>
               <Text style={styles.nodeTitle}>DZYwallet</Text>
-              <Text style={styles.nodeSubtitle}>Destination</Text>
+              <Text style={styles.nodeSubtitle}>{t('topup.destination')}</Text>
             </View>
 
           </View>
@@ -129,9 +154,9 @@ export default function TopUpPaymentScreen() {
               <Ionicons name="shield-checkmark-outline" size={20} color="#0052FF" />
             </View>
             <View style={styles.securityBannerContent}>
-              <Text style={styles.securityBannerTitle}>Transaction sécurisée</Text>
+              <Text style={styles.securityBannerTitle}>{t('topup.secure_transaction')}</Text>
               <Text style={styles.securityBannerText}>
-                Ne quittez pas cette page.{'\n'}Votre paiement est en cours de traitement.
+                {t('topup.do_not_leave')}
               </Text>
             </View>
           </View>
@@ -143,8 +168,8 @@ export default function TopUpPaymentScreen() {
                 <Ionicons name="time-outline" size={18} color="#1A2840" />
               </View>
               <View style={styles.infoColTextWrap}>
-                <Text style={styles.infoColLabel}>Temps estimé</Text>
-                <Text style={styles.infoColValue}>Moins de 2 minutes</Text>
+                <Text style={styles.infoColLabel}>{t('topup.estimated_time')}</Text>
+                <Text style={styles.infoColValue}>{t('topup.less_than_2_min')}</Text>
               </View>
             </View>
 
@@ -153,7 +178,7 @@ export default function TopUpPaymentScreen() {
                 <Ionicons name="lock-closed-outline" size={18} color="#0052FF" />
               </View>
               <View style={styles.infoColTextWrap}>
-                <Text style={styles.infoColLabel}>Montant à payer</Text>
+                <Text style={styles.infoColLabel}>{t('topup.amount_to_pay')}</Text>
                 <Text style={styles.infoColValueBold}>6 663 XOF</Text>
               </View>
             </View>

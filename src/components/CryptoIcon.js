@@ -8,9 +8,11 @@ const localLogos = {
   BTC: require('../../assets/cryptos/btc.png'),
   WBTC: require('../../assets/cryptos/wbtc.png'),
   ETH: require('../../assets/cryptos/eth.png'),
-  SOL: require('../../assets/cryptos/sol.png'),
-  POL: require('../../assets/cryptos/pol.png'),
-  Polygon: require('../../assets/cryptos/pol.png'),
+  SOL: require('../../assets/cryptos/solana.png'),
+  MATIC: require('../../assets/cryptos/polygon.png'),
+  POL: require('../../assets/cryptos/polygon.png'),
+  Polygon: require('../../assets/cryptos/polygon.png'),
+  BASE: require('../../assets/cryptos/base.png'),
   BNB: require('../../assets/cryptos/bnb.png'),
 };
 

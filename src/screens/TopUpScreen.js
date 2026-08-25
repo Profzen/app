@@ -5,9 +5,11 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusB
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
+import { useApp } from '../context/AppContext';
 
 export default function TopUpScreen() {
   const navigation = useNavigation();
+  const { t } = useApp();
   const [selectedMethod, setSelectedMethod] = useState('momo');
   const [toast, setToast] = useState(null);
 
@@ -20,7 +22,7 @@ export default function TopUpScreen() {
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
             <Ionicons name="chevron-back" size={22} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.pageTitle}>Recharger</Text>
+          <Text style={styles.pageTitle}>{t('topup.title')}</Text>
           <TouchableOpacity style={styles.helpButton}>
             <Ionicons name="help-circle-outline" size={22} color="#1A2840" />
           </TouchableOpacity>
@@ -34,7 +36,7 @@ export default function TopUpScreen() {
               <View style={[styles.stepCircle, styles.stepCircleActive]}>
                 <Text style={styles.stepNumberActive}>1</Text>
               </View>
-              <Text style={styles.stepTextActive}>Mode de paiement</Text>
+              <Text style={styles.stepTextActive}>{t('topup.payment_method')}</Text>
             </View>
             <View style={[styles.stepLine, styles.stepLineActive]} />
             
@@ -42,7 +44,7 @@ export default function TopUpScreen() {
               <View style={styles.stepCircle}>
                 <Text style={styles.stepNumber}>2</Text>
               </View>
-              <Text style={styles.stepText}>Détails</Text>
+              <Text style={styles.stepText}>{t('topup.details')}</Text>
             </View>
             <View style={styles.stepLine} />
             
@@ -50,7 +52,7 @@ export default function TopUpScreen() {
               <View style={styles.stepCircle}>
                 <Text style={styles.stepNumber}>3</Text>
               </View>
-              <Text style={styles.stepText}>Résumé</Text>
+              <Text style={styles.stepText}>{t('topup.summary')}</Text>
             </View>
             <View style={styles.stepLine} />
 
@@ -58,14 +60,14 @@ export default function TopUpScreen() {
               <View style={styles.stepCircle}>
                 <Text style={styles.stepNumber}>4</Text>
               </View>
-              <Text style={styles.stepText}>Paiement</Text>
+              <Text style={styles.stepText}>{t('topup.payment')}</Text>
             </View>
           </View>
 
           {/* Headline & Subtitle */}
-          <Text style={styles.mainTitle}>Choisissez votre mode de paiement</Text>
+          <Text style={styles.mainTitle}>{t('topup.choose_payment_method', 'Choose Your Payment Method')}</Text>
           <Text style={styles.mainSubtitle}>
-            Achetez de la crypto en toute sécurité{'\n'}avec Mobile Money ou Carte bancaire
+            {t('topup.buy_crypto_securely', 'Buy crypto securely with Mobile Money or Credit Card')}
           </Text>
 
           {/* Option 1: Mobile Money (Selected per Mockup) */}
@@ -86,8 +88,8 @@ export default function TopUpScreen() {
               </View>
 
               <View style={styles.methodInfo}>
-                <Text style={styles.methodTitle}>Mobile Money</Text>
-                <Text style={styles.methodSubtitle}>Payez avec votre Mobile Money{'\n'}en toute simplicité.</Text>
+                <Text style={styles.methodTitle}>{t('topup.mobile_money')}</Text>
+                <Text style={styles.methodSubtitle}>{t('topup.mobile_money_desc')}</Text>
                 <View style={styles.paysBadge}>
                   <Text style={styles.paysBadgeText}>20 Pays</Text>
                 </View>
@@ -104,13 +106,7 @@ export default function TopUpScreen() {
               </View>
             </View>
 
-            {/* Detected Operator Row (Visible when Mobile Money selected) */}
-            {selectedMethod === 'momo' && (
-              <View style={styles.detectedOperatorRow}>
-                <Ionicons name="information-circle-outline" size={16} color="#1A2840" style={{ marginRight: 6 }} />
-                <Text style={styles.detectedOperatorText}>Opérateur détecté : TMoney</Text>
-              </View>
-            )}
+            {/* Detected Operator Row is removed for this generic crypto topup screen */}
 
             {/* Bottom 3-Column Features */}
             <View style={styles.featuresRow}>
@@ -150,8 +146,8 @@ export default function TopUpScreen() {
               </View>
 
               <View style={styles.methodInfo}>
-                <Text style={styles.methodTitle}>Carte bancaire</Text>
-                <Text style={styles.methodSubtitle}>Visa, Mastercard, AMEX</Text>
+                <Text style={styles.methodTitle}>{t('topup.credit_card')}</Text>
+                <Text style={styles.methodSubtitle}>{t('topup.credit_card_desc')}</Text>
               </View>
 
               <View style={styles.radioWrap}>
@@ -186,19 +182,25 @@ export default function TopUpScreen() {
 
           {/* Blockchain Info Banner Card */}
           <View style={styles.infoBannerCard}>
-            <Ionicons name="information-circle-outline" size={20} color="#0052FF" style={styles.infoBannerIcon} />
+            <View style={styles.bulbIconWrapper}>
+              <Text style={{fontSize: 16}}>💡</Text>
+            </View>
             <Text style={styles.infoBannerText}>
-              DizzitUp prend en charge les meilleurs réseaux blockchain pour des transactions rapides et sûres. Les frais peuvent varier selon le mode de paiement.
+              <Text style={{fontFamily: 'Inter_700Bold'}}>{t('topup.recommended', 'Recommended:')} </Text>
+              {t('topup.recommended_desc', 'For best experience in Africa, use Mobile Money on Base network')}
             </Text>
           </View>
 
           {/* Continue Button */}
           <TouchableOpacity 
             style={styles.btnContinue} 
-            onPress={() => navigation.navigate(selectedMethod === 'momo' ? 'TopUpDetailsScreen' : 'TopUpWalletDetailsScreen')}
+            onPress={() => navigation.navigate(
+              selectedMethod === 'momo' ? 'TopUpDetailsScreen' : 'TopUpWalletDetailsScreen',
+              { paymentMethod: selectedMethod }
+            )}
             activeOpacity={0.8}
           >
-            <Text style={styles.btnContinueText}>Continuer</Text>
+            <Text style={styles.btnContinueText}>{t('topup.continue')}</Text>
             <Ionicons name="arrow-forward" size={18} color="#1A2840" />
           </TouchableOpacity>
 
@@ -262,9 +264,9 @@ const styles = StyleSheet.create({
   featuresRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 10, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
   featureCol: { flexDirection: 'row', alignItems: 'center', flex: 1, justifyContent: 'center' },
   featureText: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#1A2840' },
-  infoBannerCard: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#EFF6FF', borderRadius: 16, padding: 14, marginBottom: 16 },
-  infoBannerIcon: { marginRight: 10, marginTop: 2 },
-  infoBannerText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 11, color: '#1A2840', lineHeight: 16 },
+  infoBannerCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFBEB', borderRadius: 12, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: '#FDE68A' },
+  bulbIconWrapper: { marginRight: 10 },
+  infoBannerText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 12, color: '#1A2840', lineHeight: 18 },
   btnContinue: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFC759', height: 48, borderRadius: 12, marginBottom: 10 },
   btnContinueText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#1A2840', marginRight: 8 }
 });

@@ -4,7 +4,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Platform, StatusBar, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import WalletCard from '../components/WalletCard';
 import BottomNavBar from '../components/BottomNavBar';
@@ -17,7 +17,7 @@ import { isSmallScreen, isShortScreen } from '../utils/responsive';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
-  const { language, toggleLanguage, t, user } = useApp();
+  const { language, toggleLanguage, t, user, isUserLoading } = useApp();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [activeSlide, setActiveSlide] = useState(0);
@@ -121,7 +121,7 @@ export default function HomeScreen() {
               </View>
               <View style={{ flexShrink: 1, paddingRight: 4 }}>
                 <Text style={styles.greetingText}>{language === 'fr' ? 'Bonjour,' : 'Hello,'}</Text>
-                <Text style={styles.nameText} numberOfLines={1}>{(user?.name || 'Utilisateur').split(' ')[0]}</Text>
+                <Text style={styles.nameText} numberOfLines={1}>{isUserLoading ? '...' : (user?.name || 'Utilisateur').split(' ')[0]}</Text>
               </View>
             </TouchableOpacity>
             <View style={styles.headerIcons}>
@@ -139,29 +139,41 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          <WalletCard balances={walletBalances} />
+          {isUserLoading ? (
+            <View style={{ height: 180, marginHorizontal: isSmallScreen ? 14 : 20, marginTop: 8, marginBottom: 8, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', borderRadius: 20, borderWidth: 1, borderColor: '#E2E8F0' }}>
+              <ActivityIndicator size="large" color="#FFC759" />
+            </View>
+          ) : (
+            <WalletCard balances={walletBalances} />
+          )}
 
-          <View style={styles.todoCard}>
-            <View style={[styles.sectionHeader, styles.todoCardHeader]}>
-              <Text style={styles.sectionTitle}>{language === 'fr' ? 'À faire' : 'To-do list'}</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('TodoListScreen')}>
-                <Text style={styles.viewAllText}>{t('viewAll', 'View all')}</Text>
-              </TouchableOpacity>
+          {isUserLoading ? (
+            <View style={[styles.todoCard, { height: 160, justifyContent: 'center', alignItems: 'center' }]}>
+              <ActivityIndicator size="small" color="#94A3B8" />
             </View>
-            <View style={styles.todoListContainer}>
-              {TODO_LIST.map((item, index) => (
-                <View key={item.id} style={[styles.todoItem, index < TODO_LIST.length - 1 && styles.todoItemDivider]}>
-                  <View style={[styles.todoIconWrapper, { backgroundColor: item.iconBgColor }]}>
-                    <Ionicons name={item.icon} size={18} color={item.iconColor} />
+          ) : (
+            <View style={styles.todoCard}>
+              <View style={[styles.sectionHeader, styles.todoCardHeader]}>
+                <Text style={styles.sectionTitle}>{language === 'fr' ? 'À faire' : 'To-do list'}</Text>
+                <TouchableOpacity onPress={() => navigation.navigate('TodoListScreen')}>
+                  <Text style={styles.viewAllText}>{t('viewAll', 'View all')}</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.todoListContainer}>
+                {TODO_LIST.map((item, index) => (
+                  <View key={item.id} style={[styles.todoItem, index < TODO_LIST.length - 1 && styles.todoItemDivider]}>
+                    <View style={[styles.todoIconWrapper, { backgroundColor: item.iconBgColor }]}>
+                      <Ionicons name={item.icon} size={18} color={item.iconColor} />
+                    </View>
+                    <Text style={styles.todoTitle}>{item.title}</Text>
+                    <TouchableOpacity style={[styles.todoButton, { backgroundColor: item.buttonBgColor }]} onPress={() => navigation.navigate(item.route)}>
+                      <Text style={[styles.todoButtonText, { color: item.buttonColor }]}>{item.buttonText}</Text>
+                    </TouchableOpacity>
                   </View>
-                  <Text style={styles.todoTitle}>{item.title}</Text>
-                  <TouchableOpacity style={[styles.todoButton, { backgroundColor: item.buttonBgColor }]} onPress={() => navigation.navigate(item.route)}>
-                    <Text style={[styles.todoButtonText, { color: item.buttonColor }]}>{item.buttonText}</Text>
-                  </TouchableOpacity>
-                </View>
-              ))}
+                ))}
+              </View>
             </View>
-          </View>
+          )}
 
           {isBannerVisible && (
             <View style={styles.bannerContainer}>
