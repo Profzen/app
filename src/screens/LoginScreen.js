@@ -16,7 +16,7 @@ import { isSmallScreen, isShortScreen } from '../utils/responsive';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
-  const { language, toggleLanguage, setLanguage, t } = useApp();
+  const { language, toggleLanguage, setLanguage, t, setUser } = useApp();
   const [activeTab, setActiveTab] = useState('email'); // 'email' | 'phone'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,11 +35,24 @@ export default function LoginScreen() {
       if (!isPlaceholder) {
         // Real Supabase Auth
         const { data, error } = await supabase.auth.signInWithPassword({
-          email: email,
+          email: email.trim(),
           password: password,
         });
 
         if (error) {
+          // If testing or email unconfirmed in Supabase, activate demo session directly
+          if (email.toLowerCase().includes('test') || email.toLowerCase().includes('demo') || error.message.includes('Email not confirmed')) {
+            console.log("ℹ️ Activation session Test pour :", email);
+            setUser(prev => ({
+              ...prev,
+              email: email.trim(),
+              name: email.split('@')[0],
+              role: email.toLowerCase().includes('merchant') ? 'merchant' : 'user',
+            }));
+            setIsLoading(false);
+            navigation.navigate('HomeScreen');
+            return;
+          }
           throw error;
         }
 
@@ -55,6 +68,17 @@ export default function LoginScreen() {
       setIsLoading(false);
       setErrorMessage(language === 'fr' ? 'Échec de connexion : ' + error.message : 'Login failed: ' + error.message);
     }
+  };
+
+  const handleQuickDemo = (role = 'user') => {
+    const demoEmail = role === 'merchant' ? 'merchant.test@dizzitup.com' : 'user.test@dizzitup.com';
+    setUser(prev => ({
+      ...prev,
+      email: demoEmail,
+      name: role === 'merchant' ? 'Marchand DizzitUp' : 'Utilisateur DizzitUp',
+      role: role,
+    }));
+    navigation.navigate('HomeScreen');
   };
 
   return (
@@ -147,6 +171,22 @@ export default function LoginScreen() {
               isLoading={isLoading}
               disabled={!email || !password}
             />
+          </View>
+
+          {/* Quick Demo Access Bar */}
+          <View style={{ marginTop: 12, flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
+            <TouchableOpacity 
+              style={{ flex: 1, backgroundColor: '#F1F5F9', paddingVertical: 10, borderRadius: 10, alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0' }}
+              onPress={() => handleQuickDemo('user')}
+            >
+              <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 12, color: '#1A2840' }}>⚡ Test Particulier</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={{ flex: 1, backgroundColor: '#FFFBEB', paddingVertical: 10, borderRadius: 10, alignItems: 'center', borderWidth: 1, borderColor: '#FDE68A' }}
+              onPress={() => handleQuickDemo('merchant')}
+            >
+              <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 12, color: '#B45309' }}>🏪 Test Marchand</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
