@@ -1,6 +1,4 @@
-import * as Print from 'expo-print';
-import * as Sharing from 'expo-sharing';
-import * as FileSystem from 'expo-file-system/legacy';
+import { Platform } from 'react-native';
 
 export const generateAndShareStatement = async (transactions, user, t) => {
   const txRows = transactions.map(tx => {
@@ -72,7 +70,26 @@ export const generateAndShareStatement = async (transactions, user, t) => {
     </html>
   `;
 
+  if (Platform.OS === 'web') {
+    try {
+      const printWindow = typeof window !== 'undefined' ? window.open('', '_blank') : null;
+      if (printWindow) {
+        printWindow.document.write(html);
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+      }
+    } catch (e) {
+      console.error("Web print error:", e);
+    }
+    return;
+  }
+
   try {
+    const Print = require('expo-print');
+    const Sharing = require('expo-sharing');
+    const FileSystem = require('expo-file-system/legacy');
+
     const { base64 } = await Print.printToFileAsync({ 
       html, 
       margins: { top: 30, bottom: 30, left: 30, right: 30 },

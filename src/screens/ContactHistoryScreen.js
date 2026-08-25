@@ -9,9 +9,18 @@ import AppToast from '../components/AppToast';
 import contactService from '../services/contactService';
 import { useApp } from '../context/AppContext';
 import { useEffect, useState } from 'react';
-import { format } from 'date-fns';
-import { fr, enUS } from 'date-fns/locale';
 
+const formatTxDate = (dateString, lang = 'fr') => {
+  try {
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return dateString || '';
+    const dateFormatted = d.toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeFormatted = d.toLocaleTimeString(lang === 'fr' ? 'fr-FR' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+    return `${dateFormatted} • ${timeFormatted}`;
+  } catch (e) {
+    return dateString || '';
+  }
+};
 
 export default function ContactHistoryScreen({ route }) {
   const navigation = useNavigation();
@@ -33,7 +42,7 @@ export default function ContactHistoryScreen({ route }) {
           type: 'envoi', // Adjust based on logic if needed
           title: t('contacts.history.send_funds', 'Envoi de fonds'),
           subtitle: t('contacts.history.transfer_done', 'Transfert effectué'),
-          date: format(new Date(tx.created_at), 'dd MMM yyyy • HH:mm', { locale: language === 'fr' ? fr : enUS }),
+          date: formatTxDate(tx.created_at, language),
           amount: `- ${tx.send_amount} ${tx.send_currency}`,
           balance: `${t('contacts.history.ref', 'Réf :')} ${tx.reference_number || 'N/A'}`,
           isPositive: false,
