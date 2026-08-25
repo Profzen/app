@@ -191,38 +191,40 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 48,
+    marginBottom: 36,
   },
   button: {
     flex: 1,
-    height: 56,
-    borderRadius: 16,
+    height: 48,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
   buttonPrevious: {
-    backgroundColor: '#8B92A5', // Grayish blue
+    backgroundColor: '#878FA4', // DizzitUp Slate Blue/Gray
     marginRight: 8,
   },
   buttonNext: {
-    backgroundColor: theme.colors.accent,
+    backgroundColor: '#FFC759', // DizzitUp Gold
     marginLeft: 8,
   },
   buttonNextDisabled: {
-    backgroundColor: '#F3F4F6', // Light gray
+    backgroundColor: '#F1F5F9', // Clean light gray
   },
   buttonPreviousText: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 16,
+    fontSize: 14,
     color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
   buttonNextText: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 16,
+    fontSize: 14,
     color: '#1A2840',
+    letterSpacing: 0.5,
   },
   buttonNextTextDisabled: {
-    color: '#D1D5DB', // Disabled gray text
+    color: '#94A3B8', // Clearer disabled text
   },
   resendContainer: {
     flexDirection: 'row',

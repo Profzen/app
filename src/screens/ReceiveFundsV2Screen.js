@@ -94,89 +94,97 @@ export default function ReceiveFundsV2Screen() {
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          {/* Blockchain Selector */}
-          <View style={styles.blockchainSection}>
-            <Text style={styles.sectionLabel}>{t('receiveFunds.select_blockchain', 'SÉLECTIONNER LA BLOCKCHAIN')}</Text>
-            <TouchableOpacity 
-              style={[styles.dropdown, dropdownOpen && styles.dropdownOpen]}
-              onPress={() => setDropdownOpen(!dropdownOpen)}
-              activeOpacity={0.8}
-            >
-              <View style={styles.dropdownLeft}>
-                <View style={styles.polygonIconBg}>
-                  <Ionicons name="infinite" size={16} color="#FFFFFF" />
+            {/* Blockchain Selector */}
+            <View style={styles.blockchainSection}>
+              <Text style={styles.sectionLabel}>{t('receiveFunds.select_blockchain', 'SÉLECTIONNER LA BLOCKCHAIN')}</Text>
+              <TouchableOpacity 
+                style={[styles.dropdown, dropdownOpen && styles.dropdownOpen]}
+                onPress={() => setDropdownOpen(!dropdownOpen)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.dropdownLeft}>
+                  <View style={{ marginRight: 12 }}>
+                    <CryptoIcon symbol={selectedChain} size={28} />
+                  </View>
+                  <Text style={styles.dropdownText}>{selectedChain}</Text>
                 </View>
-                <Text style={styles.dropdownText}>{selectedChain}</Text>
-              </View>
-              <Ionicons name={dropdownOpen ? "chevron-up" : "chevron-down"} size={20} color="#1A2840" />
-            </TouchableOpacity>
+                <Ionicons name={dropdownOpen ? "chevron-up" : "chevron-down"} size={20} color="#1A2840" />
+              </TouchableOpacity>
 
-            {/* Dropdown Menu */}
-            {dropdownOpen && (
-              <View style={styles.dropdownMenu}>
-                <TouchableOpacity style={[styles.dropdownItem, selectedChain === 'Polygone' && styles.dropdownItemActive]} onPress={() => chooseChain('Polygone')}>
-                  <View style={styles.dropdownItemLeft}>
-                    <CryptoIcon symbol="POL" size={30} />
-                    <View>
-                      <Text style={styles.dropdownItemTitle}>Polygone</Text>
-                      <Text style={styles.dropdownItemSubYellow}>DÉFAUT</Text>
+              {/* Dropdown Menu */}
+              {dropdownOpen && (
+                <View style={styles.dropdownMenu}>
+                  <TouchableOpacity style={[styles.dropdownItem, selectedChain === 'Polygone' && styles.dropdownItemActive]} onPress={() => chooseChain('Polygone')}>
+                    <View style={styles.dropdownItemLeft}>
+                      <View style={{ marginRight: 14 }}>
+                        <CryptoIcon symbol="Polygon" size={26} />
+                      </View>
+                      <View>
+                        <Text style={styles.dropdownItemTitle}>Polygon</Text>
+                        <Text style={styles.dropdownItemSubYellow}>DEFAULT</Text>
+                      </View>
                     </View>
-                  </View>
-                  {selectedChain === 'Polygone' && <Ionicons name="checkmark-circle" size={24} color="#FFB800" />}
-                </TouchableOpacity>
-                <View style={styles.dropdownDivider} />
+                    {selectedChain === 'Polygone' && <Ionicons name="checkmark-circle" size={22} color="#FFC759" />}
+                  </TouchableOpacity>
+                  <View style={styles.dropdownDivider} />
 
-                <TouchableOpacity style={[styles.dropdownItem, selectedChain === 'Ethereum' && styles.dropdownItemActive]} onPress={() => chooseChain('Ethereum')}>
-                  <View style={styles.dropdownItemLeft}>
-                    <CryptoIcon symbol="ETH" size={30} />
-                    <View>
-                      <Text style={styles.dropdownItemTitle}>Ethereum</Text>
-                      <Text style={styles.dropdownItemSub}>Nœud disponible</Text>
+                  <TouchableOpacity style={[styles.dropdownItem, selectedChain === 'Ethereum' && styles.dropdownItemActive]} onPress={() => chooseChain('Ethereum')}>
+                    <View style={styles.dropdownItemLeft}>
+                      <View style={{ marginRight: 14 }}>
+                        <CryptoIcon symbol="Ethereum" size={26} />
+                      </View>
+                      <View>
+                        <Text style={styles.dropdownItemTitle}>Ethereum</Text>
+                        <Text style={styles.dropdownItemSub}>Available Node</Text>
+                      </View>
                     </View>
-                  </View>
-                  {selectedChain === 'Ethereum' && <Ionicons name="checkmark-circle" size={24} color="#FFB800" />}
-                </TouchableOpacity>
-                <View style={styles.dropdownDivider} />
+                    {selectedChain === 'Ethereum' && <Ionicons name="checkmark-circle" size={22} color="#FFC759" />}
+                  </TouchableOpacity>
+                  <View style={styles.dropdownDivider} />
 
-                <TouchableOpacity style={[styles.dropdownItem, selectedChain === 'Base' && styles.dropdownItemActive]} onPress={() => chooseChain('Base')}>
-                  <View style={styles.dropdownItemLeft}>
-                    <View style={[styles.cryptoIconBg, {backgroundColor: '#0052FF'}]}>
-                      <View style={{width: 12, height: 12, borderRadius: 6, backgroundColor: '#FFFFFF'}} />
+                  <TouchableOpacity style={[styles.dropdownItem, selectedChain === 'Base' && styles.dropdownItemActive]} onPress={() => chooseChain('Base')}>
+                    <View style={styles.dropdownItemLeft}>
+                      <View style={{ marginRight: 14 }}>
+                        <CryptoIcon symbol="Base" size={26} />
+                      </View>
+                      <View>
+                        <Text style={styles.dropdownItemTitle}>Base</Text>
+                        <Text style={styles.dropdownItemSub}>Available Node</Text>
+                      </View>
                     </View>
-                    <View>
-                      <Text style={styles.dropdownItemTitle}>Base</Text>
-                      <Text style={styles.dropdownItemSub}>Nœud disponible</Text>
-                    </View>
-                  </View>
-                  {selectedChain === 'Base' && <Ionicons name="checkmark-circle" size={24} color="#FFB800" />}
-                </TouchableOpacity>
-                <View style={styles.dropdownDivider} />
+                    {selectedChain === 'Base' && <Ionicons name="checkmark-circle" size={22} color="#FFC759" />}
+                  </TouchableOpacity>
+                  <View style={styles.dropdownDivider} />
 
-                <TouchableOpacity style={[styles.dropdownItem, selectedChain === 'Solana' && styles.dropdownItemActive]} onPress={() => chooseChain('Solana')}>
-                  <View style={styles.dropdownItemLeft}>
-                    <CryptoIcon symbol="SOL" size={30} />
-                    <View>
-                      <Text style={styles.dropdownItemTitle}>Solana</Text>
-                      <Text style={styles.dropdownItemSub}>Nœud disponible</Text>
+                  <TouchableOpacity style={[styles.dropdownItem, selectedChain === 'Solana' && styles.dropdownItemActive]} onPress={() => chooseChain('Solana')}>
+                    <View style={styles.dropdownItemLeft}>
+                      <View style={{ marginRight: 14 }}>
+                        <CryptoIcon symbol="Solana" size={26} />
+                      </View>
+                      <View>
+                        <Text style={styles.dropdownItemTitle}>Solana</Text>
+                        <Text style={styles.dropdownItemSub}>Available Node</Text>
+                      </View>
                     </View>
-                  </View>
-                  {selectedChain === 'Solana' && <Ionicons name="checkmark-circle" size={24} color="#FFB800" />}
-                </TouchableOpacity>
-                <View style={styles.dropdownDivider} />
+                    {selectedChain === 'Solana' && <Ionicons name="checkmark-circle" size={22} color="#FFC759" />}
+                  </TouchableOpacity>
+                  <View style={styles.dropdownDivider} />
 
-                <TouchableOpacity style={[styles.dropdownItem, selectedChain === 'Chaîne BNB' && styles.dropdownItemActive]} onPress={() => chooseChain('Chaîne BNB')}>
-                  <View style={styles.dropdownItemLeft}>
-                    <CryptoIcon symbol="BNB" size={30} />
-                    <View>
-                      <Text style={styles.dropdownItemTitle}>Chaîne BNB</Text>
-                      <Text style={styles.dropdownItemSub}>Nœud disponible</Text>
+                  <TouchableOpacity style={[styles.dropdownItem, (selectedChain === 'Chaîne BNB' || selectedChain === 'BNB Chain') && styles.dropdownItemActive]} onPress={() => chooseChain('BNB Chain')}>
+                    <View style={styles.dropdownItemLeft}>
+                      <View style={{ marginRight: 14 }}>
+                        <CryptoIcon symbol="BNB Chain" size={26} />
+                      </View>
+                      <View>
+                        <Text style={styles.dropdownItemTitle}>BNB Chain</Text>
+                        <Text style={styles.dropdownItemSub}>Available Node</Text>
+                      </View>
                     </View>
-                  </View>
-                  {selectedChain === 'Chaîne BNB' && <Ionicons name="checkmark-circle" size={24} color="#FFB800" />}
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
+                    {(selectedChain === 'Chaîne BNB' || selectedChain === 'BNB Chain') && <Ionicons name="checkmark-circle" size={22} color="#FFC759" />}
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
 
           {/* Tabs */}
           <View style={styles.tabsContainer}>
@@ -451,82 +459,71 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
     borderRadius: 16,
-    padding: 16,
+    paddingHorizontal: 16,
+    height: 54,
   },
   dropdownOpen: {
-    borderColor: '#FFB800',
+    borderColor: '#FFC759',
+    borderWidth: 2,
   },
   dropdownLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  polygonIconBg: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#8247E5',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  cryptoIconBg: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
   dropdownText: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 16,
+    fontSize: 15,
     color: '#1A2840',
   },
   dropdownMenu: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 18,
     marginTop: 8,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: '#E2E8F0',
     overflow: 'hidden',
+    boxShadow: '0px 8px 24px rgba(15, 23, 42, 0.08)',
+    elevation: 6,
   },
   dropdownItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
   dropdownItemActive: {
-    backgroundColor: '#FFFBEB',
+    backgroundColor: '#FFFDF5',
   },
   dropdownItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   dropdownItemTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 15,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 14,
     color: '#1A2840',
   },
   dropdownItemSub: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 12,
+    fontSize: 11,
     color: '#94A3B8',
-    marginTop: 2,
+    marginTop: 1,
   },
   dropdownItemSubYellow: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-    color: '#FFB800',
-    marginTop: 2,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 10,
+    color: '#D97706',
+    marginTop: 1,
+    letterSpacing: 0.5,
   },
   dropdownDivider: {
     height: 1,
     backgroundColor: '#F1F5F9',
-    marginLeft: 60,
+    marginLeft: 56,
   },
   tabsContainer: {
     flexDirection: 'row',

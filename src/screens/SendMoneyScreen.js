@@ -7,6 +7,7 @@ import * as Clipboard from 'expo-clipboard';
 import AppSelect from '../components/AppSelect';
 import AppToast from '../components/AppToast';
 import BottomNavBar from '../components/BottomNavBar';
+import CryptoIcon from '../components/CryptoIcon';
 import { useApp } from '../context/AppContext';
 import { useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
@@ -254,8 +255,8 @@ export default function SendMoneyScreen() {
             {/* Section 1: CHOISIR LA BLOCKCHAIN */}
             <Text style={styles.fieldLabel}>{t('pos.select_blockchain', 'CHOISIR LA BLOCKCHAIN')}</Text>
             <View style={styles.selectBoxRow}>
-              <View style={[styles.tokenIconBadge, { backgroundColor: '#8247E5' }]}>
-                <Ionicons name="cube-outline" size={16} color="#FFFFFF" />
+              <View style={{ marginRight: 10 }}>
+                <CryptoIcon symbol={blockchain} size={30} />
               </View>
               <AppSelect
                 value={blockchain}
@@ -270,8 +271,8 @@ export default function SendMoneyScreen() {
             {/* Section 2: Jeton */}
             <Text style={styles.fieldLabel}>{t('pos.token_caps', 'JETON')}</Text>
             <View style={styles.selectBoxRow}>
-              <View style={[styles.tokenIconBadge, { backgroundColor: '#2775CA' }]}>
-                <Ionicons name="logo-usd" size={16} color="#FFFFFF" />
+              <View style={{ marginRight: 10 }}>
+                <CryptoIcon symbol={token} size={30} />
               </View>
               <AppSelect
                 value={token}

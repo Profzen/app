@@ -219,9 +219,9 @@ const styles = StyleSheet.create({
   channelDesc: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280', marginTop: 2 },
   card: { backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#F0F2F5', padding: 16, marginTop: 4, marginBottom: 16 },
   fieldGroup: { marginBottom: 14 },
-  fieldLabel: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#4B5563', marginBottom: 6 },
-  input: { backgroundColor: '#F9FAFB', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 12, height: 46, fontFamily: 'Inter_400Regular', fontSize: 14, color: '#1A2840' },
-  textArea: { height: 110, paddingTop: 10 },
+  fieldLabel: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#1A2840', marginBottom: 8 },
+  input: { backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: '#CBD5E1', borderRadius: 12, paddingHorizontal: 14, height: 48, fontFamily: 'Inter_500Medium', fontSize: 14, color: '#1A2840', outlineStyle: 'none' },
+  textArea: { height: 120, paddingTop: 12 },
   submitBtn: { height: 50, borderRadius: 14, backgroundColor: '#FFC759', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 4, boxShadow: '0px 4px 8px #FFC759' },
   submitBtnText: { fontFamily: 'Inter_700Bold', fontSize: 15, color: '#1A2840' },
 });

@@ -293,7 +293,12 @@ export default function ShopsScreen() {
           </View>
 
           {/* Filters */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            style={styles.filtersScrollView}
+            contentContainerStyle={styles.filtersScroll}
+          >
             {categories.map((item) => {
               const isActive = activeFilter === item.id;
               return (
@@ -307,9 +312,9 @@ export default function ShopsScreen() {
                 >
                   <Ionicons
                     name={item.icon}
-                    size={16}
-                    color={isActive ? '#FFC759' : '#FFC759'}
-                    style={{ marginRight: 8 }}
+                    size={15}
+                    color={isActive ? '#FFC759' : '#1A2840'}
+                    style={{ marginRight: 6 }}
                   />
                   <Text
                     style={[
@@ -570,11 +575,12 @@ const styles = StyleSheet.create({
   viewToggleBtn: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, justifyContent: 'center', alignItems: 'center' },
   viewToggleBtnActive: { backgroundColor: '#1A2840' },
 
-  filtersScroll: { paddingHorizontal: 16, marginBottom: 14 },
-  filterChipActive: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A2840', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, marginRight: 10, borderWidth: 1, borderColor: '#1A2840' },
-  filterChipTextActive: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#FFFFFF' },
-  filterChip: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, marginRight: 10 },
-  filterChipText: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#1A2840' },
+  filtersScrollView: { marginBottom: 14 },
+  filtersScroll: { paddingLeft: 16, paddingRight: 8 },
+  filterChipActive: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A2840', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 18, marginRight: 8, borderWidth: 1, borderColor: '#1A2840' },
+  filterChipTextActive: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#FFFFFF' },
+  filterChip: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 18, marginRight: 8 },
+  filterChipText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840' },
 
   shopsContainer: { paddingHorizontal: 16, marginBottom: 16 },
   shopsGridContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', paddingHorizontal: 16 },

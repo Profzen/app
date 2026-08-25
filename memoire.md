@@ -1851,18 +1851,148 @@ Un audit complet des branches locales et distantes a été effectué (`origin/fr
 1. **Étape 1 : Récupération & Consolidation `front-back` (Terminé ✅)**
    - Pull complet de `origin/front-back` (commit `fd85f6f`).
    - Configuration du fichier local [`.env`](file:///g:/zen/projets/DizzitApp/app/.env) avec les clés Crossmint, Supabase et les 4 endpoints d'API.
-2. **Étape 2 : Fusion et Push vers `develop` (En cours 🔄)**
-   - Fusionner l'arbre complet de `front-back` dans la branche `develop` (branche de release TestFlight).
-   - Pusher `develop` sur `origin/develop` pour assurer la synchronisation parfaite de l'équipe et préparer le build EAS TestFlight.
-3. **Étape 3 : Traitement des retours d'Audit Google Doc d'Assia**
-   - Dès réception des remarques et captures d'écran listées par Assia dans le Google Doc :
-     - Traitement méthodique écran par écran (ajustements Pixel-Perfect, formulaires, Safe Area, claviers, iPhone SE).
-     - Validation visuelle continue avant les prochains pushs.
+2. **Étape 2 : Fusion et Push vers `develop` (Terminé ✅)**
+   - Fusion propre de `front-back` vers `develop` (commit `628beeb`).
+   - Push réussi sur `origin/develop` et synchronisation complète de la branche de release TestFlight.
+3. **Étape 3 : Traitement des retours d'Audit Google Doc d'Assia (Terminé ✅)**
+   - Correction chirurgicale des 7 écrans et renforcement des composants partagés (`OtpInput`, `CryptoIcon`, `AppSelect`).
+   - Alignement parfait avec la charte DizzitUp et la maquette de référence du dropdown de chaînes.
+4. **Étape 4 : Commit, Fusion `front-back` vers `develop` & Livraison TestFlight (En cours 🔄)**
+   - Commit propre sur `front-back` et push vers `origin/front-back`.
+   - Merge sans conflit de `front-back` dans `develop` et push vers `origin/develop` pour le build TestFlight.
+
+---
+
+## 🔍 Audit UI/UX & Retours d'Assia (Document "UI/UX Improvement Notes" - 25 août 2026)
+
+### 📌 Contexte & Consignes Générales d'Assia
+- **Objectif** : Ajustements visuels et ergonomiques (Frontend/UI) pour aligner l'application mobile avec le design du site web DizzitUp, en mettant l'accent sur le responsive (petits écrans, iPhone SE, appareils iOS).
+- **Gestion des langues / i18n** : Présence temporaire d'un mélange FR/EN sur certaines captures à ne pas prendre en compte immédiatement, car Assia finalisera les clés JSON et l'appel systématique à `t()` une fois l'intégration terminée.
+- **Méthode de traitement** : Consignation chirurgicale dans le Mémoire écran par écran, puis implémentation groupée et validée.
+
+---
+
+### 📋 Relevé Chirurgical des Écrans Auditées :
+
+#### 🎨 Nuancier & Charte Couleur Officielle Référencée par Assia (Colour Chart)
+- `#FFFFFF` : Blanc pur (Fond / Cartes)
+- `#20365B` : Bleu Marine Foncé DizzitUp (Primary)
+- `#FFC759` : Or / Jaune Moutarde DizzitUp (Accent / Boutons actifs)
+- `#0E0E0E` : Noir Profond (Texte principal)
+- `#B9B9B9` : Gris neutre / Bordures
+- `#878FA4` : Gris-Bleu Ardoise (Boutons secondaires / "Précédent")
+
+---
+
+#### 1. [`ResetPasswordCodeScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ResetPasswordCodeScreen.js)
+- **Composants en jeu** : [`HeaderBackButton`](file:///g:/zen/projets/DizzitApp/app/src/components/HeaderBackButton.js), [`StepIndicator`](file:///g:/zen/projets/DizzitApp/app/src/components/StepIndicator.js), [`OtpInput`](file:///g:/zen/projets/DizzitApp/app/src/components/OtpInput.js).
+- **Objectif explicite** : Rapprocher l'écran du design du site web DizzitUp.
+- **Demandes d'ajustements spécifiques (Requested changes)** :
+  1. **Boutons "Précédent" et "Suivant"** :
+     - Les rendre un peu plus petits (hauteur et padding plus compacts) et plus élégants.
+     - Améliorer leur style général pour un rendu plus net, propre et soigné (*clean & polished*).
+     - Respecter les couleurs : `#878FA4` pour "Précédent" et `#FFC759` / `#20365B` pour "Suivant".
+  2. **Cases de saisie du Code OTP ([`OtpInput.js`](file:///g:/zen/projets/DizzitApp/app/src/components/OtpInput.js))** :
+     - Rendre les cases d'input beaucoup **plus visibles et contrastées** (actuellement bordure trop claire / fond blanc fondu).
+     - Définir des bordures nettes (ex: `#B9B9B9` par défaut, `#FFC759` ou `#20365B` au focus/remplissage).
+  3. **Harmonie visuelle globale** :
+     - Appliquer strictement la palette DizzitUp, en particulier les tonalités bleu nuit (`#20365B`) et or (`#FFC759`).
+
+#### 2. [`SendMoneyScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneyScreen.js)
+- **Composants en jeu** : Sélecteur de blockchain/réseau, sélecteur de jeton (Token/Crypto), [`CryptoIcon.js`](file:///g:/zen/projets/DizzitApp/app/src/components/CryptoIcon.js), [`BottomNavBar`](file:///g:/zen/projets/DizzitApp/app/src/components/BottomNavBar.js).
+- **Demandes d'ajustements spécifiques (Requested changes)** :
+  1. **Logos officiels des Blockchains et Jetons** :
+     - Remplacer tous les logos génériques ou temporaires par les **vrais logos officiels** :
+       - **Polygon** doit afficher le véritable logo officiel Polygon.
+       - **USDC** doit afficher le véritable logo officiel USDC.
+       - Idem pour tous les autres réseaux et tokens supportés (Base, Solana, BNB Chain, Ethereum, DAI, etc.).
+  2. **Règle stricte pour les assets** :
+     - **Ne JAMAIS charger les logos depuis des URLs/liens externes**.
+     - Utiliser exclusivement les fichiers locaux intégrés dans le dossier [`assets/cryptos/`](file:///g:/zen/projets/DizzitApp/app/assets/cryptos) (notre dossier contient déjà `polygon.png`, `usdc.png`, `usdt.png`, `base.png`, `solana.png`, `bnb-logo.png`, `eth.png`, `dai-logo.png`, etc.).
+#### 3. [`BusinessAccountScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/BusinessAccountScreen.js)
+- **Composants en jeu** : Header, Sélecteur de compte actif (Personnel vs Business PRO), Carte détails du compte Business, Boutons d'actions principaux ("Ouvrir Caisse TPE", "Ajouter compte"), [`BottomNavBar`](file:///g:/zen/projets/DizzitApp/app/src/components/BottomNavBar.js).
+- **Problèmes identifiés lors du test iPhone SE (375 × 667 px) / iOS** :
+  - Mise en page trop compacte et écrasée (*too tight*).
+  - Les libellés de la carte de détails (ex: "Caisse TPE / QR Code :") avec `width: 140` fixe passent à la ligne et tronquent les valeurs à droite.
+  - Les badges de catégories ("Digital Marketing & SEO", "Freelance Writing & Translation") débordent ou s'empilent maladroitement.
+  - Espacements verticaux insuffisants en bas d'écran avec chevauchement potentiel sur la barre de navigation.
+- **Demandes d'ajustements spécifiques (Requested changes)** :
+  1. **Audit & Optimisation Responsive iPhone SE / Petits Écrans iOS** :
+     - Remplacer les largeurs fixes (`width: 140`) par un dimensionnement flexible (`flex: 1` / `flexShrink`) pour éviter tout retour à la ligne disgracieux sur les labels.
+     - Améliorer l'affichage des badges de catégories (`flexWrap: 'wrap'`, marges et paddings équilibrés).
+     - Harmoniser les marges et paddings intérieurs pour un rendu plus aéré et fluide sans compression visuelle.
+#### 4. [`ShopsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShopsScreen.js)
+- **Composants en jeu** : Barre de recherche, grille d'actions rapides (4 colonnes), section "Mes shops / My Shops", barre de filtres horizontaux (`ScrollView horizontal`), liste des boutiques (`ShopListItem`), [`BottomNavBar`](file:///g:/zen/projets/DizzitApp/app/src/components/BottomNavBar.js).
+- **Problème identifié (Responsiveness issue sur iPhone SE & petits écrans)** :
+  - La rangée de boutons de filtres de catégories (`filtersScroll`) déborde hors du conteneur d'écran sur les bords gauche et droit lors du défilement horizontal.
+  - Le premier bouton ("À proximité") et le dernier sont coupés/rognés au scroll sans marges internes propres.
+- **Demandes d'ajustements spécifiques (Requested changes)** :
+  1. **Correction du défilement horizontal des filtres** :
+     - Ajuster le `contentContainerStyle` et les marges du `ScrollView` horizontal pour que les boutons restent toujours à l'intérieur du conteneur avec un `paddingHorizontal` propre et constant.
+#### 5. [`ContactUsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactUsScreen.js) *(intitulé "5- ShopsScreen.js" par erreur de titre dans le doc d'Assia)*
+- **Composants en jeu** : Canaux de contact rapides (Chat Aminata, Email, WhatsApp Pro, FAQ), Formulaire "Envoyer un message au support" (Champs Sujet / Message, Bouton d'envoi jaune), [`BottomNavBar`](file:///g:/zen/projets/DizzitApp/app/src/components/BottomNavBar.js).
+- **Problème identifié** :
+  - Les champs de saisie ("Subject" et "Your message") sont trop clairs / trop grisés (`backgroundColor: '#F9FAFB', borderColor: '#E5E7EB'`), ce qui manque de contraste et ne fait pas assez ressortir la zone de frappe pour l'utilisateur.
+- **Demandes d'ajustements spécifiques (Requested changes)** :
+  1. **Visibilité & Affordance des champs du formulaire** :
+#### 6. [`ReceiveFundsV2Screen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ReceiveFundsV2Screen.js)
+- **Composants en jeu** : Sélecteur déroulant de blockchain (`styles.dropdown`, `styles.dropdownMenu`), Onglets "YOUR ADDRESS" / "SCAN", Carte d'adresse bleue EVM/Solana, Boutons "COPY" et "SHARE", Toast de confirmation, [`BottomNavBar`](file:///g:/zen/projets/DizzitApp/app/src/components/BottomNavBar.js).
+- **Problème identifié (Dropdown Blockchain trop discret & peu visible)** :
+  - Le composant dropdown fermé a un aspect trop clair / trop fade (`borderColor: '#F1F5F9'` sur fond blanc), ce qui le fond dans le fond et ne donne pas assez d'affordance pour indiquer qu'il s'agit d'un menu déroulant cliquable permettant de changer de chaîne (Polygon, Ethereum, Base, Solana, BNB Chain).
+  - Les logos de blockchains dans le menu ouvert sont trop grands, avec des bordures et espacements non harmonisés par rapport aux libellés.
+- **Demandes d'ajustements spécifiques (Requested changes selon la Maquette de référence)** :
+  1. **Bouton Déroulant Fermé** :
+     - Bordure plus contrastée en état repos (`#CBD5E1` / `#B9B9B9`) et bordure dorée `#FFC759` lorsque le menu est ouvert.
+     - Afficher dynamiquement le **vrai logo officiel** de la blockchain active (chargé depuis [`assets/cryptos/`](file:///g:/zen/projets/DizzitApp/app/assets/cryptos)) et son nom avec chevron haut/bas.
+  2. **Menu Déroulant Ouvert (aligné sur la maquette visuelle)** :
+     - **Taille & Style des Logos** : Réduire la taille des logos de chaînes (logos plus petits, nets, propres, logés dans un médaillon circulaire ou affichés en format compact ~24-28px).
+     - **Espacement** : Augmenter l'espacement entre le logo et les libellés de texte (`marginRight: 14`).
+     - **Ligne active (Polygon - Défaut)** : Fond doux beige/or (`#FFFBEB`), titre "Polygon" en gras `#1A2840`, badge "DEFAULT" en jaune/or `#FFC759`, et icône checkmark dorée à droite.
+     - **Autres lignes (Ethereum, Base, Solana, BNB Chain)** : Titre de la chaîne en semi-bold `#1A2840` et sous-titre "Available Node" en gris subtil `#94A3B8`.
+
+#### 7. [`ContactsManageScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactsManageScreen.js)
+- **Composants en jeu** : Header, Barre de recherche de contacts (`styles.searchContainer`, `styles.searchInput`), Grille d'actions rapides (Ajouter, Modifier, Mes bénéficiaires), Liste filtrable des bénéficiaires (`Nearby`, `From favorite countries`, `All over...`), [`BottomNavBar`](file:///g:/zen/projets/DizzitApp/app/src/components/BottomNavBar.js).
+- **Problème identifié (Barre de recherche trop fade / manque de contraste)** :
+  - La barre de recherche est trop claire et se confond avec le fond blanc (`backgroundColor: '#FFFFFF', borderColor: '#F1F5F9'`), rendant la zone de saisie peu repérable.
+  - L'icône loupe est grisée et manque de netteté (`#94A3B8`).
+- **Demandes d'ajustements spécifiques (Requested changes)** :
+  1. **Refonte Visuelle de la Barre de Recherche** :
+     - Renforcer le contraste et la visibilité du champ de recherche (meilleur traitement des bordures `#CBD5E1` / `#B9B9B9` ou fond adouci avec ombre portée subtile `boxShadow` / élévation).
+     - Rendre l'icône loupe plus contrastée et visible (couleur DizzitUp `#20365B` ou `#1A2840`).
+     - Conserver un rendu fluide, moderne, épuré et parfaitement harmonisé avec la charte DizzitUp (sans surcharge visuelle).
+
+#### 🌐 8. Règle Globale Transverse : Standardisation du Bouton Retour (Back Arrow) sur TOUS les Écrans
+- **Directive stricte d'Assia** :
+  - Ajouter le **bouton de retour arrière standardisé** (icône flèche/chevron retour `<` dans un cercle blanc/gris clair avec bordure douce) sur **TOUS les écrans de l'application qui n'en possèdent pas actuellement**.
+  - Conserver rigoureusement la **même position en haut à gauche** et le **même style** sur l'ensemble des 70+ écrans afin que les utilisateurs puissent revenir en arrière de manière intuitive et homogène où qu'ils soient dans l'application.
+  - Action liée : `navigation.goBack()` avec fallback propre.
+
+### 🎯 9. Synthèse des Correctifs Appliqués & Validés (25 août 2026) :
+- ✅ **[`OtpInput.js`](file:///g:/zen/projets/DizzitApp/app/src/components/OtpInput.js)** : Bordures renforcées (`#CBD5E1`), état actif or `#FFC759` et dimensions calibrées (46x52px).
+- ✅ **[`CryptoIcon.js`](file:///g:/zen/projets/DizzitApp/app/src/components/CryptoIcon.js) & [`AppSelect.js`](file:///g:/zen/projets/DizzitApp/app/src/components/AppSelect.js)** : Prise en charge native de tous les logos de chaînes et cryptos officiels stockés dans [`assets/cryptos/`](file:///g:/zen/projets/DizzitApp/app/assets/cryptos).
+- ✅ **[`ResetPasswordCodeScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ResetPasswordCodeScreen.js)** : Boutons plus compacts (hauteur 48px, arrondi 12px), "Précédent" en `#878FA4` et "Suivant" en or `#FFC759`.
+- ✅ **[`SendMoneyScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneyScreen.js)** : Intégration des vrais logos officiels pour Polygon, Ethereum, Solana, BNB, Base, USDC, USDT et dégagement du scroll bas.
+- ✅ **[`BusinessAccountScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/BusinessAccountScreen.js)** : Suppression des largeurs fixes rigides sur les labels, badges de catégories flexibles (`justifyContent: 'flex-end'`, `flexWrap: 'wrap'`), et marges parfaites sur iPhone SE.
+- ✅ **[`ShopsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShopsScreen.js)** : `filtersScrollView` optimisé avec `paddingLeft: 16` et `paddingRight: 8` pour un défilement horizontal fluide sans coupure de boutons.
+- ✅ **[`ContactUsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactUsScreen.js)** : Champs de saisie Sujet / Message sur fond blanc avec bordure nette `#CBD5E1` et focus lisible.
+- ✅ **[`ReceiveFundsV2Screen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ReceiveFundsV2Screen.js)** : Refonte complète du dropdown blockchain avec bordure `#CBD5E1`, liseré or `#FFC759` à l'ouverture, logos compacts (26px), badge "DEFAULT" et items conformes à la maquette.
+- ✅ **[`ContactsManageScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactsManageScreen.js)** : Barre de recherche rehaussée avec bordure `#CBD5E1`, ombre portée douce et icône loupe bleu nuit `#20365B`.
 
 ---
 
 ## 🔄 Règle d'Or pour l'IA (Mise à jour Continue du Mémoire)
 
 **RÈGLE STRICTE POUR L'IA** : À la fin de chaque session ou après toute modification majeure (ajout d'écran, ajustement de flux, refactoring, gestion Git), l'IA **DOIT IMPÉRATIVEMENT** mettre à jour ce fichier `memoire.md`. Ainsi, lors de l'ouverture d'une nouvelle session de conversation, la lecture préalable de ce fichier permet de récupérer l'intégralité du contexte, de l'état d'avancement et des règles sans aucune perte d'information ni interruption du workflow.
+
+
+
+
+
+
+
+
+
+
+
 
 

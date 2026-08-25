@@ -113,8 +113,8 @@ export default function ContactsManageScreen() {
 
           {/* Search Bar */}
           <View style={styles.searchContainer}>
-            <Ionicons name="search-outline" size={20} color="#94A3B8" style={styles.searchIcon} />
-            <View>
+            <Ionicons name="search" size={20} color="#20365B" style={styles.searchIcon} />
+            <View style={styles.searchContent}>
               <TextInput
                 style={styles.searchInput}
                 placeholder={t('common.wallet.search_beneficiary', 'Rechercher un contact')}
@@ -426,22 +426,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
     borderRadius: 16,
-    padding: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     marginHorizontal: 16,
     marginBottom: 24,
+    boxShadow: '0px 2px 6px rgba(15, 23, 42, 0.04)',
+  },
+  searchContent: {
+    flex: 1,
   },
   searchIcon: {
-    marginRight: 12,
+    marginRight: 10,
   },
   searchInput: {
     fontFamily: 'Inter_500Medium',
     fontSize: 14,
     color: '#1A2840',
     outlineStyle: 'none',
-    marginBottom: 2,
+    marginBottom: 1,
     padding: 0,
   },
   searchSubText: {

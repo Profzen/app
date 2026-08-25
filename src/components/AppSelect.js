@@ -2,6 +2,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import CryptoIcon from './CryptoIcon';
 
 export default function AppSelect({
   value,
@@ -70,6 +71,10 @@ export default function AppSelect({
                       {/* Logo Icon Badge */}
                       {option.flagUrl ? (
                         <Image source={{ uri: option.flagUrl }} style={{ width: 34, height: 34, borderRadius: 17, marginRight: 12, resizeMode: 'cover', borderWidth: 1, borderColor: '#F1F5F9' }} />
+                      ) : (option.cryptoSymbol || option.value) && (option.isCrypto || ['Polygon', 'Ethereum', 'Solana', 'BNB Chain', 'Base', 'USDC', 'USDT', 'BTC', 'ETH', 'SOL', 'POL', 'DAI', 'EURC', 'DIZ'].includes(option.cryptoSymbol || option.value)) ? (
+                        <View style={{ marginRight: 12 }}>
+                          <CryptoIcon symbol={option.cryptoSymbol || option.value} size={34} />
+                        </View>
                       ) : option.iconName ? (
                         <View style={[styles.iconBadge, { backgroundColor: option.bg || '#3B82F6' }]}>
                           <Ionicons name={option.iconName} size={16} color={option.color || '#FFFFFF'} />
