@@ -1975,14 +1975,31 @@ Un audit complet des branches locales et distantes a été effectué (`origin/fr
 - ✅ **[`BusinessAccountScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/BusinessAccountScreen.js)** : Suppression des largeurs fixes rigides sur les labels, badges de catégories flexibles (`justifyContent: 'flex-end'`, `flexWrap: 'wrap'`), et marges parfaites sur iPhone SE.
 - ✅ **[`ShopsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShopsScreen.js)** : `filtersScrollView` optimisé avec `paddingLeft: 16` et `paddingRight: 8` pour un défilement horizontal fluide sans coupure de boutons.
 - ✅ **[`ContactUsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactUsScreen.js)** : Champs de saisie Sujet / Message sur fond blanc avec bordure nette `#CBD5E1` et focus lisible.
-- ✅ **[`ReceiveFundsV2Screen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ReceiveFundsV2Screen.js)** : Refonte complète du dropdown blockchain avec bordure `#CBD5E1`, liseré or `#FFC759` à l'ouverture, logos compacts (26px), badge "DEFAULT" et items conformes à la maquette.
+- ✅ **[`ReceiveFundsV2Screen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ReceiveFundsV2Screen.js)** : Refonte complète du dropdown blockchain avec bordure `#CBD5E1`, liseré or `#FFC759` à l'ouverture, logos compacts (26px), badge "DEFAULT" et items conformes à la capture et remarques d'Assia.
 - ✅ **[`ContactsManageScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactsManageScreen.js)** : Barre de recherche rehaussée avec bordure `#CBD5E1`, ombre portée douce et icône loupe bleu nuit `#20365B`.
+- ✅ **[`LoginScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/LoginScreen.js)** : Authentification stricte de production Supabase préservée sans aucun contournement parasite.
+- ✅ **Compatibilité Web Bundler Metro** : Résolution des dépendances natives web (`pdfGenerator.js`, `ContactHistoryScreen.js`, `app.json`).
+
+---
+
+## 🧭 Règles de Méthodologie & de Posture pour l'IA
+
+1. **Écoute & Réponse Directe d'Abord** :
+   - Lorsqu'une question est posée par l'utilisateur, l'IA **DOIT TOUJOURS répondre directement, calmement et précisément à la question AVANT d'envisager la moindre action**.
+   - **Interdiction formelle de se précipiter** sur des modifications de code imprévues ou non sollicitées.
+
+2. **Aucune Modification Non Demandée (Pas d'action intempestive)** :
+   - L'IA ne doit pas toucher aux fichiers source de son propre chef sans demande explicite ou validation préalable de l'utilisateur.
+
+3. **Intégrité Absolue des Branches de Release (`front-back` et `develop`)** :
+   - Ne jamais injecter de code temporaire, de bypass d'authentification ou de boutons de test sur les branches de release (`front-back` et `develop`). Ces branches doivent toujours contenir du code 100% propre, testé, sécurisé et prêt pour TestFlight.
 
 ---
 
 ## 🔄 Règle d'Or pour l'IA (Mise à jour Continue du Mémoire)
 
 **RÈGLE STRICTE POUR L'IA** : À la fin de chaque session ou après toute modification majeure (ajout d'écran, ajustement de flux, refactoring, gestion Git), l'IA **DOIT IMPÉRATIVEMENT** mettre à jour ce fichier `memoire.md`. Ainsi, lors de l'ouverture d'une nouvelle session de conversation, la lecture préalable de ce fichier permet de récupérer l'intégralité du contexte, de l'état d'avancement et des règles sans aucune perte d'information ni interruption du workflow.
+
 
 
 
