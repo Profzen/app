@@ -42,7 +42,7 @@ export default function ReceiveFundsV2Screen() {
   const [showToast, setShowToast] = useState(false);
   const [copied, setCopied] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [selectedChain, setSelectedChain] = useState('Polygone');
+  const [selectedChain, setSelectedChain] = useState('Polygon');
   const address = selectedChain === 'Solana' ? (addresses.solana || 'Chargement...') : (addresses.evm || 'Chargement...');
   const qr = address && address !== 'Chargement...' ? QRCode.create(address, { errorCorrectionLevel: 'M' }) : null;
   const copyAddress = () => { setShowToast(true); setCopied(true); Clipboard.setStringAsync(address).catch(() => {}); setTimeout(() => setCopied(false), 2500); };
@@ -58,6 +58,14 @@ export default function ReceiveFundsV2Screen() {
     );
   };
 
+  const CHAINS = [
+    { id: 'Polygon', name: 'Polygon', isDefault: true, subtitle: 'DEFAULT' },
+    { id: 'Ethereum', name: 'Ethereum', isDefault: false, subtitle: 'Available Node' },
+    { id: 'Base', name: 'Base', isDefault: false, subtitle: 'Available Node' },
+    { id: 'Solana', name: 'Solana', isDefault: false, subtitle: 'Available Node' },
+    { id: 'BNB Chain', name: 'BNB Chain', isDefault: false, subtitle: 'Available Node' },
+  ];
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -68,26 +76,18 @@ export default function ReceiveFundsV2Screen() {
             <Ionicons name="chevron-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           
-          <View style={styles.headerCenter}>
-            <Text style={styles.pageTitle}>{t('receiveFunds.title', 'Recevoir des fonds')}</Text>
-            <View style={styles.secureTag}>
-              <View style={styles.secureDot} />
-              <Text style={styles.secureText}>{t('receiveFunds.secure', 'SÉCURISÉ')}</Text>
-            </View>
-          </View>
-          
-          <View style={styles.headerRight}>
-            <TouchableOpacity style={styles.iconBtnHeader}>
+          <Text style={styles.headerTitle}>{t('receiveFunds.receive_funds_title', 'Recevoir des fonds')}</Text>
+
+          <View style={styles.headerRightIcons}>
+            <TouchableOpacity style={styles.iconBtn}>
               <Ionicons name="notifications-outline" size={20} color="#1A2840" />
-              <View style={styles.notifDot}>
-                <Text style={styles.notifText}>1</Text>
-              </View>
+              <View style={styles.notificationDot} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnHeader} onPress={() => navigation.navigate('RewardsScreen')}>
+            <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('RewardsScreen')}>
               <Ionicons name="gift-outline" size={20} color="#1A2840" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnHeader} onPress={() => navigation.navigate('MoreSettingsScreen')}>
-              <Ionicons name="ellipsis-vertical" size={20} color="#1A2840" />
+            <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('MoreSettingsScreen')}>
+              <Ionicons name="ellipsis-horizontal" size={20} color="#1A2840" />
             </TouchableOpacity>
           </View>
         </View>
@@ -114,74 +114,34 @@ export default function ReceiveFundsV2Screen() {
               {/* Dropdown Menu */}
               {dropdownOpen && (
                 <View style={styles.dropdownMenu}>
-                  <TouchableOpacity style={[styles.dropdownItem, selectedChain === 'Polygone' && styles.dropdownItemActive]} onPress={() => chooseChain('Polygone')}>
-                    <View style={styles.dropdownItemLeft}>
-                      <View style={{ marginRight: 14 }}>
-                        <CryptoIcon symbol="Polygon" size={26} />
-                      </View>
-                      <View>
-                        <Text style={styles.dropdownItemTitle}>Polygon</Text>
-                        <Text style={styles.dropdownItemSubYellow}>DEFAULT</Text>
-                      </View>
-                    </View>
-                    {selectedChain === 'Polygone' && <Ionicons name="checkmark-circle" size={22} color="#FFC759" />}
-                  </TouchableOpacity>
-                  <View style={styles.dropdownDivider} />
-
-                  <TouchableOpacity style={[styles.dropdownItem, selectedChain === 'Ethereum' && styles.dropdownItemActive]} onPress={() => chooseChain('Ethereum')}>
-                    <View style={styles.dropdownItemLeft}>
-                      <View style={{ marginRight: 14 }}>
-                        <CryptoIcon symbol="Ethereum" size={26} />
-                      </View>
-                      <View>
-                        <Text style={styles.dropdownItemTitle}>Ethereum</Text>
-                        <Text style={styles.dropdownItemSub}>Available Node</Text>
-                      </View>
-                    </View>
-                    {selectedChain === 'Ethereum' && <Ionicons name="checkmark-circle" size={22} color="#FFC759" />}
-                  </TouchableOpacity>
-                  <View style={styles.dropdownDivider} />
-
-                  <TouchableOpacity style={[styles.dropdownItem, selectedChain === 'Base' && styles.dropdownItemActive]} onPress={() => chooseChain('Base')}>
-                    <View style={styles.dropdownItemLeft}>
-                      <View style={{ marginRight: 14 }}>
-                        <CryptoIcon symbol="Base" size={26} />
-                      </View>
-                      <View>
-                        <Text style={styles.dropdownItemTitle}>Base</Text>
-                        <Text style={styles.dropdownItemSub}>Available Node</Text>
-                      </View>
-                    </View>
-                    {selectedChain === 'Base' && <Ionicons name="checkmark-circle" size={22} color="#FFC759" />}
-                  </TouchableOpacity>
-                  <View style={styles.dropdownDivider} />
-
-                  <TouchableOpacity style={[styles.dropdownItem, selectedChain === 'Solana' && styles.dropdownItemActive]} onPress={() => chooseChain('Solana')}>
-                    <View style={styles.dropdownItemLeft}>
-                      <View style={{ marginRight: 14 }}>
-                        <CryptoIcon symbol="Solana" size={26} />
-                      </View>
-                      <View>
-                        <Text style={styles.dropdownItemTitle}>Solana</Text>
-                        <Text style={styles.dropdownItemSub}>Available Node</Text>
-                      </View>
-                    </View>
-                    {selectedChain === 'Solana' && <Ionicons name="checkmark-circle" size={22} color="#FFC759" />}
-                  </TouchableOpacity>
-                  <View style={styles.dropdownDivider} />
-
-                  <TouchableOpacity style={[styles.dropdownItem, (selectedChain === 'Chaîne BNB' || selectedChain === 'BNB Chain') && styles.dropdownItemActive]} onPress={() => chooseChain('BNB Chain')}>
-                    <View style={styles.dropdownItemLeft}>
-                      <View style={{ marginRight: 14 }}>
-                        <CryptoIcon symbol="BNB Chain" size={26} />
-                      </View>
-                      <View>
-                        <Text style={styles.dropdownItemTitle}>BNB Chain</Text>
-                        <Text style={styles.dropdownItemSub}>Available Node</Text>
-                      </View>
-                    </View>
-                    {(selectedChain === 'Chaîne BNB' || selectedChain === 'BNB Chain') && <Ionicons name="checkmark-circle" size={22} color="#FFC759" />}
-                  </TouchableOpacity>
+                  {CHAINS.map((chain, index) => {
+                    const isSelected = selectedChain === chain.id;
+                    return (
+                      <React.Fragment key={chain.id}>
+                        {index > 0 && <View style={styles.dropdownDivider} />}
+                        <TouchableOpacity 
+                          style={[styles.dropdownItem, isSelected && styles.dropdownItemActive]} 
+                          onPress={() => chooseChain(chain.id)}
+                          activeOpacity={0.7}
+                        >
+                          <View style={styles.dropdownItemLeft}>
+                            <View style={{ marginRight: 14 }}>
+                              <CryptoIcon symbol={chain.id} size={26} />
+                            </View>
+                            <View>
+                              <Text style={styles.dropdownItemTitle}>{chain.name}</Text>
+                              {chain.isDefault ? (
+                                <Text style={styles.dropdownItemSubYellow}>{chain.subtitle}</Text>
+                              ) : (
+                                <Text style={styles.dropdownItemSub}>{chain.subtitle}</Text>
+                              )}
+                            </View>
+                          </View>
+                          {isSelected && <Ionicons name="checkmark-circle" size={22} color="#FFC759" />}
+                        </TouchableOpacity>
+                      </React.Fragment>
+                    );
+                  })}
                 </View>
               )}
             </View>
