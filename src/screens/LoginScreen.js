@@ -16,7 +16,7 @@ import { isSmallScreen, isShortScreen } from '../utils/responsive';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
-  const { language, toggleLanguage, setLanguage, t, setUser } = useApp();
+  const { language, toggleLanguage, setLanguage, t } = useApp();
   const [activeTab, setActiveTab] = useState('email'); // 'email' | 'phone'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,19 +40,6 @@ export default function LoginScreen() {
         });
 
         if (error) {
-          // If testing or email unconfirmed in Supabase, activate demo session directly
-          if (email.toLowerCase().includes('test') || email.toLowerCase().includes('demo') || error.message.includes('Email not confirmed')) {
-            console.log("ℹ️ Activation session Test pour :", email);
-            setUser(prev => ({
-              ...prev,
-              email: email.trim(),
-              name: email.split('@')[0],
-              role: email.toLowerCase().includes('merchant') ? 'merchant' : 'user',
-            }));
-            setIsLoading(false);
-            navigation.navigate('HomeScreen');
-            return;
-          }
           throw error;
         }
 
@@ -68,17 +55,6 @@ export default function LoginScreen() {
       setIsLoading(false);
       setErrorMessage(language === 'fr' ? 'Échec de connexion : ' + error.message : 'Login failed: ' + error.message);
     }
-  };
-
-  const handleQuickDemo = (role = 'user') => {
-    const demoEmail = role === 'merchant' ? 'merchant.test@dizzitup.com' : 'user.test@dizzitup.com';
-    setUser(prev => ({
-      ...prev,
-      email: demoEmail,
-      name: role === 'merchant' ? 'Marchand DizzitUp' : 'Utilisateur DizzitUp',
-      role: role,
-    }));
-    navigation.navigate('HomeScreen');
   };
 
   return (
@@ -112,51 +88,67 @@ export default function LoginScreen() {
           </Text>
         </View>
 
-        {/* Tabs */}
-        <View style={styles.tabsContainer}>
-          <TouchableOpacity 
-            style={[styles.tab, activeTab === 'email' && styles.activeTab]}
-            onPress={() => setActiveTab('email')}
-          >
-            <Text style={[styles.tabText, activeTab === 'email' && styles.activeTabText]}>
-              {t('login.email_tab', 'Email')}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.tab, activeTab === 'phone' && styles.activeTab]}
-            onPress={() => setActiveTab('phone')}
-          >
-            <Text style={[styles.tabText, activeTab === 'phone' && styles.activeTabText]}>
-              {t('login.phone_tab', 'Phone')}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
         {/* Form Container */}
-        <View style={styles.formContainer}>
-          <DizzitInput 
-            label={activeTab === 'email' ? t('login.email_label', 'Email address') : t('login.phone_label', 'Phone number')}
-            iconLeft={<Ionicons name={activeTab === 'email' ? 'mail-outline' : 'call-outline'} size={20} color={theme.colors.primary} />}
-            placeholder={activeTab === 'email' ? t('login.email_placeholder', 'Enter your email address') : t('login.phone_placeholder', 'Enter your phone number')}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType={activeTab === 'email' ? 'email-address' : 'phone-pad'}
-          />
-
-          <View style={styles.passwordContainer}>
-            <DizzitInput 
-              label={t('login.password_label', 'Password')}
-              iconLeft={<Ionicons name="lock-closed-outline" size={20} color={theme.colors.primary} />}
-              placeholder={t('login.password_placeholder', 'Enter your password')}
-              value={password}
-              onChangeText={setPassword}
-              isPassword={true}
-            />
+        <View style={styles.formCard}>
+          {/* Tabs */}
+          <View style={styles.tabContainer}>
+            <TouchableOpacity 
+              style={[styles.tab, activeTab === 'email' && styles.activeTab]}
+              onPress={() => setActiveTab('email')}
+            >
+              <Text style={[styles.tabText, activeTab === 'email' && styles.activeTabText]}>
+                {t('login.tab_email', 'Email')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.tab, activeTab === 'phone' && styles.activeTab]}
+              onPress={() => setActiveTab('phone')}
+            >
+              <Text style={[styles.tabText, activeTab === 'phone' && styles.activeTabText]}>
+                {t('login.tab_phone', 'Phone Number')}
+              </Text>
+            </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={styles.forgotPasswordContainer} onPress={() => navigation.navigate('ResetPasswordEmailScreen')}>
-            <Text style={styles.forgotPasswordText}>{t('login.forgot_password', 'Forgot password?')}</Text>
-          </TouchableOpacity>
+          {/* Input Fields */}
+          {activeTab === 'email' ? (
+            <DizzitInput 
+              label={t('login.email_label', 'Email Address')}
+              placeholder={t('login.email_placeholder', 'name@example.com')}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              icon="mail-outline"
+            />
+          ) : (
+            <DizzitInput 
+              label={t('login.phone_label', 'Phone Number')}
+              placeholder={t('login.phone_placeholder', '+33 6 12 34 56 78')}
+              value={email} // Reusing field for phone
+              onChangeText={setEmail}
+              keyboardType="phone-pad"
+              icon="call-outline"
+            />
+          )}
+
+          <DizzitInput 
+            label={t('login.password_label', 'Password')}
+            placeholder={t('login.password_placeholder', '••••••••')}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            icon="lock-closed-outline"
+          />
+
+          {/* Forgot Password */}
+          <View style={styles.forgotContainer}>
+            <TouchableOpacity onPress={() => navigation.navigate('ResetPasswordEmailScreen')}>
+              <Text style={styles.forgotText}>
+                {t('login.forgot_password', 'Forgot password?')}
+              </Text>
+            </TouchableOpacity>
+          </View>
 
           {errorMessage && (
             <View style={styles.errorContainer}>
@@ -171,22 +163,6 @@ export default function LoginScreen() {
               isLoading={isLoading}
               disabled={!email || !password}
             />
-          </View>
-
-          {/* Quick Demo Access Bar */}
-          <View style={{ marginTop: 12, flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
-            <TouchableOpacity 
-              style={{ flex: 1, backgroundColor: '#F1F5F9', paddingVertical: 10, borderRadius: 10, alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0' }}
-              onPress={() => handleQuickDemo('user')}
-            >
-              <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 12, color: '#1A2840' }}>⚡ Test Particulier</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={{ flex: 1, backgroundColor: '#FFFBEB', paddingVertical: 10, borderRadius: 10, alignItems: 'center', borderWidth: 1, borderColor: '#FDE68A' }}
-              onPress={() => handleQuickDemo('merchant')}
-            >
-              <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 12, color: '#B45309' }}>🏪 Test Marchand</Text>
-            </TouchableOpacity>
           </View>
         </View>
 
