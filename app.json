@@ -4,12 +4,7 @@
     "slug": "dizzitapp-v2",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/brand/dizzitup_logo_cercle_cropped.png",
-    "splash": {
-      "image": "./assets/brand/dizzitup_logo_cercle.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#1A2840"
-    },
+    "icon": "./assets/brand/finalLogo.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
@@ -29,15 +24,21 @@
       }
     },
     "web": {
-      "favicon": "./assets/brand/dizzitup_logo_cercle_cropped.png"
+      "favicon": "./assets/brand/finalLogo.png"
     },
     "plugins": [
       "expo-font",
-      "expo-build-properties",
       "expo-status-bar",
       "expo-secure-store",
       "expo-web-browser",
-      "expo-splash-screen"
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/brand/dizzitup_logo_cercle.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#1A2840"
+        }
+      ]
     ],
     "extra": {
       "eas": {
