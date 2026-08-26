@@ -1997,8 +1997,10 @@ Pour pallier l'exclusion du fichier `.env` via `.gitignore` lors de la compilati
 - Le fichier local [`.env`](file:///g:/zen/projets/DizzitApp/app/.env) a été mis à jour avec les endpoints de production HTTPS décommentés par défaut.
 - Clés de production intégrées : Supabase (URL + Anon Key) et Crossmint Client-side API Key de production.
 
-### 3. Normalisation & Résilience des Routes d'API
-- Correction et sécurisation des routes dans [`ChooseServiceScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ChooseServiceScreen.js), [`ServiceCheckoutScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ServiceCheckoutScreen.js) et [`EditBeneficiaryScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/EditBeneficiaryScreen.js) pour garantir l'absence de doublons `/api/api` et une synchronisation parfaite avec les services backend.
+### 4. Déploiement TestFlight Réussi (Build 3)
+- **Version** : `1.0.0`
+- **Build Number** : `3` (Build ID : `e31a1e3a-706e-4a49-bc4e-98f40e2aff56`)
+- **Statut** : Compilé avec succès avec toutes les variables d'environnement de production injectées, et uploadé sur Apple App Store Connect / TestFlight.
 
 ---
 
