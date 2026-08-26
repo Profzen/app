@@ -58,12 +58,20 @@ export const DizzitInput = ({
             <TouchableOpacity 
               style={styles.iconRight} 
               onPress={() => setShowPassword(!showPassword)}
+              activeOpacity={0.7}
             >
-              <Ionicons 
-                name={showPassword ? "eye-off-outline" : "eye-outline"} 
-                size={20} 
-                color={theme.colors.primary} 
-              />
+              <LinearGradient
+                colors={['#FFC759', '#FFD880']}
+                start={{x: 0, y: 0}}
+                end={{x: 1, y: 1}}
+                style={styles.eyeIconGradient}
+              >
+                <Ionicons 
+                  name={showPassword ? "eye-off-outline" : "eye-outline"} 
+                  size={16} 
+                  color="#1A2840" 
+                />
+              </LinearGradient>
             </TouchableOpacity>
           )}
 
@@ -86,12 +94,11 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.fontFamily.semiBold,
     fontSize: theme.typography.sizes.sm,
     color: theme.colors.primary,
-    marginBottom: theme.spacing.sm,
+    marginBottom: 6, // Slightly reduced spacing
   },
   gradientWrapper: {
-    padding: 2, // This creates the 2px gradient border
-    borderRadius: theme.radii.md + 2,
-    // Add a very subtle, static shadow that doesn't change on focus to avoid Android layout bugs
+    padding: 1.5, // Thinner, more elegant border
+    borderRadius: theme.radii.md, // Slightly softer radius
     shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -102,20 +109,31 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F8FAFC',
-    borderRadius: theme.radii.md,
-    minHeight: 56,
-    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.radii.md - 1.5, // Match inner radius
+    minHeight: 44, // Extra slim and elegant
+    paddingHorizontal: 12,
     width: '100%',
   },
   inputContainerFocusedInner: {
     backgroundColor: '#FFFFFF',
   },
   iconLeft: {
-    marginRight: theme.spacing.sm,
+    marginRight: 10,
   },
   iconRight: {
-    marginLeft: theme.spacing.sm,
-    padding: 4,
+    marginLeft: 8,
+  },
+  eyeIconGradient: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#FFC759',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    elevation: 3,
   },
   rightIconContainer: {
     marginLeft: theme.spacing.sm,

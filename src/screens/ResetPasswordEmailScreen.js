@@ -35,7 +35,9 @@ export default function ResetPasswordEmailScreen() {
     
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'dizzitapp://reset-password',
+      });
       if (error) {
         setError(error.message);
       } else {

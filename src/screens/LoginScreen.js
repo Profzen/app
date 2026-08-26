@@ -1,7 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, StatusBar, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
 import { DizzitInput } from '../components/DizzitInput';
@@ -59,7 +59,11 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView 
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView 
         contentContainerStyle={styles.scrollContent} 
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -89,9 +93,9 @@ export default function LoginScreen() {
         </View>
 
         {/* Form Container */}
-        <View style={styles.formCard}>
+        <View style={styles.formContainer}>
           {/* Tabs */}
-          <View style={styles.tabContainer}>
+          <View style={styles.tabsContainer}>
             <TouchableOpacity 
               style={[styles.tab, activeTab === 'email' && styles.activeTab]}
               onPress={() => setActiveTab('email')}
@@ -119,7 +123,7 @@ export default function LoginScreen() {
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
-              icon="mail-outline"
+              iconLeft={<Ionicons name="mail-outline" size={20} color={theme.colors.primary} />}
             />
           ) : (
             <DizzitInput 
@@ -128,7 +132,7 @@ export default function LoginScreen() {
               value={email} // Reusing field for phone
               onChangeText={setEmail}
               keyboardType="phone-pad"
-              icon="call-outline"
+              iconLeft={<Ionicons name="call-outline" size={20} color={theme.colors.primary} />}
             />
           )}
 
@@ -137,14 +141,16 @@ export default function LoginScreen() {
             placeholder={t('login.password_placeholder', '••••••••')}
             value={password}
             onChangeText={setPassword}
-            secureTextEntry
-            icon="lock-closed-outline"
+            isPassword
+            iconLeft={<Ionicons name="lock-closed-outline" size={20} color={theme.colors.primary} />}
+            returnKeyType="done"
+            onSubmitEditing={handleLogin}
           />
 
           {/* Forgot Password */}
-          <View style={styles.forgotContainer}>
+          <View style={styles.forgotPasswordContainer}>
             <TouchableOpacity onPress={() => navigation.navigate('ResetPasswordEmailScreen')}>
-              <Text style={styles.forgotText}>
+              <Text style={styles.forgotPasswordText}>
                 {t('login.forgot_password', 'Forgot password?')}
               </Text>
             </TouchableOpacity>
@@ -183,7 +189,8 @@ export default function LoginScreen() {
         <View style={{marginTop: theme.spacing.md}}>
           <FeaturesBanner />
         </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

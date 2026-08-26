@@ -62,7 +62,11 @@ export function AppProvider({ children }) {
     const checkLockState = async () => {
       try {
         if (Platform.OS !== 'web') {
-          const storedPin = await SecureStore.getItemAsync('user_pin');
+          // Add a 2-second timeout to prevent the app from getting stuck on Android if SecureStore hangs
+          const storedPin = await Promise.race([
+            SecureStore.getItemAsync('user_pin'),
+            new Promise((resolve) => setTimeout(() => resolve(null), 2000))
+          ]);
           if (storedPin) {
             setIsAppLocked(true);
           }

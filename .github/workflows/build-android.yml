@@ -10,9 +10,18 @@ concurrency:
   group: android-build-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  EXPO_PUBLIC_DIZZY_WALLET_API_URL: https://wallet.dizzitup.com/api
+  EXPO_PUBLIC_BUY_GOODS_API_URL: https://buygoods-api.dizzitup.com/api
+  EXPO_PUBLIC_PAY_BILLS_API_URL: https://api.dizzitup.com
+  EXPO_PUBLIC_MEDUSA_API_URL: https://medusa.dizzitup.com/store
+  EXPO_PUBLIC_SUPABASE_URL: https://sdnpjglhcauispfrrhwh.supabase.co
+  EXPO_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkbnBqZ2xoY2F1aXNwZnJyaHdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEyMDg5NDUsImV4cCI6MjA3Njc4NDk0NX0.NR18FzE1lx0mzF3cTrkHEqAIaBBeM7zb54I83OjsM2E
+  EXPO_PUBLIC_CROSSMINT_CLIENT_SIDE_API_KEY: ck_production_672dJDwj8Mdcq6vVvJDn4ogiN7ncsh6untkkYA7tN52U2hfK5aZ86ax9tzNukFfkA3WGSnNfgVQFwYkAyxXNqj1ZPrz5e5zRy2gFXjFRb3hbLcVX56546u8137MqqpC4SzRMus1qLHQuDzeFFTPkoxbUzVA3sSyBWarLzNywdzqUesLJvGdSzira4Jp5Jkhs8jxCGQ5Vce2vag6ZK9bzwAS7
+
 jobs:
   build-android:
-    name: Build APK and AAB (Signed)
+    name: Build Android APK and AAB
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -26,131 +35,99 @@ jobs:
           node-version: 22
           cache: 'npm'
 
-      - name: Setup EAS CLI
-        uses: expo/expo-github-action@v8
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
         with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Gradle Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
       - name: Install Dependencies
         run: npm ci
 
-      # -- Build APK (preview profile) --------------------------
-      - name: Build APK via EAS
-        id: build_apk
+      - name: Generate Native Android Project (Expo Prebuild)
+        run: npx expo prebuild --platform android --clean
+
+      - name: Make Gradlew Executable
+        run: chmod +x ./android/gradlew
+
+      - name: Build Android Release APK
         run: |
-          echo "Starting APK build on EAS..."
-          BUILD_JSON=$(eas build --platform android --profile preview --no-wait --non-interactive --json)
+          cd android
+          ./gradlew assembleRelease --no-daemon --stacktrace
 
-          BUILD_ID=$(echo "$BUILD_JSON" | jq -r '.[0].id // empty')
+      - name: Build Android Release AAB
+        run: |
+          cd android
+          ./gradlew bundleRelease --no-daemon --stacktrace
 
-          if [ -z "$BUILD_ID" ]; then
-            echo "Failed to start APK build: $BUILD_JSON"
+      - name: Locate and Rename Artifacts
+        run: |
+          mkdir -p build-output
+          # Copy APK
+          APK_PATH=$(find android/app/build/outputs/apk -name "*.apk" | head -n 1)
+          if [ -n "$APK_PATH" ]; then
+            cp "$APK_PATH" build-output/DizzitUp.apk
+            echo "Found APK: $APK_PATH"
+            echo "APK Size: $(du -h build-output/DizzitUp.apk | cut -f1)"
+          else
+            echo "Error: APK not found"
             exit 1
           fi
 
-          echo "APK Build ID: $BUILD_ID"
-          echo "build_id=$BUILD_ID" >> $GITHUB_OUTPUT
-
-          echo "Waiting for APK build to complete..."
-          ARTIFACT_URL=""
-          for i in $(seq 1 120); do
-            sleep 30
-            STATUS_JSON=$(eas build:view "$BUILD_ID" --json)
-            STATUS=$(echo "$STATUS_JSON" | jq -r '.status // empty')
-
-            if [ "$STATUS" = "FINISHED" ]; then
-              ARTIFACT_URL=$(echo "$STATUS_JSON" | jq -r '.artifacts.buildUrl // empty')
-              echo "APK Build finished successfully!"
-              break
-            elif [ "$STATUS" = "ERRORED" ] || [ "$STATUS" = "CANCELED" ]; then
-              echo "APK Build failed with status: $STATUS"
-              exit 1
-            fi
-            echo "Build status: $STATUS (attempt $i/120)"
-          done
-
-          if [ -z "$ARTIFACT_URL" ]; then
-            echo "Timed out waiting for APK build"
+          # Copy AAB
+          AAB_PATH=$(find android/app/build/outputs/bundle -name "*.aab" | head -n 1)
+          if [ -n "$AAB_PATH" ]; then
+            cp "$AAB_PATH" build-output/DizzitUp.aab
+            echo "Found AAB: $AAB_PATH"
+            echo "AAB Size: $(du -h build-output/DizzitUp.aab | cut -f1)"
+          else
+            echo "Error: AAB not found"
             exit 1
           fi
 
-          echo "artifact_url=$ARTIFACT_URL" >> $GITHUB_OUTPUT
-
-      - name: Download APK Artifact
-        run: |
-          curl -L -o DizzitUp.apk "${{ steps.build_apk.outputs.artifact_url }}"
-          echo "APK size: $(du -h DizzitUp.apk | cut -f1)"
-
-      # -- Build AAB (production profile) ------------------------
-      - name: Build AAB via EAS
-        id: build_aab
-        run: |
-          echo "Starting AAB build on EAS..."
-          BUILD_JSON=$(eas build --platform android --profile production --no-wait --non-interactive --json)
-
-          BUILD_ID=$(echo "$BUILD_JSON" | jq -r '.[0].id // empty')
-
-          if [ -z "$BUILD_ID" ]; then
-            echo "Failed to start AAB build: $BUILD_JSON"
-            exit 1
-          fi
-
-          echo "AAB Build ID: $BUILD_ID"
-          echo "build_id=$BUILD_ID" >> $GITHUB_OUTPUT
-
-          echo "Waiting for AAB build to complete..."
-          ARTIFACT_URL=""
-          for i in $(seq 1 120); do
-            sleep 30
-            STATUS_JSON=$(eas build:view "$BUILD_ID" --json)
-            STATUS=$(echo "$STATUS_JSON" | jq -r '.status // empty')
-
-            if [ "$STATUS" = "FINISHED" ]; then
-              ARTIFACT_URL=$(echo "$STATUS_JSON" | jq -r '.artifacts.buildUrl // empty')
-              echo "AAB Build finished successfully!"
-              break
-            elif [ "$STATUS" = "ERRORED" ] || [ "$STATUS" = "CANCELED" ]; then
-              echo "AAB Build failed with status: $STATUS"
-              exit 1
-            fi
-            echo "Build status: $STATUS (attempt $i/120)"
-          done
-
-          if [ -z "$ARTIFACT_URL" ]; then
-            echo "Timed out waiting for AAB build"
-            exit 1
-          fi
-
-          echo "artifact_url=$ARTIFACT_URL" >> $GITHUB_OUTPUT
-
-      - name: Download AAB Artifact
-        run: |
-          curl -L -o DizzitUp.aab "${{ steps.build_aab.outputs.artifact_url }}"
-          echo "AAB size: $(du -h DizzitUp.aab | cut -f1)"
-
-      # -- Upload to GitHub --------------------------------------
       - name: Upload APK to GitHub Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: DizzitUp-APK-v${{ github.run_number }}
-          path: DizzitUp.apk
+          path: build-output/DizzitUp.apk
           retention-days: 90
 
       - name: Upload AAB to GitHub Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: DizzitUp-AAB-v${{ github.run_number }}
-          path: DizzitUp.aab
+          path: build-output/DizzitUp.aab
           retention-days: 90
 
       - name: Build Summary
+        if: always()
         run: |
-          echo "## Android Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## 🤖 Android Build Summary (100% GitHub Native)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Artifact | Status | Size |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|--------|------|" >> $GITHUB_STEP_SUMMARY
-          echo "| APK | Built and Signed | $(du -h DizzitUp.apk | cut -f1) |" >> $GITHUB_STEP_SUMMARY
-          echo "| AAB | Built and Signed | $(du -h DizzitUp.aab | cut -f1) |" >> $GITHUB_STEP_SUMMARY
+          if [ -f "build-output/DizzitUp.apk" ]; then
+            echo "| **APK** (Direct Install) | ✅ Built Successfully | $(du -h build-output/DizzitUp.apk | cut -f1) |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| **APK** | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ -f "build-output/DizzitUp.aab" ]; then
+            echo "| **AAB** (Google Play) | ✅ Built Successfully | $(du -h build-output/DizzitUp.aab | cut -f1) |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| **AAB** | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Download from the **Artifacts** section above." >> $GITHUB_STEP_SUMMARY
+          echo "📦 Download APK and AAB from the **Artifacts** section at the top of this run." >> $GITHUB_STEP_SUMMARY
