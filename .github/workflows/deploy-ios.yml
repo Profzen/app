@@ -1,4 +1,4 @@
-name: 🍏 Build & Deploy iOS to TestFlight
+name: Build and Deploy iOS to TestFlight
 
 on:
   push:
@@ -12,42 +12,41 @@ concurrency:
 
 jobs:
   build-ios:
-    name: 📱 Build iOS & Submit to TestFlight
+    name: Build iOS and Submit to TestFlight
     runs-on: ubuntu-latest
     timeout-minutes: 90
 
     steps:
-      - name: 📥 Checkout Repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 🟢 Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'npm'
 
-      - name: ⚡ Setup EAS CLI
+      - name: Setup EAS CLI
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: 📦 Install Dependencies
+      - name: Install Dependencies
         run: npm ci
 
-      - name: 🏗️ Build iOS & Submit to TestFlight
+      - name: Build iOS and Submit to TestFlight
         run: |
-          echo "🚀 Starting iOS production build with auto-submit to TestFlight..."
           eas build \
             --platform ios \
             --profile production \
             --auto-submit \
             --non-interactive
 
-      - name: 📊 Build Summary
+      - name: Build Summary
         if: always()
         run: |
-          echo "## 🍏 iOS Build & TestFlight Submission" >> $GITHUB_STEP_SUMMARY
+          echo "## iOS Build and TestFlight Submission" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Detail | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
@@ -55,7 +54,7 @@ jobs:
           echo "| Profile | Production |" >> $GITHUB_STEP_SUMMARY
           echo "| Bundle ID | com.dizzitup.app |" >> $GITHUB_STEP_SUMMARY
           echo "| ASC App ID | 6799749556 |" >> $GITHUB_STEP_SUMMARY
-          echo "| Auto-Submit | ✅ TestFlight |" >> $GITHUB_STEP_SUMMARY
-          echo "| Auto-Increment | ✅ Build Number |" >> $GITHUB_STEP_SUMMARY
+          echo "| Auto-Submit | TestFlight |" >> $GITHUB_STEP_SUMMARY
+          echo "| Auto-Increment | Build Number |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🔗 [View on TestFlight](https://appstoreconnect.apple.com/apps/6799749556/testflight/ios)" >> $GITHUB_STEP_SUMMARY
+          echo "[View on TestFlight](https://appstoreconnect.apple.com/apps/6799749556/testflight/ios)" >> $GITHUB_STEP_SUMMARY

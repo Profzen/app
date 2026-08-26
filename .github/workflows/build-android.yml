@@ -1,4 +1,4 @@
-name: 🤖 Build Android (APK + AAB)
+name: Build Android (APK + AAB)
 
 on:
   push:
@@ -12,147 +12,145 @@ concurrency:
 
 jobs:
   build-android:
-    name: 📱 Build APK & AAB (Signed)
+    name: Build APK and AAB (Signed)
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
     steps:
-      - name: 📥 Checkout Repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 🟢 Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'npm'
 
-      - name: ⚡ Setup EAS CLI
+      - name: Setup EAS CLI
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: 📦 Install Dependencies
+      - name: Install Dependencies
         run: npm ci
 
-      # ── Build APK (preview profile) ──────────────────────────
-      - name: 🏗️ Build APK via EAS
+      # -- Build APK (preview profile) --------------------------
+      - name: Build APK via EAS
         id: build_apk
         run: |
-          echo "🚀 Starting APK build..."
+          echo "Starting APK build..."
           BUILD_JSON=$(eas build --platform android --profile preview --non-interactive --json 2>/dev/null || true)
-          
-          # Extract build ID and artifact URL
+
           BUILD_ID=$(echo "$BUILD_JSON" | jq -r '.[0].id // empty')
-          
+
           if [ -z "$BUILD_ID" ]; then
-            echo "❌ Failed to start APK build"
+            echo "Failed to start APK build"
             exit 1
           fi
-          
-          echo "✅ APK Build ID: $BUILD_ID"
+
+          echo "APK Build ID: $BUILD_ID"
           echo "build_id=$BUILD_ID" >> $GITHUB_OUTPUT
-          
-          # Wait for build and get artifact URL
-          echo "⏳ Waiting for APK build to complete..."
+
+          echo "Waiting for APK build to complete..."
           ARTIFACT_URL=""
           for i in $(seq 1 120); do
             sleep 30
             STATUS_JSON=$(eas build:view "$BUILD_ID" --json 2>/dev/null || true)
             STATUS=$(echo "$STATUS_JSON" | jq -r '.status // empty')
-            
+
             if [ "$STATUS" = "FINISHED" ]; then
               ARTIFACT_URL=$(echo "$STATUS_JSON" | jq -r '.artifacts.buildUrl // empty')
-              echo "✅ APK Build finished!"
+              echo "APK Build finished!"
               break
             elif [ "$STATUS" = "ERRORED" ] || [ "$STATUS" = "CANCELED" ]; then
-              echo "❌ APK Build failed with status: $STATUS"
+              echo "APK Build failed with status: $STATUS"
               exit 1
             fi
-            echo "⏳ Build status: $STATUS (attempt $i/120)"
+            echo "Build status: $STATUS (attempt $i/120)"
           done
-          
+
           if [ -z "$ARTIFACT_URL" ]; then
-            echo "❌ Timed out waiting for APK build"
+            echo "Timed out waiting for APK build"
             exit 1
           fi
-          
+
           echo "artifact_url=$ARTIFACT_URL" >> $GITHUB_OUTPUT
 
-      - name: 📥 Download APK Artifact
+      - name: Download APK Artifact
         run: |
           curl -L -o DizzitUp.apk "${{ steps.build_apk.outputs.artifact_url }}"
-          echo "📱 APK size: $(du -h DizzitUp.apk | cut -f1)"
+          echo "APK size: $(du -h DizzitUp.apk | cut -f1)"
 
-      # ── Build AAB (production profile) ───────────────────────
-      - name: 🏗️ Build AAB via EAS
+      # -- Build AAB (production profile) ------------------------
+      - name: Build AAB via EAS
         id: build_aab
         run: |
-          echo "🚀 Starting AAB build..."
+          echo "Starting AAB build..."
           BUILD_JSON=$(eas build --platform android --profile production --non-interactive --json 2>/dev/null || true)
-          
+
           BUILD_ID=$(echo "$BUILD_JSON" | jq -r '.[0].id // empty')
-          
+
           if [ -z "$BUILD_ID" ]; then
-            echo "❌ Failed to start AAB build"
+            echo "Failed to start AAB build"
             exit 1
           fi
-          
-          echo "✅ AAB Build ID: $BUILD_ID"
+
+          echo "AAB Build ID: $BUILD_ID"
           echo "build_id=$BUILD_ID" >> $GITHUB_OUTPUT
-          
-          echo "⏳ Waiting for AAB build to complete..."
+
+          echo "Waiting for AAB build to complete..."
           ARTIFACT_URL=""
           for i in $(seq 1 120); do
             sleep 30
             STATUS_JSON=$(eas build:view "$BUILD_ID" --json 2>/dev/null || true)
             STATUS=$(echo "$STATUS_JSON" | jq -r '.status // empty')
-            
+
             if [ "$STATUS" = "FINISHED" ]; then
               ARTIFACT_URL=$(echo "$STATUS_JSON" | jq -r '.artifacts.buildUrl // empty')
-              echo "✅ AAB Build finished!"
+              echo "AAB Build finished!"
               break
             elif [ "$STATUS" = "ERRORED" ] || [ "$STATUS" = "CANCELED" ]; then
-              echo "❌ AAB Build failed with status: $STATUS"
+              echo "AAB Build failed with status: $STATUS"
               exit 1
             fi
-            echo "⏳ Build status: $STATUS (attempt $i/120)"
+            echo "Build status: $STATUS (attempt $i/120)"
           done
-          
+
           if [ -z "$ARTIFACT_URL" ]; then
-            echo "❌ Timed out waiting for AAB build"
+            echo "Timed out waiting for AAB build"
             exit 1
           fi
-          
+
           echo "artifact_url=$ARTIFACT_URL" >> $GITHUB_OUTPUT
 
-      - name: 📥 Download AAB Artifact
+      - name: Download AAB Artifact
         run: |
           curl -L -o DizzitUp.aab "${{ steps.build_aab.outputs.artifact_url }}"
-          echo "📦 AAB size: $(du -h DizzitUp.aab | cut -f1)"
+          echo "AAB size: $(du -h DizzitUp.aab | cut -f1)"
 
-      # ── Upload to GitHub ─────────────────────────────────────
-      - name: 🚀 Upload APK to GitHub Artifacts
+      # -- Upload to GitHub --------------------------------------
+      - name: Upload APK to GitHub Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: DizzitUp-APK-v${{ github.run_number }}
           path: DizzitUp.apk
           retention-days: 90
 
-      - name: 🚀 Upload AAB to GitHub Artifacts
+      - name: Upload AAB to GitHub Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: DizzitUp-AAB-v${{ github.run_number }}
           path: DizzitUp.aab
           retention-days: 90
 
-      - name: 📊 Build Summary
+      - name: Build Summary
         run: |
-          echo "## 🤖 Android Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## Android Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Artifact | Status | Size |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|--------|------|" >> $GITHUB_STEP_SUMMARY
-          echo "| APK | ✅ Built & Signed | $(du -h DizzitUp.apk | cut -f1) |" >> $GITHUB_STEP_SUMMARY
-          echo "| AAB | ✅ Built & Signed | $(du -h DizzitUp.aab | cut -f1) |" >> $GITHUB_STEP_SUMMARY
+          echo "| APK | Built and Signed | $(du -h DizzitUp.apk | cut -f1) |" >> $GITHUB_STEP_SUMMARY
+          echo "| AAB | Built and Signed | $(du -h DizzitUp.aab | cut -f1) |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "📥 Download from the **Artifacts** section above." >> $GITHUB_STEP_SUMMARY
+          echo "Download from the **Artifacts** section above." >> $GITHUB_STEP_SUMMARY
