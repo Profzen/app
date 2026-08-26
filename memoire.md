@@ -2047,7 +2047,9 @@ Ecrans corriges : `WithdrawFundsScreen`, `DashboardScreen`, `SwapTokensScreen`, 
 ## Synchronisation Git
 
 ### Etat Actuel (26 aout 2026)
-- `develop` et `front-back` synchronisees au commit `0deff3f`
+- `develop` et `front-back` synchronisees au commit `f8f2ac2`
+- Alignement complet Expo SDK 57 : `app.json` (splash plugin + icone carree `finalLogo.png`), `package.json` (overrides de deduplication des modules natifs Crossmint, suppression `expo-modules-core`, lockfile propre).
+- Validation `expo prebuild --clean` passee avec succes (Code 0).
 - Remote : `https://github.com/Dizzitup/dizzitapp-v2.git`
 
 ### Regle de Synchronisation
