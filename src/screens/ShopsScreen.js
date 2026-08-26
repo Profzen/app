@@ -387,7 +387,7 @@ export default function ShopsScreen() {
                       {shop.logoUrl ? (
                         <Image source={{ uri: shop.logoUrl }} style={styles.shopLogo} />
                       ) : (
-                        <ImageBackground source={require('../../assets/brand/shop_placeholder.png')} style={[styles.shopLogo, { justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }]}>
+                        <ImageBackground source={require('../../assets/brand/shop_placeholder.jpg')} style={[styles.shopLogo, { justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }]}>
                           <Text style={[styles.shopLogoText, { color: '#FFC759', fontSize: 18, fontWeight: '900', letterSpacing: 1 }]}>
                             {shop.logoText}
                           </Text>

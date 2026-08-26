@@ -7,6 +7,28 @@ export const OtpInput = ({ length = 6, value, onChange, isError }) => {
   const inputs = useRef([]);
 
   const handleChange = (text, index) => {
+    // Handle pasting a full code
+    if (text.length > 1) {
+      const pastedChars = text.replace(/[^0-9]/g, '').slice(0, length).split('');
+      const newCode = [...code];
+      
+      pastedChars.forEach((char, i) => {
+        if (i < length) {
+          newCode[i] = char;
+        }
+      });
+      
+      setCode(newCode);
+      if (onChange) onChange(newCode.join(''));
+      
+      // Focus the last filled input
+      const focusIndex = Math.min(pastedChars.length, length - 1);
+      if (inputs.current[focusIndex]) {
+        inputs.current[focusIndex].focus();
+      }
+      return;
+    }
+
     const newCode = [...code];
     newCode[index] = text;
     setCode(newCode);
@@ -39,7 +61,8 @@ export const OtpInput = ({ length = 6, value, onChange, isError }) => {
           onChangeText={(text) => handleChange(text, index)}
           onKeyPress={(e) => handleKeyPress(e, index)}
           keyboardType="number-pad"
-          maxLength={1}
+          textContentType="oneTimeCode"
+          maxLength={length} // Allow pasting full code
           ref={(ref) => inputs.current[index] = ref}
           selectionColor={theme.colors.accent}
         />

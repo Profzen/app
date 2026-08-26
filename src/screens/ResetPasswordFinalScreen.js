@@ -9,6 +9,7 @@ import { DizzitInput } from '../components/DizzitInput';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 import AppToast from '../components/AppToast';
+import { supabase } from '../services/supabaseClient';
 
 const STEPS = (t) => [
   { label: t('auth.email', 'E-mail') },
@@ -25,13 +26,19 @@ export default function ResetPasswordFinalScreen() {
   const [error, setError] = useState('');
   const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '', type: 'success' });
 
-  const handleNext = () => {
+  const handleNext = async () => {
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+      
       setToastInfo({ visible: true, title: t('common.success', 'Success'), message: t('auth.passwordResetSuccess', 'Votre mot de passe a été réinitialisé avec succès !'), type: 'success' });
       setTimeout(() => navigation.navigate('LoginScreen'), 1500);
-    }, 1500);
+    } catch (err) {
+      setToastInfo({ visible: true, title: t('common.error', 'Error'), message: err.message, type: 'error' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const isPasswordValid = password.length >= 8;
