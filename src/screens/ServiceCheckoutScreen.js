@@ -7,9 +7,11 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import AppToast from '../components/AppToast';
 
-const BUY_GOODS_API = process.env.EXPO_PUBLIC_BUY_GOODS_API_URL || 'https://buygoods-api.dizzitup.com';
+const rawBuyGoods = process.env.EXPO_PUBLIC_BUY_GOODS_API_URL || 'https://buygoods-api.dizzitup.com/api';
+const BUY_GOODS_API = rawBuyGoods.replace(/\/api\/?$/, '');
 const PAY_BILLS_URL = process.env.EXPO_PUBLIC_PAY_BILLS_URL || 'https://paybills.dizzitup.com';
-const DIZZYWALLET_API = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'https://dizzy-wallet-api.dizzitup.com';
+const rawDizzyWallet = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'https://wallet.dizzitup.com/api';
+const DIZZYWALLET_API = rawDizzyWallet.replace(/\/api\/?$/, '');
 
 export default function ServiceCheckoutScreen() {
   const navigation = useNavigation();

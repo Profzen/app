@@ -8,7 +8,8 @@ import { supabase } from '../services/supabaseClient';
 import AppToast from '../components/AppToast';
 
 // Default API fallback if env var is missing
-const BUY_GOODS_API = process.env.EXPO_PUBLIC_BUY_GOODS_API_URL || 'https://buygoods-api.dizzitup.com';
+const rawBuyGoods = process.env.EXPO_PUBLIC_BUY_GOODS_API_URL || 'https://buygoods-api.dizzitup.com/api';
+const BUY_GOODS_API = rawBuyGoods.replace(/\/api\/?$/, '');
 
 
 export default function ChooseServiceScreen() {

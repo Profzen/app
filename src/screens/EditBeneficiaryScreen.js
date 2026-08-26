@@ -114,9 +114,10 @@ export default function EditBeneficiaryScreen({ route }) {
     try {
       const token = session?.access_token;
       const phoneToSend = formData.phone.startsWith('+') ? formData.phone : `+${formData.phone.replace(/^0+/, '')}`;
-      const apiBaseUrl = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || "https://wallet.dizzitup.com/api/wallet";
+      const rawWalletApi = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'https://wallet.dizzitup.com/api';
+      const walletBase = rawWalletApi.replace(/\/wallet\/?$/, '').replace(/\/api\/?$/, '') + '/api/wallet';
 
-      const res = await fetch(`${apiBaseUrl}/lookup-by-phone?phone=${encodeURIComponent(phoneToSend)}`, {
+      const res = await fetch(`${walletBase}/lookup-by-phone?phone=${encodeURIComponent(phoneToSend)}`, {
         headers: { 'Authorization': token ? `Bearer ${token}` : '' }
       });
 

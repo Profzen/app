@@ -1982,6 +1982,26 @@ Un audit complet des branches locales et distantes a été effectué (`origin/fr
 
 ---
 
+## ⚡ Intégration des Endpoints de Production & Configuration EAS TestFlight (26 août 2026)
+
+### 1. Endpoints de Production Validés par Assia
+Les 4 microservices de production officiels ont été confirmés et branchés :
+- **DZY Wallet** : `https://wallet.dizzitup.com/api` (Crypto, Wallets Crossmint, P2P, Rewards DZY, Handoff SSO)
+- **BuyGoods** : `https://buygoods-api.dizzitup.com/api` (Marchands, Produits locaux, Caisse TPE/POS, Recommandations, Notifications)
+- **PayBills** : `https://api.dizzitup.com` (Factures de services publics, Airtime, Mobile Money)
+- **Medusa** : `https://medusa.dizzitup.com/store` (Marketplace globale)
+
+### 2. Configuration & Inlining EAS Cloud Build
+Pour pallier l'exclusion du fichier `.env` via `.gitignore` lors de la compilation distante sur EAS :
+- Les variables d'environnement ont été injectées sous `build.production.env` dans [`eas.json`](file:///g:/zen/projets/DizzitApp/app/eas.json).
+- Le fichier local [`.env`](file:///g:/zen/projets/DizzitApp/app/.env) a été mis à jour avec les endpoints de production HTTPS décommentés par défaut.
+- Clés de production intégrées : Supabase (URL + Anon Key) et Crossmint Client-side API Key de production.
+
+### 3. Normalisation & Résilience des Routes d'API
+- Correction et sécurisation des routes dans [`ChooseServiceScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ChooseServiceScreen.js), [`ServiceCheckoutScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ServiceCheckoutScreen.js) et [`EditBeneficiaryScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/EditBeneficiaryScreen.js) pour garantir l'absence de doublons `/api/api` et une synchronisation parfaite avec les services backend.
+
+---
+
 ## 🧭 Règles de Méthodologie & de Posture pour l'IA
 
 1. **Écoute & Réponse Directe d'Abord** :
@@ -1999,6 +2019,7 @@ Un audit complet des branches locales et distantes a été effectué (`origin/fr
 ## 🔄 Règle d'Or pour l'IA (Mise à jour Continue du Mémoire)
 
 **RÈGLE STRICTE POUR L'IA** : À la fin de chaque session ou après toute modification majeure (ajout d'écran, ajustement de flux, refactoring, gestion Git), l'IA **DOIT IMPÉRATIVEMENT** mettre à jour ce fichier `memoire.md`. Ainsi, lors de l'ouverture d'une nouvelle session de conversation, la lecture préalable de ce fichier permet de récupérer l'intégralité du contexte, de l'état d'avancement et des règles sans aucune perte d'information ni interruption du workflow.
+
 
 
 

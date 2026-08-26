@@ -15,7 +15,16 @@
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_DIZZY_WALLET_API_URL": "https://wallet.dizzitup.com/api",
+        "EXPO_PUBLIC_BUY_GOODS_API_URL": "https://buygoods-api.dizzitup.com/api",
+        "EXPO_PUBLIC_PAY_BILLS_API_URL": "https://api.dizzitup.com",
+        "EXPO_PUBLIC_MEDUSA_API_URL": "https://medusa.dizzitup.com/store",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://sdnpjglhcauispfrrhwh.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkbnBqZ2xoY2F1aXNwZnJyaHdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEyMDg5NDUsImV4cCI6MjA3Njc4NDk0NX0.NR18FzE1lx0mzF3cTrkHEqAIaBBeM7zb54I83OjsM2E",
+        "EXPO_PUBLIC_CROSSMINT_CLIENT_SIDE_API_KEY": "ck_production_672dJDwj8Mdcq6vVvJDn4ogiN7ncsh6untkkYA7tN52U2hfK5aZ86ax9tzNukFfkA3WGSnNfgVQFwYkAyxXNqj1ZPrz5e5zRy2gFXjFRb3hbLcVX56546u8137MqqpC4SzRMus1qLHQuDzeFFTPkoxbUzVA3sSyBWarLzNywdzqUesLJvGdSzira4Jp5Jkhs8jxCGQ5Vce2vag6ZK9bzwAS7"
+      }
     }
   },
   "submit": {
