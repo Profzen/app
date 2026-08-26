@@ -2035,28 +2035,53 @@ Ecrans corriges : `WithdrawFundsScreen`, `DashboardScreen`, `SwapTokensScreen`, 
 ### Anciens Workflows Supprimes
 - `build-apk.yml` (Gradle, echouait) et `eas-build.yml` (EAS manuel) : SUPPRIMES.
 
-### Flux de Travail
-1. Developper et tester localement (`npm run web` sur `localhost:8081`)
-2. Commit et push sur `develop`
-3. Les deux pipelines se declenchent automatiquement
-4. Android : APK + AAB dans GitHub Actions > Artifacts
-5. iOS : Build soumis a TestFlight (build number auto-incremente)
+### Flux de Travail & Stratégie de Déploiement par Lots (Batch Releases)
+
+> [!IMPORTANT]
+> **RÈGLE CRUCIALE DE GESTION DES BRANCHES & DÉPLOIEMENTS** :
+> Pour éviter de déclencher inutilement les pipelines CI/CD (EAS Build / TestFlight) à chaque micro-modification et d'accumuler une multitude de versions intermédiaires sur TestFlight, le flux de travail est strictement le suivant :
+>
+> 1. **`front-back` (Branche Active de Développement & d'Intégration)** :
+>    - C'est la branche de travail quotidien.
+>    - Toutes les modifications de code, ajustements UI/UX, ajouts d'écrans et tests locaux se font et se commitent sur **`front-back`**.
+>    - **Cette branche ne déclenche pas de build CI/CD distant**, ce qui permet de travailler sereinement sans spammer EAS ni TestFlight.
+>
+> 2. **`develop` (Branche de Release & Déploiement Groupé / Batch)** :
+>    - C'est la branche de publication officielle (déclencheur des pipelines Android et iOS).
+>    - **On ne pousse sur `develop` QUE lorsqu'un lot complet et cohérent de fonctionnalités / correctifs a été entièrement testé et validé sur `front-back`**.
+>    - **INTERDICTION FORMELLE** de pousser sur `develop` pour des micro-commits ou des petits bouts de code isolés.
+>
+> 3. **Procédure de Release par Lot** :
+>    - Développer et valider l'ensemble du lot sur `front-back`.
+>    - Lorsque le lot complet est prêt et validé :
+>      ```bash
+>      git checkout develop
+>      git merge front-back
+>      git push origin develop
+>      git checkout front-back
+>      ```
+>    - Les pipelines Android (APK + AAB) et iOS (TestFlight) se déclenchent alors pour produire la nouvelle version officielle.
 
 ---
 
 ## Synchronisation Git
 
-### Etat Actuel (26 aout 2026)
-- `develop` et `front-back` synchronisees au commit `f8f2ac2`
-- Alignement complet Expo SDK 57 : `app.json` (splash plugin + icone carree `finalLogo.png`), `package.json` (overrides de deduplication des modules natifs Crossmint, suppression `expo-modules-core`, lockfile propre).
-- Validation `expo prebuild --clean` passee avec succes (Code 0).
+### État Actuel (26 août 2026)
+- `front-back` (branche active) et `develop` (branche de release) synchronisées au commit `aeec1f2`.
+- Alignement complet Expo SDK 57 : `app.json` (splash plugin + icône carrée `finalLogo.png`), `package.json` (overrides de déduplication des modules natifs Crossmint, suppression `expo-modules-core`, lockfile propre).
+- Validation `expo prebuild --clean` passée avec succès (Code 0).
 - Remote : `https://github.com/Dizzitup/dizzitapp-v2.git`
 
-### Regle de Synchronisation
-```bash
-git add -A && git commit -m "description" && git push origin develop
-git checkout front-back && git merge develop && git push origin front-back && git checkout develop
-```
+### Commandes Usuelles
+- **Au quotidien (sur `front-back`)** :
+  ```bash
+  git checkout front-back
+  git add -A && git commit -m "feat/fix: description" && git push origin front-back
+  ```
+- **Pour une release par lot (vers `develop`)** :
+  ```bash
+  git checkout develop && git merge front-back && git push origin develop && git checkout front-back
+  ```
 
 ---
 
