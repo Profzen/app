@@ -39,13 +39,13 @@ jobs:
       - name: Build APK via EAS
         id: build_apk
         run: |
-          echo "Starting APK build..."
-          BUILD_JSON=$(eas build --platform android --profile preview --non-interactive --json 2>/dev/null || true)
+          echo "Starting APK build on EAS..."
+          BUILD_JSON=$(eas build --platform android --profile preview --no-wait --non-interactive --json)
 
           BUILD_ID=$(echo "$BUILD_JSON" | jq -r '.[0].id // empty')
 
           if [ -z "$BUILD_ID" ]; then
-            echo "Failed to start APK build"
+            echo "Failed to start APK build: $BUILD_JSON"
             exit 1
           fi
 
@@ -56,12 +56,12 @@ jobs:
           ARTIFACT_URL=""
           for i in $(seq 1 120); do
             sleep 30
-            STATUS_JSON=$(eas build:view "$BUILD_ID" --json 2>/dev/null || true)
+            STATUS_JSON=$(eas build:view "$BUILD_ID" --json)
             STATUS=$(echo "$STATUS_JSON" | jq -r '.status // empty')
 
             if [ "$STATUS" = "FINISHED" ]; then
               ARTIFACT_URL=$(echo "$STATUS_JSON" | jq -r '.artifacts.buildUrl // empty')
-              echo "APK Build finished!"
+              echo "APK Build finished successfully!"
               break
             elif [ "$STATUS" = "ERRORED" ] || [ "$STATUS" = "CANCELED" ]; then
               echo "APK Build failed with status: $STATUS"
@@ -86,13 +86,13 @@ jobs:
       - name: Build AAB via EAS
         id: build_aab
         run: |
-          echo "Starting AAB build..."
-          BUILD_JSON=$(eas build --platform android --profile production --non-interactive --json 2>/dev/null || true)
+          echo "Starting AAB build on EAS..."
+          BUILD_JSON=$(eas build --platform android --profile production --no-wait --non-interactive --json)
 
           BUILD_ID=$(echo "$BUILD_JSON" | jq -r '.[0].id // empty')
 
           if [ -z "$BUILD_ID" ]; then
-            echo "Failed to start AAB build"
+            echo "Failed to start AAB build: $BUILD_JSON"
             exit 1
           fi
 
@@ -103,12 +103,12 @@ jobs:
           ARTIFACT_URL=""
           for i in $(seq 1 120); do
             sleep 30
-            STATUS_JSON=$(eas build:view "$BUILD_ID" --json 2>/dev/null || true)
+            STATUS_JSON=$(eas build:view "$BUILD_ID" --json)
             STATUS=$(echo "$STATUS_JSON" | jq -r '.status // empty')
 
             if [ "$STATUS" = "FINISHED" ]; then
               ARTIFACT_URL=$(echo "$STATUS_JSON" | jq -r '.artifacts.buildUrl // empty')
-              echo "AAB Build finished!"
+              echo "AAB Build finished successfully!"
               break
             elif [ "$STATUS" = "ERRORED" ] || [ "$STATUS" = "CANCELED" ]; then
               echo "AAB Build failed with status: $STATUS"
