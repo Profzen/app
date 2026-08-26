@@ -5,6 +5,7 @@
     "scheme": "dizzitapp",
     "version": "1.0.0",
     "orientation": "portrait",
+    "scheme": "dizzitup",
     "icon": "./assets/brand/finalLogo.png",
     "userInterfaceStyle": "light",
     "ios": {
@@ -32,6 +33,19 @@
       "expo-status-bar",
       "expo-secure-store",
       "expo-web-browser",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 24,
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "extraMavenRepos": [
+              "https://jitpack.io"
+            ]
+          }
+        }
+      ],
       [
         "expo-splash-screen",
         {
