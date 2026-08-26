@@ -49,6 +49,27 @@ if (Platform.OS === 'web' && typeof console !== 'undefined') {
   };
 }
 
+if (Platform.OS === 'web' && typeof document !== 'undefined') {
+  const styleEl = document.createElement('style');
+  styleEl.textContent = `
+    html, body, #root {
+      height: 100%;
+      overflow: auto !important;
+      -webkit-overflow-scrolling: touch;
+    }
+    /* Ensure all ScrollViews in React Native Web respond to mousewheel smoothly */
+    div[style*="overflow-y: scroll"],
+    div[style*="overflow-y: auto"],
+    div[style*="overflow: auto"],
+    div[style*="overflow: scroll"] {
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      overscroll-behavior: contain;
+    }
+  `;
+  document.head.appendChild(styleEl);
+}
+
 export default function App() {
   let [fontsLoaded] = useFonts({
     Inter_400Regular,

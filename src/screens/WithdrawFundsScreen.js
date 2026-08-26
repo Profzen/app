@@ -29,17 +29,8 @@ export default function WithdrawFundsScreen() {
     { id: 'Ethereum', name: 'Ethereum', icon: 'ETH_ICON' },
   ];
 
-  const renderTokenIcon = (id) => <CryptoIcon symbol={id} size={48} />;
-
-  const renderNetworkIcon = (id) => {
-    switch (id) {
-      case 'Polygon': return <View style={[styles.networkIconCircle, {backgroundColor: '#8247E5'}]}><Ionicons name="git-network" size={16} color="#FFF" /></View>;
-      case 'Base': return <View style={[styles.networkIconCircle, {backgroundColor: '#0052FF'}]}><View style={styles.baseIconInner} /></View>;
-      case 'Solana': return <View style={[styles.networkIconCircle, {backgroundColor: '#14F195'}]}><Ionicons name="water" size={16} color="#000" /></View>;
-      case 'Ethereum': return <View style={[styles.networkIconCircle, {backgroundColor: '#F3F4F6'}]}><Ionicons name="logo-electron" size={16} color="#3C3C3D" /></View>;
-      default: return null;
-    }
-  };
+  const renderTokenIcon = (id) => <CryptoIcon symbol={id} size={38} />;
+  const renderNetworkIcon = (id) => <CryptoIcon symbol={id} size={38} />;
 
   return (
     <SafeAreaView style={styles.safeArea}>

@@ -48,40 +48,34 @@ export default function AnimatedSplashScreen({ onAnimationComplete }) {
   }, []);
 
   return (
-    <Modal
-      visible
-      animationType="none"
-      transparent={false}
-      statusBarTranslucent
-    >
-      <Animated.View style={[styles.container, { opacity: containerFadeAnim }]}>
-        <View style={styles.content}>
-          <Animated.Image
-            source={require('../../assets/brand/dizzitup_logo_cercle.png')}
-            style={[
-              styles.logo,
-              {
-                opacity: fadeAnim,
-                transform: [{ scale: pulseAnim }],
-              },
-            ]}
-            resizeMode="contain"
-          />
-          <Animated.Text style={[styles.brandText, { opacity: textFadeAnim }]}>
-            DizzitApp
-          </Animated.Text>
-        </View>
-      </Animated.View>
-    </Modal>
+    <Animated.View style={[styles.overlay, { opacity: containerFadeAnim }]} pointerEvents="none">
+      <View style={styles.content}>
+        <Animated.Image
+          source={require('../../assets/brand/dizzitup_logo_cercle.png')}
+          style={[
+            styles.logo,
+            {
+              opacity: fadeAnim,
+              transform: [{ scale: pulseAnim }],
+            },
+          ]}
+          resizeMode="contain"
+        />
+        <Animated.Text style={[styles.brandText, { opacity: textFadeAnim }]}>
+          DizzitApp
+        </Animated.Text>
+      </View>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: '#1A2840', // Deep Blue
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 99999,
   },
   content: {
     alignItems: 'center',

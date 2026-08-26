@@ -6,7 +6,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
 import AppSelect from '../components/AppSelect';
 
-const chainOptions = ['Polygon', 'Ethereum', 'Base', 'Solana', 'BNB Chain'].map((value) => ({value, label: value, iconName: 'git-network'}));
+const chainOptions = ['Polygon', 'Ethereum', 'Base', 'Solana', 'BNB Chain'].map((value) => ({value, label: value, isCrypto: true, cryptoSymbol: value}));
 const tokenOptions = ['DZY', 'USDC', 'USDT', 'POL', 'WBTC', 'ETH', 'SOL'].map((value) => ({value, label: value}));
 
 export default function SwapTokensScreen() {

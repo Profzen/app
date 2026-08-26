@@ -13,19 +13,20 @@ import { useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
 
 const BLOCKCHAINS = [
-  { value: 'Polygon', label: 'Polygon', name: 'Polygon Network', iconName: 'cube-outline', color: '#FFFFFF', bg: '#8247E5' },
-  { value: 'Ethereum', label: 'Ethereum', name: 'Ethereum Mainnet', iconName: 'logo-ethereum', color: '#FFFFFF', bg: '#627EEA' },
-  { value: 'Solana', label: 'Solana', name: 'Solana Network', iconName: 'flash-outline', color: '#FFFFFF', bg: '#14F195' },
-  { value: 'BNB Chain', label: 'BNB Chain', name: 'BNB Smart Chain', iconName: 'layers-outline', color: '#FFFFFF', bg: '#F3BA2F' },
-  { value: 'Bitcoin', label: 'Bitcoin', name: 'Bitcoin Network', iconName: 'logo-bitcoin', color: '#FFFFFF', bg: '#F7931A' },
+  { value: 'Polygon', label: 'Polygon', name: 'Polygon Network', isCrypto: true, cryptoSymbol: 'Polygon' },
+  { value: 'Ethereum', label: 'Ethereum', name: 'Ethereum Mainnet', isCrypto: true, cryptoSymbol: 'Ethereum' },
+  { value: 'Solana', label: 'Solana', name: 'Solana Network', isCrypto: true, cryptoSymbol: 'Solana' },
+  { value: 'BNB Chain', label: 'BNB Chain', name: 'BNB Smart Chain', isCrypto: true, cryptoSymbol: 'BNB Chain' },
+  { value: 'Base', label: 'Base', name: 'Base Network', isCrypto: true, cryptoSymbol: 'Base' },
 ];
 
 const CRYPTO_TOKENS = [
-  { value: 'USDC', label: 'USDC', name: 'USD Coin', iconName: 'logo-usd', color: '#FFFFFF', bg: '#2775CA', subtitle: 'USD Coin (Stablecoin)' },
-  { value: 'USDT', label: 'USDT', name: 'Tether USD', iconName: 'cash-outline', color: '#FFFFFF', bg: '#26A17B', subtitle: 'Tether USD (Stablecoin)' },
-  { value: 'DIZ', label: 'DIZ', name: 'DizzitUp Token', iconName: 'paper-plane-outline', color: '#0F172A', bg: '#FFC759', subtitle: 'DizzitUp Utility Token' },
-  { value: 'ETH', label: 'ETH', name: 'Ethereum', iconName: 'logo-ethereum', color: '#FFFFFF', bg: '#627EEA', subtitle: 'Ethereum Native Token' },
-  { value: 'BTC', label: 'BTC', name: 'Bitcoin', iconName: 'logo-bitcoin', color: '#FFFFFF', bg: '#F7931A', subtitle: 'Bitcoin Native Token' },
+  { value: 'USDC', label: 'USDC', name: 'USD Coin', isCrypto: true, cryptoSymbol: 'USDC', subtitle: 'USD Coin (Stablecoin)' },
+  { value: 'USDT', label: 'USDT', name: 'Tether USD', isCrypto: true, cryptoSymbol: 'USDT', subtitle: 'Tether USD (Stablecoin)' },
+  { value: 'EURC', label: 'EURC', name: 'Euro Coin', isCrypto: true, cryptoSymbol: 'EURC', subtitle: 'EURC Stablecoin' },
+  { value: 'DZY', label: 'DZY', name: 'DizzitUp Token', isCrypto: true, cryptoSymbol: 'DZY', subtitle: 'DizzitUp Utility Token' },
+  { value: 'ETH', label: 'ETH', name: 'Ethereum', isCrypto: true, cryptoSymbol: 'ETH', subtitle: 'Ethereum Native Token' },
+  { value: 'POL', label: 'POL', name: 'Polygon', isCrypto: true, cryptoSymbol: 'POL', subtitle: 'Polygon Native Token' },
 ];
 
 

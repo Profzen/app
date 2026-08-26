@@ -5,17 +5,18 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import BottomNavBar from '../components/BottomNavBar';
+import CryptoIcon from '../components/CryptoIcon';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { useApp } from '../context/AppContext';
 
 const { width } = Dimensions.get('window');
 
 const DEFAULT_FONDS = [
-  { id: '1', symbol: 'USDC', sub: 'USDC', balance: '0.00', currency: 'USDC', iconUrl: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png' },
-  { id: '2', symbol: 'USDT', sub: '(TRC20)', balance: '0.00', currency: 'USDT', iconUrl: 'https://cryptologos.cc/logos/tether-usdt-logo.png' },
-  { id: '3', symbol: 'EURC', sub: 'EURC', balance: '0.00', currency: 'EURC', isCustom: true, icon: 'logo-euro', iconColor: '#2775CA' },
-  { id: '4', symbol: 'DZY', sub: 'DZY', balance: '0.00', currency: 'DZY', isLocal: true },
-  { id: '5', symbol: 'Bitcoin', sub: '(WBTC)', balance: '0.00', currency: 'WBTC', iconUrl: 'https://cryptologos.cc/logos/wrapped-bitcoin-wbtc-logo.png' },
+  { id: '1', symbol: 'USDC', sub: 'USDC', balance: '0.00', currency: 'USDC' },
+  { id: '2', symbol: 'USDT', sub: '(TRC20)', balance: '0.00', currency: 'USDT' },
+  { id: '3', symbol: 'EURC', sub: 'EURC', balance: '0.00', currency: 'EURC' },
+  { id: '4', symbol: 'DZY', sub: 'DZY', balance: '0.00', currency: 'DZY' },
+  { id: '5', symbol: 'Bitcoin', sub: '(WBTC)', balance: '0.00', currency: 'WBTC' },
 ];
 
 export default function DashboardScreen() {
@@ -185,15 +186,7 @@ export default function DashboardScreen() {
               <React.Fragment key={item.id}>
                 <View style={styles.fondItem}>
                   <View style={styles.fondIcon}>
-                    {item.isLocal ? (
-                      <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={{width: 68, height: 68, transform: [{scale: 1.2}]}} resizeMode="contain" />
-                    ) : item.isCustom ? (
-                      <View style={[styles.customFondIcon, {backgroundColor: item.iconColor}]}>
-                        <Ionicons name={item.icon} size={24} color="#FFFFFF" />
-                      </View>
-                    ) : (
-                      <Image source={{uri: item.iconUrl}} style={{width: 44, height: 44}} resizeMode="contain" />
-                    )}
+                    <CryptoIcon symbol={item.currency || item.symbol} size={44} />
                   </View>
                   <Text style={styles.fondSymbol}>{item.symbol}</Text>
                   <Text style={styles.fondSub}>{item.sub}</Text>

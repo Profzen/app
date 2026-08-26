@@ -1997,10 +1997,22 @@ Pour pallier l'exclusion du fichier `.env` via `.gitignore` lors de la compilati
 - Le fichier local [`.env`](file:///g:/zen/projets/DizzitApp/app/.env) a été mis à jour avec les endpoints de production HTTPS décommentés par défaut.
 - Clés de production intégrées : Supabase (URL + Anon Key) et Crossmint Client-side API Key de production.
 
+### 3. Normalisation & Résilience des Routes d'API
+- Correction et sécurisation des routes dans [`ChooseServiceScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ChooseServiceScreen.js), [`ServiceCheckoutScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ServiceCheckoutScreen.js) et [`EditBeneficiaryScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/EditBeneficiaryScreen.js) pour garantir l'absence de doublons `/api/api` et une synchronisation parfaite avec les services backend.
+
 ### 4. Déploiement TestFlight Réussi (Build 3)
 - **Version** : `1.0.0`
 - **Build Number** : `3` (Build ID : `e31a1e3a-706e-4a49-bc4e-98f40e2aff56`)
 - **Statut** : Compilé avec succès avec toutes les variables d'environnement de production injectées, et uploadé sur Apple App Store Connect / TestFlight.
+
+### 5. Audit Visuel & Correctifs Majeurs (26 août 2026) :
+- ✅ **`ReceiveFundsV2Screen.js`** : Alignement horizontal des icônes d'en-tête (notifications, récompenses, menu) avec un conteneur `headerRightIcons` en `flexDirection: 'row'` et boutons compacts (38px).
+- ✅ **`WithdrawFundsScreen.js`** : Remplacement de tous les logos vectoriels artificiels par les vrais logos officiels (USDC, USDT, EURC, DZY, Polygon, Base, Solana, Ethereum) via `CryptoIcon`.
+- ✅ **`DashboardScreen.js`** : Remplacement des URLs externes et icônes vectorielles par `CryptoIcon` pour tous les actifs (USDC, USDT, EURC, DZY, WBTC, etc.).
+- ✅ **`SwapTokensScreen.js` & `CashierSendFundsScreen.js`** : Correction de `chainOptions` et `cashierNetworks` pour utiliser `CryptoIcon` dans `AppSelect`.
+- ✅ **`SendMoneyScreen.js` & `ReceiveFundsScreen.js`** : Support complet des 5 chaînes et tokens avec `isCrypto: true` et logos officiels.
+- ✅ **Défilement & Scroll Web** : Remplacement du composant `Modal` dans `AnimatedSplashScreen.js` par un conteneur absolu non bloquant et injection des règles CSS `overflow-y: auto` sur Web pour un scroll fluide à la souris et au trackpad.
+
 
 ---
 

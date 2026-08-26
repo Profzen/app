@@ -8,7 +8,7 @@ import AppSelect from '../components/AppSelect';
 import CryptoIcon from '../components/CryptoIcon';
 import { useApp } from '../context/AppContext';
 
-const cashierNetworks = ['Polygon','Base','Solana','Ethereum'].map((value) => ({value,label:value,iconName:'git-network'}));
+const cashierNetworks = ['Polygon','Base','Solana','Ethereum'].map((value) => ({value, label: value, isCrypto: true, cryptoSymbol: value}));
 const cashierTokens = ['USDC','USDT','EURC','DZY'].map((value) => ({value,label:value}));
 
 export default function CashierSendFundsScreen() {

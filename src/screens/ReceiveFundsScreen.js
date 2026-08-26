@@ -60,7 +60,13 @@ export default function ReceiveFundsScreen() {
             <Text style={styles.sectionLabel}>CHOISIR LA BLOCKCHAIN</Text>
             <AppSelect
               value={selectedChain}
-              options={[{value:'POL',label:'Polygon'},{value:'ETH',label:'Ethereum'},{value:'SOL',label:'Solana'},{value:'BNB',label:'Chaîne BNB'}]}
+              options={[
+                { value: 'Polygon', label: 'Polygon', isCrypto: true, cryptoSymbol: 'Polygon' },
+                { value: 'Ethereum', label: 'Ethereum', isCrypto: true, cryptoSymbol: 'Ethereum' },
+                { value: 'Base', label: 'Base', isCrypto: true, cryptoSymbol: 'Base' },
+                { value: 'Solana', label: 'Solana', isCrypto: true, cryptoSymbol: 'Solana' },
+                { value: 'BNB Chain', label: 'BNB Chain', isCrypto: true, cryptoSymbol: 'BNB Chain' },
+              ]}
               onChange={setSelectedChain}
               title="Choisir la blockchain"
               renderLeading={(option) => <CryptoIcon symbol={option.value} size={28} style={{marginRight: 10}} />}
