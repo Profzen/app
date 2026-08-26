@@ -1967,84 +1967,148 @@ Un audit complet des branches locales et distantes a été effectué (`origin/fr
   - Conserver rigoureusement la **même position en haut à gauche** et le **même style** sur l'ensemble des 70+ écrans afin que les utilisateurs puissent revenir en arrière de manière intuitive et homogène où qu'ils soient dans l'application.
   - Action liée : `navigation.goBack()` avec fallback propre.
 
-### 🎯 9. Synthèse des Correctifs Appliqués & Validés (25 août 2026) :
-- ✅ **[`OtpInput.js`](file:///g:/zen/projets/DizzitApp/app/src/components/OtpInput.js)** : Bordures renforcées (`#CBD5E1`), état actif or `#FFC759` et dimensions calibrées (46x52px).
-- ✅ **[`CryptoIcon.js`](file:///g:/zen/projets/DizzitApp/app/src/components/CryptoIcon.js) & [`AppSelect.js`](file:///g:/zen/projets/DizzitApp/app/src/components/AppSelect.js)** : Prise en charge native de tous les logos de chaînes et cryptos officiels stockés dans [`assets/cryptos/`](file:///g:/zen/projets/DizzitApp/app/assets/cryptos).
-- ✅ **[`ResetPasswordCodeScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ResetPasswordCodeScreen.js)** : Boutons plus compacts (hauteur 48px, arrondi 12px), "Précédent" en `#878FA4` et "Suivant" en or `#FFC759`.
-- ✅ **[`SendMoneyScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/SendMoneyScreen.js)** : Intégration des vrais logos officiels pour Polygon, Ethereum, Solana, BNB, Base, USDC, USDT et dégagement du scroll bas.
-- ✅ **[`BusinessAccountScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/BusinessAccountScreen.js)** : Suppression des largeurs fixes rigides sur les labels, badges de catégories flexibles (`justifyContent: 'flex-end'`, `flexWrap: 'wrap'`), et marges parfaites sur iPhone SE.
-- ✅ **[`ShopsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShopsScreen.js)** : `filtersScrollView` optimisé avec `paddingLeft: 16` et `paddingRight: 8` pour un défilement horizontal fluide sans coupure de boutons.
-- ✅ **[`ContactUsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactUsScreen.js)** : Champs de saisie Sujet / Message sur fond blanc avec bordure nette `#CBD5E1` et focus lisible.
-- ✅ **[`ReceiveFundsV2Screen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ReceiveFundsV2Screen.js)** : Refonte complète du dropdown blockchain avec bordure `#CBD5E1`, liseré or `#FFC759` à l'ouverture, logos compacts (26px), badge "DEFAULT" et items conformes à la capture et remarques d'Assia.
-- ✅ **[`ContactsManageScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactsManageScreen.js)** : Barre de recherche rehaussée avec bordure `#CBD5E1`, ombre portée douce et icône loupe bleu nuit `#20365B`.
-- ✅ **[`LoginScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/LoginScreen.js)** : Authentification stricte de production Supabase préservée sans aucun contournement parasite.
-- ✅ **Compatibilité Web Bundler Metro** : Résolution des dépendances natives web (`pdfGenerator.js`, `ContactHistoryScreen.js`, `app.json`).
+### 9. Synthese des Correctifs Appliques et Valides (25 aout 2026)
+- [`OtpInput.js`](file:///g:/zen/projets/DizzitApp/app/src/components/OtpInput.js) : Bordures renforcees, etat actif or, dimensions calibrees.
+- [`CryptoIcon.js`](file:///g:/zen/projets/DizzitApp/app/src/components/CryptoIcon.js) et [`AppSelect.js`](file:///g:/zen/projets/DizzitApp/app/src/components/AppSelect.js) : Prise en charge native de tous les logos officiels.
+- [`LoginScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/LoginScreen.js) : Authentification stricte de production Supabase preservee.
+- Compatibilite Web Bundler Metro : Resolution des dependances natives web.
 
 ---
 
-## ⚡ Intégration des Endpoints de Production & Configuration EAS TestFlight (26 août 2026)
+## Integration des Endpoints de Production et Configuration EAS TestFlight (26 aout 2026)
 
-### 1. Endpoints de Production Validés par Assia
-Les 4 microservices de production officiels ont été confirmés et branchés :
-- **DZY Wallet** : `https://wallet.dizzitup.com/api` (Crypto, Wallets Crossmint, P2P, Rewards DZY, Handoff SSO)
-- **BuyGoods** : `https://buygoods-api.dizzitup.com/api` (Marchands, Produits locaux, Caisse TPE/POS, Recommandations, Notifications)
-- **PayBills** : `https://api.dizzitup.com` (Factures de services publics, Airtime, Mobile Money)
-- **Medusa** : `https://medusa.dizzitup.com/store` (Marketplace globale)
+### 1. Endpoints de Production Valides par Assia
+Les 4 microservices de production officiels ont ete confirmes et branches :
+- **DZY Wallet** : `https://wallet.dizzitup.com/api`
+- **BuyGoods** : `https://buygoods-api.dizzitup.com/api`
+- **PayBills** : `https://api.dizzitup.com`
+- **Medusa** : `https://medusa.dizzitup.com/store`
 
-### 2. Configuration & Inlining EAS Cloud Build
-Pour pallier l'exclusion du fichier `.env` via `.gitignore` lors de la compilation distante sur EAS :
-- Les variables d'environnement ont été injectées sous `build.production.env` dans [`eas.json`](file:///g:/zen/projets/DizzitApp/app/eas.json).
-- Le fichier local [`.env`](file:///g:/zen/projets/DizzitApp/app/.env) a été mis à jour avec les endpoints de production HTTPS décommentés par défaut.
-- Clés de production intégrées : Supabase (URL + Anon Key) et Crossmint Client-side API Key de production.
+### 2. Configuration et Inlining EAS Cloud Build
+- Variables d'environnement injectees sous `build.production.env` et `build.preview.env` dans [`eas.json`](file:///g:/zen/projets/DizzitApp/app/eas.json).
+- Cles de production integrees : Supabase (URL + Anon Key) et Crossmint Client-side API Key.
 
-### 3. Normalisation & Résilience des Routes d'API
-- Correction et sécurisation des routes dans [`ChooseServiceScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ChooseServiceScreen.js), [`ServiceCheckoutScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ServiceCheckoutScreen.js) et [`EditBeneficiaryScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/EditBeneficiaryScreen.js) pour garantir l'absence de doublons `/api/api` et une synchronisation parfaite avec les services backend.
+### 3. Normalisation des Routes d'API
+- Correction des routes dans `ChooseServiceScreen.js`, `ServiceCheckoutScreen.js` et `EditBeneficiaryScreen.js` pour eliminer les doublons `/api/api`.
 
-### 4. Déploiement TestFlight Réussi (Build 3)
-- **Version** : `1.0.0`
-- **Build Number** : `3` (Build ID : `e31a1e3a-706e-4a49-bc4e-98f40e2aff56`)
-- **Statut** : Compilé avec succès avec toutes les variables d'environnement de production injectées, et uploadé sur Apple App Store Connect / TestFlight.
+### 4. Deploiement TestFlight Build 3 puis Build 5
+- Build 3 : `1.0.0` (Build ID : `e31a1e3a-706e-4a49-bc4e-98f40e2aff56`) - Premier build avec endpoints de production.
+- Build 5 : `1.0.0` (Build ID : `240a2f2b-9998-47f1-8f9d-27bef0bce34d`) - Build final avec tous les correctifs visuels.
 
-### 5. Audit Visuel & Correctifs Majeurs (26 août 2026) :
-- ✅ **`ReceiveFundsV2Screen.js`** : Alignement horizontal des icônes d'en-tête (notifications, récompenses, menu) avec un conteneur `headerRightIcons` en `flexDirection: 'row'` et boutons compacts (38px).
-- ✅ **`WithdrawFundsScreen.js`** : Remplacement de tous les logos vectoriels artificiels par les vrais logos officiels (USDC, USDT, EURC, DZY, Polygon, Base, Solana, Ethereum) via `CryptoIcon`.
-- ✅ **`DashboardScreen.js`** : Remplacement des URLs externes et icônes vectorielles par `CryptoIcon` pour tous les actifs (USDC, USDT, EURC, DZY, WBTC, etc.).
-- ✅ **`SwapTokensScreen.js` & `CashierSendFundsScreen.js`** : Correction de `chainOptions` et `cashierNetworks` pour utiliser `CryptoIcon` dans `AppSelect`.
-- ✅ **`SendMoneyScreen.js` & `ReceiveFundsScreen.js`** : Support complet des 5 chaînes et tokens avec `isCrypto: true` et logos officiels.
-- ✅ **Défilement & Scroll Web** : Remplacement du composant `Modal` dans `AnimatedSplashScreen.js` par un conteneur absolu non bloquant et injection des règles CSS `overflow-y: auto` sur Web pour un scroll fluide à la souris et au trackpad.
+### 5. Audit Visuel et Correctifs Majeurs (26 aout 2026)
 
+#### Faux Logos Crypto remplaces par logos officiels
+Ecrans corriges : `WithdrawFundsScreen`, `DashboardScreen`, `SwapTokensScreen`, `CashierSendFundsScreen`, `SendMoneyScreen`, `ReceiveFundsScreen`. Tous migres vers `CryptoIcon` avec logos locaux depuis `assets/cryptos/`.
 
----
+#### Alignement Vertical des Icones d'En-Tete corrige
+`ReceiveFundsV2Screen.js` : header restructure avec `flexDirection: 'row'`, boutons 38x38px.
 
-## 🧭 Règles de Méthodologie & de Posture pour l'IA
-
-1. **Écoute & Réponse Directe d'Abord** :
-   - Lorsqu'une question est posée par l'utilisateur, l'IA **DOIT TOUJOURS répondre directement, calmement et précisément à la question AVANT d'envisager la moindre action**.
-   - **Interdiction formelle de se précipiter** sur des modifications de code imprévues ou non sollicitées.
-
-2. **Aucune Modification Non Demandée (Pas d'action intempestive)** :
-   - L'IA ne doit pas toucher aux fichiers source de son propre chef sans demande explicite ou validation préalable de l'utilisateur.
-
-3. **Intégrité Absolue des Branches de Release (`front-back` et `develop`)** :
-   - Ne jamais injecter de code temporaire, de bypass d'authentification ou de boutons de test sur les branches de release (`front-back` et `develop`). Ces branches doivent toujours contenir du code 100% propre, testé, sécurisé et prêt pour TestFlight.
+#### Scroll Web corrige
+`AnimatedSplashScreen.js` : `<Modal>` remplace par `Animated.View` avec `pointerEvents="none"`. CSS global injecte dans `App.js`.
 
 ---
 
-## 🔄 Règle d'Or pour l'IA (Mise à jour Continue du Mémoire)
+## CI/CD : Pipelines Automatisees GitHub Actions (26 aout 2026)
 
-**RÈGLE STRICTE POUR L'IA** : À la fin de chaque session ou après toute modification majeure (ajout d'écran, ajustement de flux, refactoring, gestion Git), l'IA **DOIT IMPÉRATIVEMENT** mettre à jour ce fichier `memoire.md`. Ainsi, lors de l'ouverture d'une nouvelle session de conversation, la lecture préalable de ce fichier permet de récupérer l'intégralité du contexte, de l'état d'avancement et des règles sans aucune perte d'information ni interruption du workflow.
+### Contexte et Problemes Resolus
+- L'ancien workflow `build-apk.yml` echouait systematiquement (82 runs en echec) a cause de `expo prebuild` + Gradle.
+- Aucun workflow iOS n'existait : builds TestFlight lances manuellement.
+- Pas de fichier AAB signe produit automatiquement.
 
+### Architecture CI/CD Actuelle
 
+#### [`build-android.yml`](file:///g:/zen/projets/DizzitApp/app/.github/workflows/build-android.yml)
+- **Declencheur** : Push sur `develop` ou lancement manuel
+- **Fonctionnement** : EAS CLI en CI pour APK (profil `preview`) et AAB (profil `production`), signes automatiquement par EAS, puis uploades comme GitHub Actions Artifacts.
+- **Artefacts** : `DizzitUp-APK-v{N}` et `DizzitUp-AAB-v{N}` (retention 90 jours)
+- **Concurrency** : Un seul build a la fois, le nouveau annule l'ancien.
 
+#### [`deploy-ios.yml`](file:///g:/zen/projets/DizzitApp/app/.github/workflows/deploy-ios.yml)
+- **Declencheur** : Push sur `develop` ou lancement manuel
+- **Fonctionnement** : EAS CLI avec `--auto-submit --non-interactive` pour build iOS + soumission TestFlight automatique.
+- **Build Number** : Auto-incremente grace a `autoIncrement: true` et `appVersionSource: "remote"`.
 
+### Secrets GitHub Requis
+- **`EXPO_TOKEN`** : Token Expo stocke dans Settings > Secrets and variables > Actions. Donne acces aux certificats iOS, keystore Android et API Key App Store Connect (tout stocke sur serveurs Expo).
+- Token genere depuis : https://expo.dev/accounts/profzen/settings/access-tokens
 
+### Anciens Workflows Supprimes
+- `build-apk.yml` (Gradle, echouait) et `eas-build.yml` (EAS manuel) : SUPPRIMES.
 
+### Flux de Travail
+1. Developper et tester localement (`npm run web` sur `localhost:8081`)
+2. Commit et push sur `develop`
+3. Les deux pipelines se declenchent automatiquement
+4. Android : APK + AAB dans GitHub Actions > Artifacts
+5. iOS : Build soumis a TestFlight (build number auto-incremente)
 
+---
 
+## Synchronisation Git
 
+### Etat Actuel (26 aout 2026)
+- `develop` et `front-back` synchronisees au commit `0deff3f`
+- Remote : `https://github.com/Dizzitup/dizzitapp-v2.git`
 
+### Regle de Synchronisation
+```bash
+git add -A && git commit -m "description" && git push origin develop
+git checkout front-back && git merge develop && git push origin front-back && git checkout develop
+```
 
+---
 
+## Informations Techniques de Reference
 
+### Identifiants Apple / EAS
+- ASC App ID : `6799749556` | Bundle ID : `com.dizzitup.app`
+- Project ID EAS : `cb443e23-61ff-47de-8f7d-45919575a57d` | Owner : `@profzen`
+- Apple Team : `948RWU4PMF` (DizzitUp)
+- Distribution Certificate : Serial `369BDC522DD7A132C40B781D5254599F` (expire 09/08/2027)
+- App Store Connect API Key : `4S4J7Q3V9S` (DizzitUp Key)
 
+### Logos Crypto (Source de Verite)
+- Dossier : `assets/cryptos/` | Composant : `CryptoIcon.js`
+- Fichiers : polygon.png, usdc.png, usdt.png, base.png, solana.png, bnb-logo.png, eth.png, eurc.png, wbtc.png, weth.png, btc.png, sol.png, pol.png, dai-logo.png
+- DZY/DIZZY : `assets/brand/dizzitup_logo_cercle.png`
 
+### Standards UI/UX d'En-Tete
+- Gauche : Bouton retour 38x38px, cercle bordure `#E2E8F0`, `Ionicons chevron-back`
+- Centre : Titre `flex: 1`, `textAlign: 'center'`, `fontSize: 16-17`, `Inter_700Bold`
+- Droite : `headerRightIcons` en `flexDirection: 'row'`, boutons 38x38px, marges 6px
+
+---
+
+## Prochaines Etapes
+
+### Immediat
+1. Verifier que les workflows CI/CD passent au vert sur GitHub Actions
+2. Nettoyer les anciens workflow runs obsoletes dans la sidebar GitHub Actions
+3. Tester le Build 5 sur TestFlight avec Assia
+
+### A Venir
+1. Appliquer les retours d'Assia sur le Build 5
+2. Verification du build Android (APK) sur appareil reel
+3. Revue finale avant soumission App Store / Play Store
+
+### Points d'Attention Permanents
+- Toujours utiliser `CryptoIcon` pour les cryptos (jamais d'icones vectorielles)
+- Icones d'en-tete toujours en `flexDirection: 'row'`
+- Synchroniser `develop` et `front-back` apres chaque modification
+- Variables de production dans `eas.json` (sous `production.env` ET `preview.env`)
+- Pas d'emojis dans les noms de workflows ou scripts
+
+---
+
+## Regles de Methodologie pour l'IA
+
+1. Repondre directement a la question AVANT toute action.
+2. Aucune modification non demandee.
+3. Integrite absolue des branches `front-back` et `develop` (pas de code temporaire).
+4. Pas d'emojis dans les noms de fichiers, workflows ou scripts.
+
+---
+
+## Regle d'Or (Mise a jour du Memoire)
+
+A la fin de chaque session ou apres toute modification majeure, l'IA DOIT mettre a jour ce fichier `memoire.md` pour garantir la continuite entre sessions.
