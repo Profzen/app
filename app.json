@@ -2,7 +2,6 @@
   "expo": {
     "name": "DizzitApp",
     "slug": "dizzitapp-v2",
-    "scheme": "dizzitapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "scheme": "dizzitup",
@@ -57,8 +56,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "f203faf0-426c-46fb-bba1-440ce3ec87e5"
+        "projectId": "cb443e23-61ff-47de-8f7d-45919575a57d"
       }
-    }
+    },
+    "owner": "profzen"
   }
 }
