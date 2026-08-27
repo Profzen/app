@@ -2028,14 +2028,55 @@ Ecrans corriges : `WithdrawFundsScreen`, `DashboardScreen`, `SwapTokensScreen`, 
 - **Fonctionnement** : EAS CLI avec `--auto-submit --non-interactive` pour build iOS + soumission TestFlight automatique.
 - **Build Number** : Auto-incremente grace a `autoIncrement: true` et `appVersionSource: "remote"`.
 
-### Secrets GitHub Requis
-- **`EXPO_TOKEN`** : Token Expo stocke dans Settings > Secrets and variables > Actions. Donne acces aux certificats iOS, keystore Android et API Key App Store Connect (tout stocke sur serveurs Expo).
-- Token genere depuis : https://expo.dev/accounts/profzen/settings/access-tokens
+---
 
-### Anciens Workflows Supprimes
-- `build-apk.yml` (Gradle, echouait) et `eas-build.yml` (EAS manuel) : SUPPRIMES.
+## Session du 27 Aout 2026 : Resolution & Validation de Bout en Bout des Pipelines CI/CD (100% au Vert)
 
-### Flux de Travail & Stratégie de Déploiement par Lots (Batch Releases)
+### 1. Resolution de l'Erreur d'Autorisation iOS (TestFlight)
+- **Diagnostic** : `app.json` contenait un `projectId` altere (`f203faf0-...`) et le champ `owner` supprime. Le token GitHub `EXPO_TOKEN` appartenant a `@profzen`, EAS rejetait le build avec l'erreur `Entity not authorized`.
+- **Action** : Restauration immediate dans `app.json` du `projectId` officiel (`cb443e23-61ff-47de-8f7d-45919575a57d`) et du champ `owner: "profzen"`.
+- **Securite & Verificateur Automatique** : Ajout d'un garde-fou dans `.github/workflows/deploy-ios.yml` (`Verify Project Configuration`) qui controle le `projectId` et l'`owner` avant le lancement de tout build iOS.
+- **Resultat** : Workflow iOS `Run #33067340837` **100% au Vert (GREEN ✅)**. Application soumise avec succes sur Apple TestFlight.
+
+### 2. Pipeline Android 100% Natif sur GitHub Actions (Autonome & Illimite)
+- **Architecture** : Creation d'un pipeline natif sur runner GitHub Actions (`ubuntu-latest`, Node 22, Java 17 Temurin, SDK Android, Gradle).
+- **Independance EAS** : Le build n'utilise plus les serveurs cloud EAS pour Android, eliminant ainsi tout risque d'interruption lie aux quotas mensuels Expo.
+- **Correction Gradle SDK 36** : Alignement de `compileSdkVersion: 36` dans `app.json` (`expo-build-properties`) pour satisfaire la dependance `androidx.core:core:1.18.0`.
+- **Double Publication** : Generation automatique de l'APK (installation directe) et de l'AAB (Play Store) publies sur [GitHub Releases](https://github.com/Dizzitup/dizzitapp-v2/releases) (tag `android-vXX`) avec repli sur GitHub Artifacts (`continue-on-error: true`).
+- **Resultat** : Workflow Android `Run #33067340803` **100% au Vert (GREEN ✅)**.
+
+### 3. Nettoyage & Standardisation
+- **Nettoyage Stockage** : Suppression de 30 anciens artefacts volumineux (>1.5 Go) via l'API GitHub pour liberer les quotas de stockage du depot.
+- **Conformite YAML Strict** : Suppression de tous les emojis et caracteres non-ASCII des fichiers de workflow `.github/workflows/deploy-ios.yml` et `build-android.yml`.
+
+---
+
+## Prochaines Etapes
+
+### Immediat
+1. Assia peut pousser ses lots sur `develop` en toute serenite : les 2 pipelines se declencheront automatiquement.
+2. Recuperer le build iOS mis a jour sur TestFlight pour validation.
+3. Telecharger les fichiers APK et AAB depuis l'onglet GitHub Releases du depot.
+
+### Points de Vigilance Equipe (Assia & Dev)
+- **Interdiction formelle** d'executer `eas init` ou de modifier `extra.eas.projectId` et `owner` dans `app.json`.
+- **Developpement au quotidien** : Travailler uniquement sur `front-back`.
+- **Release par Lot** : Ne fusionner sur `develop` que lorsqu'un lot complet et teste est valide.
+
+---
+
+## Regles de Methodologie pour l'IA
+
+1. Repondre directement a la question AVANT toute action.
+2. Aucune modification non demandee.
+3. Integrite absolue des branches `front-back` et `develop` (pas de code temporaire).
+4. Pas d'emojis dans les noms de fichiers, workflows ou scripts.
+
+---
+
+## Regle d'Or (Mise a jour du Memoire)
+
+A la fin de chaque session ou apres toute modification majeure, l'IA DOIT mettre a jour ce fichier `memoire.md` pour garantir la continuite entre sessions.
 
 > [!IMPORTANT]
 > **RÈGLE CRUCIALE DE GESTION DES BRANCHES & DÉPLOIEMENTS** :
