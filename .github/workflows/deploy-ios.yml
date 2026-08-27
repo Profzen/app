@@ -1,4 +1,4 @@
-name: "\uD83C\uDF4F Build & Deploy iOS to TestFlight"
+name: Build and Deploy iOS to TestFlight
 
 on:
   push:
@@ -68,7 +68,7 @@ jobs:
       - name: Build Summary
         if: always()
         run: |
-          echo "## 🍏 iOS Build & TestFlight Submission" >> $GITHUB_STEP_SUMMARY
+          echo "##  iOS Build & TestFlight Submission" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Detail | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
@@ -79,4 +79,4 @@ jobs:
           echo "| Auto-Submit | TestFlight |" >> $GITHUB_STEP_SUMMARY
           echo "| Auto-Increment | Build Number |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "📱 [View on TestFlight](https://appstoreconnect.apple.com/apps/6799749556/testflight/ios)" >> $GITHUB_STEP_SUMMARY
+          echo " [View on TestFlight](https://appstoreconnect.apple.com/apps/6799749556/testflight/ios)" >> $GITHUB_STEP_SUMMARY
