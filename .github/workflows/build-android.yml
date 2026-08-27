@@ -116,11 +116,7 @@ jobs:
         with:
           tag_name: android-v${{ github.run_number }}
           name: "Android Build #${{ github.run_number }}"
-          body: |
-             DizzitUp Android Release
-            - **APK** : Installation directe sur smartphone
-            - **AAB** : Publication Google Play Store
-            - Commit : ${{ github.sha }}
+          body: "DizzitUp Android Release APK and AAB (Build #${{ github.run_number }})"
           files: |
             build-output/DizzitUp.apk
             build-output/DizzitUp.aab
