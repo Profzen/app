@@ -1,4 +1,4 @@
-name: "\uD83E\uDD16 Build Android (APK + AAB)"
+name: Build Android (APK + AAB)
 
 on:
   push:
@@ -82,7 +82,7 @@ jobs:
           APK_PATH=$(find android/app/build/outputs/apk -name "*.apk" | head -n 1)
           if [ -n "$APK_PATH" ]; then
             cp "$APK_PATH" build-output/DizzitUp.apk
-            echo "✅ APK: $(du -h build-output/DizzitUp.apk | cut -f1)"
+            echo " APK: $(du -h build-output/DizzitUp.apk | cut -f1)"
           else
             echo "::error::APK not found in build outputs"
             exit 1
@@ -91,7 +91,7 @@ jobs:
           AAB_PATH=$(find android/app/build/outputs/bundle -name "*.aab" | head -n 1)
           if [ -n "$AAB_PATH" ]; then
             cp "$AAB_PATH" build-output/DizzitUp.aab
-            echo "✅ AAB: $(du -h build-output/DizzitUp.aab | cut -f1)"
+            echo " AAB: $(du -h build-output/DizzitUp.aab | cut -f1)"
           else
             echo "::error::AAB not found in build outputs"
             exit 1
@@ -117,7 +117,7 @@ jobs:
           tag_name: android-v${{ github.run_number }}
           name: "Android Build #${{ github.run_number }}"
           body: |
-            🤖 DizzitUp Android Release
+             DizzitUp Android Release
             - **APK** : Installation directe sur smartphone
             - **AAB** : Publication Google Play Store
             - Commit : ${{ github.sha }}
@@ -129,19 +129,19 @@ jobs:
       - name: Build Summary
         if: always()
         run: |
-          echo "## 🤖 Android Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "##  Android Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Artifact | Status | Size |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|--------|------|" >> $GITHUB_STEP_SUMMARY
           if [ -f "build-output/DizzitUp.apk" ]; then
-            echo "| **APK** | ✅ Built | $(du -h build-output/DizzitUp.apk | cut -f1) |" >> $GITHUB_STEP_SUMMARY
+            echo "| **APK** |  Built | $(du -h build-output/DizzitUp.apk | cut -f1) |" >> $GITHUB_STEP_SUMMARY
           else
-            echo "| **APK** | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
+            echo "| **APK** |  Failed | - |" >> $GITHUB_STEP_SUMMARY
           fi
           if [ -f "build-output/DizzitUp.aab" ]; then
-            echo "| **AAB** | ✅ Built | $(du -h build-output/DizzitUp.aab | cut -f1) |" >> $GITHUB_STEP_SUMMARY
+            echo "| **AAB** |  Built | $(du -h build-output/DizzitUp.aab | cut -f1) |" >> $GITHUB_STEP_SUMMARY
           else
-            echo "| **AAB** | ❌ Failed | - |" >> $GITHUB_STEP_SUMMARY
+            echo "| **AAB** |  Failed | - |" >> $GITHUB_STEP_SUMMARY
           fi
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "📦 Téléchargement : [GitHub Releases](https://github.com/Dizzitup/dizzitapp-v2/releases)" >> $GITHUB_STEP_SUMMARY
+          echo "Download : [GitHub Releases](https://github.com/Dizzitup/dizzitapp-v2/releases)" >> $GITHUB_STEP_SUMMARY
