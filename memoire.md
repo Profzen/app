@@ -2147,24 +2147,39 @@ A la fin de chaque session ou apres toute modification majeure, l'IA DOIT mettre
 
 ---
 
+---
+
+## Roadmap des Ajustements UI/UX & Fonctionnels (Demandes Slack Solofo & Assia)
+
+### Module 1 : Refonte Globale de l'Ecran d'Accueil (Home) & Grille de Raccourcis UI/UX
+- **Grille de Raccourcis (Quick Actions Grid)** : Remplacement de la liste verticale par une grille de 8 cartes/icônes rondes dynamiques (*Buy goods, Pay bills, Buy/Pay me, Send & Request funds, Top-up DZYwallet, Refer a business, Source in Africa, Personal ATM*).
+- **Feuille de Fil d'Actualites & Selection (Featured / News)** : Creation d'un composant a 2 onglets en bas de page (`Featured` et `News`) listant les produits, boutiques et commerces de la zone geolocalisee et des pays d'interet du profil utilisateur.
+- **Hierarchie Typographique & Adaptabilite Petits Ecrans (Benchmark Amazon)** : Rehaussement de la lisibilite sur petits ecrans (type iPhone SE / 13 mini) avec contrastes augmentes, tailles de police distinctes et suppression du rendu plat/tiny.
+
+### Module 2 : Refonte du Service de Retrait Cash Main-a-Main ("Personal ATM / Local FIAT ATM")
+- **Repositionnement Fonctionnel** : Suppression de la redirection erronee vers les choix de banque/MoMo.
+- **Ecran de Saisie avec Estimation Monnaie Locale** : Saisie du montant d'echange en Crypto/DZY (USDC, USDT, EURC, DZY) avec affichage d'une estimation indicative en monnaie locale (FCFA) pour la negociation de gre a gre.
+- **QR Code Dynamique d'Echange & Commission** : Generation du QR Code dynamique incluant automatiquement les frais de commission DizzitUp.
+- **Transaction P2P `Send Funds`** : Transfert direct vers le wallet partenaire lors du scan de validation.
+
+### Module 3 : Messages d'Information Dynamiques & Modal des Pays Restreints (Recharge MoMo / Carte)
+- **Section Mobile Money (MoMo)** : Message dynamique sur la couverture des 20 pays et la recommandation des reseaux Polygon ou Base.
+- **Section Carte de Credit (Crossmint)** : Message de couverture mondiale et integration d'une Pop-up Modal interactive affichant la liste cliquable des pays sous restriction.
+- **Design Polish** : Correctif des chevauchements de texte sur la carte de paiement par Carte bancaire.
+
+### Module 4 : Harmonisation Typographique Auth & Redirections (Sign-in / Sign-up / Password)
+- **Positionnement des Messages d'Accueil** : Repositionnement des messages de bienvenue au haut sous la salutation principale sur l'ecran Login.
+- **Harmonisation Typographique & E-mails** : Alignement des tailles et polices de caracteres entre l'application, les modales (Language Selector) et le template d'e-mail de reinitialisation de mot de passe.
+
+---
+
 ## Prochaines Etapes
 
-### Immediat
-1. Verifier que les workflows CI/CD passent au vert sur GitHub Actions
-2. Nettoyer les anciens workflow runs obsoletes dans la sidebar GitHub Actions
-3. Tester le Build 5 sur TestFlight avec Assia
-
-### A Venir
-1. Appliquer les retours d'Assia sur le Build 5
-2. Verification du build Android (APK) sur appareil reel
-3. Revue finale avant soumission App Store / Play Store
-
-### Points d'Attention Permanents
-- Toujours utiliser `CryptoIcon` pour les cryptos (jamais d'icones vectorielles)
-- Icones d'en-tete toujours en `flexDirection: 'row'`
-- Synchroniser `develop` et `front-back` apres chaque modification
-- Variables de production dans `eas.json` (sous `production.env` ET `preview.env`)
-- Pas d'emojis dans les noms de workflows ou scripts
+### Immediat (Pour la demo Actionnaires)
+1. Executer la refonte de l'ecran d'Accueil (Grille 8 cartes + onglets Featured/News).
+2. Appliquer les correctifs du module Personal ATM (Exchange Cash main-a-main + QR Code).
+3. Integrer la modal des pays restreints et corriger le layout Top Up Wallet.
+4. Generer les builds de qualification pour la capture video d'investisseurs.
 
 ---
 
