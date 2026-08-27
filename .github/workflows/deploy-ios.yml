@@ -1,4 +1,4 @@
-name: Build and Deploy iOS to TestFlight
+name: "\uD83C\uDF4F Build & Deploy iOS to TestFlight"
 
 on:
   push:
@@ -35,7 +35,29 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      - name: Verify EAS Authentication
+        run: eas whoami
+
+      - name: Verify Project Configuration
+        run: |
+          echo "Checking app.json projectId..."
+          PROJECT_ID=$(node -e "console.log(require('./app.json').expo.extra.eas.projectId)")
+          OWNER=$(node -e "console.log(require('./app.json').expo.owner || 'NOT SET')")
+          echo "Project ID: $PROJECT_ID"
+          echo "Owner: $OWNER"
+          if [ "$OWNER" != "profzen" ]; then
+            echo "::error::app.json owner must be 'profzen' to match EXPO_TOKEN. Current: $OWNER"
+            exit 1
+          fi
+          if [ "$PROJECT_ID" != "cb443e23-61ff-47de-8f7d-45919575a57d" ]; then
+            echo "::error::app.json projectId does not match @profzen project. Current: $PROJECT_ID"
+            exit 1
+          fi
+          echo "Configuration verified successfully!"
+
       - name: Build iOS and Submit to TestFlight
+        env:
+          EAS_BUILD_NO_EXPO_GO_WARNING: true
         run: |
           eas build \
             --platform ios \
@@ -46,7 +68,7 @@ jobs:
       - name: Build Summary
         if: always()
         run: |
-          echo "## iOS Build and TestFlight Submission" >> $GITHUB_STEP_SUMMARY
+          echo "## 🍏 iOS Build & TestFlight Submission" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Detail | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
@@ -57,4 +79,4 @@ jobs:
           echo "| Auto-Submit | TestFlight |" >> $GITHUB_STEP_SUMMARY
           echo "| Auto-Increment | Build Number |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "[View on TestFlight](https://appstoreconnect.apple.com/apps/6799749556/testflight/ios)" >> $GITHUB_STEP_SUMMARY
+          echo "📱 [View on TestFlight](https://appstoreconnect.apple.com/apps/6799749556/testflight/ios)" >> $GITHUB_STEP_SUMMARY
