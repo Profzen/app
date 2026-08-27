@@ -97,20 +97,6 @@ jobs:
             exit 1
           fi
 
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: DizzitUp-APK
-          path: build-output/DizzitUp.apk
-          retention-days: 14
-
-      - name: Upload AAB Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: DizzitUp-AAB
-          path: build-output/DizzitUp.aab
-          retention-days: 14
-
       - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
@@ -121,6 +107,22 @@ jobs:
             build-output/DizzitUp.apk
             build-output/DizzitUp.aab
           make_latest: true
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: DizzitUp-APK
+          path: build-output/DizzitUp.apk
+          retention-days: 14
+
+      - name: Upload AAB Artifact
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: DizzitUp-AAB
+          path: build-output/DizzitUp.aab
+          retention-days: 14
 
       - name: Build Summary
         if: always()
