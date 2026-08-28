@@ -10,14 +10,16 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
   const navigation = useNavigation();
   const [localMenuOpen, setLocalMenuOpen] = useState(false);
   const menuOpen = typeof isMenuOpen === 'boolean' ? isMenuOpen : localMenuOpen;
-  
+
   let accountMode = 'personal';
   let activeLanguage = propLanguage || 'fr';
+  let t = (k, f) => f || k;
   try {
     const appCtx = useApp();
     if (appCtx && appCtx.accountMode) accountMode = appCtx.accountMode;
     if (appCtx && appCtx.language) activeLanguage = appCtx.language;
-  } catch (e) {}
+    if (appCtx && appCtx.t) t = appCtx.t;
+  } catch (e) { }
 
   const handleHomePress = () => {
     if (accountMode === 'business') {
@@ -27,15 +29,15 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
     }
   };
 
-  const shortcuts = [
-    ['briefcase-outline', 'Pay bills & Send essentials', 'ChooseServiceScreen'],
-    ['paper-plane-outline', 'Send funds', 'SendMoneyScreen'],
-    ['chatbox-ellipses-outline', 'Buy, Pay me this', 'ShopsScreen'],
-    ['hand-left-outline', 'Request funds', 'ReceiveFundsV2Screen'],
-    ['add-circle-outline', 'Top-up DZYwallet', 'TopUpWalletScreen'],
-    ['storefront-outline', 'Refer a business', 'ShopsScreen'],
-    ['globe-outline', 'Source in Africa', 'ShopsScreen'],
-    ['cash-outline', 'Local FIAT ATM', 'WithdrawFundsScreen'],
+  const QUICK_ACTIONS = [
+    { id: '1', icon: 'bag-handle-outline', color: '#3B82F6', bgColor: '#EFF6FF', label: activeLanguage === 'en' ? 'Buy goods' : 'Acheter des biens', route: 'ShopsScreen' },
+    { id: '2', icon: 'document-text-outline', color: '#8B5CF6', bgColor: '#F5F3FF', label: activeLanguage === 'en' ? 'Pay bills' : 'Payer des factures', route: 'ContactsScreen' },
+    { id: '3', icon: 'cart-outline', color: '#F59E0B', bgColor: '#FFFBEB', label: activeLanguage === 'en' ? 'Request funds' : 'Demander des fonds', route: 'ReceiveFundsV2Screen' },
+    { id: '4', icon: 'people-outline', color: '#10B981', bgColor: '#ECFDF5', label: activeLanguage === 'en' ? 'Send money' : "Envoyer de l'argent", route: 'ContactsScreen' },
+    { id: '5', icon: 'add-circle-outline', color: '#10B981', bgColor: '#ECFDF5', label: activeLanguage === 'en' ? 'Top up' : 'Recharger', route: 'TopUpScreen' },
+    { id: '6', icon: 'storefront-outline', color: '#F59E0B', bgColor: '#FFFBEB', label: activeLanguage === 'en' ? 'Refer a shop' : 'Référer un shop', route: 'ReferBusinessScreen' },
+    { id: '7', icon: 'globe-outline', color: '#3B82F6', bgColor: '#EFF6FF', label: activeLanguage === 'en' ? 'Source in Africa' : 'Sourcing en Afrique', route: 'ShopsScreen' },
+    { id: '8', icon: 'qr-code-outline', color: '#10B981', bgColor: '#F0FDFA', label: 'Scan & Cash', route: 'LocalExchangeScreen' },
   ];
 
   const closeAndNavigate = (route) => {
@@ -49,39 +51,40 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
       {menuOpen && (
         <View style={styles.shortcutMenu}>
-          <Text style={styles.shortcutTitle}>Actions rapides</Text>
-          {shortcuts.map(([icon, label, route]) => (
-            <TouchableOpacity key={label} style={styles.shortcutItem} onPress={() => closeAndNavigate(route)}>
-              <View style={styles.shortcutIcon}>
-                <Ionicons name={icon} size={17} color="#1A2840" />
-              </View>
-              <Text style={styles.shortcutLabel}>{label}</Text>
-              <Ionicons name="chevron-forward" size={16} color="#64748B" />
-            </TouchableOpacity>
-          ))}
+          <Text style={styles.shortcutTitle}>{activeLanguage === 'en' ? 'Quick actions' : 'Actions rapides'}</Text>
+          <View style={styles.quickActionsGrid}>
+            {QUICK_ACTIONS.map((action) => (
+              <TouchableOpacity key={action.id} style={styles.actionGridItem} onPress={() => closeAndNavigate(action.route)}>
+                <View style={[styles.actionGridIcon, { backgroundColor: action.bgColor }]}>
+                  <Ionicons name={action.icon} size={22} color={action.color} />
+                </View>
+                <Text style={styles.actionGridText} numberOfLines={2}>{action.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       )}
 
       <View style={styles.container}>
         {/* Home */}
-        <NavItem 
-          icon="home" 
-          label={activeLanguage === 'en' ? 'Home' : 'Accueil'} 
-          isActive={activeTabLower === 'home' || activeTabLower === 'accueil'} 
-          onPress={handleHomePress} 
+        <NavItem
+          icon="home"
+          label={t('tabHome', 'Accueil')}
+          isActive={activeTabLower === 'home' || activeTabLower === 'accueil'}
+          onPress={handleHomePress}
         />
 
         {/* Contacts */}
-        <NavItem 
-          icon="people-outline" 
-          label="Contacts" 
-          isActive={activeTabLower === 'contacts'} 
-          onPress={() => navigation.navigate('ContactsScreen')} 
+        <NavItem
+          icon="people-outline"
+          label={t('tabContacts', 'Contacts')}
+          isActive={activeTabLower === 'contacts'}
+          onPress={() => navigation.navigate('ContactsScreen')}
         />
-        
+
         {/* Center Floating Button */}
         <View style={styles.centerButtonWrapper}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.centerButton, menuOpen && styles.centerButtonActive]}
             onPress={() => {
               if (onCenterButtonPress) {
@@ -93,28 +96,28 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
             activeOpacity={0.8}
             accessibilityLabel={menuOpen ? 'Fermer les actions rapides' : 'Ouvrir les actions rapides'}
           >
-            <Ionicons 
-              name={menuOpen ? "close" : "swap-horizontal"} 
-              size={26} 
-              color="#1A2840" 
+            <Ionicons
+              name={menuOpen ? "close" : "swap-horizontal"}
+              size={26}
+              color="#1A2840"
             />
           </TouchableOpacity>
         </View>
 
         {/* Shops */}
-        <NavItem 
-          icon="storefront-outline" 
-          label={activeLanguage === 'en' ? 'Shop' : 'Boutique'} 
-          isActive={['shops', 'shop', 'boutique', 'boutiques'].includes(activeTabLower)} 
-          onPress={() => navigation.navigate('ShopsScreen')} 
+        <NavItem
+          icon="storefront-outline"
+          label={t('tabShops', 'Boutique')}
+          isActive={['shops', 'shop', 'boutique', 'boutiques'].includes(activeTabLower)}
+          onPress={() => navigation.navigate('ShopsScreen')}
         />
 
         {/* Wallet / Assets */}
-        <NavItem 
-          icon="wallet-outline" 
-          label={activeLanguage === 'en' ? 'Wallet' : 'Portefeuille'} 
-          isActive={['wallet', 'portefeuille', 'assets'].includes(activeTabLower)} 
-          onPress={() => navigation.navigate('AssetListScreen')} 
+        <NavItem
+          icon="wallet-outline"
+          label={t('tabWallet', 'Portefeuille')}
+          isActive={['wallet', 'portefeuille', 'assets'].includes(activeTabLower)}
+          onPress={() => navigation.navigate('AssetListScreen')}
         />
       </View>
     </SafeAreaView>
@@ -142,10 +145,11 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: '#E5E7EB', shadowColor: '#000', shadowOpacity: 0.16,
     shadowRadius: 14, shadowOffset: { width: 0, height: -4 }, elevation: 12,
   },
-  shortcutTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#1A2840', marginBottom: 6 },
-  shortcutItem: { flexDirection: 'row', alignItems: 'center', minHeight: 42, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
-  shortcutIcon: { width: 30, height: 30, borderRadius: 9, backgroundColor: '#FFF7E6', alignItems: 'center', justifyContent: 'center', marginRight: 10 },
-  shortcutLabel: { flex: 1, fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840' },
+  shortcutTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#1A2840', marginBottom: 12 },
+  quickActionsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  actionGridItem: { width: '23%', alignItems: 'center', marginBottom: 12 },
+  actionGridIcon: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 6 },
+  actionGridText: { fontFamily: 'Inter_500Medium', fontSize: 10, color: '#1A2840', textAlign: 'center', lineHeight: 12 },
   container: {
     flexDirection: 'row',
     justifyContent: 'space-around',

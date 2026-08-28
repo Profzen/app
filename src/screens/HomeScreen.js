@@ -4,14 +4,16 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Platform, StatusBar, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Platform, StatusBar, ActivityIndicator, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import WalletCard from '../components/WalletCard';
 import BottomNavBar from '../components/BottomNavBar';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
 import { useApp } from '../context/AppContext';
-
+import { useBuyGoods } from '../hooks/useBuyGoods';
+import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
+import PriceDisplay from '../components/PriceDisplay';
 
 import { isSmallScreen, isShortScreen } from '../utils/responsive';
 
@@ -22,20 +24,64 @@ export default function HomeScreen() {
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [activeSlide, setActiveSlide] = useState(0);
   const [walletBalances, setWalletBalances] = useState({});
+  const [timelineTab, setTimelineTab] = useState('featured');
+  const [featuredShops, setFeaturedShops] = useState([]);
+  const [newsProducts, setNewsProducts] = useState([]);
+  const { fetchMerchants, fetchAllProducts, loading: dataLoading } = useBuyGoods();
 
   useEffect(() => {
-    if (user) {
-      if (user.role === 'merchant' && user.businessBalances) {
-        setWalletBalances(user.businessBalances);
-      } else if (user.allBalances) {
-        setWalletBalances(user.allBalances);
+    const loadRealData = async () => {
+      try {
+        const merchants = await fetchMerchants('');
+        const products = await fetchAllProducts('');
+
+        // Apply COI or Geolocation logic
+        const targetCountry = (user?.COI || user?.country || 'Senegal').toLowerCase();
+        
+        let localMerchants = merchants.filter(m => (m.country || '').toLowerCase() === targetCountry);
+        let localProducts = products.filter(p => (p.merchant?.country || '').toLowerCase() === targetCountry);
+        
+        // Diaspora fallback: if they have no local physical merchants, show global/digital services
+        if (localMerchants.length === 0) {
+          localMerchants = merchants.filter(m => (m.shop_categories || '').toLowerCase().includes('digital') || (m.shop_categories || '').toLowerCase().includes('global'));
+        }
+        if (localProducts.length === 0) {
+          localProducts = products.filter(p => (p.category || '').toLowerCase().includes('digital') || (p.category || '').toLowerCase().includes('global') || !p.merchant?.country);
+        }
+
+        // If still empty, just show something as fallback
+        if (localMerchants.length === 0) localMerchants = merchants;
+        if (localProducts.length === 0) localProducts = products;
+
+        setFeaturedShops(localMerchants.slice(0, 4));
+        setNewsProducts(localProducts.slice(0, 4));
+      } catch (err) {
+        console.warn('Failed to load timeline data:', err);
       }
+    };
+    loadRealData();
+  }, [fetchMerchants, fetchAllProducts, user?.COI, user?.country]);
+
+  useEffect(() => {
+    if (user && user.allBalances) {
+      setWalletBalances(user.allBalances);
     }
   }, [user]);
 
   // Dynamically generate To-Do List based on real user state
   const TODO_LIST = [];
   
+  TODO_LIST.push({
+    id: '1',
+    icon: 'sync-outline',
+    iconColor: '#3B82F6',
+    iconBgColor: '#EFF6FF',
+    title: t('contacts.sync', 'Synchroniser vos contacts'),
+    buttonText: t('common.sync', 'Sync'),
+    buttonColor: '#3B82F6',
+    buttonBgColor: '#EFF6FF',
+    route: 'ContactsScreen'
+  });
   if ((user?.balanceDZY || 0) < 10) {
     TODO_LIST.push({
       id: '2',
@@ -81,16 +127,7 @@ export default function HomeScreen() {
       route: user?.role === 'merchant' ? 'BusinessAccountScreen' : 'ShopsScreen'
   });
 
-  const QUICK_ACTIONS = [
-    { id: '1', icon: 'bag-handle-outline', color: '#3B82F6', bgColor: '#EFF6FF', title: t('home.actions.buy_goods', 'Buy goods') },
-    { id: '2', icon: 'document-text-outline', color: '#8B5CF6', bgColor: '#F5F3FF', title: t('home.actions.pay_bills', 'Pay bills') },
-    { id: '3', icon: 'cart-outline', color: '#F59E0B', bgColor: '#FFFBEB', title: t('home.actions.buy_pay_me', 'Buy / Pay me') },
-    { id: '4', icon: 'people-outline', color: '#10B981', bgColor: '#ECFDF5', title: t('home.actions.send_request', 'Send &\nRequest funds') },
-    { id: '5', icon: 'add-circle-outline', color: '#10B981', bgColor: '#ECFDF5', title: t('home.actions.top_up', 'Top-up\nDZYwallet') },
-    { id: '6', icon: 'storefront-outline', color: '#F59E0B', bgColor: '#FFFBEB', title: t('home.actions.refer_business', 'Refer\na business') },
-    { id: '7', icon: 'globe-outline', color: '#3B82F6', bgColor: '#EFF6FF', title: t('home.actions.source_africa', 'Source\nin Africa') },
-    { id: '8', icon: 'phone-portrait-outline', color: '#10B981', bgColor: '#F0FDFA', title: t('home.actions.personal_atm', 'Personal ATM') },
-  ];
+
 
   useEffect(() => {
     if (!isBannerVisible) return;
@@ -235,19 +272,81 @@ export default function HomeScreen() {
             </View>
           )}
 
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{language === 'fr' ? 'Raccourcis rapides' : 'Quick actions'}</Text>
+
+
+          <View style={styles.timelineTabsContainer}>
+            <TouchableOpacity 
+              style={[styles.timelineTab, timelineTab === 'featured' && styles.timelineTabActive]}
+              onPress={() => setTimelineTab('featured')}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.timelineTabText, timelineTab === 'featured' && styles.timelineTabTextActive]}>
+                {t('home.tabs.featured', 'Featured')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.timelineTab, timelineTab === 'news' && styles.timelineTabActive]}
+              onPress={() => setTimelineTab('news')}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.timelineTabText, timelineTab === 'news' && styles.timelineTabTextActive]}>
+                {t('home.tabs.news', 'News')}
+              </Text>
+            </TouchableOpacity>
           </View>
 
-          <View style={styles.quickActionsGrid}>
-            {QUICK_ACTIONS.map(action => (
-              <TouchableOpacity key={action.id} style={styles.actionGridItem} onPress={() => { if (action.id === '1' || action.id === '7') navigation.navigate('ShopsScreen'); else if (action.id === '2') navigation.navigate('ContactsScreen', { nextScreen: 'ChooseServiceScreen' }); else if (action.id === '3') navigation.navigate('ReceiveFundsV2Screen'); else if (action.id === '4') navigation.navigate('ContactsScreen', { nextScreen: 'SendMoneyScreen' }); else if (action.id === '5') navigation.navigate('TopUpScreen'); else if (action.id === '6') navigation.navigate('ReferBusinessScreen'); else if (action.id === '8') navigation.navigate('WithdrawFundsScreen'); }}>
-                <View style={styles.actionGridIcon}>
-                  <Ionicons name={action.icon} size={24} color={action.color} />
-                </View>
-                <Text style={styles.actionGridText} numberOfLines={2}>{action.title}</Text>
-              </TouchableOpacity>
-            ))}
+          <View style={styles.timelineContentContainer}>
+            {dataLoading ? (
+              <View style={{ padding: 20, alignItems: 'center' }}>
+                <ActivityIndicator size="small" color="#FFC759" />
+              </View>
+            ) : timelineTab === 'featured' ? (
+              <View style={styles.timelineList}>
+                {featuredShops.length > 0 ? featuredShops.map((shop, index) => {
+                  const locationStr = `${shop.city_village || 'Local'}, ${shop.country || 'Global'}`;
+                  return (
+                    <TouchableOpacity key={shop.id || index} style={styles.timelineCard} onPress={() => navigation.navigate('ShopDetailsScreen', { shop })}>
+                      <Image source={shop.shop_logo_url ? { uri: shop.shop_logo_url } : require('../../assets/brand/shop_placeholder.jpg')} style={styles.timelineImage} />
+                      <View style={styles.timelineCardContent}>
+                        <View style={styles.timelineBadge}><Text style={styles.timelineBadgeText}>{language === 'en' ? 'Featured' : 'En vedette'}</Text></View>
+                        <Text style={styles.timelineTitle} numberOfLines={1}>{shop.shop_name}</Text>
+                        <Text style={styles.timelineSubtitle} numberOfLines={2}>{locationStr} • {shop.shop_categories || 'Marketplace'}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                }) : (
+                  <View style={styles.timelineEmptyState}>
+                    <Ionicons name="star-outline" size={24} color="#94A3B8" style={{ marginBottom: 8 }} />
+                    <Text style={styles.timelineEmptyText}>
+                      {t('home.timeline.featured_empty', 'Discover featured products, shops and businesses here.')}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            ) : (
+              <View style={styles.timelineList}>
+                {newsProducts.length > 0 ? newsProducts.map((product, index) => {
+                  return (
+                    <TouchableOpacity key={product.id || index} style={styles.timelineCard} onPress={() => navigation.navigate('ProductDetailsScreen', { product })}>
+                      <Image source={product.product_images && product.product_images.length > 0 ? { uri: product.product_images[0] } : product.thumbnail ? { uri: product.thumbnail } : product.images && product.images.length > 0 ? { uri: product.images[0] } : require('../../assets/brand/dizzitup_logo_cercle.png')} style={styles.timelineImage} resizeMode="cover" />
+                      <View style={styles.timelineCardContent}>
+                        <View style={[styles.timelineBadge, { backgroundColor: '#F3E8FF' }]}><Text style={[styles.timelineBadgeText, { color: '#9333EA' }]}>{language === 'en' ? 'New' : 'Nouveau'}</Text></View>
+                        <Text style={styles.timelineTitle} numberOfLines={1}>{product.name || product.title || 'Produit'}</Text>
+                        <Text style={styles.timelineSubtitle} numberOfLines={1}>{product.merchant?.shop_name || 'DizzitUp'}</Text>
+                        <PriceDisplay amount={product.price || 0} baseCurrency={product.currency || 'XOF'} />
+                      </View>
+                    </TouchableOpacity>
+                  );
+                }) : (
+                  <View style={styles.timelineEmptyState}>
+                    <Ionicons name="newspaper-outline" size={24} color="#94A3B8" style={{ marginBottom: 8 }} />
+                    <Text style={styles.timelineEmptyText}>
+                      {t('home.timeline.news_empty', 'Stay updated with local news from your network.')}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
           </View>
 
           <View style={styles.securityBanner}>
@@ -401,6 +500,102 @@ const styles = StyleSheet.create({
   },
   actionGridIcon: { width: 32, height: 32, justifyContent: 'center', alignItems: 'center', marginBottom: 2 },
   actionGridText: { fontFamily: 'Inter_600SemiBold', fontSize: 9.5, lineHeight: 11.5, color: '#1A2840', textAlign: 'center', paddingHorizontal: 1 },
+  timelineTabsContainer: {
+    flexDirection: 'row',
+    marginHorizontal: isSmallScreen ? 14 : 20,
+    marginTop: 16,
+    marginBottom: 12,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 20,
+    padding: 4,
+  },
+  timelineTab: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timelineTabActive: {
+    backgroundColor: '#FFFFFF',
+    boxShadow: '0px 2px 8px rgba(0,0,0,0.1)',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  timelineTabText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 13,
+    color: '#475569'
+  },
+  timelineTabTextActive: {
+    color: '#0F172A',
+    fontFamily: 'Inter_700Bold',
+  },
+  timelineContentContainer: {
+    marginHorizontal: isSmallScreen ? 14 : 20,
+    marginBottom: 16,
+  },
+  timelineEmptyState: {
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  timelineEmptyText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 18
+  },
+  timelineList: { gap: 12 },
+  timelineCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    overflow: 'hidden',
+    flexDirection: 'row',
+  },
+  timelineImage: {
+    width: 100,
+    height: '100%',
+    backgroundColor: '#F1F5F9'
+  },
+  timelineCardContent: {
+    flex: 1,
+    padding: 12,
+    justifyContent: 'center'
+  },
+  timelineBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    marginBottom: 6
+  },
+  timelineBadgeText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 9,
+    color: '#D97706',
+    textTransform: 'uppercase'
+  },
+  timelineTitle: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 14,
+    color: '#1A2840',
+    marginBottom: 4
+  },
+  timelineSubtitle: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    color: '#64748B',
+    lineHeight: 16
+  },
   securityBanner: { 
     flexDirection: 'row', 
     alignItems: 'center', 

@@ -7,69 +7,76 @@ import BottomNavBar from '../components/BottomNavBar';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
 
-import { SHOPS_MOCK } from '../mocks/shopsMock';
+import { useBuyGoods } from '../hooks/useBuyGoods';
+import { Image } from 'react-native';
 
-const categories = ['Tout', 'Téléphones & Tablettes', 'Électronique', 'Maison & Bureau'];
-
-const products = [
-  { 
-    id: '1', name: 'Samsung Galaxy A14', 
-    desc1: 'Smartphone', desc2: '64 Go • 4 Go RAM', 
-    price: '155 000 FCFA', stock: 'En stock', category: 'Téléphones & Tablettes', priceValue: 155000
-  },
-  { 
-    id: '2', name: 'Écouteurs sans fil', 
-    desc1: 'Bluetooth 5.3', desc2: 'Son HD • Réduction\nde bruit', 
-    price: '25 000 FCFA', stock: 'En stock', category: 'Électronique', priceValue: 25000
-  },
-  { 
-    id: '3', name: 'Montre connectée', 
-    desc1: 'Écran tactile 1,9"', desc2: 'Suivi santé • Sport\nÉtanche IP67', 
-    price: '45 000 FCFA', stock: 'En stock', category: 'Électronique', priceValue: 45000
-  },
-  { 
-    id: '4', name: 'OMO Détergent 2,5kg', 
-    desc1: 'Poudre, 2,5 kg', desc2: 'Fraîcheur longue\ndurée', 
-    price: '6 500 FCFA', stock: 'En stock', category: 'Maison & Bureau', priceValue: 6500
-  },
-  { 
-    id: '5', name: 'HP 250 G9', 
-    desc1: 'Intel Core i3', desc2: '8 Go RAM • 256 Go SSD\n15,6" • Windows 11', 
-    price: '310 000 FCFA', stock: 'En stock', category: 'Électronique', priceValue: 310000
-  },
-  { 
-    id: '6', name: 'Ninja Air Fryer', 
-    desc1: '4,7L • 1500W', desc2: 'Cuisson sans huile\nTechnologie AirCrisp', 
-    price: '85 000 FCFA', stock: 'En stock', category: 'Maison & Bureau', priceValue: 85000
-  },
-  { 
-    id: '7', name: 'Kit Solaire PV 30W', 
-    desc1: 'Panneau solaire', desc2: 'Monocristallin\nHaute efficacité', 
-    price: '150 000 FCFA', stock: 'En stock', category: 'Maison & Bureau', priceValue: 150000
-  },
-  { 
-    id: '8', name: 'Internet package', 
-    desc1: 'Forfaits data', desc2: 'valables 1, 2 ou 3\nmois', 
-    price: '15 000 FCFA', stock: 'En stock', category: 'Électronique', priceValue: 15000
-  },
-];
+import { useApp } from '../context/AppContext';
+import PriceDisplay from '../components/PriceDisplay';
 
 export default function ShopProductsScreen({ route }) {
   const navigation = useNavigation();
   const shopParam = route?.params?.shop;
-  const shop = shopParam || SHOPS_MOCK[0];
+  const shop = shopParam || {};
 
+  const { fetchAllProducts } = useBuyGoods();
   const { width } = useWindowDimensions();
+  const { t } = useApp();
   const [favorite, setFavorite] = useState(false);
   const [favorites, setFavorites] = useState([]);
   const [activeTab, setActiveTab] = useState('products');
   const [query, setQuery] = useState('');
-  const [category, setCategory] = useState('Tout');
+  const [category, setCategory] = useState('All');
   const [filterOpen, setFilterOpen] = useState(false);
   const [priceFilter, setPriceFilter] = useState('all');
   const [toast, setToast] = useState(null);
+  
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    const loadProducts = async () => {
+      setLoading(true);
+      const allProds = await fetchAllProducts();
+      const merchantId = shop.raw?.id || shop.id;
+      const storeProducts = merchantId 
+        ? allProds.filter(p => (p.merchant_id === merchantId || (p.merchant && p.merchant.id === merchantId)) && p.status === 'published')
+        : allProds.filter(p => p.status === 'published');
+      setProducts(storeProducts);
+      setLoading(false);
+    };
+    loadProducts();
+  }, [shop.id, shop.raw?.id]);
+
   const productWidth = width < 340 ? Math.max(250, width - 40) : (Math.min(width, 520) - 56) / 2;
-  const filteredProducts = useMemo(() => products.filter((product) => (category === 'Tout' || product.category === category) && product.name.toLowerCase().includes(query.trim().toLowerCase()) && (priceFilter === 'all' || (priceFilter === 'low' ? product.priceValue < 50000 : product.priceValue >= 50000))), [category, query, priceFilter]);
+  
+  const dynamicCategories = useMemo(() => {
+    const cats = new Set(products.map(p => p.category).filter(Boolean));
+    return ['All', ...Array.from(cats)];
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) => {
+      const pName = product.title || product.name || '';
+      const pCategory = product.category || 'All';
+      let pPriceValue = 0;
+      if (product.variants && product.variants.length > 0 && product.variants[0].prices && product.variants[0].prices.length > 0) {
+        pPriceValue = product.variants[0].prices[0].amount;
+      }
+      
+      const matchCategory = category === 'All' || pCategory === category;
+      const matchQuery = pName.toLowerCase().includes(query.trim().toLowerCase());
+      const matchPrice = priceFilter === 'all' || (priceFilter === 'low' ? pPriceValue < 50000 : pPriceValue >= 50000);
+      return matchCategory && matchQuery && matchPrice;
+    });
+  }, [products, category, query, priceFilter]);
+
+  const getProductPrice = (prod) => {
+    if (prod.price) return prod.price;
+    if (prod.variants && prod.variants.length > 0 && prod.variants[0].prices && prod.variants[0].prices.length > 0) {
+      return `${prod.variants[0].prices[0].amount} FCFA`;
+    }
+    return '0 FCFA';
+  };
   const shareShop = async () => { try { await Share.share({title: 'Jumia Sénégal', message: 'Découvrez les produits de Jumia Sénégal sur DizzitUp.'}); } finally { setToast({title: 'Partage prêt', message: 'La boutique peut maintenant être envoyée à vos contacts.'}); } };
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -98,56 +105,62 @@ export default function ShopProductsScreen({ route }) {
           {/* Condensed Shop Info */}
           <View style={styles.condensedInfo}>
             <View style={styles.logoCircle}>
-              <Text style={styles.logoText}>JUMIA</Text>
-              <View style={styles.verifiedBadge}>
-                <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                <View style={styles.verifiedBadgeBg} />
-              </View>
+              {(shop.logoUrl || shop.raw?.shop_logo_url || shop.shop_logo_url) ? (
+                <Image source={{ uri: shop.logoUrl || shop.raw?.shop_logo_url || shop.shop_logo_url }} style={{ width: 64, height: 64, borderRadius: 32 }} resizeMode="cover" />
+              ) : (
+                <Text style={styles.logoText}>{(shop.name || shop.raw?.shop_name || shop.shop_name || 'BO').substring(0, 2).toUpperCase()}</Text>
+              )}
+              {shop.verified && (
+                <View style={styles.verifiedBadge}>
+                  <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                  <View style={styles.verifiedBadgeBg} />
+                </View>
+              )}
             </View>
             <View style={styles.condensedContent}>
               <View style={styles.shopNameRow}>
-                <Text style={styles.shopName}>Jumia Sénégal</Text>
-                <Ionicons name="checkmark-circle" size={16} color="#3B82F6" style={{marginLeft: 4}} />
+                <Text style={styles.shopName}>{shop.name || shop.raw?.shop_name || shop.shop_name || t('shop.default_name', 'Boutique')}</Text>
+                {shop.verified && <Ionicons name="checkmark-circle" size={16} color="#3B82F6" style={{marginLeft: 4}} />}
               </View>
               <View style={styles.categoryBadge}>
-                <Text style={styles.categoryBadgeText}>Marketplace</Text>
+                <Text style={styles.categoryBadgeText}>{shop.category || shop.raw?.shop_categories || 'Marketplace'}</Text>
               </View>
-              <Text style={styles.shopType}>Shopping en ligne</Text>
+              <Text style={styles.shopType}>{shop.category || shop.raw?.shop_categories || 'Shopping'}</Text>
               <View style={styles.shopMetaRow}>
                 <Ionicons name="star" size={12} color="#F59E0B" />
-                <Text style={styles.ratingText}>4.6</Text>
-                <Text style={styles.reviewsText}>(3,235 avis)</Text>
+                <Text style={styles.ratingText}>{shop.rating || '4.6'}</Text>
+                <Text style={styles.reviewsText}>({shop.reviews || '0'} avis)</Text>
                 <Text style={styles.dotSeparator}>|</Text>
                 <Ionicons name="location-outline" size={12} color="#64748B" />
-                <Text style={styles.locationText}>Dakar, Sénégal</Text>
+                <Text style={styles.locationText}>{shop.location || [shop.raw?.city_village || shop.city_village || shop.city, shop.raw?.country || shop.country].filter(Boolean).join(', ')}</Text>
                 <Text style={styles.dotSeparator}>•</Text>
-                <Text style={styles.distanceText}>1,5 km</Text>
+                <Text style={styles.distanceText}>{shop.distance || '1,5 km'}</Text>
               </View>
             </View>
           </View>
 
           {/* Payment Methods */}
           <View style={styles.paymentMethodsCard}>
-            <Text style={styles.paymentMethodsTitle}>Moyens de paiement acceptés</Text>
+            <Text style={styles.paymentMethodsTitle}>{t('shop.sections.accepted_payment_methods', 'Moyens de paiement acceptés')}</Text>
             <View style={styles.paymentIconsRow}>
               <View style={styles.paymentItem}>
-                <CryptoIcon symbol="USDT" size={36} />
+                <View style={styles.tokenIconBg}><CryptoIcon symbol="USDT" size={36} /></View>
                 <Text style={styles.tokenLabel}>USDT</Text>
               </View>
               <View style={styles.paymentItem}>
-                <CryptoIcon symbol="USDC" size={36} />
+                <View style={styles.tokenIconBg}><CryptoIcon symbol="USDC" size={36} /></View>
                 <Text style={styles.tokenLabel}>USDC</Text>
               </View>
               <View style={styles.paymentItem}>
-                <CryptoIcon symbol="EURC" size={36} />
+                <View style={styles.tokenIconBg}><CryptoIcon symbol="EURC" size={36} /></View>
                 <Text style={styles.tokenLabel}>EURC</Text>
               </View>
               <View style={styles.paymentItem}>
-                <CryptoIcon symbol="DZY" size={36} />
+                <View style={styles.tokenIconBg}><CryptoIcon symbol="DZY" size={36} /></View>
                 <Text style={styles.tokenLabel}>DZY</Text>
               </View>
               <TouchableOpacity style={styles.paymentItem}>
-                <Text style={styles.plusLink}>+ Plus</Text>
+                <Text style={styles.plusLink}>{t('shop.categories.more', '+ Plus')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -156,23 +169,23 @@ export default function ShopProductsScreen({ route }) {
           <View style={styles.tabsContainer}>
             <TouchableOpacity style={[styles.tab, activeTab === 'products' && styles.tabActive]} onPress={() => setActiveTab('products')}>
               <Ionicons name="bag-handle-outline" size={16} color={activeTab === 'products' ? '#FFB800' : '#94A3B8'} style={{marginRight: 6}} />
-              <Text style={activeTab === 'products' ? styles.tabTextActive : styles.tabTextInactive}>Produits</Text>
+              <Text style={activeTab === 'products' ? styles.tabTextActive : styles.tabTextInactive}>{t('shop.tabs.products', 'Produits')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.tab, activeTab === 'reviews' && styles.tabActive]} onPress={() => setActiveTab('reviews')}>
               <Ionicons name="star-outline" size={16} color={activeTab === 'reviews' ? '#FFB800' : '#94A3B8'} style={{marginRight: 6}} />
-              <Text style={activeTab === 'reviews' ? styles.tabTextActive : styles.tabTextInactive}>Avis</Text>
+              <Text style={activeTab === 'reviews' ? styles.tabTextActive : styles.tabTextInactive}>{t('shop.tabs.reviews', 'Avis')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.tab, activeTab === 'info' && styles.tabActive]} onPress={() => setActiveTab('info')}>
               <Ionicons name="information-circle-outline" size={16} color={activeTab === 'info' ? '#FFB800' : '#94A3B8'} style={{marginRight: 6}} />
-              <Text style={activeTab === 'info' ? styles.tabTextActive : styles.tabTextInactive}>Infos</Text>
+              <Text style={activeTab === 'info' ? styles.tabTextActive : styles.tabTextInactive}>{t('shop.tabs.info', 'Infos')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.tab, activeTab === 'shop' && styles.tabActive]} onPress={() => setActiveTab('shop')}>
               <Ionicons name="storefront-outline" size={16} color={activeTab === 'shop' ? '#FFB800' : '#94A3B8'} style={{marginRight: 6}} />
-              <Text style={activeTab === 'shop' ? styles.tabTextActive : styles.tabTextInactive}>Boutique</Text>
+              <Text style={activeTab === 'shop' ? styles.tabTextActive : styles.tabTextInactive}>{t('shop.tabs.store', 'Boutique')}</Text>
             </TouchableOpacity>
           </View>
 
-          {activeTab !== 'products' && <ShopTabContent tab={activeTab} onViewShop={() => navigation.navigate('ShopDetailsScreen')} />}
+          {activeTab !== 'products' && <ShopTabContent tab={activeTab} onViewShop={() => navigation.navigate('ShopDetailsScreen')} t={t} />}
 
           <View style={activeTab === 'products' ? null : styles.hidden}>
 
@@ -182,7 +195,7 @@ export default function ShopProductsScreen({ route }) {
               <Ionicons name="search-outline" size={18} color="#94A3B8" style={{marginRight: 8}} />
               <TextInput 
                 style={styles.searchInput} 
-                placeholder="Rechercher un produit..." 
+                placeholder={t('shop.products.search_placeholder', 'Rechercher un produit...')} 
                 placeholderTextColor="#94A3B8"
                 value={query}
                 onChangeText={setQuery}
@@ -190,16 +203,26 @@ export default function ShopProductsScreen({ route }) {
             </View>
             <TouchableOpacity style={styles.btnFilter} onPress={() => setFilterOpen(!filterOpen)}>
               <Ionicons name="options-outline" size={18} color="#3B82F6" style={{marginRight: 6}} />
-              <Text style={styles.btnFilterText}>Filtrer</Text>
+              <Text style={styles.btnFilterText}>{t('shop.products.filter', 'Filtrer')}</Text>
             </TouchableOpacity>
           </View>
-          {filterOpen && <View style={styles.filterPanel}><Text style={styles.filterPanelTitle}>Prix</Text>{[{value:'all',label:'Tous les prix'},{value:'low',label:'Moins de 50 000 FCFA'},{value:'high',label:'50 000 FCFA et plus'}].map((option) => <TouchableOpacity key={option.value} style={[styles.filterOption, priceFilter === option.value && styles.filterOptionActive]} onPress={() => {setPriceFilter(option.value);setFilterOpen(false)}}><Text style={styles.filterOptionText}>{option.label}</Text>{priceFilter === option.value && <Ionicons name="checkmark" size={18} color="#F59E0B" />}</TouchableOpacity>)}</View>}
+          {filterOpen && <View style={styles.filterPanel}><Text style={styles.filterPanelTitle}>{t('shop.products.price', 'Prix')}</Text>{[{value:'all',label:t('shop.products.all_prices', 'Tous les prix')},{value:'low',label:t('shop.products.under_50k', 'Moins de 50 000 FCFA')},{value:'high',label:t('shop.products.over_50k', '50 000 FCFA et plus')}].map((option) => <TouchableOpacity key={option.value} style={[styles.filterOption, priceFilter === option.value && styles.filterOptionActive]} onPress={() => {setPriceFilter(option.value);setFilterOpen(false)}}><Text style={styles.filterOptionText}>{option.label}</Text>{priceFilter === option.value && <Ionicons name="checkmark" size={18} color="#F59E0B" />}</TouchableOpacity>)}</View>}
 
           {/* Categories */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesScroll}>
-            {categories.map((item) => <TouchableOpacity key={item} style={category === item ? styles.categoryChipActive : styles.categoryChip} onPress={() => setCategory(item)}><Text style={category === item ? styles.categoryChipTextActive : styles.categoryChipText}>{item}</Text></TouchableOpacity>)}
+            {dynamicCategories.map((item) => (
+              <TouchableOpacity 
+                key={item} 
+                style={category === item ? styles.categoryChipActive : styles.categoryChip} 
+                onPress={() => setCategory(item)}
+              >
+                <Text style={category === item ? styles.categoryChipTextActive : styles.categoryChipText}>
+                  {item === 'All' ? t('shop.categories.all', 'All') : item}
+                </Text>
+              </TouchableOpacity>
+            ))}
             <TouchableOpacity style={styles.categoryChip}>
-              <Text style={styles.categoryChipTextBlue}>Plus ˅</Text>
+              <Text style={styles.categoryChipTextBlue}>{t('shop.categories.more', 'More ˅')}</Text>
             </TouchableOpacity>
           </ScrollView>
 
@@ -210,20 +233,35 @@ export default function ShopProductsScreen({ route }) {
                 <TouchableOpacity style={styles.heartIcon} onPress={() => setFavorites((items) => items.includes(product.id) ? items.filter((id) => id !== product.id) : [...items, product.id])}>
                   <Ionicons name={favorites.includes(product.id) ? "heart" : "heart-outline"} size={14} color={favorites.includes(product.id) ? "#EF4444" : "#64748B"} />
                 </TouchableOpacity>
-                <View style={styles.productImgPlaceholder} />
+                
+                {product.product_images && product.product_images.length > 0 ? (
+                  <Image source={{ uri: product.product_images[0] }} style={styles.productImgPlaceholder} resizeMode="cover" />
+                ) : product.thumbnail ? (
+                  <Image source={{ uri: product.thumbnail }} style={styles.productImgPlaceholder} resizeMode="cover" />
+                ) : product.images && product.images.length > 0 ? (
+                  <Image source={{ uri: product.images[0] }} style={styles.productImgPlaceholder} resizeMode="cover" />
+                ) : (
+                  <View style={[styles.productImgPlaceholder, { justifyContent: 'center', alignItems: 'center' }]}>
+                    <Ionicons name="cube-outline" size={24} color="#9CA3AF" />
+                  </View>
+                )}
+                
                 <View style={styles.productContent}>
-                  <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
-                  <Text style={styles.productDesc}>{product.desc1}</Text>
-                  <Text style={styles.productDescLines} numberOfLines={2}>{product.desc2}</Text>
+                  <Text style={styles.productName} numberOfLines={1}>{product.title || product.name}</Text>
+                  <Text style={styles.productDesc} numberOfLines={1}>{product.subtitle || ''}</Text>
+                  <Text style={styles.productDescLines} numberOfLines={2}>{product.description || ''}</Text>
                   
                   <View style={styles.priceStockRow}>
-                    <Text style={styles.productPrice}>{product.price}</Text>
-                    <Text style={styles.productStock}>{product.stock}</Text>
+                    <PriceDisplay 
+                      amount={product.price || (product.variants?.[0]?.prices?.[0]?.amount || 0)} 
+                      baseCurrency={product.currency || 'XOF'} 
+                    />
+                    <Text style={styles.productStock}>{product.stock || t('shop.products.in_stock', 'En stock')}</Text>
                   </View>
                   
               <TouchableOpacity style={styles.btnBuyCeci} onPress={() => navigation.navigate('ProductDetailsScreen', { product: product, shop: shop })}>
                     <Ionicons name="cart-outline" size={12} color="#1A2840" style={{marginRight: 4}} />
-                    <Text style={styles.btnBuyCeciText}>Achetez-moi ceci</Text>
+                    <Text style={styles.btnBuyCeciText}>{t('shop.products.buy_me_this', 'Achetez-moi ceci')}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -235,29 +273,29 @@ export default function ShopProductsScreen({ route }) {
             <View style={styles.featureItem}>
               <Ionicons name="shield-checkmark-outline" size={20} color="#3B82F6" style={{marginRight: 8}} />
               <View>
-                <Text style={styles.featureTitle}>Paiement sécurisé</Text>
-                <Text style={styles.featureSubtitle}>100% sécurisé</Text>
+                <Text style={styles.featureTitle}>{t('shop.features.secure_payment', 'Paiement sécurisé')}</Text>
+                <Text style={styles.featureSubtitle}>{t('shop.features.secure_100', '100% sécurisé')}</Text>
               </View>
             </View>
             <View style={styles.featureItem}>
               <Ionicons name="bus-outline" size={20} color="#3B82F6" style={{marginRight: 8}} />
               <View>
-                <Text style={styles.featureTitle}>Livraison rapide</Text>
-                <Text style={styles.featureSubtitle}>Partout au Sénégal</Text>
+                <Text style={styles.featureTitle}>{t('shop.features.fast_delivery', 'Livraison rapide')}</Text>
+                <Text style={styles.featureSubtitle}>{t('shop.features.nationwide_delivery', 'Partout au Sénégal')}</Text>
               </View>
             </View>
             <View style={styles.featureItem}>
               <Ionicons name="headset-outline" size={20} color="#3B82F6" style={{marginRight: 8}} />
               <View>
-                <Text style={styles.featureTitle}>Support 7j/7</Text>
-                <Text style={styles.featureSubtitle}>Assistance dédiée</Text>
+                <Text style={styles.featureTitle}>{t('shop.features.support_24_7', 'Support 7j/7')}</Text>
+                <Text style={styles.featureSubtitle}>{t('shop.features.dedicated_support', 'Assistance dédiée')}</Text>
               </View>
             </View>
             <View style={styles.featureItem}>
               <Ionicons name="checkmark-circle-outline" size={20} color="#3B82F6" style={{marginRight: 8}} />
               <View>
-                <Text style={styles.featureTitle}>Vendeur vérifié</Text>
-                <Text style={styles.featureSubtitle}>Marchand de confiance</Text>
+                <Text style={styles.featureTitle}>{t('shop.features.verified_seller', 'Vendeur vérifié')}</Text>
+                <Text style={styles.featureSubtitle}>{t('shop.features.trusted_merchant', 'Marchand de confiance')}</Text>
               </View>
             </View>
           </ScrollView>
@@ -271,10 +309,10 @@ export default function ShopProductsScreen({ route }) {
   );
 }
 
-function ShopTabContent({ tab, onViewShop }) {
-  if (tab === 'reviews') return <View style={styles.tabPage}><Text style={styles.tabPageTitle}>Avis clients</Text><View style={styles.ratingSummary}><Text style={styles.ratingBig}>4.6</Text><View><Text style={styles.stars}>★★★★★</Text><Text style={styles.tabPageText}>3 235 avis vérifiés</Text></View></View>{['Livraison rapide et produit conforme.', 'Très bon vendeur, je recommande.', 'Service client réactif.'].map((review, index) => <View key={review} style={styles.reviewCard}><View style={styles.reviewAvatar}><Text style={styles.reviewAvatarText}>{['MK','OT','AB'][index]}</Text></View><View style={{flex:1}}><Text style={styles.reviewName}>{['Marie K.','Ousmane T.','Aïssatou B.'][index]}</Text><Text style={styles.tabPageText}>{review}</Text></View></View>)}</View>;
-  if (tab === 'info') return <View style={styles.tabPage}><Text style={styles.tabPageTitle}>Informations pratiques</Text>{[['time-outline','Horaires','Lundi à dimanche, 08:00 – 22:00'],['bus-outline','Livraison','Livraison, retrait et commande en ligne'],['location-outline','Adresse','Dakar, Sénégal'],['shield-checkmark-outline','Vérification','Marchand vérifié depuis 2016']].map(([icon,title,text]) => <View key={title} style={styles.infoRow}><View style={styles.infoIcon}><Ionicons name={icon} size={20} color="#3B82F6" /></View><View><Text style={styles.infoTitle}>{title}</Text><Text style={styles.tabPageText}>{text}</Text></View></View>)}</View>;
-  return <View style={styles.tabPage}><Text style={styles.tabPageTitle}>À propos de la boutique</Text><Text style={styles.tabPageText}>Jumia Sénégal propose des produits électroniques, téléphones, articles pour la maison et de nombreux services avec paiement sécurisé en crypto.</Text><TouchableOpacity style={styles.viewShopButton} onPress={onViewShop}><Ionicons name="storefront-outline" size={19} color="#1A2840" /><Text style={styles.viewShopButtonText}>Voir la fiche complète</Text></TouchableOpacity></View>;
+function ShopTabContent({ tab, onViewShop, t }) {
+  if (tab === 'reviews') return <View style={styles.tabPage}><Text style={styles.tabPageTitle}>{t('shop.reviews.title', 'Avis clients')}</Text><View style={styles.ratingSummary}><Text style={styles.ratingBig}>4.6</Text><View><Text style={styles.stars}>★★★★★</Text><Text style={styles.tabPageText}>3 235 {t('shop.reviews.count_verified', 'avis vérifiés')}</Text></View></View>{['Livraison rapide et produit conforme.', 'Très bon vendeur, je recommande.', 'Service client réactif.'].map((review, index) => <View key={review} style={styles.reviewCard}><View style={styles.reviewAvatar}><Text style={styles.reviewAvatarText}>{['MK','OT','AB'][index]}</Text></View><View style={{flex:1}}><Text style={styles.reviewName}>{['Marie K.','Ousmane T.','Aïssatou B.'][index]}</Text><Text style={styles.tabPageText}>{review}</Text></View></View>)}</View>;
+  if (tab === 'info') return <View style={styles.tabPage}><Text style={styles.tabPageTitle}>{t('shop.info.practical_info', 'Informations pratiques')}</Text>{[['time-outline',t('shop.info.address', 'Horaires'),'Lundi à dimanche, 08:00 – 22:00'],['bus-outline',t('shop.info.delivery', 'Livraison'),t('shop.info.delivery_options', 'Livraison, retrait et commande en ligne')],['location-outline',t('shop.info.location', 'Adresse'),'Dakar, Sénégal'],['shield-checkmark-outline','Vérification',t('shop.info.verified_since', 'Marchand vérifié depuis 2016')]].map(([icon,title,text]) => <View key={title} style={styles.infoRow}><View style={styles.infoIcon}><Ionicons name={icon} size={20} color="#3B82F6" /></View><View><Text style={styles.infoTitle}>{title}</Text><Text style={styles.tabPageText}>{text}</Text></View></View>)}</View>;
+  return <View style={styles.tabPage}><Text style={styles.tabPageTitle}>{t('shop.sections.about_store', 'À propos de la boutique')}</Text><Text style={styles.tabPageText}>Jumia Sénégal propose des produits électroniques, téléphones, articles pour la maison et de nombreux services avec paiement sécurisé en crypto.</Text><TouchableOpacity style={styles.viewShopButton} onPress={onViewShop}><Ionicons name="storefront-outline" size={19} color="#1A2840" /><Text style={styles.viewShopButtonText}>{t('shop.actions.view_full_profile', 'Voir la fiche complète')}</Text></TouchableOpacity></View>;
 }
 
 const styles = StyleSheet.create({
@@ -453,6 +491,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 4,
   },
+  tokenIconBg: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
   tokenIconText: {
     color: '#FFFFFF',
     fontSize: 14,
@@ -615,7 +662,8 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   productImgPlaceholder: {
-    height: 60,
+    height: 140,
+    width: '100%',
     backgroundColor: '#F8FAFC',
     borderRadius: 8,
     marginBottom: 8,

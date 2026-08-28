@@ -7,11 +7,7 @@ import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
 import { useBuyGoods } from '../hooks/useBuyGoods';
 import { useApp } from '../context/AppContext';
-
-
-
-const { width } = Dimensions.get('window');
-
+import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
 
 
 export default function ShopDetailsScreen({ route }) {
@@ -28,22 +24,32 @@ export default function ShopDetailsScreen({ route }) {
 
   const [favorite, setFavorite] = useState(false);
   const [productFavorites, setProductFavorites] = useState([]);
-  const [selectedPayment, setSelectedPayment] = useState('card');
   const [aboutExpanded, setAboutExpanded] = useState(false);
+  const [shopInfoExpanded, setShopInfoExpanded] = useState(false);
+  const [paymentInfoExpanded, setPaymentInfoExpanded] = useState(false);
   const [toast, setToast] = useState(null);
+
+  const getFlagCode = (countryInput) => {
+    if (!countryInput) return 'us';
+    if (countryInput.length === 2) return countryInput.toLowerCase();
+    const iso = getCountryCurrencyInfo(countryInput);
+    if (iso && iso.code) return iso.code.toLowerCase();
+    return 'us';
+  };
 
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      if (initialShop.raw?.slug) {
-        const storeDetails = await fetchStoreDetails(initialShop.raw.slug);
+      const slugOrId = initialShop.slug || initialShop.id;
+      if (slugOrId) {
+        const storeDetails = await fetchStoreDetails(slugOrId);
         if (storeDetails) {
           setShop(prev => ({ ...prev, ...storeDetails }));
         }
       }
 
       const allProds = await fetchAllProducts();
-      const merchantId = initialShop.raw?.id;
+      const merchantId = initialShop.id;
       const storeProducts = merchantId
         ? allProds.filter(p => p.merchant_id === merchantId || (p.merchant && p.merchant.id === merchantId))
         : allProds;
@@ -53,18 +59,34 @@ export default function ShopDetailsScreen({ route }) {
     };
 
     loadData();
-  }, [initialShop.raw?.slug, initialShop.raw?.id]);
+  }, [initialShop.slug, initialShop.id]);
 
   const copyToClipboard = (label, text) => {
-    setToast({ title: `${label} copié !`, message: `${text}` });
+    setToast({ title: t('copied_title', `${label} copié !`, { label }), message: `${text}` });
   };
 
   const shareShop = async () => {
+    const shopName = shop.shop_name || shop.name || 'Boutique';
+    const shopSlug = shop.slug || 'boutique';
+    const formatForUrl = (text) => text ? text.toLowerCase().replace(/\s+/g, '-') : 'unknown';
+    const countryStr = formatForUrl(shop.country || 'sn');
+    const cityStr = formatForUrl(shop.city_village || 'dakar');
+    const shopUrl = `dizzitup://DZYstore/${countryStr}/${cityStr}/${shopSlug}`;
+
     try {
-      await Share.share({ title: 'Jumia Sénégal', message: 'Découvrez la boutique Jumia Sénégal sur DizzitUp : dzy.store/jumia-senegal' });
-      setToast({ title: 'Boutique partagée', message: 'Le partage a été préparé avec succès.' });
+      await Share.share({
+        title: shopName,
+        message: t('shop.share.message', `Découvrez la boutique ${shopName} sur DizzitUp : ${shopUrl}`, { name: shopName, url: shopUrl })
+      });
+      setToast({
+        title: t('shop.share.success_title', 'Boutique partagée'),
+        message: t('shop.share.success_msg', 'Le partage a été préparé avec succès.')
+      });
     } catch {
-      setToast({ title: 'Lien copié', message: 'dzy.store/jumia-senegal a été copié.' });
+      setToast({
+        title: t('shop.share.copied_title', 'Lien copié'),
+        message: t('shop.share.copied_msg', `${shopUrl} a été copié.`, { url: shopUrl })
+      });
     }
   };
 
@@ -98,19 +120,24 @@ export default function ShopDetailsScreen({ route }) {
             {/* Cover Banner */}
             <View style={styles.coverBg}>
               <View style={styles.coverTextContent}>
-                <Text style={styles.coverTitle}>{(shop.shop_name || shop.name || 'Boutique')?.toUpperCase()}</Text>
-                <Text style={styles.coverSubtitle}>Tout ce dont vous{'\n'}avez besoin, livré{'\n'}chez vous.</Text>
+                <Text style={styles.coverTitle} numberOfLines={2}>{shop.shop_name || shop.name || t('shop.default_name', 'Boutique')}</Text>
+                <Text style={styles.coverSubtitle}>{t('shop.cover_subtitle', 'Tout ce dont vous\navez besoin, livré\nchez vous.')}</Text>
               </View>
               <Image
-                source={shop.shop_banner_url ? { uri: shop.shop_banner_url } : require('../../assets/promo_shop.png')}
+                source={shop.shop_banner_url ? { uri: shop.shop_banner_url } : require('../../assets/brand/shop_default_banner.png')}
                 style={styles.coverImage}
               />
+              {!shop.shop_banner_url && (
+                <View style={{position: 'absolute', bottom: 10, right: 14, backgroundColor: 'rgba(26, 40, 64, 0.7)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12}}>
+                  <Text style={{fontFamily: 'SpaceGrotesk_700Bold', fontSize: 10, color: '#FFF'}}>DZYstore • Dizzitup</Text>
+                </View>
+              )}
             </View>
 
             {/* Circular Logo overlay */}
             <View style={styles.logoContainer}>
               <View style={styles.logoCircle}>
-                <Image source={shop.logoImage || require('../../assets/brand/dizzitup_logo_cercle.png')} style={{ width: 36, height: 36 }} resizeMode="contain" />
+                <Image source={shop.shop_logo_url ? { uri: shop.shop_logo_url } : require('../../assets/brand/dizzitup_logo_cercle.png')} style={{ width: 36, height: 36, borderRadius: 18 }} resizeMode="contain" />
               </View>
               {shop.verified && (
                 <View style={styles.verifiedBadge}>
@@ -123,32 +150,38 @@ export default function ShopDetailsScreen({ route }) {
           {/* Shop Metadata */}
           <View style={styles.shopInfoHeader}>
             <View style={styles.shopNameRow}>
-              <Text style={styles.shopName}>{shop.shop_name || shop.name || 'Boutique'}</Text>
-              <Ionicons name="checkmark-circle" size={18} color="#3B82F6" style={{ marginLeft: 6 }} />
+              <Text style={styles.shopName}>{shop.shop_name || shop.name || t('shop.default_name', 'Boutique')}</Text>
+              {shop.verified && <Ionicons name="checkmark-circle" size={18} color="#3B82F6" style={{ marginLeft: 6 }} />}
+              <View style={styles.flagCityBadge}>
+                <Image source={{ uri: `https://flagcdn.com/w20/${getFlagCode(shop.country || shop.raw?.country || shop.country_code)}.png` }} style={{ width: 16, height: 11, marginRight: 4, borderRadius: 2 }} />
+                <Text style={styles.flagCityText}>
+                  {shop.city_village || shop.raw?.city_village || shop.city || ''}
+                </Text>
+              </View>
             </View>
 
             <View style={styles.badgesRow}>
               <View style={[styles.statusBadge, { backgroundColor: '#ECFDF5' }]}>
-                <Text style={[styles.statusBadgeText, { color: '#10B981' }]}>ACTIVE</Text>
+                <Text style={[styles.statusBadgeText, { color: '#10B981' }]}>{t('shop.badges.active', 'ACTIVE')}</Text>
               </View>
               <View style={[styles.statusBadge, { backgroundColor: '#F1F5F9' }]}>
                 <Ionicons name="bus-outline" size={12} color="#64748B" style={{ marginRight: 4 }} />
                 <Text style={[styles.statusBadgeText, { color: '#64748B' }]}>{shop.deliveryTime || '24h'}</Text>
               </View>
               <View style={[styles.statusBadge, { backgroundColor: '#F5F3FF' }]}>
-                <Text style={[styles.statusBadgeText, { color: '#8B5CF6' }]}>{shop.shop_categories || shop.category || 'Marketplace'}</Text>
+                <Text style={[styles.statusBadgeText, { color: '#8B5CF6' }]}>{shop.shop_categories || shop.category || t('shop.badges.marketplace', 'Marketplace')}</Text>
               </View>
             </View>
 
-            <Text style={styles.shopType}>Shopping en ligne</Text>
+            <Text style={styles.shopType}>{t('shop.badges.online_shopping', 'Shopping en ligne')}</Text>
 
             <View style={styles.shopMetaRow}>
               <Ionicons name="star" size={13} color="#F59E0B" />
               <Text style={styles.ratingText}>4.6</Text>
-              <Text style={styles.reviewsText}>(3,215 avis)</Text>
+              <Text style={styles.reviewsText}>(3,215 {t('shop.stats.reviews_verified', 'avis vérifiés')})</Text>
               <Text style={styles.dotSeparator}>•</Text>
               <Ionicons name="location-outline" size={13} color="#64748B" />
-              <Text style={styles.locationText}>Dakar, Sénégal</Text>
+              <Text style={styles.locationText}>{shop.location || [shop.city_village || shop.raw?.city_village || shop.city, shop.country || shop.raw?.country].filter(Boolean).join(', ')}</Text>
               <Text style={styles.dotSeparator}>•</Text>
               <Text style={styles.distanceText}>1,5 km</Text>
             </View>
@@ -160,7 +193,7 @@ export default function ShopDetailsScreen({ route }) {
               <Ionicons name="cube-outline" size={18} color="#1A2840" />
               <View style={{ marginLeft: 8 }}>
                 <Text style={styles.statNumber}>12 540</Text>
-                <Text style={styles.statLabel}>Produits</Text>
+                <Text style={styles.statLabel}>{t('shop.stats.products', 'Produits')}</Text>
               </View>
             </View>
             <View style={styles.statDivider} />
@@ -168,7 +201,7 @@ export default function ShopDetailsScreen({ route }) {
               <Ionicons name="people-outline" size={18} color="#1A2840" />
               <View style={{ marginLeft: 8 }}>
                 <Text style={styles.statNumber}>52,3 k</Text>
-                <Text style={styles.statLabel}>Abonnés</Text>
+                <Text style={styles.statLabel}>{t('shop.stats.followers', 'Abonnés')}</Text>
               </View>
             </View>
             <View style={styles.statDivider} />
@@ -176,36 +209,15 @@ export default function ShopDetailsScreen({ route }) {
               <Ionicons name="person-outline" size={18} color="#1A2840" />
               <View style={{ marginLeft: 8 }}>
                 <Text style={styles.statNumber}>128</Text>
-                <Text style={styles.statLabel}>Abonnements</Text>
+                <Text style={styles.statLabel}>{t('shop.stats.following', 'Abonnements')}</Text>
               </View>
             </View>
           </View>
 
-          {/* QR Code & Share Cards Row */}
-          <View style={styles.twoCardsRow}>
-            {/* QR Card */}
-            <View style={[styles.halfCard, { marginRight: 6 }]}>
-              <View style={styles.cardHeaderRow}>
-                <Text style={styles.cardTitle}>QR code boutique</Text>
-                <Ionicons name="information-circle-outline" size={14} color="#9CA3AF" />
-              </View>
-              <View style={styles.qrRow}>
-                <View style={styles.qrPlaceholder}>
-                  <Ionicons name="qr-code-outline" size={42} color="#1A2840" />
-                </View>
-                <View style={{ flex: 1, marginLeft: 8 }}>
-                  <Text style={styles.qrText}>Scannez pour visiter ma boutique</Text>
-                  <TouchableOpacity style={styles.urlRow} onPress={() => copyToClipboard('Lien boutique', 'dzy.store/jumia-senegal')}>
-                    <Text style={styles.urlText} numberOfLines={1}>dzy.store/jumia-senegal</Text>
-                    <Ionicons name="copy-outline" size={12} color="#3B82F6" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-
-            {/* Share Card */}
-            <View style={[styles.halfCard, { marginLeft: 6 }]}>
-              <Text style={styles.cardTitle}>Partager la boutique</Text>
+          {/* Share Card Row */}
+          <View style={styles.shareCardContainer}>
+            <View style={styles.fullCard}>
+              <Text style={styles.cardTitle}>{t('shop.actions.share_store', 'Partager la boutique')}</Text>
               <View style={styles.socialIconsRow}>
                 <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#ECFDF5' }]} onPress={shareShop}>
                   <Ionicons name="logo-whatsapp" size={16} color="#10B981" />
@@ -226,166 +238,116 @@ export default function ShopDetailsScreen({ route }) {
             </View>
           </View>
 
-          {/* Key Location & Delivery Info Card */}
-          <View style={styles.keyInfoCard}>
-            <View style={styles.keyInfoCol}>
-              <Ionicons name="business-outline" size={18} color="#1A2840" />
-              <Text style={styles.keyInfoTitle}>Adresse</Text>
-              <Text style={styles.keyInfoDesc}>Sacré-Coeur 3{'\n'}Villa N°9732</Text>
-            </View>
-            <View style={styles.keyInfoCol}>
-              <Ionicons name="location-outline" size={18} color="#1A2840" />
-              <Text style={styles.keyInfoTitle}>Localisation</Text>
-              <Text style={styles.keyInfoDesc}>Dakar, Sénégal{'\n'}1,5 km</Text>
-            </View>
-            <View style={styles.keyInfoCol}>
-              <Ionicons name="bag-handle-outline" size={18} color="#1A2840" />
-              <Text style={styles.keyInfoTitle}>Retrait</Text>
-              <Text style={[styles.keyInfoDesc, { color: '#10B981', fontWeight: 'bold' }]}>Disponible</Text>
-            </View>
-            <View style={styles.keyInfoCol}>
-              <Ionicons name="bus-outline" size={18} color="#1A2840" />
-              <Text style={styles.keyInfoTitle}>Livraison</Text>
-              <Text style={[styles.keyInfoDesc, { color: '#10B981', fontWeight: 'bold' }]}>Disponible</Text>
-            </View>
-          </View>
-
-          {/* Detailed Info Cards (Payment Info vs Shop Info) */}
-          <View style={styles.twoCardsRow}>
-            {/* Payment Info Card */}
-            <View style={[styles.halfCard, { marginRight: 6 }]}>
-              <Text style={styles.cardTitle}>Informations de paiement</Text>
-              <View style={styles.infoList}>
-                <TouchableOpacity style={styles.infoRow} onPress={() => copyToClipboard('DZYwallet', 'USDC, USDT, EURC, DZY')}>
-                  <Ionicons name="wallet-outline" size={14} color="#1A2840" />
-                  <Text style={styles.infoText} numberOfLines={1}>DZYwallet (USDC, USDT...)</Text>
-                  <Ionicons name="copy-outline" size={12} color="#9CA3AF" />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.infoRow} onPress={() => copyToClipboard('EVM wallet', '0x7d17...9Fa3c2E')}>
-                  <Ionicons name="hardware-chip-outline" size={14} color="#8B5CF6" />
-                  <View style={{ flex: 1, marginHorizontal: 4 }}>
-                    <Text style={styles.infoTextSmall}>EVM wallet</Text>
-                    <Text style={styles.infoTextSub}>0x7d17...9Fa3c2E</Text>
-                  </View>
-                  <Ionicons name="copy-outline" size={12} color="#9CA3AF" />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.infoRow} onPress={() => copyToClipboard('Solana wallet', '7GfK9...mJ8nPcLz')}>
-                  <Ionicons name="server-outline" size={14} color="#10B981" />
-                  <View style={{ flex: 1, marginHorizontal: 4 }}>
-                    <Text style={styles.infoTextSmall}>Solana wallet</Text>
-                    <Text style={styles.infoTextSub}>7GfK9...mJ8nPcLz</Text>
-                  </View>
-                  <Ionicons name="copy-outline" size={12} color="#9CA3AF" />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.infoRow} onPress={() => copyToClipboard('IBAN Euro', 'DE89 3704 0044 0532 0130 00')}>
-                  <Text style={{ fontSize: 10 }}>🇪🇺</Text>
-                  <View style={{ flex: 1, marginHorizontal: 4 }}>
-                    <Text style={styles.infoTextSmall}>Euro IBAN Virtual account</Text>
-                    <Text style={styles.infoTextSub}>DE89 3704 0044 0532 0130 00</Text>
-                  </View>
-                  <Ionicons name="copy-outline" size={12} color="#9CA3AF" />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.infoRow} onPress={() => copyToClipboard('USD Account', 'AE10 3315 8923 1000 0001 234')}>
-                  <Text style={{ fontSize: 10 }}>🇺🇸</Text>
-                  <View style={{ flex: 1, marginHorizontal: 4 }}>
-                    <Text style={styles.infoTextSmall}>USD Bank Virtual account</Text>
-                    <Text style={styles.infoTextSub}>AE10 3315 8923 1000 0001 234</Text>
-                  </View>
-                  <Ionicons name="copy-outline" size={12} color="#9CA3AF" />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Shop Info Card */}
-            <View style={[styles.halfCard, { marginLeft: 6 }]}>
-              <Text style={styles.cardTitle}>Informations sur la boutique</Text>
-              <View style={styles.infoList}>
+          {/* Accordion 1: Informations sur la boutique */}
+          <View style={styles.accordionContainer}>
+            <TouchableOpacity
+              style={styles.accordionHeader}
+              onPress={() => setShopInfoExpanded(!shopInfoExpanded)}
+            >
+              <Text style={styles.accordionTitle}>{t('shop.info.title', 'Informations sur la boutique')}</Text>
+              <Ionicons name={shopInfoExpanded ? "chevron-up" : "chevron-down"} size={20} color="#1A2840" />
+            </TouchableOpacity>
+            {shopInfoExpanded && (
+              <View style={styles.accordionContent}>
                 <TouchableOpacity style={styles.infoRow}>
-                  <Ionicons name="cube-outline" size={14} color="#1A2840" />
-                  <View style={{ flex: 1, marginHorizontal: 4 }}>
-                    <Text style={styles.infoTextSmall}>Adresse</Text>
-                    <Text style={styles.infoTextSub}>Sacré-Coeur 3, Villa N°9732</Text>
+                  <Ionicons name="cube-outline" size={16} color="#1A2840" />
+                  <View style={{ flex: 1, marginHorizontal: 8 }}>
+                    <Text style={styles.infoTextSmall}>{t('shop.info.address', 'Adresse')}</Text>
+                    <Text style={styles.infoTextSub}>{shop.street_name || shop.neighborhood || t('shop.info.not_specified', 'Non spécifié')}</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={14} color="#9CA3AF" />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.infoRow}>
-                  <Ionicons name="location-outline" size={14} color="#1A2840" />
-                  <View style={{ flex: 1, marginHorizontal: 4 }}>
-                    <Text style={styles.infoTextSmall}>Localisation</Text>
-                    <Text style={styles.infoTextSub}>Dakar, Sénégal (1,5 km)</Text>
+                  <Ionicons name="location-outline" size={16} color="#1A2840" />
+                  <View style={{ flex: 1, marginHorizontal: 8 }}>
+                    <Text style={styles.infoTextSmall}>{t('shop.info.location', 'Localisation')}</Text>
+                    <Text style={styles.infoTextSub}>{shop.location || [shop.city_village || shop.raw?.city_village || shop.city, shop.country || shop.raw?.country].filter(Boolean).join(', ') || t('shop.info.not_specified', 'Non spécifié')}</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={14} color="#9CA3AF" />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.infoRow}>
-                  <Ionicons name="bus-outline" size={14} color="#1A2840" />
-                  <View style={{ flex: 1, marginHorizontal: 4 }}>
-                    <Text style={styles.infoTextSmall}>Retrait / Livraison</Text>
-                    <Text style={styles.infoTextSub}>Disponible</Text>
+                  <Ionicons name="bus-outline" size={16} color="#1A2840" />
+                  <View style={{ flex: 1, marginHorizontal: 8 }}>
+                    <Text style={styles.infoTextSmall}>{t('shop.info.delivery', 'Retrait / Livraison')}</Text>
+                    <Text style={styles.infoTextSub}>{shop.deliveryTime ? t('shop.info.available', 'Disponible') : t('shop.info.not_specified', 'Non spécifié')}</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={14} color="#9CA3AF" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.infoRow} onPress={() => copyToClipboard('URL DZYStore', 'dzy.store/jumia-senegal')}>
-                  <Ionicons name="globe-outline" size={14} color="#1A2840" />
-                  <View style={{ flex: 1, marginHorizontal: 4 }}>
+                <TouchableOpacity style={styles.infoRow} onPress={() => {
+                  const formatForUrl = (text) => text ? text.toLowerCase().replace(/\s+/g, '-') : 'unknown';
+                  const countryStr = formatForUrl(shop.country || 'sn');
+                  const cityStr = formatForUrl(shop.city_village || 'dakar');
+                  const shopUrl = `dizzitup://DZYstore/${countryStr}/${cityStr}/${shop.slug || 'boutique'}`;
+                  copyToClipboard('URL DZYStore', shopUrl);
+                }}>
+                  <Ionicons name="globe-outline" size={16} color="#1A2840" />
+                  <View style={{ flex: 1, marginHorizontal: 8 }}>
                     <Text style={styles.infoTextSmall}>DZYstore URL</Text>
-                    <Text style={styles.infoTextSub}>dzy.store /jumia-senegal</Text>
+                    <Text style={styles.infoTextSub} numberOfLines={1}>dizzitup://.../{shop.slug || 'boutique'}</Text>
                   </View>
-                  <Ionicons name="copy-outline" size={12} color="#9CA3AF" />
+                  <Ionicons name="copy-outline" size={14} color="#9CA3AF" />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.infoRow} onPress={shareShop}>
-                  <Ionicons name="logo-whatsapp" size={14} color="#10B981" />
-                  <View style={{ flex: 1, marginHorizontal: 4 }}>
-                    <Text style={styles.infoTextSmall}>Partage sur les réseaux</Text>
+                  <Ionicons name="logo-whatsapp" size={16} color="#10B981" />
+                  <View style={{ flex: 1, marginHorizontal: 8 }}>
+                    <Text style={styles.infoTextSmall}>{t('shop.info.social_share', 'Partage sur les réseaux')}</Text>
                     <Text style={styles.infoTextSub}>WhatsApp, Facebook, IG...</Text>
                   </View>
                 </TouchableOpacity>
               </View>
-            </View>
+            )}
           </View>
 
-          {/* Moyens de paiement acceptés */}
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Moyens de paiement acceptés</Text>
-            <View style={styles.paymentSelectGrid}>
-              <TouchableOpacity
-                style={[styles.paymentSelectCard, selectedPayment === 'card' && styles.paymentSelectCardActive]}
-                onPress={() => setSelectedPayment('card')}
-              >
-                <View style={[styles.paymentSelectIcon, { backgroundColor: '#FFC759' }]}>
-                  <Ionicons name="card-outline" size={18} color="#1A2840" />
-                </View>
-                <View style={{ flex: 1, marginLeft: 8 }}>
-                  <Text style={styles.paymentSelectTitle}>Card Payment</Text>
-                  <Text style={styles.paymentSelectSub}>Visa, Mastercard, Amex</Text>
-                </View>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.paymentSelectCard, selectedPayment === 'wallet' && styles.paymentSelectCardActive]}
-                onPress={() => setSelectedPayment('wallet')}
-              >
-                <View style={[styles.paymentSelectIcon, { backgroundColor: '#F8FAFC' }]}>
-                  <Ionicons name="wallet-outline" size={18} color="#1A2840" />
-                </View>
-                <View style={{ flex: 1, marginLeft: 8 }}>
-                  <Text style={styles.paymentSelectTitle}>DZYwallet (Stablecoins & DZY)</Text>
-                  <Text style={styles.paymentSelectSub}>USDC, USDT, EURC, DZY</Text>
-                </View>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.paymentSelectCard, selectedPayment === 'mobile' && styles.paymentSelectCardActive]}
-                onPress={() => setSelectedPayment('mobile')}
-              >
-                <View style={[styles.paymentSelectIcon, { backgroundColor: '#F8FAFC' }]}>
-                  <Ionicons name="phone-portrait-outline" size={18} color="#1A2840" />
-                </View>
-                <View style={{ flex: 1, marginLeft: 8 }}>
-                  <Text style={styles.paymentSelectTitle}>Mobile Money (géolocalisé)</Text>
-                  <Text style={styles.paymentSelectSub}>Payer avec Mobile Money</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
+          {/* Accordion 2: Informations de paiement */}
+          <View style={[styles.accordionContainer, { marginBottom: 20 }]}>
+            <TouchableOpacity
+              style={styles.accordionHeader}
+              onPress={() => setPaymentInfoExpanded(!paymentInfoExpanded)}
+            >
+              <Text style={styles.accordionTitle}>{t('shop.payment.title', 'Informations de paiement')}</Text>
+              <Ionicons name={paymentInfoExpanded ? "chevron-up" : "chevron-down"} size={20} color="#1A2840" />
+            </TouchableOpacity>
+            {paymentInfoExpanded && (
+              <View style={styles.accordionContent}>
+                <TouchableOpacity style={styles.infoRow} onPress={() => copyToClipboard('DZYwallet', shop.dzy_wallet || 'USDC, USDT, EURC, DZY')}>
+                  <Ionicons name="wallet-outline" size={16} color="#1A2840" />
+                  <View style={{ flex: 1, marginHorizontal: 8 }}>
+                    <Text style={styles.infoTextSmall}>DZYwallet</Text>
+                    <Text style={styles.infoTextSub}>{shop.dzy_wallet || 'USDC, USDT, EURC, DZY'}</Text>
+                  </View>
+                  <Ionicons name="copy-outline" size={14} color="#9CA3AF" />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.infoRow} onPress={() => { if (shop.evm_wallet) copyToClipboard('EVM wallet', shop.evm_wallet); }}>
+                  <Ionicons name="hardware-chip-outline" size={16} color="#8B5CF6" />
+                  <View style={{ flex: 1, marginHorizontal: 8 }}>
+                    <Text style={styles.infoTextSmall}>EVM wallet</Text>
+                    <Text style={styles.infoTextSub}>{shop.evm_wallet || t('shop.info.not_specified', 'Non spécifié')}</Text>
+                  </View>
+                  {shop.evm_wallet && <Ionicons name="copy-outline" size={14} color="#9CA3AF" />}
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.infoRow} onPress={() => { if (shop.solana_wallet) copyToClipboard('Solana wallet', shop.solana_wallet); }}>
+                  <Ionicons name="server-outline" size={16} color="#10B981" />
+                  <View style={{ flex: 1, marginHorizontal: 8 }}>
+                    <Text style={styles.infoTextSmall}>Solana wallet</Text>
+                    <Text style={styles.infoTextSub}>{shop.solana_wallet || t('shop.info.not_specified', 'Non spécifié')}</Text>
+                  </View>
+                  {shop.solana_wallet && <Ionicons name="copy-outline" size={14} color="#9CA3AF" />}
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.infoRow} onPress={() => { if (shop.iban_euro) copyToClipboard('IBAN Euro', shop.iban_euro); }}>
+                  <Text style={{ fontSize: 14 }}>🇪🇺</Text>
+                  <View style={{ flex: 1, marginHorizontal: 8 }}>
+                    <Text style={styles.infoTextSmall}>{t('shop.payment.euro_iban', 'Euro IBAN Virtual account')}</Text>
+                    <Text style={styles.infoTextSub}>{shop.iban_euro || t('shop.info.not_specified', 'Non spécifié')}</Text>
+                  </View>
+                  {shop.iban_euro && <Ionicons name="copy-outline" size={14} color="#9CA3AF" />}
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.infoRow} onPress={() => { if (shop.usd_account) copyToClipboard('USD Account', shop.usd_account); }}>
+                  <Text style={{ fontSize: 14 }}>🇺🇸</Text>
+                  <View style={{ flex: 1, marginHorizontal: 8 }}>
+                    <Text style={styles.infoTextSmall}>{t('shop.payment.usd_account', 'USD Bank Virtual account')}</Text>
+                    <Text style={styles.infoTextSub}>{shop.usd_account || t('shop.info.not_specified', 'Non spécifié')}</Text>
+                  </View>
+                  {shop.usd_account && <Ionicons name="copy-outline" size={14} color="#9CA3AF" />}
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
 
           {/* Primary Action Buttons */}
@@ -393,15 +355,15 @@ export default function ShopDetailsScreen({ route }) {
             <TouchableOpacity style={styles.btnAcheter} onPress={() => navigation.navigate('ShopProductsScreen')}>
               <Ionicons name="cart-outline" size={18} color="#1A2840" style={{ marginRight: 6 }} />
               <View>
-                <Text style={styles.btnAcheterTitle}>Acheter</Text>
+                <Text style={styles.btnAcheterTitle}>{t('shop.actions.buy', 'Acheter')}</Text>
                 <Text style={styles.btnAcheterSub}>Buy</Text>
               </View>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.btnAchetezMoi} onPress={() => setToast({ title: 'Option Achetez-le moi', message: 'Le lien de paiement cadeau est prêt.' })}>
+            <TouchableOpacity style={styles.btnAchetezMoi} onPress={() => setToast({ title: t('shop.actions.buy_me', 'Achetez-le moi'), message: t('shop.toast.gift_link_generated', 'Lien cadeau généré.') })}>
               <Ionicons name="gift-outline" size={18} color="#1A2840" style={{ marginRight: 6 }} />
               <View>
-                <Text style={styles.btnAchetezMoiTitle}>Achetez-le moi</Text>
+                <Text style={styles.btnAchetezMoiTitle}>{t('shop.actions.buy_me', 'Achetez-le moi')}</Text>
                 <Text style={styles.btnAchetezMoiSub}>Buy me</Text>
               </View>
             </TouchableOpacity>
@@ -409,9 +371,9 @@ export default function ShopDetailsScreen({ route }) {
 
           {/* Produits populaires */}
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>Produits populaires</Text>
+            <Text style={styles.sectionTitle}>{t('shop.sections.popular_products', 'Produits populaires')}</Text>
             <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => navigation.navigate('ShopProductsScreen')}>
-              <Text style={styles.showAllText}>Voir tout</Text>
+              <Text style={styles.showAllText}>{t('common.viewAll', 'Voir tout')}</Text>
               <Ionicons name="arrow-forward" size={14} color="#3B82F6" style={{ marginLeft: 4 }} />
             </TouchableOpacity>
           </View>
@@ -426,36 +388,40 @@ export default function ShopDetailsScreen({ route }) {
                 </TouchableOpacity>
 
                 <View style={[styles.productImgPlaceholder, { padding: 0, overflow: 'hidden' }]}>
-                  {product.images && product.images.length > 0 ? (
+                  {product.product_images && product.product_images.length > 0 ? (
+                    <Image source={{ uri: product.product_images[0] }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                  ) : product.images && product.images.length > 0 ? (
                     <Image source={{ uri: product.images[0] }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                  ) : product.thumbnail ? (
+                    <Image source={{ uri: product.thumbnail }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
                   ) : (
-                    <Ionicons name="cube-outline" size={32} color="#94A3B8" style={{ alignSelf: 'center', marginTop: 30 }} />
+                    <Ionicons name="cube-outline" size={24} color="#9CA3AF" />
                   )}
                 </View>
 
                 <View style={styles.productInfo}>
                   <Text style={styles.productName} numberOfLines={1}>{product.name || 'Produit'}</Text>
                   <Text style={styles.productPrice}>{product.price ? product.price.toLocaleString('fr-FR') + ' FCFA' : 'Prix non défini'}</Text>
-                  <Text style={styles.productStock}>{product.stock_quantity > 0 ? t('inStock', 'En stock') : t('outOfStock', 'Rupture')}</Text>
+                  <Text style={styles.productStock}>{product.stock_quantity > 0 ? t('shop.products.in_stock', 'En stock') : t('outOfStock', 'Rupture')}</Text>
                 </View>
 
                 <TouchableOpacity style={styles.btnBuySmall} onPress={() => navigation.navigate('ProductDetailsScreen', { product })}>
-                  <Text style={styles.btnBuySmallText}>Acheter</Text>
+                  <Text style={styles.btnBuySmallText}>{t('shop.actions.buy', 'Acheter')}</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.btnBuyMeSmall} onPress={() => setToast({ title: 'Achetez-moi', message: 'Lien cadeau généré.' })}>
-                  <Text style={styles.btnBuyMeSmallText}>Achetez-moi</Text>
+                <TouchableOpacity style={styles.btnBuyMeSmall} onPress={() => setToast({ title: t('shop.actions.buy_me', 'Achetez-moi'), message: t('shop.toast.gift_link_generated', 'Lien cadeau généré.') })}>
+                  <Text style={styles.btnBuyMeSmallText}>{t('shop.actions.buy_me', 'Achetez-moi')}</Text>
                 </TouchableOpacity>
               </View>
             ))}
           </ScrollView>
 
-          {/* À propos de Jumia Sénégal */}
+          {/* À propos de la boutique */}
           <View style={styles.aboutSection}>
-            <Text style={styles.sectionTitle}>À propos de Jumia Sénégal</Text>
+            <Text style={styles.sectionTitle}>{t('shop.sections.about_store', 'À propos de')} {shop.shop_name || shop.name || t('shop.default_name', 'la boutique')}</Text>
             <View style={styles.aboutTextContainer}>
               <Text style={styles.aboutText} numberOfLines={aboutExpanded ? undefined : 3}>
-                Jumia Sénégal est la plateforme de e-commerce numéro 1 au Sénégal. Nous vous proposons des milliers de produits dans plusieurs catégories : électronique, mode, maison, beauté, sport et bien plus encore.
+                {shop.description || shop.shop_description || `Bienvenue sur la boutique officielle de ${shop.shop_name || shop.name || 'ce marchand'}. Découvrez nos produits et services au meilleur prix.`}
               </Text>
               <TouchableOpacity style={styles.aboutChevron} onPress={() => setAboutExpanded(!aboutExpanded)}>
                 <Ionicons name={aboutExpanded ? "chevron-up" : "chevron-down"} size={18} color="#1A2840" />
@@ -486,13 +452,13 @@ const styles = StyleSheet.create({
   scrollView: { flex: 1 },
   scrollContent: { paddingBottom: 30 },
   coverContainer: { marginHorizontal: 16, marginBottom: 40, position: 'relative', marginTop: 4 },
-  coverBg: { height: 140, backgroundColor: '#FF6B00', borderRadius: 16, flexDirection: 'row', overflow: 'hidden', padding: 16, position: 'relative' },
+  coverBg: { height: 140, backgroundColor: '#1A2840', borderRadius: 16, flexDirection: 'row', overflow: 'hidden', padding: 16, position: 'relative' },
   coverTextContent: { flex: 1, zIndex: 2 },
-  coverTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 28, color: '#FFFFFF', marginBottom: 4 },
+  coverTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 22, lineHeight: 26, color: '#FFFFFF', marginBottom: 4 },
   coverSubtitle: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#FFFFFF', lineHeight: 16 },
   coverImage: { width: 140, height: '120%', position: 'absolute', right: 0, top: 0, borderRadius: 16, opacity: 0.9 },
   logoContainer: { position: 'absolute', bottom: -30, left: 14 },
-  logoCircle: { width: 70, height: 70, borderRadius: 35, backgroundColor: '#FF6B00', borderWidth: 3, borderColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', boxShadow: '0px 2px 4px rgba(0,0,0,0.1)', elevation: 3 },
+  logoCircle: { width: 70, height: 70, borderRadius: 35, backgroundColor: '#1A2840', borderWidth: 3, borderColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', boxShadow: '0px 2px 4px rgba(0,0,0,0.1)', elevation: 3 },
   logoText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#FFFFFF' },
   verifiedBadge: { position: 'absolute', bottom: 2, right: 2, backgroundColor: '#FFFFFF', borderRadius: 10 },
   shopInfoHeader: { paddingHorizontal: 16, marginBottom: 16 },
@@ -513,34 +479,25 @@ const styles = StyleSheet.create({
   statNumber: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#1A2840' },
   statLabel: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#6B7280' },
   statDivider: { width: 1, height: 24, backgroundColor: '#F3F4F6' },
-  twoCardsRow: { flexDirection: 'row', marginHorizontal: 16, marginBottom: 12 },
-  halfCard: { flex: 1, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0F2F5', borderRadius: 14, padding: 10 },
+  shareCardContainer: { marginHorizontal: 16, marginBottom: 12 },
+  fullCard: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0F2F5', borderRadius: 14, padding: 14 },
   cardHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
   cardTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840', marginBottom: 8 },
-  qrRow: { flexDirection: 'row', alignItems: 'center' },
-  qrPlaceholder: { width: 50, height: 50, backgroundColor: '#F8FAFC', borderRadius: 8, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#E5E7EB' },
-  qrText: { fontFamily: 'Inter_400Regular', fontSize: 9, color: '#6B7280', lineHeight: 11, marginBottom: 4 },
-  urlRow: { flexDirection: 'row', alignItems: 'center' },
-  urlText: { fontFamily: 'Inter_600SemiBold', fontSize: 9, color: '#3B82F6', marginRight: 4 },
   socialIconsRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
   socialBtn: { width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
-  keyInfoCard: { flexDirection: 'row', justifyContent: 'space-around', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0F2F5', borderRadius: 14, marginHorizontal: 16, paddingVertical: 12, paddingHorizontal: 8, marginBottom: 12 },
-  keyInfoCol: { flex: 1, alignItems: 'center', paddingHorizontal: 2 },
-  keyInfoTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 10, color: '#1A2840', marginTop: 4, marginBottom: 2 },
-  keyInfoDesc: { fontFamily: 'Inter_400Regular', fontSize: 9, color: '#6B7280', textAlign: 'center', lineHeight: 11 },
+  flagCityBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F1F5F9', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, marginLeft: 'auto' },
+  flagCityText: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#1A2840' },
+  accordionContainer: { marginHorizontal: 16, marginBottom: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 14, overflow: 'hidden' },
+  accordionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, backgroundColor: '#FAFAFA' },
+  accordionTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#1A2840' },
+  accordionContent: { padding: 16, paddingTop: 8, backgroundColor: '#FFFFFF' },
   infoList: { gap: 8 },
-  infoRow: { flexDirection: 'row', alignItems: 'center', minHeight: 24 },
-  infoText: { fontFamily: 'Inter_500Medium', fontSize: 10, color: '#1A2840', flex: 1, marginLeft: 4 },
-  infoTextSmall: { fontFamily: 'Inter_600SemiBold', fontSize: 10, color: '#1A2840' },
-  infoTextSub: { fontFamily: 'Inter_400Regular', fontSize: 8, color: '#6B7280' },
+  infoRow: { flexDirection: 'row', alignItems: 'center', minHeight: 32, marginBottom: 8 },
+  infoText: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#1A2840', flex: 1, marginLeft: 4 },
+  infoTextSmall: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840' },
+  infoTextSub: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280', marginTop: 2 },
   sectionContainer: { marginHorizontal: 16, marginBottom: 16 },
   sectionTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#1A2840', marginBottom: 10 },
-  paymentSelectGrid: { gap: 8 },
-  paymentSelectCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, padding: 10 },
-  paymentSelectCardActive: { borderColor: '#FFC759', backgroundColor: '#FFFDF5' },
-  paymentSelectIcon: { width: 34, height: 34, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
-  paymentSelectTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840' },
-  paymentSelectSub: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#6B7280' },
   actionButtonsRow: { flexDirection: 'row', marginHorizontal: 16, marginBottom: 18, gap: 10 },
   btnAcheter: { flex: 1, flexDirection: 'row', height: 46, backgroundColor: '#FFC759', borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   btnAcheterTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840', lineHeight: 15 },

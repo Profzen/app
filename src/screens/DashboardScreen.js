@@ -24,10 +24,13 @@ export default function DashboardScreen() {
   const { hideBalance, toggleHideBalance, language, toggleLanguage, t, transactions, user } = useApp();
 
   const getDynamicFonds = () => {
-    if (!user?.rawBalances || user.rawBalances.length === 0) return DEFAULT_FONDS;
+    const isMerchant = user?.role === 'merchant';
+    const currentRawBalances = isMerchant ? (user?.businessRawBalances || []) : (user?.rawBalances || []);
+    
+    if (!currentRawBalances || currentRawBalances.length === 0) return DEFAULT_FONDS;
     
     // Map backend balances to our UI format
-    return user.rawBalances.map((item, index) => {
+    return currentRawBalances.map((item, index) => {
       const cur = (item.currency || item.token || item.symbol || '').toUpperCase();
       let uiProps = DEFAULT_FONDS.find(f => f.symbol === cur || f.currency === cur);
       

@@ -27,8 +27,8 @@ export default function ContactsManageScreen() {
   const [loading, setLoading] = useState(true);
 
   const quickActions = [
-    { id: '1', title: t('contacts.quick_action_add', "Ajouter\nun bénéficiaire"), subtitle: t('contacts.quick_action_add_sub', "Ajouter un nouveau\nbénéficiaire"), icon: "person-add-outline", color: "#8B5CF6" },
-    { id: '2', title: t('contacts.quick_action_edit', "Modifier\nun bénéficiaire"), subtitle: t('contacts.quick_action_edit_sub', "Mettre à jour les\ninformations"), icon: "pencil-outline", color: "#10B981" },
+    { id: '1', title: t('contacts.add', "Ajouter\nun bénéficiaire"), subtitle: t('contacts.add_desc', "Ajouter un nouveau\nbénéficiaire"), icon: "person-add-outline", color: "#8B5CF6" },
+    { id: '2', title: t('contacts.edit', "Modifier\nun bénéficiaire"), subtitle: t('contacts.edit_desc', "Mettre à jour les\ninformations"), icon: "pencil-outline", color: "#10B981" },
     { id: '3', title: t('contacts.my_beneficiaries', "Mes\nbénéficiaires"), subtitle: t('contacts.quick_action_view_sub', "Voir et gérer tous\nmes contacts"), icon: "people-outline", color: "#3B82F6" },
     { id: '4', title: t('contacts.quick_action_5.title', "Inviter\nmes amis"), subtitle: t('contacts.quick_action_5.subtitle', "Invitez vos amis et\ngagnez $5 en DZY"), icon: "paper-plane-outline", color: "#F59E0B", subtitleColor: "#64748B", highlightColor: "#F59E0B", highlightText: "$5 en DZY" },
   ];
@@ -109,7 +109,7 @@ export default function ContactsManageScreen() {
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
           <Text style={styles.mainTitle}>{t('contacts.manage_contacts', 'Contacts')}</Text>
-          <Text style={styles.subtitle}>Envoyez de l'argent à vos bénéficiaires à travers l'Afrique.</Text>
+          <Text style={styles.subtitle}>{t('contacts.subtitle', "Envoyez de l'argent à vos bénéficiaires à travers l'Afrique.")}</Text>
 
           {/* Search Bar */}
           <View style={styles.searchContainer}>

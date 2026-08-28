@@ -108,15 +108,11 @@ export default function ContactsScreen() {
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          <TouchableOpacity style={styles.syncBtn} onPress={() => setToast({ title: language === 'fr' ? 'Synchronisation' : 'Sync Completed', message: language === 'fr' ? 'Vos contacts du téléphone ont été synchronisés !' : 'Your phone contacts have been synced!' })}>
-            <Ionicons name="sync-outline" size={16} color="#3B82F6" style={{ marginRight: 8 }} />
-            <Text style={styles.syncBtnText}>{t('syncContactsBtn', 'Synchroniser vos contacts')}</Text>
-          </TouchableOpacity>
-          
+
           <Text style={styles.subtitle}>
             {nextScreen 
               ? t('contacts.select_beneficiary_action', 'Sélectionnez un bénéficiaire pour continuer.')
-              : t('contactsSubtitle', "Envoyez de l'argent à vos bénéficiaires à travers l'Afrique.")}
+              : t('contacts.subtitle', "Soutenez vos bénéficiaires : envoyez de l'argent, payez des factures et achetez l'essentiel en Afrique.")}
           </Text>
 
           {/* Search Bar */}
@@ -125,7 +121,7 @@ export default function ContactsScreen() {
             <View style={{ flex: 1 }}>
               <TextInput
                 style={styles.searchInput}
-                placeholder={t('contactsSearchPlaceholder', 'Rechercher un contact')}
+                placeholder={t('contacts.search', 'Rechercher un contact')}
                 placeholderTextColor="#64748B"
               />
               <Text style={styles.searchSubText}>{language === 'fr' ? 'Nom, téléphone, email, ville ou pays' : 'Name, phone, email, city or country'}</Text>
@@ -409,8 +405,12 @@ const styles = StyleSheet.create({
   notificationDot: { position: 'absolute', top: 8, right: 8, width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFB800', borderWidth: 1, borderColor: '#FFFFFF' },
   scrollView: { flex: 1 },
   scrollContent: { paddingTop: 8, paddingBottom: 200 },
-  syncBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, marginBottom: 8 },
-  syncBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#3B82F6' },
+  todoCard: { marginHorizontal: 16, marginBottom: 12, borderRadius: 16, borderWidth: 1, borderColor: '#F0F2F6', backgroundColor: '#FFFFFF', boxShadow: '0px 4px 12px #0A1737', overflow: 'hidden' },
+  todoItem: { flexDirection: 'row', alignItems: 'center', minHeight: 40, paddingHorizontal: 12, paddingVertical: 10 },
+  todoIconWrapper: { width: 30, height: 30, borderRadius: 15, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
+  todoTitle: { flex: 1, fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#1A2840', lineHeight: 16, paddingRight: 10 },
+  todoButton: { minWidth: 60, alignItems: 'center', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
+  todoButtonText: { fontFamily: 'Inter_600SemiBold', fontSize: 11 },
   subtitle: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#64748B', paddingHorizontal: 16, marginBottom: 16 },
   searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, padding: 12, marginHorizontal: 16, marginBottom: 24 },
   searchIcon: { marginRight: 12 },

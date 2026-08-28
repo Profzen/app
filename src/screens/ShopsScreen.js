@@ -474,69 +474,69 @@ export default function ShopsScreen() {
             </TouchableOpacity>
           )}
 
-          {/* Refer Banner CTA at bottom */}
-          {isBannerVisible && (
-            <View style={styles.bannerContainer}>
-              {bannerSlide === 0 ? (
-                <View style={[styles.inviteBanner, { backgroundColor: '#EEF5FF' }]}>
-                  <TouchableOpacity style={styles.closeBannerButton} onPress={() => setIsBannerVisible(false)} accessibilityLabel="Close banner">
-                    <Ionicons name="close" size={16} color="#6B7280" />
-                  </TouchableOpacity>
-                  <View style={styles.inviteContent}>
-                    <Text style={styles.inviteTitle}>
-                      {t('shopsBannerInviteTitle', 'Invite friends\nand earn ')}
-                      <Text style={{ color: '#20365B' }}>${appSettings.refer_user_reward || 5} in DZY</Text>
-                    </Text>
-                    <Text style={styles.inviteSubtitle}>
-                      {t('shopsBannerInviteSub', 'Send money, buy goods,\npay bills and earn rewards.')}
-                    </Text>
-                    <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#071D54' }]} onPress={() => navigation.navigate('RewardsScreen')}>
-                      <Text style={styles.inviteButtonText}>{t('shopsBannerInviteBtn', 'Invite now')}</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.inviteGraphic}>
-                    <View style={styles.inviteOrbitOne} />
-                    <View style={styles.inviteOrbitTwo} />
-                    <View style={styles.giantCoin}>
-                      <View style={styles.innerCoin}>
-                        <Text style={styles.coinText}>DZY</Text>
-                      </View>
-                    </View>
-                    <Image source={{ uri: 'https://i.pravatar.cc/100?img=5' }} style={[styles.miniAvatar, { top: 10, right: 12 }]} />
-                    <Image source={{ uri: 'https://i.pravatar.cc/100?img=9' }} style={[styles.miniAvatar, { bottom: 12, left: 14 }]} />
-                  </View>
-                </View>
-              ) : (
-                <View style={[styles.inviteBanner, { backgroundColor: '#F0FDF4' }]}>
-                  <TouchableOpacity style={styles.closeBannerButton} onPress={() => setIsBannerVisible(false)} accessibilityLabel="Close banner">
-                    <Ionicons name="close" size={16} color="#6B7280" />
-                  </TouchableOpacity>
-                  <View style={styles.inviteContent}>
-                    <Text style={styles.inviteTitle}>
-                      {t('shopsBannerReferTitle', 'Refer a Store\nand earn ')}
-                      <Text style={{ color: '#10B981' }}>${appSettings.refer_business_reward || 10} in DZY</Text>
-                    </Text>
-                    <Text style={styles.inviteSubtitle}>
-                      {t('shopsBannerReferSub', 'Refer a store or business\nand earn rewards.')}
-                    </Text>
-                    <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#10B981' }]} onPress={() => navigation.navigate('ReferBusinessScreen')}>
-                      <Text style={styles.inviteButtonText}>{t('shopsBannerReferBtn', 'Refer now')}</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.storeGraphic}>
-                    <Image source={require('../../assets/brand/dzy_store_icone.png')} style={{ width: 110, height: 95 }} resizeMode="contain" />
-                  </View>
-                </View>
-              )}
-              <View style={styles.carouselDotsContainer}>
-                <TouchableOpacity onPress={() => setBannerSlide(0)}><View style={[styles.carouselDot, bannerSlide === 0 ? styles.activeDotSlide0 : styles.inactiveDot]} /></TouchableOpacity>
-                <TouchableOpacity onPress={() => setBannerSlide(1)}><View style={[styles.carouselDot, bannerSlide === 1 ? styles.activeDotSlide1 : styles.inactiveDot]} /></TouchableOpacity>
-              </View>
-            </View>
-          )}
-
-          <View style={{ height: 40 }} />
+          <View style={{ height: 120 }} />
         </ScrollView>
+
+        {/* Refer Banner CTA (Floating) */}
+        {isBannerVisible && (
+          <View style={[styles.bannerContainer, styles.floatingBannerWrapper]}>
+            {bannerSlide === 0 ? (
+              <View style={[styles.inviteBanner, { backgroundColor: '#EEF5FF' }]}>
+                <TouchableOpacity style={styles.closeBannerButton} onPress={() => setIsBannerVisible(false)} accessibilityLabel="Close banner">
+                  <Ionicons name="close" size={16} color="#6B7280" />
+                </TouchableOpacity>
+                <View style={styles.inviteContent}>
+                  <Text style={styles.inviteTitle}>
+                    {t('shopsBannerInviteTitle', 'Invite friends\nand earn ')}
+                    <Text style={{ color: '#20365B' }}>${appSettings.refer_user_reward || 5} in DZY</Text>
+                  </Text>
+                  <Text style={styles.inviteSubtitle}>
+                    {t('shopsBannerInviteSub', 'Send money, buy goods,\npay bills and earn rewards.')}
+                  </Text>
+                  <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#071D54' }]} onPress={() => navigation.navigate('RewardsScreen')}>
+                    <Text style={styles.inviteButtonText}>{t('shopsBannerInviteBtn', 'Invite now')}</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.inviteGraphic}>
+                  <View style={styles.inviteOrbitOne} />
+                  <View style={styles.inviteOrbitTwo} />
+                  <View style={styles.giantCoin}>
+                    <View style={styles.innerCoin}>
+                      <Text style={styles.coinText}>DZY</Text>
+                    </View>
+                  </View>
+                  <Image source={{ uri: 'https://i.pravatar.cc/100?img=5' }} style={[styles.miniAvatar, { top: 10, right: 12 }]} />
+                  <Image source={{ uri: 'https://i.pravatar.cc/100?img=9' }} style={[styles.miniAvatar, { bottom: 12, left: 14 }]} />
+                </View>
+              </View>
+            ) : (
+              <View style={[styles.inviteBanner, { backgroundColor: '#F0FDF4' }]}>
+                <TouchableOpacity style={styles.closeBannerButton} onPress={() => setIsBannerVisible(false)} accessibilityLabel="Close banner">
+                  <Ionicons name="close" size={16} color="#6B7280" />
+                </TouchableOpacity>
+                <View style={styles.inviteContent}>
+                  <Text style={styles.inviteTitle}>
+                    {t('shopsBannerReferTitle', 'Refer a Store\nand earn ')}
+                    <Text style={{ color: '#10B981' }}>${appSettings.refer_business_reward || 10} in DZY</Text>
+                  </Text>
+                  <Text style={styles.inviteSubtitle}>
+                    {t('shopsBannerReferSub', 'Refer a store or business\nand earn rewards.')}
+                  </Text>
+                  <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#10B981' }]} onPress={() => navigation.navigate('ReferBusinessScreen')}>
+                    <Text style={styles.inviteButtonText}>{t('shopsBannerReferBtn', 'Refer now')}</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.storeGraphic}>
+                  <Image source={require('../../assets/brand/dzy_store_icone.png')} style={{ width: 110, height: 95 }} resizeMode="contain" />
+                </View>
+              </View>
+            )}
+            <View style={styles.carouselDotsContainer}>
+              <TouchableOpacity onPress={() => setBannerSlide(0)}><View style={[styles.carouselDot, bannerSlide === 0 ? styles.activeDotSlide0 : styles.inactiveDot]} /></TouchableOpacity>
+              <TouchableOpacity onPress={() => setBannerSlide(1)}><View style={[styles.carouselDot, bannerSlide === 1 ? styles.activeDotSlide1 : styles.inactiveDot]} /></TouchableOpacity>
+            </View>
+          </View>
+        )}
 
         <BottomNavBar activeTab="shops" language={language} />
         {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
@@ -617,7 +617,8 @@ const styles = StyleSheet.create({
   shopGridType: { fontFamily: 'Inter_500Medium', fontSize: 10, color: '#6B7280', marginTop: 2 },
   shopGridLocation: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#9CA3AF', marginTop: 2 },
 
-  bannerContainer: { marginHorizontal: 16, marginTop: 4, position: 'relative' },
+  floatingBannerWrapper: { position: 'absolute', bottom: 96, left: 16, right: 16, zIndex: 50 },
+  bannerContainer: { marginTop: 4 },
   inviteBanner: { borderRadius: 17, paddingHorizontal: 14, paddingVertical: 14, flexDirection: 'row', overflow: 'hidden', position: 'relative', minHeight: 125 },
   inviteContent: { flex: 1, zIndex: 2, justifyContent: 'center' },
   inviteTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#1A2840', lineHeight: 18, marginBottom: 3 },
