@@ -2145,6 +2145,12 @@ A la fin de chaque session ou apres toute modification majeure, l'IA DOIT mettre
 - Centre : Titre `flex: 1`, `textAlign: 'center'`, `fontSize: 16-17`, `Inter_700Bold`
 - Droite : `headerRightIcons` en `flexDirection: 'row'`, boutons 38x38px, marges 6px
 
+### Procedure d'Invitation TestFlight (Clients / Actionnaires / Equipe)
+- **App Store Connect** : Connexion a [https://appstoreconnect.apple.com](https://appstoreconnect.apple.com) > Applications > DizzitApp > Onglet TestFlight.
+- **Option 1 (Par E-mail)** : Menu gauche > Testeurs externes (ou groupe *Actionnaires*) > Bouton `+` > Ajouter Prénom, Nom et E-mail (Envoi automatique de l'invitation Apple).
+- **Option 2 (Lien Public)** : Menu gauche > Groupe de test > Activer le lien public (Public Link) > Copier le lien unique (ex: `https://testflight.apple.com/join/XXXXX`) a partager par WhatsApp/Slack/E-mail.
+- **Parcours Utilisateur iPhone** : Télécharger l'application gratuite TestFlight sur l'App Store > Ouvrir l'invitation ou le lien public > Cliquer sur **Accepter / Installer**.
+
 ---
 
 ---
