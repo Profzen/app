@@ -1,13 +1,15 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 
 export default function TopUpWalletScreen() {
   const navigation = useNavigation();
   const [selectedMethod, setSelectedMethod] = useState('card');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalContent, setModalContent] = useState('card');
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -101,7 +103,15 @@ export default function TopUpWalletScreen() {
                     )}
                   </View>
                 </View>
-                <Text style={styles.methodDesc}>Visa, Mastercard, AMEX</Text>
+                <Text style={styles.methodDesc}>
+                  Visa, Mastercard, AMEX{'\n'}
+                  <Text 
+                    style={styles.infoLink} 
+                    onPress={() => { setModalContent('card'); setModalVisible(true); }}
+                  >
+                    Available worldwide except from restricted countries
+                  </Text>
+                </Text>
                 <View style={styles.recommendedBadge}>
                   <Text style={styles.recommendedText}>Recommandé</Text>
                 </View>
@@ -150,7 +160,17 @@ export default function TopUpWalletScreen() {
                     )}
                   </View>
                 </View>
-                <Text style={styles.methodDesc}>PayGate (Togocom, Moov,{'\n'}Mixx by Yas...)</Text>
+                <Text style={styles.methodDesc}>
+                  PayGate (Togocom, Moov, Mixx by Yas...){'\n'}
+                  <Text 
+                    style={styles.infoLink} 
+                    onPress={() => { setModalContent('momo'); setModalVisible(true); }}
+                  >
+                    Available from covered countries
+                  </Text>
+                  {'\n'}
+                  <Text style={{ fontSize: 11, color: '#10B981', fontFamily: 'Inter_500Medium' }}>Prefer transaction on Polygon or Base</Text>
+                </Text>
                 <View style={styles.countryBadge}>
                   <Text style={styles.countryBadgeText}>20 pays</Text>
                 </View>
@@ -194,6 +214,46 @@ export default function TopUpWalletScreen() {
         </ScrollView>
 
         <BottomNavBar />
+
+        {/* Info Modal */}
+        <Modal visible={modalVisible} transparent={true} animationType="fade" onRequestClose={() => setModalVisible(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>
+                  {modalContent === 'card' ? 'Restricted Countries' : 'Covered Countries'}
+                </Text>
+                <TouchableOpacity onPress={() => setModalVisible(false)} style={{ padding: 4 }}>
+                  <Ionicons name="close" size={24} color="#1A2840" />
+                </TouchableOpacity>
+              </View>
+              <ScrollView style={styles.modalBody}>
+                {modalContent === 'card' ? (
+                  <Text style={styles.modalText}>
+                    Credit & Debit cards are available worldwide, except in the following restricted countries:{'\n\n'}
+                    • North Korea{'\n'}
+                    • Iran{'\n'}
+                    • Syria{'\n'}
+                    • Cuba{'\n'}
+                    • Russia{'\n\n'}
+                    <Text style={{ fontStyle: 'italic', color: '#94A3B8' }}>(This list is subject to change based on international regulations)</Text>
+                  </Text>
+                ) : (
+                  <Text style={styles.modalText}>
+                    Mobile Money is currently available in the following countries:{'\n\n'}
+                    • Senegal (Orange Money, Wave, Free Money){'\n'}
+                    • Togo (Togocom, Moov){'\n'}
+                    • Ivory Coast (Orange Money, MTN, Moov, Wave){'\n'}
+                    • Benin (MTN, Moov){'\n'}
+                    • Mali (Orange Money, Moov){'\n'}
+                    • Burkina Faso (Orange Money, Moov){'\n\n'}
+                    <Text style={{ fontStyle: 'italic', color: '#94A3B8' }}>(More countries will be added soon)</Text>
+                  </Text>
+                )}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
       </View>
     </SafeAreaView>
   );
@@ -493,5 +553,50 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1A2840',
     marginRight: 8,
+  },
+  infoLink: {
+    fontSize: 11,
+    color: '#3B82F6',
+    fontFamily: 'Inter_500Medium',
+    textDecorationLine: 'underline',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    width: '100%',
+    maxHeight: '70%',
+    padding: 20,
+    boxShadow: '0px 10px 25px rgba(0,0,0,0.15)',
+    elevation: 10,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+    paddingBottom: 12,
+  },
+  modalTitle: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 18,
+    color: '#1A2840',
+  },
+  modalBody: {
+    flexGrow: 0,
+  },
+  modalText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 14,
+    color: '#475569',
+    lineHeight: 22,
   },
 });

@@ -90,6 +90,10 @@ export default function LoginScreen() {
           <Text style={styles.subTitle}>
             {t('login.subtitle', 'Sign in to your DizzitUp account to continue.')}
           </Text>
+
+          <View style={{marginTop: theme.spacing.md, width: '100%'}}>
+            <FeaturesBanner />
+          </View>
         </View>
 
         {/* Form Container */}
@@ -183,11 +187,6 @@ export default function LoginScreen() {
           <TouchableOpacity onPress={() => navigation.navigate('RegisterScreen')}>
             <Text style={styles.signupLink}>{language === 'fr' ? "S'inscrire" : 'Sign up'}</Text>
           </TouchableOpacity>
-        </View>
-        
-        {/* Features Banner inside scroll */}
-        <View style={{marginTop: theme.spacing.md}}>
-          <FeaturesBanner />
         </View>
         </ScrollView>
       </KeyboardAvoidingView>

@@ -9,6 +9,7 @@
   "7": "7",
   "8": "8",
   "9": "9",
+  "copied_title": "تم نسخ {{label}}!",
   "finance": {
     "stakeholders": {
       "families": {
@@ -3621,7 +3622,14 @@
       "send_funds": "إرسال أموال",
       "transfer_done": "اكتمل التحويل",
       "ref": "المرجع:"
-    }
+    },
+    "sync": "مزامنة جهات الاتصال",
+    "search": "البحث عن جهة اتصال",
+    "add": "إضافة مستفيد",
+    "add_desc": "إضافة مستفيد جديد",
+    "edit": "تعديل المستفيد",
+    "edit_desc": "تحديث المعلومات",
+    "subtitle": "دعم المستفيدين الخاص بك: إرسال الأموال، دفع الفواتير وشراء الأساسيات عبر أفريقيا."
   },
   "beneficiary_management": {
     "edit": {
@@ -3733,5 +3741,134 @@
     "network_error": "خطأ في الشبكة أثناء إنشاء الطلب",
     "payment_details": "تفاصيل الدفع",
     "crossmint_secure": "أكمل عملية الدفع بأمان عبر Crossmint."
+  },
+  "localExchange": {
+    "title": "مسح وصرف",
+    "subtitle": "استبدل عملاتك المستقرة نقدًا محليًا.",
+    "selectCurrency": "حدد الأصل",
+    "amount": "المبلغ المراد صرفه",
+    "scanTitle": "مسح رمز QR للمستلم",
+    "scanSubtitle": "اطلب من المستلم إظهار رمز QR الخاص بـ DizzitUp.",
+    "confirmTitle": "تأكيد الاستبدال",
+    "confirmSubtitle": "راجع التفاصيل قبل التأكيد."
+  },
+  "tabWallet": "محفظة",
+  "shop.default_name": "متجر",
+  "shop.cover_subtitle": "كل ما تحتاجه،\nيتم توصيله\nإليك.",
+  "shop.info.title": "معلومات المتجر",
+  "shop.info.address": "العنوان",
+  "shop.info.location": "الموقع",
+  "shop.info.delivery": "استلام / توصيل",
+  "shop.info.social_share": "مشاركة على وسائل التواصل",
+  "shop.info.not_specified": "غير محدد",
+  "shop.info.available": "متوفر",
+  "shop.payment.title": "معلومات الدفع",
+  "shop.payment.euro_iban": "حساب افتراضي يورو IBAN",
+  "shop.payment.usd_account": "حساب بنكي افتراضي دولار أمريكي",
+  "contacts.quick_action_1.title": "الدفع و\nشراء الأساسيات",
+  "contacts.quick_action_1.subtitle": "رصيد، إنترنت،\nتلفزيون، ألعاب،\nعملات مشفرة والمزيد",
+  "contacts.quick_action_2.title": "شحن\nرصيد الجوال",
+  "contacts.quick_action_2.subtitle": "شراء رصيد\nالجوال",
+  "contacts.quick_action_3.title": "دفع\nالفواتير",
+  "contacts.quick_action_3.subtitle": "كهرباء، مياه،\nإنترنت والمزيد",
+  "contacts.quick_action_4.title": "إرسال /\nطلب\nأموال",
+  "contacts.quick_action_4.subtitle": "تحويلات\nفورية",
+  "contacts.quick_action_5.title": "دعوة",
+  "contacts.quick_action_5.subtitle": "ادعُ أصدقاءك\nواربح\n DZY",
+  "shop": {
+    "default_name": "متجر",
+    "cover_subtitle": "كل ما تحتاجه، يتم توصيله إلى باب منزلك.",
+    "tabs": {
+      "products": "منتجات",
+      "reviews": "التقييمات",
+      "info": "معلومات",
+      "store": "متجر"
+    },
+    "products": {
+      "search_placeholder": "ابحث عن منتج...",
+      "filter": "تصفية",
+      "price": "السعر",
+      "all_prices": "كل الأسعار",
+      "under_50k": "أقل من 50,000 فرنك أفريقي",
+      "over_50k": "50,000 فرنك أفريقي وما فوق",
+      "buy_me_this": "اشتر لي هذا",
+      "no_products": "لم يتم العثور على منتجات.",
+      "in_stock": "متوفر",
+      "buy_me": "اشتر لي"
+    },
+    "features": {
+      "secure_payment": "دفع آمن",
+      "secure_100": "آمن 100%",
+      "fast_delivery": "توصيل سريع",
+      "nationwide_delivery": "توصيل لجميع أنحاء البلاد",
+      "support_24_7": "دعم 24/7",
+      "dedicated_support": "مساعدة مخصصة",
+      "verified_seller": "بائع معتمد",
+      "trusted_merchant": "تاجر موثوق"
+    },
+    "actions": {
+      "buy": "شراء",
+      "buy_me": "اشتر لي",
+      "share_store": "شارك المتجر",
+      "view_full_profile": "عرض الملف الكامل"
+    },
+    "sections": {
+      "popular_products": "منتجات شائعة",
+      "about_store": "حول"
+    },
+    "badges": {
+      "active": "نشط",
+      "online_shopping": "تسوق عبر الإنترنت",
+      "marketplace": "السوق"
+    },
+    "stats": {
+      "products": "منتجات",
+      "followers": "المتابعون",
+      "following": "يتابع",
+      "reviews_verified": "تقييمات موثقة"
+    },
+    "info": {
+      "title": "معلومات المتجر",
+      "practical_info": "معلومات عملية",
+      "address": "العنوان",
+      "not_specified": "غير محدد",
+      "location": "الموقع",
+      "delivery": "استلام / توصيل",
+      "available": "متوفر",
+      "social_share": "المشاركة الاجتماعية",
+      "delivery_options": "توصيل، استلام وطلب عبر الإنترنت",
+      "verified_since": "تاجر معتمد منذ 2016"
+    },
+    "payment": {
+      "title": "معلومات الدفع",
+      "accepted_methods": "طرق الدفع المقبولة",
+      "euro_iban": "حساب يورو الافتراضي",
+      "usd_account": "حساب دولار الافتراضي"
+    },
+    "options": {
+      "title": "خيارات المتجر",
+      "message": "تتوفر إجراءات إضافية."
+    },
+    "share": {
+      "ready": "جاهز للمشاركة",
+      "ready_msg": "يمكن الآن إرسال المتجر إلى جهات الاتصال الخاصة بك."
+    },
+    "reviews": {
+      "title": "تقييمات العملاء",
+      "count_verified": "تقييمات موثقة"
+    },
+    "toast": {
+      "gift_link_generated": "تم إنشاء رابط الهدية."
+    }
+  },
+  "quickActions": {
+    "buy_goods": "شراء سلع",
+    "pay_bills": "دفع الفواتير",
+    "request_money": "طلب أموال",
+    "send_money": "إرسال وطلب أموال",
+    "top_up": "شحن المحفظة",
+    "refer_store": "إحالة متجر",
+    "source_africa": "المصادر في أفريقيا",
+    "scan_cash": "مسح ونقد"
   }
 }

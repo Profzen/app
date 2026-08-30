@@ -39,7 +39,9 @@ export default function AssetListScreen() {
     // You could add a toast here
   };
 
+  const isMerchant = user?.role === 'merchant';
   const totalUsdValue = user?.totalUsdValue || 0;
+  const currentRawBalances = user?.rawBalances || [];
   
   const groupedTokens = useMemo(() => {
     const groups = {};
@@ -62,8 +64,8 @@ export default function AssetListScreen() {
     });
 
     // Merge actual user balances
-    if (user?.rawBalances && Array.isArray(user.rawBalances)) {
-      user.rawBalances.forEach(b => {
+    if (currentRawBalances && Array.isArray(currentRawBalances)) {
+      currentRawBalances.forEach(b => {
         const sym = (b.currency || b.token || b.symbol || '').toUpperCase();
         const chain = (b.chain || b.network || 'unknown').toLowerCase();
         const bal = parseFloat(b.balance || 0);
@@ -87,9 +89,12 @@ export default function AssetListScreen() {
 
     const result = Object.values(groups).sort((a, b) => b.usdValue - a.usdValue);
     return result;
-  }, [user?.rawBalances]);
+  }, [currentRawBalances]);
 
-  const dzyToken = groupedTokens.find(t => t.symbol === 'DZY') || { symbol: 'DZY', balance: user?.balanceDZY || 0, usdValue: user?.totalUsdValue || 0 };
+  const fallbackDZY = user?.balanceDZY || 0;
+  const dzyToken = groupedTokens.find(t => t.symbol === 'DZY') || { symbol: 'DZY', balance: 0, usdValue: 0 };
+  dzyToken.balance = dzyToken.balance || fallbackDZY;
+  dzyToken.usdValue = totalUsdValue;
   const otherTokens = groupedTokens.filter(t => t.symbol !== 'DZY');
 
   const toggleExpand = (symbol) => {

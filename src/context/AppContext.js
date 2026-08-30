@@ -19,7 +19,7 @@ export function AppProvider({ children }) {
   const [user, setUser] = useState({
     name: 'Utilisateur',
     email: '',
-    avatar: require('../../assets/avatars/david.jpg'),
+    avatar: null,
     balanceDZY: 0,
     allBalances: {},
     currency: 'DZY',
@@ -104,6 +104,8 @@ export function AppProvider({ children }) {
         let businessBalances = { DZY: 0 };
         let totalUsdValue = 0;
         let rawBalancesArray = [];
+        let businessRawBalancesArray = [];
+        let businessTotalUsdValue = 0;
         
         try {
           const { data: profile } = await supabase
@@ -281,12 +283,12 @@ export function AppProvider({ children }) {
               }
             }
           }
-
           // Fetch business balance if merchant
           if (fetchedBusinessDizzyToken) {
             const bData = await fetchBalance(fetchedBusinessDizzyToken);
             if (bData) {
               if (bData.balances) {
+                businessRawBalancesArray = bData.balances;
                 bData.balances.forEach(b => {
                   const cur = (b.currency || b.token || b.symbol || '').toUpperCase();
                   if (cur) businessBalances[cur] = parseFloat(b.balance || 0);
@@ -294,10 +296,12 @@ export function AppProvider({ children }) {
               }
               if (bData.totalUsdValue !== undefined) {
                 const usdVal = parseFloat(bData.totalUsdValue || 0);
+                businessTotalUsdValue = usdVal;
                 businessBalances['DZY'] = usdVal * 10;
                 businessBalances['USD'] = usdVal;
+                const knownCryptoTokens = ['POL', 'USDT', 'USDC', 'ETH', 'BTC', 'WBTC', 'SOL', 'MATIC', 'BNB', 'DAI'];
                 Object.keys(newBalances).forEach(key => {
-                  if (key !== 'DZY' && key !== 'USD' && newBalances[key]) {
+                  if (key !== 'DZY' && key !== 'USD' && !knownCryptoTokens.includes(key) && newBalances[key]) {
                      businessBalances[key] = (newBalances[key] / (newBalances['USD'] || 1)) * usdVal;
                   }
                 });
@@ -328,7 +332,7 @@ export function AppProvider({ children }) {
           country: fetchedCountry,
           city: fetchedCity,
           phone: fetchedPhone,
-          avatar: fetchedAvatar ? { uri: fetchedAvatar } : require('../../assets/avatars/david.jpg'),
+          avatar: fetchedAvatar ? { uri: fetchedAvatar } : null,
           balanceDZY: newBalances.DZY,
           balanceUSDT: newBalances.USDT,
           balanceCFA: newBalances.XOF || newBalances.CFA,
@@ -342,7 +346,9 @@ export function AppProvider({ children }) {
           businessSolanaAddress: fetchedBusinessSolanaAddress,
           dizzyToken: fetchedDizzyToken,
           businessDizzyToken: fetchedBusinessDizzyToken,
-          businessBalances: businessBalances
+          businessBalances: businessBalances,
+          businessRawBalances: businessRawBalancesArray,
+          businessTotalUsdValue: businessTotalUsdValue
         });
       }
       setIsUserLoading(false);

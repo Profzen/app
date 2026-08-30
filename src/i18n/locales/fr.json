@@ -3782,7 +3782,14 @@
       "send_funds": "Envoi de fonds",
       "transfer_done": "Transfert effectué",
       "ref": "Réf :"
-    }
+    },
+    "sync": "Synchroniser vos contacts",
+    "search": "Rechercher un contact",
+    "add": "Ajouter un bénéficiaire",
+    "add_desc": "Ajouter un nouveau bénéficiaire",
+    "edit": "Modifier un bénéficiaire",
+    "edit_desc": "Mettre à jour les informations",
+    "subtitle": "Soutenez vos bénéficiaires : envoyez de l'argent, payez des factures et achetez l'essentiel en Afrique."
   },
   "beneficiary_management": {
     "edit": {
@@ -3894,5 +3901,134 @@
     "network_error": "Erreur réseau lors de la création de la commande",
     "payment_details": "Détails du paiement",
     "crossmint_secure": "Effectuez votre paiement en toute sécurité via Crossmint."
+  },
+  "localExchange": {
+    "title": "Scanner & Encaisser",
+    "subtitle": "Échangez vos stablecoins contre des espèces localement.",
+    "selectCurrency": "Sélectionnez l'actif",
+    "amount": "Montant à encaisser",
+    "scanTitle": "Scanner le QR du récepteur",
+    "scanSubtitle": "Demandez au récepteur de montrer son QR Code DizzitUp.",
+    "confirmTitle": "Confirmer l'échange",
+    "confirmSubtitle": "Vérifiez les détails avant de valider."
+  },
+  "tabWallet": "Portefeuille",
+  "shop.default_name": "Boutique",
+  "shop.cover_subtitle": "Tout ce dont vous\navez besoin, livré\nchez vous.",
+  "shop.info.title": "Informations sur la boutique",
+  "shop.info.address": "Adresse",
+  "shop.info.location": "Localisation",
+  "shop.info.delivery": "Retrait / Livraison",
+  "shop.info.social_share": "Partage sur les réseaux",
+  "shop.info.not_specified": "Non spécifié",
+  "shop.info.available": "Disponible",
+  "shop.payment.title": "Informations de paiement",
+  "shop.payment.euro_iban": "Compte Virtuel Euro IBAN",
+  "shop.payment.usd_account": "Compte Bancaire Virtuel USD",
+  "contacts.quick_action_1.title": "Payer et\nacheter l'essentiel",
+  "contacts.quick_action_1.subtitle": "Achat de crédit,\ninternet, TV, jeux,\ncrypto et plus",
+  "contacts.quick_action_2.title": "Recharger\nmobile",
+  "contacts.quick_action_2.subtitle": "Achat de crédit\nmobile",
+  "contacts.quick_action_3.title": "Payer des\nfactures",
+  "contacts.quick_action_3.subtitle": "Électricité, eau,\ninternet et plus",
+  "contacts.quick_action_4.title": "Envoyer /\nDemander\ndes fonds",
+  "contacts.quick_action_4.subtitle": "Transferts d'argent\ninstantanés",
+  "contacts.quick_action_5.title": "Inviter",
+  "contacts.quick_action_5.subtitle": "Invitez vos amis\net gagnez\n en DZY",
+  "shop": {
+    "default_name": "Boutique",
+    "cover_subtitle": "Tout ce dont vous\navez besoin, livré\nchez vous.",
+    "tabs": {
+      "products": "Produits",
+      "reviews": "Avis",
+      "info": "Infos",
+      "store": "Boutique"
+    },
+    "products": {
+      "search_placeholder": "Rechercher un produit...",
+      "filter": "Filtrer",
+      "price": "Prix",
+      "all_prices": "Tous les prix",
+      "under_50k": "Moins de 50 000 FCFA",
+      "over_50k": "50 000 FCFA et plus",
+      "buy_me_this": "Achetez-moi ceci",
+      "no_products": "Aucun produit trouvé.",
+      "in_stock": "En stock",
+      "buy_me": "Achetez-moi"
+    },
+    "features": {
+      "secure_payment": "Paiement sécurisé",
+      "secure_100": "100% sécurisé",
+      "fast_delivery": "Livraison rapide",
+      "nationwide_delivery": "Partout au Sénégal",
+      "support_24_7": "Support 7j/7",
+      "dedicated_support": "Assistance dédiée",
+      "verified_seller": "Vendeur vérifié",
+      "trusted_merchant": "Marchand de confiance"
+    },
+    "actions": {
+      "buy": "Acheter",
+      "buy_me": "Achetez-le moi",
+      "share_store": "Partager la boutique",
+      "view_full_profile": "Voir la fiche complète"
+    },
+    "sections": {
+      "popular_products": "Produits populaires",
+      "about_store": "À propos de"
+    },
+    "badges": {
+      "active": "ACTIVE",
+      "online_shopping": "Shopping en ligne",
+      "marketplace": "Marketplace"
+    },
+    "stats": {
+      "products": "Produits",
+      "followers": "Abonnés",
+      "following": "Abonnements",
+      "reviews_verified": "avis vérifiés"
+    },
+    "info": {
+      "title": "Informations sur la boutique",
+      "practical_info": "Informations pratiques",
+      "address": "Adresse",
+      "not_specified": "Non spécifié",
+      "location": "Localisation",
+      "delivery": "Retrait / Livraison",
+      "available": "Disponible",
+      "social_share": "Partage sur les réseaux",
+      "delivery_options": "Livraison, retrait et commande en ligne",
+      "verified_since": "Marchand vérifié depuis 2016"
+    },
+    "payment": {
+      "title": "Informations de paiement",
+      "accepted_methods": "Moyens de paiement acceptés",
+      "euro_iban": "Euro IBAN Virtual account",
+      "usd_account": "USD Bank Virtual account"
+    },
+    "options": {
+      "title": "Options de la boutique",
+      "message": "Les actions supplémentaires sont disponibles."
+    },
+    "share": {
+      "ready": "Partage prêt",
+      "ready_msg": "La boutique peut maintenant être envoyée à vos contacts."
+    },
+    "reviews": {
+      "title": "Avis clients",
+      "count_verified": "avis vérifiés"
+    },
+    "toast": {
+      "gift_link_generated": "Lien cadeau généré."
+    }
+  },
+  "quickActions": {
+    "buy_goods": "Acheter des biens",
+    "pay_bills": "Payer des factures",
+    "request_money": "Demander des fonds",
+    "send_money": "Envoyer de l'argent",
+    "top_up": "Recharger",
+    "refer_store": "Référer un shop",
+    "source_africa": "Sourcing en Afrique",
+    "scan_cash": "Scan & Cash"
   }
 }

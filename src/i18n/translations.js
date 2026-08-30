@@ -6,6 +6,7 @@ export const TRANSLATIONS = {
     tabSwap: "Swap",
     tabShops: "Boutique",
     tabMore: "Plus",
+    tabWallet: "Portefeuille",
 
     // Common Buttons & Actions
     btnSend: "Envoyer",
@@ -169,6 +170,17 @@ export const TRANSLATIONS = {
     "pos.do_not_close": "Ne fermez pas cette page avant d'avoir\nreçu le paiement.",
     "pos.scanned_ticket": "Billet scanné :",
     "pos.image_imported": "Image importée avec succès!",
+
+    "contacts.quick_action_1.title": "Payer et\nacheter l'essentiel",
+    "contacts.quick_action_1.subtitle": "Achat de crédit,\ninternet, TV, jeux,\ncrypto et plus",
+    "contacts.quick_action_2.title": "Recharger\nmobile",
+    "contacts.quick_action_2.subtitle": "Achat de crédit\nmobile",
+    "contacts.quick_action_3.title": "Payer des\nfactures",
+    "contacts.quick_action_3.subtitle": "Électricité, eau,\ninternet et plus",
+    "contacts.quick_action_4.title": "Envoyer /\nDemander\ndes fonds",
+    "contacts.quick_action_4.subtitle": "Transferts d'argent\ninstantanés",
+    "contacts.quick_action_5.title": "Inviter",
+    "contacts.quick_action_5.subtitle": "Invitez vos amis\net gagnez\n$5 en DZY",
   },
   en: {
     // Navigation Tabs
@@ -177,6 +189,7 @@ export const TRANSLATIONS = {
     tabSwap: "Swap",
     tabShops: "Shop",
     tabMore: "More",
+    tabWallet: "Wallet",
 
     // Common Buttons & Actions
     btnSend: "Send",
@@ -340,6 +353,17 @@ export const TRANSLATIONS = {
     "pos.do_not_close": "Do not close this page until you\nhave received the payment.",
     "pos.scanned_ticket": "Ticket scanned:",
     "pos.image_imported": "Image imported successfully!",
+
+    "contacts.quick_action_1.title": "Pay &\nbuy essentials",
+    "contacts.quick_action_1.subtitle": "Credit, internet,\nTV, games,\ncrypto & more",
+    "contacts.quick_action_2.title": "Mobile\nTop-up",
+    "contacts.quick_action_2.subtitle": "Buy mobile\ncredit",
+    "contacts.quick_action_3.title": "Pay\nbills",
+    "contacts.quick_action_3.subtitle": "Electricity, water,\ninternet & more",
+    "contacts.quick_action_4.title": "Send /\nRequest\nfunds",
+    "contacts.quick_action_4.subtitle": "Instant money\ntransfers",
+    "contacts.quick_action_5.title": "Invite",
+    "contacts.quick_action_5.subtitle": "Invite friends\nand earn\n$5 in DZY",
   },
   pt: {
     // Beneficiaries
@@ -410,6 +434,17 @@ export const TRANSLATIONS = {
     "pos.do_not_close": "Não feche esta página até\nter recebido o pagamento.",
     "pos.scanned_ticket": "Bilhete escaneado:",
     "pos.image_imported": "Imagem importada com sucesso!",
+
+    "contacts.quick_action_1.title": "Pagar e\ncomprar essenciais",
+    "contacts.quick_action_1.subtitle": "Crédito, internet,\nTV, jogos,\ncripto e mais",
+    "contacts.quick_action_2.title": "Recarga\nmóvel",
+    "contacts.quick_action_2.subtitle": "Comprar crédito\nmóvel",
+    "contacts.quick_action_3.title": "Pagar\ncontas",
+    "contacts.quick_action_3.subtitle": "Eletricidade, água,\ninternet e mais",
+    "contacts.quick_action_4.title": "Enviar /\nSolicitar\nfundos",
+    "contacts.quick_action_4.subtitle": "Transferências\ninstantâneas",
+    "contacts.quick_action_5.title": "Convidar",
+    "contacts.quick_action_5.subtitle": "Convide amigos\ne ganhe\n$5 em DZY",
   },
   ar: {
     // Beneficiaries
@@ -480,6 +515,17 @@ export const TRANSLATIONS = {
     "pos.do_not_close": "لا تغلق هذه الصفحة حتى\nتتلقى الدفع.",
     "pos.scanned_ticket": "التذكرة الممسوحة ضوئياً:",
     "pos.image_imported": "تم استيراد الصورة بنجاح!",
+
+    "contacts.quick_action_1.title": "الدفع و\nشراء الأساسيات",
+    "contacts.quick_action_1.subtitle": "رصيد، إنترنت،\nتلفزيون، ألعاب،\nعملات مشفرة والمزيد",
+    "contacts.quick_action_2.title": "شحن\nرصيد الجوال",
+    "contacts.quick_action_2.subtitle": "شراء رصيد\nالجوال",
+    "contacts.quick_action_3.title": "دفع\nالفواتير",
+    "contacts.quick_action_3.subtitle": "كهرباء، مياه،\nإنترنت والمزيد",
+    "contacts.quick_action_4.title": "إرسال /\nطلب\nأموال",
+    "contacts.quick_action_4.subtitle": "تحويلات\nفورية",
+    "contacts.quick_action_5.title": "دعوة",
+    "contacts.quick_action_5.subtitle": "ادعُ أصدقاءك\nواربح\n$5 DZY",
   },
   am: {
     // Beneficiaries
@@ -550,5 +596,16 @@ export const TRANSLATIONS = {
     "pos.do_not_close": "ክፍያውን እስኪቀበሉ ድረስ\nይህንን ገጽ አይዝጉት።",
     "pos.scanned_ticket": "የተቃኘ ትኬት:",
     "pos.image_imported": "ምስል በተሳካ ሁኔታ ገብቷል!",
+
+    "contacts.quick_action_1.title": "መክፈልና\nአስፈላጊ ነገሮችን መግዛት",
+    "contacts.quick_action_1.subtitle": "ክሬዲት፣ ኢንተርኔት፣\nቲቪ፣ ጨዋታዎች፣\nክሪፕቶ እና ሌሎችም",
+    "contacts.quick_action_2.title": "ሞባይል\nመሙላት",
+    "contacts.quick_action_2.subtitle": "የሞባይል ክሬዲት\nይግዙ",
+    "contacts.quick_action_3.title": "ክፍያዎችን\nይፈጽሙ",
+    "contacts.quick_action_3.subtitle": "መብራት፣ ውሃ፣\nኢንተርኔት እና ሌሎችም",
+    "contacts.quick_action_4.title": "ገንዘብ ማስተላለፍ /\nመጠየቅ",
+    "contacts.quick_action_4.subtitle": "ፈጣን የገንዘብ\nዝውውሮች",
+    "contacts.quick_action_5.title": "ይጋብዙ",
+    "contacts.quick_action_5.subtitle": "ጓደኞችዎን ይጋብዙና\n$5 DZY\nያግኙ",
   }
 };

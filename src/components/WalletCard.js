@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -7,6 +7,7 @@ import CryptoIcon from './CryptoIcon';
 import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
 import { useApp } from '../context/AppContext';
 import { isSmallScreen } from '../utils/responsive';
+import { supabase } from '../services/supabaseClient';
 
 export default function WalletCard({ balances }) {
   const navigation = useNavigation();
@@ -24,8 +25,40 @@ export default function WalletCard({ balances }) {
     secondaryCountry = getCountryCurrencyInfo('france');
   }
 
-  const primaryBalance = balances?.[primaryCountry.currency] || 0;
-  const secondaryBalance = balances?.[secondaryCountry.currency] || 0;
+  const [exchangeRates, setExchangeRates] = useState({});
+
+  useEffect(() => {
+    const fetchRates = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('exchange_rates')
+          .select('target_currency, rate')
+          .eq('base_currency', 'USD')
+          .eq('status', 'active');
+          
+        if (!error && data && data.length > 0) {
+          const ratesMap = {};
+          data.forEach(r => ratesMap[r.target_currency] = r.rate);
+          ratesMap['USD'] = 1;
+          setExchangeRates(ratesMap);
+        }
+      } catch (e) {
+        console.warn('Failed to fetch rates from DB', e);
+      }
+    };
+    fetchRates();
+  }, []);
+
+  // 10 DZY = $1.00 USD -> 1 DZY = $0.10 USD
+  const dzyInUsd = mainBalance * 0.10;
+  
+  // Convert USD equivalent to Local Fiat
+  const localRate = exchangeRates[primaryCountry.currency] || 1;
+  const primaryBalance = dzyInUsd * localRate;
+  
+  // Convert USD equivalent to Secondary Fiat (usually USD, so rate is 1, or EUR)
+  const secondaryRate = exchangeRates[secondaryCountry.currency] || (secondaryCountry.currency === 'EUR' ? 0.92 : 1);
+  const secondaryBalance = dzyInUsd * secondaryRate;
   
   const formatNum = (num, min=2, max=2) => (num || 0).toLocaleString('en-US', { minimumFractionDigits: min, maximumFractionDigits: max });
 

@@ -9,6 +9,7 @@
   "7": "7",
   "8": "8",
   "9": "9",
+  "copied_title": "{{label}} ተቀድቷል!",
   "finance": {
     "stakeholders": {
       "families": {
@@ -3590,7 +3591,14 @@
       "send_funds": "ገንዘብ መላክ",
       "transfer_done": "ዝውውር ተጠናቋል",
       "ref": "ማጣቀሻ፦"
-    }
+    },
+    "sync": "እውቂያዎችን ያመሳስሉ",
+    "search": "እውቂያ ይፈልጉ",
+    "add": "ተጠቃሚ ያክሉ",
+    "add_desc": "አዲስ ተጠቃሚ ያክሉ",
+    "edit": "ተጠቃሚ ያርትዑ",
+    "edit_desc": "መረጃ ያዘምኑ",
+    "subtitle": "ተጠቃሚዎችዎን ይደግፉ፡ ገንዘብ ይላኩ፣ ክፍያዎችን ይክፈሉ እና በመላው አፍሪካ አስፈላጊ ነገሮችን ይግዙ።"
   },
   "beneficiary_management": {
     "edit": {
@@ -3643,5 +3651,134 @@
       "sponsor": "ስፖንሰር",
       "yes": "አዎ"
     }
+  },
+  "localExchange": {
+    "title": "ቃኝ እና ገንዘብ አውጣ",
+    "subtitle": "የእርስዎን የተረጋጋ ሳንቲሞች በአካባቢው በጥሬ ገንዘብ ይለውጡ።",
+    "selectCurrency": "ንብረት ይምረጡ",
+    "amount": "የሚያወጡት መጠን",
+    "scanTitle": "የተቀባይ QR ይቃኙ",
+    "scanSubtitle": "ተቀባዩ የDizzitUp QR ኮዳቸውን እንዲያሳይ ይጠይቁ።",
+    "confirmTitle": "ልውውጥ ያረጋግጡ",
+    "confirmSubtitle": "ከማረጋገጥዎ በፊት ዝርዝሮቹን ይገምግሙ።"
+  },
+  "tabWallet": "ቦርሳ",
+  "shop.default_name": "ሱቅ",
+  "shop.cover_subtitle": "የሚፈልጉት\nሁሉ፣ ወደ እርሶ\nይደርሳል።",
+  "shop.info.title": "የሱቅ መረጃ",
+  "shop.info.address": "አድራሻ",
+  "shop.info.location": "ቦታ",
+  "shop.info.delivery": "መውሰጃ / ማድረሻ",
+  "shop.info.social_share": "በማህበራዊ ሚዲያ ያጋሩ",
+  "shop.info.not_specified": "አልተገለጸም",
+  "shop.info.available": "ይገኛል",
+  "shop.payment.title": "የክፍያ መረጃ",
+  "shop.payment.euro_iban": "ዩሮ IBAN ቨርቹዋል አካውንት",
+  "shop.payment.usd_account": "የአሜሪካ ዶላር ቨርቹዋል ባንክ",
+  "contacts.quick_action_1.title": "መክፈልና\nአስፈላጊ ነገሮችን መግዛት",
+  "contacts.quick_action_1.subtitle": "ክሬዲት፣ ኢንተርኔት፣\nቲቪ፣ ጨዋታዎች፣\nክሪፕቶ እና ሌሎችም",
+  "contacts.quick_action_2.title": "ሞባይል\nመሙላት",
+  "contacts.quick_action_2.subtitle": "የሞባይል ክሬዲት\nይግዙ",
+  "contacts.quick_action_3.title": "ክፍያዎችን\nይፈጽሙ",
+  "contacts.quick_action_3.subtitle": "መብራት፣ ውሃ፣\nኢንተርኔት እና ሌሎችም",
+  "contacts.quick_action_4.title": "ገንዘብ ማስተላለፍ /\nመጠየቅ",
+  "contacts.quick_action_4.subtitle": "ፈጣን የገንዘብ\nዝውውሮች",
+  "contacts.quick_action_5.title": "ይጋብዙ",
+  "contacts.quick_action_5.subtitle": "ጓደኞችዎን ይጋብዙና\n DZY\nያግኙ",
+  "shop": {
+    "default_name": "ሱቅ",
+    "cover_subtitle": "የሚፈልጉትን ሁሉ፣ ወደ በርዎ ይደርሳል።",
+    "tabs": {
+      "products": "ምርቶች",
+      "reviews": "ግምገማዎች",
+      "info": "መረጃ",
+      "store": "ሱቅ"
+    },
+    "products": {
+      "search_placeholder": "ምርት ይፈልጉ...",
+      "filter": "አጣራ",
+      "price": "ዋጋ",
+      "all_prices": "ሁሉም ዋጋዎች",
+      "under_50k": "ከ 50,000 FCFA በታች",
+      "over_50k": "50,000 FCFA እና ከዚያ በላይ",
+      "buy_me_this": "ይህን ግዛልኝ",
+      "no_products": "ምንም ምርቶች አልተገኙም።",
+      "in_stock": "በክምችት አለ",
+      "buy_me": "ግዛልኝ"
+    },
+    "features": {
+      "secure_payment": "ደህንነቱ የተጠበቀ ክፍያ",
+      "secure_100": "100% ደህንነቱ የተጠበቀ",
+      "fast_delivery": "ፈጣን ማድረስ",
+      "nationwide_delivery": "አገር አቀፍ ማድረስ",
+      "support_24_7": "24/7 ድጋፍ",
+      "dedicated_support": "የተለየ እገዛ",
+      "verified_seller": "የተረጋገጠ ሻጭ",
+      "trusted_merchant": "ታማኝ ነጋዴ"
+    },
+    "actions": {
+      "buy": "ግዛ",
+      "buy_me": "ግዛልኝ",
+      "share_store": "ሱቅ አጋራ",
+      "view_full_profile": "ሙሉ መገለጫ ይመልከቱ"
+    },
+    "sections": {
+      "popular_products": "ታዋቂ ምርቶች",
+      "about_store": "ስለ"
+    },
+    "badges": {
+      "active": "ገቢር",
+      "online_shopping": "የመስመር ላይ ግብይት",
+      "marketplace": "የገበያ ቦታ"
+    },
+    "stats": {
+      "products": "ምርቶች",
+      "followers": "ተከታዮች",
+      "following": "በመከተል ላይ",
+      "reviews_verified": "የተረጋገጡ ግምገማዎች"
+    },
+    "info": {
+      "title": "የሱቅ መረጃ",
+      "practical_info": "ተግባራዊ መረጃ",
+      "address": "አድራሻ",
+      "not_specified": "አልተገለጸም",
+      "location": "ቦታ",
+      "delivery": "ማንሳት / ማድረስ",
+      "available": "አለ",
+      "social_share": "ማህበራዊ ማጋራት",
+      "delivery_options": "ማድረስ፣ ማንሳት እና በመስመር ላይ ማዘዝ",
+      "verified_since": "ከ 2016 ጀምሮ የተረጋገጠ ነጋዴ"
+    },
+    "payment": {
+      "title": "የክፍያ መረጃ",
+      "accepted_methods": "ተቀባይነት ያላቸው የክፍያ ዘዴዎች",
+      "euro_iban": "የዩሮ ቨርቹዋል መለያ",
+      "usd_account": "የዶላር ቨርቹዋል መለያ"
+    },
+    "options": {
+      "title": "የሱቅ አማራጮች",
+      "message": "ተጨማሪ እርምጃዎች አሉ።"
+    },
+    "share": {
+      "ready": "ለማጋራት ዝግጁ",
+      "ready_msg": "ሱቁ አሁን ለእውቂያዎችዎ መላክ ይችላል።"
+    },
+    "reviews": {
+      "title": "የደንበኛ ግምገማዎች",
+      "count_verified": "የተረጋገጡ ግምገማዎች"
+    },
+    "toast": {
+      "gift_link_generated": "የስጦታ አገናኝ ተፈጥሯል።"
+    }
+  },
+  "quickActions": {
+    "buy_goods": "ዕቃዎችን ይግዙ",
+    "pay_bills": "ክፍያዎችን ይክፈሉ",
+    "request_money": "ገንዘብ ይጠይቁ",
+    "send_money": "ገንዘብ ይላኩ እና ይጠይቁ",
+    "top_up": "ካዝና ይሙሉ",
+    "refer_store": "ሱቅ ይጠቁሙ",
+    "source_africa": "ከአፍሪካ ያስመጡ",
+    "scan_cash": "ስካን እና ጥሬ ገንዘብ"
   }
 }

@@ -20,6 +20,7 @@ import DashboardEngScreen from '../screens/DashboardEngScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import FiltersScreen from '../screens/FiltersScreen';
 import HomeScreen from '../screens/HomeScreen';
+import LocalExchangeScreen from '../screens/LocalExchangeScreen';
 import LoginScreen from '../screens/LoginScreen';
 import MobileRechargeScreen from '../screens/MobileRechargeScreen';
 import MoreSettingsScreen from '../screens/MoreSettingsScreen';
@@ -134,6 +135,7 @@ export default function AppNavigator() {
       <Stack.Screen name="DashboardScreen" component={DashboardScreen} />
       <Stack.Screen name="FiltersScreen" component={FiltersScreen} />
       <Stack.Screen name="HomeScreen" component={HomeScreen} />
+      <Stack.Screen name="LocalExchangeScreen" component={LocalExchangeScreen} />
       <Stack.Screen name="LoginScreen" component={LoginScreen} />
       <Stack.Screen name="MobileRechargeScreen" component={MobileRechargeScreen} />
       <Stack.Screen name="MoreSettingsScreen" component={MoreSettingsScreen} />

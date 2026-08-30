@@ -9,6 +9,7 @@
   "7": "7",
   "8": "8",
   "9": "9",
+  "copied_title": "{{label}} copied!",
   "finance": {
     "stakeholders": {
       "families": {
@@ -3739,7 +3740,14 @@
       "send_funds": "Send funds",
       "transfer_done": "Transfer complete",
       "ref": "Ref :"
-    }
+    },
+    "sync": "Sync your contacts",
+    "search": "Search a contact",
+    "add": "Add a beneficiary",
+    "add_desc": "Add a new beneficiary",
+    "edit": "Edit a beneficiary",
+    "edit_desc": "Update information",
+    "subtitle": "Support your beneficiaries: send money, pay bills and buy essentials across Africa."
   },
   "beneficiary_management": {
     "edit": {
@@ -3851,5 +3859,134 @@
     "network_error": "Network error during order creation",
     "payment_details": "Payment details",
     "crossmint_secure": "Complete your payment securely via Crossmint."
+  },
+  "localExchange": {
+    "title": "Scan & Cash",
+    "subtitle": "Exchange your stablecoins against cash locally.",
+    "selectCurrency": "Select Asset",
+    "amount": "Amount to cash out",
+    "scanTitle": "Scan Receiver QR",
+    "scanSubtitle": "Ask the receiver to show their DizzitUp QR Code.",
+    "confirmTitle": "Confirm Exchange",
+    "confirmSubtitle": "Review the details before validating."
+  },
+  "tabWallet": "Wallet",
+  "shop.default_name": "Shop",
+  "shop.cover_subtitle": "Everything you\nneed, delivered\nto you.",
+  "shop.info.title": "Store information",
+  "shop.info.address": "Address",
+  "shop.info.location": "Location",
+  "shop.info.delivery": "Pickup / Delivery",
+  "shop.info.social_share": "Share on social media",
+  "shop.info.not_specified": "Not specified",
+  "shop.info.available": "Available",
+  "shop.payment.title": "Payment information",
+  "shop.payment.euro_iban": "Euro IBAN Virtual account",
+  "shop.payment.usd_account": "USD Bank Virtual account",
+  "contacts.quick_action_1.title": "Pay &\nbuy essentials",
+  "contacts.quick_action_1.subtitle": "Credit, internet,\nTV, games,\ncrypto & more",
+  "contacts.quick_action_2.title": "Mobile\nTop-up",
+  "contacts.quick_action_2.subtitle": "Buy mobile\ncredit",
+  "contacts.quick_action_3.title": "Pay\nbills",
+  "contacts.quick_action_3.subtitle": "Electricity, water,\ninternet & more",
+  "contacts.quick_action_4.title": "Send /\nRequest\nfunds",
+  "contacts.quick_action_4.subtitle": "Instant money\ntransfers",
+  "contacts.quick_action_5.title": "Invite",
+  "contacts.quick_action_5.subtitle": "Invite friends\nand earn\n in DZY",
+  "shop": {
+    "default_name": "Store",
+    "cover_subtitle": "Everything you\nneed, delivered\nto your door.",
+    "tabs": {
+      "products": "Products",
+      "reviews": "Reviews",
+      "info": "Info",
+      "store": "Store"
+    },
+    "products": {
+      "search_placeholder": "Search for a product...",
+      "filter": "Filter",
+      "price": "Price",
+      "all_prices": "All prices",
+      "under_50k": "Under 50,000 FCFA",
+      "over_50k": "50,000 FCFA and above",
+      "buy_me_this": "Buy me this",
+      "no_products": "No products found.",
+      "in_stock": "In stock",
+      "buy_me": "Buy me"
+    },
+    "features": {
+      "secure_payment": "Secure Payment",
+      "secure_100": "100% secure",
+      "fast_delivery": "Fast Delivery",
+      "nationwide_delivery": "Nationwide delivery",
+      "support_24_7": "24/7 Support",
+      "dedicated_support": "Dedicated assistance",
+      "verified_seller": "Verified Seller",
+      "trusted_merchant": "Trusted merchant"
+    },
+    "actions": {
+      "buy": "Buy",
+      "buy_me": "Buy me",
+      "share_store": "Share Store",
+      "view_full_profile": "View full profile"
+    },
+    "sections": {
+      "popular_products": "Popular Products",
+      "about_store": "About"
+    },
+    "badges": {
+      "active": "ACTIVE",
+      "online_shopping": "Online Shopping",
+      "marketplace": "Marketplace"
+    },
+    "stats": {
+      "products": "Products",
+      "followers": "Followers",
+      "following": "Following",
+      "reviews_verified": "verified reviews"
+    },
+    "info": {
+      "title": "Store Information",
+      "practical_info": "Practical Information",
+      "address": "Address",
+      "not_specified": "Not specified",
+      "location": "Location",
+      "delivery": "Pickup / Delivery",
+      "available": "Available",
+      "social_share": "Social Share",
+      "delivery_options": "Delivery, pickup and online order",
+      "verified_since": "Verified merchant since 2016"
+    },
+    "payment": {
+      "title": "Payment Information",
+      "accepted_methods": "Accepted payment methods",
+      "euro_iban": "Euro IBAN Virtual account",
+      "usd_account": "USD Bank Virtual account"
+    },
+    "options": {
+      "title": "Store Options",
+      "message": "Additional actions are available."
+    },
+    "share": {
+      "ready": "Share Ready",
+      "ready_msg": "The store can now be sent to your contacts."
+    },
+    "reviews": {
+      "title": "Customer Reviews",
+      "count_verified": "verified reviews"
+    },
+    "toast": {
+      "gift_link_generated": "Gift link generated."
+    }
+  },
+  "quickActions": {
+    "buy_goods": "Buy goods",
+    "pay_bills": "Pay bills",
+    "request_money": "Request funds",
+    "send_money": "Send & Request funds",
+    "top_up": "Top-up DZYwallet",
+    "refer_store": "Refer a business",
+    "source_africa": "Source in Africa",
+    "scan_cash": "Scan & Cash"
   }
 }
