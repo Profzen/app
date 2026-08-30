@@ -68,15 +68,15 @@ export default function RewardsScreen() {
                   <Text style={styles.colTitleLabel}>Total DZY</Text>
                   <Ionicons name="information-circle-outline" size={13} color="#FFC759" style={{ marginLeft: 3 }} />
                 </View>
-                <Text style={styles.colSubtext}>(Since Day 1)</Text>
+                <Text style={styles.colSubtext} numberOfLines={1}>(Since Day 1)</Text>
 
                 <View style={styles.amountContainer}>
-                  <Text style={styles.colAmountMain}>2,354.82</Text>
+                  <Text style={styles.colAmountMain} numberOfLines={1} adjustsFontSizeToFit>2,354.82</Text>
                   <Text style={styles.dzyTagText}>DZY</Text>
                 </View>
 
-                <Text style={styles.equivText}>≈ 158,500 FCFA</Text>
-                <Text style={styles.equivText}>≈ 42.28 USD</Text>
+                <Text style={styles.equivText} numberOfLines={1}>≈ 158,500 FCFA</Text>
+                <Text style={styles.equivText} numberOfLines={1}>≈ 42.28 USD</Text>
               </View>
 
               <View style={styles.verticalDivider} />
@@ -105,15 +105,15 @@ export default function RewardsScreen() {
                   <Text style={styles.colTitleLabel}>Balance</Text>
                   <Ionicons name="information-circle-outline" size={13} color="#FFC759" style={{ marginLeft: 3 }} />
                 </View>
-                <Text style={styles.colSubtext}>Disponible</Text>
+                <Text style={styles.colSubtext} numberOfLines={1}>Disponible</Text>
 
                 <View style={styles.amountContainer}>
-                  <Text style={styles.colAmountMain}>845.62</Text>
+                  <Text style={styles.colAmountMain} numberOfLines={1} adjustsFontSizeToFit>845.62</Text>
                   <Text style={styles.dzyTagText}>DZY</Text>
                 </View>
 
-                <Text style={styles.equivText}>≈ 56,900 FCFA</Text>
-                <Text style={styles.equivText}>≈ 15.96 USD</Text>
+                <Text style={styles.equivText} numberOfLines={1}>≈ 56,900 FCFA</Text>
+                <Text style={styles.equivText} numberOfLines={1}>≈ 15.96 USD</Text>
               </View>
 
             </View>
@@ -279,25 +279,25 @@ const styles = StyleSheet.create({
   headerRightActions: { flexDirection: 'row', gap: 6 },
   scrollView: { flex: 1 },
   scrollContent: { paddingTop: 6, paddingBottom: 30, paddingHorizontal: 16 },
-  mainNavyCard: { backgroundColor: '#071D54', borderRadius: 20, padding: 14, marginBottom: 20 },
-  cardColumnsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  cardCol: { flex: 1 },
+  mainNavyCard: { backgroundColor: '#071D54', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 14, marginBottom: 20 },
+  cardColumnsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'stretch' },
+  cardCol: { flex: 1, justifyContent: 'space-between' },
   colHeaderRow: { flexDirection: 'row', alignItems: 'center' },
   colTitleLabel: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 12, color: '#FFFFFF' },
-  colSubtext: { fontFamily: 'Inter_400Regular', fontSize: 9, color: '#94A3B8', marginBottom: 6 },
-  amountContainer: { flexDirection: 'row', alignItems: 'baseline', marginBottom: 6, flexWrap: 'wrap' },
-  colAmountMain: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#FFFFFF' },
-  dzyTagText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#FFC759', marginLeft: 3 },
-  equivText: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#94A3B8', lineHeight: 14 },
-  verticalDivider: { width: 1, backgroundColor: 'rgba(255,255,255,0.15)', height: '100%', marginHorizontal: 8 },
-  cardCenterCol: { flex: 1.1, alignItems: 'center', justifyContent: 'center' },
-  btnBuyDzy: { backgroundColor: '#FFC759', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 12, marginBottom: 6 },
-  btnBuyDzyText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#1A2840' },
-  circleLogoBox: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', marginBottom: 6 },
-  dzyCircleLogo: { width: 40, height: 40 },
-  cashbackBadge: { backgroundColor: 'rgba(255, 199, 89, 0.15)', borderWidth: 1, borderColor: 'rgba(255, 199, 89, 0.4)', borderRadius: 8, paddingHorizontal: 6, paddingVertical: 3, alignItems: 'center' },
-  cashbackBadgeTitle: { fontFamily: 'Inter_500Medium', fontSize: 9, color: '#E2E8F0' },
-  cashbackBadgeHighlight: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#FFC759' },
+  colSubtext: { fontFamily: 'Inter_400Regular', fontSize: 9, color: '#94A3B8', marginBottom: 6, height: 13 },
+  amountContainer: { flexDirection: 'row', alignItems: 'baseline', marginBottom: 6, flexWrap: 'nowrap' },
+  colAmountMain: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#FFFFFF' },
+  dzyTagText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 10.5, color: '#FFC759', marginLeft: 3 },
+  equivText: { fontFamily: 'Inter_400Regular', fontSize: 9.5, color: '#94A3B8', lineHeight: 13 },
+  verticalDivider: { width: 1, backgroundColor: 'rgba(255,255,255,0.15)', height: '100%', marginHorizontal: 6 },
+  cardCenterCol: { flex: 1.1, alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 2 },
+  btnBuyDzy: { backgroundColor: '#FFC759', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10, marginBottom: 4 },
+  btnBuyDzyText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 10.5, color: '#1A2840' },
+  circleLogoBox: { width: 42, height: 42, borderRadius: 21, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', marginVertical: 3 },
+  dzyCircleLogo: { width: 38, height: 38 },
+  cashbackBadge: { backgroundColor: 'rgba(255, 199, 89, 0.15)', borderWidth: 1, borderColor: 'rgba(255, 199, 89, 0.4)', borderRadius: 8, paddingHorizontal: 5, paddingVertical: 2, alignItems: 'center' },
+  cashbackBadgeTitle: { fontFamily: 'Inter_500Medium', fontSize: 8.5, color: '#E2E8F0' },
+  cashbackBadgeHighlight: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 10.5, color: '#FFC759' },
   sectionHeaderRow: { marginBottom: 12 },
   sectionTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#1A2840' },
   sectionSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280', marginTop: 1 },
