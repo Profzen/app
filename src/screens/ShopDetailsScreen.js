@@ -124,7 +124,7 @@ export default function ShopDetailsScreen({ route }) {
                 <Text style={styles.coverSubtitle}>{t('shop.cover_subtitle', 'Tout ce dont vous\navez besoin, livré\nchez vous.')}</Text>
               </View>
               <Image
-                source={shop.shop_banner_url ? { uri: shop.shop_banner_url } : require('../../assets/brand/shop_default_banner.png')}
+                source={shop.shop_banner_url ? { uri: shop.shop_banner_url } : require('../../assets/brand/shop_default_banner.jpg')}
                 style={styles.coverImage}
               />
               {!shop.shop_banner_url && (

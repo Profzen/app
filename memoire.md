@@ -2202,6 +2202,13 @@ A la fin de chaque session ou apres toute modification majeure, l'IA DOIT mettre
   - Épinglage de la section en-tête (Titre *Mes shops* / *Nouveaux shops* + sélecteur Grille/Liste) et du carrousel de catégories (`Tout`, `Alimentation`, `Électronique`, `Mode`, `Services`).
   - Navigation fluide et filtrage immédiat quel que soit le niveau de scroll.
 
+### 4. Résolution de l'Erreur de Build Android AAPT2 (`shop_default_banner`)
+- **Diagnostic** : Le build Android échouait lors de la tâche `:app:packageReleaseResources` / `Aapt2CompileRunnable` car `assets/brand/shop_default_banner.png` (introduit dans le commit `ac559c0`) était en réalité un fichier JPEG encodé (`ffd8ffe0...`) nommé avec l'extension `.png`. L'outil de packaging natif Android (AAPT2) rejette strictement les images dont les magic bytes ne correspondent pas à l'extension.
+- **Actions correctives** :
+  - Renommage officiel en `assets/brand/shop_default_banner.jpg` et mise à jour du `require` dans `ShopDetailsScreen.js`.
+  - Suppression des fichiers 0-byte résiduels (`google_g.png`, `google_pay.png`).
+  - Audit automatisé complet de tous les assets du projet (`assets/`) : 100% conformes et validés.
+
 ---
 
 ## Prochaines Étapes
