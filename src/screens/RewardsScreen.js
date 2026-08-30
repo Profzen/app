@@ -66,12 +66,14 @@ export default function RewardsScreen() {
               <View style={styles.cardCol}>
                 <View style={styles.colHeaderRow}>
                   <Text style={styles.colTitleLabel}>Total DZY</Text>
-                  <Ionicons name="information-circle-outline" size={12} color="#9CA3AF" style={{ marginLeft: 2 }} />
+                  <Ionicons name="information-circle-outline" size={13} color="#FFC759" style={{ marginLeft: 3 }} />
                 </View>
                 <Text style={styles.colSubtext}>(Since Day 1)</Text>
 
-                <Text style={styles.colAmountMain}>2,354.82</Text>
-                <Text style={styles.dzyTagText}>DZY</Text>
+                <View style={styles.amountContainer}>
+                  <Text style={styles.colAmountMain}>2,354.82</Text>
+                  <Text style={styles.dzyTagText}>DZY</Text>
+                </View>
 
                 <Text style={styles.equivText}>≈ 158,500 FCFA</Text>
                 <Text style={styles.equivText}>≈ 42.28 USD</Text>
@@ -81,7 +83,7 @@ export default function RewardsScreen() {
 
               {/* Middle Column: + Buy DZY Logo & Cashback Note */}
               <View style={styles.cardCenterCol}>
-                <TouchableOpacity style={styles.btnBuyDzy} onPress={() => navigation.navigate('SwapTokensScreen')}>
+                <TouchableOpacity style={styles.btnBuyDzy} onPress={() => navigation.navigate('SwapTokensScreen')} activeOpacity={0.85}>
                   <Text style={styles.btnBuyDzyText}>+ Buy DZY</Text>
                 </TouchableOpacity>
 
@@ -89,9 +91,10 @@ export default function RewardsScreen() {
                   <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={styles.dzyCircleLogo} resizeMode="contain" />
                 </View>
 
-                <Text style={styles.cashbackNoteText}>
-                  Buy DZY pour bénéficier{'\n'}du meilleur taux de{'\n'}Cashback à <Text style={{ color: '#FFC759', fontWeight: 'bold' }}>5%</Text>
-                </Text>
+                <View style={styles.cashbackBadge}>
+                  <Text style={styles.cashbackBadgeTitle}>Benefit</Text>
+                  <Text style={styles.cashbackBadgeHighlight}>5% Cashback</Text>
+                </View>
               </View>
 
               <View style={styles.verticalDivider} />
@@ -100,12 +103,14 @@ export default function RewardsScreen() {
               <View style={styles.cardCol}>
                 <View style={styles.colHeaderRow}>
                   <Text style={styles.colTitleLabel}>Balance</Text>
-                  <Ionicons name="information-circle-outline" size={12} color="#9CA3AF" style={{ marginLeft: 2 }} />
+                  <Ionicons name="information-circle-outline" size={13} color="#FFC759" style={{ marginLeft: 3 }} />
                 </View>
-                <Text style={styles.colSubtext}> </Text>
+                <Text style={styles.colSubtext}>Disponible</Text>
 
-                <Text style={styles.colAmountMain}>845.62</Text>
-                <Text style={styles.dzyTagText}>DZY</Text>
+                <View style={styles.amountContainer}>
+                  <Text style={styles.colAmountMain}>845.62</Text>
+                  <Text style={styles.dzyTagText}>DZY</Text>
+                </View>
 
                 <Text style={styles.equivText}>≈ 56,900 FCFA</Text>
                 <Text style={styles.equivText}>≈ 15.96 USD</Text>
@@ -278,18 +283,21 @@ const styles = StyleSheet.create({
   cardColumnsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   cardCol: { flex: 1 },
   colHeaderRow: { flexDirection: 'row', alignItems: 'center' },
-  colTitleLabel: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#9CA3AF' },
-  colSubtext: { fontFamily: 'Inter_400Regular', fontSize: 9, color: '#6B7280', marginBottom: 6 },
-  colAmountMain: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 20, color: '#FFFFFF' },
-  dzyTagText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#FFC759', marginBottom: 8 },
-  equivText: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#9CA3AF', lineHeight: 14 },
-  verticalDivider: { width: 1, backgroundColor: 'rgba(255,255,255,0.1)', height: '100%', marginHorizontal: 8 },
+  colTitleLabel: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 12, color: '#FFFFFF' },
+  colSubtext: { fontFamily: 'Inter_400Regular', fontSize: 9, color: '#94A3B8', marginBottom: 6 },
+  amountContainer: { flexDirection: 'row', alignItems: 'baseline', marginBottom: 6, flexWrap: 'wrap' },
+  colAmountMain: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#FFFFFF' },
+  dzyTagText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#FFC759', marginLeft: 3 },
+  equivText: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#94A3B8', lineHeight: 14 },
+  verticalDivider: { width: 1, backgroundColor: 'rgba(255,255,255,0.15)', height: '100%', marginHorizontal: 8 },
   cardCenterCol: { flex: 1.1, alignItems: 'center', justifyContent: 'center' },
-  btnBuyDzy: { backgroundColor: '#FFC759', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10, marginBottom: 8 },
+  btnBuyDzy: { backgroundColor: '#FFC759', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 12, marginBottom: 6 },
   btnBuyDzyText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#1A2840' },
-  circleLogoBox: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', marginBottom: 6 },
-  dzyCircleLogo: { width: 44, height: 44 },
-  cashbackNoteText: { fontFamily: 'Inter_400Regular', fontSize: 9, color: '#FFFFFF', textAlign: 'center', lineHeight: 12 },
+  circleLogoBox: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', marginBottom: 6 },
+  dzyCircleLogo: { width: 40, height: 40 },
+  cashbackBadge: { backgroundColor: 'rgba(255, 199, 89, 0.15)', borderWidth: 1, borderColor: 'rgba(255, 199, 89, 0.4)', borderRadius: 8, paddingHorizontal: 6, paddingVertical: 3, alignItems: 'center' },
+  cashbackBadgeTitle: { fontFamily: 'Inter_500Medium', fontSize: 9, color: '#E2E8F0' },
+  cashbackBadgeHighlight: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#FFC759' },
   sectionHeaderRow: { marginBottom: 12 },
   sectionTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#1A2840' },
   sectionSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280', marginTop: 1 },

@@ -222,6 +222,7 @@ export default function ShopsScreen() {
           style={styles.scrollView} 
           contentContainerStyle={styles.scrollContent} 
           showsVerticalScrollIndicator={false}
+          stickyHeaderIndices={[1]}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -231,103 +232,108 @@ export default function ShopsScreen() {
             />
           }
         >
+          {/* Index 0: Top non-sticky elements */}
+          <View>
+            <Text style={styles.mainTitle}>{t('shopsTitle', 'Shops')}</Text>
+            <Text style={styles.subtitle}>{t('shopsSubtitle', 'Discover, pay and support African businesses.')}</Text>
+            <Text style={styles.acceptedTokensText}>
+              <Text style={{ color: '#20365B' }}>{t('paymentCards', 'Cards')}</Text>  •  <Text style={{ color: '#20365B' }}>{t('paymentStablecoins', 'Stablecoins')}</Text>  •  <Text style={{ color: '#20365B' }}>{t('paymentMobileMoney', 'Mobile Money')}</Text>  {t('paymentAccepted', 'accepted')}
+            </Text>
 
-          <Text style={styles.mainTitle}>{t('shopsTitle', 'Shops')}</Text>
-          <Text style={styles.subtitle}>{t('shopsSubtitle', 'Discover, pay and support African businesses.')}</Text>
-          <Text style={styles.acceptedTokensText}>
-            <Text style={{ color: '#20365B' }}>{t('paymentCards', 'Cards')}</Text>  •  <Text style={{ color: '#20365B' }}>{t('paymentStablecoins', 'Stablecoins')}</Text>  •  <Text style={{ color: '#20365B' }}>{t('paymentMobileMoney', 'Mobile Money')}</Text>  {t('paymentAccepted', 'accepted')}
-          </Text>
+            {/* Stunning Search Bar */}
+            <View style={styles.searchWrapper}>
+              <View style={styles.searchContainer}>
+                <Ionicons name="search" size={20} color="#20365B" style={styles.searchIcon} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder={t('shopsSearchPlaceholder', 'Search by name, city, country or category...')}
+                  placeholderTextColor="#9CA3AF"
+                  value={query}
+                  onChangeText={setQuery}
+                  selectionColor="#FFC759"
+                />
+                {query.length > 0 && (
+                  <TouchableOpacity onPress={() => setQuery('')} style={styles.clearSearchBtn}>
+                    <Ionicons name="close-circle" size={18} color="#9CA3AF" />
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
 
-          {/* Stunning Search Bar */}
-          <View style={styles.searchWrapper}>
-            <View style={styles.searchContainer}>
-              <Ionicons name="search" size={20} color="#20365B" style={styles.searchIcon} />
-              <TextInput
-                style={styles.searchInput}
-                placeholder={t('shopsSearchPlaceholder', 'Search by name, city, country or category...')}
-                placeholderTextColor="#9CA3AF"
-                value={query}
-                onChangeText={setQuery}
-                selectionColor="#FFC759"
-              />
-              {query.length > 0 && (
-                <TouchableOpacity onPress={() => setQuery('')} style={styles.clearSearchBtn}>
-                  <Ionicons name="close-circle" size={18} color="#9CA3AF" />
+            {/* Actions rapides */}
+            <Text style={styles.sectionTitle}>{t('shopsQuickActions', 'Quick Actions')}</Text>
+            <View style={styles.quickActionsGrid}>
+              {getQuickActions(t).map(action => (
+                <TouchableOpacity key={action.id} style={styles.quickActionCard} onPress={() => runQuickAction(action.id)}>
+                  <View style={[styles.quickActionIconContainer, { backgroundColor: action.iconBg }]}>
+                    <Ionicons name={action.icon} size={22} color={action.color} />
+                  </View>
+                  <Text style={styles.quickActionTitle}>{action.title}</Text>
+                  <Text style={styles.quickActionSubtitle}>{action.subtitle}</Text>
                 </TouchableOpacity>
-              )}
+              ))}
             </View>
           </View>
 
-          {/* Actions rapides */}
-          <Text style={styles.sectionTitle}>{t('shopsQuickActions', 'Quick Actions')}</Text>
-          <View style={styles.quickActionsGrid}>
-            {getQuickActions(t).map(action => (
-              <TouchableOpacity key={action.id} style={styles.quickActionCard} onPress={() => runQuickAction(action.id)}>
-                <View style={[styles.quickActionIconContainer, { backgroundColor: action.iconBg }]}>
-                  <Ionicons name={action.icon} size={22} color={action.color} />
-                </View>
-                <Text style={styles.quickActionTitle}>{action.title}</Text>
-                <Text style={styles.quickActionSubtitle}>{action.subtitle}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {/* Index 1: Pinned / Sticky Header (My shops title, View toggle, Filter chips) */}
+          <View style={styles.stickyHeaderContainer}>
+            {/* Mes shops & View Toggle */}
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitleSticky}>{activeSubNav === 'new' ? t('qaNewShopsTitle', 'New Shops').replace('\n', ' ') : t('qaMyShopsTitle', 'My Shops')}</Text>
 
-          {/* Mes shops & View Toggle */}
-          <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>{activeSubNav === 'new' ? t('qaNewShopsTitle', 'New Shops').replace('\n', ' ') : t('qaMyShopsTitle', 'My Shops')}</Text>
-
-            <View style={styles.viewToggleContainer}>
-              <TouchableOpacity
-                style={[styles.viewToggleBtn, viewMode === 'grid' && styles.viewToggleBtnActive]}
-                onPress={() => setViewMode('grid')}
-              >
-                <Ionicons name="grid" size={14} color={viewMode === 'grid' ? '#FFFFFF' : '#64748B'} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.viewToggleBtn, viewMode === 'list' && styles.viewToggleBtnActive]}
-                onPress={() => setViewMode('list')}
-              >
-                <Ionicons name="list" size={16} color={viewMode === 'list' ? '#FFFFFF' : '#64748B'} />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Filters */}
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false} 
-            style={styles.filtersScrollView}
-            contentContainerStyle={styles.filtersScroll}
-          >
-            {categories.map((item) => {
-              const isActive = activeFilter === item.id;
-              return (
+              <View style={styles.viewToggleContainer}>
                 <TouchableOpacity
-                  key={item.id}
-                  style={[
-                    styles.filterChip,
-                    isActive ? styles.filterChipActive : null
-                  ]}
-                  onPress={() => setActiveFilter(item.id)}
+                  style={[styles.viewToggleBtn, viewMode === 'grid' && styles.viewToggleBtnActive]}
+                  onPress={() => setViewMode('grid')}
                 >
-                  <Ionicons
-                    name={item.icon}
-                    size={15}
-                    color={isActive ? '#FFC759' : '#1A2840'}
-                    style={{ marginRight: 6 }}
-                  />
-                  <Text
-                    style={[
-                      styles.filterChipText,
-                      isActive ? styles.filterChipTextActive : null
-                    ]}
-                  >
-                    {item.label}
-                  </Text>
+                  <Ionicons name="grid" size={14} color={viewMode === 'grid' ? '#FFFFFF' : '#64748B'} />
                 </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
+                <TouchableOpacity
+                  style={[styles.viewToggleBtn, viewMode === 'list' && styles.viewToggleBtnActive]}
+                  onPress={() => setViewMode('list')}
+                >
+                  <Ionicons name="list" size={16} color={viewMode === 'list' ? '#FFFFFF' : '#64748B'} />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Filters */}
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false} 
+              style={styles.filtersScrollView}
+              contentContainerStyle={styles.filtersScroll}
+            >
+              {categories.map((item) => {
+                const isActive = activeFilter === item.id;
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[
+                      styles.filterChip,
+                      isActive ? styles.filterChipActive : null
+                    ]}
+                    onPress={() => setActiveFilter(item.id)}
+                  >
+                    <Ionicons
+                      name={item.icon}
+                      size={15}
+                      color={isActive ? '#FFC759' : '#1A2840'}
+                      style={{ marginRight: 6 }}
+                    />
+                    <Text
+                      style={[
+                        styles.filterChipText,
+                        isActive ? styles.filterChipTextActive : null
+                      ]}
+                    >
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
 
           {/* Shops List */}
           {loading && (
@@ -569,13 +575,15 @@ const styles = StyleSheet.create({
   quickActionIconContainer: { width: 38, height: 38, borderRadius: 19, justifyContent: 'center', alignItems: 'center', marginBottom: 6 },
   quickActionTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 10, color: '#1A2840', textAlign: 'center', marginBottom: 2, lineHeight: 12 },
   quickActionSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 8, color: '#9CA3AF', textAlign: 'center', lineHeight: 10 },
-  sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 16, marginBottom: 4 },
+  sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 16, marginBottom: 8 },
+  sectionTitleSticky: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#1A2840', paddingHorizontal: 16 },
+  stickyHeaderContainer: { backgroundColor: '#FFFFFF', paddingTop: 8, paddingBottom: 4, borderBottomWidth: 1, borderBottomColor: '#F1F5F9', zIndex: 10 },
 
   viewToggleContainer: { flexDirection: 'row', backgroundColor: '#F1F5F9', borderRadius: 8, padding: 2 },
   viewToggleBtn: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, justifyContent: 'center', alignItems: 'center' },
   viewToggleBtnActive: { backgroundColor: '#1A2840' },
 
-  filtersScrollView: { marginBottom: 14 },
+  filtersScrollView: { marginBottom: 8 },
   filtersScroll: { paddingLeft: 16, paddingRight: 8 },
   filterChipActive: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A2840', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 18, marginRight: 8, borderWidth: 1, borderColor: '#1A2840' },
   filterChipTextActive: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#FFFFFF' },

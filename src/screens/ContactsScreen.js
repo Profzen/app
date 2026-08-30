@@ -9,6 +9,7 @@ import Avatar from '../components/Avatar';
 import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
 import { useApp } from '../context/AppContext';
 import contactService from '../services/contactService';
+import { CONTACTS_MOCK } from '../mocks/contactsMock';
 
 const quickActions = [
   { id: '1', title: "Payer et\nacheter l'essentiel", subtitle: "Achat de crédit,\ninternet, TV, jeux,\ncrypto et plus", icon: "bag-handle-outline", color: "#8B5CF6" },
@@ -17,7 +18,6 @@ const quickActions = [
   { id: '4', title: "Envoyer /\nDemander\ndes fonds", subtitle: "Transferts d'argent\ninstantanés", icon: "swap-horizontal-outline", color: "#F59E0B" },
   { id: '5', title: "Inviter", subtitle: "Invitez vos amis\net gagnez\n$5 en DZY", icon: "person-add-outline", color: "#8B5CF6" },
 ];
-
 
 const getFlagEmoji = (countryCode) => {
   if (!countryCode) return '🌍';
@@ -37,18 +37,21 @@ export default function ContactsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [openSwipe, setOpenSwipe] = useState(null);
   const [toast, setToast] = useState(null);
+  const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'nearby', 'favorites', 'africa', 'world'
+  const [searchQuery, setSearchQuery] = useState('');
 
   const nextScreen = route.params?.nextScreen;
   const actionRoutes = { '1': 'ChooseServiceScreen', '2': 'MobileRechargeScreen', '3': 'ChooseServiceScreen', '4': 'SendMoneyScreen', '5': 'RewardsScreen' };
 
   const fetchBeneficiaries = async () => {
     if (!session?.user?.id) {
+      setContactItems(CONTACTS_MOCK);
       setIsLoading(false);
       return;
     }
     setIsLoading(true);
     const { success, data } = await contactService.getBeneficiaries(session.user.id);
-    if (success) {
+    if (success && data && data.length > 0) {
       const formatted = data.map(b => ({
         id: b.id,
         name: b.full_name || `${b.first_name} ${b.last_name || ''}`.trim(),
@@ -64,6 +67,8 @@ export default function ContactsScreen() {
         raw_data: b
       }));
       setContactItems(formatted);
+    } else {
+      setContactItems(CONTACTS_MOCK);
     }
     setIsLoading(false);
   };
@@ -82,6 +87,27 @@ export default function ContactsScreen() {
     }
     setOpenSwipe(null);
   };
+
+  const filteredContacts = useMemo(() => {
+    return contactItems.filter(contact => {
+      const name = (contact.name || '').toLowerCase();
+      const loc = (contact.location || '').toLowerCase();
+      const country = (contact.country || '').toLowerCase();
+      const q = searchQuery.trim().toLowerCase();
+      const matchesSearch = !q || name.includes(q) || loc.includes(q) || country.includes(q);
+
+      if (!matchesSearch) return false;
+
+      if (activeFilter === 'nearby') {
+        return contact.isBeneficiary;
+      } else if (activeFilter === 'favorites') {
+        return contact.isSponsor;
+      } else if (activeFilter === 'africa') {
+        return ['TG', 'NG', 'KE', 'SN', 'ML', 'BF', 'GH', 'CI', 'BJ', 'CM'].some(code => (contact.country_code || '').toUpperCase() === code);
+      }
+      return true;
+    });
+  }, [contactItems, searchQuery, activeFilter]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -106,108 +132,143 @@ export default function ContactsScreen() {
           </View>
         </View>
 
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          style={styles.scrollView} 
+          contentContainerStyle={styles.scrollContent} 
+          showsVerticalScrollIndicator={false}
+          stickyHeaderIndices={[1]}
+        >
           
+          {/* Index 0: Top Non-Sticky Elements */}
+          <View>
+            <Text style={styles.subtitle}>
+              {nextScreen 
+                ? t('contacts.select_beneficiary_action', 'Sélectionnez un bénéficiaire pour continuer.')
+                : t('contacts.subtitle', "Soutenez vos bénéficiaires : envoyez de l'argent, payez des factures et achetez l'essentiel en Afrique.")}
+            </Text>
 
-          <Text style={styles.subtitle}>
-            {nextScreen 
-              ? t('contacts.select_beneficiary_action', 'Sélectionnez un bénéficiaire pour continuer.')
-              : t('contacts.subtitle', "Soutenez vos bénéficiaires : envoyez de l'argent, payez des factures et achetez l'essentiel en Afrique.")}
-          </Text>
-
-          {/* Search Bar */}
-          <View style={styles.searchContainer}>
-            <Ionicons name="search-outline" size={20} color="#94A3B8" style={styles.searchIcon} />
-            <View style={{ flex: 1 }}>
-              <TextInput
-                style={styles.searchInput}
-                placeholder={t('contacts.search', 'Rechercher un contact')}
-                placeholderTextColor="#64748B"
-              />
-              <Text style={styles.searchSubText}>{language === 'fr' ? 'Nom, téléphone, email, ville ou pays' : 'Name, phone, email, city or country'}</Text>
+            {/* Search Bar */}
+            <View style={styles.searchContainer}>
+              <Ionicons name="search-outline" size={20} color="#94A3B8" style={styles.searchIcon} />
+              <View style={{ flex: 1 }}>
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder={t('contacts.search', 'Rechercher un contact')}
+                  placeholderTextColor="#64748B"
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                />
+                <Text style={styles.searchSubText}>{language === 'fr' ? 'Nom, téléphone, email, ville ou pays' : 'Name, phone, email, city or country'}</Text>
+              </View>
             </View>
+
+            {nextScreen ? (
+              <View style={styles.activeActionBanner}>
+                <View style={styles.activeActionBannerLeft}>
+                  <Ionicons name="information-circle" size={24} color="#3B82F6" />
+                  <View style={{ marginLeft: 12 }}>
+                    <Text style={styles.activeActionTitle}>{t('contacts.action_selected_title', 'Sélectionnez un bénéficiaire')}</Text>
+                    <Text style={styles.activeActionSub}>{t('contacts.action_selected_sub', 'Appuyez sur un contact ci-dessous pour continuer')}</Text>
+                  </View>
+                </View>
+                <TouchableOpacity style={styles.cancelActionBtn} onPress={() => navigation.setParams({ nextScreen: undefined })}>
+                  <Text style={styles.cancelActionText}>{t('common.cancel', 'Annuler')}</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <>
+                <Text style={styles.sectionTitle}>{t('contacts.quick_actions', 'Actions rapides')}</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickActionsScroll}>
+                  {quickActions.map(action => (
+                    <TouchableOpacity 
+                      key={action.id} 
+                      style={styles.quickActionCard} 
+                      onPress={() => {
+                        if (action.id === '5') {
+                          shareInviteLink();
+                        } else {
+                          navigation.setParams({ nextScreen: actionRoutes[action.id] });
+                        }
+                      }}
+                    >
+                      <View style={styles.quickActionIconContainer}>
+                        <Ionicons name={action.icon} size={28} color={action.color} />
+                      </View>
+                      <Text style={styles.quickActionTitle}>{t(`contacts.quick_action_${action.id}.title`, action.title)}</Text>
+                      <Text style={styles.quickActionSubtitle}>{t(`contacts.quick_action_${action.id}.subtitle`, action.subtitle)}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </>
+            )}
           </View>
 
-          {nextScreen ? (
-            <View style={styles.activeActionBanner}>
-              <View style={styles.activeActionBannerLeft}>
-                <Ionicons name="information-circle" size={24} color="#3B82F6" />
-                <View style={{ marginLeft: 12 }}>
-                  <Text style={styles.activeActionTitle}>{t('contacts.action_selected_title', 'Sélectionnez un bénéficiaire')}</Text>
-                  <Text style={styles.activeActionSub}>{t('contacts.action_selected_sub', 'Appuyez sur un contact ci-dessous pour continuer')}</Text>
-                </View>
-              </View>
-              <TouchableOpacity style={styles.cancelActionBtn} onPress={() => navigation.setParams({ nextScreen: undefined })}>
-                <Text style={styles.cancelActionText}>{t('common.cancel', 'Annuler')}</Text>
+          {/* Index 1: Pinned / Sticky Header (Beneficiaries header, Filters & Column titles) */}
+          <View style={styles.stickyHeaderContainer}>
+            {/* Mes bénéficiaires */}
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitleSticky}>{t('contacts.my_beneficiaries', 'Mes bénéficiaires')}</Text>
+              <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => navigation.navigate('ContactsManageScreen')}>
+                <Text style={styles.showLessText}>{t('contacts.manage_contacts', 'Gérer contacts')}</Text>
+                <Ionicons name="arrow-forward" size={14} color="#3B82F6" style={{ marginLeft: 4 }} />
               </TouchableOpacity>
             </View>
-          ) : (
-            <>
-              <Text style={styles.sectionTitle}>{t('contacts.quick_actions', 'Actions rapides')}</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickActionsScroll}>
-                {quickActions.map(action => (
-                  <TouchableOpacity 
-                    key={action.id} 
-                    style={styles.quickActionCard} 
-                    onPress={() => {
-                      if (action.id === '5') {
-                        shareInviteLink();
-                      } else {
-                        navigation.setParams({ nextScreen: actionRoutes[action.id] });
-                      }
-                    }}
-                  >
-                    <View style={styles.quickActionIconContainer}>
-                      <Ionicons name={action.icon} size={28} color={action.color} />
-                    </View>
-                    <Text style={styles.quickActionTitle}>{t(`contacts.quick_action_${action.id}.title`, action.title)}</Text>
-                    <Text style={styles.quickActionSubtitle}>{t(`contacts.quick_action_${action.id}.subtitle`, action.subtitle)}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </>
-          )}
 
-          {/* Mes bénéficiaires */}
-          <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>{t('contacts.my_beneficiaries', 'Mes bénéficiaires')}</Text>
-            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => navigation.navigate('ContactsManageScreen')}>
-              <Text style={styles.showLessText}>{t('contacts.manage_contacts', 'Gérer contacts')}</Text>
-              <Ionicons name="arrow-forward" size={14} color="#64748B" style={{ marginLeft: 4 }} />
-            </TouchableOpacity>
+            {/* Filters */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>
+              <TouchableOpacity 
+                style={activeFilter === 'all' ? styles.filterChipActive : styles.filterChip}
+                onPress={() => setActiveFilter('all')}
+              >
+                <Ionicons name="apps-outline" size={15} color={activeFilter === 'all' ? '#FFFFFF' : '#64748B'} style={{ marginRight: 6 }} />
+                <Text style={activeFilter === 'all' ? styles.filterChipTextActive : styles.filterChipText}>{t('common.all', 'Tous')}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={activeFilter === 'nearby' ? styles.filterChipActive : styles.filterChip}
+                onPress={() => setActiveFilter('nearby')}
+              >
+                <Ionicons name="location-outline" size={15} color={activeFilter === 'nearby' ? '#FFFFFF' : '#64748B'} style={{ marginRight: 6 }} />
+                <Text style={activeFilter === 'nearby' ? styles.filterChipTextActive : styles.filterChipText}>{t('contacts.filter_nearby', 'À proximité')}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={activeFilter === 'favorites' ? styles.filterChipActive : styles.filterChip}
+                onPress={() => setActiveFilter('favorites')}
+              >
+                <Ionicons name="heart-outline" size={15} color={activeFilter === 'favorites' ? '#FFFFFF' : '#64748B'} style={{ marginRight: 6 }} />
+                <Text style={activeFilter === 'favorites' ? styles.filterChipTextActive : styles.filterChipText}>{t('contacts.filter_favorites', 'De mes pays préférés')}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={activeFilter === 'africa' ? styles.filterChipActive : styles.filterChip}
+                onPress={() => setActiveFilter('africa')}
+              >
+                <Ionicons name="earth-outline" size={15} color={activeFilter === 'africa' ? '#FFFFFF' : '#64748B'} style={{ marginRight: 6 }} />
+                <Text style={activeFilter === 'africa' ? styles.filterChipTextActive : styles.filterChipText}>{t('contacts.filter_africa', "De toute l'Afrique")}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={activeFilter === 'world' ? styles.filterChipActive : styles.filterChip}
+                onPress={() => setActiveFilter('world')}
+              >
+                <Ionicons name="globe-outline" size={15} color={activeFilter === 'world' ? '#FFFFFF' : '#64748B'} style={{ marginRight: 6 }} />
+                <Text style={activeFilter === 'world' ? styles.filterChipTextActive : styles.filterChipText}>{t('contacts.filter_world', 'Du reste du monde')}</Text>
+              </TouchableOpacity>
+            </ScrollView>
+
+            {/* Contacts List Header */}
+            <View style={styles.listHeaderRow}>
+              <Text style={[styles.listHeaderText, { flex: 2 }]}>{t('contacts.col_contact', 'Contact')}</Text>
+              <Text style={[styles.listHeaderText, { flex: 1, textAlign: 'center' }]}>{t('contacts.col_beneficiary', 'Bénéficiaire')}</Text>
+              <Text style={[styles.listHeaderText, { flex: 1, textAlign: 'center' }]}>{t('contacts.col_sponsor', 'Parrain')}</Text>
+              <View style={{ width: 34 }} />
+            </View>
           </View>
 
-          {/* Filters */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>
-            <TouchableOpacity style={styles.filterChipActive}>
-              <Ionicons name="location-outline" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
-              <Text style={styles.filterChipTextActive}>{t('contacts.filter_nearby', 'À proximité')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.filterChip}>
-              <Ionicons name="heart-outline" size={16} color="#64748B" style={{ marginRight: 6 }} />
-              <Text style={styles.filterChipText}>{t('contacts.filter_favorites', 'De mes pays préférés')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.filterChip}>
-              <Ionicons name="earth-outline" size={16} color="#64748B" style={{ marginRight: 6 }} />
-              <Text style={styles.filterChipText}>{t('contacts.filter_africa', "De toute l'Afrique")}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.filterChip}>
-              <Ionicons name="globe-outline" size={16} color="#64748B" style={{ marginRight: 6 }} />
-              <Text style={styles.filterChipText}>{t('contacts.filter_world', 'Du reste du monde')}</Text>
-            </TouchableOpacity>
-          </ScrollView>
-
-          {/* Contacts List Header */}
-          <View style={styles.listHeaderRow}>
-            <Text style={[styles.listHeaderText, { flex: 2 }]}>{t('contacts.col_contact', 'Contact')}</Text>
-            <Text style={[styles.listHeaderText, { flex: 1, textAlign: 'center' }]}>{t('contacts.col_beneficiary', 'Bénéficiaire')}</Text>
-            <Text style={[styles.listHeaderText, { flex: 1, textAlign: 'center' }]}>{t('contacts.col_sponsor', 'Parrain')}</Text>
-            <View style={{ width: 34 }} />
-          </View>
-
-          {/* Contacts List with Interactive Swipe Left & Right */}
+          {/* Index 2: Contacts List with Interactive Swipe Left & Right */}
           <View style={styles.contactsList}>
-            {contactItems.map((contact) => (
+            {filteredContacts.map((contact) => (
               <SwipeContactRow
                 key={contact.id}
                 contact={contact}
@@ -429,13 +490,15 @@ const styles = StyleSheet.create({
   quickActionTitle: { fontFamily: 'Inter_700Bold', fontSize: 12, color: '#1A2840', textAlign: 'center', marginBottom: 8 },
   quickActionSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#64748B', textAlign: 'center', lineHeight: 14 },
   sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 16, marginBottom: 12 },
+  sectionTitleSticky: { fontFamily: 'Inter_700Bold', fontSize: 16, color: '#1A2840', paddingHorizontal: 16 },
+  stickyHeaderContainer: { backgroundColor: '#FAFAFA', paddingTop: 8, paddingBottom: 4, borderBottomWidth: 1, borderBottomColor: '#E2E8F0', zIndex: 10 },
   showLessText: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#3B82F6' },
-  filtersScroll: { paddingHorizontal: 16, marginBottom: 16 },
-  filterChipActive: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0A1128', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, marginRight: 8 },
-  filterChipTextActive: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#FFFFFF' },
-  filterChip: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, marginRight: 8 },
-  filterChipText: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#64748B' },
-  listHeaderRow: { flexDirection: 'row', paddingHorizontal: 16, marginBottom: 8, alignItems: 'center' },
+  filtersScroll: { paddingHorizontal: 16, marginBottom: 12 },
+  filterChipActive: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0A1128', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, marginRight: 8 },
+  filterChipTextActive: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#FFFFFF' },
+  filterChip: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, marginRight: 8 },
+  filterChipText: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#64748B' },
+  listHeaderRow: { flexDirection: 'row', paddingHorizontal: 16, paddingBottom: 8, alignItems: 'center', backgroundColor: '#FAFAFA' },
   listHeaderText: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#94A3B8' },
   contactsList: { paddingHorizontal: 16 },
   contactItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#F1F5F9', paddingVertical: 12 },

@@ -2179,25 +2179,49 @@ A la fin de chaque session ou apres toute modification majeure, l'IA DOIT mettre
 
 ---
 
-## Prochaines Etapes
+## Session du 30 Août 2026 : Intégration des Retours Slack & Optimisation UI/UX
 
-### Immediat (Pour la demo Actionnaires)
-1. Executer la refonte de l'ecran d'Accueil (Grille 8 cartes + onglets Featured/News).
-2. Appliquer les correctifs du module Personal ATM (Exchange Cash main-a-main + QR Code).
-3. Integrer la modal des pays restreints et corriger le layout Top Up Wallet.
-4. Generer les builds de qualification pour la capture video d'investisseurs.
+### 1. Synchronisation des Branches & Code Base
+- **Mise à jour `develop` et `front-back`** : Récupération du commit `ac559c0` d'Assia (stabilisation wallet, écrans LocalExchange, PriceDisplay, traductions i18n).
+- **Principe de branche respecté** : Travail et validation effectués sur la branche `front-back`.
+
+### 2. Optimisation du Header DZY Rewards (`RewardsScreen.js`)
+- **Élimination de la surcharge textuelle** : Nettoyage du bloc central pour un message percutant et vendeur.
+- **Mise en avant de la valeur** : Intégration du badge doré **« Benefit 5% Cashback »** incitant à l'achat anticipé de jetons DZY.
+- **Lisibilité et Typographie** : Rehaussement des contrastes de *Total DZY* et *Balance* (libellés blancs nets, icônes d'info dorées `#FFC759`, sous-titres discrets).
+- **Positionnement du symbole DZY** : Alignement direct du symbole `DZY` après le montant principal pour une lecture immédiate (`2,354.82 DZY` / `845.62 DZY`).
+
+### 3. En-têtes & Filtres Fixes / Sticky au Scroll (`ContactsScreen.js` & `ShopsScreen.js`)
+- **Écran Contacts (`ContactsScreen.js`)** :
+  - Intégration de `stickyHeaderIndices={[1]}` sur le `ScrollView`.
+  - Épinglage de la rangée de filtres (`Tous`, `À proximité`, `De mes pays préférés`, `De toute l'Afrique`, `Du reste du monde`) et de la ligne d'en-tête de colonnes (`Contact | Bénéficiaire | Parrain`).
+  - L'utilisateur conserve le contexte et la signification des colonnes et des statuts (Bénéficiaire/Parrain) tout au long du défilement.
+  - Ajout du filtrage en temps réel par recherche et par puce active.
+- **Écran Boutiques (`ShopsScreen.js`)** :
+  - Intégration de `stickyHeaderIndices={[1]}` sur le `ScrollView`.
+  - Épinglage de la section en-tête (Titre *Mes shops* / *Nouveaux shops* + sélecteur Grille/Liste) et du carrousel de catégories (`Tout`, `Alimentation`, `Électronique`, `Mode`, `Services`).
+  - Navigation fluide et filtrage immédiat quel que soit le niveau de scroll.
 
 ---
 
-## Regles de Methodologie pour l'IA
+## Prochaines Étapes
 
-1. Repondre directement a la question AVANT toute action.
-2. Aucune modification non demandee.
-3. Integrite absolue des branches `front-back` et `develop` (pas de code temporaire).
+### Immédiat
+1. Valider le rendu visuel en local (Web / simulateur).
+2. Valider avec l'équipe (Solofo & Assia).
+3. Sur feu vert final : merger `front-back` vers `develop` et pousser pour déclencher les builds CI/CD automatisés Android et iOS TestFlight.
+
+---
+
+## Règles de Méthodologie pour l'IA
+
+1. Répondre directement à la question AVANT toute action.
+2. Aucune modification non demandée.
+3. Intégrité absolue des branches `front-back` et `develop` (pas de code temporaire).
 4. Pas d'emojis dans les noms de fichiers, workflows ou scripts.
 
 ---
 
-## Regle d'Or (Mise a jour du Memoire)
+## Règle d'Or (Mise à jour du Mémoire)
 
-A la fin de chaque session ou apres toute modification majeure, l'IA DOIT mettre a jour ce fichier `memoire.md` pour garantir la continuite entre sessions.
+À la fin de chaque session ou après toute modification majeure, l'IA DOIT mettre à jour ce fichier `memoire.md` pour garantir la continuité entre sessions.
