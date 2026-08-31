@@ -2179,44 +2179,50 @@ A la fin de chaque session ou apres toute modification majeure, l'IA DOIT mettre
 
 ---
 
-## Session du 30 Août 2026 : Intégration des Retours Slack & Optimisation UI/UX
+## Session du 30-31 Août 2026 : Intégration Retours Slack, Polish UI/UX & Pipeline Android 100% au Vert (GREEN ✅)
 
-### 1. Synchronisation des Branches & Code Base
-- **Mise à jour `develop` et `front-back`** : Récupération du commit `ac559c0` d'Assia (stabilisation wallet, écrans LocalExchange, PriceDisplay, traductions i18n).
-- **Principe de branche respecté** : Travail et validation effectués sur la branche `front-back`.
+### 1. Synchronisation des Branches & Base de Code
+- **Intégration du travail d'Assia** : Récupération et fusion du commit `ac559c0` (stabilisation du wallet, composants `PriceDisplay` et `LocalExchangeScreen`, complétion des traductions i18n).
+- **Règle de branche strictement appliquée** : Travail et validation sur `front-back` avant toute fusion groupée sur `develop` (commit `b7dc84b`).
 
-### 2. Optimisation du Header DZY Rewards (`RewardsScreen.js`)
-- **Élimination de la surcharge textuelle** : Nettoyage du bloc central pour un message percutant et vendeur.
-- **Mise en avant de la valeur** : Intégration du badge doré **« Benefit 5% Cashback »** incitant à l'achat anticipé de jetons DZY.
-- **Lisibilité et Typographie** : Rehaussement des contrastes de *Total DZY* et *Balance* (libellés blancs nets, icônes d'info dorées `#FFC759`, sous-titres discrets).
-- **Positionnement du symbole DZY** : Alignement direct du symbole `DZY` après le montant principal pour une lecture immédiate (`2,354.82 DZY` / `845.62 DZY`).
+### 2. Optimisation UI/UX du Header DZY Rewards (`RewardsScreen.js`)
+- **Élimination de la surcharge textuelle** : Remplacement des paragraphes superflus par un message percutant et ultra-lisible.
+- **Badge d'incitation à l'achat** : Intégration du badge vendeur doré **« Benefit 5% Cashback »** au centre sous le bouton `+ Buy DZY` et le logo DZY.
+- **Lisibilité & Typographie haut contraste** :
+  - *Total DZY* et *Balance* rehaussés avec des libellés blancs nets, icônes d'information dorées `#FFC759` et sous-titres discrets (`Since Day 1`, `Disponible`).
+  - Symbole **`DZY`** aligné directement à côté du montant principal (`2,354.82 DZY` / `845.62 DZY`).
+- **Verrouillage de l'alignement et symétrie multi-écrans** :
+  - Ajout de `flexWrap: 'nowrap'` et `numberOfLines={1}` avec `adjustsFontSizeToFit` pour empêcher tout passage à la ligne asymétrique du symbole `DZY` sur petits écrans (iPhone SE, petits smartphones Android).
+  - Hauteur uniforme des sous-titres et alignement vertical `alignItems: 'stretch'` pour une symétrie parfaite des 3 colonnes.
 
-### 3. En-têtes & Filtres Fixes / Sticky au Scroll (`ContactsScreen.js` & `ShopsScreen.js`)
+### 3. En-têtes & Filtres Épinglés (Sticky) au Scroll (`ContactsScreen.js` & `ShopsScreen.js`)
 - **Écran Contacts (`ContactsScreen.js`)** :
-  - Intégration de `stickyHeaderIndices={[1]}` sur le `ScrollView`.
-  - Épinglage de la rangée de filtres (`Tous`, `À proximité`, `De mes pays préférés`, `De toute l'Afrique`, `Du reste du monde`) et de la ligne d'en-tête de colonnes (`Contact | Bénéficiaire | Parrain`).
-  - L'utilisateur conserve le contexte et la signification des colonnes et des statuts (Bénéficiaire/Parrain) tout au long du défilement.
-  - Ajout du filtrage en temps réel par recherche et par puce active.
+  - Mise en place de `stickyHeaderIndices={[1]}` sur le `ScrollView`.
+  - Épinglage continu de la rangée de filtres (*Tous*, *À proximité*, *De mes pays préférés*, *De toute l'Afrique*, *Du reste du monde*) et de la rangée d'en-tête de colonnes (*Contact | Bénéficiaire | Parrain*).
+  - L'utilisateur conserve la signification exacte des colonnes et des statuts (Bénéficiaire/Parrain) tout au long du défilement.
+  - Filtrage en temps réel par mot-clé (`searchQuery`) et par puce active avec repli automatique sur `CONTACTS_MOCK`.
 - **Écran Boutiques (`ShopsScreen.js`)** :
-  - Intégration de `stickyHeaderIndices={[1]}` sur le `ScrollView`.
-  - Épinglage de la section en-tête (Titre *Mes shops* / *Nouveaux shops* + sélecteur Grille/Liste) et du carrousel de catégories (`Tout`, `Alimentation`, `Électronique`, `Mode`, `Services`).
-  - Navigation fluide et filtrage immédiat quel que soit le niveau de scroll.
+  - Mise en place de `stickyHeaderIndices={[1]}` sur le `ScrollView`.
+  - Épinglage au scroll de la section en-tête (Titre *Mes shops* / *Nouveaux shops* + toggle Grille/Liste) et du carrousel de catégories (*Tout*, *Alimentation*, *Électronique*, *Mode*, *Services*).
 
-### 4. Résolution de l'Erreur de Build Android AAPT2 (`shop_default_banner`)
-- **Diagnostic** : Le build Android échouait lors de la tâche `:app:packageReleaseResources` / `Aapt2CompileRunnable` car `assets/brand/shop_default_banner.png` (introduit dans le commit `ac559c0`) était en réalité un fichier JPEG encodé (`ffd8ffe0...`) nommé avec l'extension `.png`. L'outil de packaging natif Android (AAPT2) rejette strictement les images dont les magic bytes ne correspondent pas à l'extension.
-- **Actions correctives** :
-  - Renommage officiel en `assets/brand/shop_default_banner.jpg` et mise à jour du `require` dans `ShopDetailsScreen.js`.
+### 4. Résolution de l'Erreur de Build Android AAPT2 & Validation CI/CD
+- **Diagnostic de l'échec Gradle** : Le build Android échouait sur l'étape `:app:packageReleaseResources` / `Aapt2CompileRunnable` en raison de `assets/brand/shop_default_banner.png` (introduit dans le commit `ac559c0`). Ce fichier était en réalité encodé en JPEG (`ffd8ffe0...`) mais nommé avec l'extension `.png`. L'outil de packaging natif Android (AAPT2) refuse strictement les images dont les magic bytes ne correspondent pas à leur extension.
+- **Actions correctives appliquées** :
+  - Renommage officiel en `assets/brand/shop_default_banner.jpg` et mise à jour du `require` dans [`ShopDetailsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShopDetailsScreen.js).
   - Suppression des fichiers 0-byte résiduels (`google_g.png`, `google_pay.png`).
-  - Audit automatisé complet de tous les assets du projet (`assets/`) : 100% conformes et validés.
+  - Création et exécution d'un script d'audit automatisé sur 100% des fichiers du dossier `assets/` pour garantir l'intégrité de toutes les images.
+- **Résultat Pipeline CI/CD** :
+  - **Android (`build-android.yml`)** : Workflow **`Run #33322286745` 100% au Vert (GREEN ✅)**. Fichiers APK et AAB générés et publiés avec succès.
+  - **iOS (`deploy-ios.yml`)** : En attente de réinitialisation du quota mensuel EAS au 1er septembre 2026.
 
 ---
 
 ## Prochaines Étapes
 
 ### Immédiat
-1. Valider le rendu visuel en local (Web / simulateur).
-2. Valider avec l'équipe (Solofo & Assia).
-3. Sur feu vert final : merger `front-back` vers `develop` et pousser pour déclencher les builds CI/CD automatisés Android et iOS TestFlight.
+1. Télécharger et tester les APK/AAB générés depuis GitHub Actions pour validation finale Android.
+2. Relancer le build iOS TestFlight dès la réinitialisation du quota au 1er septembre.
+3. Poursuivre le traitement des modules de la roadmap (Personal ATM, Modal des pays restreints, Harmonisation Auth).
 
 ---
 
