@@ -112,10 +112,8 @@ export default function TopUpWalletPaymentScreen() {
             <View style={styles.centerNodeWrapper}>
               <View style={styles.pulseCircleOuter}>
                 <View style={styles.pulseCircleInner}>
-                  <View style={styles.crossmintShield}>
-                    <Ionicons name="flash" size={16} color="#FFFFFF" />
-                  </View>
-                  <Text style={styles.crossmintTextBold}>crossmint</Text>
+                  <Ionicons name="shield-checkmark" size={36} color="#3B82F6" style={{ marginBottom: 4 }} />
+                  <Text style={styles.crossmintTextBold}>Paiement</Text>
                   <Text style={styles.pulseSubtitle}>Vérification{'\n'}sécurisée</Text>
                 </View>
               </View>
@@ -146,7 +144,7 @@ export default function TopUpWalletPaymentScreen() {
             <View style={styles.verificationContent}>
               <Text style={styles.verificationTitle}>Vérification de votre paiement...</Text>
               <Text style={styles.verificationDesc}>
-                Votre banque et Crossmint confirment{'\n'}actuellement la transaction.
+                Votre banque confirme{'\n'}actuellement la transaction.
               </Text>
             </View>
           </View>
@@ -176,11 +174,11 @@ export default function TopUpWalletPaymentScreen() {
             <View style={styles.detailRow}>
               <View style={styles.detailLeft}>
                 <Ionicons name="shield-checkmark-outline" size={20} color="#1A2840" style={{marginRight: 12}} />
-                <Text style={styles.detailLabel}>Transaction sécurisée par</Text>
+                <Text style={styles.detailLabel}>Transaction sécurisée</Text>
               </View>
               <View style={styles.crossmintLogoSmall}>
-                <Ionicons name="flower" size={16} color="#10B981" />
-                <Text style={styles.crossmintTextSmall}>crossmint</Text>
+                <Ionicons name="lock-closed" size={16} color="#10B981" />
+                <Text style={styles.crossmintTextSmall}>SSL 256-bit</Text>
               </View>
             </View>
           </View>

@@ -1,151 +1,295 @@
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Platform, StatusBar, Modal, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Platform, StatusBar } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
+import { useWallet, EVMWallet, SolanaWallet } from '@crossmint/client-sdk-react-native-ui';
+
 import CryptoIcon from '../components/CryptoIcon';
 import AppSelect from '../components/AppSelect';
+import { useApp } from '../context/AppContext';
+import { swapService } from '../services/swapService';
 
-const chainOptions = ['Polygon', 'Ethereum', 'Base', 'Solana', 'BNB Chain'].map((value) => ({value, label: value, isCrypto: true, cryptoSymbol: value}));
-const tokenOptions = ['DZY', 'USDC', 'USDT', 'POL', 'WBTC', 'ETH', 'SOL'].map((value) => ({value, label: value}));
+const chainOptions = [
+  { value: 'polygon', label: 'Polygon', isCrypto: true, cryptoSymbol: 'Polygon' },
+  { value: 'ethereum', label: 'Ethereum', isCrypto: true, cryptoSymbol: 'Ethereum' },
+  { value: 'base', label: 'Base', isCrypto: true, cryptoSymbol: 'Base' },
+  { value: 'solana', label: 'Solana', isCrypto: true, cryptoSymbol: 'Solana' },
+  { value: 'bsc', label: 'BNB Chain', isCrypto: true, cryptoSymbol: 'BNB' },
+];
+const tokenOptions = ['USDC', 'USDT', 'POL', 'WBTC', 'WETH', 'ETH', 'SOL', 'BNB', 'DAI'].map((value) => ({ value, label: value }));
 
 export default function SwapTokensScreen() {
-  const [fromChain, setFromChain] = useState('Polygon');
-  const [toChain, setToChain] = useState('Solana');
   const navigation = useNavigation();
-  const [fromAmount, setFromAmount] = useState('0,00');
-  const [toAmount, setToAmount] = useState('0,00');
+
+  const { wallet: crossmintWallet } = useWallet();
+  const { user, session, refreshBalances, t } = useApp();
+
+  const [fromChain, setFromChain] = useState('polygon');
+  const [toChain, setToChain] = useState('polygon');
+  const [fromAmount, setFromAmount] = useState('');
+  const [toAmount, setToAmount] = useState('');
   const [fromToken, setFromToken] = useState('USDC');
   const [toToken, setToToken] = useState('USDT');
-  const chooseQuickToken = (symbol) => setFromToken(symbol);
-  const swapSides = () => { setFromChain(toChain); setToChain(fromChain); setFromToken(toToken); setToToken(fromToken); setFromAmount(toAmount); setToAmount(fromAmount); };
+
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const [txStatus, setTxStatus] = useState(null);
+  const [activeTxHash, setActiveTxHash] = useState(null);
+  const [signerEmail, setSignerEmail] = useState(null);
+  const [isAuthorizing, setIsAuthorizing] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const amountInputRef = React.useRef(null);
+
+  const availableBalance = user?.rawBalances?.find((b) => (b.currency || b.token || b.symbol) === fromToken && (b.chain === fromChain || !b.chain))?.balance || user?.allBalances?.[fromToken] || 0;
+
+  // Debounced quote fetching
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (fromAmount && parseFloat(fromAmount) > 0) {
+        getQuote();
+      } else {
+        setToAmount('');
+      }
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [fromAmount, fromToken, toToken, fromChain, toChain]);
+
+  const getQuote = async () => {
+    setQuoteLoading(true);
+    setError(null);
+    try {
+      const data = await swapService.getQuote(fromToken, toToken, fromAmount, fromChain, toChain, session?.access_token);
+      if (data && data.toAmount) {
+        // Simple decimal formatting for UI. Backend usually returns raw or formatted depending on logic.
+        setToAmount(Number(data.toAmount).toFixed(6).replace(/\.?0+$/, ''));
+      }
+    } catch (e) {
+      console.log('Quote error', e);
+    } finally {
+      setQuoteLoading(false);
+    }
+  };
+
+  const pollTransactionStatus = async (txId) => {
+    setActiveTxHash(txId);
+    let attempts = 0;
+    const maxAttempts = 30;
+
+    const interval = setInterval(async () => {
+      attempts++;
+      try {
+        const data = await swapService.checkTransactionStatus(txId, session?.access_token);
+        const crossStatus = data.crossmintStatus || data.status;
+        setTxStatus(crossStatus);
+
+        if (data.status === 'COMPLETED') {
+          clearInterval(interval);
+
+          if (data.type === 'APPROVAL') {
+            // If it was an approval, immediately trigger the swap execute
+            setTxStatus(null);
+            handleSwap();
+          } else {
+            setLoading(false);
+            setIsAuthorizing(false);
+            refreshBalances();
+            setTxStatus('success');
+            setTimeout(() => navigation.goBack(), 2000);
+          }
+          return;
+        }
+
+        if (crossStatus === 'failed') {
+          clearInterval(interval);
+          setError(t('common.wallet.swap_ui.failed', 'Transaction failed'));
+          setLoading(false);
+          setIsAuthorizing(false);
+          return;
+        }
+      } catch (err) {
+        console.log(err);
+      }
+
+      if (attempts >= maxAttempts) {
+        clearInterval(interval);
+        setLoading(false);
+        setIsAuthorizing(false);
+      }
+    }, 5000);
+  };
+
+  const handleSwap = async () => {
+    if (!fromAmount || parseFloat(fromAmount) > availableBalance) {
+      setError(t('common.wallet.swap_ui.insufficient_balance', 'INSUFFICIENT BALANCE'));
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await swapService.executeSwap(fromToken, toToken, fromAmount, fromChain, toChain, session?.access_token);
+
+      if (res.error) {
+        if (res.status === 400 && res.data?.status === 'requires-handshake') {
+          const txId = res.data.txId;
+          setActiveTxHash(txId);
+          setTxStatus('awaiting-approval');
+          setSignerEmail(res.data.signerAddress?.replace('email:', '') || user?.email);
+          setLoading(false);
+          return;
+        }
+
+        if (res.status === 400 && res.data?.status === 'requires-approval') {
+          // Trigger approval flow
+          const approveRes = await swapService.approve(fromToken, fromChain, res.data.spender, session?.access_token);
+          if (approveRes.error && approveRes.status === 400 && approveRes.data?.status === 'requires-handshake') {
+            const txId = approveRes.data.txId;
+            setActiveTxHash(txId);
+            setTxStatus('awaiting-approval');
+            setSignerEmail(approveRes.data?.signerAddress?.replace('email:', '') || user?.email || user?.user_metadata?.email || 'your registered email');
+            setLoading(false);
+            return;
+          }
+          if (!approveRes.error && approveRes.data?.txHash) {
+            pollTransactionStatus(approveRes.data.txHash);
+          }
+          return;
+        }
+        throw new Error(res.data?.error || 'Swap failed');
+      }
+
+      if (res.data?.txHash) {
+        pollTransactionStatus(res.data.txHash);
+      }
+    } catch (e) {
+      setLoading(false);
+      setError(e.message);
+    }
+  };
+
+  const handleAuthorize = async () => {
+    try {
+      setIsAuthorizing(true);
+      if (!crossmintWallet) throw new Error('Crossmint wallet not connected');
+
+      const activeWallet = fromChain === 'solana' ? SolanaWallet.from(crossmintWallet) : EVMWallet.from(crossmintWallet);
+      const emailToUse = signerEmail || user?.email;
+
+      await activeWallet.useSigner({ type: 'email', email: emailToUse });
+      await activeWallet.approve({ transactionId: activeTxHash });
+
+      pollTransactionStatus(activeTxHash);
+    } catch (e) {
+      console.error("Authorize error", e);
+      setIsAuthorizing(false);
+
+      // Handle already approved errors
+      const errMsg = String(e);
+      if (errMsg.includes("Already has the required number of approvals")) {
+        pollTransactionStatus(activeTxHash);
+      }
+    }
+  };
+
+
+  const swapSides = () => {
+    setFromChain(toChain);
+    setToChain(fromChain);
+    setFromToken(toToken);
+    setToToken(fromToken);
+    setFromAmount(toAmount);
+    setToAmount(fromAmount);
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        
+
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
             <Ionicons name="chevron-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
-            <Text style={styles.pageTitle}>Échange de jetons</Text>
-            <Text style={styles.pageSubtitle}>Swap/Bridge tokens</Text>
+            <Text style={styles.pageTitle}>{t('common.wallet.swap_ui.swap_tokens', 'Swap Tokens')}</Text>
+            <Text style={styles.pageSubtitle}>{t('common.wallet.swap_ui.swap_subtitle', 'Exchange tokens instantly')}</Text>
           </View>
           <View style={styles.headerRightIcons}>
-            <TouchableOpacity style={styles.iconBtnRight}>
-              <Ionicons name="notifications-outline" size={20} color="#1A2840" />
-              <View style={styles.notificationDot} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnRight} onPress={() => navigation.navigate('RewardsScreen')}>
-              <Ionicons name="gift-outline" size={20} color="#1A2840" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnRight} onPress={() => navigation.navigate('MoreSettingsScreen')}>
-              <Ionicons name="ellipsis-vertical" size={20} color="#1A2840" />
-            </TouchableOpacity>
+            <View style={{ width: 44 }} />
           </View>
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          <Text style={styles.introText}>Échangez vos jetons instantanément aux meilleurs taux.</Text>
+
+          {error && (
+            <View style={styles.errorBox}>
+              <Ionicons name="alert-circle" size={20} color="#DC2626" />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
 
           {/* Chain Selectors */}
           <View style={styles.chainRow}>
             <View style={styles.chainCol}>
-              <Text style={styles.inputLabel}>DE LA CHAÎNE</Text>
-              <AppSelect value={fromChain} options={chainOptions} onChange={setFromChain} title="Choisir la chaîne source" style={styles.chainSelector} textStyle={styles.chainName} />
+              <Text style={styles.inputLabel}>{t('common.wallet.swap_ui.from_chain', 'From Chain')}</Text>
+              <AppSelect value={fromChain} options={chainOptions} onChange={setFromChain} title={t('common.wallet.swap_ui.from_chain')} style={styles.chainSelector} textStyle={styles.chainName} chevronColor="#20365B" />
             </View>
-            <View style={{width: 16}} />
+            <View style={{ width: 16 }} />
             <View style={styles.chainCol}>
-              <Text style={styles.inputLabel}>À CHAÎNE</Text>
-              <AppSelect value={toChain} options={chainOptions} onChange={setToChain} title="Choisir la chaîne cible" style={styles.chainSelector} textStyle={styles.chainName} />
+              <Text style={styles.inputLabel}>{t('common.wallet.swap_ui.to_chain', 'To Chain')}</Text>
+              <AppSelect value={toChain} options={chainOptions} onChange={setToChain} title={t('common.wallet.swap_ui.to_chain')} style={styles.chainSelector} textStyle={styles.chainName} chevronColor="#20365B" />
             </View>
           </View>
 
           {/* DZY Banner */}
           <View style={styles.dzyBanner}>
             <View style={styles.dzyBannerHeader}>
-              <Ionicons name="rocket-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
-              <Text style={styles.dzyBannerTitle}>Le jeton DZY arrive bientôt !</Text>
+              <Ionicons name="rocket-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
+              <Text style={styles.dzyBannerTitle}>{t('common.wallet.swap_ui.dzy_coming_soon', 'DZY Token Coming Soon!')}</Text>
             </View>
             <Text style={styles.dzyBannerText}>
-              Le token natif de DizzitUp sera lancé au deuxième trimestre 2026. Vous pourrez bientôt échanger des DZY contre d'autres tokens !
+              {t('common.wallet.swap_ui.dzy_launch_desc', { date: 'Q2 2027' })}
             </Text>
-          </View>
-
-          {/* Quick Selection */}
-          <Text style={styles.inputLabel}>SÉLECTION RAPIDE - POLYGON</Text>
-          <View style={styles.quickSelectionRow}>
-            <TouchableOpacity style={styles.quickTokenCard} onPress={() => chooseQuickToken('DZY')}>
-              <View style={[styles.tokenLogoWrapper, {borderColor: '#FFB800'}]}>
-                <CryptoIcon symbol="DZY" size={28} />
-              </View>
-              <Text style={styles.quickTokenName}>DZY</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.quickTokenCard} onPress={() => chooseQuickToken('USDC')}>
-              <View style={[styles.tokenLogoWrapper, {borderColor: '#3B82F6'}]}>
-                <CryptoIcon symbol="USDC" size={28} />
-              </View>
-              <Text style={styles.quickTokenName}>USDC</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.quickTokenCard} onPress={() => chooseQuickToken('USDT')}>
-              <View style={[styles.tokenLogoWrapper, {borderColor: '#10B981'}]}>
-                <CryptoIcon symbol="USDT" size={28} />
-              </View>
-              <Text style={styles.quickTokenName}>USDT</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.quickTokenCard} onPress={() => chooseQuickToken('POL')}>
-              <View style={[styles.tokenLogoWrapper, {borderColor: '#8B5CF6'}]}>
-                <CryptoIcon symbol="POL" size={28} />
-              </View>
-              <Text style={styles.quickTokenName}>POL</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.quickTokenCard} onPress={() => chooseQuickToken('WBTC')}>
-              <View style={[styles.tokenLogoWrapper, {borderColor: '#F59E0B'}]}>
-                <CryptoIcon symbol="WBTC" size={28} />
-              </View>
-              <Text style={styles.quickTokenName}>WBTC</Text>
-            </TouchableOpacity>
           </View>
 
           {/* Swap Box */}
           <View style={styles.swapContainer}>
-            
+
             {/* From Input */}
             <View style={styles.inputBox}>
               <View style={styles.inputBoxHeader}>
-                <Text style={styles.inputLabel}>À PARTIR DU JETON</Text>
+                <Text style={styles.inputLabel}>{t('common.wallet.swap_ui.from_token', 'From Token')}</Text>
                 <View style={styles.balanceInfo}>
-                  <Ionicons name="wallet-outline" size={14} color="#D97706" style={{marginRight: 4}} />
-                  <Text style={styles.balanceValue}>0,0000 USDC</Text>
-                  <TouchableOpacity>
-                    <Text style={styles.maxText}>MAX</Text>
+                  <Ionicons name="wallet-outline" size={14} color="#D97706" style={{ marginRight: 4 }} />
+                  <Text style={styles.balanceValue}>{Number(availableBalance).toFixed(4)} {fromToken}</Text>
+                  <TouchableOpacity onPress={() => setFromAmount(availableBalance.toString())}>
+                    <Text style={styles.maxText}>{t('common.wallet.swap_ui.max', 'MAX')}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
               <View style={styles.inputRow}>
-                <AppSelect value={fromToken} options={tokenOptions} onChange={setFromToken} title="Jeton à échanger" style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option.value} size={24} style={{marginRight: 6}} />} />
-                <View style={styles.amountInputContainer}>
+                <AppSelect value={fromToken} options={tokenOptions} onChange={setFromToken} title={t('common.wallet.swap_ui.from_token')} style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option.value} size={24} style={{ marginRight: 6 }} />} />
+                <TouchableOpacity activeOpacity={1} style={[styles.amountInputContainer, isFocused && styles.amountInputContainerFocused]} onPress={() => amountInputRef.current?.focus()}>
                   <TextInput
+                    ref={amountInputRef}
                     style={styles.amountInput}
                     value={fromAmount}
                     onChangeText={setFromAmount}
-                    keyboardType="numeric"
+                    keyboardType="decimal-pad"
+                    placeholder="0.00"
+                    placeholderTextColor="#94A3B8"
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
                   />
-                  <View style={styles.upDownArrows}>
-                    <Ionicons name="chevron-up" size={12} color="#1A2840" />
-                    <Ionicons name="chevron-down" size={12} color="#1A2840" />
-                  </View>
-                </View>
+                </TouchableOpacity>
               </View>
             </View>
 
-            {/* Swap Button (floating) */}
+            {/* Swap Button */}
             <View style={styles.swapBtnWrapper}>
               <TouchableOpacity style={styles.swapBtn} onPress={swapSides}>
                 <Ionicons name="swap-vertical" size={20} color="#1A2840" />
@@ -155,16 +299,25 @@ export default function SwapTokensScreen() {
             {/* To Input */}
             <View style={styles.inputBox}>
               <View style={styles.inputBoxHeader}>
-                <Text style={styles.inputLabel}>À TOKEN (ESTIMATION)</Text>
+                <Text style={styles.inputLabel}>{t('common.wallet.swap_ui.to_token_estimated', 'To Token (Estimated)')}</Text>
+                {quoteLoading && (
+                  <View style={styles.quoteLoadingBadge}>
+                    <ActivityIndicator size="small" color="#D97706" style={{ marginRight: 6, transform: [{ scale: 0.8 }] }} />
+                    <Text style={styles.quoteLoadingText}>
+                      {t('common.wallet.swap_ui.fetching_rate', 'Fetching best rate...')}
+                    </Text>
+                  </View>
+                )}
               </View>
               <View style={styles.inputRow}>
-                <AppSelect value={toToken} options={tokenOptions} onChange={setToToken} title="Jeton à recevoir" style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option.value} size={24} style={{marginRight: 6}} />} />
-                <View style={styles.amountInputContainer}>
+                <AppSelect value={toToken} options={tokenOptions} onChange={setToToken} title={t('common.wallet.swap_ui.to_chain')} style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option.value} size={24} style={{ marginRight: 6 }} />} />
+                <View style={[styles.amountInputContainer, styles.amountInputContainerDisabled]}>
                   <TextInput
-                    style={styles.amountInput}
+                    style={[styles.amountInput, { color: '#878FA4' }]}
                     value={toAmount}
-                    onChangeText={setToAmount}
-                    keyboardType="numeric"
+                    editable={false}
+                    placeholder="0.00"
+                    placeholderTextColor="#94A3B8"
                   />
                 </View>
               </View>
@@ -172,44 +325,58 @@ export default function SwapTokensScreen() {
 
           </View>
 
-          {/* Wallet Status */}
-          <View style={styles.walletStatusBox}>
-            <View style={styles.walletStatusRow}>
-              <View style={styles.walletStatusLeft}>
-                <View style={styles.greenDot} />
-                <Text style={styles.walletStatusLabel}>PORTEFEUILLE ACTIF (POLYGON)</Text>
-              </View>
-              <View style={styles.walletStatusRight}>
-                <Text style={styles.walletAddress}>0x5C29...9b91</Text>
-                <Ionicons name="copy-outline" size={16} color="#1A2840" style={{marginLeft: 8}} />
-              </View>
-            </View>
-            <View style={styles.divider} />
-            <View style={styles.walletStatusRow}>
-              <Text style={styles.walletStatusLabel}>SOLDE DISPONIBLE</Text>
-              <View style={styles.walletStatusRightCol}>
-                <Text style={styles.walletBalanceBold}>0 USDC</Text>
-                <TouchableOpacity>
-                  <Text style={styles.viewOnChainText}>VOIR SUR LA CHAÎNE</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-
           {/* Action Button */}
-          <TouchableOpacity style={styles.btnAction} onPress={() => navigation.navigate('SuccessScreen')}>
-            <Ionicons name="flash" size={20} color="#FFB800" style={{marginRight: 8}} />
-            <Text style={styles.btnActionText}>ÉCHANGEZ DES JETONS MAINTENANT</Text>
+          <TouchableOpacity
+            style={[styles.btnAction, loading && styles.btnActionDisabled]}
+            onPress={handleSwap}
+            disabled={loading || !fromAmount}
+          >
+            {loading && <ActivityIndicator color={loading ? "#1A2840" : "#FFF"} style={{ marginRight: 8 }} />}
+            {!loading && <Ionicons name="swap-horizontal" size={18} color={(!fromAmount || loading) ? '#94A3B8' : '#FFC759'} style={{ marginRight: 8 }} />}
+            <Text style={[styles.btnActionText, (!fromAmount || loading) && { color: '#94A3B8' }]}>
+              {loading ? t('common.wallet.swap_ui.executing_swap', 'EXECUTING SWAP...') : t('common.wallet.swap_ui.swap_btn', 'SWAP TOKENS NOW')}
+            </Text>
           </TouchableOpacity>
-
-          {/* Footer Info */}
-          <View style={styles.footerInfoRow}>
-            <Text style={styles.footerInfoText}>• GLISSEMENT 0,5%</Text>
-            <Text style={styles.footerInfoText}>• FRAIS DE RÉSEAU RÉDUITS</Text>
-          </View>
 
         </ScrollView>
       </View>
+
+      {/* Signature Required Modal */}
+      <Modal visible={txStatus === 'awaiting-approval'} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeaderIcon}>
+              <Ionicons name="lock-closed" size={28} color="#EA580C" />
+            </View>
+            <Text style={styles.modalTitle}>{t('common.wallet.swap_ui.signature_required', 'Signature Required')}</Text>
+            <Text style={styles.modalSubtitle}>{t('common.wallet.swap_ui.crossmint_action_needed', 'Crossmint Action Needed')}</Text>
+
+            <View style={styles.modalInfoBox}>
+              <Text style={styles.modalInfoTextBold}>{t('common.wallet.swap_ui.verification_request', 'A verification request has been deployed to your profile.')}</Text>
+              <View style={styles.emailBadge}>
+                <Text style={styles.emailBadgeText}>{t('common.wallet.swap_ui.check_email', '📧 Check Email:')} {signerEmail}</Text>
+              </View>
+              <Text style={styles.modalInfoText}>{t('common.wallet.swap_ui.secure_link_prompt', 'Please follow the secure external link or utilize biometric passkey authorizations if prompted.')}</Text>
+            </View>
+
+            <TouchableOpacity
+              style={[styles.authBtn, isAuthorizing && styles.authBtnDisabled]}
+              onPress={handleAuthorize}
+              disabled={isAuthorizing}
+            >
+              {isAuthorizing ? <ActivityIndicator color="#FFF" /> : <Ionicons name="lock-closed" size={20} color="#FFF" style={{ marginRight: 8 }} />}
+              <Text style={styles.authBtnText}>
+                {isAuthorizing ? t('common.wallet.swap_ui.authorizing', 'Authorizing...') : t('common.wallet.swap_ui.authorize_swap', 'Authorize Swap Release')}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => setTxStatus(null)} style={styles.dismissBtn}>
+              <Text style={styles.dismissBtnText}>{t('common.wallet.swap_ui.dismiss_banner', 'Dismiss Banner')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
     </SafeAreaView>
   );
 }
@@ -246,38 +413,15 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontFamily: 'Inter_700Bold',
     fontSize: 16,
-    color: '#1A2840',
+    color: '#20365B',
   },
   pageSubtitle: {
     fontFamily: 'Inter_500Medium',
     fontSize: 12,
-    color: '#64748B',
+    color: '#878FA4',
   },
   headerRightIcons: {
     flexDirection: 'row',
-  },
-  iconBtnRight: {
-    width: 36,
-    height: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    marginLeft: 8,
-    position: 'relative',
-  },
-  notificationDot: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#FFB800',
-    borderWidth: 1,
-    borderColor: '#FFFFFF',
   },
   scrollView: {
     flex: 1,
@@ -287,12 +431,22 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 40,
   },
-  introText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 14,
-    color: '#64748B',
-    textAlign: 'center',
-    marginBottom: 24,
+  errorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF2F2',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+    marginBottom: 16,
+  },
+  errorText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 13,
+    color: '#DC2626',
+    marginLeft: 8,
+    flex: 1,
   },
   chainRow: {
     flexDirection: 'row',
@@ -305,46 +459,43 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 11,
-    color: '#64748B',
+    color: '#878FA4',
     marginBottom: 8,
     textTransform: 'uppercase',
   },
   chainSelector: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#F1F5F9',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  chainLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  polygonIconSmall: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#8247E5',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    minHeight: 46,
+    marginTop: 4,
+    shadowColor: '#1A2840',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
   },
   chainName: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 14,
-    color: '#1A2840',
+    color: '#0E0E0E',
+    textTransform: 'capitalize',
   },
   dzyBanner: {
-    backgroundColor: '#FFFBEB',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#FDE68A',
+    borderColor: '#FFC759',
     borderRadius: 16,
     padding: 16,
     marginBottom: 24,
+    shadowColor: '#FFC759',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
   },
   dzyBannerHeader: {
     flexDirection: 'row',
@@ -354,61 +505,13 @@ const styles = StyleSheet.create({
   dzyBannerTitle: {
     fontFamily: 'Inter_700Bold',
     fontSize: 14,
-    color: '#1A2840',
+    color: '#20365B',
   },
   dzyBannerText: {
     fontFamily: 'Inter_400Regular',
     fontSize: 12,
-    color: '#475569',
+    color: '#878FA4',
     lineHeight: 18,
-  },
-  quickSelectionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 24,
-  },
-  quickTokenCard: {
-    alignItems: 'center',
-  },
-  tokenLogoWrapper: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    borderWidth: 1,
-    backgroundColor: '#FAFAFA',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  usdcLogo: {
-    backgroundColor: '#2775CA',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  usdtLogo: {
-    backgroundColor: '#26A17B',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  polygonLogo: {
-    backgroundColor: '#8247E5',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  wbtcLogo: {
-    backgroundColor: '#F7931A',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  quickTokenName: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
-    color: '#1A2840',
   },
   swapContainer: {
     position: 'relative',
@@ -428,6 +531,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
+  quoteLoadingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    shadowColor: '#D97706',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  quoteLoadingText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    color: '#D97706',
+  },
   balanceInfo: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -435,13 +558,13 @@ const styles = StyleSheet.create({
   balanceValue: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 11,
-    color: '#1A2840',
+    color: '#20365B',
     marginRight: 8,
   },
   maxText: {
     fontFamily: 'Inter_700Bold',
     fontSize: 11,
-    color: '#F59E0B',
+    color: '#FFC759',
   },
   inputRow: {
     flexDirection: 'row',
@@ -451,34 +574,59 @@ const styles = StyleSheet.create({
   tokenSelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FAFAFA',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    borderRadius: 12,
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    height: 48,
+    width: '45%', // Ensures enough space for the full token name
+    shadowColor: '#1A2840',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   selectedTokenName: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 14,
-    color: '#1A2840',
+    color: '#0E0E0E',
     marginHorizontal: 8,
   },
   amountInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    width: '50%', // Explicitly shorter width as requested
+    justifyContent: 'flex-end',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    height: 48,
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1', // Stronger default visible border
+  },
+  amountInputContainerFocused: {
+    borderColor: '#1A2840', // Navy border when typing
+    backgroundColor: '#F8FAFC',
+    shadowColor: '#1A2840',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  amountInputContainerDisabled: {
+    backgroundColor: '#F1F5F9', // Grayed out background
+    borderColor: '#E2E8F0', // Lighter border
+    borderStyle: 'dashed', // Clearly indicates non-interactivity
   },
   amountInput: {
+    flex: 1, // Ensures the input is clickable anywhere inside the container
     fontFamily: 'Inter_700Bold',
-    fontSize: 24,
+    fontSize: 20, // Tighter font size as requested
     color: '#1A2840',
     outlineStyle: 'none',
     textAlign: 'right',
-    minWidth: 100,
-  },
-  upDownArrows: {
-    marginLeft: 8,
-    alignItems: 'center',
+    minWidth: 80,
   },
   swapBtnWrapper: {
     position: 'absolute',
@@ -487,98 +635,170 @@ const styles = StyleSheet.create({
     marginLeft: -20,
     marginTop: -20,
     zIndex: 10,
-    backgroundColor: '#FAFAFA', // matching background to hide border line
+    backgroundColor: '#FAFAFA',
     padding: 4,
     borderRadius: 24,
   },
   swapBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#FFB800',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#FFC759',
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#20365B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  walletStatusBox: {
+  btnAction: {
+    flexDirection: 'row',
+    backgroundColor: '#1A2840',
+    paddingVertical: 15,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+    shadowColor: '#1A2840',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  btnActionDisabled: {
+    backgroundColor: '#E2E8F0',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  btnActionText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 15,
+    color: '#FFC759',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+
+  /* Modal Styles */
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(32, 54, 91, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 32,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    borderWidth: 1,
+    borderColor: '#FFC759',
+    alignItems: 'center',
+    shadowColor: '#20365B',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  modalHeaderIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 24,
     backgroundColor: '#FAFAFA',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 20,
+    color: '#20365B',
+    textTransform: 'uppercase',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  modalSubtitle: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 12,
+    color: '#FFC759',
+    textTransform: 'uppercase',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalInfoBox: {
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
     borderColor: '#F1F5F9',
     borderRadius: 16,
     padding: 16,
+    width: '100%',
     marginBottom: 24,
   },
-  walletStatusRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  walletStatusLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  greenDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#10B981',
-    marginRight: 8,
-  },
-  walletStatusLabel: {
+  modalInfoTextBold: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-    color: '#64748B',
+    fontSize: 14,
+    color: '#20365B',
+    marginBottom: 12,
   },
-  walletStatusRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  emailBadge: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
   },
-  walletAddress: {
+  emailBadgeText: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 13,
-    color: '#1A2840',
+    color: '#0E0E0E',
   },
-  divider: {
-    height: 1,
-    backgroundColor: '#F1F5F9',
-    marginVertical: 12,
+  modalInfoText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
+    color: '#878FA4',
+    lineHeight: 18,
   },
-  walletStatusRightCol: {
-    alignItems: 'flex-end',
-  },
-  walletBalanceBold: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 14,
-    color: '#1A2840',
-    marginBottom: 4,
-  },
-  viewOnChainText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 10,
-    color: '#F59E0B',
-  },
-  btnAction: {
-    flexDirection: 'row',
-    backgroundColor: '#0A1128',
-    paddingVertical: 18,
+  authBtn: {
+    backgroundColor: '#20365B',
+    width: '100%',
+    height: 56,
     borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  btnActionText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 14,
-    color: '#FFFFFF',
-  },
-  footerInfoRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 16,
+    shadowColor: '#20365B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  footerInfoText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-    color: '#64748B',
-    marginHorizontal: 12,
+  authBtnDisabled: {
+    backgroundColor: '#B9B9B9',
+    shadowOpacity: 0,
+    elevation: 0,
   },
+  authBtnText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 16,
+    color: '#FFFFFF',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  dismissBtn: {
+    padding: 12,
+  },
+  dismissBtnText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 12,
+    color: '#94A3B8',
+    textTransform: 'uppercase',
+  }
 });

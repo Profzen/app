@@ -36,7 +36,7 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
     { id: '4', icon: 'people-outline', color: '#10B981', bgColor: '#ECFDF5', label: activeLanguage === 'en' ? 'Send money' : "Envoyer de l'argent", route: 'ContactsScreen' },
     { id: '5', icon: 'add-circle-outline', color: '#10B981', bgColor: '#ECFDF5', label: activeLanguage === 'en' ? 'Top up' : 'Recharger', route: 'TopUpScreen' },
     { id: '6', icon: 'storefront-outline', color: '#F59E0B', bgColor: '#FFFBEB', label: activeLanguage === 'en' ? 'Refer a shop' : 'Référer un shop', route: 'ReferBusinessScreen' },
-    { id: '7', icon: 'globe-outline', color: '#3B82F6', bgColor: '#EFF6FF', label: activeLanguage === 'en' ? 'Source in Africa' : 'Sourcing en Afrique', route: 'ShopsScreen' },
+    { id: '7', icon: 'swap-horizontal', color: '#3B82F6', bgColor: '#EFF6FF', label: activeLanguage === 'en' ? 'Swap' : 'Échanger', route: 'SwapTokensScreen' },
     { id: '8', icon: 'qr-code-outline', color: '#10B981', bgColor: '#F0FDFA', label: 'Scan & Cash', route: 'LocalExchangeScreen' },
   ];
 

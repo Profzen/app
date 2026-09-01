@@ -93,9 +93,14 @@ export default function WalletCard({ balances }) {
 
         {/* Main Balance */}
         <View style={styles.balanceArea}>
-          <Text style={[styles.bigBalanceText, !isVisible && styles.blurredText]} numberOfLines={1} adjustsFontSizeToFit>
-            {formatNum(mainBalance, 2, 4)} <Text style={[styles.currencyText, !isVisible && styles.blurredText]}>DZY</Text>
-          </Text>
+          <View style={{ flex: 1, paddingRight: 10 }}>
+            <Text style={[styles.bigBalanceText, !isVisible && styles.blurredText]} numberOfLines={1} adjustsFontSizeToFit>
+              {formatNum(mainBalance, 2, 4)} <Text style={[styles.currencyText, !isVisible && styles.blurredText]}>DZY</Text>
+            </Text>
+          </View>
+          <TouchableOpacity style={styles.btnTopUp} onPress={() => navigation.navigate('TopUpScreen')} activeOpacity={0.85}>
+            <Text style={styles.btnTopUpText}>+ Top-up</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Unified Internal Fiat Row */}
@@ -127,6 +132,7 @@ export default function WalletCard({ balances }) {
         <View style={styles.actionsContainer}>
           <ActionItem icon="paper-plane-outline" label={t('wallet.actions.send', 'Send')} onPress={() => navigation.navigate('SendMoneyScreen')} divider />
           <ActionItem icon="server-outline" label={t('wallet.actions.my_assets', 'Assets')} onPress={() => navigation.navigate('AssetListScreen')} divider />
+          <ActionItem icon="swap-horizontal-outline" label={t('wallet.actions.swap', 'Swap')} onPress={() => navigation.navigate('SwapTokensScreen')} divider />
           <ActionItem icon="time-outline" label={t('wallet.actions.history', 'History')} onPress={() => navigation.navigate('TransactionHistoryScreen')} divider />
           <ActionItem icon="card-outline" label={t('wallet.actions.cash_out', 'Cash-out')} onPress={() => navigation.navigate('WithdrawFundsScreen')} />
         </View>
@@ -201,7 +207,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   balanceArea: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 12,
+  },
+  btnTopUp: {
+    backgroundColor: '#FFC759',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  btnTopUpText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 11,
+    color: '#1A2840',
   },
   bigBalanceText: {
     fontFamily: 'SpaceGrotesk_700Bold',

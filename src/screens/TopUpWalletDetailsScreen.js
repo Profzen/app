@@ -140,7 +140,7 @@ export default function TopUpWalletDetailsScreen() {
           {/* Titles */}
           <Text style={styles.mainTitle}>{t('topup.payment_details')}</Text>
           <Text style={styles.mainSubtitle}>
-            {t('topup.crossmint_secure')}
+            {t('topup.secure_payment_desc', 'Complete your payment securely.')}
           </Text>
 
           {/* Form: Montant */}
@@ -175,8 +175,8 @@ export default function TopUpWalletDetailsScreen() {
           <View style={styles.checkoutWrapper}>
             {!orderIdentifier && !isLoading && !error && (
               <TouchableOpacity style={styles.btnContinue} onPress={handleGenerateOrder}>
-                <Text style={styles.btnContinueText}>{t('topup.continue_crossmint')}</Text>
-                <Ionicons name="arrow-forward" size={20} color="#1A2840" />
+                <Text style={styles.btnContinueText}>{t('topup.continue_btn', 'CONTINUE TO SECURE PAYMENT')}</Text>
+                <Ionicons name="arrow-forward" size={18} color="#FFC759" />
               </TouchableOpacity>
             )}
 
@@ -366,17 +366,24 @@ const styles = StyleSheet.create({
   },
   btnContinue: {
     flexDirection: 'row',
-    alignItems: 'center',
+    backgroundColor: '#1A2840',
+    paddingVertical: 15,
+    borderRadius: 14,
     justifyContent: 'center',
-    backgroundColor: '#FFB800',
-    paddingVertical: 18,
-    borderRadius: 16,
+    alignItems: 'center',
     marginBottom: 24,
+    shadowColor: '#1A2840',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
   },
   btnContinueText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 16,
-    color: '#1A2840',
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 15,
+    color: '#FFC759',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
     marginRight: 8,
   },
   inputContainer: {
