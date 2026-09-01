@@ -146,7 +146,7 @@ function ActionItem({ icon, label, onPress, divider }) {
   return (
     <TouchableOpacity style={[styles.actionItem, divider && styles.actionDivider]} onPress={onPress}>
       <Ionicons name={icon} size={20} color="#FFC759" />
-      <Text style={styles.actionLabel} numberOfLines={1}>{label}</Text>
+      <Text style={styles.actionLabel} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{label}</Text>
     </TouchableOpacity>
   );
 }

@@ -158,7 +158,7 @@ export default function HomeScreen() {
               </View>
               <View style={{ flexShrink: 1, paddingRight: 4 }}>
                 <Text style={styles.greetingText}>{language === 'fr' ? 'Bonjour,' : 'Hello,'}</Text>
-                <Text style={styles.nameText} numberOfLines={1}>{isUserLoading ? '...' : (user?.name || 'Utilisateur').split(' ')[0]}</Text>
+                <Text style={styles.nameText} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{isUserLoading ? '...' : (user?.name || 'Utilisateur').split(' ')[0]}</Text>
               </View>
             </TouchableOpacity>
             <View style={styles.headerIcons}>

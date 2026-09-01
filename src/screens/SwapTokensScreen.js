@@ -282,6 +282,7 @@ export default function SwapTokensScreen() {
                     keyboardType="decimal-pad"
                     placeholder="0.00"
                     placeholderTextColor="#94A3B8"
+                    allowFontScaling={false}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                   />
@@ -318,6 +319,7 @@ export default function SwapTokensScreen() {
                     editable={false}
                     placeholder="0.00"
                     placeholderTextColor="#94A3B8"
+                    allowFontScaling={false}
                   />
                 </View>
               </View>
@@ -578,9 +580,9 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#CBD5E1',
     borderRadius: 12,
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     height: 48,
-    width: '45%', // Ensures enough space for the full token name
+    width: '47%', // Increased slightly to prevent USDC clipping
     shadowColor: '#1A2840',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -596,7 +598,7 @@ const styles = StyleSheet.create({
   amountInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '50%', // Explicitly shorter width as requested
+    width: '51%', // Give it as much space as possible without crushing the token selector
     justifyContent: 'flex-end',
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
@@ -622,7 +624,7 @@ const styles = StyleSheet.create({
   amountInput: {
     flex: 1, // Ensures the input is clickable anywhere inside the container
     fontFamily: 'Inter_700Bold',
-    fontSize: 20, // Tighter font size as requested
+    fontSize: 16, // Reduced to prevent clipping on Android with large font scaling
     color: '#1A2840',
     outlineStyle: 'none',
     textAlign: 'right',

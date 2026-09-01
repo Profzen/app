@@ -3436,9 +3436,9 @@
   "wallet": {
     "actions": {
       "send": "Envoyer",
-      "my_assets": "Mes atouts",
-      "history": "Histoire",
-      "cash_out": "Encaissement"
+      "my_assets": "Mes actifs",
+      "history": "Historique",
+      "cash_out": "Retrait"
     }
   },
   "@": "@",

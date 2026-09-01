@@ -14,15 +14,44 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 
 const WEB_DEFAULT_TOKENS = [
   { symbol: "DZY", name: "DIZZITUP INDEX", chain: "polygon" },
-  { symbol: "USDC", name: "USD Coin", chain: "polygon" },
+  
+  // USDT
   { symbol: "USDT", name: "Tether USD", chain: "polygon" },
+  { symbol: "USDT", name: "Tether USD", chain: "ethereum" },
+  { symbol: "USDT", name: "Tether USD", chain: "solana" },
+  { symbol: "USDT", name: "Tether USD", chain: "bsc" },
+
+  // USDC
+  { symbol: "USDC", name: "USD Coin", chain: "polygon" },
+  { symbol: "USDC", name: "USD Coin", chain: "ethereum" },
+  { symbol: "USDC", name: "USD Coin", chain: "base" },
+  { symbol: "USDC", name: "USD Coin", chain: "solana" },
+  { symbol: "USDC", name: "USD Coin", chain: "bsc" },
+
+  // POL
   { symbol: "POL", name: "Polygon (POL)", chain: "polygon" },
-  { symbol: "WBTC", name: "Wrapped Bitcoin", chain: "polygon" },
-  { symbol: "WETH", name: "Wrapped Ethereum", chain: "polygon" },
-  { symbol: "ETH", name: "Ethereum", chain: "ethereum" },
-  { symbol: "SOL", name: "Solana", chain: "solana" },
+  
+  // BNB
   { symbol: "BNB", name: "BNB", chain: "bsc" },
+  
+  // DAI
   { symbol: "DAI", name: "Dai Stablecoin", chain: "bsc" },
+
+  // ETH
+  { symbol: "ETH", name: "Ethereum", chain: "ethereum" },
+  { symbol: "ETH", name: "Ethereum", chain: "base" },
+
+  // SOL
+  { symbol: "SOL", name: "Solana", chain: "solana" },
+
+  // WBTC
+  { symbol: "WBTC", name: "Wrapped Bitcoin", chain: "polygon" },
+  { symbol: "WBTC", name: "Wrapped Bitcoin", chain: "ethereum" },
+
+  // WETH
+  { symbol: "WETH", name: "Wrapped Ethereum", chain: "polygon" },
+  { symbol: "WETH", name: "Wrapped Ethereum", chain: "ethereum" },
+  { symbol: "WETH", name: "Wrapped Ethereum", chain: "base" },
 ];
 
 const CAN_BUY_SELL = ['USDC', 'USDT'];

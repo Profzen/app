@@ -3275,10 +3275,10 @@
   },
   "wallet": {
     "actions": {
-      "send": "يرسل",
-      "my_assets": "أصولي",
-      "history": "تاريخ",
-      "cash_out": "صرف النقود"
+      "send": "إرسال",
+      "my_assets": "الأصول",
+      "history": "السجل",
+      "cash_out": "سحب"
     }
   },
   "@": "@",
