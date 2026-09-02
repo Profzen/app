@@ -497,7 +497,7 @@ export default function ShopsScreen() {
                     <Text style={{ color: '#20365B' }}>${appSettings.refer_user_reward || 5} in DZY</Text>
                   </Text>
                   <Text style={styles.inviteSubtitle}>
-                    {t('shopsBannerInviteSub', 'Send money, buy goods,\npay bills and earn rewards.')}
+                    {t('shopsBannerInviteSub', 'Send Stablecoins, buy goods,\npay bills and earn rewards.')}
                   </Text>
                   <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#071D54' }]} onPress={() => navigation.navigate('RewardsScreen')}>
                     <Text style={styles.inviteButtonText}>{t('shopsBannerInviteBtn', 'Invite now')}</Text>

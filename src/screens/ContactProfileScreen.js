@@ -90,7 +90,7 @@ export default function ContactProfileScreen({ route }) {
           {/* 4 Quick Action Cards Grid (Exact Mockup Icons) */}
           <View style={styles.quickActionsGrid}>
             
-            {/* Card 1: Envoyer de l'argent (Green Diagonal Arrow ↗) */}
+            {/* Card 1: envoyer des Stablecoins (Green Diagonal Arrow ↗) */}
             <TouchableOpacity style={styles.quickCard} onPress={() => navigation.navigate('SendMoneyScreen', { contact })}>
               <View style={styles.quickCardIconBox}>
                 <Ionicons name="trending-up" size={26} color="#10B981" />
@@ -278,7 +278,7 @@ export default function ContactProfileScreen({ route }) {
             activeOpacity={0.8}
           >
             <Ionicons name="swap-horizontal" size={18} color="#1A2840" style={{ marginRight: 8 }} />
-            <Text style={styles.btnSendMoneyText}>{t('wallet.actions.send', "Envoyer de l'argent")}</Text>
+            <Text style={styles.btnSendMoneyText}>{t('wallet.actions.send', "envoyer des Stablecoins")}</Text>
           </TouchableOpacity>
 
           <View style={{ height: 20 }} />

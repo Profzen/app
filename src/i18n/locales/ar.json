@@ -3591,25 +3591,25 @@
       "subtitle": "تحويلات مالية\nفورية"
     },
     "quick_action_5": {
-      "title": "دعوة",
-      "subtitle": "ادع أصدقاءك\nواكسب\n5$ من DZY"
+      "title": "دعوة\nالأصدقاء",
+      "subtitle": "قم بدعوة الأصدقاء و\nاربح 5$ DZY"
     },
-    "my_beneficiaries": "المستفيدون",
-    "manage_contacts": "إدارة جهات الاتصال",
+    "my_beneficiaries": "المستفيدين",
+    "manage_contacts": "جهات الاتصال",
     "filter_nearby": "قريب",
-    "filter_favorites": "من الدول المفضلة",
-    "filter_africa": "جميع أنحاء إفريقيا",
-    "filter_world": "باقي العالم",
-    "col_contact": "جهة اتصال",
+    "filter_favorites": "البلدان المفضلة",
+    "filter_africa": "كل أفريقيا",
+    "filter_world": "بقية العالم",
+    "col_contact": "جهة الاتصال",
     "col_beneficiary": "مستفيد",
     "col_sponsor": "كفيل",
     "relation": {
       "friend": "صديق"
     },
     "deleted": "تم حذف جهة الاتصال",
-    "deleted_desc": "تمت إزالة جهة الاتصال بنجاح.",
+    "deleted_desc": "تم حذف جهة الاتصال بنجاح.",
     "delete_error": "لا يمكن حذف جهة الاتصال هذه.",
-    "search_hint": "الاسم، الهاتف، البريد، المدينة أو البلد",
+    "search_hint": "الاسم، الهاتف، البريد الإلكتروني، المدينة أو البلد",
     "add_permanent_sub": "إضافة إلى السجلات الدائمة",
     "tab": {
       "info": "معلومات",
@@ -3625,11 +3625,21 @@
     },
     "sync": "مزامنة جهات الاتصال",
     "search": "البحث عن جهة اتصال",
-    "add": "إضافة مستفيد",
-    "add_desc": "إضافة مستفيد جديد",
-    "edit": "تعديل المستفيد",
-    "edit_desc": "تحديث المعلومات",
-    "subtitle": "دعم المستفيدين الخاص بك: إرسال الأموال، دفع الفواتير وشراء الأساسيات عبر أفريقيا."
+    "add": "إضافة\nمستفيد",
+    "add_desc": "إضافة مستفيد\nجديد",
+    "edit": "تعديل\nالمستفيد",
+    "edit_desc": "تحديث\nالمعلومات",
+    "subtitle": "أرسل الأموال إلى المستفيدين في جميع أنحاء أفريقيا.",
+    "action_send": "إرسال",
+    "action_request": "طلب",
+    "action_pay": "دفع",
+    "action_invite": "دعوة",
+    "action_add_favorite": "أضف إلى المفضلة",
+    "action_edit": "تعديل جهة الاتصال",
+    "action_delete": "حذف جهة الاتصال",
+    "added_favorite": "أضيف للمفضلة",
+    "added_favorite_desc": "تمت إضافته إلى مفضلتك.",
+    "quick_action_view_sub": "عرض وإدارة\nجميع جهات الاتصال"
   },
   "beneficiary_management": {
     "edit": {

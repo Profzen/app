@@ -14,7 +14,7 @@ export const FeaturesBanner = () => {
           <Ionicons name="shield-checkmark-outline" size={22} color={theme.colors.accent} />
         </View>
         <Text style={styles.featureText}>
-          {t('features.secureMoney', "Soutenez vos familles en Afrique tout en sécurisant l'usage de votre argent")}
+          {t('features.secureMoney', "Soutenez vos familles en Afrique tout en sécurisant l'usage de vos fonds")}
         </Text>
       </View>
 

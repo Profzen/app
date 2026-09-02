@@ -38,7 +38,7 @@
         "description": "Achetez des produits de première nécessité directement pour vos proches."
       },
       "sendMoney": {
-        "label": "Envoyer de l'argent",
+        "label": "Envoyer des Stablecoins",
         "description": "Remise transfrontalière sans frais vers les portefeuilles mobiles."
       },
       "earnRewards": {
@@ -91,7 +91,7 @@
     },
     "mission": {
       "title": "Libérer les MPME africaines pour commercer sans frontières",
-      "text": "Trop de freelances, de petites entreprises, d'agriculteurs, d'exportateurs et de boutiques familiales en Afrique font encore face à des barrières et des retards avec les banques traditionnelles. Notre mission est de supprimer ces barrières et de donner aux entreprises africaines la liberté de gagner, de gérer et de faire fructifier leur argent à l'échelle mondiale."
+      "text": "Trop de freelances, de petites entreprises, d'agriculteurs, d'exportateurs et de boutiques familiales en Afrique font encore face à des barrières et des retards avec les banques traditionnelles. Notre mission est de supprimer ces barrières et de donner aux entreprises africaines la liberté de gagner, de gérer et de faire fructifier leurs fonds à l'échelle mondiale."
     },
     "flowNodes": {
       "sell": "Vendre",
@@ -261,7 +261,7 @@
     "signingIn": "Connexion en cours...",
     "gettingStarted": "Démarrage...",
     "chooseAccountType": "Choisissez votre type de compte",
-    "accountTypeDescription": "Après avoir cliqué sur \"Commencer\", vous pourrez choisir entre un compte personnel pour envoyer de l'argent et faire des achats, ou un compte marchand pour vendre des produits et gérer votre entreprise.",
+    "accountTypeDescription": "Après avoir cliqué sur \"Commencer\", vous pourrez choisir entre un compte personnel pour Envoyer des Stablecoins et faire des achats, ou un compte marchand pour vendre des produits et gérer votre entreprise.",
     "termsHelper": "En vous connectant ou en créant un compte, vous acceptez nos",
     "connecting": "Connexion en cours...",
     "continueWithSocial": "Continuer avec Google, X ou Wallet",
@@ -271,7 +271,7 @@
       "subtitle": "Débloquez des fonctionnalités exclusives et connectez-vous avec votre communauté",
       "supportFamily": "Soutenez votre famille en Afrique en toute sécurité",
       "supportFamilyDesc": "Envoyez des ressources directement à vos proches via notre réseau sécurisé et vérifié par la blockchain.",
-      "provideEssentials": "Fournissez l'essentiel, pas seulement de l'argent",
+      "provideEssentials": "Fournissez l'essentiel, pas seulement des fonds",
       "provideEssentialsDesc": "Payez directement pour la santé, les frais de scolarité et les courses alimentaires.",
       "empowerSMEs": "Autonomisez les PME africaines",
       "empowerSMEsDesc": "Soutenez directement les entrepreneurs africains vérifiés en achetant sur DizzitUp.",
@@ -287,7 +287,7 @@
       "user": {
         "title": "Utilisateur régulier",
         "subtitle": "Compte personnel",
-        "benefit1Title": "Envoyer de l'argent en Afrique",
+        "benefit1Title": "Envoyer des Stablecoins en Afrique",
         "benefit1Desc": "Services de transfert rapides et sécurisés vers la famille et les amis",
         "benefit2Title": "Acheter des produits africains",
         "benefit2Desc": "Accédez à des produits authentiques de marchands à travers l'Afrique",
@@ -1192,7 +1192,7 @@
     }
   },
   "homepage": {
-    "title": "Envoyez de l'argent, Achetez des produits, Payez vos factures",
+    "title": "Envoyez des fonds, Achetez des produits, Payez vos factures",
     "subtitle": "Gagnez des récompenses DZY sur chaque transaction",
     "getStarted": "Commencer",
     "learnMore": "En savoir plus",
@@ -1202,7 +1202,7 @@
       "secure": "100% Sécurisé",
       "secureDesc": "Sécurité alimentée par la blockchain",
       "fast": "Transfert Instantané",
-      "fastDesc": "Envoyez de l'argent en quelques secondes"
+      "fastDesc": "Envoyez des fonds en quelques secondes"
     },
     "metaTitle": "DizzitUp - Achetez des Biens & Payez des Factures pour vos Proches",
     "metaDescription": "Plateforme de soutien direct pour acheter des produits de première nécessité et payer des factures pour votre famille en Afrique.",
@@ -1272,12 +1272,12 @@
     "hero": {
       "badge": "54 pays couverts",
       "africanDiaspora": "Diaspora Africaine",
-      "title": "Arrêtez d'envoyer de l'argent,",
+      "title": "Arrêtez d'Envoyer des Stablecoins,",
       "titleHighlight": "achetez localement",
       "titleSuffix": "",
       "subtitle": "Évitez les frais de transfert. Payez leurs factures d'électricité, rechargez leurs téléphones et achetez l'essentiel directement en Afrique.",
       "benefits": [
-        "Maîtrisez votre argent",
+        "Maîtrisez vos fonds",
         "Aidez et développez les MPME africaines"
       ],
       "phonePlaceholder": "Entrez le numéro de téléphone",
@@ -1405,7 +1405,7 @@
         "communityTitle": "Ce que dit notre communauté",
         "communitySubtitle": "Histoires réelles de personnes soutenant leur famille en Afrique",
         "ctaTitle": "Prêt à faire la différence ?",
-        "ctaSubtitle": "Rejoignez des milliers de personnes qui transforment la façon dont elles soutiennent leur famille en Afrique. Envoyez l'essentiel, pas seulement de l'argent.",
+        "ctaSubtitle": "Rejoignez des milliers de personnes qui transforment la façon dont elles soutiennent leur famille en Afrique. Envoyez l'essentiel, pas seulement des fonds.",
         "ctaButton1": "Envoyez votre première aide",
         "stats": {
           "families": {
@@ -1439,7 +1439,7 @@
           "sarah": {
             "name": "Sarah M.",
             "country": "Du Canada vers le Kenya",
-            "text": "Ma famille reçoit exactement ce dont elle a besoin - médicaments, services publics, tout. C'est bien mieux que d'envoyer de l'argent."
+            "text": "Ma famille reçoit exactement ce dont elle a besoin - médicaments, services publics, tout. C'est bien mieux que d'Envoyer des Stablecoins."
           }
         }
       },
@@ -1690,7 +1690,7 @@
           "highlight": "Plusieurs méthodes de paiement"
         },
         {
-          "q": "Quand est-ce que je reçois mon argent ?",
+          "q": "Quand est-ce que je reçois mes fonds ?",
           "a": "Les règlements peuvent être traités quotidiennement ou hebdomadairement selon votre pays et votre méthode préférée. Les paiements basés sur la blockchain sont souvent les plus rapides.",
           "highlight": "Paiements rapides"
         }
@@ -2715,7 +2715,7 @@
   "beneficiary": {
     "form": {
       "title_add": "Ajouter un Bénéficiaire",
-      "subtitle_add": "Ajoutez un nouveau bénéficiaire pour leur envoyer de l'argent ou payer leurs factures.",
+      "subtitle_add": "Ajoutez un nouveau bénéficiaire pour leur Envoyer des Stablecoins ou payer leurs factures.",
       "title_update": "Modifier le Bénéficiaire",
       "subtitle_update": "Mettre à jour les détails de {{name}}",
       "firstName": "Prénom",
@@ -2828,7 +2828,7 @@
       "giftCardName": "Carte Cadeau DizzitUp",
       "giftCardDesc": "Carte cadeau numérique envoyée par email/SMS",
       "remittanceName": "Envoyer des Fonds",
-      "remittanceDesc": "Transférez de l'argent directement via votre DZYwallet"
+      "remittanceDesc": "Transférez des fonds directement via votre DZYwallet"
     },
     "city": {
       "nationwide": "National",
@@ -3385,7 +3385,7 @@
       },
       "remittance": {
         "title": "Envoyer des fonds",
-        "desc": "Envoyez de l'argent rapidement"
+        "desc": "Envoyez des fonds rapidement"
       },
       "payBills": {
         "title": "Payer des factures",
@@ -3501,7 +3501,7 @@
     },
     "inviteBannerTitle_1": "Invitez vos amis\net gagnez ",
     "inviteBannerTitle_2": "$5 en DZY",
-    "inviteBannerDesc": "Envoyez de l'argent, achetez, payez des factures et gagnez des récompenses ensemble.",
+    "inviteBannerDesc": "Envoyez des fonds, achetez, payez des factures et gagnez des récompenses ensemble.",
     "btnInviteNow": "Inviter maintenant"
   },
   "personalAccount": {
@@ -3557,7 +3557,7 @@
   "shopsSearchPlaceholder": "Rechercher par nom, ville, pays ou catégorie...",
   "Nouveau code envoyé (Simulé)": "Nouveau code envoyé (Simulé)",
   "features": {
-    "secureMoney": "Soutenez vos familles en Afrique tout en sécurisant l'usage de votre argent",
+    "secureMoney": "Soutenez vos familles en Afrique tout en sécurisant l'usage de vos fonds",
     "allAfrica": "Sur toute l'Afrique\n(54 pays)",
     "bestPrice": "Sourcez produits et services en Afrique au meilleur rapport Qualité/Prix"
   },
@@ -3748,14 +3748,14 @@
     },
     "quick_action_4": {
       "title": "Envoyer /\nDemander\ndes fonds",
-      "subtitle": "Transferts d'argent\ninstantanés"
+      "subtitle": "Transferts d'fonds\ninstantanés"
     },
     "quick_action_5": {
-      "title": "Inviter",
-      "subtitle": "Invitez vos amis\net gagnez\n$5 en DZY"
+      "title": "Inviter\nmes amis",
+      "subtitle": "Invitez vos amis et\ngagnez $5 en DZY"
     },
     "my_beneficiaries": "Mes bénéficiaires",
-    "manage_contacts": "Gérer contacts",
+    "manage_contacts": "Contacts",
     "filter_nearby": "À proximité",
     "filter_favorites": "De mes pays préférés",
     "filter_africa": "De toute l'Afrique",
@@ -3767,7 +3767,7 @@
       "friend": "Ami"
     },
     "deleted": "Contact supprimé",
-    "deleted_desc": "Le contact a été retiré avec succès.",
+    "deleted_desc": "Contact supprimé avec succès.",
     "delete_error": "Impossible de supprimer ce contact.",
     "search_hint": "Nom, téléphone, email, ville ou pays",
     "add_permanent_sub": "Ajouter aux enregistrements permanents",
@@ -3785,11 +3785,21 @@
     },
     "sync": "Synchroniser vos contacts",
     "search": "Rechercher un contact",
-    "add": "Ajouter un bénéficiaire",
-    "add_desc": "Ajouter un nouveau bénéficiaire",
-    "edit": "Modifier un bénéficiaire",
-    "edit_desc": "Mettre à jour les informations",
-    "subtitle": "Soutenez vos bénéficiaires : envoyez de l'argent, payez des factures et achetez l'essentiel en Afrique."
+    "add": "Ajouter\nun bénéficiaire",
+    "add_desc": "Ajouter un nouveau\nbénéficiaire",
+    "edit": "Modifier\nun bénéficiaire",
+    "edit_desc": "Mettre à jour les\ninformations",
+    "subtitle": "Envoyez des fonds à vos bénéficiaires à travers l'Afrique.",
+    "action_send": "Envoyer",
+    "action_request": "Demander",
+    "action_pay": "Payer",
+    "action_invite": "Inviter",
+    "action_add_favorite": "Ajouter aux favoris",
+    "action_edit": "Modifier le contact",
+    "action_delete": "Supprimer le contact",
+    "added_favorite": "Ajouté aux favoris",
+    "added_favorite_desc": "a été ajouté à vos favoris.",
+    "quick_action_view_sub": "Voir et gérer tous\nmes contacts"
   },
   "beneficiary_management": {
     "edit": {
@@ -3932,7 +3942,7 @@
   "contacts.quick_action_3.title": "Payer des\nfactures",
   "contacts.quick_action_3.subtitle": "Électricité, eau,\ninternet et plus",
   "contacts.quick_action_4.title": "Envoyer /\nDemander\ndes fonds",
-  "contacts.quick_action_4.subtitle": "Transferts d'argent\ninstantanés",
+  "contacts.quick_action_4.subtitle": "Transferts d'fonds\ninstantanés",
   "contacts.quick_action_5.title": "Inviter",
   "contacts.quick_action_5.subtitle": "Invitez vos amis\net gagnez\n en DZY",
   "shop": {
@@ -4025,7 +4035,7 @@
     "buy_goods": "Acheter des biens",
     "pay_bills": "Payer des factures",
     "request_money": "Demander des fonds",
-    "send_money": "Envoyer de l'argent",
+    "send_money": "Envoyer des Stablecoins",
     "top_up": "Recharger",
     "refer_store": "Référer un shop",
     "source_africa": "Sourcing en Afrique",

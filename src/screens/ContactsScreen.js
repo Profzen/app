@@ -1,7 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, TextInput, Image, PanResponder, Animated, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, TextInput, Image, Modal, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
@@ -35,7 +35,7 @@ export default function ContactsScreen() {
   const [showInvite, setShowInvite] = useState(true);
   const [contactItems, setContactItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [openSwipe, setOpenSwipe] = useState(null);
+  const [selectedContact, setSelectedContact] = useState(null);
   const [toast, setToast] = useState(null);
   const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'nearby', 'favorites', 'africa', 'world'
   const [searchQuery, setSearchQuery] = useState('');
@@ -85,7 +85,7 @@ export default function ContactsScreen() {
     } else {
       setToast({ title: t('common.error', 'Erreur'), message: error || t('contacts.delete_error', 'Impossible de supprimer ce contact.') });
     }
-    setOpenSwipe(null);
+    setSelectedContact(null);
   };
 
   const filteredContacts = useMemo(() => {
@@ -266,26 +266,42 @@ export default function ContactsScreen() {
             </View>
           </View>
 
-          {/* Index 2: Contacts List with Interactive Swipe Left & Right */}
+          {/* Index 2: Contacts List */}
           <View style={styles.contactsList}>
             {filteredContacts.map((contact) => (
-              <SwipeContactRow
-                key={contact.id}
-                contact={contact}
-                direction={openSwipe?.id === contact.id ? openSwipe.direction : null}
-                onDirection={(direction) => setOpenSwipe(direction ? { id: contact.id, direction } : null)}
-                onNavigate={(routeStr, extraParams = {}) => navigation.navigate(routeStr, { beneficiary: contact, contact, ...extraParams })}
-                onDelete={() => removeContact(contact.id)}
-                onFavorite={() => {
-                  setOpenSwipe(null);
-                  setToast({ title: 'Ajouté aux favoris', message: `${contact.name} a été ajouté à vos favoris.` });
+              <ContactRow 
+                key={contact.id} 
+                contact={contact} 
+                onPress={() => {
+                  if (nextScreen) {
+                    navigation.navigate(nextScreen, { beneficiary: contact, contact });
+                  } else {
+                    setSelectedContact(contact);
+                  }
                 }}
-                defaultRoute={nextScreen || 'ContactProfileScreen'}
               />
             ))}
           </View>
 
         </ScrollView>
+
+        <ContactActionSheet 
+          contact={selectedContact}
+          visible={!!selectedContact}
+          onClose={() => setSelectedContact(null)}
+          onNavigate={(routeStr, extraParams = {}) => {
+            setSelectedContact(null);
+            navigation.navigate(routeStr, { beneficiary: selectedContact, contact: selectedContact, ...extraParams });
+          }}
+          onDelete={(id) => {
+            setSelectedContact(null);
+            removeContact(id);
+          }}
+          onFavorite={(contact) => {
+            setSelectedContact(null);
+            setToast({ title: t('contacts.added_favorite', 'Ajouté aux favoris'), message: `${contact.name} ${t('contacts.added_favorite_desc', 'a été ajouté à vos favoris.')}` });
+          }}
+        />
 
         {/* Invite Banner (Floating) */}
         {showInvite && (
@@ -321,135 +337,98 @@ export default function ContactsScreen() {
   );
 }
 
-function SwipeContactRow({ contact, direction, onDirection, onNavigate, onDelete, onFavorite, defaultRoute = 'ContactProfileScreen' }) {
+function ContactRow({ contact, onPress }) {
   const { t } = useApp();
-  const translateX = useRef(new Animated.Value(0)).current;
-  const lastSwipeDx = useRef(0);
-
-  const panResponder = useMemo(
-    () =>
-      PanResponder.create({
-        onStartShouldSetPanResponder: () => false,
-        onStartShouldSetPanResponderCapture: () => false,
-        onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > 5 && Math.abs(gesture.dx) > Math.abs(gesture.dy),
-        onMoveShouldSetPanResponderCapture: (_, gesture) => Math.abs(gesture.dx) > 5 && Math.abs(gesture.dx) > Math.abs(gesture.dy),
-        onPanResponderGrant: () => {
-          lastSwipeDx.current = 0;
-        },
-        onPanResponderMove: (_, gesture) => {
-          lastSwipeDx.current = gesture.dx;
-          translateX.setValue(Math.max(-120, Math.min(120, gesture.dx)));
-        },
-        onPanResponderRelease: (_, gesture) => {
-          const dx = Math.abs(gesture.dx) >= Math.abs(lastSwipeDx.current) ? gesture.dx : lastSwipeDx.current;
-          if (dx < -25) {
-            onDirection('left');
-          } else if (dx > 25) {
-            onDirection('right');
-          } else {
-            onDirection(null);
-          }
-          lastSwipeDx.current = 0;
-          Animated.spring(translateX, { toValue: 0, useNativeDriver: true, speed: 20 }).start();
-        },
-        onPanResponderTerminate: () => {
-          Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
-        },
-      }),
-    [onDirection, translateX]
-  );
-
-  const personInfo = (
-    <View style={styles.contactInfoCol}>
-      <Avatar image={contact.image} name={contact.name} size={40} style={styles.contactAvatar} />
-      <View style={styles.contactDetails}>
-        <Text style={styles.contactName}>{contact.name}</Text>
-        <Text style={styles.contactRelation}>{contact.relation}</Text>
-        <Text style={styles.contactLocation}>{contact.flag} {contact.location}</Text>
-      </View>
-    </View>
-  );
-
-  if (direction) {
-    return (
-      <View style={styles.swipeRow}>
-        <TouchableOpacity style={styles.swipePerson} onPress={() => onDirection(null)}>
-          {personInfo}
-        </TouchableOpacity>
-        <View style={styles.swipeReveal}>
-          {direction === 'left' ? (
-            <>
-              <SwipeAction icon="star-outline" label="Favoris" onPress={onFavorite} />
-              <SwipeAction icon="pencil-outline" label="Modifier" onPress={() => onNavigate('ContactProfileScreen')} />
-              <SwipeAction icon="trash-outline" label="Supprimer" danger onPress={onDelete} />
-            </>
-          ) : (
-            <>
-              <SwipeAction icon="arrow-up-outline" label={'Envoyer\nde l’argent'} tint="#ECFDF5" onPress={() => onNavigate('SendMoneyScreen')} />
-              <SwipeAction icon="cash-outline" label={'Demander\nde l’argent'} tint="#FFF7E6" onPress={() => onNavigate('ReceiveFundsV2Screen')} />
-              <SwipeAction icon="bag-handle-outline" label={'Payer &\nessentiels'} tint="#EFF6FF" onPress={() => onNavigate('ChooseServiceScreen')} />
-              <SwipeAction icon="person-add-outline" label="Inviter" tint="#F5F3FF" onPress={() => onNavigate('RewardsScreen')} />
-            </>
-          )}
-        </View>
-      </View>
-    );
-  }
 
   return (
-    <Animated.View style={[styles.contactItem, { transform: [{ translateX }] }]} {...panResponder.panHandlers}>
-      <TouchableOpacity style={styles.contactInfoCol} onPress={() => onNavigate(defaultRoute)}>
-        <Avatar image={contact.image} name={contact.name} size={40} style={styles.contactAvatar} />
+    <TouchableOpacity style={styles.contactItem} onPress={onPress} activeOpacity={0.7}>
+      <View style={styles.contactInfoCol}>
+        <Avatar image={contact.image} name={contact.name} size={46} style={styles.contactAvatarLarge} />
         <View style={styles.contactDetails}>
           <Text style={styles.contactName}>{contact.name}</Text>
           <Text style={styles.contactRelation}>{contact.relation}</Text>
           <Text style={styles.contactLocation}>{contact.flag} {contact.location}</Text>
         </View>
-      </TouchableOpacity>
+      </View>
 
-      <TouchableOpacity 
-        style={styles.statusCol}
-        onPress={() => !contact.isBeneficiary && onNavigate('EditBeneficiaryScreen', { isEditing: false, beneficiary: contact })}
-        disabled={contact.isBeneficiary}
-      >
-        <Ionicons name="person-outline" size={20} color={contact.isBeneficiary ? '#10B981' : '#94A3B8'} />
+      <View style={styles.statusCol}>
+        <Ionicons name="person-outline" size={18} color={contact.isBeneficiary ? '#10B981' : '#94A3B8'} />
         <Text style={[styles.statusText, { color: contact.isBeneficiary ? '#10B981' : '#94A3B8' }]}>
           {contact.isBeneficiary ? t('beneficiary_management.profile.yes', 'Oui') : t('beneficiary_management.profile.no', 'Non')}
         </Text>
-      </TouchableOpacity>
+      </View>
 
-      <TouchableOpacity 
-        style={styles.statusCol}
-        onPress={() => !contact.isSponsor && onNavigate('RewardsScreen')}
-        disabled={contact.isSponsor}
-      >
-        <Ionicons name="person-add-outline" size={20} color={contact.isSponsor ? '#10B981' : '#94A3B8'} />
+      <View style={styles.statusCol}>
+        <Ionicons name="person-add-outline" size={18} color={contact.isSponsor ? '#10B981' : '#94A3B8'} />
         <Text style={[styles.statusText, { color: contact.isSponsor ? '#10B981' : '#94A3B8' }]}>
           {contact.isSponsor ? t('beneficiary_management.profile.yes', 'Oui') : t('beneficiary_management.profile.no', 'Non')}
         </Text>
-      </TouchableOpacity>
+      </View>
 
-      <TouchableOpacity
-        style={styles.swipeTriggerBtn}
-        onPress={() => onDirection('right')}
-        onLongPress={() => onDirection('left')}
-        activeOpacity={0.7}
-      >
-        <Ionicons name="swap-horizontal" size={18} color="#0F172A" />
-      </TouchableOpacity>
-    </Animated.View>
+      <View style={styles.moreActionBtn}>
+        <Ionicons name="ellipsis-vertical" size={20} color="#3B82F6" />
+      </View>
+    </TouchableOpacity>
   );
 }
 
-function SwipeAction({ icon, label, onPress, danger, tint }) {
+function ContactActionSheet({ contact, visible, onClose, onNavigate, onDelete, onFavorite }) {
+  const { t } = useApp();
+  if (!contact) return null;
+
   return (
-    <TouchableOpacity
-      style={[styles.swipeAction, tint && { backgroundColor: tint }, danger && styles.swipeActionDanger]}
-      onPress={onPress}
-      activeOpacity={0.8}
-    >
-      <Ionicons name={icon} size={20} color={danger ? '#FFF' : '#1A2840'} />
-      <Text style={[styles.swipeActionLabel, danger && { color: '#FFF' }]}>{label}</Text>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View style={styles.sheetOverlay}>
+        <TouchableOpacity style={styles.sheetDismissArea} activeOpacity={1} onPress={onClose} />
+        
+        <View style={styles.sheetContainer}>
+          <View style={styles.sheetHandleWrap}>
+            <View style={styles.sheetHandle} />
+          </View>
+
+          <View style={styles.sheetHeader}>
+             <Avatar image={contact.image} name={contact.name} size={64} style={styles.sheetAvatar} />
+             <Text style={styles.sheetNameLg}>{contact.name}</Text>
+             <Text style={styles.sheetLocationLg}>{contact.flag} {contact.location}</Text>
+          </View>
+
+          <View style={styles.sheetActionsGrid}>
+            <SheetGridAction icon="arrow-up-outline" label={t('contacts.action_send', 'Envoyer')} color="#10B981" bgColor="#ECFDF5" onPress={() => onNavigate('SendMoneyScreen')} />
+            <SheetGridAction icon="cash-outline" label={t('contacts.action_request', 'Demander')} color="#F59E0B" bgColor="#FFF7E6" onPress={() => onNavigate('ReceiveFundsV2Screen')} />
+            <SheetGridAction icon="bag-handle-outline" label={t('contacts.action_pay', 'Payer')} color="#3B82F6" bgColor="#EFF6FF" onPress={() => onNavigate('ChooseServiceScreen')} />
+            <SheetGridAction icon="person-add-outline" label={t('contacts.action_invite', 'Inviter')} color="#8B5CF6" bgColor="#F5F3FF" onPress={() => onNavigate('RewardsScreen')} />
+          </View>
+
+          <View style={styles.sheetListGroup}>
+             <SheetListAction icon="star" label={t('contacts.action_add_favorite', 'Ajouter aux favoris')} color="#F59E0B" bgColor="#FEF3C7" onPress={() => onFavorite(contact)} />
+             <SheetListAction icon="pencil" label={t('contacts.action_edit', 'Modifier le contact')} color="#3B82F6" bgColor="#EFF6FF" onPress={() => onNavigate('EditBeneficiaryScreen', { isEditing: true, beneficiary: contact })} />
+             <SheetListAction icon="trash" label={t('contacts.action_delete', 'Supprimer le contact')} color="#EF4444" bgColor="#FEF2F2" onPress={() => onDelete(contact.id)} />
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+function SheetGridAction({ icon, label, color, bgColor, onPress }) {
+  return (
+    <TouchableOpacity style={styles.gridActionBtn} onPress={onPress}>
+      <View style={[styles.gridActionIconWrap, { backgroundColor: bgColor }]}>
+        <Ionicons name={icon} size={28} color={color} />
+      </View>
+      <Text style={styles.gridActionLabel}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
+function SheetListAction({ icon, label, onPress, color = '#64748B', bgColor = '#F1F5F9' }) {
+  return (
+    <TouchableOpacity style={styles.listActionBtn} onPress={onPress}>
+      <View style={[styles.listActionIconWrap, { backgroundColor: bgColor }]}>
+        <Ionicons name={icon} size={20} color={color} />
+      </View>
+      <Text style={[styles.listActionLabel, color === '#EF4444' && { color: '#EF4444' }]}>{label}</Text>
+      <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
     </TouchableOpacity>
   );
 }
@@ -503,20 +482,31 @@ const styles = StyleSheet.create({
   contactsList: { paddingHorizontal: 16 },
   contactItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#F1F5F9', paddingVertical: 12 },
   contactInfoCol: { flexDirection: 'row', alignItems: 'center', flex: 2 },
-  contactAvatar: { width: 40, height: 40, borderRadius: 20, marginRight: 12 },
+  contactAvatarLarge: { width: 46, height: 46, borderRadius: 23, marginRight: 12 },
   contactDetails: { flex: 1 },
   contactName: { fontFamily: 'Inter_700Bold', fontSize: 14, color: '#1A2840', marginBottom: 2 },
   contactRelation: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#64748B', marginBottom: 2 },
   contactLocation: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#64748B' },
   statusCol: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   statusText: { fontFamily: 'Inter_700Bold', fontSize: 11 },
-  swipeRow: { minHeight: 74, flexDirection: 'row', overflow: 'hidden', backgroundColor: '#FFF', borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
-  swipePerson: { width: '35%', paddingHorizontal: 8, justifyContent: 'center', backgroundColor: '#FFF' },
-  swipeReveal: { flex: 1, flexDirection: 'row' },
-  swipeAction: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 2, backgroundColor: '#F8FAFC' },
-  swipeActionDanger: { backgroundColor: '#EF4444' },
-  swipeActionLabel: { marginTop: 4, fontFamily: 'Inter_600SemiBold', fontSize: 9, lineHeight: 11, textAlign: 'center', color: '#1A2840' },
-  swipeTriggerBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F1F5F9' },
+  moreActionBtn: { width: 36, height: 36, justifyContent: 'center', alignItems: 'center', borderRadius: 18, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E0E7FF', shadowColor: '#6366F1', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 4 },
+  sheetOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.4)', justifyContent: 'flex-end' },
+  sheetDismissArea: { flex: 1 },
+  sheetContainer: { backgroundColor: '#FFFFFF', borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 20, paddingBottom: Platform.OS === 'ios' ? 40 : 24, maxHeight: '90%' },
+  sheetHandleWrap: { alignItems: 'center', paddingVertical: 12 },
+  sheetHandle: { width: 48, height: 5, backgroundColor: '#E2E8F0', borderRadius: 3 },
+  sheetHeader: { alignItems: 'center', marginBottom: 24 },
+  sheetAvatar: { width: 64, height: 64, borderRadius: 32, marginBottom: 12 },
+  sheetNameLg: { fontFamily: 'Inter_700Bold', fontSize: 20, color: '#0F172A', marginBottom: 4 },
+  sheetLocationLg: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#64748B' },
+  sheetActionsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 24 },
+  gridActionBtn: { width: '23%', alignItems: 'center', marginBottom: 16 },
+  gridActionIconWrap: { width: 56, height: 56, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
+  gridActionLabel: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#334155', textAlign: 'center' },
+  sheetListGroup: { backgroundColor: '#F8FAFC', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8 },
+  listActionBtn: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+  listActionIconWrap: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  listActionLabel: { flex: 1, fontFamily: 'Inter_500Medium', fontSize: 14, color: '#1E293B' },
   toastWrap: { position: 'absolute', left: 14, right: 14, top: 70, zIndex: 50 },
   inviteBannerWrapper: { position: 'absolute', bottom: 90, left: 16, right: 16 },
   inviteBanner: { backgroundColor: '#20365B', borderRadius: 16, padding: 16, flexDirection: 'row', alignItems: 'center', position: 'relative', overflow: 'hidden' },

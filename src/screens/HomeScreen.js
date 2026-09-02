@@ -225,7 +225,7 @@ export default function HomeScreen() {
                       <Text style={{ color: '#3B82F6' }}>$5 in DZY</Text>
                     </Text>
                     <Text style={styles.inviteSubtitle}>
-                      {language === 'fr' ? "Envoyez des fonds, achetez,\npayez vos factures et gagnez." : "Send money, buy goods,\npay bills and earn rewards."}
+                      {language === 'fr' ? "Envoyez des fonds, achetez,\npayez vos factures et gagnez." : "Send Stablecoins, buy goods,\npay bills and earn rewards."}
                     </Text>
                     <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#071D54' }]} onPress={() => navigation.navigate('RewardsScreen')}>
                       <Text style={styles.inviteButtonText}>{language === 'fr' ? 'Inviter' : 'Invite now'}</Text>

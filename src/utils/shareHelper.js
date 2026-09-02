@@ -2,7 +2,7 @@ import { Share, Platform } from 'react-native';
 
 export const shareInviteLink = async (refCode = 'DZY500') => {
   const inviteUrl = `https://dizzitup.com/invite?ref=${refCode}`;
-  const message = `Rejoins-moi sur DizzitUp pour envoyer de l'argent, recharger des mobiles et payer des factures en Afrique sans frais ! Reçois $5 en DZY à l'inscription. Télécharge l'application ou clique ici : ${inviteUrl}`;
+  const message = `Rejoins-moi sur DizzitUp pour envoyer des Stablecoins, recharger des mobiles et payer des factures en Afrique sans frais ! Reçois $5 en DZY à l'inscription. Télécharge l'application ou clique ici : ${inviteUrl}`;
 
   try {
     if (Platform.OS === 'web' && navigator.share) {
