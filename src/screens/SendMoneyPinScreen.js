@@ -50,7 +50,7 @@ export default function SendMoneyPinScreen() {
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <Ionicons name="arrow-redo" size={20} color="#1A2840" style={styles.headerIcon} />
-            <Text style={styles.headerTitle}>Envoyer de l'argent</Text>
+            <Text style={styles.headerTitle}>envoyer des Stablecoins</Text>
           </View>
           <TouchableOpacity style={styles.iconBtn}>
             <Ionicons name="ellipsis-horizontal" size={20} color="#1A2840" />

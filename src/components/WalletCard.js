@@ -93,9 +93,14 @@ export default function WalletCard({ balances }) {
 
         {/* Main Balance */}
         <View style={styles.balanceArea}>
-          <Text style={[styles.bigBalanceText, !isVisible && styles.blurredText]} numberOfLines={1} adjustsFontSizeToFit>
-            {formatNum(mainBalance, 2, 4)} <Text style={[styles.currencyText, !isVisible && styles.blurredText]}>DZY</Text>
-          </Text>
+          <View style={{ flex: 1, paddingRight: 10 }}>
+            <Text style={[styles.bigBalanceText, !isVisible && styles.blurredText]} numberOfLines={1} adjustsFontSizeToFit>
+              {formatNum(mainBalance, 2, 4)} <Text style={[styles.currencyText, !isVisible && styles.blurredText]}>DZY</Text>
+            </Text>
+          </View>
+          <TouchableOpacity style={styles.btnTopUp} onPress={() => navigation.navigate('TopUpScreen')} activeOpacity={0.85}>
+            <Text style={styles.btnTopUpText}>+ Top-up</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Unified Internal Fiat Row */}
@@ -140,7 +145,7 @@ function ActionItem({ icon, label, onPress, divider }) {
   return (
     <TouchableOpacity style={[styles.actionItem, divider && styles.actionDivider]} onPress={onPress}>
       <Ionicons name={icon} size={20} color="#FFC759" />
-      <Text style={styles.actionLabel} numberOfLines={1}>{label}</Text>
+      <Text style={styles.actionLabel} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -201,7 +206,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   balanceArea: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 12,
+  },
+  btnTopUp: {
+    backgroundColor: '#FFC759',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  btnTopUpText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 11,
+    color: '#1A2840',
   },
   bigBalanceText: {
     fontFamily: 'SpaceGrotesk_700Bold',

@@ -3611,24 +3611,24 @@
       "subtitle": "ፈጣን የገንዘብ\nዝውውሮች"
     },
     "quick_action_5": {
-      "title": "ይጋብዙ",
-      "subtitle": "ጓደኞችዎን ይጋብዙ\nእና $5\nበ DZY ያግኙ"
+      "title": "ጓደኞችን\nጋብዝ",
+      "subtitle": "ጓደኞችን ይጋብዙ እና\n$5 DZY ያግኙ"
     },
-    "my_beneficiaries": "ተጠቃሚዎቼ",
-    "manage_contacts": "እውቂያዎችን አስተዳድር",
-    "filter_nearby": "አቅራቢያ",
-    "filter_favorites": "ከተመረጡ ሀገራት",
-    "filter_africa": "በመላው አፍሪካ",
-    "filter_world": "የተቀረው ዓለም",
+    "my_beneficiaries": "የእኔ ተቀባዮች",
+    "manage_contacts": "እውቂያዎች",
+    "filter_nearby": "በአቅራቢያ",
+    "filter_favorites": "ተወዳጅ ሀገሮች",
+    "filter_africa": "መላው አፍሪካ",
+    "filter_world": "ቀሪው ዓለም",
     "col_contact": "እውቂያ",
-    "col_beneficiary": "ተጠቃሚ",
+    "col_beneficiary": "ተቀባይ",
     "col_sponsor": "ስፖንሰር",
     "relation": {
       "friend": "ጓደኛ"
     },
     "deleted": "እውቂያ ተሰርዟል",
-    "deleted_desc": "እውቂያ በተሳካ ሁኔታ ተወግዷል።",
-    "delete_error": "ይህን እውቂያ መሰረዝ አይቻልም።",
+    "deleted_desc": "እውቂያው በተሳካ ሁኔታ ተሰርዟል።",
+    "delete_error": "ይህን እውቂያ መሰረዝ አልተቻለም።",
     "search_hint": "ስም፣ ስልክ፣ ኢሜይል፣ ከተማ ወይም ሀገር",
     "add_permanent_sub": "ወደ ቋሚ መዝገቦች አክል",
     "tab": {
@@ -3645,11 +3645,21 @@
     },
     "sync": "እውቂያዎችን ያመሳስሉ",
     "search": "እውቂያ ይፈልጉ",
-    "add": "ተጠቃሚ ያክሉ",
-    "add_desc": "አዲስ ተጠቃሚ ያክሉ",
-    "edit": "ተጠቃሚ ያርትዑ",
-    "edit_desc": "መረጃ ያዘምኑ",
-    "subtitle": "ተጠቃሚዎችዎን ይደግፉ፡ ገንዘብ ይላኩ፣ ክፍያዎችን ይክፈሉ እና በመላው አፍሪካ አስፈላጊ ነገሮችን ይግዙ።"
+    "add": "ተቀባይ\nአክል",
+    "add_desc": "አዲስ ተቀባይ\nአክል",
+    "edit": "ተቀባይ\nአስተካክል",
+    "edit_desc": "መረጃ\nአድስ",
+    "subtitle": "በመላው አፍሪካ ለሚገኙ ተቀባዮችዎ ገንዘብ ይላኩ።",
+    "action_send": "ላክ",
+    "action_request": "ጠይቅ",
+    "action_pay": "ክፈል",
+    "action_invite": "ጋብዝ",
+    "action_add_favorite": "ወደ ተወዳጆች አክል",
+    "action_edit": "ዕውቂያ አርትዕ",
+    "action_delete": "ዕውቂያ ሰርዝ",
+    "added_favorite": "ወደ ተወዳጆች ታክሏል",
+    "added_favorite_desc": "ወደ ተወዳጆችዎ ታክሏል።",
+    "quick_action_view_sub": "ሁሉንም እውቂያዎች\nይመልከቱ እና ያቀናብሩ"
   },
   "beneficiary_management": {
     "edit": {

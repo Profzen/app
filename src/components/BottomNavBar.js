@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
@@ -33,10 +33,10 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
     { id: '1', icon: 'bag-handle-outline', color: '#3B82F6', bgColor: '#EFF6FF', label: t('actionBuyGoods', 'Acheter des biens'), route: 'ShopsScreen' },
     { id: '2', icon: 'document-text-outline', color: '#8B5CF6', bgColor: '#F5F3FF', label: t('actionPayBills', 'Payer des factures'), route: 'ContactsScreen' },
     { id: '3', icon: 'cart-outline', color: '#F59E0B', bgColor: '#FFFBEB', label: t('actionRequestMoney', 'Demander des fonds'), route: 'ReceiveFundsV2Screen' },
-    { id: '4', icon: 'people-outline', color: '#10B981', bgColor: '#ECFDF5', label: t('actionSendMoney', "Envoyer de l'argent"), route: 'ContactsScreen' },
+    { id: '4', icon: 'people-outline', color: '#10B981', bgColor: '#ECFDF5', label: t('actionSendMoney', 'Envoyer des Stablecoins'), route: 'ContactsScreen' },
     { id: '5', icon: 'add-circle-outline', color: '#10B981', bgColor: '#ECFDF5', label: t('actionTopUp', 'Recharger'), route: 'TopUpScreen' },
     { id: '6', icon: 'storefront-outline', color: '#F59E0B', bgColor: '#FFFBEB', label: t('actionReferStore', 'Référer un shop'), route: 'ReferBusinessScreen' },
-    { id: '7', icon: 'globe-outline', color: '#3B82F6', bgColor: '#EFF6FF', label: t('actionSourceAfrica', 'Sourcing en Afrique'), route: 'ShopsScreen' },
+    { id: '7', icon: 'swap-horizontal', color: '#3B82F6', bgColor: '#EFF6FF', label: t('tabSwap', 'Échanger'), route: 'SwapTokensScreen' },
     { id: '8', icon: 'qr-code-outline', color: '#10B981', bgColor: '#F0FDFA', label: 'Scan & Cash', route: 'LocalExchangeScreen' },
   ];
 
@@ -49,21 +49,29 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
-      {menuOpen && (
-        <View style={styles.shortcutMenu}>
-          <Text style={styles.shortcutTitle}>{t('quickActionsTitle', 'Actions rapides')}</Text>
-          <View style={styles.quickActionsGrid}>
-            {QUICK_ACTIONS.map((action) => (
-              <TouchableOpacity key={action.id} style={styles.actionGridItem} onPress={() => closeAndNavigate(action.route)}>
-                <View style={[styles.actionGridIcon, { backgroundColor: action.bgColor }]}>
-                  <Ionicons name={action.icon} size={22} color={action.color} />
-                </View>
-                <Text style={styles.actionGridText} numberOfLines={2}>{action.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-      )}
+      <Modal visible={menuOpen} transparent={true} animationType="fade" onRequestClose={() => {
+        if (onCenterButtonPress) onCenterButtonPress();
+        else setLocalMenuOpen(false);
+      }}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => {
+          if (onCenterButtonPress) onCenterButtonPress();
+          else setLocalMenuOpen(false);
+        }}>
+          <TouchableOpacity activeOpacity={1} style={styles.shortcutMenu} onPress={(e) => e.stopPropagation()}>
+            <Text style={styles.shortcutTitle}>{t('quickActionsTitle', 'Actions rapides')}</Text>
+            <View style={styles.quickActionsGrid}>
+              {QUICK_ACTIONS.map((action) => (
+                <TouchableOpacity key={action.id} style={styles.actionGridItem} onPress={() => closeAndNavigate(action.route)}>
+                  <View style={[styles.actionGridIcon, { backgroundColor: action.bgColor }]}>
+                    <Ionicons name={action.icon} size={22} color={action.color} />
+                  </View>
+                  <Text style={styles.actionGridText} numberOfLines={2} adjustsFontSizeToFit>{action.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
 
       <View style={styles.container}>
         {/* Home */}
@@ -139,8 +147,13 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#F4F5F7',
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.1)',
+    justifyContent: 'flex-end',
+  },
   shortcutMenu: {
-    position: 'absolute', left: 12, right: 12, bottom: 64, zIndex: 50,
+    position: 'absolute', left: 12, right: 12, bottom: 100, zIndex: 50,
     backgroundColor: '#FFFFFF', borderRadius: 18, padding: 12,
     borderWidth: 1, borderColor: '#E5E7EB', shadowColor: '#000', shadowOpacity: 0.16,
     shadowRadius: 14, shadowOffset: { width: 0, height: -4 }, elevation: 12,

@@ -51,7 +51,7 @@ export const TRANSLATIONS = {
     // Quick Action Labels
     actionBuyGoods: "Acheter des biens",
     actionPayBills: "Payer des factures",
-    actionSendMoney: "Envoyer de l'argent",
+    actionSendMoney: "envoyer des Stablecoins",
     actionTopUp: "Recharger",
     actionReferStore: "Référer un shop",
     actionSourceAfrica: "Sourcing en Afrique",
@@ -229,12 +229,12 @@ export const TRANSLATIONS = {
     securityBannerTitle: "Secure, simple and instant",
     securityBannerDesc: "Your funds and data are protected by enterprise-grade network encryption.",
     inviteBannerTitle: "Invite friends and earn $5 in DZY",
-    inviteBannerDesc: "Send money, buy goods, pay bills and earn rewards together.",
+    inviteBannerDesc: "Send Stablecoins, buy goods, pay bills and earn rewards together.",
 
     // Quick Action Labels
     actionBuyGoods: "Buy goods",
     actionPayBills: "Pay bills",
-    actionSendMoney: "Send money",
+    actionSendMoney: "Send Stablecoins",
     actionTopUp: "Top-up",
     actionReferStore: "Refer a store",
     actionSourceAfrica: "Source in Africa",
@@ -243,7 +243,7 @@ export const TRANSLATIONS = {
 
     // Contacts Screen
     contactsTitle: "Contacts",
-    contactsSubtitle: "Send money to your beneficiaries across Africa.",
+    contactsSubtitle: "Send Stablecoins to your beneficiaries across Africa.",
     contactsSearchPlaceholder: "Search contact (Name, phone, email, city...)",
     syncContactsBtn: "Sync your contacts",
     myBeneficiaries: "My beneficiaries",

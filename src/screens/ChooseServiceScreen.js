@@ -133,7 +133,7 @@ export default function ChooseServiceScreen() {
         // 2. Inject Static Platform Services for the country
         const platformServices = [
           {
-            id: 'srv_remittance', image: 'https://buygoods.dizzitup.com/assets/services/remittance_tile.png', name: `Send Money to ${globalCountryName}`, category: 'remittance', description: `Direct cash remittance to ${globalCountryName} — fast, secure, and reliable`, price: 0, currency: 'USD', supplier: 'DizzitUp Remittance', isService: true, isRemittance: true, featured: true, country: globalCountryName, city: 'Nationwide'
+            id: 'srv_remittance', image: 'https://buygoods.dizzitup.com/assets/services/remittance_tile.png', name: `Send Stablecoins to ${globalCountryName}`, category: 'remittance', description: `Direct cash remittance to ${globalCountryName} — fast, secure, and reliable`, price: 0, currency: 'USD', supplier: 'DizzitUp Remittance', isService: true, isRemittance: true, featured: true, country: globalCountryName, city: 'Nationwide'
           },
           {
             id: 'srv_airtime', image: 'https://buygoods.dizzitup.com/assets/services/airtime_v2_1777468371506.png', name: `${globalCountryName} Airtime Top-up`, category: 'mobile_data_airtime', description: `Instant mobile credit for any ${globalCountryName} operator`, price: 10, currency: 'USD', supplier: 'DizzitUp Services', isService: true, featured: true, country: globalCountryName, city: 'Nationwide'

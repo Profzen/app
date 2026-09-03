@@ -39,7 +39,7 @@
         "description": "Compre essenciais diretamente para seus entes queridos."
       },
       "sendMoney": {
-        "label": "Enviar dinheiro",
+        "label": "Enviar Stablecoins",
         "description": "Remessa transfronteiriça sem taxas para carteiras móveis."
       },
       "earnRewards": {
@@ -262,7 +262,7 @@
     "signingIn": "Entrando...",
     "gettingStarted": "Começando...",
     "chooseAccountType": "Escolha o Tipo de Conta",
-    "accountTypeDescription": "Após clicar em \"Começar\", você poderá escolher entre uma conta pessoal para enviar dinheiro e fazer compras, ou uma conta de comerciante para vender produtos e gerenciar seu negócio.",
+    "accountTypeDescription": "Após clicar em \"Começar\", você poderá escolher entre uma conta pessoal para Enviar Stablecoins e fazer compras, ou uma conta de comerciante para vender produtos e gerenciar seu negócio.",
     "termsHelper": "Ao entrar ou criar uma conta, você concorda com nossos",
     "connecting": "Conectando...",
     "continueWith": "Continuar com",
@@ -290,7 +290,7 @@
       "user": {
         "title": "Usuário Comum",
         "subtitle": "Conta Pessoal",
-        "benefit1Title": "Enviar Dinheiro pela África",
+        "benefit1Title": "Enviar Stablecoins pela África",
         "benefit1Desc": "Serviços de remessa rápidos e seguros para família e amigos",
         "benefit2Title": "Comprar Produtos Africanos",
         "benefit2Desc": "Acesse produtos autênticos de comerciantes em toda a África",
@@ -1214,7 +1214,7 @@
     "hero": {
       "badge": "54 países cobertos",
       "africanDiaspora": "Diáspora Africana",
-      "title": "Pare de enviar dinheiro,",
+      "title": "Pare de Enviar Stablecoins,",
       "titleHighlight": "compre localmente",
       "titleSuffix": "",
       "subtitle": "Evite as taxas de remessa. Pague contas, carregue telemóveis e compre bens essenciais diretamente em África.",
@@ -1381,7 +1381,7 @@
           "sarah": {
             "name": "Sarah M.",
             "country": "do Canadá para o Quénia",
-            "text": "A minha família recebe exatamente o que precisa - medicamentos, serviços públicos, tudo. Muito melhor do que enviar dinheiro."
+            "text": "A minha família recebe exatamente o que precisa - medicamentos, serviços públicos, tudo. Muito melhor do que Enviar Stablecoins."
           }
         }
       },
@@ -2639,7 +2639,7 @@
   "beneficiary": {
     "form": {
       "title_add": "Adicionar Beneficiário",
-      "subtitle_add": "Adicione um novo beneficiário para enviar dinheiro ou pagar contas facilmente.",
+      "subtitle_add": "Adicione um novo beneficiário para Enviar Stablecoins ou pagar contas facilmente.",
       "title_update": "Atualizar Beneficiário",
       "subtitle_update": "Atualizar detalhes de {{name}}",
       "firstName": "Nome",
@@ -3277,8 +3277,7 @@
   "wallet": {
     "actions": {
       "send": "Enviar",
-      "my_assets": "Meus ativos",
-      "history": "História",
+      "history": "Histórico",
       "cash_out": "Saque",
       "swap": "Troca"
     }
@@ -3593,25 +3592,25 @@
       "subtitle": "Transferências\ninstantâneas"
     },
     "quick_action_5": {
-      "title": "Convidar",
-      "subtitle": "Convide amigos\ne ganhe\n$5 em DZY"
+      "title": "Convidar\namigos",
+      "subtitle": "Convide amigos e\nganhe $5 DZY"
     },
-    "my_beneficiaries": "Meus Beneficiários",
-    "manage_contacts": "Gerenciar Contatos",
-    "filter_nearby": "Próximo",
-    "filter_favorites": "De países favoritos",
-    "filter_africa": "Em toda a África",
+    "my_beneficiaries": "Meus beneficiários",
+    "manage_contacts": "Contatos",
+    "filter_nearby": "Perto",
+    "filter_favorites": "Países favoritos",
+    "filter_africa": "Toda a África",
     "filter_world": "Resto do mundo",
     "col_contact": "Contato",
     "col_beneficiary": "Beneficiário",
-    "col_sponsor": "Padrinho",
+    "col_sponsor": "Patrocinador",
     "relation": {
       "friend": "Amigo"
     },
-    "deleted": "Contato removido",
-    "deleted_desc": "Contato foi removido com sucesso.",
+    "deleted": "Contato excluído",
+    "deleted_desc": "Contato excluído com sucesso.",
     "delete_error": "Não é possível excluir este contato.",
-    "search_hint": "Nome, telefone, email, cidade ou país",
+    "search_hint": "Nome, telefone, e-mail, cidade ou país",
     "add_permanent_sub": "Adicionar aos registros permanentes",
     "tab": {
       "info": "Informação",
@@ -3627,11 +3626,21 @@
     },
     "sync": "Sincronizar contactos",
     "search": "Pesquisar contacto",
-    "add": "Adicionar beneficiário",
-    "add_desc": "Adicionar novo beneficiário",
-    "edit": "Editar beneficiário",
-    "edit_desc": "Atualizar informações",
-    "subtitle": "Apoie seus beneficiários: envie dinheiro, pague contas e compre o essencial na África."
+    "add": "Adicionar\nbeneficiário",
+    "add_desc": "Adicionar um novo\nbeneficiário",
+    "edit": "Editar\nbeneficiário",
+    "edit_desc": "Atualizar\ninformações",
+    "subtitle": "Envie dinheiro para seus beneficiários em toda a África.",
+    "action_send": "Enviar",
+    "action_request": "Solicitar",
+    "action_pay": "Pagar",
+    "action_invite": "Convidar",
+    "action_add_favorite": "Adicionar aos favoritos",
+    "action_edit": "Editar contato",
+    "action_delete": "Excluir contato",
+    "added_favorite": "Adicionado aos favoritos",
+    "added_favorite_desc": "foi adicionado aos seus favoritos.",
+    "quick_action_view_sub": "Ver e gerenciar\ntodos os contatos"
   },
   "beneficiary_management": {
     "edit": {

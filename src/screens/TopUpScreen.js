@@ -146,8 +146,8 @@ export default function TopUpScreen() {
               </View>
 
               <View style={styles.methodInfo}>
-                <Text style={styles.methodTitle}>{t('topup.credit_card')}</Text>
-                <Text style={styles.methodSubtitle}>{t('topup.credit_card_desc')}</Text>
+                <Text style={styles.methodTitle}>{t('topup.credit_debit_card', 'Credit & Debit cards')}</Text>
+                <Text style={styles.methodSubtitle}>{t('topup.credit_debit_card_desc', 'Visa, Mastercard')}</Text>
               </View>
 
               <View style={styles.radioWrap}>
@@ -187,7 +187,7 @@ export default function TopUpScreen() {
             </View>
             <Text style={styles.infoBannerText}>
               <Text style={{fontFamily: 'Inter_700Bold'}}>{t('topup.recommended', 'Recommended:')} </Text>
-              {t('topup.recommended_desc', 'For best experience in Africa, use Mobile Money on Base network')}
+              {t('topup.recommended_desc', 'For best experience in Africa, use Mobile Money on Polygon network')}
             </Text>
           </View>
 
@@ -200,8 +200,8 @@ export default function TopUpScreen() {
             )}
             activeOpacity={0.8}
           >
-            <Text style={styles.btnContinueText}>{t('topup.continue')}</Text>
-            <Ionicons name="arrow-forward" size={18} color="#1A2840" />
+            <Text style={styles.btnContinueText}>{t('topup.continue', 'CONTINUE')}</Text>
+            <Ionicons name="arrow-forward" size={18} color="#FFC759" />
           </TouchableOpacity>
 
           <View style={{ height: 20 }} />
@@ -238,8 +238,8 @@ const styles = StyleSheet.create({
   stepLineActive: { backgroundColor: '#FFC759' },
   mainTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 20, color: '#1A2840', textAlign: 'center', marginBottom: 6 },
   mainSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#6B7280', textAlign: 'center', lineHeight: 17, marginBottom: 20, paddingHorizontal: 16 },
-  methodCard: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 18, padding: 14, marginBottom: 14 },
-  methodCardActive: { backgroundColor: '#FFFDF0', borderColor: '#FFC759', borderWidth: 1.5 },
+  methodCard: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#94A3B8', borderRadius: 18, padding: 14, marginBottom: 14, shadowColor: '#1A2840', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 3 },
+  methodCardActive: { backgroundColor: '#FFFDF0', borderColor: '#F59E0B', borderWidth: 2, shadowColor: '#F59E0B', shadowOpacity: 0.2, elevation: 5 },
   methodTopRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 12 },
   methodIconBox: { width: 64, height: 64, borderRadius: 16, backgroundColor: '#FFC759', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   phoneIllustration: { width: 34, height: 46, backgroundColor: '#0052FF', borderRadius: 8, justifyContent: 'center', alignItems: 'center', position: 'relative' },
@@ -256,17 +256,19 @@ const styles = StyleSheet.create({
   paysBadge: { alignSelf: 'flex-start', backgroundColor: '#FEF3C7', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 10 },
   paysBadgeText: { fontFamily: 'Inter_600SemiBold', fontSize: 10, color: '#D97706' },
   radioWrap: { marginLeft: 8 },
-  radioOuterActive: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: '#FFC759', justifyContent: 'center', alignItems: 'center' },
-  radioInnerActive: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#FFC759' },
-  radioInactive: { width: 22, height: 22, borderRadius: 11, borderWidth: 1, borderColor: '#E5E7EB' },
+  radioOuterActive: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: '#F59E0B', justifyContent: 'center', alignItems: 'center' },
+  radioInnerActive: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#F59E0B' },
+  radioInactive: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: '#1A2840', backgroundColor: '#F8FAFC' },
   detectedOperatorRow: { flexDirection: 'row', alignItems: 'center', paddingTop: 10, paddingBottom: 10, borderTopWidth: 1, borderTopColor: '#FDE68A', borderStyle: 'dotted', marginBottom: 6 },
   detectedOperatorText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840' },
-  featuresRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 10, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
-  featureCol: { flexDirection: 'row', alignItems: 'center', flex: 1, justifyContent: 'center' },
+  featuresRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
+  featureCol: { flexDirection: 'row', alignItems: 'center' },
   featureText: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#1A2840' },
   infoBannerCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFBEB', borderRadius: 12, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: '#FDE68A' },
   bulbIconWrapper: { marginRight: 10 },
   infoBannerText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 12, color: '#1A2840', lineHeight: 18 },
-  btnContinue: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFC759', height: 48, borderRadius: 12, marginBottom: 10 },
-  btnContinueText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#1A2840', marginRight: 8 }
+  btnContinue: { 
+    flexDirection: 'row', backgroundColor: '#1A2840', paddingVertical: 15, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginTop: 10, marginBottom: 10, shadowColor: '#1A2840', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 6, elevation: 4 
+  },
+  btnContinueText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#FFC759', textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 8 }
 });
