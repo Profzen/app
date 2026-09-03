@@ -253,39 +253,7 @@ export default function SendMoneyScreen() {
               </Text>
             </View>
 
-            {/* Section 1: CHOISIR LA BLOCKCHAIN */}
-            <Text style={styles.fieldLabel}>{t('pos.select_blockchain', 'CHOISIR LA BLOCKCHAIN')}</Text>
-            <View style={styles.selectBoxRow}>
-              <View style={{ marginRight: 10 }}>
-                <CryptoIcon symbol={blockchain} size={30} />
-              </View>
-              <AppSelect
-                value={blockchain}
-                options={BLOCKCHAINS}
-                onChange={(val) => setBlockchain(val)}
-                title={t('common.wallet.select_chain', 'Sélectionner la Blockchain')}
-                style={styles.appSelectFlex}
-                textStyle={styles.selectTextBold}
-              />
-            </View>
-
-            {/* Section 2: Jeton */}
-            <Text style={styles.fieldLabel}>{t('pos.token_caps', 'JETON')}</Text>
-            <View style={styles.selectBoxRow}>
-              <View style={{ marginRight: 10 }}>
-                <CryptoIcon symbol={token} size={30} />
-              </View>
-              <AppSelect
-                value={token}
-                options={CRYPTO_TOKENS}
-                onChange={(val) => setToken(val)}
-                title={t('pos.choose_currency', 'Sélectionner un jeton crypto')}
-                style={styles.appSelectFlex}
-                textStyle={styles.selectTextBold}
-              />
-            </View>
-
-            {/* Section 3: Adresse du destinataire (Search & Dropdown vs Picked Card) */}
+            {/* Section 1: Adresse du destinataire (Search & Dropdown vs Picked Card) */}
             <Text style={styles.fieldLabel}>{t('pos.recipient_address_caps', 'ADRESSE DU DESTINATAIRE')}</Text>
 
             {(!selectedRecipient || isSearchingRecipient) ? (
@@ -389,6 +357,38 @@ export default function SendMoneyScreen() {
                 </TouchableOpacity>
               </View>
             )}
+
+            {/* Section 2: CHOISIR LA BLOCKCHAIN */}
+            <Text style={styles.fieldLabel}>{t('pos.select_blockchain', 'CHOISIR LA BLOCKCHAIN')}</Text>
+            <View style={styles.selectBoxRow}>
+              <View style={{ marginRight: 10 }}>
+                <CryptoIcon symbol={blockchain} size={30} />
+              </View>
+              <AppSelect
+                value={blockchain}
+                options={BLOCKCHAINS}
+                onChange={(val) => setBlockchain(val)}
+                title={t('common.wallet.select_chain', 'Sélectionner la Blockchain')}
+                style={styles.appSelectFlex}
+                textStyle={styles.selectTextBold}
+              />
+            </View>
+
+            {/* Section 3: Jeton */}
+            <Text style={styles.fieldLabel}>{t('pos.token_caps', 'JETON')}</Text>
+            <View style={styles.selectBoxRow}>
+              <View style={{ marginRight: 10 }}>
+                <CryptoIcon symbol={token} size={30} />
+              </View>
+              <AppSelect
+                value={token}
+                options={CRYPTO_TOKENS}
+                onChange={(val) => setToken(val)}
+                title={t('pos.choose_currency', 'Sélectionner un jeton crypto')}
+                style={styles.appSelectFlex}
+                textStyle={styles.selectTextBold}
+              />
+            </View>
 
             {/* Section 4: Montant & Solde disponible */}
             <View style={styles.amountHeaderRow}>

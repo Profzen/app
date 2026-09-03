@@ -21,8 +21,8 @@ export default function DizzyFamilyScreen() {
 
   const handleCopyCode = () => {
     setToast({ 
-      title: language === 'fr' ? 'Code copié' : 'Code Copied', 
-      message: language === 'fr' ? `Le code de parrainage ${referralCode} a été copié.` : `Referral code ${referralCode} copied to clipboard.` 
+      title: t('dizzyFamily.code_copied', 'Code copié'), 
+      message: `${t('dizzyFamily.code_copied_msg', 'Le code de parrainage a été copié.')} (${referralCode})`
     });
   };
 
@@ -37,7 +37,7 @@ export default function DizzyFamilyScreen() {
             </TouchableOpacity>
             <View style={styles.headerTitleContainer}>
               <Text style={styles.pageTitle}>{t('dizzyFamily', 'DizzyFamily Program')}</Text>
-              <Text style={styles.pageSubtitle}>{language === 'fr' ? 'Programme de fidélité & avantages exclusifs' : 'Loyalty program & exclusive perks'}</Text>
+              <Text style={styles.pageSubtitle}>{t('dizzyFamily.subtitle', 'Programme de fidélité & avantages exclusifs')}</Text>
             </View>
           </View>
 
@@ -52,7 +52,7 @@ export default function DizzyFamilyScreen() {
             </View>
 
             <Text style={styles.pointsNumber}>4,850 <Text style={{ fontSize: 16 }}>DZY</Text></Text>
-            <Text style={styles.pointsLabel}>{language === 'fr' ? 'Points de fidélité accumulés' : 'Accumulated loyalty points'}</Text>
+            <Text style={styles.pointsLabel}>{t('dizzyFamily.points_label', 'Points de fidélité accumulés')}</Text>
 
             {/* Tier Progress Bar */}
             <View style={styles.progressContainer}>
@@ -60,55 +60,55 @@ export default function DizzyFamilyScreen() {
                 <View style={[styles.progressBarFill, { width: '75%' }]} />
               </View>
               <View style={styles.progressLabels}>
-                <Text style={styles.progressText}>{language === 'fr' ? 'Niveau Gold' : 'Gold Level'}</Text>
+                <Text style={styles.progressText}>{t('dizzyFamily.gold_level', 'Niveau Gold')}</Text>
                 <Text style={styles.progressTextNext}>Platinum (5 000 DZY)</Text>
               </View>
             </View>
           </View>
 
           {/* Referral Code Box */}
-          <Text style={styles.sectionHeader}>{language === 'fr' ? 'VOTRE CODE DE PARRAINAGE' : 'YOUR REFERRAL CODE'}</Text>
+          <Text style={styles.sectionHeader}>{t('dizzyFamily.your_referral_code', 'VOTRE CODE DE PARRAINAGE')}</Text>
           <View style={styles.referralCard}>
             <View style={styles.referralLeft}>
-              <Text style={styles.referralLabel}>{language === 'fr' ? 'Code unique :' : 'Unique Code:'}</Text>
+              <Text style={styles.referralLabel}>{t('dizzyFamily.unique_code', 'Code unique :')}</Text>
               <Text style={styles.referralCode}>{referralCode}</Text>
             </View>
             <TouchableOpacity style={styles.copyBtn} onPress={handleCopyCode}>
               <Ionicons name="copy-outline" size={18} color="#1A2840" style={{ marginRight: 4 }} />
-              <Text style={styles.copyBtnText}>{language === 'fr' ? 'Copier' : 'Copy'}</Text>
+              <Text style={styles.copyBtnText}>{t('btnCopy', 'Copier')}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Referral Stats */}
-          <Text style={styles.sectionHeader}>{language === 'fr' ? 'VOS STATISTIQUES' : 'YOUR STATISTICS'}</Text>
+          <Text style={styles.sectionHeader}>{t('dizzyFamily.your_statistics', 'VOS STATISTIQUES')}</Text>
           <View style={styles.statsRow}>
             <View style={styles.statBox}>
               <Ionicons name="people-outline" size={22} color="#3B82F6" />
               <Text style={styles.statNumber}>12</Text>
-              <Text style={styles.statLabel}>{language === 'fr' ? 'Filleuls invités' : 'Invited Referrals'}</Text>
+              <Text style={styles.statLabel}>{t('dizzyFamily.invited_referrals', 'Filleuls invités')}</Text>
             </View>
             <View style={styles.statBox}>
               <Ionicons name="cash-outline" size={22} color="#10B981" />
               <Text style={styles.statNumber}>$60</Text>
-              <Text style={styles.statLabel}>{language === 'fr' ? 'Gagnés en DZY' : 'Earned in DZY'}</Text>
+              <Text style={styles.statLabel}>{t('dizzyFamily.earned_in_dzy', 'Gagnés en DZY')}</Text>
             </View>
             <View style={styles.statBox}>
               <Ionicons name="flash-outline" size={22} color="#F59E0B" />
               <Text style={styles.statNumber}>5%</Text>
-              <Text style={styles.statLabel}>{language === 'fr' ? 'Cashback Actif' : 'Active Cashback'}</Text>
+              <Text style={styles.statLabel}>{t('dizzyFamily.active_cashback', 'Cashback Actif')}</Text>
             </View>
           </View>
 
           {/* Member Benefits */}
-          <Text style={styles.sectionHeader}>{language === 'fr' ? 'AVANTAGES DIZZYFAMILY GOLD' : 'DIZZYFAMILY GOLD PERKS'}</Text>
+          <Text style={styles.sectionHeader}>{t('dizzyFamily.gold_perks', 'AVANTAGES DIZZYFAMILY GOLD')}</Text>
           <View style={styles.card}>
             <View style={styles.benefitRow}>
               <View style={[styles.benefitIcon, { backgroundColor: '#EFF6FF' }]}>
                 <Ionicons name="star-outline" size={20} color="#3B82F6" />
               </View>
               <View style={styles.benefitText}>
-                <Text style={styles.benefitTitle}>{language === 'fr' ? 'Bonus de Cashback +2%' : '+2% Cashback Bonus'}</Text>
-                <Text style={styles.benefitDesc}>{language === 'fr' ? 'Sur tous vos achats boutiques et paiements' : 'On all shop purchases and payments'}</Text>
+                <Text style={styles.benefitTitle}>{t('dizzyFamily.benefit_1_title', 'Bonus de Cashback +2%')}</Text>
+                <Text style={styles.benefitDesc}>{t('dizzyFamily.benefit_1_desc', 'Sur tous vos achats boutiques et paiements')}</Text>
               </View>
             </View>
 
@@ -119,8 +119,8 @@ export default function DizzyFamilyScreen() {
                 <Ionicons name="swap-horizontal-outline" size={20} color="#10B981" />
               </View>
               <View style={styles.benefitText}>
-                <Text style={styles.benefitTitle}>{language === 'fr' ? 'Swaps sans frais réseau' : 'Zero network fee Swaps'}</Text>
-                <Text style={styles.benefitDesc}>{language === 'fr' ? 'Échanges DZY / Stablecoins illimités' : 'Unlimited DZY / Stablecoins exchanges'}</Text>
+                <Text style={styles.benefitTitle}>{t('dizzyFamily.benefit_2_title', 'Swaps sans frais réseau')}</Text>
+                <Text style={styles.benefitDesc}>{t('dizzyFamily.benefit_2_desc', 'Échanges DZY / Stablecoins illimités')}</Text>
               </View>
             </View>
 
@@ -131,8 +131,8 @@ export default function DizzyFamilyScreen() {
                 <Ionicons name="headset-outline" size={20} color="#F59E0B" />
               </View>
               <View style={styles.benefitText}>
-                <Text style={styles.benefitTitle}>{language === 'fr' ? 'Support VIP Prioritaire' : 'Priority VIP Support'}</Text>
-                <Text style={styles.benefitDesc}>{language === 'fr' ? 'Assistance dédiée via Aminata AI & conseillers' : 'Dedicated assistance via Aminata AI & agents'}</Text>
+                <Text style={styles.benefitTitle}>{t('dizzyFamily.benefit_3_title', 'Support VIP Prioritaire')}</Text>
+                <Text style={styles.benefitDesc}>{t('dizzyFamily.benefit_3_desc', 'Assistance dédiée via Aminata AI & conseillers')}</Text>
               </View>
             </View>
           </View>
@@ -140,7 +140,7 @@ export default function DizzyFamilyScreen() {
           {/* Action Link to Rewards */}
           <TouchableOpacity style={styles.rewardsLinkBtn} onPress={() => navigation.navigate('RewardsScreen')}>
             <Ionicons name="gift-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
-            <Text style={styles.rewardsLinkBtnText}>{language === 'fr' ? 'Voir le tableau de bord Rewards' : 'View Rewards Dashboard'}</Text>
+            <Text style={styles.rewardsLinkBtnText}>{t('dizzyFamily.view_rewards_dashboard', 'Voir le tableau de bord Rewards')}</Text>
           </TouchableOpacity>
 
           <View style={{ height: 30 }} />

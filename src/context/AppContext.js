@@ -375,14 +375,26 @@ export function AppProvider({ children }) {
   const [language, setLanguage] = useState('fr'); // 'en' | 'fr' | 'pt' | 'am' | 'ar'
 
   const handleSetLanguage = useCallback((newLang) => {
+    const saveLang = (lang) => {
+      if (Platform.OS === 'web') {
+        try {
+          if (typeof window !== 'undefined' && window.localStorage) {
+            window.localStorage.setItem('app_language', lang);
+          }
+        } catch (e) {}
+      } else {
+        SecureStore.setItemAsync('app_language', lang).catch(() => {});
+      }
+    };
+
     if (typeof newLang === 'function') {
       setLanguage(prev => {
         const result = newLang(prev);
-        if (Platform.OS !== 'web') SecureStore.setItemAsync('app_language', result).catch(() => {});
+        saveLang(result);
         return result;
       });
     } else {
-      if (Platform.OS !== 'web') SecureStore.setItemAsync('app_language', newLang).catch(() => {});
+      saveLang(newLang);
       setLanguage(newLang);
     }
   }, []);
@@ -390,29 +402,34 @@ export function AppProvider({ children }) {
   useEffect(() => {
     const loadLanguage = async () => {
       try {
-        const storedLang = await SecureStore.getItemAsync('app_language');
-        if (storedLang) setLanguage(storedLang);
+        if (Platform.OS === 'web') {
+          if (typeof window !== 'undefined' && window.localStorage) {
+            const webLang = window.localStorage.getItem('app_language');
+            if (webLang) setLanguage(webLang);
+          }
+        } else {
+          const storedLang = await SecureStore.getItemAsync('app_language');
+          if (storedLang) setLanguage(storedLang);
+        }
       } catch (err) {}
     };
-    if (Platform.OS !== 'web') loadLanguage();
+    loadLanguage();
   }, []);
 
   const toggleLanguage = useCallback(() => {
     const langs = ['en', 'fr', 'pt', 'ar', 'am'];
-    setLanguage(prev => {
+    handleSetLanguage(prev => {
       const idx = langs.indexOf(prev);
-      const nextLang = langs[(idx + 1) % langs.length];
-      if (Platform.OS !== 'web') {
-        SecureStore.setItemAsync('app_language', nextLang).catch(() => {});
-      }
-      return nextLang;
+      return langs[(idx + 1) % langs.length];
     });
-  }, []);
+  }, [handleSetLanguage]);
 
   const t = useCallback((key, fallback = '') => {
     const langDict = TRANSLATIONS[language] || TRANSLATIONS.en;
-    // Helper to traverse nested object paths (e.g. 'common.buttons.save')
+    // Helper to traverse flat keys OR nested object paths (e.g. 'common.buttons.save')
     const getNestedValue = (obj, path) => {
+      if (!obj || typeof obj !== 'object') return undefined;
+      if (obj[path] !== undefined && obj[path] !== null) return obj[path];
       return path.split('.').reduce((acc, part) => acc && acc[part], obj);
     };
     

@@ -131,7 +131,7 @@ export default function ContactHistoryScreen({ route }) {
             <View style={styles.monthContent}>
               <Text style={styles.monthLabel}>{t('contacts.history.monthly', 'Historique mensuel')}</Text>
               <TouchableOpacity style={styles.monthDropdownBtn}>
-                <Text style={styles.monthValueText}>{format(new Date(), 'MMMM yyyy', { locale: language === 'fr' ? fr : enUS })}</Text>
+                <Text style={styles.monthValueText}>{new Date().toLocaleDateString(language === 'fr' ? 'fr-FR' : (language === 'pt' ? 'pt-PT' : (language === 'ar' ? 'ar-SA' : (language === 'am' ? 'am-ET' : 'en-US'))), { month: 'long', year: 'numeric' })}</Text>
                 <Ionicons name="chevron-down" size={14} color="#1A2840" style={{ marginLeft: 4 }} />
               </TouchableOpacity>
             </View>

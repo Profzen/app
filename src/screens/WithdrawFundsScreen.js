@@ -1,36 +1,52 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Platform, StatusBar, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
-import AppSelect from '../components/AppSelect';
-
-const fiatOptions = [{value:'FCFA',label:'🇸🇳  FCFA'},{value:'GHS',label:'🇬🇭  GHS'},{value:'NGN',label:'🇳🇬  NGN'},{value:'USD',label:'🇺🇸  USD'}];
+import { useApp } from '../context/AppContext';
+import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
 
 export default function WithdrawFundsScreen() {
   const navigation = useNavigation();
-  const [selectedToken, setSelectedToken] = useState('USDC');
-  const [selectedNetwork, setSelectedNetwork] = useState('Polygon');
+  const { user, t } = useApp();
+
+  // 1. Auto-detect user's local fiat currency based on country
+  const userCountryInfo = useMemo(() => {
+    return getCountryCurrencyInfo(user?.country || 'Togo');
+  }, [user?.country]);
+
+  const localCurrency = ['XOF', 'XAF'].includes(userCountryInfo.currency) ? 'FCFA' : userCountryInfo.currency;
+
   const [amount, setAmount] = useState('250 000');
-  const [currency, setCurrency] = useState('FCFA');
+  const [selectedToken, setSelectedToken] = useState('USDC');
 
-  const tokens = [
-    { id: 'USDC', name: 'USDC', balance: '1 250,00', icon: 'USDC_ICON' },
-    { id: 'USDT', name: 'USDT', balance: '930,00', icon: 'USDT_ICON' },
-    { id: 'EURC', name: 'EURC', balance: '420,00', icon: 'EURC_ICON' },
-    { id: 'DZY', name: 'DZY', balance: '12 500', icon: 'DZY_ICON' },
-  ];
+  // 2. Token selection with live balances
+  const tokens = useMemo(() => [
+    { id: 'USDC', name: 'USDC', balance: user?.allBalances?.USDC ? `${user.allBalances.USDC}` : '1 250,00', network: 'Polygon' },
+    { id: 'USDT', name: 'USDT', balance: user?.allBalances?.USDT ? `${user.allBalances.USDT}` : '930,00', network: 'Polygon' },
+    { id: 'EURC', name: 'EURC', balance: user?.allBalances?.EURC ? `${user.allBalances.EURC}` : '420,00', network: 'Base' },
+    { id: 'DZY', name: 'DZY', balance: user?.balanceDZY ? `${user.balanceDZY}` : '12 500', network: 'Polygon' },
+  ], [user?.allBalances, user?.balanceDZY]);
 
-  const networks = [
-    { id: 'Polygon', name: 'Polygon', icon: 'POLYGON_ICON' },
-    { id: 'Base', name: 'Base', icon: 'BASE_ICON' },
-    { id: 'Solana', name: 'Solana', icon: 'SOLANA_ICON' },
-    { id: 'Ethereum', name: 'Ethereum', icon: 'ETH_ICON' },
-  ];
+  // 3. Auto-detected blockchain network based on selected token
+  const selectedNetwork = useMemo(() => {
+    const found = tokens.find(t => t.id === selectedToken);
+    return found?.network || 'Polygon';
+  }, [selectedToken, tokens]);
+
+  // Rough equivalence estimation for UI feedback
+  const parsedAmount = parseFloat((amount || '').replace(/\s/g, '')) || 0;
+  const estimatedCrypto = useMemo(() => {
+    if (localCurrency === 'FCFA') return (parsedAmount / 600).toFixed(2);
+    if (localCurrency === 'EUR') return (parsedAmount * 1.08).toFixed(2);
+    if (localCurrency === 'GHS') return (parsedAmount / 15).toFixed(2);
+    if (localCurrency === 'NGN') return (parsedAmount / 1500).toFixed(2);
+    return parsedAmount.toFixed(2);
+  }, [parsedAmount, localCurrency]);
 
   const renderTokenIcon = (id) => <CryptoIcon symbol={id} size={38} />;
-  const renderNetworkIcon = (id) => <CryptoIcon symbol={id} size={38} />;
+  const renderNetworkIcon = (id) => <CryptoIcon symbol={id} size={28} />;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -38,69 +54,70 @@ export default function WithdrawFundsScreen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={24} color="#1A2840" />
+          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()} accessibilityLabel="Retour">
+            <Ionicons name="chevron-back" size={24} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.pageTitle}>Retirer des fonds</Text>
-          <TouchableOpacity style={styles.iconBtn}>
-            <Ionicons name="headset-outline" size={24} color="#1A2840" />
+          <Text style={styles.pageTitle}>{t('withdraw.title', 'Retirer des fonds')}</Text>
+          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('ContactUsScreen')} accessibilityLabel="Support">
+            <Ionicons name="headset-outline" size={22} color="#1A2840" />
           </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          {/* Simple Stepper (1 to 5) */}
+          {/* Stepper (1 to 5) */}
           <View style={styles.stepperContainer}>
             <View style={[styles.stepCircle, styles.stepCircleActive]}>
               <Text style={styles.stepNumberActive}>1</Text>
             </View>
             <View style={styles.stepLine} />
-            
-            <View style={styles.stepCircle}>
-              <Text style={styles.stepNumber}>2</Text>
-            </View>
+            <View style={styles.stepCircle}><Text style={styles.stepNumber}>2</Text></View>
             <View style={styles.stepLine} />
-            
-            <View style={styles.stepCircle}>
-              <Text style={styles.stepNumber}>3</Text>
-            </View>
+            <View style={styles.stepCircle}><Text style={styles.stepNumber}>3</Text></View>
             <View style={styles.stepLine} />
-            
-            <View style={styles.stepCircle}>
-              <Text style={styles.stepNumber}>4</Text>
-            </View>
+            <View style={styles.stepCircle}><Text style={styles.stepNumber}>4</Text></View>
             <View style={styles.stepLine} />
-
-            <View style={styles.stepCircle}>
-              <Text style={styles.stepNumber}>5</Text>
-            </View>
+            <View style={styles.stepCircle}><Text style={styles.stepNumber}>5</Text></View>
           </View>
 
           {/* Titles */}
-          <Text style={styles.stepOverTitle}>Étape 1/5</Text>
-          <Text style={styles.mainTitle}>Choisissez les détails de votre retrait</Text>
-          <Text style={styles.mainSubtitle}>Sélectionnez le montant, le jeton et le réseau.</Text>
+          <Text style={styles.stepOverTitle}>{t('withdraw.step_1_of_5', 'Étape 1/5')}</Text>
+          <Text style={styles.mainTitle}>{t('withdraw.choose_details_title', 'Choisissez les détails de votre retrait')}</Text>
+          <Text style={styles.mainSubtitle}>{t('withdraw.choose_details_desc', 'La devise de votre pays est fixée automatiquement. Choisissez le jeton à débiter.')}</Text>
 
           {/* Main Card */}
           <View style={styles.mainCard}>
             
-            {/* Montant à retirer */}
-            <Text style={styles.sectionTitle}>Montant à retirer</Text>
+            {/* Montant à retirer en monnaie locale */}
+            <View style={styles.sectionHeaderBetween}>
+              <Text style={styles.sectionTitle}>{t('withdraw.amount_to_withdraw', 'Montant à retirer')}</Text>
+              <View style={styles.detectedCountryBadge}>
+                <Image source={{ uri: `https://flagcdn.com/w40/${userCountryInfo.code}.png` }} style={styles.countryFlag} />
+                <Text style={styles.detectedCountryText}>{userCountryInfo.label || 'Afrique'}</Text>
+              </View>
+            </View>
+
             <View style={styles.amountInputContainer}>
               <TextInput 
                 style={styles.amountInput}
                 value={amount}
                 onChangeText={(text) => setAmount(text.replace(/\D/g, '').slice(0, 12).replace(/\B(?=(\d{3})+(?!\d))/g, ' '))}
                 keyboardType="numeric"
+                placeholder="0"
+                placeholderTextColor="#94A3B8"
               />
-              <AppSelect value={currency} options={fiatOptions} onChange={setCurrency} title="Choisir la devise" style={styles.currencySelector} textStyle={styles.currencyCode} />
+              <View style={styles.fixedCurrencyBadge}>
+                <Text style={styles.fixedCurrencyText}>{localCurrency}</Text>
+              </View>
             </View>
-            <Text style={styles.equivText}>≈ 417,33 USDC</Text>
+            <Text style={styles.equivText}>≈ {estimatedCrypto} {selectedToken}</Text>
 
             <View style={styles.divider} />
 
-            {/* Choisissez le jeton */}
-            <Text style={styles.sectionTitle}>Choisissez le jeton</Text>
+            {/* Choisissez le jeton à débiter */}
+            <Text style={styles.sectionTitle}>{t('withdraw.select_token_to_debit', 'Choisissez le jeton à débiter')}</Text>
+            <Text style={styles.sectionSubInstruction}>{t('withdraw.select_token_desc', 'Sélectionnez parmi vos jetons disponibles :')}</Text>
+            
             <View style={styles.gridContainer}>
               {tokens.map((token) => (
                 <TouchableOpacity 
@@ -113,7 +130,7 @@ export default function WithdrawFundsScreen() {
                     {renderTokenIcon(token.id)}
                   </View>
                   <Text style={styles.itemName}>{token.name}</Text>
-                  <Text style={styles.itemSubText}>Solde : {token.balance}</Text>
+                  <Text style={styles.itemSubText}>{t('common.wallet.balance', 'Solde')} : {token.balance}</Text>
                   
                   {selectedToken === token.id && (
                     <View style={styles.checkBadge}>
@@ -124,45 +141,42 @@ export default function WithdrawFundsScreen() {
               ))}
             </View>
 
-            {/* Choisissez le réseau */}
-            <Text style={[styles.sectionTitle, {marginTop: 8}]}>Choisissez le réseau</Text>
-            <View style={styles.gridContainer}>
-              {networks.map((net) => (
-                <TouchableOpacity 
-                  key={net.id} 
-                  style={[styles.gridItemCard, selectedNetwork === net.id && styles.gridItemCardActive]}
-                  onPress={() => setSelectedNetwork(net.id)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.itemIconContainer}>
-                    {renderNetworkIcon(net.id)}
-                  </View>
-                  <Text style={styles.itemName}>{net.name}</Text>
-                  
-                  {selectedNetwork === net.id && (
-                    <View style={styles.checkBadge}>
-                      <Ionicons name="checkmark" size={12} color="#FFFFFF" />
-                    </View>
-                  )}
-                </TouchableOpacity>
-              ))}
+            {/* Réseau détecté automatiquement */}
+            <View style={styles.detectedNetworkCard}>
+              <View style={styles.detectedNetworkLeft}>
+                <View style={styles.networkIconCircle}>
+                  {renderNetworkIcon(selectedNetwork)}
+                </View>
+                <View>
+                  <Text style={styles.networkTitle}>{t('withdraw.detected_network', 'Réseau blockchain détecté')}</Text>
+                  <Text style={styles.networkName}>{selectedNetwork} {t('withdraw.recommended_network', '(Recommandé)')}</Text>
+                </View>
+              </View>
+              <View style={styles.autoBadge}>
+                <Ionicons name="flash" size={12} color="#16A34A" style={{ marginRight: 3 }} />
+                <Text style={styles.autoBadgeText}>{t('common.auto', 'Auto')}</Text>
+              </View>
             </View>
 
             {/* Info Banner */}
             <View style={styles.infoBanner}>
               <View style={styles.infoIconCircle}>
-                <Ionicons name="information" size={16} color="#FFFFFF" />
+                <Ionicons name="shield-checkmark" size={16} color="#FFFFFF" />
               </View>
               <Text style={styles.infoBannerText}>
-                Assurez-vous que le réseau sélectionné est supporté par la plateforme de réception.
+                {t('withdraw.safety_notice', 'Conversion sécurisée garantie au meilleur taux de change vers votre monnaie locale.')}
               </Text>
             </View>
 
           </View>
 
           {/* Continue Button */}
-          <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('WithdrawFundsMethodScreen', { amount, currency, selectedToken, selectedNetwork })}>
-            <Text style={styles.btnContinueText}>Continuer</Text>
+          <TouchableOpacity 
+            style={styles.btnContinue} 
+            onPress={() => navigation.navigate('WithdrawFundsMethodScreen', { amount, currency: localCurrency, selectedToken, selectedNetwork })}
+          >
+            <Text style={styles.btnContinueText}>{t('btnContinue', 'Continuer')}</Text>
+            <Ionicons name="arrow-forward" size={18} color="#1A2840" style={{ marginLeft: 8 }} />
           </TouchableOpacity>
 
         </ScrollView>
@@ -270,11 +284,44 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 24,
   },
+  sectionHeaderBetween: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
   sectionTitle: {
     fontFamily: 'Inter_700Bold',
     fontSize: 14,
     color: '#1A2840',
+    marginBottom: 4,
+  },
+  sectionSubInstruction: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12,
+    color: '#64748B',
     marginBottom: 12,
+  },
+  detectedCountryBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  countryFlag: {
+    width: 16,
+    height: 12,
+    borderRadius: 2,
+    marginRight: 6,
+  },
+  detectedCountryText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    color: '#1E293B',
   },
   amountInputContainer: {
     flexDirection: 'row',
@@ -294,6 +341,19 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: '#1A2840',
     outlineStyle: 'none',
+  },
+  fixedCurrencyBadge: {
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+  fixedCurrencyText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 14,
+    color: '#1D4ED8',
   },
   currencySelector: {
     flexDirection: 'row',
@@ -317,6 +377,46 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#64748B',
     marginTop: 8,
+  },
+  detectedNetworkCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    padding: 12,
+    marginTop: 4,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  detectedNetworkLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  networkTitle: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    color: '#64748B',
+  },
+  networkName: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 13,
+    color: '#1A2840',
+    marginTop: 2,
+  },
+  autoBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  autoBadgeText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 11,
+    color: '#15803D',
   },
   divider: {
     height: 1,

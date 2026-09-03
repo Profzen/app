@@ -5,14 +5,16 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Platfo
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
 import AppSelect from '../components/AppSelect';
+import { useApp } from '../context/AppContext';
 
 const chainOptions = ['Polygon', 'Ethereum', 'Base', 'Solana', 'BNB Chain'].map((value) => ({value, label: value, isCrypto: true, cryptoSymbol: value}));
 const tokenOptions = ['DZY', 'USDC', 'USDT', 'POL', 'WBTC', 'ETH', 'SOL'].map((value) => ({value, label: value}));
 
 export default function SwapTokensScreen() {
+  const navigation = useNavigation();
+  const { t, user } = useApp();
   const [fromChain, setFromChain] = useState('Polygon');
   const [toChain, setToChain] = useState('Solana');
-  const navigation = useNavigation();
   const [fromAmount, setFromAmount] = useState('0,00');
   const [toAmount, setToAmount] = useState('0,00');
   const [fromToken, setFromToken] = useState('USDC');
@@ -26,40 +28,36 @@ export default function SwapTokensScreen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()} accessibilityLabel="Retour">
             <Ionicons name="chevron-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
-            <Text style={styles.pageTitle}>Échange de jetons</Text>
-            <Text style={styles.pageSubtitle}>Swap/Bridge tokens</Text>
+            <Text style={styles.pageTitle}>{t('swap.title', 'Échange de jetons')}</Text>
+            <Text style={styles.pageSubtitle}>{t('swap.subtitle', 'Swap / Bridge')}</Text>
           </View>
           <View style={styles.headerRightIcons}>
-            <TouchableOpacity style={styles.iconBtnRight}>
-              <Ionicons name="notifications-outline" size={20} color="#1A2840" />
-              <View style={styles.notificationDot} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnRight} onPress={() => navigation.navigate('RewardsScreen')}>
+            <TouchableOpacity style={styles.iconBtnRight} onPress={() => navigation.navigate('RewardsScreen')} accessibilityLabel="Récompenses">
               <Ionicons name="gift-outline" size={20} color="#1A2840" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnRight} onPress={() => navigation.navigate('MoreSettingsScreen')}>
+            <TouchableOpacity style={styles.iconBtnRight} onPress={() => navigation.navigate('MoreSettingsScreen')} accessibilityLabel="Paramètres">
               <Ionicons name="ellipsis-vertical" size={20} color="#1A2840" />
             </TouchableOpacity>
           </View>
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          <Text style={styles.introText}>Échangez vos jetons instantanément aux meilleurs taux.</Text>
+          <Text style={styles.introText}>{t('swap.intro', 'Échangez vos jetons instantanément aux meilleurs taux.')}</Text>
 
           {/* Chain Selectors */}
           <View style={styles.chainRow}>
             <View style={styles.chainCol}>
-              <Text style={styles.inputLabel}>DE LA CHAÎNE</Text>
-              <AppSelect value={fromChain} options={chainOptions} onChange={setFromChain} title="Choisir la chaîne source" style={styles.chainSelector} textStyle={styles.chainName} />
+              <Text style={styles.inputLabel}>{t('swap.from_chain', 'DE LA CHAÎNE')}</Text>
+              <AppSelect value={fromChain} options={chainOptions} onChange={setFromChain} title={t('swap.select_source_chain', 'Choisir la chaîne source')} style={styles.chainSelector} textStyle={styles.chainName} />
             </View>
             <View style={{width: 16}} />
             <View style={styles.chainCol}>
-              <Text style={styles.inputLabel}>À CHAÎNE</Text>
-              <AppSelect value={toChain} options={chainOptions} onChange={setToChain} title="Choisir la chaîne cible" style={styles.chainSelector} textStyle={styles.chainName} />
+              <Text style={styles.inputLabel}>{t('swap.to_chain', 'À CHAÎNE')}</Text>
+              <AppSelect value={toChain} options={chainOptions} onChange={setToChain} title={t('swap.select_target_chain', 'Choisir la chaîne cible')} style={styles.chainSelector} textStyle={styles.chainName} />
             </View>
           </View>
 
@@ -67,15 +65,15 @@ export default function SwapTokensScreen() {
           <View style={styles.dzyBanner}>
             <View style={styles.dzyBannerHeader}>
               <Ionicons name="rocket-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
-              <Text style={styles.dzyBannerTitle}>Le jeton DZY arrive bientôt !</Text>
+              <Text style={styles.dzyBannerTitle}>{t('swap.dzy_banner_title', 'Le jeton DZY arrive bientôt !')}</Text>
             </View>
             <Text style={styles.dzyBannerText}>
-              Le token natif de DizzitUp sera lancé au deuxième trimestre 2026. Vous pourrez bientôt échanger des DZY contre d'autres tokens !
+              {t('swap.dzy_banner_desc', "Le token natif de DizzitUp sera lancé prochainement. Vous pourrez échanger des DZY contre d'autres tokens !")}
             </Text>
           </View>
 
           {/* Quick Selection */}
-          <Text style={styles.inputLabel}>SÉLECTION RAPIDE - POLYGON</Text>
+          <Text style={styles.inputLabel}>{t('swap.quick_select', 'SÉLECTION RAPIDE - POLYGON')}</Text>
           <View style={styles.quickSelectionRow}>
             <TouchableOpacity style={styles.quickTokenCard} onPress={() => chooseQuickToken('DZY')}>
               <View style={[styles.tokenLogoWrapper, {borderColor: '#FFB800'}]}>
@@ -119,10 +117,10 @@ export default function SwapTokensScreen() {
             {/* From Input */}
             <View style={styles.inputBox}>
               <View style={styles.inputBoxHeader}>
-                <Text style={styles.inputLabel}>À PARTIR DU JETON</Text>
+                <Text style={styles.inputLabel}>{t('swap.from_token', 'À PARTIR DU JETON')}</Text>
                 <View style={styles.balanceInfo}>
                   <Ionicons name="wallet-outline" size={14} color="#D97706" style={{marginRight: 4}} />
-                  <Text style={styles.balanceValue}>0,0000 USDC</Text>
+                  <Text style={styles.balanceValue}>{user?.allBalances?.USDC || '0,00'} USDC</Text>
                   <TouchableOpacity>
                     <Text style={styles.maxText}>MAX</Text>
                   </TouchableOpacity>
@@ -155,10 +153,10 @@ export default function SwapTokensScreen() {
             {/* To Input */}
             <View style={styles.inputBox}>
               <View style={styles.inputBoxHeader}>
-                <Text style={styles.inputLabel}>À TOKEN (ESTIMATION)</Text>
+                <Text style={styles.inputLabel}>{t('swap.to_token', 'À TOKEN (ESTIMATION)')}</Text>
               </View>
               <View style={styles.inputRow}>
-                <AppSelect value={toToken} options={tokenOptions} onChange={setToToken} title="Jeton à recevoir" style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option.value} size={24} style={{marginRight: 6}} />} />
+                <AppSelect value={toToken} options={tokenOptions} onChange={setToToken} title={t('swap.select_target_token', 'Jeton à recevoir')} style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option.value} size={24} style={{marginRight: 6}} />} />
                 <View style={styles.amountInputContainer}>
                   <TextInput
                     style={styles.amountInput}
@@ -177,20 +175,20 @@ export default function SwapTokensScreen() {
             <View style={styles.walletStatusRow}>
               <View style={styles.walletStatusLeft}>
                 <View style={styles.greenDot} />
-                <Text style={styles.walletStatusLabel}>PORTEFEUILLE ACTIF (POLYGON)</Text>
+                <Text style={styles.walletStatusLabel}>{t('swap.active_wallet', 'PORTEFEUILLE ACTIF (POLYGON)')}</Text>
               </View>
               <View style={styles.walletStatusRight}>
-                <Text style={styles.walletAddress}>0x5C29...9b91</Text>
+                <Text style={styles.walletAddress}>{user?.evmAddress ? `${user.evmAddress.slice(0, 6)}...${user.evmAddress.slice(-4)}` : '0x5C29...9b91'}</Text>
                 <Ionicons name="copy-outline" size={16} color="#1A2840" style={{marginLeft: 8}} />
               </View>
             </View>
             <View style={styles.divider} />
             <View style={styles.walletStatusRow}>
-              <Text style={styles.walletStatusLabel}>SOLDE DISPONIBLE</Text>
+              <Text style={styles.walletStatusLabel}>{t('availableBalance', 'SOLDE DISPONIBLE')}</Text>
               <View style={styles.walletStatusRightCol}>
-                <Text style={styles.walletBalanceBold}>0 USDC</Text>
+                <Text style={styles.walletBalanceBold}>{user?.allBalances?.USDC || '0'} USDC</Text>
                 <TouchableOpacity>
-                  <Text style={styles.viewOnChainText}>VOIR SUR LA CHAÎNE</Text>
+                  <Text style={styles.viewOnChainText}>{t('swap.view_on_chain', 'VOIR SUR LA CHAÎNE')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -199,13 +197,13 @@ export default function SwapTokensScreen() {
           {/* Action Button */}
           <TouchableOpacity style={styles.btnAction} onPress={() => navigation.navigate('SuccessScreen')}>
             <Ionicons name="flash" size={20} color="#FFB800" style={{marginRight: 8}} />
-            <Text style={styles.btnActionText}>ÉCHANGEZ DES JETONS MAINTENANT</Text>
+            <Text style={styles.btnActionText}>{t('swap.swap_now', 'ÉCHANGEZ DES JETONS MAINTENANT')}</Text>
           </TouchableOpacity>
 
           {/* Footer Info */}
           <View style={styles.footerInfoRow}>
-            <Text style={styles.footerInfoText}>• GLISSEMENT 0,5%</Text>
-            <Text style={styles.footerInfoText}>• FRAIS DE RÉSEAU RÉDUITS</Text>
+            <Text style={styles.footerInfoText}>{t('swap.slippage', '• GLISSEMENT 0,5%')}</Text>
+            <Text style={styles.footerInfoText}>{t('swap.low_fee', '• FRAIS DE RÉSEAU RÉDUITS')}</Text>
           </View>
 
         </ScrollView>

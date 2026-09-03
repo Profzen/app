@@ -5,6 +5,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, 
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
 import BottomNavBar from '../components/BottomNavBar';
+import { useApp } from '../context/AppContext';
 
 const ACQUIRED_DATA = [
   { id: '1', label: 'Cashback Rewards', amount: '940.00 DZY', percentage: '40%', color: '#10B981', value: 40 },
@@ -25,6 +26,7 @@ const USAGE_DATA = [
 
 export default function RewardsScreen() {
   const navigation = useNavigation();
+  const { t } = useApp();
   const [currentViewMode, setCurrentViewMode] = useState('usages'); // 'usages' or 'acquis'
 
   const activeData = currentViewMode === 'usages' ? USAGE_DATA : ACQUIRED_DATA;
@@ -42,10 +44,10 @@ export default function RewardsScreen() {
         
         {/* Header Top Bar */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.iconSquareBtn} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.iconSquareBtn} onPress={() => navigation.goBack()} accessibilityLabel="Retour">
             <Ionicons name="arrow-back" size={20} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>DZY Rewards</Text>
+          <Text style={styles.headerTitle}>{t('rewards.title', 'DZY Rewards')}</Text>
           <View style={styles.headerRightActions}>
             <TouchableOpacity style={styles.iconSquareBtn}>
               <Ionicons name="help-circle-outline" size={20} color="#1A2840" />
@@ -84,7 +86,7 @@ export default function RewardsScreen() {
               {/* Middle Column: + Buy DZY Logo & Cashback Note */}
               <View style={styles.cardCenterCol}>
                 <TouchableOpacity style={styles.btnBuyDzy} onPress={() => navigation.navigate('SwapTokensScreen')} activeOpacity={0.85}>
-                  <Text style={styles.btnBuyDzyText}>+ Buy DZY</Text>
+                  <Text style={styles.btnBuyDzyText}>+ {t('btnBuy', 'Buy')} DZY</Text>
                 </TouchableOpacity>
 
                 <View style={styles.circleLogoBox}>
@@ -92,7 +94,7 @@ export default function RewardsScreen() {
                 </View>
 
                 <View style={styles.cashbackBadge}>
-                  <Text style={styles.cashbackBadgeTitle}>Benefit</Text>
+                  <Text style={styles.cashbackBadgeTitle}>{t('rewards.benefit', 'Benefit')}</Text>
                   <Text style={styles.cashbackBadgeHighlight}>5% Cashback</Text>
                 </View>
               </View>
@@ -102,10 +104,10 @@ export default function RewardsScreen() {
               {/* Right Column: Balance */}
               <View style={styles.cardCol}>
                 <View style={styles.colHeaderRow}>
-                  <Text style={styles.colTitleLabel}>Balance</Text>
+                  <Text style={styles.colTitleLabel}>{t('totalBalance', 'Balance')}</Text>
                   <Ionicons name="information-circle-outline" size={13} color="#FFC759" style={{ marginLeft: 3 }} />
                 </View>
-                <Text style={styles.colSubtext} numberOfLines={1}>Disponible</Text>
+                <Text style={styles.colSubtext} numberOfLines={1}>{t('common.wallet.available', 'Disponible')}</Text>
 
                 <View style={styles.amountContainer}>
                   <Text style={styles.colAmountMain} numberOfLines={1} adjustsFontSizeToFit>845.62</Text>

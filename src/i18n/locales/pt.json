@@ -2678,6 +2678,56 @@
       "back": "Voltar",
       "save": "Salvar Beneficiário",
       "update": "Atualizar Beneficiário"
+    },
+    "edit": {
+      "edit_title_new": "Novo Beneficiário",
+      "edit_title_update": "Editar",
+      "personal_info": "Informações Pessoais",
+      "avatar": "Avatar",
+      "first_name": "Nome",
+      "first_name_placeholder": "Ex: John",
+      "last_name": "Sobrenome",
+      "last_name_placeholder": "Ex: Doe",
+      "relation": "Relação",
+      "contact_details": "Detalhes de Contato",
+      "phone": "Telefone",
+      "phone_placeholder": "+228...",
+      "email": "E-mail",
+      "email_placeholder": "Ex: email@example.com",
+      "country": "País",
+      "country_placeholder": "Ex: Togo",
+      "city": "Cidade",
+      "city_placeholder": "Ex: Lomé",
+      "banks_wallets": "Bancos e Carteiras",
+      "bank_name": "Nome do Banco",
+      "bank_name_placeholder": "Ex: Ecobank",
+      "bank_account": "Número da Conta / IBAN",
+      "evm_wallet": "EVM Wallet",
+      "evm_wallet_placeholder": "0x...",
+      "solana_wallet": "Solana Wallet",
+      "btn_save": "Salvar",
+      "relation_family": "Família",
+      "relation_friend": "Amigo",
+      "relation_colleague": "Colega",
+      "relation_other": "Outro",
+      "sync_success": "Carteiras sincronizadas com sucesso",
+      "sync_error": "Erro de sincronização",
+      "sync_not_found": "Nenhuma carteira encontrada",
+      "sync_req_phone": "Por favor, insira um telefone",
+      "save_req_name": "O nome é obrigatório",
+      "save_req_contact": "O telefone ou email é obrigatório",
+      "save_success_add": "Beneficiário adicionado",
+      "save_success_edit": "Beneficiário modificado",
+      "save_error": "Erro ao salvar"
+    },
+    "profile": {
+      "info_tab": "Informação",
+      "history_tab": "Histórico",
+      "not_provided": "Não fornecido",
+      "verified_contact": "Contato verificado",
+      "group": "Grupo",
+      "sponsor": "Patrocinador",
+      "yes": "Sim"
     }
   },
   "footer": {
@@ -3229,7 +3279,8 @@
       "send": "Enviar",
       "my_assets": "Meus ativos",
       "history": "História",
-      "cash_out": "Saque"
+      "cash_out": "Saque",
+      "swap": "Troca"
     }
   },
   "@": "@",
@@ -3821,5 +3872,10 @@
     "refer_store": "Indicar uma loja",
     "source_africa": "Fontes na África",
     "scan_cash": "Escanear e Dinheiro"
-  }
+  },
+  "tabHome": "Início",
+  "tabContacts": "Contatos",
+  "tabShops": "Lojas",
+  "tabSwap": "Troca",
+  "tabMore": "Mais"
 }
