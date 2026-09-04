@@ -11,7 +11,7 @@ export const FeaturesBanner = () => {
     <View style={styles.container}>
       <View style={styles.featureItem}>
         <View style={styles.iconContainer}>
-          <Ionicons name="shield-checkmark-outline" size={22} color={theme.colors.accent} />
+          <Ionicons name="shield-checkmark-outline" size={22} color={theme.colors.primary} />
         </View>
         <Text style={styles.featureText}>
           {t('features.secureMoney', "Soutenez vos familles en Afrique tout en sécurisant l'usage de vos fonds")}
@@ -22,7 +22,7 @@ export const FeaturesBanner = () => {
 
       <View style={styles.featureItem}>
         <View style={styles.iconContainer}>
-          <Ionicons name="map-outline" size={22} color={theme.colors.accent} />
+          <Ionicons name="map-outline" size={22} color={theme.colors.primary} />
         </View>
         <Text style={styles.featureText}>
           {t('features.allAfrica', "Sur toute l'Afrique\n(54 pays)")}
@@ -33,7 +33,7 @@ export const FeaturesBanner = () => {
 
       <View style={styles.featureItem}>
         <View style={styles.iconContainer}>
-          <Ionicons name="globe-outline" size={22} color={theme.colors.accent} />
+          <Ionicons name="globe-outline" size={22} color={theme.colors.primary} />
         </View>
         <Text style={styles.featureText}>
           {t('features.bestPrice', "Sourcez produits et services en Afrique au meilleur rapport Qualité/Prix")}
@@ -73,8 +73,8 @@ const styles = StyleSheet.create({
   featureText: {
     fontFamily: theme.typography.fontFamily.medium,
     fontSize: 10,
-    color: theme.colors.textSecondary,
     textAlign: 'center',
+    color: theme.colors.primary,
     lineHeight: 14,
   },
   divider: {

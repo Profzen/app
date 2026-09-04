@@ -102,6 +102,11 @@ export const TRANSLATIONS = {
     langSwitchedToastTitle: "Langue modifiée",
     langSwitchedToastMessage: "L'application est maintenant en Français",
     
+    // Auth & Login
+    "common.comingSoon": "Bientôt disponible",
+    "auth.socialLoginComingSoon": "La connexion avec {{provider}} n'est pas encore disponible.",
+    "login.phoneNotAvailable": "La connexion par numéro de téléphone n'est pas encore disponible. Veuillez utiliser votre adresse email.",
+    
     // Beneficiaries
     "beneficiary.edit.edit_title_new": "Nouveau Bénéficiaire",
     "beneficiary.edit.edit_title_update": "Modifier",
@@ -284,7 +289,12 @@ export const TRANSLATIONS = {
     // Toast messages
     langSwitchedToastTitle: "Language Updated",
     langSwitchedToastMessage: "App is now set to English",
-
+    
+    // Auth & Login
+    "common.comingSoon": "Coming soon",
+    "auth.socialLoginComingSoon": "Logging in with {{provider}} is not available yet.",
+    "login.phoneNotAvailable": "Phone number authentication is not available yet. Please use your email address.",
+    
     // Beneficiaries
     "beneficiary.edit.edit_title_new": "New Beneficiary",
     "beneficiary.edit.edit_title_update": "Edit",
@@ -366,6 +376,11 @@ export const TRANSLATIONS = {
     "contacts.quick_action_5.subtitle": "Invite friends\nand earn\n$5 in DZY",
   },
   pt: {
+    // Auth & Login
+    "common.comingSoon": "Em breve",
+    "auth.socialLoginComingSoon": "O login com {{provider}} ainda não está disponível.",
+    "login.phoneNotAvailable": "A autenticação por número de telefone ainda não está disponível. Por favor, use seu endereço de e-mail.",
+    
     // Beneficiaries
     "beneficiary.edit.edit_title_new": "Novo Beneficiário",
     "beneficiary.edit.edit_title_update": "Editar",
@@ -447,6 +462,11 @@ export const TRANSLATIONS = {
     "contacts.quick_action_5.subtitle": "Convide amigos\ne ganhe\n$5 em DZY",
   },
   ar: {
+    // Auth & Login
+    "common.comingSoon": "قريباً",
+    "auth.socialLoginComingSoon": "تسجيل الدخول باستخدام {{provider}} غير متوفر بعد.",
+    "login.phoneNotAvailable": "المصادقة برقم الهاتف غير متوفرة بعد. يرجى استخدام عنوان بريدك الإلكتروني.",
+    
     // Beneficiaries
     "beneficiary.edit.edit_title_new": "مستفيد جديد",
     "beneficiary.edit.edit_title_update": "تعديل",
@@ -528,6 +548,11 @@ export const TRANSLATIONS = {
     "contacts.quick_action_5.subtitle": "ادعُ أصدقاءك\nواربح\n$5 DZY",
   },
   am: {
+    // Auth & Login
+    "common.comingSoon": "በቅርቡ ይመጣል",
+    "auth.socialLoginComingSoon": "በ{{provider}} መግባት ገና አልተገኘም።",
+    "login.phoneNotAvailable": "የስልክ ቁጥር ማረጋገጫ ገና አልተገኘም። እባክዎ የኢሜይል አድራሻዎን ይጠቀሙ።",
+    
     // Beneficiaries
     "beneficiary.edit.edit_title_new": "አዲስ ተጠቃሚ",
     "beneficiary.edit.edit_title_update": "አስተካክል",

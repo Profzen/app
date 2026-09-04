@@ -20,7 +20,6 @@ import { isSmallScreen, isShortScreen } from '../utils/responsive';
 export default function HomeScreen() {
   const navigation = useNavigation();
   const { language, toggleLanguage, t, user, isUserLoading } = useApp();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [activeSlide, setActiveSlide] = useState(0);
   const [walletBalances, setWalletBalances] = useState({});
@@ -371,8 +370,6 @@ export default function HomeScreen() {
 
         <BottomNavBar
           activeTab="Home"
-          isMenuOpen={isMenuOpen}
-          onCenterButtonPress={() => setIsMenuOpen(!isMenuOpen)}
         />
       </View>
     </SafeAreaView>

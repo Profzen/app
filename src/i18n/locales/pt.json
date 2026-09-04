@@ -506,7 +506,8 @@
     "back": "Voltar",
     "savePin": "Salvar PIN",
     "successTitle": "Parabéns!",
-    "successSubtitle": "Sua conta foi criada com sucesso."
+    "successSubtitle": "Sua conta foi criada com sucesso.",
+    "phoneNotAvailable": "A autenticação por número de telefone ainda não está disponível. Por favor, use seu endereço de e-mail."
   },
   "common": {
     "selectServiceGateway": {

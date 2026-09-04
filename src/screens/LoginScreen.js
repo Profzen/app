@@ -1,7 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, StatusBar, KeyboardAvoidingView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, StatusBar, KeyboardAvoidingView, Alert, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
 import { DizzitInput } from '../components/DizzitInput';
@@ -9,6 +9,7 @@ import { DizzitButton } from '../components/DizzitButton';
 import { SocialLogins } from '../components/SocialLogins';
 import { FeaturesBanner } from '../components/FeaturesBanner';
 import { LanguageSelector } from '../components/LanguageSelector';
+import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../services/supabaseClient';
 
@@ -21,6 +22,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '', type: 'info' });
   const [errorMessage, setErrorMessage] = useState(null);
 
   const handleLogin = async () => {
@@ -109,10 +111,17 @@ export default function LoginScreen() {
               </Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={[styles.tab, activeTab === 'phone' && styles.activeTab]}
-              onPress={() => setActiveTab('phone')}
+              style={[styles.tab, { opacity: 0.5 }]}
+              onPress={() => {
+                setToastInfo({
+                  visible: true,
+                  title: t('common.comingSoon', 'Coming Soon'),
+                  message: t('auth.phoneNotAvailable', 'Phone number authentication is not available yet. Please use your email address.'),
+                  type: 'info'
+                });
+              }}
             >
-              <Text style={[styles.tabText, activeTab === 'phone' && styles.activeTabText]}>
+              <Text style={[styles.tabText, { color: theme.colors.textSecondary }]}>
                 {t('login.tab_phone', 'Phone Number')}
               </Text>
             </TouchableOpacity>
@@ -184,12 +193,19 @@ export default function LoginScreen() {
         {/* Signup Link */}
         <View style={styles.signupContainer}>
           <Text style={styles.signupText}>{language === 'fr' ? "Vous n'avez pas de compte ? " : "Don't have an account? "}</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('RegisterScreen')}>
+          <TouchableOpacity onPress={() => Linking.openURL('https://dizzitup.com/user-registration-login?mode=signup')}>
             <Text style={styles.signupLink}>{language === 'fr' ? "S'inscrire" : 'Sign up'}</Text>
           </TouchableOpacity>
         </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      <AppToast 
+        visible={toastInfo.visible} 
+        title={toastInfo.title} 
+        message={toastInfo.message} 
+        type={toastInfo.type} 
+        onClose={() => setToastInfo({ ...toastInfo, visible: false })} 
+      />
     </SafeAreaView>
   );
 }

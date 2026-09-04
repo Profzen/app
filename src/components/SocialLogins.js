@@ -12,15 +12,13 @@ export const SocialLogins = ({ variant = 'row' }) => {
   const dividerText = t('auth.orContinueWith', 'or continue with');
 
   const handleSocialLogin = async (providerName) => {
-    if (providerName === 'Facebook' || providerName === 'X') {
-      setToastInfo({
-        visible: true,
-        title: t('common.comingSoon', 'Coming soon'),
-        message: t('auth.socialLoginComingSoon', `Logging in with ${providerName} will be available soon.`).replace('{{provider}}', providerName),
-        type: 'info'
-      });
-      return;
-    }
+    setToastInfo({
+      visible: true,
+      title: t('common.comingSoon', 'Coming soon'),
+      message: t('auth.socialLoginComingSoon', `Logging in with ${providerName} is not available yet.`).replace('{{provider}}', providerName),
+      type: 'info'
+    });
+    return;
 
     try {
       const providerId = providerName.toLowerCase();
@@ -138,6 +136,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.radii.md,
     justifyContent: 'center',
     alignItems: 'center',
+    opacity: 0.5,
   },
   socialText: {
     fontFamily: theme.typography.fontFamily.medium,
@@ -164,6 +163,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
+    opacity: 0.5,
   },
   squareText: {
     fontFamily: theme.typography.fontFamily.medium,

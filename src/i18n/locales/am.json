@@ -553,7 +553,8 @@
     "back": "ተመለስ",
     "savePin": "ፒን አስቀምጥ",
     "successTitle": "እንኳን ደስ አላችሁ!",
-    "successSubtitle": "መለያዎ በተሳካ ሁኔታ ተፈጥሯል።"
+    "successSubtitle": "መለያዎ በተሳካ ሁኔታ ተፈጥሯል።",
+    "phoneNotAvailable": "የስልክ ቁጥር ማረጋገጫ ገና አልተገኘም። እባክዎ የኢሜይል አድራሻዎን ይጠቀሙ።"
   },
   "common": {
     "selectServiceGateway": {

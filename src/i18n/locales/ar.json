@@ -506,7 +506,8 @@
     "back": "رجوع",
     "savePin": "حفظ الرمز",
     "successTitle": "تهانينا!",
-    "successSubtitle": "تم إنشاء حسابك بنجاح."
+    "successSubtitle": "تم إنشاء حسابك بنجاح.",
+    "phoneNotAvailable": "المصادقة برقم الهاتف غير متوفرة بعد. يرجى استخدام عنوان بريدك الإلكتروني."
   },
   "profile": {
     "editProfile": "تعديل الملف الشخصي",

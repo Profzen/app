@@ -505,7 +505,8 @@
     "back": "Retour",
     "savePin": "Enregistrer le PIN",
     "successTitle": "Félicitations !",
-    "successSubtitle": "Votre compte a été créé avec succès."
+    "successSubtitle": "Votre compte a été créé avec succès.",
+    "phoneNotAvailable": "La connexion par numéro de téléphone n'est pas encore disponible. Veuillez utiliser votre adresse email."
   },
   "common": {
     "selectServiceGateway": {
