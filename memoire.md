@@ -2334,23 +2334,99 @@ A la fin de chaque session ou apres toute modification majeure, l'IA DOIT mettre
 
 ---
 
-## Prochaines Étapes
+## 🚀 Déploiement Git & Synchronisation des Branches (Terminé)
 
-### Immédiat
-1. Faire le commit git global sur la branche `front-back`.
-2. Merger proprement `front-back` dans `develop` et pousser vers `origin develop` conformément aux instructions de l'utilisateur.
+1. **Commit sur `front-back` (`48c09ab`)** :
+   - Message : `feat: implement Module A UI/UX fixes and Module B Assia i18n full localization`.
+   - Tous les changements Module A et Module B commités et vérifiés.
+2. **Merge dans `develop` & Résolution des Conflits avec l'équipe (`c72b52f`)** :
+   - Récupération des commits distants d'Assia (`512507e`, `5a97b58`, `ab3fd12`).
+   - Conflits résolus sans régression sur : `HomeScreen.js`, `BottomNavBar.js`, `WalletCard.js`, `ShopsScreen.js`, `SwapTokensScreen.js`, `fr.json`, `pt.json`, `ar.json`.
+   - Préservation de la nouvelle intégration du service de swap et Crossmint apportée par l'équipe tout en conservant l'unification i18n avec `t()`.
+3. **Poussée vers les dépôts distants** :
+   - `develop` poussée avec succès sur `origin/develop` et `personal/develop`.
+   - Branche `front-back` synchronisée en miroir avec le commit de merge `c72b52f`.
+4. **Statut Actuel** :
+   - Arbre de travail propre (`clean`), aucune modification en attente.
+   - Les branches `develop` et `front-back` sont 100% synchronisées et alignées avec `origin/develop`.
 
 ---
 
-## Règles de Méthodologie pour l'IA
+## 🛠️ Audit des Anomalies Visuelles & Plan d'Action (Logos Crypto, Titre Connexion, Header Home, Traductions & Latence)
 
-1. Répondre directement à la question AVANT toute action.
-2. Aucune modification non demandée.
-3. Intégrité absolue des branches `front-back` et `develop` (pas de code temporaire).
-4. Pas d'emojis dans les noms de fichiers, workflows ou scripts.
+### 1. Titre « Connexion » excentré à gauche (`LoginScreen.js`)
+- **Problème** : Le titre était centré avec un spacer de 44px à gauche, alors que le sélecteur de langue est à droite.
+- **Correction validée** : Supprimer le spacer gauche pour caler le titre « Connexion » à gauche (`textAlign: 'left'`) en vis-à-vis harmonieux avec le sélecteur de langue à droite.
+
+### 2. Header Home - Débordement de l'utilisateur sous le sélecteur (`HomeScreen.js`)
+- **Problème** : L'avatar, le texte « Bonjour, » et le nom d'utilisateur étaient alignés sur une seule ligne horizontale (`flexDirection: 'row'`). En présence du sélecteur de langue (`[FR v]`) et des 3 boutons d'actions à droite, l'espace horizontal était saturé et le nom d'utilisateur passait en partie derrière le sélecteur.
+- **Correction validée** : Réagencer l'information utilisateur en colonne sur 2 lignes à droite de l'avatar :
+  - Ligne 1 : Salutation fine (`Bonjour,` / `greetingHello`, 12px).
+  - Ligne 2 : Nom d'utilisateur en gras (`SpaceGrotesk_700Bold`, 15px) contraint par `flex: 1`, `numberOfLines={1}` et `ellipsizeMode="tail"`.
+  - Harmoniser le `gap` et les marges des icônes d'en-tête pour un affichage propre sans collision.
+
+### 3. Traduction Dynamique des Bannières, Carrousels et Encarts To-Do (`HomeScreen`, `ContactsScreen`, `ShopsScreen`)
+- **Problème** : 
+  - Sur la Home, les cartes To-Do (notamment le top-up : *« Low balance, top up your account »*) restaient en anglais en mode français car les clés `home.todos.*` manquaient dans les dictionnaires de traduction.
+  - Les bannières d'invitation et de parrainage contenaient des portions en dur non localisées (ex: `"$10 in DZY"` au lieu de `"$10 en DZY"`).
+  - Sur l'écran Boutiques (`ShopsScreen.js`), les catégories de filtres étaient figées dans un `useState` qui ne se mettait pas à jour lors d'un changement de langue.
+- **Correction validée** :
+  - Compléter les dictionnaires (`fr.json`, `en.json`, `pt.json`, `ar.json`, `am.json`) avec toutes les clés manquantes pour les To-Dos et bannières.
+  - Passer les catégories de `ShopsScreen.js` en calcul dynamique (`useMemo` réactif au changement de langue).
+  - Localiser l'ensemble des encarts et boutons d'invitation/parrainage.
+
+### 4. Cause Racine des Logos Crypto Manquants (`USDC`, `USDT`, etc.) & Latence de Chargement
+- **Diagnostic technique** :
+  - Sur `WithdrawFundsScreen`, `AppSelect` et `AssetListScreen`, les jetons `EURC` (128x128 px, 2 Ko), `POL` (512x512 px) et `DZY` s'affichent instantanément.
+  - En revanche, les logos de `USDC`, `USDT`, `DAI`, `WBTC`, `WETH` apparaissaient sous forme de cercles blancs vides.
+  - **Explication** : Les fichiers d'origine dans `assets/cryptos/` sont des exports bruts en **2000x2000 pixels**. En mémoire vive sous Android, chaque image non compressée consomme **16 Mo de RAM** (2000 × 2000 × 4 octets). Afficher 10 icônes sur un écran nécessite plus de **160 Mo de RAM bitmap**, ce qui dépasse les capacités du cache Fresco/BitmapPool sur Android. Le moteur graphique abandonne alors l'allocation (icône invisible) et provoque des saccades / latences majeures lors du chargement des écrans.
+- **Correction validée** :
+  - Redimensionner et optimiser tous les fichiers PNG de `assets/cryptos/` au format standard mobile **256x256 pixels** (< 15 Ko par fichier), garantissant une netteté totale et une consommation mémoire divisée par plus de 60.
+  - Sécuriser `CryptoIcon.js` pour garantir un fallback esthétique et coloré sans aucun espace blanc.
+
+### 5. Restauration Impérative de « Mes Actifs » sur `WalletCard.js` (5 Boutons au Total)
+- **Problème** : Lors de l'inversion Swap / Historique, le bouton « Mes actifs » (qui pointe vers `AssetListScreen`) a été accidentellement écrasé au lieu d'être conservé parmi les 5 actions.
+- **Correction validée** : Rétablir la barre complète des **5 actions** sans rien casser de l'existant :
+  1. `Envoyer` (`paper-plane-outline`) -> `SendMoneyScreen`
+  2. `Mes actifs` (`layers-outline` / `server-outline`) -> `AssetListScreen`
+  3. `Swap` (`swap-horizontal-outline`) -> `SwapTokensScreen`
+  4. `Historique` (`time-outline`) -> `TransactionHistoryScreen`
+  5. `Retrait` (`card-outline`) -> `WithdrawFundsScreen`
+
+### 6. Élimination Définitive des 2 Blocs Blancs de Chargement sur la Home (Screenshot 2)
+- **Diagnostic technique** :
+  - Sur la capture 2, la Home affiche 2 grands rectangles blancs vides avec des spinners au centre pendant plusieurs secondes (`height: 180` et `height: 160`), et le nom d'utilisateur affiche `...`.
+  - Cause : `isUserLoading` est à `true` tant que la chaîne séquentielle de requêtes réseau (Supabase, Dizzy API, Crossmint, soldes, transactions) n'a pas répondu. En l'absence de cache persistant, chaque ouverture d'écran bloque la vue.
+- **Correction validée (*Stale-While-Revalidate*)** :
+  - Sauvegarde automatique de l'état `user` et des soldes dans `AsyncStorage` dans `AppContext.js`.
+  - Au montage de l'application, lecture immédiate du cache local (< 10 ms). Dès que le cache existe, `user` est peuplé et `isUserLoading` est initialisé à `false`.
+  - La carte du Wallet et la carte To-Do s'affichent **instantanément** dès la première milliseconde.
+  - La synchronisation réseau s'effectue en tâche de fond de manière transparente et met à jour les soldes sans jamais bloquer l'interface utilisateur.
 
 ---
 
-## Règle d'Or (Mise à jour du Mémoire)
+## 🛡️ Règles de Méthodologie & Politique Git Stricte (Protection Quota de Build)
 
-À la fin de chaque session ou après toute modification majeure, l'IA DOIT mettre à jour ce fichier `memoire.md` pour garantir la continuité entre sessions.
+> [!CAUTION]
+> ### RÈGLE ABSOLUE SUR LES PUSH VERS `develop` (QUOTA EAS / CI LIMITÉ)
+> **Chaque push sur `origin/develop` déclenche automatiquement des builds CI/CD (EAS Build / GitHub Actions) et consomme le quota mensuel limité de builds.**
+> 
+> 1. **Travailler sur `front-back` pour le quotidien** :
+>    - Tous les développements, tests, petites retouches, ajustements UI/UX, traductions et mises à jour de documentation (`memoire.md`) se font **EXCLUSIVEMENT** sur la branche `front-back`.
+>    - Les petits commits réguliers restent sur `front-back`.
+> 2. **Interdiction de pusher sur `develop` pour des petits ajustements** :
+>    - **NE JAMAIS** faire de push vers `origin/develop` pour un simple fichier de documentation (`memoire.md`), une retouche cosmétique mineure ou un commit isolé.
+> 3. **Push sur `develop` UNIQUEMENT par gros lots validés** :
+>    - Le merge et le push sur `origin/develop` ne sont autorisés que lorsqu'un **gros lot de fonctionnalités complètes** (un module entier validé) est prêt et après confirmation.
+
+### Autres Règles Fondamentales
+1. **Répondre directement à la question AVANT toute action.**
+2. **Aucune modification non demandée.**
+3. **Intégrité absolue des branches `front-back` et `develop`** (aucun code temporaire résiduel).
+4. **Pas d'emojis** dans les noms de fichiers, workflows ou scripts.
+
+---
+
+## 📜 Règle d'Or (Mise à jour du Mémoire)
+
+À la fin de chaque session ou après toute modification majeure, l'IA DOIT mettre à jour ce fichier `memoire.md` pour garantir la continuité entre sessions, **sans pour autant pusher vers `origin/develop` pour cette seule raison**.

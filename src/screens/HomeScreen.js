@@ -88,8 +88,8 @@ export default function HomeScreen() {
       icon: 'warning-outline',
       iconColor: '#EF4444',
       iconBgColor: '#FEF2F2',
-      title: t('home.todos.low_balance.title', 'Low balance,\ntop up your account'),
-      buttonText: t('home.todos.low_balance.button', 'Top up'),
+      title: t('home.todos.low_balance.title', 'Solde faible,\nrechargez votre compte'),
+      buttonText: t('home.todos.low_balance.button', 'Recharger'),
       buttonColor: '#EF4444',
       buttonBgColor: '#FEF2F2',
       route: 'TopUpScreen'
@@ -102,8 +102,8 @@ export default function HomeScreen() {
       icon: 'shield-checkmark-outline',
       iconColor: '#3B82F6',
       iconBgColor: '#EFF6FF',
-      title: t('home.todos.complete_profile.title', 'Complete your profile\nfor more security'),
-      buttonText: t('home.todos.complete_profile.button', 'Complete'),
+      title: t('home.todos.complete_profile.title', 'Complétez votre profil\npour plus de sécurité'),
+      buttonText: t('home.todos.complete_profile.button', 'Compléter'),
       buttonColor: '#3B82F6',
       buttonBgColor: '#EFF6FF',
       route: 'SecureAccountScreen'
@@ -117,11 +117,11 @@ export default function HomeScreen() {
       iconColor: '#8B5CF6',
       iconBgColor: '#F5F3FF',
       title: user?.role === 'merchant'
-        ? t('home.todos.merchant_dashboard.title', 'Access your Business\nDashboard')
-        : t('home.todos.create_store.title', 'Create your DZYStore\nand start selling'),
+        ? t('home.todos.merchant_dashboard.title', 'Accéder à votre\nTableau de bord Pro')
+        : t('home.todos.create_store.title', 'Créez votre DZYStore\net commencez à vendre'),
       buttonText: user?.role === 'merchant'
-        ? t('home.todos.merchant_dashboard.button', 'Access')
-        : t('home.todos.create_store.button', 'Create'),
+        ? t('home.todos.merchant_dashboard.button', 'Accéder')
+        : t('home.todos.create_store.button', 'Créer'),
       buttonColor: '#8B5CF6',
       buttonBgColor: '#F5F3FF',
       route: user?.role === 'merchant' ? 'BusinessAccountScreen' : 'ShopsScreen'
@@ -156,8 +156,12 @@ export default function HomeScreen() {
                   ) : null}
                 </View>
               </View>
-                <Text style={styles.greetingText}>{t('greetingHello', 'Bonjour,')}</Text>
-                <Text style={styles.nameText} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{isUserLoading ? '...' : (user?.name || 'Utilisateur').split(' ')[0]}</Text>
+              <View style={styles.userTextCol}>
+                <Text style={styles.greetingText} numberOfLines={1}>{t('greetingHello', 'Bonjour,')}</Text>
+                <Text style={styles.nameText} numberOfLines={1} ellipsizeMode="tail">
+                  {isUserLoading && !user?.name ? '...' : (user?.name || 'Utilisateur').split(' ')[0]}
+                </Text>
+              </View>
             </TouchableOpacity>
             <View style={styles.headerIcons}>
               <LanguageSelector />
@@ -174,7 +178,7 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          {isUserLoading ? (
+          {isUserLoading && !user?.id ? (
             <View style={{ height: 180, marginHorizontal: isSmallScreen ? 14 : 20, marginTop: 8, marginBottom: 8, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', borderRadius: 20, borderWidth: 1, borderColor: '#E2E8F0' }}>
               <ActivityIndicator size="large" color="#FFC759" />
             </View>
@@ -182,7 +186,7 @@ export default function HomeScreen() {
             <WalletCard balances={walletBalances} />
           )}
 
-          {isUserLoading ? (
+          {isUserLoading && !user?.id ? (
             <View style={[styles.todoCard, { height: 160, justifyContent: 'center', alignItems: 'center' }]}>
               <ActivityIndicator size="small" color="#94A3B8" />
             </View>
@@ -220,7 +224,7 @@ export default function HomeScreen() {
                   <View style={styles.inviteContent}>
                     <Text style={styles.inviteTitle}>
                       {t('home.inviteBannerTitle_1', "Invitez vos amis\net gagnez ")}
-                      <Text style={{ color: '#3B82F6' }}>$5 in DZY</Text>
+                      <Text style={{ color: '#3B82F6' }}>{t('home.inviteBannerAmount', "$5 en DZY")}</Text>
                     </Text>
                     <Text style={styles.inviteSubtitle}>
                       {t('home.inviteBannerDesc', "Envoyez des fonds, achetez,\npayez vos factures et gagnez.")}
@@ -249,7 +253,7 @@ export default function HomeScreen() {
                   <View style={styles.inviteContent}>
                     <Text style={styles.inviteTitle}>
                       {t('home.referBannerTitle_1', "Référencez un commerce\net gagnez ")}
-                      <Text style={{ color: '#10B981' }}>$10 in DZY</Text>
+                      <Text style={{ color: '#10B981' }}>{t('home.referBannerAmount', "$10 en DZY")}</Text>
                     </Text>
                     <Text style={styles.inviteSubtitle}>
                       {t('home.referBannerDesc', "Recommandez un business\net gagnez des récompenses.")}
@@ -396,6 +400,10 @@ const styles = StyleSheet.create({
     flex: 1, 
     marginRight: 6 
   },
+  userTextCol: {
+    flex: 1,
+    justifyContent: 'center',
+  },
   avatarRing: { width: 44, height: 44, borderRadius: 22, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginRight: 10 },
   merchantRing: { borderColor: '#8B5CF6' },
   userRing: { borderColor: '#3B82F6' },
@@ -409,11 +417,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden' 
   },
   avatarImage: { ...StyleSheet.absoluteFill, width: 38, height: 38, borderRadius: 19 },
-  greetingText: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#1A2840' },
-  nameText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#1A2840' },
+  greetingText: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#64748B', lineHeight: 15 },
+  nameText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#1A2840', lineHeight: 19 },
   merchantBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#8B5CF6', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginLeft: 6 },
   merchantBadgeText: { fontFamily: 'Inter_700Bold', fontSize: 9, color: '#FFFFFF', letterSpacing: 0.5 },
-  headerIcons: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  headerIcons: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   iconButton: { 
     width: 34, 
     height: 34, 
@@ -422,7 +430,6 @@ const styles = StyleSheet.create({
     borderColor: '#F3F4F6', 
     justifyContent: 'center', 
     alignItems: 'center', 
-    marginLeft: isSmallScreen ? 4 : 8, 
     position: 'relative', 
     backgroundColor: '#FFFFFF' 
   },

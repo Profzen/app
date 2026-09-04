@@ -3511,7 +3511,10 @@
     "inviteBannerTitle_1": "Invite friends\nand earn ",
     "inviteBannerTitle_2": "$5 in DZY",
     "inviteBannerDesc": "Send Stablecoins, shop, pay bills, and earn rewards together.",
-    "btnInviteNow": "Invite now"
+    "btnInviteNow": "Invite now",
+    "inviteBannerAmount": " in DZY",
+    "referBannerTitle_1": "Refer a Store\nand earn ",
+    "referBannerAmount": " in DZY"
   },
   "personalAccount": {
     "title": "Personal Account",
@@ -3715,7 +3718,7 @@
     "sending": "Sending...",
     "btnSendMessage": "Send Message"
   },
-  "shopsFilterAll": "All",
+  "shopsFilterAll": "All Shops",
   "shopsToggleGrid": "Grid View",
   "shopsToggleList": "List View",
   "shopsSeeMore": "See more",
@@ -4104,7 +4107,7 @@
   "shopsFilterNearby": "Nearby",
   "shopsFilterMarketplace": "Marketplace & High-Tech",
   "shopsFilterSupermarket": "Supermarket & Groceries",
-  "shopsFilterFashion": "Fashion & Designers",
+  "shopsFilterFashion": "Fashion",
   "shopsFilterDzyPartner": "DZY Partners",
   "shopsFound": "shops found",
   "acceptsLabel": "Accepts:",
@@ -4113,5 +4116,12 @@
   "langLabel": "Display Language",
   "currencyLabel": "Primary Currency",
   "langSwitchedToastTitle": "Language Updated",
-  "langSwitchedToastMessage": "App is now set to English"
+  "langSwitchedToastMessage": "App is now set to English",
+  "shopsBannerReferTitle": "Refer a Store\nand earn ",
+  "shopsBannerReferAmount": " in DZY",
+  "shopsBannerReferSub": "Refer a store or business\nand earn rewards.",
+  "shopsBannerReferBtn": "Refer now",
+  "shopsFilterFood": "Food & Groceries",
+  "shopsFilterTech": "Electronics",
+  "shopsFilterServices": "Services"
 }

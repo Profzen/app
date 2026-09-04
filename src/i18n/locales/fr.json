@@ -3523,19 +3523,19 @@
   "home": {
     "todos": {
       "low_balance": {
-        "title": "Faible solde,\nrecharger votre compte",
+        "title": "Solde faible,\nrechargez votre compte",
         "button": "Recharger"
       },
       "complete_profile": {
         "title": "Complétez votre profil\npour plus de sécurité",
-        "button": "Complet"
+        "button": "Compléter"
       },
       "merchant_dashboard": {
-        "title": "Accédez à votre entreprise\nTableau de bord",
+        "title": "Accéder à votre\nTableau de bord Pro",
         "button": "Accéder"
       },
       "create_store": {
-        "title": "Créez votre DZYStore\net commencer à vendre",
+        "title": "Créez votre DZYStore\net commencez à vendre",
         "button": "Créer"
       }
     },
@@ -3552,7 +3552,10 @@
     "inviteBannerTitle_1": "Invitez vos amis\net gagnez ",
     "inviteBannerTitle_2": "$5 en DZY",
     "inviteBannerDesc": "Envoyez des fonds, achetez, payez des factures et gagnez des récompenses ensemble.",
-    "btnInviteNow": "Inviter maintenant"
+    "btnInviteNow": "Inviter maintenant",
+    "inviteBannerAmount": " en DZY",
+    "referBannerTitle_1": "Référencez un commerce\net gagnez ",
+    "referBannerAmount": " en DZY"
   },
   "personalAccount": {
     "title": "Compte personnel",
@@ -3756,7 +3759,7 @@
     "sending": "Envoi...",
     "btnSendMessage": "Envoyer le message"
   },
-  "shopsFilterAll": "Tout",
+  "shopsFilterAll": "Toutes les boutiques",
   "shopsToggleGrid": "Vue Grille",
   "shopsToggleList": "Vue Liste",
   "shopsSeeMore": "Voir plus",
@@ -4145,7 +4148,7 @@
   "shopsFilterNearby": "À proximité",
   "shopsFilterMarketplace": "Marketplace & High-Tech",
   "shopsFilterSupermarket": "Supermarché & Alimentation",
-  "shopsFilterFashion": "Mode & Créateurs",
+  "shopsFilterFashion": "Mode & Beauté",
   "shopsFilterDzyPartner": "Partenaires DZY",
   "shopsFound": "boutiques trouvées",
   "acceptsLabel": "Accepté:",
@@ -4154,5 +4157,12 @@
   "langLabel": "Langue d'affichage",
   "currencyLabel": "Devise principale",
   "langSwitchedToastTitle": "Langue modifiée",
-  "langSwitchedToastMessage": "L'application est maintenant en Français"
+  "langSwitchedToastMessage": "L'application est maintenant en Français",
+  "shopsBannerReferTitle": "Référencez un commerce\net gagnez ",
+  "shopsBannerReferAmount": " en DZY",
+  "shopsBannerReferSub": "Recommandez un business\net gagnez des récompenses.",
+  "shopsBannerReferBtn": "Référencer",
+  "shopsFilterFood": "Alimentation & Épicerie",
+  "shopsFilterTech": "Électronique & Tech",
+  "shopsFilterServices": "Services & Pro"
 }

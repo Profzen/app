@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useCallback, useEffect } from 'react';
 import { Platform, Alert } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SHOPS_MOCK } from '../mocks/shopsMock';
 import { CONTACTS_MOCK } from '../mocks/contactsMock';
 import enDict from '../i18n/locales/en.json';
@@ -29,6 +30,25 @@ export function AppProvider({ children }) {
   
   const [session, setSession] = useState(null);
   const [isUserLoading, setIsUserLoading] = useState(true);
+
+  // Instant Stale-While-Revalidate: load cached user immediately on mount
+  useEffect(() => {
+    const hydrateCachedUser = async () => {
+      try {
+        const cached = await AsyncStorage.getItem('@dizzitup_cached_user');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && (parsed.id || parsed.name)) {
+            setUser(prev => ({ ...prev, ...parsed }));
+            setIsUserLoading(false);
+          }
+        }
+      } catch (err) {
+        console.log("Error hydrating cached user:", err);
+      }
+    };
+    hydrateCachedUser();
+  }, []);
   const [transactions, setTransactions] = useState([]);
   const [isTransactionsLoading, setIsTransactionsLoading] = useState(false);
   const [isAppLocked, setIsAppLocked] = useState(false);
@@ -322,7 +342,7 @@ export function AppProvider({ children }) {
           setIsTransactionsLoading(false);
         }
 
-        setUser({
+        const fullUserData = {
           name: fetchedName,
           firstName: fetchedFirstName,
           lastName: fetchedLastName,
@@ -349,7 +369,9 @@ export function AppProvider({ children }) {
           businessBalances: businessBalances,
           businessRawBalances: businessRawBalancesArray,
           businessTotalUsdValue: businessTotalUsdValue
-        });
+        };
+        setUser(fullUserData);
+        AsyncStorage.setItem('@dizzitup_cached_user', JSON.stringify(fullUserData)).catch(() => {});
       }
       setIsUserLoading(false);
     };
