@@ -104,12 +104,12 @@ export default function DashboardScreen() {
           <LinearGradient colors={['#2B4C7E', '#20365B']} start={{x: 0, y: 0}} end={{x: 1, y: 1}} style={styles.walletCard}>
             <View style={styles.walletHeader}>
               <TouchableOpacity style={styles.walletHeaderLeft} onPress={toggleHideBalance} activeOpacity={0.7}>
-                <Text style={styles.soldeText}>{language === 'fr' ? 'Solde total' : 'Total balance'}</Text>
+                <Text style={styles.soldeText}>{t('totalBalance', 'Solde total')}</Text>
                 <Ionicons name={hideBalance ? "eye-off" : "eye"} size={18} color="#FFFFFF" style={{marginLeft: 8}} />
               </TouchableOpacity>
               <TouchableOpacity style={styles.rechargerBtn} onPress={() => navigation.navigate('TopUpScreen')}>
                 <Ionicons name="add" size={14} color="#1A2840" />
-                <Text style={styles.rechargerText}>{language === 'fr' ? 'Recharger' : 'Top-up'}</Text>
+                <Text style={styles.rechargerText}>{t('btnTopUp', 'Recharger')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.arrowRightBtn} onPress={() => navigation.navigate('AssetListScreen')}>
                 <Ionicons name="chevron-forward" size={16} color="#FFFFFF" />
@@ -142,7 +142,7 @@ export default function DashboardScreen() {
               <View style={styles.actionIconWrapper}>
                 <Ionicons name="paper-plane-outline" size={24} color="#1A2840" />
               </View>
-              <Text style={styles.actionItemText}>{language === 'fr' ? 'Envoyer' : 'Send'}</Text>
+              <Text style={styles.actionItemText}>{t('btnSend', 'Envoyer')}</Text>
             </TouchableOpacity>
             
             <View style={styles.verticalDivider} />
@@ -151,7 +151,7 @@ export default function DashboardScreen() {
               <View style={styles.actionIconWrapper}>
                 <Ionicons name="download-outline" size={24} color="#1A2840" />
               </View>
-              <Text style={styles.actionItemText}>{language === 'fr' ? 'Recevoir' : 'Receive'}</Text>
+              <Text style={styles.actionItemText}>{t('btnReceive', 'Recevoir')}</Text>
             </TouchableOpacity>
             
             <View style={styles.verticalDivider} />
@@ -160,7 +160,7 @@ export default function DashboardScreen() {
               <View style={styles.actionIconWrapper}>
                 <Ionicons name="swap-horizontal-outline" size={24} color="#1A2840" />
               </View>
-              <Text style={styles.actionItemText}>{language === 'fr' ? 'Convertir' : 'Swap'}</Text>
+              <Text style={styles.actionItemText}>{t('tabSwap', 'Swap')}</Text>
             </TouchableOpacity>
             
             <View style={styles.verticalDivider} />
@@ -169,16 +169,16 @@ export default function DashboardScreen() {
               <View style={styles.actionIconWrapperDisabled}>
                 <Ionicons name="add-circle-outline" size={24} color="#6B7280" />
               </View>
-              <Text style={styles.actionItemTextDisabled}>{language === 'fr' ? 'Retirer' : 'Cash-out'}</Text>
+              <Text style={styles.actionItemTextDisabled}>{t('btnCashOut', 'Retrait')}</Text>
               <View style={styles.unavailableBadge}>
-                <Text style={styles.unavailableText}>{language === 'fr' ? 'Non disponible\ndepuis votre pays' : 'Not available\nin your country'}</Text>
+                <Text style={styles.unavailableText}>{t('wallet.unavailable_country', 'Non disponible\ndepuis votre pays')}</Text>
               </View>
             </TouchableOpacity>
           </View>
 
           {/* Mes fonds */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{language === 'fr' ? 'Mes fonds' : 'My Assets'}</Text>
+            <Text style={styles.sectionTitle}>{t('wallet.my_assets', 'Mes fonds')}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('AssetListScreen')}>
               <Text style={styles.voirTout}>{t('viewAll', 'Voir tout')} <Ionicons name="arrow-forward" size={14} /></Text>
             </TouchableOpacity>
@@ -210,9 +210,7 @@ export default function DashboardScreen() {
           <LinearGradient colors={['#2B4C7E', '#20365B']} start={{x: 0, y: 0}} end={{x: 1, y: 1}} style={styles.cardPromo}>
             <View style={styles.cardPromoContent}>
               <Text style={styles.cardPromoText}>
-                {language === 'fr' 
-                  ? 'Votre carte Visa en $US et non pas en Naira, Bir, ZAR, FCFA, ... pour acheter et voyager partout dans le monde.'
-                  : 'Your Visa card in $USD (not Naira, Birr, ZAR, FCFA...) to shop and travel worldwide.'}
+                {t('dashboard.dzy_card_promo', 'Votre carte Visa en $US pour acheter et voyager partout dans le monde.')}
               </Text>
               
               <View style={styles.payMethods}>
@@ -255,7 +253,7 @@ export default function DashboardScreen() {
 
           {/* Transactions récentes */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{language === 'fr' ? 'Transactions récentes' : 'Recent Transactions'}</Text>
+            <Text style={styles.sectionTitle}>{t('dashboard.recent_transactions', 'Transactions récentes')}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('TransactionHistoryScreen')}>
               <Text style={styles.voirTout}>{t('viewAll', 'Voir tout')} <Ionicons name="arrow-forward" size={14} /></Text>
             </TouchableOpacity>

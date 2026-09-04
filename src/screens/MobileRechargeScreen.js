@@ -5,9 +5,11 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, 
 import { Ionicons } from '@expo/vector-icons';
 import { DizzitButton } from '../components/DizzitButton';
 import BottomNavBar from '../components/BottomNavBar';
+import { useApp } from '../context/AppContext';
 
 export default function MobileRechargeScreen() {
   const navigation = useNavigation();
+  const { t } = useApp();
   const [selectedAmount, setSelectedAmount] = useState(500);
   const amounts = [500, 1000, 2000, 5000, 10000, 20000];
 
@@ -17,15 +19,11 @@ export default function MobileRechargeScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerTopRow}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} accessibilityLabel="Retour">
               <Ionicons name="arrow-back" size={24} color="#1A2840" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Recharger un mobile</Text>
+            <Text style={styles.headerTitle}>{t('mobileRecharge.title', 'Recharger un mobile')}</Text>
             <View style={styles.headerIcons}>
-              <TouchableOpacity style={styles.iconButton}>
-                <Ionicons name="notifications-outline" size={18} color="#1A2840" />
-                <View style={styles.notificationDot} />
-              </TouchableOpacity>
               <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('RewardsScreen')}>
                 <Ionicons name="gift-outline" size={18} color="#1A2840" />
               </TouchableOpacity>
@@ -34,7 +32,7 @@ export default function MobileRechargeScreen() {
               </TouchableOpacity>
             </View>
           </View>
-          <Text style={styles.headerSubtitle}>Vérifiez les informations et sélectionnez le montant à recharger.</Text>
+          <Text style={styles.headerSubtitle}>{t('mobileRecharge.subtitle', 'Vérifiez les informations et sélectionnez le montant à recharger.')}</Text>
         </View>
 
         <ScrollView style={styles.mainScroll} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -116,7 +114,7 @@ export default function MobileRechargeScreen() {
 
         {/* Footer */}
         <View style={styles.footer}>
-          <DizzitButton title="Continuer ➔" onPress={() => navigation.navigate('ReviewPaymentScreen')} />
+          <DizzitButton title={`${t('btnContinue', 'Continuer')} ➔`} onPress={() => navigation.navigate('ReviewPaymentScreen')} />
         </View>
 
         <BottomNavBar />

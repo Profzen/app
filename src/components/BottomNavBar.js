@@ -30,13 +30,13 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
   };
 
   const QUICK_ACTIONS = [
-    { id: '1', icon: 'bag-handle-outline', color: '#3B82F6', bgColor: '#EFF6FF', label: activeLanguage === 'en' ? 'Buy goods' : 'Acheter des biens', route: 'ShopsScreen' },
-    { id: '2', icon: 'document-text-outline', color: '#8B5CF6', bgColor: '#F5F3FF', label: activeLanguage === 'en' ? 'Pay bills' : 'Payer des factures', route: 'ContactsScreen' },
-    { id: '3', icon: 'cart-outline', color: '#F59E0B', bgColor: '#FFFBEB', label: activeLanguage === 'en' ? 'Request funds' : 'Demander des fonds', route: 'ReceiveFundsV2Screen' },
-    { id: '4', icon: 'people-outline', color: '#10B981', bgColor: '#ECFDF5', label: activeLanguage === 'en' ? 'Send Stablecoins' : "envoyer des Stablecoins", route: 'ContactsScreen' },
-    { id: '5', icon: 'add-circle-outline', color: '#10B981', bgColor: '#ECFDF5', label: activeLanguage === 'en' ? 'Top up' : 'Recharger', route: 'TopUpScreen' },
-    { id: '6', icon: 'storefront-outline', color: '#F59E0B', bgColor: '#FFFBEB', label: activeLanguage === 'en' ? 'Refer a shop' : 'Référer un shop', route: 'ReferBusinessScreen' },
-    { id: '7', icon: 'swap-horizontal', color: '#3B82F6', bgColor: '#EFF6FF', label: activeLanguage === 'en' ? 'Swap' : 'Échanger', route: 'SwapTokensScreen' },
+    { id: '1', icon: 'bag-handle-outline', color: '#3B82F6', bgColor: '#EFF6FF', label: t('actionBuyGoods', 'Acheter des biens'), route: 'ShopsScreen' },
+    { id: '2', icon: 'document-text-outline', color: '#8B5CF6', bgColor: '#F5F3FF', label: t('actionPayBills', 'Payer des factures'), route: 'ContactsScreen' },
+    { id: '3', icon: 'cart-outline', color: '#F59E0B', bgColor: '#FFFBEB', label: t('actionRequestMoney', 'Demander des fonds'), route: 'ReceiveFundsV2Screen' },
+    { id: '4', icon: 'people-outline', color: '#10B981', bgColor: '#ECFDF5', label: t('actionSendMoney', 'Envoyer des Stablecoins'), route: 'ContactsScreen' },
+    { id: '5', icon: 'add-circle-outline', color: '#10B981', bgColor: '#ECFDF5', label: t('actionTopUp', 'Recharger'), route: 'TopUpScreen' },
+    { id: '6', icon: 'storefront-outline', color: '#F59E0B', bgColor: '#FFFBEB', label: t('actionReferStore', 'Référer un shop'), route: 'ReferBusinessScreen' },
+    { id: '7', icon: 'swap-horizontal', color: '#3B82F6', bgColor: '#EFF6FF', label: t('tabSwap', 'Échanger'), route: 'SwapTokensScreen' },
     { id: '8', icon: 'qr-code-outline', color: '#10B981', bgColor: '#F0FDFA', label: 'Scan & Cash', route: 'LocalExchangeScreen' },
   ];
 
@@ -58,7 +58,7 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
           else setLocalMenuOpen(false);
         }}>
           <TouchableOpacity activeOpacity={1} style={styles.shortcutMenu} onPress={(e) => e.stopPropagation()}>
-            <Text style={styles.shortcutTitle}>{activeLanguage === 'en' ? 'Quick actions' : 'Actions rapides'}</Text>
+            <Text style={styles.shortcutTitle}>{t('quickActionsTitle', 'Actions rapides')}</Text>
             <View style={styles.quickActionsGrid}>
               {QUICK_ACTIONS.map((action) => (
                 <TouchableOpacity key={action.id} style={styles.actionGridItem} onPress={() => closeAndNavigate(action.route)}>

@@ -2695,6 +2695,56 @@
       "back": "ተመለስ",
       "save": "ተጠቃሚ አስቀምጥ",
       "update": "ተጠቃሚ አዘምን"
+    },
+    "edit": {
+      "edit_title_new": "አዲስ ተጠቃሚ",
+      "edit_title_update": "አስተካክል",
+      "personal_info": "የግል መረጃ",
+      "avatar": "አቫታር",
+      "first_name": "ስም",
+      "first_name_placeholder": "ለምሳሌ: John",
+      "last_name": "የአባት ስም",
+      "last_name_placeholder": "ለምሳሌ: Doe",
+      "relation": "ግንኙነት",
+      "contact_details": "የእውቂያ ዝርዝሮች",
+      "phone": "ስልክ",
+      "phone_placeholder": "+228...",
+      "email": "ኢሜይል",
+      "email_placeholder": "ለምሳሌ: email@example.com",
+      "country": "ሀገር",
+      "country_placeholder": "ለምሳሌ: Togo",
+      "city": "ከተማ",
+      "city_placeholder": "ለምሳሌ: Lomé",
+      "banks_wallets": "ባንኮች እና ቦርሳዎች",
+      "bank_name": "የባንክ ስም",
+      "bank_name_placeholder": "ለምሳሌ: Ecobank",
+      "bank_account": "የሂሳብ ቁጥር / IBAN",
+      "evm_wallet": "የEVM ቦርሳ",
+      "evm_wallet_placeholder": "0x...",
+      "solana_wallet": "የSolana ቦርሳ",
+      "btn_save": "አስቀምጥ",
+      "relation_family": "ቤተሰብ",
+      "relation_friend": "ጓደኛ",
+      "relation_colleague": "የሥራ ባልደረባ",
+      "relation_other": "ሌላ",
+      "sync_success": "ቦርሳዎች በተሳካ ሁኔታ ተመሳስለዋል",
+      "sync_error": "የማመሳሰል ስህተት",
+      "sync_not_found": "ምንም ቦርሳ አልተገኘም",
+      "sync_req_phone": "እባክዎ መጀመሪያ ስልክ ቁጥር ያስገቡ",
+      "save_req_name": "ስም ያስፈልጋል",
+      "save_req_contact": "ስልክ ወይም ኢሜይል ያስፈልጋል",
+      "save_success_add": "ተጠቃሚ ታክሏል",
+      "save_success_edit": "ተጠቃሚ ተሻሽሏል",
+      "save_error": "በማስቀመጥ ላይ ስህተት"
+    },
+    "profile": {
+      "info_tab": "መረጃ",
+      "history_tab": "ታሪክ",
+      "not_provided": "አልቀረበም",
+      "verified_contact": "የተረጋገጠ አድራሻ",
+      "group": "ቡድን",
+      "sponsor": "ስፖንሰር",
+      "yes": "አዎ"
     }
   },
   "footer": {
@@ -3248,7 +3298,8 @@
       "send": "ላክ",
       "my_assets": "የእኔ ንብረቶች",
       "history": "ታሪክ",
-      "cash_out": "ገንዘብ ማውጣት"
+      "cash_out": "ገንዘብ ማውጣት",
+      "swap": "መለዋወጫ"
     }
   },
   "@": "@",
@@ -3791,5 +3842,10 @@
     "refer_store": "ሱቅ ይጠቁሙ",
     "source_africa": "ከአፍሪካ ያስመጡ",
     "scan_cash": "ስካን እና ጥሬ ገንዘብ"
-  }
+  },
+  "tabHome": "መነሻ",
+  "tabContacts": "እውቂያዎች",
+  "tabShops": "ሱቆች",
+  "tabSwap": "መለዋወጫ",
+  "tabMore": "ተጨማሪ"
 }

@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import SelectableContactItem from '../components/SelectableContactItem';
 import AppToast from '../components/AppToast';
 import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
+import { useApp } from '../context/AppContext';
 
 const MOCK_CONTACTS = [
   { id: '1', name: 'Mama Kemi Adebayo', relation: 'Mère', country: 'Lagos, Nigeria', flag: '🇳🇬', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80', statusColor: '#10B981' },
@@ -17,7 +18,8 @@ const MOCK_CONTACTS = [
 
 export default function PayBillsScreen() {
   const navigation = useNavigation();
-  const [activeFilter, setActiveFilter] = useState('À proximité');
+  const { t } = useApp();
+  const [activeFilter, setActiveFilter] = useState('nearby');
   const [searchQuery, setSearchQuery] = useState('');
   const [showPromo, setShowPromo] = useState(true);
   const [selectedContactId, setSelectedContactId] = useState('1'); // Mama Kemi selected by default
@@ -35,17 +37,13 @@ export default function PayBillsScreen() {
         {/* Header Top Bar */}
         <View style={styles.header}>
           <View style={styles.headerTopRow}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} accessibilityLabel="Retour">
               <Ionicons name="arrow-back" size={22} color="#1A2840" />
             </TouchableOpacity>
             <View style={styles.headerTitleWrap}>
-              <Text style={styles.headerTitle}>Pay Bills & Send Essentials</Text>
+              <Text style={styles.headerTitle}>{t('payBills.title', 'Payer des factures & Essentiels')}</Text>
             </View>
             <View style={styles.headerIcons}>
-              <TouchableOpacity style={styles.iconButton}>
-                <Ionicons name="notifications-outline" size={18} color="#1A2840" />
-                <View style={styles.notificationDot} />
-              </TouchableOpacity>
               <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('RewardsScreen')}>
                 <Ionicons name="gift-outline" size={18} color="#1A2840" />
               </TouchableOpacity>
@@ -54,7 +52,7 @@ export default function PayBillsScreen() {
               </TouchableOpacity>
             </View>
           </View>
-          <Text style={styles.headerSubtitle}>Envoyez des produits essentiels et payez les factures de vos proches.</Text>
+          <Text style={styles.headerSubtitle}>{t('payBills.subtitle', 'Envoyez des produits essentiels et payez les factures de vos proches.')}</Text>
         </View>
 
         <ScrollView
@@ -67,7 +65,7 @@ export default function PayBillsScreen() {
             <Ionicons name="search-outline" size={18} color="#9CA3AF" style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Rechercher un bénéficiaire, pays ou relation..."
+              placeholder={t('contacts.search', 'Rechercher un bénéficiaire, pays ou relation...')}
               placeholderTextColor="#9CA3AF"
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -75,68 +73,56 @@ export default function PayBillsScreen() {
           </View>
 
           {/* Quick Actions (4-column Grid) */}
-          <Text style={styles.sectionTitle}>Actions rapides</Text>
+          <Text style={styles.sectionTitle}>{t('quickActionsTitle', 'Actions rapides')}</Text>
           <View style={styles.quickActionsGrid}>
             <TouchableOpacity style={styles.quickActionCard} onPress={() => navigation.navigate('ContactsManageScreen')}>
               <View style={[styles.quickActionIconBg, { backgroundColor: '#FFF7E6' }]}>
                 <Ionicons name="person-add-outline" size={20} color="#F59E0B" />
               </View>
-              <Text style={styles.quickActionTitle}>Ajouter{'\n'}bénéficiaire</Text>
+              <Text style={styles.quickActionTitle}>{t('common.wallet.add_new_beneficiary', 'Ajouter\nbénéficiaire')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.quickActionCard} onPress={() => navigation.navigate('ContactsScreen')}>
               <View style={[styles.quickActionIconBg, { backgroundColor: '#ECFDF5' }]}>
                 <Ionicons name="people-outline" size={20} color="#10B981" />
               </View>
-              <Text style={styles.quickActionTitle}>Mes{'\n'}bénéficiaires</Text>
+              <Text style={styles.quickActionTitle}>{t('myBeneficiaries', 'Mes\nbénéficiaires')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.quickActionCard} onPress={() => shareInviteLink()}>
               <View style={[styles.quickActionIconBg, { backgroundColor: '#EFF6FF' }]}>
                 <Ionicons name="paper-plane-outline" size={20} color="#3B82F6" />
               </View>
-              <Text style={styles.quickActionTitle}>Inviter{'\n'}un ami</Text>
+              <Text style={styles.quickActionTitle}>{t('home.btnInviteNow', 'Inviter\nun ami')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.quickActionCard} onPress={() => shareShopLink()}>
               <View style={[styles.quickActionIconBg, { backgroundColor: '#F5F3FF' }]}>
                 <Ionicons name="storefront-outline" size={20} color="#8B5CF6" />
               </View>
-              <Text style={styles.quickActionTitle}>Référer un{'\n'}marchand</Text>
+              <Text style={styles.quickActionTitle}>{t('actionReferStore', 'Référer un\nmarchand')}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Mes bénéficiaires Section */}
-          <Text style={styles.sectionTitle}>Mes bénéficiaires</Text>
+          <Text style={styles.sectionTitle}>{t('myBeneficiaries', 'Mes bénéficiaires')}</Text>
 
           {/* Sub-tabs / Filters Row */}
           <View style={styles.filtersRow}>
             <TouchableOpacity
-              style={[styles.filterChip, activeFilter === 'À proximité' && styles.filterChipActive]}
-              onPress={() => setActiveFilter('À proximité')}
+              style={[styles.filterChip, activeFilter === 'nearby' && styles.filterChipActive]}
+              onPress={() => setActiveFilter('nearby')}
             >
-              <Ionicons name="location-outline" size={13} color={activeFilter === 'À proximité' ? '#FFFFFF' : '#6B7280'} style={{ marginRight: 4 }} />
-              <Text style={[styles.filterText, activeFilter === 'À proximité' && styles.filterTextActive]}>À proximité</Text>
+              <Ionicons name="location-outline" size={13} color={activeFilter === 'nearby' ? '#FFFFFF' : '#6B7280'} style={{ marginRight: 4 }} />
+              <Text style={[styles.filterText, activeFilter === 'nearby' && styles.filterTextActive]}>{t('filterNearby', 'À proximité')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
-              style={[styles.filterChip, activeFilter === 'COI' && styles.filterChipActive]}
-              onPress={() => setActiveFilter('COI')}
+              style={[styles.filterChip, activeFilter === 'all' && styles.filterChipActive]}
+              onPress={() => setActiveFilter('all')}
             >
-              <Ionicons name="globe-outline" size={13} color={activeFilter === 'COI' ? '#FFFFFF' : '#6B7280'} style={{ marginRight: 4 }} />
-              <Text style={[styles.filterText, activeFilter === 'COI' && styles.filterTextActive]}>COI</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.filterChip, activeFilter === 'Récents' && styles.filterChipActive]}
-              onPress={() => setActiveFilter('Récents')}
-            >
-              <Ionicons name="time-outline" size={13} color={activeFilter === 'Récents' ? '#FFFFFF' : '#6B7280'} style={{ marginRight: 4 }} />
-              <Text style={[styles.filterText, activeFilter === 'Récents' && styles.filterTextActive]}>Récents</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.filterIconButton} onPress={() => setToast({ title: 'Filtre avancé', message: 'Trier par pays ou nom.' })}>
-              <Ionicons name="options-outline" size={18} color="#1A2840" />
+              <Ionicons name="globe-outline" size={13} color={activeFilter === 'all' ? '#FFFFFF' : '#6B7280'} style={{ marginRight: 4 }} />
+              <Text style={[styles.filterText, activeFilter === 'all' && styles.filterTextActive]}>{t('filterAll', 'Tous les contacts')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -157,37 +143,32 @@ export default function PayBillsScreen() {
             ))}
           </View>
 
-          {/* Info Promo Banner Card */}
+          {/* Promo Floating Banner */}
           {showPromo && (
             <View style={styles.promoBanner}>
-              <TouchableOpacity style={styles.promoClose} onPress={() => setShowPromo(false)}>
-                <Ionicons name="close" size={16} color="#9CA3AF" />
+              <TouchableOpacity style={styles.promoClose} onPress={() => setShowPromo(false)} accessibilityLabel="Fermer">
+                <Ionicons name="close" size={16} color="#6B7280" />
               </TouchableOpacity>
-
               <View style={styles.promoContent}>
-                {/* Left Graphic Wallet */}
                 <View style={styles.promoGraphicBox}>
                   <View style={styles.miniCoinsGroup}>
-                    <View style={[styles.miniCoinDot, { top: 0, left: 4 }]} />
-                    <View style={[styles.miniCoinDot, { top: 2, right: 2 }]} />
-                    <View style={[styles.miniCoinDot, { top: 12, left: 14 }]} />
+                    <View style={[styles.miniCoinDot, { left: 4, top: 0 }]} />
+                    <View style={[styles.miniCoinDot, { left: 18, top: -4 }]} />
+                    <View style={[styles.miniCoinDot, { left: 32, top: 2 }]} />
                   </View>
                   <View style={styles.miniWalletCard}>
                     <Text style={styles.miniWalletBrand}>DZY</Text>
                     <View style={styles.miniWalletButton} />
                   </View>
                 </View>
-
-                {/* Promo Content Text */}
                 <View style={styles.promoTextContainer}>
-                  <Text style={styles.promoTitle}>Payez facilement les factures, recharges et produits essentiels en Afrique.</Text>
-                  <Text style={styles.promoSubtitle}>Rapide, sécurisé et sans frontières.</Text>
+                  <Text style={styles.promoTitle}>{t('home.inviteBannerTitle_1', 'Invitez vos amis et gagnez')} $5 DZY</Text>
+                  <Text style={styles.promoSubtitle}>{t('home.inviteBannerDesc', 'Partagez votre lien et recevez des bonus.')}</Text>
                 </View>
               </View>
             </View>
           )}
 
-          <View style={{ height: 20 }} />
         </ScrollView>
 
         {/* Bottom Fixed CTA Button */}
@@ -197,10 +178,10 @@ export default function PayBillsScreen() {
             onPress={() => navigation.navigate('ChooseServiceScreen')}
             activeOpacity={0.8}
           >
-            <Text style={styles.ctaButtonText}>Continuer</Text>
+            <Text style={styles.ctaButtonText}>{t('btnContinue', 'Continuer')}</Text>
             <Ionicons name="arrow-forward" size={18} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.ctaHint}>Sélectionnez un bénéficiaire pour continuer</Text>
+          <Text style={styles.ctaHint}>{t('payBills.cta_hint', 'Sélectionnez un bénéficiaire pour continuer')}</Text>
         </View>
 
         {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}

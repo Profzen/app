@@ -55,7 +55,7 @@ export default function LoginScreen() {
     } catch (error) {
       console.warn("⚠️ Connexion Supabase échouée (" + error.message + ")");
       setIsLoading(false);
-      setErrorMessage(language === 'fr' ? 'Échec de connexion : ' + error.message : 'Login failed: ' + error.message);
+      setErrorMessage(t('login.error_failed', 'Échec de connexion : ') + error.message);
     }
   };
 
@@ -74,10 +74,8 @@ export default function LoginScreen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.canGoBack() ? navigation.goBack() : navigation.navigate('HomeScreen')}>
-            <Ionicons name="arrow-back" size={22} color={theme.colors.primary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{language === 'fr' ? 'Connexion' : 'Log In'}</Text>
+          <View style={styles.headerSpacer} />
+          <Text style={styles.headerTitle}>{t('auth.login', 'Connexion')}</Text>
           <LanguageSelector />
         </View>
 
@@ -192,9 +190,9 @@ export default function LoginScreen() {
 
         {/* Signup Link */}
         <View style={styles.signupContainer}>
-          <Text style={styles.signupText}>{language === 'fr' ? "Vous n'avez pas de compte ? " : "Don't have an account? "}</Text>
+          <Text style={styles.signupText}>{t('auth.no_account', "Vous n'avez pas de compte ? ")}</Text>
           <TouchableOpacity onPress={() => Linking.openURL('https://dizzitup.com/user-registration-login?mode=signup')}>
-            <Text style={styles.signupLink}>{language === 'fr' ? "S'inscrire" : 'Sign up'}</Text>
+            <Text style={styles.signupLink}>{t('auth.sign_up', "S'inscrire")}</Text>
           </TouchableOpacity>
         </View>
         </ScrollView>
@@ -227,6 +225,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: isShortScreen ? 14 : theme.spacing.xl,
+  },
+  headerSpacer: {
+    width: 44,
   },
   backButton: {
     padding: 4,

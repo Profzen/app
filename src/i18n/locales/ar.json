@@ -2498,6 +2498,56 @@
       "back": "العودة",
       "save": "حفظ المستفيد",
       "update": "تحديث المستفيد"
+    },
+    "edit": {
+      "edit_title_new": "مستفيد جديد",
+      "edit_title_update": "تعديل",
+      "personal_info": "المعلومات الشخصية",
+      "avatar": "الصورة الرمزية",
+      "first_name": "الاسم الأول",
+      "first_name_placeholder": "مثل: John",
+      "last_name": "اسم العائلة",
+      "last_name_placeholder": "مثل: Doe",
+      "relation": "العلاقة",
+      "contact_details": "تفاصيل الاتصال",
+      "phone": "الهاتف",
+      "phone_placeholder": "+228...",
+      "email": "البريد الإلكتروني",
+      "email_placeholder": "مثل: email@example.com",
+      "country": "البلد",
+      "country_placeholder": "مثل: Togo",
+      "city": "المدينة",
+      "city_placeholder": "مثل: Lomé",
+      "banks_wallets": "البنوك والمحافظ",
+      "bank_name": "اسم البنك",
+      "bank_name_placeholder": "مثل: Ecobank",
+      "bank_account": "رقم الحساب / الآيبان",
+      "evm_wallet": "محفظة EVM",
+      "evm_wallet_placeholder": "0x...",
+      "solana_wallet": "محفظة Solana",
+      "btn_save": "حفظ",
+      "relation_family": "عائلة",
+      "relation_friend": "صديق",
+      "relation_colleague": "زميل",
+      "relation_other": "آخر",
+      "sync_success": "تمت المزامنة بنجاح",
+      "sync_error": "خطأ في المزامنة",
+      "sync_not_found": "لم يتم العثور على محفظة",
+      "sync_req_phone": "الرجاء إدخال رقم هاتف",
+      "save_req_name": "الاسم مطلوب",
+      "save_req_contact": "الهاتف أو البريد مطلوب",
+      "save_success_add": "تمت إضافة المستفيد",
+      "save_success_edit": "تم تعديل المستفيد",
+      "save_error": "خطأ أثناء الحفظ"
+    },
+    "profile": {
+      "info_tab": "معلومات",
+      "history_tab": "سجل",
+      "not_provided": "غير متوفر",
+      "verified_contact": "جهة اتصال تم التحقق منها",
+      "group": "مجموعة",
+      "sponsor": "كفيل",
+      "yes": "نعم"
     }
   },
   "marketplace": {
@@ -3279,7 +3329,8 @@
       "send": "إرسال",
       "my_assets": "الأصول",
       "history": "السجل",
-      "cash_out": "سحب"
+      "cash_out": "سحب",
+      "swap": "تبديل"
     }
   },
   "@": "@",
@@ -3881,5 +3932,10 @@
     "refer_store": "إحالة متجر",
     "source_africa": "المصادر في أفريقيا",
     "scan_cash": "مسح ونقد"
-  }
+  },
+  "tabHome": "الرئيسية",
+  "tabContacts": "جهات الاتصال",
+  "tabShops": "المتاجر",
+  "tabSwap": "تبديل",
+  "tabMore": "المزيد"
 }

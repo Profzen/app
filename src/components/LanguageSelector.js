@@ -15,7 +15,7 @@ export const getFlagCode = (lang) => {
 };
 
 export const LanguageSelector = ({ variant = 'default' }) => {
-  const { language, setLanguage } = useApp();
+  const { language, setLanguage, t } = useApp();
 
   return (
     <AppSelect 
@@ -28,7 +28,7 @@ export const LanguageSelector = ({ variant = 'default' }) => {
         { value: 'am', label: 'አማርኛ', flagUrl: 'https://flagcdn.com/w40/et.png' },
       ]}
       onChange={(val) => setLanguage && setLanguage(val)}
-      title={language === 'fr' ? 'Changer la langue' : 'Switch Language'}
+      title={t('langSwitchedToastTitle', 'Changer la langue')}
       renderCustomTrigger={({ setOpen }) => (
         <TouchableOpacity 
           style={[styles.languageSelector, variant === 'dark' && styles.languageSelectorDark]} 

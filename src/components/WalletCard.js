@@ -131,9 +131,8 @@ export default function WalletCard({ balances }) {
         {/* Action Buttons Row */}
         <View style={styles.actionsContainer}>
           <ActionItem icon="paper-plane-outline" label={t('wallet.actions.send', 'Send')} onPress={() => navigation.navigate('SendMoneyScreen')} divider />
-          <ActionItem icon="server-outline" label={t('wallet.actions.my_assets', 'Assets')} onPress={() => navigation.navigate('AssetListScreen')} divider />
-          <ActionItem icon="swap-horizontal-outline" label={t('wallet.actions.swap', 'Swap')} onPress={() => navigation.navigate('SwapTokensScreen')} divider />
           <ActionItem icon="time-outline" label={t('wallet.actions.history', 'History')} onPress={() => navigation.navigate('TransactionHistoryScreen')} divider />
+          <ActionItem icon="swap-horizontal-outline" label={t('wallet.actions.swap', 'Swap')} onPress={() => navigation.navigate('SwapTokensScreen')} divider />
           <ActionItem icon="card-outline" label={t('wallet.actions.cash_out', 'Cash-out')} onPress={() => navigation.navigate('WithdrawFundsScreen')} />
         </View>
 

@@ -158,7 +158,7 @@ export default function ContactsScreen() {
                   value={searchQuery}
                   onChangeText={setSearchQuery}
                 />
-                <Text style={styles.searchSubText}>{language === 'fr' ? 'Nom, téléphone, email, ville ou pays' : 'Name, phone, email, city or country'}</Text>
+                <Text style={styles.searchSubText}>{t('contacts.search_hint', 'Nom, téléphone, email, ville ou pays')}</Text>
               </View>
             </View>
 
@@ -307,12 +307,12 @@ export default function ContactsScreen() {
         {showInvite && (
           <View style={styles.inviteBannerWrapper}>
             <View style={styles.inviteBanner}>
-              <TouchableOpacity style={styles.closeBannerBtn} onPress={() => setShowInvite(false)}>
-                <Ionicons name="close" size={20} color="#FFFFFF" />
+              <TouchableOpacity style={styles.closeBannerBtn} onPress={() => setShowInvite(false)} accessibilityLabel="Fermer la bannière">
+                <Ionicons name="close" size={18} color="#6B7280" />
               </TouchableOpacity>
               <View style={styles.inviteBannerLeft}>
                 <Text style={styles.inviteBannerTitle}>
-                  {t('home.inviteBannerTitle_1', "Invitez vos amis\net gagnez ")}<Text style={{color: '#FFB800'}}>{t('home.inviteBannerTitle_2', "$5 en DZY")}</Text>
+                  {t('home.inviteBannerTitle_1', "Invitez vos amis\net gagnez ")}<Text style={{color: '#3B82F6'}}>{t('home.inviteBannerTitle_2', "$5 en DZY")}</Text>
                 </Text>
                 <Text style={styles.inviteBannerText}>
                   {t('home.inviteBannerDesc', "Envoyez de l'argent, achetez, payez des factures et gagnez des récompenses ensemble.")}
@@ -509,13 +509,13 @@ const styles = StyleSheet.create({
   listActionLabel: { flex: 1, fontFamily: 'Inter_500Medium', fontSize: 14, color: '#1E293B' },
   toastWrap: { position: 'absolute', left: 14, right: 14, top: 70, zIndex: 50 },
   inviteBannerWrapper: { position: 'absolute', bottom: 90, left: 16, right: 16 },
-  inviteBanner: { backgroundColor: '#20365B', borderRadius: 16, padding: 16, flexDirection: 'row', alignItems: 'center', position: 'relative', overflow: 'hidden' },
-  closeBannerBtn: { position: 'absolute', top: 12, right: 12, zIndex: 10 },
+  inviteBanner: { backgroundColor: '#EEF5FF', borderRadius: 16, padding: 16, flexDirection: 'row', alignItems: 'center', position: 'relative', overflow: 'hidden', borderWidth: 1, borderColor: '#DBEAFE', elevation: 4, shadowColor: '#3B82F6', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 8 },
+  closeBannerBtn: { position: 'absolute', top: 12, right: 12, zIndex: 10, width: 24, height: 24, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.05)', alignItems: 'center', justifyContent: 'center' },
   inviteBannerLeft: { flex: 1, zIndex: 2 },
-  inviteBannerTitle: { fontFamily: 'Inter_700Bold', fontSize: 16, color: '#FFFFFF', marginBottom: 8, lineHeight: 22 },
-  inviteBannerText: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#E2E8F0', marginBottom: 16, lineHeight: 16 },
-  inviteBtn: { backgroundColor: '#FFB800', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8, alignSelf: 'flex-start' },
-  inviteBtnText: { fontFamily: 'Inter_700Bold', fontSize: 12, color: '#1A2840' },
+  inviteBannerTitle: { fontFamily: 'Inter_700Bold', fontSize: 16, color: '#1A2840', marginBottom: 8, lineHeight: 22 },
+  inviteBannerText: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#475569', marginBottom: 16, lineHeight: 16 },
+  inviteBtn: { backgroundColor: '#071D54', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8, alignSelf: 'flex-start' },
+  inviteBtnText: { fontFamily: 'Inter_700Bold', fontSize: 12, color: '#FFFFFF' },
   inviteBannerRight: { width: 80, height: 80, justifyContent: 'center', alignItems: 'center', zIndex: 1 },
-  mockPhoneIllustration: { width: 64, height: 64, backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 32, justifyContent: 'center', alignItems: 'center' },
+  mockPhoneIllustration: { width: 64, height: 64, backgroundColor: '#DBEAFE', borderRadius: 32, justifyContent: 'center', alignItems: 'center' },
 });

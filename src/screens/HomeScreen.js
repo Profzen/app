@@ -155,10 +155,8 @@ export default function HomeScreen() {
                   ) : null}
                 </View>
               </View>
-              <View style={{ flexShrink: 1, paddingRight: 4 }}>
-                <Text style={styles.greetingText}>{language === 'fr' ? 'Bonjour,' : 'Hello,'}</Text>
+                <Text style={styles.greetingText}>{t('greetingHello', 'Bonjour,')}</Text>
                 <Text style={styles.nameText} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{isUserLoading ? '...' : (user?.name || 'Utilisateur').split(' ')[0]}</Text>
-              </View>
             </TouchableOpacity>
             <View style={styles.headerIcons}>
               <LanguageSelector />
@@ -190,7 +188,7 @@ export default function HomeScreen() {
           ) : (
             <View style={styles.todoCard}>
               <View style={[styles.sectionHeader, styles.todoCardHeader]}>
-                <Text style={styles.sectionTitle}>{language === 'fr' ? 'À faire' : 'To-do list'}</Text>
+                <Text style={styles.sectionTitle}>{t('todoTitle', 'À faire')}</Text>
                 <TouchableOpacity onPress={() => navigation.navigate('TodoListScreen')}>
                   <Text style={styles.viewAllText}>{t('viewAll', 'View all')}</Text>
                 </TouchableOpacity>
@@ -220,14 +218,14 @@ export default function HomeScreen() {
                   </TouchableOpacity>
                   <View style={styles.inviteContent}>
                     <Text style={styles.inviteTitle}>
-                      {language === 'fr' ? "Invitez vos amis\net gagnez " : "Invite friends\nand earn "}
+                      {t('home.inviteBannerTitle_1', "Invitez vos amis\net gagnez ")}
                       <Text style={{ color: '#3B82F6' }}>$5 in DZY</Text>
                     </Text>
                     <Text style={styles.inviteSubtitle}>
-                      {language === 'fr' ? "Envoyez des fonds, achetez,\npayez vos factures et gagnez." : "Send Stablecoins, buy goods,\npay bills and earn rewards."}
+                      {t('home.inviteBannerDesc', "Envoyez des fonds, achetez,\npayez vos factures et gagnez.")}
                     </Text>
                     <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#071D54' }]} onPress={() => navigation.navigate('RewardsScreen')}>
-                      <Text style={styles.inviteButtonText}>{language === 'fr' ? 'Inviter' : 'Invite now'}</Text>
+                      <Text style={styles.inviteButtonText}>{t('home.btnInviteNow', 'Inviter')}</Text>
                     </TouchableOpacity>
                   </View>
                   <View style={styles.inviteGraphic}>
@@ -249,14 +247,14 @@ export default function HomeScreen() {
                   </TouchableOpacity>
                   <View style={styles.inviteContent}>
                     <Text style={styles.inviteTitle}>
-                      {language === 'fr' ? "Référencez un commerce\net gagnez " : "Refer a Store or Business\nand earn "}
+                      {t('home.referBannerTitle_1', "Référencez un commerce\net gagnez ")}
                       <Text style={{ color: '#10B981' }}>$10 in DZY</Text>
                     </Text>
                     <Text style={styles.inviteSubtitle}>
-                      {language === 'fr' ? "Recommandez un business\net gagnez des récompenses." : "Refer a store or business\nand earn rewards."}
+                      {t('home.referBannerDesc', "Recommandez un business\net gagnez des récompenses.")}
                     </Text>
                     <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#10B981' }]} onPress={() => navigation.navigate('ShopsScreen')}>
-                      <Text style={styles.inviteButtonText}>{language === 'fr' ? 'Référencer' : 'Refer now'}</Text>
+                      <Text style={styles.inviteButtonText}>{t('home.btnReferNow', 'Référencer')}</Text>
                     </TouchableOpacity>
                   </View>
                   <View style={styles.storeGraphic}>
@@ -353,11 +351,9 @@ export default function HomeScreen() {
               <Ionicons name="shield-checkmark-outline" size={22} color="#1A2840" />
             </View>
             <View style={styles.securityTextContent}>
-              <Text style={styles.securityTitle}>{language === 'fr' ? 'Sécurisé, simple et instantané' : 'Secure, simple and instant'}</Text>
+              <Text style={styles.securityTitle}>{t('securityBannerTitle', 'Sécurisé, simple et instantané')}</Text>
               <Text style={styles.securityDesc}>
-                {language === 'fr' ? 'Vos fonds sont protégés par les protocoles de sécurité les ' : 'Your funds are protected by the '}
-                <Text style={{ color: '#F59E0B' }}>{language === 'fr' ? 'plus élevés.' : 'highest'}</Text>
-                {language === 'fr' ? '' : ' security protocols.'}
+                {t('securityBannerDesc', 'Vos fonds et données sont protégés par le chiffrement réseau de classe entreprise.')}
               </Text>
             </View>
             <View style={styles.lockIconWrapper}>
