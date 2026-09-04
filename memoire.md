@@ -2405,6 +2405,28 @@ A la fin de chaque session ou apres toute modification majeure, l'IA DOIT mettre
 
 ---
 
+## 🚀 Livraison des 6 Chantiers & Déploiement Validé (Commit `8c43051`)
+
+1. **Restauration de « Mes actifs » (`WalletCard.js`)** :
+   - Les 5 boutons d'action sont en place et actifs : *Envoyer*, *Mes actifs* (pointant vers `AssetListScreen`), *Swap*, *Historique*, *Retrait*.
+2. **Suppression des 2 cartes blanches & Latence (`HomeScreen.js` & `AppContext.js`)** :
+   - Cache `AsyncStorage` actif. Affichage instantané dès l'ouverture de l'application, sans attente réseau ni rectangles gris/blancs.
+3. **Alignement Titre Connexion (`LoginScreen.js`)** :
+   - Titre « Connexion » calé à gauche, espaceur supprimé.
+4. **Header Accueil (`HomeScreen.js`)** :
+   - Disposition en 2 lignes verticales (`Bonjour,` / `profzzen`) avec contrainte stricte pour ne plus déborder sous le sélecteur `[FR v]`.
+5. **Logos Crypto Optimisés (`assets/cryptos/`)** :
+   - `usdc.png`, `usdt.png`, `dai-logo.png`, `wbtc.png`, `weth.png` redimensionnés de 2000x2000 px à 256x256 px (< 18 Ko). Saturation mémoire Fresco éliminée, affichage net et immédiat sur tous les écrans.
+6. **Internationalisation (i18n) & Fusion avec Assia** :
+   - Les clés To-Dos (`home.todos.*`), bannières et catégories sont traduites sur les 5 langues (`fr.json`, `en.json`, `pt.json`, `ar.json`, `am.json`).
+   - Intégration transparente et sans conflit des nouveautés d'Assia (téléphone et réseaux sociaux avec toast *Coming soon*, redirection inscription web).
+7. **Validation & Git** :
+   - Compilation Babel : 100% OK (0 erreur).
+   - Livré et poussé sur `origin/develop` (commit `8c43051`) pour déclencher le build.
+   - Synchronisé sur la branche `front-back`.
+
+---
+
 ## 🛡️ Règles de Méthodologie & Politique Git Stricte (Protection Quota de Build)
 
 > [!CAUTION]
