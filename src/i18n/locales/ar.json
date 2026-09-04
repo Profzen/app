@@ -3365,20 +3365,20 @@
   "home": {
     "todos": {
       "low_balance": {
-        "title": "رصيد منخفض،\nقم بتعبئة حسابك",
-        "button": "اشحن رصيدك"
+        "title": "الرصيد منخفض،\nأعد شحن حسابك",
+        "button": "إعادة الشحن"
       },
       "complete_profile": {
         "title": "أكمل ملفك الشخصي\nلمزيد من الأمان",
-        "button": "مكتمل"
+        "button": "إكمال"
       },
       "merchant_dashboard": {
-        "title": "الوصول إلى عملك\nلوحة القيادة",
-        "button": "وصول"
+        "title": "الوصول إلى\nلوحة التحكم التجارية",
+        "button": "دخول"
       },
       "create_store": {
-        "title": "قم بإنشاء متجر DZY الخاص بك\nوابدأ بالبيع",
-        "button": "يخلق"
+        "title": "أنشئ DZYStore الخاصة بك\nوابدأ البيع",
+        "button": "إنشاء"
       }
     },
     "actions": {
@@ -3394,7 +3394,10 @@
     "inviteBannerTitle_1": "قم بدعوة أصدقائك\nواكسب ",
     "inviteBannerTitle_2": "$5 في DZY",
     "inviteBannerDesc": "أرسل الأموال، تسوق، وادفع الفواتير، واكسب المكافآت معًا.",
-    "btnInviteNow": "ادعُ الآن"
+    "btnInviteNow": "ادعُ الآن",
+    "inviteBannerAmount": "5$ في DZY",
+    "referBannerTitle_1": "قم بإحالة متجر\nواربح ",
+    "referBannerAmount": "10$ في DZY"
   },
   "personalAccount": {
     "title": "حساب شخصي",
@@ -3598,7 +3601,7 @@
     "sending": "جاري الإرسال...",
     "btnSendMessage": "إرسال رسالة"
   },
-  "shopsFilterAll": "الكل",
+  "shopsFilterAll": "جميع المتاجر",
   "shopsToggleGrid": "عرض الشبكة",
   "shopsToggleList": "عرض القائمة",
   "shopsSeeMore": "عرض المزيد",
@@ -3937,5 +3940,13 @@
   "tabContacts": "جهات الاتصال",
   "tabShops": "المتاجر",
   "tabSwap": "تبديل",
-  "tabMore": "المزيد"
+  "tabMore": "المزيد",
+  "shopsBannerReferTitle": "قم بإحالة متجر\nواربح ",
+  "shopsBannerReferAmount": "10$ في DZY",
+  "shopsBannerReferSub": "قم بالتوصية بنشاط تجاري\nواربح مكافآت.",
+  "shopsBannerReferBtn": "إحالة الآن",
+  "shopsFilterFood": "الأغذية والبقالة",
+  "shopsFilterTech": "الإلكترونيات",
+  "shopsFilterFashion": "الموضة",
+  "shopsFilterServices": "الخدمات"
 }

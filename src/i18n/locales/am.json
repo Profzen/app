@@ -3334,20 +3334,20 @@
   "home": {
     "todos": {
       "low_balance": {
-        "title": "ዝቅተኛ ሚዛን,\nመለያዎን ይሙሉ",
-        "button": "ወደላይ"
+        "title": "ዝቅተኛ ቀሪ ሂሳብ፣\nመለያዎን ይሙሉ",
+        "button": "ይሙሉ"
       },
       "complete_profile": {
-        "title": "መገለጫዎን ያጠናቅቁ\nለበለጠ ደህንነት",
-        "button": "ተጠናቀቀ"
+        "title": "ለበለጠ ደህንነት\nመገለጫዎን ያጠናቅቁ",
+        "button": "ያጠናቅቁ"
       },
       "merchant_dashboard": {
-        "title": "ንግድዎን ይድረሱበት\nዳሽቦርድ",
-        "button": "መዳረሻ"
+        "title": "የንግድ ዳሽቦርድዎን\nይድረሱ",
+        "button": "ይድረሱ"
       },
       "create_store": {
-        "title": "የእርስዎን DZYStore ይፍጠሩ\nእና መሸጥ ይጀምሩ",
-        "button": "ፍጠር"
+        "title": "DZYStoreዎን ይፍጠሩ\nእና መሸጥ ይጀምሩ",
+        "button": "ይፍጠሩ"
       }
     },
     "actions": {
@@ -3363,7 +3363,10 @@
     "inviteBannerTitle_1": "ጓደኞችዎን ይጋብዙ\nእና ያግኙ ",
     "inviteBannerTitle_2": "$5 በ DZY",
     "inviteBannerDesc": "ገንዘብ ይላኩ፣ ይገበያዩ፣ ሂሳቦችን ይክፈሉ እና ሽልማቶችን አብረው ያግኙ።",
-    "btnInviteNow": "አሁን ይጋብዙ"
+    "btnInviteNow": "አሁን ይጋብዙ",
+    "inviteBannerAmount": " በDZY",
+    "referBannerTitle_1": "መደብር ያመልክቱ\nእና ያግኙ ",
+    "referBannerAmount": " በDZY"
   },
   "personalAccount": {
     "title": "የግል መለያ",
@@ -3567,7 +3570,7 @@
     "sending": "በመላክ ላይ...",
     "btnSendMessage": "መልእክት ላክ"
   },
-  "shopsFilterAll": "ሁሉም",
+  "shopsFilterAll": "ሁሉም ሱቆች",
   "shopsToggleGrid": "ፍርግርግ እይታ",
   "shopsToggleList": "ዝርዝር እይታ",
   "shopsSeeMore": "ተጨማሪ ይመልከቱ",
@@ -3847,5 +3850,13 @@
   "tabContacts": "እውቂያዎች",
   "tabShops": "ሱቆች",
   "tabSwap": "መለዋወጫ",
-  "tabMore": "ተጨማሪ"
+  "tabMore": "ተጨማሪ",
+  "shopsBannerReferTitle": "መደብር ያመልክቱ\nእና ያግኙ ",
+  "shopsBannerReferAmount": " በDZY",
+  "shopsBannerReferSub": "ንግድ ይጠቁሙ\nእና ሽልማቶችን ያግኙ።",
+  "shopsBannerReferBtn": "አሁን ያመልክቱ",
+  "shopsFilterFood": "ምግብ እና ሸቀጣ ሸቀጥ",
+  "shopsFilterTech": "ኤሌክትሮኒክስ",
+  "shopsFilterFashion": "ፋሽን",
+  "shopsFilterServices": "አገልግሎቶች"
 }

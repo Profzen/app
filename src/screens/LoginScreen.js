@@ -74,7 +74,6 @@ export default function LoginScreen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.headerSpacer} />
           <Text style={styles.headerTitle}>{t('auth.login', 'Connexion')}</Text>
           <LanguageSelector />
         </View>
@@ -226,15 +225,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: isShortScreen ? 14 : theme.spacing.xl,
   },
-  headerSpacer: {
-    width: 44,
-  },
-  backButton: {
-    padding: 4,
-  },
   headerTitle: {
-    fontFamily: theme.typography.fontFamily.semiBold,
-    fontSize: theme.typography.sizes.base,
+    fontFamily: theme.typography.fontFamily.bold || theme.typography.fontFamily.semiBold,
+    fontSize: 18,
     color: theme.colors.primary,
   },
   titleContainer: {

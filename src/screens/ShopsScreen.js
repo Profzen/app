@@ -27,13 +27,13 @@ export default function ShopsScreen() {
   const { language, toggleLanguage, t, user, appSettings } = useApp();
   const { loading, error, fetchMerchants } = useBuyGoods();
   const [shopsList, setShopsList] = useState([]);
-  const [categories] = useState([
-    { id: 'Tout', label: t('shopsFilterAll', 'All Shops'), icon: 'apps', iconColor: '#FFC759' },
-    { id: 'Alimentation', label: t('shopsFilterFood', 'Food & Groceries'), icon: 'restaurant-outline', iconColor: '#FFC759' },
-    { id: 'Électronique', label: t('shopsFilterTech', 'Electronics'), icon: 'laptop-outline', iconColor: '#FFC759' },
-    { id: 'Mode', label: t('shopsFilterFashion', 'Fashion'), icon: 'shirt-outline', iconColor: '#FFC759' },
-    { id: 'Services', label: t('shopsFilterServices', 'Services'), icon: 'briefcase-outline', iconColor: '#FFC759' }
-  ]);
+  const categories = React.useMemo(() => [
+    { id: 'Tout', label: t('shopsFilterAll', 'Toutes les boutiques'), icon: 'apps', iconColor: '#FFC759' },
+    { id: 'Alimentation', label: t('shopsFilterFood', 'Alimentation & Épicerie'), icon: 'restaurant-outline', iconColor: '#FFC759' },
+    { id: 'Électronique', label: t('shopsFilterTech', 'Électronique & Tech'), icon: 'laptop-outline', iconColor: '#FFC759' },
+    { id: 'Mode', label: t('shopsFilterFashion', 'Mode & Beauté'), icon: 'shirt-outline', iconColor: '#FFC759' },
+    { id: 'Services', label: t('shopsFilterServices', 'Services & Pro'), icon: 'briefcase-outline', iconColor: '#FFC759' }
+  ], [t, language]);
   const [activeSubNav, setActiveSubNav] = useState('shops');
   const [query, setQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('Tout');
@@ -484,14 +484,14 @@ export default function ShopsScreen() {
               </TouchableOpacity>
               <View style={styles.inviteContent}>
                 <Text style={styles.inviteTitle}>
-                  {t('shopsBannerReferTitle', 'Refer a Store\nand earn ')}
-                  <Text style={{ color: '#10B981' }}>${appSettings.refer_business_reward || 10} in DZY</Text>
+                  {t('shopsBannerReferTitle', "Référencez un commerce\net gagnez ")}
+                  <Text style={{ color: '#10B981' }}>{t('shopsBannerReferAmount', `$${appSettings.refer_business_reward || 10} en DZY`)}</Text>
                 </Text>
                 <Text style={styles.inviteSubtitle}>
-                  {t('shopsBannerReferSub', 'Refer a store or business\nand earn rewards.')}
+                  {t('shopsBannerReferSub', "Recommandez un business\net gagnez des récompenses.")}
                 </Text>
                 <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#10B981' }]} onPress={() => navigation.navigate('ReferBusinessScreen')}>
-                  <Text style={styles.inviteButtonText}>{t('shopsBannerReferBtn', 'Refer now')}</Text>
+                  <Text style={styles.inviteButtonText}>{t('shopsBannerReferBtn', 'Référencer')}</Text>
                 </TouchableOpacity>
               </View>
               <View style={styles.storeGraphic}>

@@ -3315,16 +3315,16 @@
   "home": {
     "todos": {
       "low_balance": {
-        "title": "Baixo equilíbrio,\nrecarregue sua conta",
+        "title": "Saldo baixo,\nrecarregue sua conta",
         "button": "Recarregar"
       },
       "complete_profile": {
         "title": "Complete seu perfil\npara mais segurança",
-        "button": "Completo"
+        "button": "Completar"
       },
       "merchant_dashboard": {
-        "title": "Acesse seu negócio\nPainel",
-        "button": "Acesso"
+        "title": "Acesse seu\nPainel de Negócios",
+        "button": "Acessar"
       },
       "create_store": {
         "title": "Crie sua DZYStore\ne comece a vender",
@@ -3344,7 +3344,10 @@
     "inviteBannerTitle_1": "Convide amigos\ne ganhe ",
     "inviteBannerTitle_2": "$5 em DZY",
     "inviteBannerDesc": "Envie dinheiro, faça compras, pague contas e ganhem recompensas juntos.",
-    "btnInviteNow": "Convidar agora"
+    "btnInviteNow": "Convidar agora",
+    "inviteBannerAmount": " em DZY",
+    "referBannerTitle_1": "Indique uma loja\ne ganhe ",
+    "referBannerAmount": " em DZY"
   },
   "personalAccount": {
     "title": "Conta Pessoal",
@@ -3548,7 +3551,7 @@
     "sending": "A enviar...",
     "btnSendMessage": "Enviar Mensagem"
   },
-  "shopsFilterAll": "Todos",
+  "shopsFilterAll": "Todas as lojas",
   "shopsToggleGrid": "Exibição em Grade",
   "shopsToggleList": "Exibição em Lista",
   "shopsSeeMore": "Ver mais",
@@ -3887,5 +3890,13 @@
   "tabContacts": "Contatos",
   "tabShops": "Lojas",
   "tabSwap": "Troca",
-  "tabMore": "Mais"
+  "tabMore": "Mais",
+  "shopsBannerReferTitle": "Indique uma loja\ne ganhe ",
+  "shopsBannerReferAmount": " em DZY",
+  "shopsBannerReferSub": "Recomende um negócio\ne ganhe recompensas.",
+  "shopsBannerReferBtn": "Indicar",
+  "shopsFilterFood": "Alimentos e Mercearia",
+  "shopsFilterTech": "Eletrônicos",
+  "shopsFilterFashion": "Moda",
+  "shopsFilterServices": "Serviços"
 }
