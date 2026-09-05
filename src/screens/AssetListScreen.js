@@ -69,8 +69,12 @@ export default function AssetListScreen() {
   };
 
   const isMerchant = user?.role === 'merchant';
-  const totalUsdValue = user?.totalUsdValue || 0;
-  const currentRawBalances = user?.rawBalances || [];
+  const totalUsdValue = isMerchant
+    ? (user?.businessTotalUsdValue || user?.totalUsdValue || 0)
+    : (user?.totalUsdValue || 0);
+  const currentRawBalances = isMerchant
+    ? (user?.businessRawBalances?.length ? user.businessRawBalances : (user?.rawBalances || []))
+    : (user?.rawBalances || []);
   
   const groupedTokens = useMemo(() => {
     const groups = {};

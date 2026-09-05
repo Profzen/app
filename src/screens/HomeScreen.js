@@ -62,8 +62,12 @@ export default function HomeScreen() {
   }, [fetchMerchants, fetchAllProducts, user?.COI, user?.country]);
 
   useEffect(() => {
-    if (user && user.allBalances) {
-      setWalletBalances(user.allBalances);
+    if (user) {
+      const isMerchant = user?.role === 'merchant';
+      const balances = (isMerchant && user?.businessBalances && Object.keys(user.businessBalances).length > 0)
+        ? user.businessBalances
+        : (user?.allBalances || {});
+      setWalletBalances(balances);
     }
   }, [user]);
 

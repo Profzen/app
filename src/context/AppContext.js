@@ -342,6 +342,17 @@ export function AppProvider({ children }) {
           setIsTransactionsLoading(false);
         }
 
+        const isMerchant = fetchedRole === 'merchant';
+        const primaryBalances = (isMerchant && (businessTotalUsdValue > 0 || Object.keys(businessBalances).length > 0))
+          ? businessBalances
+          : newBalances;
+        const primaryRawBalances = (isMerchant && businessRawBalancesArray.length > 0)
+          ? businessRawBalancesArray
+          : rawBalancesArray;
+        const primaryTotalUsd = (isMerchant && businessTotalUsdValue > 0)
+          ? businessTotalUsdValue
+          : totalUsdValue;
+
         const fullUserData = {
           name: fetchedName,
           firstName: fetchedFirstName,
@@ -353,12 +364,15 @@ export function AppProvider({ children }) {
           city: fetchedCity,
           phone: fetchedPhone,
           avatar: fetchedAvatar ? { uri: fetchedAvatar } : null,
-          balanceDZY: newBalances.DZY,
-          balanceUSDT: newBalances.USDT,
-          balanceCFA: newBalances.XOF || newBalances.CFA,
-          totalUsdValue: totalUsdValue,
-          allBalances: newBalances,
-          rawBalances: rawBalancesArray,
+          balanceDZY: primaryBalances.DZY ?? (primaryTotalUsd * 10),
+          balanceUSDT: primaryBalances.USDT,
+          balanceCFA: primaryBalances.XOF || primaryBalances.CFA,
+          totalUsdValue: primaryTotalUsd,
+          allBalances: primaryBalances,
+          rawBalances: primaryRawBalances,
+          personalBalances: newBalances,
+          personalRawBalances: rawBalancesArray,
+          personalTotalUsdValue: totalUsdValue,
           merchantProfile: fetchedMerchantProfile,
           evmAddress: fetchedEvmAddress,
           solanaAddress: fetchedSolanaAddress,
