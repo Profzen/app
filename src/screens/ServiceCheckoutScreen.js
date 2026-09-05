@@ -10,8 +10,30 @@ import AppToast from '../components/AppToast';
 const rawBuyGoods = process.env.EXPO_PUBLIC_BUY_GOODS_API_URL || 'https://buygoods-api.dizzitup.com/api';
 const BUY_GOODS_API = rawBuyGoods.replace(/\/api\/?$/, '');
 const PAY_BILLS_URL = process.env.EXPO_PUBLIC_PAY_BILLS_URL || 'https://paybills.dizzitup.com';
+const BUY_GOODS_URL = process.env.EXPO_PUBLIC_BUY_GOODS_URL || 'https://buygoods.dizzitup.com';
 const rawDizzyWallet = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'https://wallet.dizzitup.com/api';
 const DIZZYWALLET_API = rawDizzyWallet.replace(/\/api\/?$/, '');
+
+const HIDE_WEB_CHROME_SCRIPT = `
+  (function() {
+    function hideElements() {
+      if (document.getElementById('dizzitup-native-hide-style')) return;
+      var style = document.createElement('style');
+      style.id = 'dizzitup-native-hide-style';
+      style.innerHTML = 'header, footer, nav, [data-bottom-navigation], [data-bottom-tabs], .bg-\\\\[\\\\#20365B\\\\], [class*="HeaderNavigation"], [class*="MainFooter"], [class*="BottomTabNavigation"], [class*="dizzItNavbar"] { display: none !important; } body { padding-bottom: 0 !important; }';
+      if (document.head) {
+        document.head.appendChild(style);
+      } else if (document.documentElement) {
+        document.documentElement.appendChild(style);
+      }
+    }
+    hideElements();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', hideElements);
+    }
+  })();
+  true;
+`;
 
 export default function ServiceCheckoutScreen() {
   const navigation = useNavigation();
@@ -32,13 +54,15 @@ export default function ServiceCheckoutScreen() {
 
         // 1. Determine Route based on Category
         let path = "/SelectService";
-        if (product.category === 'mobile_data_airtime') path = "/topups/operators";
+        if (product.category === 'mobile_data_airtime') {
+          path = product.operatorId ? "/topups/TopupDetails" : "/topups/operators";
+        }
         else if (product.category === 'utilities') path = "/PayUtilityBills/SelectUtilityService";
         else if (product.category === 'gift_cards') path = "/GiftCards/SelectGiftCard";
         else if (product.category === 'education') path = "/PayUtilityBills/SelectUtilityService";
         else if (product.isRemittance) path = "/send-remittance"; 
         
-        let targetHost = product.isRemittance || !product.isService ? 'https://buygoods.dizzitup.com' : PAY_BILLS_URL;
+        let targetHost = product.isRemittance || !product.isService ? BUY_GOODS_URL : PAY_BILLS_URL;
 
         // 2. Create Context for Services
         let contextId = null;
@@ -90,6 +114,28 @@ export default function ServiceCheckoutScreen() {
           params.set('amount', product.price);
         }
 
+        if (product.category === 'mobile_data_airtime') {
+          if (product.operatorId) {
+            params.set('operatorId', String(product.operatorId));
+            params.set('provider_id', String(product.operatorId));
+          }
+          if (product.name || product.operatorName) {
+            params.set('operatorName', product.name || product.operatorName);
+          }
+          if (product.price) {
+            params.set('amount', String(product.price));
+          }
+          if (product.receiveAmount) {
+            params.set('receiveAmount', String(product.receiveAmount));
+          }
+          if (product.planDescription) {
+            params.set('planDescription', String(product.planDescription));
+          }
+          if (product.directToSummary) {
+            params.set('directToSummary', 'true');
+          }
+        }
+
         const fName = beneficiary.first_name || beneficiary.name?.split(' ')[0] || "";
         const lName = beneficiary.last_name || beneficiary.name?.split(' ')?.slice(1)?.join(' ') || "";
         if (fName) params.set('firstName', fName);
@@ -98,6 +144,7 @@ export default function ServiceCheckoutScreen() {
         if (beneficiary.city) params.set('city', beneficiary.city);
         if (beneficiary.id) params.set('beneficiaryId', beneficiary.id);
         params.set('skipRecipient', 'true');
+        params.set('app', 'true'); // Native wrapper flag to hide web headers
 
         const finalUrl = `${targetHost}${path}?${params.toString()}`;
         console.log("Loading Secure Checkout URL:", finalUrl);
@@ -167,6 +214,15 @@ export default function ServiceCheckoutScreen() {
             ref={webViewRef}
             source={{ uri: checkoutUrl }}
             style={{ flex: 1 }}
+            originWhitelist={['*']}
+            injectedJavaScriptBeforeContentLoaded={HIDE_WEB_CHROME_SCRIPT}
+            injectedJavaScript={HIDE_WEB_CHROME_SCRIPT}
+            onShouldStartLoadWithRequest={(request) => {
+              if (request.url.startsWith('data:') || request.url.startsWith('blob:') || request.url.startsWith('about:')) {
+                return true;
+              }
+              return true;
+            }}
             onNavigationStateChange={handleNavigationStateChange}
             startInLoadingState={true}
             renderLoading={() => (

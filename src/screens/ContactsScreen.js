@@ -53,6 +53,7 @@ export default function ContactsScreen() {
     const { success, data } = await contactService.getBeneficiaries(session.user.id);
     if (success && data && data.length > 0) {
       const formatted = data.map(b => ({
+        ...b,
         id: b.id,
         name: b.full_name || `${b.first_name} ${b.last_name || ''}`.trim(),
         relation: b.relationship || t('contacts.relation.friend', 'Ami'),
@@ -60,6 +61,9 @@ export default function ContactsScreen() {
         country: b.country || b.country_name || (b.country_code ? (() => { try { return new Intl.DisplayNames(['en'], {type: 'region'}).of(b.country_code) } catch(e) { return b.country_code } })() : ''),
         country_code: b.country_code,
         city: b.city,
+        phone: b.phone || b.phone_number,
+        email: b.email,
+        address: b.evm_address || b.solana_address || b.phone || b.email,
         flag: getFlagEmoji(b.country_code),
         isBeneficiary: true,
         isSponsor: false,

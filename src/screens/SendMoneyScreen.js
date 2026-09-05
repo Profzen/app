@@ -82,7 +82,12 @@ export default function SendMoneyScreen() {
             address: b.evm_address || b.solana_address || b.phone || b.email,
             evm_address: b.evm_address,
             solana_address: b.solana_address,
-            avatar_url: b.avatar_url
+            avatar_url: b.avatar_url,
+            phone: b.phone || b.phone_number,
+            email: b.email,
+            country: b.country || b.country_name,
+            country_code: b.country_code || b.country_code_iso,
+            country_iso: b.country_iso || b.country_code_iso,
           }));
           
           const combined = [];
@@ -122,7 +127,12 @@ export default function SendMoneyScreen() {
               tag: 'DizzitUp',
               address: m.phone || m.evm_address || 'Utilisateur',
               evm_address: m.evm_address,
-              solana_address: m.solana_address
+              solana_address: m.solana_address,
+              phone: m.phone || m.phone_number,
+              email: m.email,
+              country: m.country || m.country_name,
+              country_code: m.country_code || m.country_code_iso,
+              country_iso: m.country_iso || m.country_code_iso
             })));
           }
         } catch (e) {

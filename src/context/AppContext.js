@@ -446,7 +446,10 @@ export function AppProvider({ children }) {
     });
   }, [handleSetLanguage]);
 
-  const t = useCallback((key, fallback = '') => {
+  const t = useCallback((key, fallbackOrParams = '', maybeParams = null) => {
+    let fallback = typeof fallbackOrParams === 'string' ? fallbackOrParams : '';
+    let params = (typeof fallbackOrParams === 'object' && fallbackOrParams !== null) ? fallbackOrParams : maybeParams;
+
     const langDict = TRANSLATIONS[language] || TRANSLATIONS.en;
     // Helper to traverse flat keys OR nested object paths (e.g. 'common.buttons.save')
     const getNestedValue = (obj, path) => {
@@ -465,7 +468,15 @@ export function AppProvider({ children }) {
       val = getNestedValue(TRANSLATIONS.en, key);
     }
     
-    return val || fallback || key;
+    let result = val || fallback || key;
+
+    if (params && typeof params === 'object' && typeof result === 'string') {
+      result = result.replace(/\{\{(\w+)\}\}/g, (_, k) => {
+        return params[k] !== undefined && params[k] !== null ? String(params[k]) : `{{${k}}}`;
+      });
+    }
+
+    return result;
   }, [language]);
 
   const toggleFavorite = (id) => {

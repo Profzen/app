@@ -189,9 +189,9 @@ export default function LoginScreen() {
 
         {/* Signup Link */}
         <View style={styles.signupContainer}>
-          <Text style={styles.signupText}>{t('auth.no_account', "Vous n'avez pas de compte ? ")}</Text>
+          <Text style={styles.signupText}>{t('auth.dontHaveAccount', "Vous n'avez pas de compte ? ")}</Text>
           <TouchableOpacity onPress={() => Linking.openURL('https://dizzitup.com/user-registration-login?mode=signup')}>
-            <Text style={styles.signupLink}>{t('auth.sign_up', "S'inscrire")}</Text>
+            <Text style={styles.signupLink}>{t('auth.signUp', "S'inscrire")}</Text>
           </TouchableOpacity>
         </View>
         </ScrollView>

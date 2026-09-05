@@ -43,6 +43,7 @@ export default function ContactsManageScreen() {
       setLoading(true);
       const data = await contactService.getBeneficiaries(session.user.id);
       const mapped = data.data.map(b => ({
+        ...b,
         id: b.id,
         name: b.full_name || `${b.first_name} ${b.last_name}`.trim(),
         relation: b.relationship || t('contacts.relation.friend', 'Ami'),
@@ -50,6 +51,9 @@ export default function ContactsManageScreen() {
         country: b.country || b.country_name || (b.country_code ? (() => { try { return new Intl.DisplayNames(['en'], {type: 'region'}).of(b.country_code) } catch(e) { return b.country_code } })() : ''),
         country_code: b.country_code,
         city: b.city,
+        phone: b.phone || b.phone_number,
+        email: b.email,
+        address: b.evm_address || b.solana_address || b.phone || b.email,
         flag: getFlagEmoji(b.country_code),
         isBeneficiary: true,
         isSponsor: false,
@@ -200,7 +204,7 @@ export default function ContactsManageScreen() {
           onClose={() => setSelectedContact(null)}
           onNavigate={(route, extraParams = {}) => {
             setSelectedContact(null);
-            navigation.navigate(route, { contact: selectedContact, ...extraParams });
+            navigation.navigate(route, { beneficiary: selectedContact, contact: selectedContact, ...extraParams });
           }}
           onDelete={(id) => {
             setSelectedContact(null);

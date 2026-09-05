@@ -16,6 +16,7 @@ import ContactsManageScreen from '../screens/ContactsManageScreen';
 import ContactsScreen from '../screens/ContactsScreen';
 import EditBeneficiaryScreen from '../screens/EditBeneficiaryScreen';
 import ServiceCheckoutScreen from '../screens/ServiceCheckoutScreen';
+import PayBillsSummaryScreen from '../screens/PayBillsSummaryScreen';
 import DashboardEngScreen from '../screens/DashboardEngScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import FiltersScreen from '../screens/FiltersScreen';
@@ -131,6 +132,7 @@ export default function AppNavigator() {
         component={ServiceCheckoutScreen} 
         options={{ presentation: 'transparentModal', animation: 'slide_from_bottom' }}
       />
+      <Stack.Screen name="PayBillsSummaryScreen" component={PayBillsSummaryScreen} />
       <Stack.Screen name="DashboardEngScreen" component={DashboardEngScreen} />
       <Stack.Screen name="DashboardScreen" component={DashboardScreen} />
       <Stack.Screen name="FiltersScreen" component={FiltersScreen} />

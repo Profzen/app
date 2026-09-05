@@ -19,20 +19,6 @@ export default function ChooseServiceScreen() {
 
   const beneficiary = route.params?.beneficiary || {};
 
-  const getCountryName = (code, fallback) => {
-    if (!code) return fallback || 'your country';
-    try { return new Intl.DisplayNames(['en'], {type: 'region'}).of(code.trim().toUpperCase()); } 
-    catch(e) { return code; }
-  };
-  
-  const globalCountryName = useMemo(() => {
-    let raw = beneficiary.country || beneficiary.country_name || beneficiary.country_code;
-    if (raw && raw.trim().length === 2) {
-      return getCountryName(raw.trim(), 'your country');
-    }
-    return raw || 'your country';
-  }, [beneficiary]);
-
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [cities, setCities] = useState([]);
@@ -55,6 +41,46 @@ export default function ChooseServiceScreen() {
     { id: 'home_furniture', name: t('marketplace.homeFurniture', 'Furniture'), icon: 'home-outline' },
     { id: 'gift_cards', name: t('marketplace.giftCards', 'Gift Cards'), icon: 'gift-outline' }
   ];
+
+  const [globalCountryName, setGlobalCountryName] = useState(() => {
+    let raw = beneficiary.country || beneficiary.country_name || beneficiary.country_code;
+    return raw || 'your country';
+  });
+  const [isCountryResolved, setIsCountryResolved] = useState(false);
+
+  // Async resolve country code to name via DB
+  useEffect(() => {
+    let raw = beneficiary.country || beneficiary.country_name || beneficiary.country_code;
+    if (raw && raw.trim().length === 2) {
+      const fetchCountryName = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('countries')
+            .select('name')
+            .eq('code', raw.trim().toUpperCase())
+            .single();
+            
+          if (data && data.name) {
+            setGlobalCountryName(data.name);
+          } else {
+            // Fallback to Intl if not in DB
+            try { 
+              const intlName = new Intl.DisplayNames(['en'], {type: 'region'}).of(raw.trim().toUpperCase()); 
+              if (intlName) setGlobalCountryName(intlName);
+            } catch(e) {}
+          }
+        } catch (err) {
+          console.log("Error fetching full country name:", err);
+        } finally {
+          setIsCountryResolved(true);
+        }
+      };
+      fetchCountryName();
+    } else {
+      if (raw) setGlobalCountryName(raw);
+      setIsCountryResolved(true);
+    }
+  }, [beneficiary]);
 
   // Load Cities
   useEffect(() => {
@@ -83,6 +109,8 @@ export default function ChooseServiceScreen() {
 
   // Load Real Products from Backend
   useEffect(() => {
+    if (!isCountryResolved) return;
+    
     const fetchProducts = async () => {
       setLoadingProducts(true);
       try {
@@ -164,7 +192,7 @@ export default function ChooseServiceScreen() {
       }
     };
     fetchProducts();
-  }, [beneficiary]);
+  }, [beneficiary, globalCountryName, isCountryResolved]);
 
   // Filtering Logic & Sorting
   const filteredProducts = useMemo(() => {
@@ -200,6 +228,8 @@ export default function ChooseServiceScreen() {
     
     if (selectedProduct.id === 'srv_remittance') {
       navigation.navigate('SendMoneyScreen', { beneficiary });
+    } else if (selectedProduct.id === 'srv_airtime') {
+      navigation.navigate('MobileRechargeScreen', { beneficiary, product: selectedProduct });
     } else if (selectedProduct.isService === false) {
       navigation.navigate('ProductDetailsScreen', { 
         product: selectedProduct, 
