@@ -56,7 +56,22 @@ export default function ProductDetailsScreen({ route }) {
           {/* Left Column: Images */}
           <View style={styles.leftCol}>
             <View style={styles.mainImageContainer}>
-              <Image source={require('../../assets/promo_shop.png')} style={{ width: '100%', height: 180, borderRadius: 12 }} resizeMode="contain" />
+              <Image
+                source={
+                  (product.product_images && product.product_images.length > 0)
+                    ? { uri: product.product_images[0] }
+                    : (product.images && product.images.length > 0)
+                    ? { uri: product.images[0] }
+                    : product.thumbnail
+                    ? { uri: product.thumbnail }
+                    : product.image
+                    ? { uri: product.image }
+                    : require('../../assets/brand/product_no_image.jpg')
+                }
+                defaultSource={require('../../assets/brand/product_no_image.jpg')}
+                style={{ width: '100%', height: 180, borderRadius: 12 }}
+                resizeMode="cover"
+              />
             </View>
           </View>
 

@@ -124,10 +124,11 @@ export default function ShopDetailsScreen({ route }) {
                 <Text style={styles.coverSubtitle}>{t('shop.cover_subtitle', 'Tout ce dont vous\navez besoin, livré\nchez vous.')}</Text>
               </View>
               <Image
-                source={shop.shop_banner_url ? { uri: shop.shop_banner_url } : require('../../assets/brand/shop_default_banner.jpg')}
+                source={shop.shop_banner_url ? { uri: shop.shop_banner_url } : (shop.bannerUrl ? { uri: shop.bannerUrl } : require('../../assets/brand/store_default_banner.jpg'))}
+                defaultSource={require('../../assets/brand/store_default_banner.jpg')}
                 style={styles.coverImage}
               />
-              {!shop.shop_banner_url && (
+              {!shop.shop_banner_url && !shop.bannerUrl && (
                 <View style={{position: 'absolute', bottom: 10, right: 14, backgroundColor: 'rgba(26, 40, 64, 0.7)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12}}>
                   <Text style={{fontFamily: 'SpaceGrotesk_700Bold', fontSize: 10, color: '#FFF'}}>DZYstore • Dizzitup</Text>
                 </View>
@@ -395,7 +396,7 @@ export default function ShopDetailsScreen({ route }) {
                   ) : product.thumbnail ? (
                     <Image source={{ uri: product.thumbnail }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
                   ) : (
-                    <Ionicons name="cube-outline" size={24} color="#9CA3AF" />
+                    <Image source={require('../../assets/brand/product_no_image.jpg')} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
                   )}
                 </View>
 

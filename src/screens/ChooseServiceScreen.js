@@ -343,9 +343,11 @@ export default function ChooseServiceScreen() {
                     <View style={styles.productImageWrap}>
                       {item.image ? (
                         <Image source={{uri: item.image}} style={styles.productImage} />
+                      ) : !item.isService ? (
+                        <Image source={require('../../assets/brand/product_no_image.jpg')} style={styles.productImage} resizeMode="cover" />
                       ) : (
                         <View style={styles.productPlaceholder}>
-                          <Ionicons name={item.isService ? "flash" : "cube"} size={32} color="#CBD5E1" />
+                          <Ionicons name="flash" size={32} color="#CBD5E1" />
                         </View>
                       )}
                       {(item.city || item.country) && !isOutOfCity && (

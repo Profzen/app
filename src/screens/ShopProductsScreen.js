@@ -241,9 +241,7 @@ export default function ShopProductsScreen({ route }) {
                 ) : product.images && product.images.length > 0 ? (
                   <Image source={{ uri: product.images[0] }} style={styles.productImgPlaceholder} resizeMode="cover" />
                 ) : (
-                  <View style={[styles.productImgPlaceholder, { justifyContent: 'center', alignItems: 'center' }]}>
-                    <Ionicons name="cube-outline" size={24} color="#9CA3AF" />
-                  </View>
+                  <Image source={require('../../assets/brand/product_no_image.jpg')} style={styles.productImgPlaceholder} resizeMode="cover" />
                 )}
                 
                 <View style={styles.productContent}>
