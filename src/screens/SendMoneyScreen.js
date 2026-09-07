@@ -349,9 +349,13 @@ export default function SendMoneyScreen() {
                 </View>
                 
                 <View style={styles.recipientInfoWrap}>
-                  <Text style={styles.recipientName}>{selectedRecipient.name}</Text>
+                  <Text style={styles.recipientName} numberOfLines={1} ellipsizeMode="tail">
+                    {selectedRecipient.name}
+                  </Text>
                   <Text style={styles.recipientAddress} numberOfLines={1} ellipsizeMode="middle">
-                    {selectedRecipient.address}
+                    {selectedRecipient.address && selectedRecipient.address.length > 20
+                      ? `${selectedRecipient.address.slice(0, 8)}...${selectedRecipient.address.slice(-6)}`
+                      : selectedRecipient.address}
                   </Text>
                 </View>
 
@@ -362,6 +366,7 @@ export default function SendMoneyScreen() {
                     setIsDropdownVisible(true);
                   }}
                   activeOpacity={0.7}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
                   <Ionicons name="close" size={16} color="#64748B" />
                 </TouchableOpacity>
@@ -492,12 +497,12 @@ const styles = StyleSheet.create({
   dropdownAddressText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 11, color: '#94A3B8' },
 
   /* Selected Recipient Card */
-  recipientCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, padding: 12, marginBottom: 20 },
-  userAvatarCircle: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#EFF6FF', borderWidth: 1, borderColor: '#DBEAFE', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  recipientInfoWrap: { flex: 1 },
+  recipientCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, padding: 12, marginBottom: 20, overflow: 'hidden' },
+  userAvatarCircle: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#EFF6FF', borderWidth: 1, borderColor: '#DBEAFE', justifyContent: 'center', alignItems: 'center', marginRight: 12, flexShrink: 0 },
+  recipientInfoWrap: { flex: 1, minWidth: 0, marginRight: 8, justifyContent: 'center' },
   recipientName: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#0F172A', marginBottom: 2 },
   recipientAddress: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#64748B' },
-  clearRecipientBtn: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center' },
+  clearRecipientBtn: { width: 30, height: 30, borderRadius: 15, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center', flexShrink: 0 },
   
   /* Amount Section */
   amountHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, marginTop: 4 },

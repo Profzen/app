@@ -274,32 +274,41 @@ export function AppProvider({ children }) {
           if (fetchedDizzyToken) {
             const bData = await fetchBalance(fetchedDizzyToken);
             if (bData) {
+              let sumPersonalTokensUsd = 0;
               if (bData.balances) {
                 rawBalancesArray = bData.balances;
                 bData.balances.forEach(b => {
                   const cur = (b.currency || b.token || b.symbol || '').toUpperCase();
-                  if (cur) newBalances[cur] = parseFloat(b.balance || 0);
+                  const bal = parseFloat(b.balance || 0);
+                  if (cur) newBalances[cur] = bal;
+                  const uv = parseFloat(b.usdValue);
+                  if (!isNaN(uv) && uv > 0) {
+                    sumPersonalTokensUsd += uv;
+                  } else if (['USDT', 'USDC', 'USD'].includes(cur)) {
+                    sumPersonalTokensUsd += bal;
+                  } else if (cur === 'EURC') {
+                    sumPersonalTokensUsd += bal * 1.08;
+                  }
                 });
               }
-              if (bData.totalUsdValue !== undefined) {
-                const usdVal = parseFloat(bData.totalUsdValue || 0);
-                totalUsdValue = usdVal;
-                newBalances['DZY'] = usdVal * 10;
-                newBalances['USD'] = usdVal;
-                try {
-                  const rateRes = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-                  if (rateRes.ok) {
-                    const rateData = await rateRes.json();
-                    const rates = rateData.rates || {};
-                    Object.keys(rates).forEach(fiat => {
-                      newBalances[fiat] = usdVal * rates[fiat];
-                    });
-                  }
-                } catch (rateErr) {
-                  newBalances['UGX'] = usdVal * 3750;
-                  newBalances['EUR'] = usdVal * 0.92;
-                  newBalances['XOF'] = usdVal * 605;
+              const backendUsd = bData.totalUsdValue !== undefined ? parseFloat(bData.totalUsdValue || 0) : 0;
+              const usdVal = Math.max(backendUsd, sumPersonalTokensUsd);
+              totalUsdValue = usdVal;
+              newBalances['DZY'] = usdVal * 10;
+              newBalances['USD'] = usdVal;
+              try {
+                const rateRes = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+                if (rateRes.ok) {
+                  const rateData = await rateRes.json();
+                  const rates = rateData.rates || {};
+                  Object.keys(rates).forEach(fiat => {
+                    newBalances[fiat] = usdVal * rates[fiat];
+                  });
                 }
+              } catch (rateErr) {
+                newBalances['UGX'] = usdVal * 3750;
+                newBalances['EUR'] = usdVal * 0.92;
+                newBalances['XOF'] = usdVal * 605;
               }
             }
           }
@@ -307,25 +316,34 @@ export function AppProvider({ children }) {
           if (fetchedBusinessDizzyToken) {
             const bData = await fetchBalance(fetchedBusinessDizzyToken);
             if (bData) {
+              let sumBusinessTokensUsd = 0;
               if (bData.balances) {
                 businessRawBalancesArray = bData.balances;
                 bData.balances.forEach(b => {
                   const cur = (b.currency || b.token || b.symbol || '').toUpperCase();
-                  if (cur) businessBalances[cur] = parseFloat(b.balance || 0);
-                });
-              }
-              if (bData.totalUsdValue !== undefined) {
-                const usdVal = parseFloat(bData.totalUsdValue || 0);
-                businessTotalUsdValue = usdVal;
-                businessBalances['DZY'] = usdVal * 10;
-                businessBalances['USD'] = usdVal;
-                const knownCryptoTokens = ['POL', 'USDT', 'USDC', 'ETH', 'BTC', 'WBTC', 'SOL', 'MATIC', 'BNB', 'DAI'];
-                Object.keys(newBalances).forEach(key => {
-                  if (key !== 'DZY' && key !== 'USD' && !knownCryptoTokens.includes(key) && newBalances[key]) {
-                     businessBalances[key] = (newBalances[key] / (newBalances['USD'] || 1)) * usdVal;
+                  const bal = parseFloat(b.balance || 0);
+                  if (cur) businessBalances[cur] = bal;
+                  const uv = parseFloat(b.usdValue);
+                  if (!isNaN(uv) && uv > 0) {
+                    sumBusinessTokensUsd += uv;
+                  } else if (['USDT', 'USDC', 'USD'].includes(cur)) {
+                    sumBusinessTokensUsd += bal;
+                  } else if (cur === 'EURC') {
+                    sumBusinessTokensUsd += bal * 1.08;
                   }
                 });
               }
+              const backendBizUsd = bData.totalUsdValue !== undefined ? parseFloat(bData.totalUsdValue || 0) : 0;
+              const usdVal = Math.max(backendBizUsd, sumBusinessTokensUsd);
+              businessTotalUsdValue = usdVal;
+              businessBalances['DZY'] = usdVal * 10;
+              businessBalances['USD'] = usdVal;
+              const knownCryptoTokens = ['POL', 'USDT', 'USDC', 'ETH', 'BTC', 'WBTC', 'SOL', 'MATIC', 'BNB', 'DAI'];
+              Object.keys(newBalances).forEach(key => {
+                if (key !== 'DZY' && key !== 'USD' && !knownCryptoTokens.includes(key) && newBalances[key]) {
+                   businessBalances[key] = (newBalances[key] / (newBalances['USD'] || 1)) * usdVal;
+                }
+              });
             }
           }
         } catch (e) {
