@@ -116,7 +116,7 @@ export default function RewardsScreen() {
           <TouchableOpacity 
             style={styles.iconSquareBtn} 
             onPress={() => navigation.goBack()} 
-            accessibilityLabel="Retour"
+            accessibilityLabel={t('common.back', 'Back')}
           >
             <Ionicons name="arrow-back" size={20} color="#1A2840" />
           </TouchableOpacity>
@@ -127,14 +127,14 @@ export default function RewardsScreen() {
             <TouchableOpacity 
               style={styles.iconSquareBtn} 
               onPress={() => setShowHelpModal(true)}
-              accessibilityLabel="Aide"
+              accessibilityLabel={t('rewards.help', 'Help')}
             >
               <Ionicons name="help-circle-outline" size={20} color="#1A2840" />
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.iconSquareBtn} 
               onPress={handleShareInvite}
-              accessibilityLabel="Partager"
+              accessibilityLabel={t('rewards.share', 'Share')}
             >
               <Ionicons name="share-social-outline" size={20} color="#1A2840" />
             </TouchableOpacity>
@@ -166,12 +166,12 @@ export default function RewardsScreen() {
                   </View>
                   <View>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Text style={styles.badgeText}>DZY LOYALTY & REWARDS</Text>
+                      <Text style={styles.badgeText}>{t('rewards.loyalty_badge', 'DZY LOYALTY & REWARDS')}</Text>
                       <View style={styles.proBadge}>
-                        <Text style={styles.proBadgeText}>REWARDS ONLY</Text>
+                        <Text style={styles.proBadgeText}>{t('rewards.rewards_only', 'REWARDS ONLY')}</Text>
                       </View>
                     </View>
-                    <Text style={styles.rateSubtitle}>10 DZY = $1.00 USD (Polygon ERC-20)</Text>
+                    <Text style={styles.rateSubtitle}>{t('rewards.token_valuation', '10 DZY = $1.00 USD (Polygon ERC-20)')}</Text>
                   </View>
                 </View>
                 <TouchableOpacity onPress={toggleHideBalance} style={styles.eyeIcon}>
@@ -189,9 +189,9 @@ export default function RewardsScreen() {
                 <View style={styles.dualCol}>
                   <View style={styles.colHeaderRow}>
                     <Ionicons name="wallet-outline" size={13} color="#FFC759" style={{ marginRight: 4 }} />
-                    <Text style={styles.colTitleLabel}>AVAILABLE</Text>
+                    <Text style={styles.colTitleLabel}>{t('rewards.available', 'AVAILABLE')}</Text>
                   </View>
-                  <Text style={styles.colSubtext}>To redeem now</Text>
+                  <Text style={styles.colSubtext}>{t('rewards.to_redeem_now', 'To redeem now')}</Text>
 
                   <View style={styles.amountContainer}>
                     <Text 
@@ -219,9 +219,9 @@ export default function RewardsScreen() {
                 <View style={styles.dualCol}>
                   <View style={styles.colHeaderRow}>
                     <Ionicons name="trophy-outline" size={13} color="#FFC759" style={{ marginRight: 4 }} />
-                    <Text style={styles.colTitleLabel}>TOTAL EARNED</Text>
+                    <Text style={styles.colTitleLabel}>{t('rewards.total_earned', 'TOTAL EARNED')}</Text>
                   </View>
-                  <Text style={styles.colSubtext}>Since Day 1</Text>
+                  <Text style={styles.colSubtext}>{t('rewards.since_day_1', 'Since Day 1')}</Text>
 
                   <View style={styles.amountContainer}>
                     <Text 
@@ -247,11 +247,11 @@ export default function RewardsScreen() {
               <View style={styles.perksRow}>
                 <View style={styles.perkPill}>
                   <Ionicons name="flash" size={12} color="#FFC759" style={{ marginRight: 4 }} />
-                  <Text style={styles.perkPillText}>5% Cashback on Bills</Text>
+                  <Text style={styles.perkPillText}>{t('rewards.cashback_badge_pill', '5% Cashback on Bills')}</Text>
                 </View>
                 <View style={styles.perkPill}>
                   <Ionicons name="trending-up" size={12} color="#10B981" style={{ marginRight: 4 }} />
-                  <Text style={[styles.perkPillText, { color: '#10B981' }]}>8–15% Staking APY</Text>
+                  <Text style={[styles.perkPillText, { color: '#10B981' }]}>{t('rewards.staking_badge_pill', '8–15% Staking APY')}</Text>
                 </View>
               </View>
 
@@ -304,9 +304,9 @@ export default function RewardsScreen() {
 
           {/* Section: How to Earn DZY (Real Actionable Programs) */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{t('rewards.how_to_earn', 'Comment gagner des DZY')}</Text>
+            <Text style={styles.sectionTitle}>{t('rewards.how_to_earn', 'How to Earn DZY')}</Text>
             <Text style={styles.sectionSubtitle}>
-              {t('rewards.how_to_earn_sub', 'Participez à l\'écosystème et débloquez des bonus')}
+              {t('rewards.how_to_earn_sub', 'Participate in the ecosystem and unlock rewards')}
             </Text>
           </View>
 
@@ -320,12 +320,12 @@ export default function RewardsScreen() {
                 <View style={styles.badgeRow}>
                   <View style={[styles.miniBadge, { backgroundColor: '#FEF3C7' }]}>
                     <Text style={[styles.miniBadgeText, { color: '#B45309' }]}>
-                      {t('rewards.referral_badge', 'Gagnez $5 en DZY')}
+                      {t('rewards.referral_badge', 'Earn $5 in DZY')}
                     </Text>
                   </View>
                 </View>
                 <Text style={styles.programTitle}>
-                  {t('rewards.referral_title', 'Programme de Parrainage')}
+                  {t('rewards.referral_title', 'Referral Program')}
                 </Text>
               </View>
             </View>
@@ -333,14 +333,14 @@ export default function RewardsScreen() {
             <Text style={styles.programDesc}>
               {t(
                 'rewards.referral_desc',
-                'Invitez vos proches. Recevez $5 en DZY dès leur premier transfert ou paiement de facture.'
+                'Invite friends and family. Earn $5 in DZY as soon as they make their first transfer or bill payment.'
               )}
             </Text>
 
             {/* Referral Code Box */}
             <View style={styles.referralCodeBox}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.codeLabel}>{t('rewards.referral_code_label', 'Votre code parrain')}</Text>
+                <Text style={styles.codeLabel}>{t('rewards.referral_code_label', 'Your Referral Code')}</Text>
                 <Text style={styles.codeValue}>{referralCode}</Text>
               </View>
               <TouchableOpacity 
@@ -355,7 +355,7 @@ export default function RewardsScreen() {
                   style={{ marginRight: 4 }}
                 />
                 <Text style={[styles.copyBtnText, copiedCode && { color: '#FFFFFF' }]}>
-                  {copiedCode ? t('rewards.code_copied', 'Copié !') : t('rewards.btn_copy_code', 'Copier')}
+                  {copiedCode ? t('rewards.code_copied', 'Copied!') : t('rewards.btn_copy_code', 'Copy')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -368,7 +368,7 @@ export default function RewardsScreen() {
             >
               <Ionicons name="paper-plane-outline" size={17} color="#1A2840" style={{ marginRight: 6 }} />
               <Text style={styles.primaryActionBtnText}>
-                {t('rewards.btn_share_invite', 'Partager le lien d\'invitation')}
+                {t('rewards.btn_share_invite', 'Share Invite Link')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -383,12 +383,12 @@ export default function RewardsScreen() {
                 <View style={styles.badgeRow}>
                   <View style={[styles.miniBadge, { backgroundColor: '#DCFCE7' }]}>
                     <Text style={[styles.miniBadgeText, { color: '#047857' }]}>
-                      {t('rewards.cashback_badge', '5% de retour DZY')}
+                      {t('rewards.cashback_badge', '5% DZY Back')}
                     </Text>
                   </View>
                 </View>
                 <Text style={styles.programTitle}>
-                  {t('rewards.cashback_title', 'Cashback 5% Instantané')}
+                  {t('rewards.cashback_title', 'Instant 5% Cashback')}
                 </Text>
               </View>
             </View>
@@ -396,7 +396,7 @@ export default function RewardsScreen() {
             <Text style={styles.programDesc}>
               {t(
                 'rewards.cashback_desc',
-                'Payez vos factures (électricité, eau, TV) et rechargez votre mobile pour cumuler automatiquement 5% en DZY tokens crédités sur votre compte.'
+                'Pay your utility bills (electricity, water, TV) and recharge mobile airtime to automatically earn 5% back in DZY tokens credited to your balance.'
               )}
             </Text>
 
@@ -407,7 +407,7 @@ export default function RewardsScreen() {
             >
               <Ionicons name="receipt-outline" size={16} color="#047857" style={{ marginRight: 6 }} />
               <Text style={[styles.outlineActionBtnText, { color: '#047857' }]}>
-                {t('rewards.btn_pay_bills', 'Payer une facture maintenant')}
+                {t('rewards.btn_pay_bills', 'Pay a Bill Now')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -422,12 +422,12 @@ export default function RewardsScreen() {
                 <View style={styles.badgeRow}>
                   <View style={[styles.miniBadge, { backgroundColor: '#E0E7FF' }]}>
                     <Text style={[styles.miniBadgeText, { color: '#3730A3' }]}>
-                      {t('rewards.merchant_badge', 'Marchands & POS')}
+                      {t('rewards.merchant_badge', 'Merchants & POS')}
                     </Text>
                   </View>
                 </View>
                 <Text style={styles.programTitle}>
-                  {t('rewards.merchant_title', 'Encaissement Commerçant')}
+                  {t('rewards.merchant_title', 'Merchant Payments Acceptance')}
                 </Text>
               </View>
             </View>
@@ -435,7 +435,7 @@ export default function RewardsScreen() {
             <Text style={styles.programDesc}>
               {t(
                 'rewards.merchant_desc',
-                'Encaissez vos clients par QR code ou terminal POS DizzitUp et recevez 1.5% de bonus mensuel en tokens DZY sur votre volume.'
+                'Accept customer payments via DizzitUp QR code or POS terminal and receive a 1.5% monthly bonus in DZY tokens on your total volume.'
               )}
             </Text>
 
@@ -446,7 +446,7 @@ export default function RewardsScreen() {
             >
               <Ionicons name="business-outline" size={16} color="#4F46E5" style={{ marginRight: 6 }} />
               <Text style={[styles.outlineActionBtnText, { color: '#4F46E5' }]}>
-                {t('rewards.btn_register_pos', 'Enregistrer un commerce')}
+                {t('rewards.btn_register_pos', 'Register a Business')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -455,21 +455,21 @@ export default function RewardsScreen() {
           <View style={styles.miniCardsRow}>
             <View style={styles.miniGridCard}>
               <Ionicons name="shield-checkmark" size={20} color="#FFC759" />
-              <Text style={styles.miniGridTitle}>{t('rewards.staking_title', 'Staking DZY')}</Text>
-              <Text style={styles.miniGridDesc}>{t('rewards.staking_desc', 'Jusqu\'à 8% APY sur vos tokens immobilisés.')}</Text>
+              <Text style={styles.miniGridTitle}>{t('rewards.staking_title', 'DZY Staking')}</Text>
+              <Text style={styles.miniGridDesc}>{t('rewards.staking_desc', 'Up to 8–15% APY on your staked tokens.')}</Text>
             </View>
             <View style={styles.miniGridCard}>
               <Ionicons name="trophy" size={20} color="#10B981" />
-              <Text style={styles.miniGridTitle}>{t('rewards.ambassador_title', 'Ambassadeur')}</Text>
-              <Text style={styles.miniGridDesc}>{t('rewards.ambassador_desc', 'Bonus exclusifs pour les leaders communautaires.')}</Text>
+              <Text style={styles.miniGridTitle}>{t('rewards.ambassador_title', 'Ambassador Program')}</Text>
+              <Text style={styles.miniGridDesc}>{t('rewards.ambassador_desc', 'Exclusive bonuses and perks for community leaders.')}</Text>
             </View>
           </View>
 
           {/* Section: How to Use / Spend DZY */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{t('rewards.how_to_spend', 'Comment utiliser vos DZY')}</Text>
+            <Text style={styles.sectionTitle}>{t('rewards.how_to_spend', 'Where to Use Your DZY')}</Text>
             <Text style={styles.sectionSubtitle}>
-              {t('rewards.how_to_spend_sub', 'Vos tokens ont une valeur d\'usage réelle et immédiate')}
+              {t('rewards.how_to_spend_sub', 'Your tokens provide real, instant purchasing power across Africa')}
             </Text>
           </View>
 
@@ -480,7 +480,7 @@ export default function RewardsScreen() {
               onPress={() => setActiveTab('spend')}
             >
               <Text style={[styles.segmentBtnText, activeTab === 'spend' && styles.segmentBtnTextActive]}>
-                {t('rewards.tab_spend', 'Paiements & Achats')}
+                {t('rewards.tab_spend', 'Where to Spend')}
               </Text>
             </TouchableOpacity>
 
@@ -489,7 +489,7 @@ export default function RewardsScreen() {
               onPress={() => setActiveTab('benefits')}
             >
               <Text style={[styles.segmentBtnText, activeTab === 'benefits' && styles.segmentBtnTextActive]}>
-                {t('rewards.tab_benefits', 'Avantages Membre')}
+                {t('rewards.tab_benefits', 'Token Advantages')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -502,8 +502,8 @@ export default function RewardsScreen() {
                   <Ionicons name="flash-outline" size={18} color="#D97706" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.utilityTitle}>{t('rewards.utility_bills_title', 'Paiement de factures électricité & eau')}</Text>
-                  <Text style={styles.utilityDesc}>{t('rewards.utility_bills_desc', 'Déduisez vos DZY directement du montant de vos factures.')}</Text>
+                  <Text style={styles.utilityTitle}>{t('rewards.utility_bills_title', 'Electricity & Water Bills')}</Text>
+                  <Text style={styles.utilityDesc}>{t('rewards.utility_bills_desc', 'Deduct your DZY directly from your utility and meter payments.')}</Text>
                 </View>
               </View>
 
@@ -514,8 +514,8 @@ export default function RewardsScreen() {
                   <Ionicons name="card-outline" size={18} color="#4F46E5" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.utilityTitle}>{t('rewards.utility_cards_title', 'Cartes cadeaux & Boutiques partenaires')}</Text>
-                  <Text style={styles.utilityDesc}>{t('rewards.utility_cards_desc', 'Achetez des bons chez les commerçants du réseau DizzitUp.')}</Text>
+                  <Text style={styles.utilityTitle}>{t('rewards.utility_cards_title', 'Gift Cards & Partner Stores')}</Text>
+                  <Text style={styles.utilityDesc}>{t('rewards.utility_cards_desc', 'Purchase shopping vouchers at merchant stores across the DizzitUp network.')}</Text>
                 </View>
               </View>
 
@@ -526,8 +526,8 @@ export default function RewardsScreen() {
                   <Ionicons name="phone-portrait-outline" size={18} color="#10B981" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.utilityTitle}>{t('rewards.utility_airtime_title', 'Recharges mobiles instantanées')}</Text>
-                  <Text style={styles.utilityDesc}>{t('rewards.utility_airtime_desc', 'Convertissez vos récompenses en crédit téléphonique partout en Afrique.')}</Text>
+                  <Text style={styles.utilityTitle}>{t('rewards.utility_airtime_title', 'Instant Mobile Recharges')}</Text>
+                  <Text style={styles.utilityDesc}>{t('rewards.utility_airtime_desc', 'Convert your rewards into prepaid mobile airtime and data across Africa.')}</Text>
                 </View>
               </View>
 
@@ -538,8 +538,8 @@ export default function RewardsScreen() {
                   <Ionicons name="swap-horizontal-outline" size={18} color="#7C3AED" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.utilityTitle}>{t('rewards.utility_swap_title', 'Conversion en Stablecoins')}</Text>
-                  <Text style={styles.utilityDesc}>{t('rewards.utility_swap_desc', 'Échangez vos DZY contre de l\'USDC ou USDT à tout moment.')}</Text>
+                  <Text style={styles.utilityTitle}>{t('rewards.utility_swap_title', 'Stablecoins Conversion')}</Text>
+                  <Text style={styles.utilityDesc}>{t('rewards.utility_swap_desc', 'Swap your DZY for USDC or USDT at any time.')}</Text>
                 </View>
               </View>
             </View>
@@ -550,8 +550,8 @@ export default function RewardsScreen() {
                   <Ionicons name="pricetag-outline" size={18} color="#10B981" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.utilityTitle}>{t('rewards.benefit_fees_title', 'Frais réduits sur les transferts')}</Text>
-                  <Text style={styles.utilityDesc}>{t('rewards.benefit_fees_desc', 'Jusqu\'à 50% de réduction sur les envois internationaux.')}</Text>
+                  <Text style={styles.utilityTitle}>{t('rewards.benefit_fees_title', 'Discounted Transfer Fees')}</Text>
+                  <Text style={styles.utilityDesc}>{t('rewards.benefit_fees_desc', 'Up to 50% discount on cross-border money transfer fees.')}</Text>
                 </View>
               </View>
 
@@ -562,8 +562,8 @@ export default function RewardsScreen() {
                   <Ionicons name="star-outline" size={18} color="#D97706" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.utilityTitle}>{t('rewards.benefit_vip_title', 'Statut Client Privilégié')}</Text>
-                  <Text style={styles.utilityDesc}>{t('rewards.benefit_vip_desc', 'Support dédié 24/7 et plafonds d\'envoi débloqués.')}</Text>
+                  <Text style={styles.utilityTitle}>{t('rewards.benefit_vip_title', 'VIP Customer Status')}</Text>
+                  <Text style={styles.utilityDesc}>{t('rewards.benefit_vip_desc', '24/7 dedicated priority customer support and elevated transaction limits.')}</Text>
                 </View>
               </View>
 
@@ -574,8 +574,8 @@ export default function RewardsScreen() {
                   <Ionicons name="gift-outline" size={18} color="#4F46E5" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.utilityTitle}>{t('rewards.benefit_airdrops_title', 'Airdrops & Cadeaux partenaires')}</Text>
-                  <Text style={styles.utilityDesc}>{t('rewards.benefit_airdrops_desc', 'Distributions régulières de bonus pour les membres actifs.')}</Text>
+                  <Text style={styles.utilityTitle}>{t('rewards.benefit_airdrops_title', 'Airdrops & Partner Gifts')}</Text>
+                  <Text style={styles.utilityDesc}>{t('rewards.benefit_airdrops_desc', 'Regular token drops and exclusive partner rewards for active members.')}</Text>
                 </View>
               </View>
             </View>
@@ -587,7 +587,7 @@ export default function RewardsScreen() {
             <Text style={styles.infoBoxText}>
               {t(
                 'rewards.token_info_banner',
-                'DZY est le utility token officiel de l\'écosystème DizzitUp au standard ERC-20 sur la blockchain Polygon, garantissant transparence et rapidité.'
+                'DZY is the official utility token of the DizzitUp ecosystem built on Polygon ERC-20, guaranteeing fast, low-cost, and secure transactions.'
               )}
             </Text>
           </View>
@@ -595,7 +595,7 @@ export default function RewardsScreen() {
           {/* Footer Note */}
           <View style={styles.footerRow}>
             <Text style={styles.footerText}>
-              {t('rewards.footer_terms', 'Les récompenses sont calculées et créditées directement sur votre compte DZY.')}
+              {t('rewards.footer_terms', 'Rewards are calculated automatically and credited directly to your DZY account.')}
             </Text>
           </View>
 
@@ -622,33 +622,33 @@ export default function RewardsScreen() {
                 </TouchableOpacity>
               </View>
 
-              <Text style={styles.modalTitle}>{t('rewards.faq_title', 'À propos de DZY Rewards')}</Text>
+              <Text style={styles.modalTitle}>{t('rewards.faq_title', 'About DZY Rewards')}</Text>
               
               <Text style={styles.modalDesc}>
                 {t(
                   'rewards.faq_desc',
-                  'Le token DZY récompense la fidélité de notre communauté. Chaque dollar équivaut à 10 tokens DZY stables dans l\'écosystème.'
+                  'The DZY token rewards community activity. Every 10 DZY tokens are anchored to $1.00 USD of purchasing power across the ecosystem.'
                 )}
               </Text>
 
               <View style={styles.modalHighlightRow}>
                 <View style={styles.modalDot} />
                 <Text style={styles.modalHighlightText}>
-                  {t('rewards.faq_item_1', '10 DZY = $1.00 USD de pouvoir d\'achat dans tous nos services.')}
+                  {t('rewards.faq_item_1', '10 DZY = $1.00 USD of purchasing power across all services.')}
                 </Text>
               </View>
 
               <View style={styles.modalHighlightRow}>
                 <View style={styles.modalDot} />
                 <Text style={styles.modalHighlightText}>
-                  {t('rewards.faq_item_2', 'Cashback automatique de 5% sur tous vos paiements de factures.')}
+                  {t('rewards.faq_item_2', 'Automatic 5% cashback on all utility bill payments.')}
                 </Text>
               </View>
 
               <View style={styles.modalHighlightRow}>
                 <View style={styles.modalDot} />
                 <Text style={styles.modalHighlightText}>
-                  {t('rewards.faq_item_3', 'Valable pour les factures, recharges, boutiques et conversions.')}
+                  {t('rewards.faq_item_3', 'Redeem for utility bills, gift cards, airtime, or swap to stablecoins.')}
                 </Text>
               </View>
 
@@ -657,7 +657,7 @@ export default function RewardsScreen() {
                 onPress={() => setShowHelpModal(false)}
                 activeOpacity={0.85}
               >
-                <Text style={styles.modalDismissBtnText}>{t('common.understood', 'J\'ai compris')}</Text>
+                <Text style={styles.modalDismissBtnText}>{t('rewards.modal_close', 'Got it')}</Text>
               </TouchableOpacity>
             </View>
           </View>
