@@ -7,7 +7,7 @@ import { DizzitButton } from '../components/DizzitButton';
 import { useApp } from '../context/AppContext';
 import AppToast from '../components/AppToast';
 import { LinearGradient } from 'expo-linear-gradient';
-import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
+import { getCountryCurrencyInfo, getFullCountryName } from '../utils/countryCurrencyUtils';
 
 const PAY_BILLS_API = process.env.EXPO_PUBLIC_PAY_BILLS_API_URL || 'https://api.dizzitup.com';
 
@@ -364,7 +364,7 @@ export default function MobileRechargeScreen() {
                 {beneficiary.country && (
                    <View style={styles.locationBadge}>
                      <Ionicons name="location" size={10} color="#FFFFFF" />
-                     <Text style={styles.locationText}>{beneficiary.city ? `${beneficiary.city}, ` : ''}{beneficiary.country}</Text>
+                     <Text style={styles.locationText}>{beneficiary.city ? `${beneficiary.city}, ` : ''}{getFullCountryName(beneficiary.country)}</Text>
                    </View>
                 )}
               </View>
@@ -426,7 +426,7 @@ export default function MobileRechargeScreen() {
                         )}
                       </View>
                       <Text style={styles.operatorCountry}>
-                        {operatorData.country?.name || beneficiary.country || ''} • {t('mobileRecharge.instant', 'Instant')}
+                        {getFullCountryName(operatorData.country?.name || beneficiary.country || '')} • {t('mobileRecharge.instant', 'Instant')}
                       </Text>
                     </View>
                     <View style={styles.changeOperatorBtn}>

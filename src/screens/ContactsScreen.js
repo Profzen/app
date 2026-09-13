@@ -1,7 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, TextInput, Image, Modal, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, TextInput, Image, Modal, Platform, StatusBar, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
@@ -9,14 +9,17 @@ import Avatar from '../components/Avatar';
 import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
 import { useApp } from '../context/AppContext';
 import contactService from '../services/contactService';
-import { CONTACTS_MOCK } from '../mocks/contactsMock';
+import { getFullCountryName } from '../utils/countryCurrencyUtils';
 
 const quickActions = [
-  { id: '1', title: "Payer et\nacheter l'essentiel", subtitle: "Achat de crédit,\ninternet, TV, jeux,\ncrypto et plus", icon: "bag-handle-outline", color: "#8B5CF6" },
-  { id: '2', title: "Recharger\nmobile", subtitle: "Achat de crédit\nmobile", icon: "phone-portrait-outline", color: "#10B981" },
-  { id: '3', title: "Payer des\nfactures", subtitle: "Électricité, eau,\ninternet et plus", icon: "receipt-outline", color: "#3B82F6" },
-  { id: '4', title: "Envoyer /\nDemander\ndes fonds", subtitle: "Transferts d'argent\ninstantanés", icon: "swap-horizontal-outline", color: "#F59E0B" },
-  { id: '5', title: "Inviter", subtitle: "Invitez vos amis\net gagnez\n$5 en DZY", icon: "person-add-outline", color: "#8B5CF6" },
+  { id: '1', titleKey: 'contacts.qa_essentials', defaultTitle: "Essentials\n& All", icon: "bag-handle-outline", color: "#8B5CF6", bgColor: "#F5F3FF" },
+  { id: '2', titleKey: 'contacts.qa_airtime', defaultTitle: "Mobile\nTop-up", icon: "phone-portrait-outline", color: "#10B981", bgColor: "#ECFDF5" },
+  { id: '3', titleKey: 'contacts.qa_paybills', defaultTitle: "Pay\nBills", icon: "flash-outline", color: "#0284C7", bgColor: "#EFF6FF" },
+  { id: '4', titleKey: 'contacts.qa_giftcards', defaultTitle: "Gift\nCards", icon: "gift-outline", color: "#D97706", bgColor: "#FFFBEB" },
+  { id: '5', titleKey: 'contacts.qa_stablecoins', defaultTitle: "Stablecoins\n& DZY", icon: "paper-plane-outline", color: "#3B82F6", bgColor: "#EFF6FF" },
+  { id: '6', titleKey: 'contacts.qa_invite', defaultTitle: "Invite\nFriends", icon: "people-outline", color: "#EC4899", bgColor: "#FDF2F8" },
+  { id: '7', titleKey: 'contacts.qa_refer', defaultTitle: "Refer a\nStore", icon: "storefront-outline", color: "#059669", bgColor: "#ECFDF5" },
+  { id: '8', titleKey: 'contacts.qa_sync', defaultTitle: "Sync\nContacts", icon: "sync-outline", color: "#6366F1", bgColor: "#EEF2FF" },
 ];
 
 const getFlagEmoji = (countryCode) => {
@@ -41,38 +44,52 @@ export default function ContactsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const nextScreen = route.params?.nextScreen;
-  const actionRoutes = { '1': 'ChooseServiceScreen', '2': 'MobileRechargeScreen', '3': 'ChooseServiceScreen', '4': 'SendMoneyScreen', '5': 'RewardsScreen' };
+  const actionRoutes = {
+    '1': 'ChooseServiceScreen',
+    '2': 'MobileRechargeScreen',
+    '3': 'BillDetailsScreen',
+    '4': 'ExploreGiftCardsScreen',
+    '5': 'SendMoneyScreen',
+    '6': 'RewardsScreen',
+    '7': 'ShopsScreen',
+    '8': 'ContactsManageScreen',
+  };
 
   const fetchBeneficiaries = async () => {
     if (!session?.user?.id) {
-      setContactItems(CONTACTS_MOCK);
+      setContactItems([]);
       setIsLoading(false);
       return;
     }
     setIsLoading(true);
     const { success, data } = await contactService.getBeneficiaries(session.user.id);
     if (success && data && data.length > 0) {
-      const formatted = data.map(b => ({
-        ...b,
-        id: b.id,
-        name: b.full_name || `${b.first_name} ${b.last_name || ''}`.trim(),
-        relation: b.relationship || t('contacts.relation.friend', 'Ami'),
-        location: `${b.city ? b.city + ', ' : ''}${b.country_code || ''}`,
-        country: b.country || b.country_name || (b.country_code ? (() => { try { return new Intl.DisplayNames(['en'], {type: 'region'}).of(b.country_code) } catch(e) { return b.country_code } })() : ''),
-        country_code: b.country_code,
-        city: b.city,
-        phone: b.phone || b.phone_number,
-        email: b.email,
-        address: b.evm_address || b.solana_address || b.phone || b.email,
-        flag: getFlagEmoji(b.country_code),
-        isBeneficiary: true,
-        isSponsor: false,
-        image: b.avatar_url || null,
-        raw_data: b
-      }));
+      const formatted = data.map(b => {
+        const fullCountry = getFullCountryName(b.country || b.country_name || b.country_code);
+        return {
+          ...b,
+          id: b.id,
+          name: b.full_name || `${b.first_name} ${b.last_name || ''}`.trim(),
+          first_name: b.first_name,
+          last_name: b.last_name,
+          relation: b.relationship || t('contacts.relation.friend', 'Ami'),
+          location: `${b.city ? b.city + ', ' : ''}${fullCountry}`,
+          country: fullCountry,
+          country_code: b.country_code,
+          city: b.city,
+          phone: b.phone || b.phone_number,
+          email: b.email,
+          address: b.evm_address || b.solana_address || b.phone || b.email,
+          flag: getFlagEmoji(b.country_code),
+          isBeneficiary: true,
+          isSponsor: false,
+          image: b.avatar_url || null,
+          raw_data: b
+        };
+      });
       setContactItems(formatted);
     } else {
-      setContactItems(CONTACTS_MOCK);
+      setContactItems([]);
     }
     setIsLoading(false);
   };
@@ -182,27 +199,33 @@ export default function ContactsScreen() {
             ) : (
               <>
                 <Text style={styles.sectionTitle}>{t('contacts.quick_actions', 'Actions rapides')}</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickActionsScroll}>
+                <View style={styles.quickActionsGrid}>
                   {quickActions.map(action => (
                     <TouchableOpacity 
                       key={action.id} 
                       style={styles.quickActionCard} 
                       onPress={() => {
-                        if (action.id === '5') {
+                        if (action.id === '6') {
                           shareInviteLink();
+                        } else if (action.id === '7') {
+                          shareShopLink();
+                        } else if (action.id === '8') {
+                          navigation.navigate('ContactsManageScreen');
                         } else {
                           navigation.setParams({ nextScreen: actionRoutes[action.id] });
                         }
                       }}
+                      activeOpacity={0.75}
                     >
-                      <View style={styles.quickActionIconContainer}>
-                        <Ionicons name={action.icon} size={28} color={action.color} />
+                      <View style={[styles.quickActionIconContainer, { backgroundColor: action.bgColor }]}>
+                        <Ionicons name={action.icon} size={22} color={action.color} />
                       </View>
-                      <Text style={styles.quickActionTitle}>{t(`contacts.quick_action_${action.id}.title`, action.title)}</Text>
-                      <Text style={styles.quickActionSubtitle}>{t(`contacts.quick_action_${action.id}.subtitle`, action.subtitle)}</Text>
+                      <Text style={styles.quickActionTitle} numberOfLines={2}>
+                        {t(action.titleKey, action.defaultTitle)}
+                      </Text>
                     </TouchableOpacity>
                   ))}
-                </ScrollView>
+                </View>
               </>
             )}
           </View>
@@ -272,19 +295,33 @@ export default function ContactsScreen() {
 
           {/* Index 2: Contacts List */}
           <View style={styles.contactsList}>
-            {filteredContacts.map((contact) => (
-              <ContactRow 
-                key={contact.id} 
-                contact={contact} 
-                onPress={() => {
-                  if (nextScreen) {
-                    navigation.navigate(nextScreen, { beneficiary: contact, contact });
-                  } else {
-                    setSelectedContact(contact);
-                  }
-                }}
-              />
-            ))}
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#FFC759" style={{ marginVertical: 32 }} />
+            ) : filteredContacts.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Ionicons name="people-outline" size={44} color="#CBD5E1" />
+                <Text style={styles.emptyTitle}>{t('contacts.no_beneficiaries', 'Aucun bénéficiaire pour le moment')}</Text>
+                <Text style={styles.emptySubtitle}>{t('contacts.add_first_sub', 'Ajoutez vos bénéficiaires pour leur envoyer des fonds et payer leurs factures.')}</Text>
+                <TouchableOpacity style={styles.addFirstBtn} onPress={() => navigation.navigate('ContactsManageScreen')}>
+                  <Ionicons name="person-add" size={16} color="#071D54" style={{ marginRight: 6 }} />
+                  <Text style={styles.addFirstBtnText}>{t('contacts.add_beneficiary', 'Ajouter un bénéficiaire')}</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              filteredContacts.map((contact) => (
+                <ContactRow 
+                  key={contact.id} 
+                  contact={contact} 
+                  onPress={() => {
+                    if (nextScreen) {
+                      navigation.navigate(nextScreen, { beneficiary: contact, contact });
+                    } else {
+                      setSelectedContact(contact);
+                    }
+                  }}
+                />
+              ))
+            )}
           </View>
 
         </ScrollView>
@@ -467,11 +504,44 @@ const styles = StyleSheet.create({
   cancelActionBtn: { backgroundColor: '#FFFFFF', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: '#BFDBFE' },
   cancelActionText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#EF4444' },
   sectionTitle: { fontFamily: 'Inter_700Bold', fontSize: 16, color: '#1A2840', paddingHorizontal: 16, marginBottom: 12 },
-  quickActionsScroll: { paddingHorizontal: 16, paddingBottom: 24 },
-  quickActionCard: { width: 140, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, padding: 16, marginRight: 12, alignItems: 'center' },
-  quickActionIconContainer: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#FAFAFA', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-  quickActionTitle: { fontFamily: 'Inter_700Bold', fontSize: 12, color: '#1A2840', textAlign: 'center', marginBottom: 8 },
-  quickActionSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#64748B', textAlign: 'center', lineHeight: 14 },
+  quickActionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 12,
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  quickActionCard: {
+    width: '23.5%',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 2,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    marginBottom: 8,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  quickActionIconContainer: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  quickActionTitle: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 10,
+    color: '#1A2840',
+    textAlign: 'center',
+    lineHeight: 13,
+  },
   sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 16, marginBottom: 12 },
   sectionTitleSticky: { fontFamily: 'Inter_700Bold', fontSize: 16, color: '#1A2840', paddingHorizontal: 16 },
   stickyHeaderContainer: { backgroundColor: '#FAFAFA', paddingTop: 8, paddingBottom: 4, borderBottomWidth: 1, borderBottomColor: '#E2E8F0', zIndex: 10 },
@@ -522,4 +592,9 @@ const styles = StyleSheet.create({
   inviteBtnText: { fontFamily: 'Inter_700Bold', fontSize: 12, color: '#FFFFFF' },
   inviteBannerRight: { width: 80, height: 80, justifyContent: 'center', alignItems: 'center', zIndex: 1 },
   mockPhoneIllustration: { width: 64, height: 64, backgroundColor: '#DBEAFE', borderRadius: 32, justifyContent: 'center', alignItems: 'center' },
+  emptyContainer: { alignItems: 'center', justifyContent: 'center', paddingVertical: 32, backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#E2E8F0', paddingHorizontal: 20, marginVertical: 12 },
+  emptyTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#1A2840', marginTop: 10, marginBottom: 4 },
+  emptySubtitle: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#64748B', textAlign: 'center', marginBottom: 16 },
+  addFirstBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFC759', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
+  addFirstBtnText: { fontFamily: 'Inter_700Bold', fontSize: 12, color: '#071D54' },
 });

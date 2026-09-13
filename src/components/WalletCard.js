@@ -9,7 +9,7 @@ import { useApp } from '../context/AppContext';
 import { isSmallScreen } from '../utils/responsive';
 import { supabase } from '../services/supabaseClient';
 
-export default function WalletCard({ balances }) {
+export default function WalletCard({ balances, badgeTitle }) {
   const navigation = useNavigation();
   const { hideBalance, toggleHideBalance, t, user } = useApp();
 
@@ -75,7 +75,7 @@ export default function WalletCard({ balances }) {
             <View>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={styles.badgeText}>
-                  {user?.role === 'merchant' ? t('wallet.business_wallet', 'BUSINESS WALLET') : 'TOTAL DZY INDEX'}
+                  {badgeTitle || (user?.role === 'merchant' ? t('wallet.business_wallet', 'BUSINESS WALLET') : 'TOTAL DZY INDEX')}
                 </Text>
                 {user?.role === 'merchant' && (
                   <View style={{ backgroundColor: '#8B5CF6', borderRadius: 4, paddingHorizontal: 4, paddingVertical: 1, marginLeft: 6 }}>

@@ -10,6 +10,8 @@ import CashierSendFundsScreen from '../screens/CashierSendFundsScreen';
 import CashierSuccessScreen from '../screens/CashierSuccessScreen';
 import CashRegisterScreen from '../screens/CashRegisterScreen';
 import ChooseServiceScreen from '../screens/ChooseServiceScreen';
+import BillDetailsScreen from '../screens/BillDetailsScreen';
+import ExploreGiftCardsScreen from '../screens/ExploreGiftCardsScreen';
 import ContactHistoryScreen from '../screens/ContactHistoryScreen';
 import ContactProfileScreen from '../screens/ContactProfileScreen';
 import ContactsManageScreen from '../screens/ContactsManageScreen';
@@ -122,6 +124,8 @@ export default function AppNavigator() {
       <Stack.Screen name="CashierSuccessScreen" component={CashierSuccessScreen} />
       <Stack.Screen name="CashRegisterScreen" component={CashRegisterScreen} />
       <Stack.Screen name="ChooseServiceScreen" component={ChooseServiceScreen} />
+      <Stack.Screen name="BillDetailsScreen" component={BillDetailsScreen} />
+      <Stack.Screen name="ExploreGiftCardsScreen" component={ExploreGiftCardsScreen} />
       <Stack.Screen name="ContactHistoryScreen" component={ContactHistoryScreen} />
       <Stack.Screen name="ContactProfileScreen" component={ContactProfileScreen} />
       <Stack.Screen name="ContactsManageScreen" component={ContactsManageScreen} />

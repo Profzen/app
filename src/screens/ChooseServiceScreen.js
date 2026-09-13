@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Platform, StatusBar, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, Platform, StatusBar, ActivityIndicator, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../services/supabaseClient';
 import AppToast from '../components/AppToast';
+import { getFullCountryName } from '../utils/countryCurrencyUtils';
+
+const { width } = Dimensions.get('window');
 
 // Default API fallback if env var is missing
 const rawBuyGoods = process.env.EXPO_PUBLIC_BUY_GOODS_API_URL || 'https://buygoods-api.dizzitup.com/api';
@@ -28,6 +31,7 @@ export default function ChooseServiceScreen() {
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [toast, setToast] = useState(null);
 
   const categories = [
     { id: 'all', name: t('marketplace.allItems', 'All Items'), icon: 'grid-outline' },
@@ -44,7 +48,7 @@ export default function ChooseServiceScreen() {
 
   const [globalCountryName, setGlobalCountryName] = useState(() => {
     let raw = beneficiary.country || beneficiary.country_name || beneficiary.country_code;
-    return raw || 'your country';
+    return getFullCountryName(raw);
   });
   const [isCountryResolved, setIsCountryResolved] = useState(false);
 
@@ -63,24 +67,20 @@ export default function ChooseServiceScreen() {
           if (data && data.name) {
             setGlobalCountryName(data.name);
           } else {
-            // Fallback to Intl if not in DB
-            try { 
-              const intlName = new Intl.DisplayNames(['en'], {type: 'region'}).of(raw.trim().toUpperCase()); 
-              if (intlName) setGlobalCountryName(intlName);
-            } catch(e) {}
+            setGlobalCountryName(getFullCountryName(raw));
           }
         } catch (err) {
-          console.log("Error fetching full country name:", err);
+          setGlobalCountryName(getFullCountryName(raw));
         } finally {
           setIsCountryResolved(true);
         }
       };
       fetchCountryName();
     } else {
-      if (raw) setGlobalCountryName(raw);
+      if (raw) setGlobalCountryName(getFullCountryName(raw));
       setIsCountryResolved(true);
     }
-  }, [beneficiary]);
+  }, [beneficiary.country, beneficiary.country_name, beneficiary.country_code]);
 
   // Load Cities
   useEffect(() => {
@@ -226,21 +226,21 @@ export default function ChooseServiceScreen() {
   const handleCheckout = () => {
     if (!selectedProduct) return;
     
-    if (selectedProduct.id === 'srv_remittance') {
+    if (selectedProduct.id === 'srv_remittance' || selectedProduct.isRemittance) {
       navigation.navigate('SendMoneyScreen', { beneficiary });
-    } else if (selectedProduct.id === 'srv_airtime') {
+    } else if (selectedProduct.id === 'srv_airtime' || selectedProduct.category === 'mobile_data_airtime') {
       navigation.navigate('MobileRechargeScreen', { beneficiary, product: selectedProduct });
+    } else if (selectedProduct.id === 'srv_electricity' || selectedProduct.category === 'utilities' || selectedProduct.category === 'education') {
+      navigation.navigate('BillDetailsScreen', { beneficiary });
+    } else if (selectedProduct.id === 'srv_giftcard_50' || selectedProduct.category === 'gift_cards') {
+      navigation.navigate('ExploreGiftCardsScreen', { beneficiary });
     } else if (selectedProduct.isService === false) {
       navigation.navigate('ProductDetailsScreen', { 
         product: selectedProduct, 
         shop: selectedProduct.merchant 
       });
     } else {
-      // Hybrid WebView Handoff for Digital Services
-      navigation.navigate('ServiceCheckoutScreen', { 
-        product: selectedProduct, 
-        beneficiary: beneficiary 
-      });
+      navigation.navigate('BillDetailsScreen', { beneficiary });
     }
   };
 
@@ -258,17 +258,148 @@ export default function ChooseServiceScreen() {
         </View>
 
         <ScrollView style={styles.mainScroll} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-          {/* Beneficiary Summary */}
+          {/* Beneficiary Summary with Phone Pill */}
           <View style={styles.beneficiaryBanner}>
             <View style={styles.beneficiaryIconWrap}>
               <Ionicons name="person" size={20} color="#FFFFFF" />
             </View>
             <View style={styles.beneficiaryTextWrap}>
               <Text style={styles.beneficiaryName}>
-                Your beneficiary is <Text style={{fontFamily: 'Inter_700Bold'}}>{beneficiary.first_name || beneficiary.name}</Text>{' '}
-                from <Text style={{color: '#FFB800'}}>{globalCountryName}</Text>
+                {t('selectService.beneficiaryIs', 'Your beneficiary is')}{' '}
+                <Text style={{ fontFamily: 'Inter_700Bold' }}>{beneficiary.first_name || beneficiary.name || t('common.beneficiary', 'Beneficiary')}</Text>{' '}
+                {t('selectService.from', 'from')} <Text style={{ color: '#FFB800' }}>{globalCountryName}</Text>
               </Text>
+              {(beneficiary.phone || beneficiary.phoneNumber) ? (
+                <View style={styles.beneficiaryPhonePill}>
+                  <Ionicons name="phone-portrait-outline" size={12} color="#071D54" style={{ marginRight: 4 }} />
+                  <Text style={styles.beneficiaryPhoneText}>{beneficiary.phone || beneficiary.phoneNumber}</Text>
+                </View>
+              ) : null}
             </View>
+          </View>
+
+          {/* 6 Core Services Hub (Screenshot 3) */}
+          <View style={styles.servicesHubContainer}>
+            <View style={styles.servicesHubHeader}>
+              <Text style={styles.servicesHubTitle}>{t('selectService.title', 'Select a Service')}</Text>
+              <Text style={styles.servicesHubSubtitle}>{t('selectService.subtitle', 'Choose how you would like to proceed')}</Text>
+            </View>
+
+            <View style={styles.servicesGrid}>
+              {/* Card 1: Buy Goods */}
+              <TouchableOpacity
+                style={[styles.serviceCard, selectedCategory === 'all' && styles.serviceCardActive]}
+                onPress={() => setSelectedCategory('all')}
+                activeOpacity={0.8}
+              >
+                <View style={styles.badgeMarketplace}>
+                  <Text style={styles.badgeMarketplaceText}>{t('selectService.badgeMarketplace', 'MARKETPLACE')}</Text>
+                </View>
+                <View style={[styles.serviceIconCircle, { backgroundColor: '#FFFBEB' }]}>
+                  <Ionicons name="bag-handle-outline" size={22} color="#D97706" />
+                </View>
+                <Text style={styles.serviceCardTitle}>{t('selectService.buyGoods', 'Buy Goods')}</Text>
+                <Text style={styles.serviceCardDesc} numberOfLines={2}>
+                  {t('selectService.buyGoodsDesc', 'Shop from local merchants and African stores')}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Card 2: Pay Utility Bill */}
+              <TouchableOpacity
+                style={styles.serviceCard}
+                onPress={() => navigation.navigate('BillDetailsScreen', { beneficiary })}
+                activeOpacity={0.8}
+              >
+                <View style={styles.badgePaybills}>
+                  <Text style={styles.badgePaybillsText}>{t('selectService.badgePaybills', 'PAYBILLS')}</Text>
+                </View>
+                <View style={[styles.serviceIconCircle, { backgroundColor: '#EFF6FF' }]}>
+                  <Ionicons name="flash-outline" size={22} color="#0284C7" />
+                </View>
+                <Text style={styles.serviceCardTitle}>{t('selectService.payUtility', 'Pay Utility Bill')}</Text>
+                <Text style={styles.serviceCardDesc} numberOfLines={2}>
+                  {t('selectService.payUtilityDesc', 'Pay electricity, water, and internet tokens')}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Card 3: Top-up Mobile */}
+              <TouchableOpacity
+                style={styles.serviceCard}
+                onPress={() => navigation.navigate('MobileRechargeScreen', { beneficiary })}
+                activeOpacity={0.8}
+              >
+                <View style={styles.badgePaybills}>
+                  <Text style={styles.badgePaybillsText}>{t('selectService.badgePaybills', 'PAYBILLS')}</Text>
+                </View>
+                <View style={[styles.serviceIconCircle, { backgroundColor: '#ECFDF5' }]}>
+                  <Ionicons name="phone-portrait-outline" size={22} color="#10B981" />
+                </View>
+                <Text style={styles.serviceCardTitle}>{t('selectService.topupMobile', 'Top-up Mobile')}</Text>
+                <Text style={styles.serviceCardDesc} numberOfLines={2}>
+                  {t('selectService.topupMobileDesc', 'Send airtime and data to mobile phones')}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Card 4: Gift Cards */}
+              <TouchableOpacity
+                style={styles.serviceCard}
+                onPress={() => navigation.navigate('ExploreGiftCardsScreen', { beneficiary })}
+                activeOpacity={0.8}
+              >
+                <View style={styles.badgePaybills}>
+                  <Text style={styles.badgePaybillsText}>{t('selectService.badgePaybills', 'PAYBILLS')}</Text>
+                </View>
+                <View style={[styles.serviceIconCircle, { backgroundColor: '#F5F3FF' }]}>
+                  <Ionicons name="gift-outline" size={22} color="#8B5CF6" />
+                </View>
+                <Text style={styles.serviceCardTitle}>{t('selectService.giftCards', 'Gift Cards')}</Text>
+                <Text style={styles.serviceCardDesc} numberOfLines={2}>
+                  {t('selectService.giftCardsDesc', 'Send international and local digital gift cards')}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Card 5: DZYcard */}
+              <TouchableOpacity
+                style={[styles.serviceCard, { opacity: 0.75 }]}
+                onPress={() => setToast({ title: 'DZYcard', message: t('selectService.dzycardToast', 'DZYcard virtual & physical Visa cards are coming soon!') })}
+                activeOpacity={0.8}
+              >
+                <View style={styles.badgeComingSoon}>
+                  <Text style={styles.badgeComingSoonText}>{t('selectService.badgeComingSoon', 'COMING SOON')}</Text>
+                </View>
+                <View style={[styles.serviceIconCircle, { backgroundColor: '#F8FAFC' }]}>
+                  <Ionicons name="card-outline" size={22} color="#64748B" />
+                </View>
+                <Text style={styles.serviceCardTitle}>{t('selectService.dzyCard', 'DZYcard')}</Text>
+                <Text style={styles.serviceCardDesc} numberOfLines={2}>
+                  {t('selectService.dzyCardDesc', 'Get your virtual and physical DZYcard')}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Card 6: Send Stablecoins & DZY */}
+              <TouchableOpacity
+                style={styles.serviceCard}
+                onPress={() => navigation.navigate('SendMoneyScreen', { beneficiary })}
+                activeOpacity={0.8}
+              >
+                <View style={styles.badgeNew}>
+                  <Text style={styles.badgeNewText}>{t('selectService.badgeNew', 'NEW')}</Text>
+                </View>
+                <View style={[styles.serviceIconCircle, { backgroundColor: '#F0F9FF' }]}>
+                  <Ionicons name="globe-outline" size={22} color="#0284C7" />
+                </View>
+                <Text style={styles.serviceCardTitle}>{t('selectService.sendStablecoins', 'Send Stablecoins & DZY')}</Text>
+                <Text style={styles.serviceCardDesc} numberOfLines={2}>
+                  {t('selectService.sendStablecoinsDesc', 'Instantly send USDC or DZY to friends for free')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.sectionDivider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerLabel}>{t('marketplace.orBrowseGoods', 'OR BROWSE LOCAL GOODS')}</Text>
+            <View style={styles.dividerLine} />
           </View>
 
           {/* Location Filters */}
@@ -419,6 +550,13 @@ export default function ChooseServiceScreen() {
             <Ionicons name="arrow-forward" size={18} color="#20365B" />
           </TouchableOpacity>
         </View>
+
+        {/* Toast Notification */}
+        {!!toast && (
+          <View style={{ position: 'absolute', top: 50, left: 16, right: 16, zIndex: 999 }}>
+            <AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} />
+          </View>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -433,11 +571,32 @@ const styles = StyleSheet.create({
   headerTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#20365B' },
   mainScroll: { flex: 1 },
   scrollContent: { paddingBottom: 120 },
-  beneficiaryBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(32, 54, 91, 0.05)', borderWidth: 1, borderColor: 'rgba(32, 54, 91, 0.1)', borderRadius: 16, padding: 16, marginHorizontal: 16, marginBottom: 20 },
+  beneficiaryBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(32, 54, 91, 0.05)', borderWidth: 1, borderColor: 'rgba(32, 54, 91, 0.1)', borderRadius: 16, padding: 16, marginHorizontal: 16, marginBottom: 16 },
   beneficiaryIconWrap: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#20365B', justifyContent: 'center', alignItems: 'center', marginRight: 14 },
   beneficiaryTextWrap: { flex: 1 },
-  beneficiaryTitle: { fontFamily: 'Inter_500Medium', fontSize: 14, color: '#6B7280' },
-  beneficiarySubtitle: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#6B7280', marginTop: 2 },
+  beneficiaryPhonePill: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#EFF6FF', alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginTop: 4 },
+  beneficiaryPhoneText: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#071D54' },
+  servicesHubContainer: { marginHorizontal: 16, marginBottom: 20 },
+  servicesHubHeader: { marginBottom: 12 },
+  servicesHubTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#1A2840' },
+  servicesHubSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#64748B', marginTop: 2 },
+  servicesGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 10 },
+  serviceCard: { width: (width - 44) / 2, backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#E2E8F0', padding: 12, position: 'relative', shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 6, elevation: 2, marginBottom: 10 },
+  serviceCardActive: { borderColor: '#FFC759', backgroundColor: '#FFFDF5' },
+  badgeMarketplace: { alignSelf: 'flex-end', backgroundColor: '#FFFBEB', borderWidth: 1, borderColor: '#FEF3C7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginBottom: 6 },
+  badgeMarketplaceText: { fontFamily: 'Inter_700Bold', fontSize: 8, color: '#D97706', letterSpacing: 0.5 },
+  badgePaybills: { alignSelf: 'flex-end', backgroundColor: '#EFF6FF', borderWidth: 1, borderColor: '#DBEAFE', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginBottom: 6 },
+  badgePaybillsText: { fontFamily: 'Inter_700Bold', fontSize: 8, color: '#0284C7', letterSpacing: 0.5 },
+  badgeComingSoon: { alignSelf: 'flex-end', backgroundColor: '#F1F5F9', borderWidth: 1, borderColor: '#E2E8F0', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginBottom: 6 },
+  badgeComingSoonText: { fontFamily: 'Inter_700Bold', fontSize: 8, color: '#64748B', letterSpacing: 0.5 },
+  badgeNew: { alignSelf: 'flex-end', backgroundColor: '#F0FDF4', borderWidth: 1, borderColor: '#DCFCE7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginBottom: 6 },
+  badgeNewText: { fontFamily: 'Inter_700Bold', fontSize: 8, color: '#16A34A', letterSpacing: 0.5 },
+  serviceIconCircle: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+  serviceCardTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840', marginBottom: 2 },
+  serviceCardDesc: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#64748B', lineHeight: 14 },
+  sectionDivider: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 16, marginBottom: 16 },
+  dividerLine: { flex: 1, height: 1, backgroundColor: '#E2E8F0' },
+  dividerLabel: { fontFamily: 'Inter_700Bold', fontSize: 10, color: '#94A3B8', marginHorizontal: 10, letterSpacing: 0.5 },
   locationFiltersRow: { flexDirection: 'row', paddingHorizontal: 16, marginBottom: 16, gap: 12 },
   filterBox: { flex: 1 },
   filterLabel: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#20365B', marginBottom: 6 },

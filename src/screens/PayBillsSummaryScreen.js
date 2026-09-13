@@ -17,21 +17,22 @@ import * as WebBrowser from 'expo-web-browser';
 import { WebView } from 'react-native-webview';
 import { useApp } from '../context/AppContext';
 import AppToast from '../components/AppToast';
+import { getIsoCountryCode, resolveBeneficiaryCountry } from '../utils/countryCurrencyUtils';
 
 const { width } = Dimensions.get('window');
 const isSmallDevice = width < 375;
 
 const getPayBillsApiUrl = () => {
   let url = process.env.EXPO_PUBLIC_PAY_BILLS_API_URL || 'https://api.dizzitup.com';
-  if (Platform.OS === 'web') {
-    url = url.replace('10.0.2.2', typeof window !== 'undefined' && window.location.hostname !== 'localhost' ? window.location.hostname : 'localhost');
-  } else if (Platform.OS === 'android') {
-    url = url.replace('localhost', '10.0.2.2');
-  }
+
+  //   if (Platform.OS === 'web') {
+  //   url = url.replace('10.0.2.2', typeof window !== 'undefined' && window.location.hostname !== 'localhost' ? window.location.hostname : 'localhost');
+  // } else if (Platform.OS === 'android') {
+  //   url = url.replace('localhost', '10.0.2.2');
+  // }
   return url.replace(/\/api\/?$/, '');
 };
-
-const PAY_BILLS_URL = process.env.EXPO_PUBLIC_PAY_BILLS_URL || 'https://paybills.dizzitup.com';
+// const PAY_BILLS_URL = process.env.EXPO_PUBLIC_PAY_BILLS_URL || 'https://paybills.dizzitup.com';
 
 export default function PayBillsSummaryScreen() {
   const navigation = useNavigation();
@@ -58,8 +59,8 @@ export default function PayBillsSummaryScreen() {
   const deliveredVal = plan.receiveAmount || plan.amount || '0';
   const totalCost = plan.costAmount || plan.price || deliveredVal;
   const isDifferentCurrency = deliveredCurrency !== currency;
-  const feeAmount = isDifferentCurrency 
-    ? (parseFloat(plan.feeAmount || 0)).toFixed(2) 
+  const feeAmount = isDifferentCurrency
+    ? (parseFloat(plan.feeAmount || 0)).toFixed(2)
     : Math.max(0, parseFloat(totalCost) - parseFloat(deliveredVal)).toFixed(2);
   const displayFee = parseFloat(feeAmount) > 0 ? `${feeAmount} ${currency}` : '0.00';
 
@@ -232,8 +233,11 @@ export default function PayBillsSummaryScreen() {
         const fName = user?.first_name || (recipientName ? recipientName.split(' ')[0] : 'Customer');
         const lName = user?.last_name || (recipientName ? recipientName.split(' ').slice(1).join(' ') : 'DizzitUp');
         const userEmail = user?.email || beneficiary.email || 'customer@dizzitup.com';
-        const userPhone = user?.phone || recipientPhone;
-        const countryIso = (beneficiary.country_code || beneficiary.country || 'TG').toUpperCase();
+        const { countryCode: countryIso } = resolveBeneficiaryCountry(beneficiary, {
+          phone: recipientPhone || beneficiary.phone,
+          user,
+          fallback: 'TG',
+        });
 
         const payload = {
           ...(isAuthUser ? { userID: user.id } : {}),
@@ -337,8 +341,16 @@ export default function PayBillsSummaryScreen() {
         const baseUrl = getPayBillsApiUrl();
         const isAuthUser = Boolean(user?.id);
         const actionRoute = isAuthUser ? 'pay' : 'payAsGuest';
-        const endpoint = `${baseUrl}/payments/airtime/${actionRoute}`;
-        const countryIso = (beneficiary.country_code || beneficiary.country || 'TG').toUpperCase();
+        const endpoint = (serviceType === 'utilities' || serviceType === 'utility')
+          ? `${baseUrl}/payments/utility/${actionRoute}`
+          : (serviceType === 'gift_cards' || serviceType === 'gift_card')
+            ? `${baseUrl}/payments/giftCard/${actionRoute}`
+            : `${baseUrl}/payments/airtime/${actionRoute}`;
+        const { countryCode: countryIso } = resolveBeneficiaryCountry(beneficiary, {
+          phone: recipientPhone || beneficiary.phone,
+          user,
+          fallback: 'TG',
+        });
 
         const payload = {
           ...(isAuthUser ? { userID: user.id } : {}),
