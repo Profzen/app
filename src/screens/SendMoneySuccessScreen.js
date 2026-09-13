@@ -5,10 +5,12 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusB
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import AppToast from '../components/AppToast';
+import { useApp } from '../context/AppContext';
 
 export default function SendMoneySuccessScreen() {
   const navigation = useNavigation();
   const route = useRoute();
+  const { t } = useApp();
 
   const { amount = '1', token = 'USDC', recipient = 'My Business', hash = '91d99789-98cc-44c0-8a14-da693a72e5f1' } = route.params || {};
   const [toast, setToast] = useState(null);
@@ -16,9 +18,9 @@ export default function SendMoneySuccessScreen() {
   const handleCopyHash = async () => {
     try {
       await Clipboard.setStringAsync(hash);
-      setToast({ title: 'Copié !', message: "L'adresse a bien été copié !" });
+      setToast({ title: t('common.copied', 'Copied!'), message: t('sendMoney.addressCopied', 'Address copied to clipboard!') });
     } catch (err) {
-      setToast({ title: 'Copié !', message: "L'adresse a bien été copié !" });
+      setToast({ title: t('common.copied', 'Copied!'), message: t('sendMoney.addressCopied', 'Address copied to clipboard!') });
     }
   };
 
@@ -38,10 +40,10 @@ export default function SendMoneySuccessScreen() {
               </View>
               
               <View style={styles.headerTextWrap}>
-                <Text style={styles.headerTitle}>Envoyer des fonds</Text>
+                <Text style={styles.headerTitle}>{t('sendMoney.sendFunds', 'Send Funds')}</Text>
                 <View style={styles.secureTagRow}>
                   <View style={styles.greenDot} />
-                  <Text style={styles.secureTagText}>SÉCURISÉ</Text>
+                  <Text style={styles.secureTagText}>{t('sendMoney.secured', 'SECURED')}</Text>
                 </View>
               </View>
             </View>
@@ -56,9 +58,9 @@ export default function SendMoneySuccessScreen() {
             </View>
 
             {/* Title & Subtitle */}
-            <Text style={styles.successTitle}>Transaction soumise !</Text>
+            <Text style={styles.successTitle}>{t('sendMoney.txSubmitted', 'Transaction submitted!')}</Text>
             <Text style={styles.successSubtitle}>
-              Vous avez envoyé avec succès {amount} {token} à {recipient}
+              {t('sendMoney.successMessage', { amount, token, recipient, defaultValue: `You successfully sent ${amount} ${token} to ${recipient}` })}
             </Text>
 
             {/* Hash Code Copy Box */}
@@ -104,12 +106,12 @@ export default function SendMoneySuccessScreen() {
               </View>
 
               <View style={styles.shareTextWrap}>
-                <Text style={styles.shareCtaTitle}>Partager mon succès</Text>
+                <Text style={styles.shareCtaTitle}>{t('shareSuccess.title', 'Share my success')}</Text>
                 <Text style={styles.shareCtaSub1}>
-                  <Text style={styles.goldText}>Gagnez 1 DZY</Text> en identifiant <Text style={styles.goldText}>@DizzitUp</Text>
+                  <Text style={styles.goldText}>{t('shareSuccess.rewardTitle', 'Earn 1 DZY by tagging @DizzitUp')}</Text>
                 </Text>
                 <Text style={styles.shareCtaSub2}>
-                  Publiez une carte DizzitUp personnalisée de cette transaction
+                  {t('shareSuccess.rewardSub', 'Publish a customized DizzitUp card of this transaction')}
                 </Text>
               </View>
 
@@ -122,7 +124,7 @@ export default function SendMoneySuccessScreen() {
               onPress={() => navigation.navigate('HomeScreen')}
               activeOpacity={0.88}
             >
-              <Text style={styles.doneButtonText}>Terminé</Text>
+              <Text style={styles.doneButtonText}>{t('common.done', 'Done')}</Text>
             </TouchableOpacity>
 
           </View>
@@ -130,7 +132,7 @@ export default function SendMoneySuccessScreen() {
           {/* Footer Security Note */}
           <View style={styles.securityFooterRow}>
             <View style={styles.goldDot} />
-            <Text style={styles.securityFooterText}>NŒUD DE TRANSACTION SÉCURISÉ</Text>
+            <Text style={styles.securityFooterText}>{t('sendMoney.secureNode', 'SECURE TRANSACTION NODE')}</Text>
           </View>
 
         </ScrollView>

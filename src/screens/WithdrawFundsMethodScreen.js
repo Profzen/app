@@ -3,10 +3,12 @@ import React, { useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useApp } from '../context/AppContext';
 
 export default function WithdrawFundsMethodScreen() {
   const navigation = useNavigation();
   const route = useRoute();
+  const { t } = useApp();
   const { amount, currency, selectedToken, selectedNetwork } = route.params || {};
   const [selectedMethod, setSelectedMethod] = useState('bank'); // 'bank' or 'mobile'
 
@@ -19,7 +21,7 @@ export default function WithdrawFundsMethodScreen() {
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={24} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.pageTitle}>Retirer des fonds</Text>
+          <Text style={styles.pageTitle}>{t('withdrawFunds.title', 'Withdraw funds')}</Text>
           <TouchableOpacity style={styles.iconBtn}>
             <Ionicons name="headset-outline" size={24} color="#1A2840" />
           </TouchableOpacity>
@@ -55,9 +57,9 @@ export default function WithdrawFundsMethodScreen() {
           </View>
 
           {/* Titles */}
-          <Text style={styles.stepOverTitle}>Étape 2/5</Text>
-          <Text style={styles.mainTitle}>Choisissez votre mode de réception</Text>
-          <Text style={styles.mainSubtitle}>Sélectionnez le moyen par lequel vous souhaitez recevoir vos fonds.</Text>
+          <Text style={styles.stepOverTitle}>{t('withdrawFunds.step2Of5', 'Step 2/5')}</Text>
+          <Text style={styles.mainTitle}>{t('withdrawFunds.chooseMethodTitle', 'Choose your receiving method')}</Text>
+          <Text style={styles.mainSubtitle}>{t('withdrawFunds.chooseMethodSubtitle', 'Select how you would like to receive your funds.')}</Text>
 
           {/* Methods Cards */}
           
@@ -74,24 +76,24 @@ export default function WithdrawFundsMethodScreen() {
                 </View>
                 <View style={styles.cardHeaderInfo}>
                   <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                    <Text style={styles.cardTitle}>Virement bancaire</Text>
+                    <Text style={styles.cardTitle}>{t('withdrawFunds.bankTransfer', 'Bank transfer')}</Text>
                     <View style={styles.badgeRecommended}>
-                      <Text style={styles.badgeRecommendedText}>Recommandé</Text>
+                      <Text style={styles.badgeRecommendedText}>{t('withdrawFunds.recommended', 'Recommended')}</Text>
                     </View>
                   </View>
                   
                   <View style={styles.featuresList}>
                     <View style={styles.featureItem}>
                       <Ionicons name="checkmark-circle" size={14} color={selectedMethod === 'bank' ? '#10B981' : '#64748B'} />
-                      <Text style={styles.featureText}>Idéal pour les montants élevés</Text>
+                      <Text style={styles.featureText}>{t('withdrawFunds.idealHighAmounts', 'Ideal for large amounts')}</Text>
                     </View>
                     <View style={styles.featureItem}>
                       <Ionicons name="checkmark-circle" size={14} color={selectedMethod === 'bank' ? '#10B981' : '#64748B'} />
-                      <Text style={styles.featureText}>Sécurisé et fiable</Text>
+                      <Text style={styles.featureText}>{t('withdrawFunds.secureReliable', 'Secure and reliable')}</Text>
                     </View>
                     <View style={styles.featureItem}>
                       <Ionicons name="checkmark-circle" size={14} color={selectedMethod === 'bank' ? '#10B981' : '#64748B'} />
-                      <Text style={styles.featureText}>Compatible avec toutes les banques</Text>
+                      <Text style={styles.featureText}>{t('withdrawFunds.compatibleAllBanks', 'Compatible with all banks')}</Text>
                     </View>
                   </View>
                 </View>
@@ -107,8 +109,8 @@ export default function WithdrawFundsMethodScreen() {
                   <Ionicons name="time-outline" size={12} color="#FFF" />
                 </View>
                 <View>
-                  <Text style={styles.statLabel}>Délai</Text>
-                  <Text style={styles.statValue}>24h à 72h</Text>
+                  <Text style={styles.statLabel}>{t('withdrawFunds.delay', 'Delay')}</Text>
+                  <Text style={styles.statValue}>{t('withdrawFunds.delay24To72h', '24h to 72h')}</Text>
                 </View>
               </View>
               <View style={styles.statItem}>
@@ -116,7 +118,7 @@ export default function WithdrawFundsMethodScreen() {
                   <Text style={{color: '#FFF', fontSize: 10, fontWeight: 'bold'}}>%</Text>
                 </View>
                 <View>
-                  <Text style={styles.statLabel}>Frais DizzitUp</Text>
+                  <Text style={styles.statLabel}>{t('withdrawFunds.dizzitupFee', 'DizzitUp Fee')}</Text>
                   <Text style={styles.statValue}>1,5%</Text>
                 </View>
               </View>
@@ -125,8 +127,8 @@ export default function WithdrawFundsMethodScreen() {
                   <Ionicons name="git-network-outline" size={12} color="#FFF" />
                 </View>
                 <View>
-                  <Text style={styles.statLabel}>Frais réseau</Text>
-                  <Text style={styles.statValue}>Variables</Text>
+                  <Text style={styles.statLabel}>{t('withdrawFunds.networkFee', 'Network Fee')}</Text>
+                  <Text style={styles.statValue}>{t('withdrawFunds.variable', 'Variable')}</Text>
                 </View>
               </View>
             </View>
@@ -144,20 +146,20 @@ export default function WithdrawFundsMethodScreen() {
                   <Ionicons name="phone-portrait-outline" size={28} color={selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'} />
                 </View>
                 <View style={styles.cardHeaderInfo}>
-                  <Text style={styles.cardTitle}>Mobile Money</Text>
+                  <Text style={styles.cardTitle}>{t('withdrawFunds.mobileMoney', 'Mobile Money')}</Text>
                   
                   <View style={styles.featuresList}>
                     <View style={styles.featureItem}>
                       <Ionicons name="checkmark-circle" size={14} color={selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'} />
-                      <Text style={styles.featureText}>Réception instantanée</Text>
+                      <Text style={styles.featureText}>{t('withdrawFunds.instantReception', 'Instant reception')}</Text>
                     </View>
                     <View style={styles.featureItem}>
                       <Ionicons name="checkmark-circle" size={14} color={selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'} />
-                      <Text style={styles.featureText}>Disponible 24/7</Text>
+                      <Text style={styles.featureText}>{t('withdrawFunds.available247', 'Available 24/7')}</Text>
                     </View>
                     <View style={styles.featureItem}>
                       <Ionicons name="checkmark-circle" size={14} color={selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'} />
-                      <Text style={styles.featureText}>Idéal pour un usage quotidien</Text>
+                      <Text style={styles.featureText}>{t('withdrawFunds.idealDailyUsage', 'Ideal for daily use')}</Text>
                     </View>
                   </View>
                 </View>
@@ -173,8 +175,8 @@ export default function WithdrawFundsMethodScreen() {
                   <Ionicons name="time-outline" size={12} color="#FFF" />
                 </View>
                 <View>
-                  <Text style={styles.statLabel}>Délai</Text>
-                  <Text style={styles.statValue}>Instantané</Text>
+                  <Text style={styles.statLabel}>{t('withdrawFunds.delay', 'Delay')}</Text>
+                  <Text style={styles.statValue}>{t('withdrawFunds.delayInstant', 'Instant')}</Text>
                 </View>
               </View>
               <View style={styles.statItem}>
@@ -182,7 +184,7 @@ export default function WithdrawFundsMethodScreen() {
                   <Text style={{color: '#FFF', fontSize: 10, fontWeight: 'bold'}}>%</Text>
                 </View>
                 <View>
-                  <Text style={styles.statLabel}>Frais DizzitUp</Text>
+                  <Text style={styles.statLabel}>{t('withdrawFunds.dizzitupFee', 'DizzitUp Fee')}</Text>
                   <Text style={styles.statValue}>2,0%</Text>
                 </View>
               </View>
@@ -191,8 +193,8 @@ export default function WithdrawFundsMethodScreen() {
                   <Ionicons name="git-network-outline" size={12} color="#FFF" />
                 </View>
                 <View>
-                  <Text style={styles.statLabel}>Frais réseau</Text>
-                  <Text style={styles.statValue}>Variables</Text>
+                  <Text style={styles.statLabel}>{t('withdrawFunds.networkFee', 'Network Fee')}</Text>
+                  <Text style={styles.statValue}>{t('withdrawFunds.variable', 'Variable')}</Text>
                 </View>
               </View>
             </View>
@@ -207,24 +209,24 @@ export default function WithdrawFundsMethodScreen() {
                 </View>
                 <View style={styles.cardHeaderInfo}>
                   <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                    <Text style={[styles.cardTitle, {color: '#94A3B8'}]}>Carte bancaire</Text>
+                    <Text style={[styles.cardTitle, {color: '#94A3B8'}]}>{t('withdrawFunds.bankCard', 'Bank card')}</Text>
                     <View style={styles.badgeComingSoon}>
-                      <Text style={styles.badgeComingSoonText}>Bientôt disponible</Text>
+                      <Text style={styles.badgeComingSoonText}>{t('withdrawFunds.comingSoon', 'Coming soon')}</Text>
                     </View>
                   </View>
                   
                   <View style={styles.featuresList}>
                     <View style={styles.featureItem}>
                       <Ionicons name="checkmark-circle" size={14} color="#94A3B8" />
-                      <Text style={[styles.featureText, {color: '#94A3B8'}]}>Retrait sur votre carte</Text>
+                      <Text style={[styles.featureText, {color: '#94A3B8'}]}>{t('withdrawFunds.withdrawToCard', 'Withdrawal to your card')}</Text>
                     </View>
                     <View style={styles.featureItem}>
                       <Ionicons name="checkmark-circle" size={14} color="#94A3B8" />
-                      <Text style={[styles.featureText, {color: '#94A3B8'}]}>Utilisable partout</Text>
+                      <Text style={[styles.featureText, {color: '#94A3B8'}]}>{t('withdrawFunds.usableEverywhere', 'Usable everywhere')}</Text>
                     </View>
                     <View style={styles.featureItem}>
                       <Ionicons name="checkmark-circle" size={14} color="#94A3B8" />
-                      <Text style={[styles.featureText, {color: '#94A3B8'}]}>Arrive bientôt</Text>
+                      <Text style={[styles.featureText, {color: '#94A3B8'}]}>{t('withdrawFunds.arrivingSoon', 'Arriving soon')}</Text>
                     </View>
                   </View>
                 </View>
@@ -242,8 +244,8 @@ export default function WithdrawFundsMethodScreen() {
                   <Ionicons name="time-outline" size={12} color="#FFF" />
                 </View>
                 <View>
-                  <Text style={styles.statLabel}>Délai</Text>
-                  <Text style={[styles.statValue, {color: '#94A3B8'}]}>24h à 48h</Text>
+                  <Text style={styles.statLabel}>{t('withdrawFunds.delay', 'Delay')}</Text>
+                  <Text style={[styles.statValue, {color: '#94A3B8'}]}>{t('withdrawFunds.delay24To48h', '24h to 48h')}</Text>
                 </View>
               </View>
               <View style={styles.statItem}>
@@ -251,7 +253,7 @@ export default function WithdrawFundsMethodScreen() {
                   <Text style={{color: '#FFF', fontSize: 10, fontWeight: 'bold'}}>%</Text>
                 </View>
                 <View>
-                  <Text style={styles.statLabel}>Frais DizzitUp</Text>
+                  <Text style={styles.statLabel}>{t('withdrawFunds.dizzitupFee', 'DizzitUp Fee')}</Text>
                   <Text style={[styles.statValue, {color: '#94A3B8'}]}>2,5%</Text>
                 </View>
               </View>
@@ -260,8 +262,8 @@ export default function WithdrawFundsMethodScreen() {
                   <Ionicons name="git-network-outline" size={12} color="#FFF" />
                 </View>
                 <View>
-                  <Text style={styles.statLabel}>Frais réseau</Text>
-                  <Text style={[styles.statValue, {color: '#94A3B8'}]}>Variables</Text>
+                  <Text style={styles.statLabel}>{t('withdrawFunds.networkFee', 'Network Fee')}</Text>
+                  <Text style={[styles.statValue, {color: '#94A3B8'}]}>{t('withdrawFunds.variable', 'Variable')}</Text>
                 </View>
               </View>
             </View>
@@ -273,13 +275,13 @@ export default function WithdrawFundsMethodScreen() {
               <Ionicons name="information" size={16} color="#FFFFFF" />
             </View>
             <Text style={styles.infoBannerText}>
-              Vous pourrez revoir les détails avant de confirmer votre retrait.
+              {t('withdrawFunds.reviewDetailsNotice', 'You can review all details before confirming your withdrawal.')}
             </Text>
           </View>
 
           {/* Continue Button */}
           <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('WithdrawFundsMobileMoneySummaryScreen', { amount, currency, selectedToken, selectedNetwork, selectedMethod })}>
-            <Text style={styles.btnContinueText}>Continuer</Text>
+            <Text style={styles.btnContinueText}>{t('withdrawFunds.continueBtn', 'Continue')}</Text>
           </TouchableOpacity>
 
         </ScrollView>

@@ -2,17 +2,19 @@ import React from 'react';
 import { View, Text, StyleSheet, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
+import { useApp } from '../context/AppContext';
 
 export const BiometricsCard = ({ isEnabled, onToggle }) => {
+  const { t } = useApp();
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
         <Ionicons name="finger-print-outline" size={32} color={theme.colors.accent} />
       </View>
       <View style={styles.textContainer}>
-        <Text style={styles.title}>Activez la connexion biométrique</Text>
+        <Text style={styles.title}>{t('auth.enableBiometrics', 'Enable biometric login')}</Text>
         <Text style={styles.desc}>
-          Connectez-vous plus rapidement et en{'\n'}toute sécurité avec votre empreinte ou Face ID.
+          {t('auth.biometricsDesc', 'Log in faster and securely with fingerprint or Face ID.')}
         </Text>
       </View>
       <Switch

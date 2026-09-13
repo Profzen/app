@@ -9,7 +9,7 @@ import { useApp } from '../context/AppContext';
 export default function DashboardEngScreen() {
   const navigation = useNavigation();
   const [activeTabMode, setActiveTabMode] = useState('business');
-  const { setAccountMode } = useApp();
+  const { setAccountMode, t } = useApp();
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -22,11 +22,11 @@ export default function DashboardEngScreen() {
               <Ionicons name="storefront" size={22} color="#1A2840" />
             </View>
             <View style={{ marginLeft: 8 }}>
-              <Text style={styles.helloText}>Hello,</Text>
+              <Text style={styles.helloText}>{t('dashboardEng.hello', 'Hello,')}</Text>
               <View style={styles.nameBadgeRow}>
                 <Text style={styles.nameText}>ABC Inc</Text>
                 <View style={styles.businessBadge}>
-                  <Text style={styles.businessBadgeText}>Business</Text>
+                  <Text style={styles.businessBadgeText}>{t('dashboardEng.business', 'Business')}</Text>
                 </View>
               </View>
             </View>
@@ -59,7 +59,7 @@ export default function DashboardEngScreen() {
               }}
               activeOpacity={0.8}
             >
-              <Text style={[styles.modeTabText, activeTabMode === 'perso' && styles.modeTabTextActive]}>Perso</Text>
+              <Text style={[styles.modeTabText, activeTabMode === 'perso' && styles.modeTabTextActive]}>{t('dashboardEng.perso', 'Perso')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -67,7 +67,7 @@ export default function DashboardEngScreen() {
               onPress={() => setActiveTabMode('business')}
               activeOpacity={0.8}
             >
-              <Text style={[styles.modeTabText, activeTabMode === 'business' && styles.modeTabTextActive]}>Business</Text>
+              <Text style={[styles.modeTabText, activeTabMode === 'business' && styles.modeTabTextActive]}>{t('dashboardEng.business', 'Business')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -84,7 +84,7 @@ export default function DashboardEngScreen() {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <TouchableOpacity style={styles.btnTopUp} onPress={() => navigation.navigate('TopUpScreen')}>
                   <Ionicons name="add" size={14} color="#1A2840" />
-                  <Text style={styles.btnTopUpText}>Top-up</Text>
+                  <Text style={styles.btnTopUpText}>{t('dashboardEng.topUp', 'Top-up')}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.arrowCircleBtn}>
@@ -127,28 +127,28 @@ export default function DashboardEngScreen() {
             <View style={styles.cardActionsRow}>
               <TouchableOpacity style={styles.cardActionItem} onPress={() => navigation.navigate('SendMoneyScreen')}>
                 <Ionicons name="paper-plane-outline" size={20} color="#FFFFFF" />
-                <Text style={styles.cardActionLabel}>Send</Text>
+                <Text style={styles.cardActionLabel}>{t('dashboardEng.send', 'Send')}</Text>
               </TouchableOpacity>
 
               <View style={styles.actionDividerVertical} />
 
               <TouchableOpacity style={styles.cardActionItem}>
                 <Ionicons name="layers-outline" size={20} color="#FFFFFF" />
-                <Text style={styles.cardActionLabel}>Mes fonds</Text>
+                <Text style={styles.cardActionLabel}>{t('dashboardEng.myFunds', 'My funds')}</Text>
               </TouchableOpacity>
 
               <View style={styles.actionDividerVertical} />
 
               <TouchableOpacity style={styles.cardActionItem}>
                 <Ionicons name="time-outline" size={20} color="#FFFFFF" />
-                <Text style={styles.cardActionLabel}>History</Text>
+                <Text style={styles.cardActionLabel}>{t('dashboardEng.history', 'History')}</Text>
               </TouchableOpacity>
 
               <View style={styles.actionDividerVertical} />
 
               <TouchableOpacity style={styles.cardActionItem} onPress={() => navigation.navigate('WithdrawFundsScreen')}>
                 <Ionicons name="exit-outline" size={20} color="#FFFFFF" />
-                <Text style={styles.cardActionLabel}>Cash-out</Text>
+                <Text style={styles.cardActionLabel}>{t('dashboardEng.cashOut', 'Cash-out')}</Text>
               </TouchableOpacity>
             </View>
 
@@ -168,7 +168,7 @@ export default function DashboardEngScreen() {
                   <Text style={[styles.badgePillText, { color: '#10B981' }]}>+12.5%</Text>
                 </View>
               </View>
-              <Text style={styles.analyticsCardLabel}>Today's sales</Text>
+              <Text style={styles.analyticsCardLabel}>{t('dashboardEng.todaysSales', "Today's sales")}</Text>
               <Text style={styles.analyticsCardMainVal}>0</Text>
               <Text style={styles.analyticsCardSubVal}>0 DZY • $0</Text>
             </View>
@@ -184,7 +184,7 @@ export default function DashboardEngScreen() {
                   <Text style={[styles.badgePillText, { color: '#10B981' }]}>+3</Text>
                 </View>
               </View>
-              <Text style={styles.analyticsCardLabel}>Pending orders</Text>
+              <Text style={styles.analyticsCardLabel}>{t('dashboardEng.pendingOrders', 'Pending orders')}</Text>
               <Text style={styles.analyticsCardMainVal}>0</Text>
             </View>
 
@@ -199,7 +199,7 @@ export default function DashboardEngScreen() {
                   <Text style={[styles.badgePillText, { color: '#EF4444' }]}>-2</Text>
                 </View>
               </View>
-              <Text style={styles.analyticsCardLabel}>Products</Text>
+              <Text style={styles.analyticsCardLabel}>{t('dashboardEng.products', 'Products')}</Text>
               <Text style={styles.analyticsCardMainVal}>0</Text>
             </View>
 
@@ -214,7 +214,7 @@ export default function DashboardEngScreen() {
                   <Text style={[styles.badgePillText, { color: '#10B981' }]}>+0.2</Text>
                 </View>
               </View>
-              <Text style={styles.analyticsCardLabel}>Customer rating</Text>
+              <Text style={styles.analyticsCardLabel}>{t('dashboardEng.customerRating', 'Customer rating')}</Text>
               <Text style={styles.analyticsCardMainVal}>4.5</Text>
             </View>
 
@@ -228,13 +228,13 @@ export default function DashboardEngScreen() {
 
             <View style={styles.referCardContent}>
               <Text style={styles.referCardTitle}>
-                Refer a Store or Business{'\n'}and earn <Text style={{ color: '#10B981' }}>$10 in DZY</Text>
+                {t('dashboardEng.referTitle', 'Refer a Store or Business\nand earn')} <Text style={{ color: '#10B981' }}>$10 in DZY</Text>
               </Text>
               <Text style={styles.referCardSubtitle}>
-                Refer a store or business{'\n'}and earn rewards.
+                {t('dashboardEng.referSubtitle', 'Refer a store or business\nand earn rewards.')}
               </Text>
               <TouchableOpacity style={styles.btnReferNow}>
-                <Text style={styles.btnReferNowText}>Refer now</Text>
+                <Text style={styles.btnReferNowText}>{t('dashboardEng.referNow', 'Refer now')}</Text>
               </TouchableOpacity>
             </View>
 
@@ -259,7 +259,7 @@ export default function DashboardEngScreen() {
 
           {/* Quick Actions Header */}
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>Quick actions</Text>
+            <Text style={styles.sectionTitle}>{t('dashboardEng.quickActions', 'Quick actions')}</Text>
           </View>
 
           {/* Quick Actions 6-Card Grid */}
@@ -270,7 +270,7 @@ export default function DashboardEngScreen() {
               <View style={[styles.qActionIconCircle, { backgroundColor: '#EFF6FF' }]}>
                 <Ionicons name="document-text-outline" size={22} color="#0052FF" />
               </View>
-              <Text style={styles.qActionCardLabel}>Invoice &{'\n'}Pay link</Text>
+              <Text style={styles.qActionCardLabel}>{t('dashboardEng.invoicePayLink', 'Invoice &\nPay link')}</Text>
             </TouchableOpacity>
 
             {/* 2: Cash-in (POS) */}
@@ -278,7 +278,7 @@ export default function DashboardEngScreen() {
               <View style={[styles.qActionIconCircle, { backgroundColor: '#F3E8FF' }]}>
                 <Ionicons name="hardware-chip-outline" size={22} color="#8B5CF6" />
               </View>
-              <Text style={styles.qActionCardLabel}>Cash-in{'\n'}(POS)</Text>
+              <Text style={styles.qActionCardLabel}>{t('dashboardEng.cashInPos', 'Cash-in\n(POS)')}</Text>
             </TouchableOpacity>
 
             {/* 3: Send & Request */}
@@ -286,7 +286,7 @@ export default function DashboardEngScreen() {
               <View style={[styles.qActionIconCircle, { backgroundColor: '#DCFCE7' }]}>
                 <Ionicons name="people-outline" size={22} color="#10B981" />
               </View>
-              <Text style={styles.qActionCardLabel}>Send &{'\n'}Request</Text>
+              <Text style={styles.qActionCardLabel}>{t('dashboardEng.sendRequest', 'Send &\nRequest')}</Text>
             </TouchableOpacity>
 
             {/* 4: Top-up DZYwallet */}
@@ -294,7 +294,7 @@ export default function DashboardEngScreen() {
               <View style={[styles.qActionIconCircle, { backgroundColor: '#DCFCE7' }]}>
                 <Ionicons name="add-circle-outline" size={22} color="#10B981" />
               </View>
-              <Text style={styles.qActionCardLabel}>Top-up{'\n'}DZYwallet</Text>
+              <Text style={styles.qActionCardLabel}>{t('dashboardEng.topUpDzyWallet', 'Top-up\nDZYwallet')}</Text>
             </TouchableOpacity>
 
             {/* 5: Cash-out */}
@@ -302,7 +302,7 @@ export default function DashboardEngScreen() {
               <View style={[styles.qActionIconCircle, { backgroundColor: '#FEF3C7' }]}>
                 <Ionicons name="wallet-outline" size={22} color="#F59E0B" />
               </View>
-              <Text style={styles.qActionCardLabel}>Cash-out</Text>
+              <Text style={styles.qActionCardLabel}>{t('dashboardEng.cashOut', 'Cash-out')}</Text>
             </TouchableOpacity>
 
             {/* 6: Source in Africa */}
@@ -310,7 +310,7 @@ export default function DashboardEngScreen() {
               <View style={[styles.qActionIconCircle, { backgroundColor: '#EFF6FF' }]}>
                 <Ionicons name="earth-outline" size={22} color="#0052FF" />
               </View>
-              <Text style={styles.qActionCardLabel}>Source in{'\n'}Africa</Text>
+              <Text style={styles.qActionCardLabel}>{t('dashboardEng.sourceInAfrica', 'Source in\nAfrica')}</Text>
             </TouchableOpacity>
 
           </View>
@@ -321,9 +321,9 @@ export default function DashboardEngScreen() {
               <Ionicons name="shield-checkmark-outline" size={24} color="#1A2840" />
             </View>
             <View style={styles.securityContentGroup}>
-              <Text style={styles.securityTitleText}>Secure your business</Text>
+              <Text style={styles.securityTitleText}>{t('dashboardEng.secureYourBusiness', 'Secure your business')}</Text>
               <Text style={styles.securitySubText}>
-                Your funds and transactions are protected{'\n'}by <Text style={{ color: '#F59E0B', fontWeight: 'bold' }}>enterprise-grade</Text> security.
+                {t('dashboardEng.secureBusinessDesc', 'Your funds and transactions are protected by enterprise-grade security.')}
               </Text>
             </View>
             <Ionicons name="lock-closed-outline" size={20} color="#1A2840" />

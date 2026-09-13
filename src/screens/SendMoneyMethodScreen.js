@@ -3,10 +3,12 @@ import React, { useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useApp } from '../context/AppContext';
 
 export default function SendMoneyMethodScreen() {
   const navigation = useNavigation();
   const route = useRoute();
+  const { t } = useApp();
   const [selectedMethod, setSelectedMethod] = useState('dizzy');
 
   const { amount = '4 000', currency = 'Ar' } = route.params || {};
@@ -22,7 +24,7 @@ export default function SendMoneyMethodScreen() {
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <Ionicons name="paper-plane-outline" size={18} color="#1A2840" style={styles.headerIcon} />
-            <Text style={styles.headerTitle}>envoyer des Stablecoins</Text>
+            <Text style={styles.headerTitle}>{t('sendMoney.headerTitle', 'Send Stablecoins')}</Text>
           </View>
           <TouchableOpacity style={styles.iconBtn}>
             <Ionicons name="ellipsis-horizontal" size={20} color="#1A2840" />
@@ -37,7 +39,7 @@ export default function SendMoneyMethodScreen() {
               <View style={[styles.stepCircle, styles.stepCircleActive]}>
                 <Text style={styles.stepNumActive}>1</Text>
               </View>
-              <Text style={styles.stepText}>Montant</Text>
+              <Text style={styles.stepText}>{t('common.amount', 'Amount')}</Text>
             </View>
             
             <View style={styles.stepLineTrack}>
@@ -48,12 +50,12 @@ export default function SendMoneyMethodScreen() {
               <View style={[styles.stepCircle, styles.stepCircleActive]}>
                 <Text style={styles.stepNumActive}>2</Text>
               </View>
-              <Text style={styles.stepTextActive}>Méthode</Text>
+              <Text style={styles.stepTextActive}>{t('sendMoney.method', 'Method')}</Text>
             </View>
           </View>
 
-          <Text style={styles.pageTitle}>Méthode</Text>
-          <Text style={styles.pageSubtitle}>Comment souhaitez-vous envoyer l'argent ?</Text>
+          <Text style={styles.pageTitle}>{t('sendMoney.method', 'Method')}</Text>
+          <Text style={styles.pageSubtitle}>{t('sendMoney.howToSend', 'How would you like to send money?')}</Text>
 
           {/* Methods List */}
           <View style={styles.methodsContainer}>
@@ -70,7 +72,7 @@ export default function SendMoneyMethodScreen() {
               
               <View style={styles.methodContent}>
                 <Text style={styles.methodTitle}>Dizzy</Text>
-                <Text style={styles.methodDesc}>Envoyer via mon portefeuille DIZY</Text>
+                <Text style={styles.methodDesc}>{t('sendMoney.viaDizyDesc', 'Send via my DIZY wallet')}</Text>
               </View>
 
               <View style={styles.radioWrapper}>
@@ -95,8 +97,8 @@ export default function SendMoneyMethodScreen() {
               </View>
               
               <View style={styles.methodContent}>
-                <Text style={styles.methodTitle}>Mobile money</Text>
-                <Text style={styles.methodDesc}>Envoyer vers un compte mobile money</Text>
+                <Text style={styles.methodTitle}>{t('withdrawFunds.mobileMoney', 'Mobile Money')}</Text>
+                <Text style={styles.methodDesc}>{t('sendMoney.viaMobileMoneyDesc', 'Send to a mobile money account')}</Text>
               </View>
 
               <View style={styles.radioWrapper}>
@@ -119,7 +121,7 @@ export default function SendMoneyMethodScreen() {
             <View style={styles.securityIconArc}>
               <Ionicons name="shield-checkmark-outline" size={20} color="#1A2840" />
             </View>
-            <Text style={styles.securityTitle}>Vos transactions sont sécurisées</Text>
+            <Text style={styles.securityTitle}>{t('sendMoney.transactionsSecure', 'Your transactions are secure')}</Text>
           </View>
 
         </ScrollView>
@@ -127,14 +129,14 @@ export default function SendMoneyMethodScreen() {
         {/* Action Buttons */}
         <View style={styles.footer}>
           <TouchableOpacity style={styles.btnPrev} onPress={() => navigation.goBack()} activeOpacity={0.8}>
-            <Text style={styles.btnPrevText}>Précédent</Text>
+            <Text style={styles.btnPrevText}>{t('common.previous', 'Previous')}</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.btnNext} 
             onPress={() => navigation.navigate('SendMoneyPinScreen', { amount, currency, method: selectedMethod })}
             activeOpacity={0.88}
           >
-            <Text style={styles.btnNextText}>Suivant</Text>
+            <Text style={styles.btnNextText}>{t('common.next', 'Next')}</Text>
           </TouchableOpacity>
         </View>
 

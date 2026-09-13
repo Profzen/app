@@ -4,10 +4,12 @@ import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Ima
 import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
+import { useApp } from '../context/AppContext';
 
 export default function ShareSuccessVisualScreen() {
   const navigation = useNavigation();
   const route = useRoute();
+  const { t } = useApp();
 
   const { platform = 'whatsapp', transactionData = {} } = route.params || {};
 
@@ -34,7 +36,10 @@ export default function ShareSuccessVisualScreen() {
 
   const toggleModifyVisual = () => {
     setCustomStyleIndex((prev) => (prev + 1) % cardBackgrounds.length);
-    setToast({ title: 'Visuel modifié', message: 'Nouveau style de carte appliqué !' });
+    setToast({ 
+      title: t('shareSuccess.toastModifiedTitle', 'Visuel modifié'), 
+      message: t('shareSuccess.toastModifiedMsg', 'Nouveau style de carte appliqué !') 
+    });
   };
 
   const handleContinue = () => {
@@ -56,10 +61,10 @@ export default function ShareSuccessVisualScreen() {
           </TouchableOpacity>
 
           <View style={styles.headerTitleWrap}>
-            <Text style={styles.headerTitle}>Aperçu de votre visuel</Text>
-            <Text style={styles.headerStepBadge}>Étape 2 sur 3</Text>
+            <Text style={styles.headerTitle}>{t('shareSuccess.visualTitle', 'Aperçu de votre visuel')}</Text>
+            <Text style={styles.headerStepBadge}>{t('shareSuccess.visualStepBadge', 'Étape 2 sur 3')}</Text>
             <Text style={styles.headerSubtitle}>
-              Voici le visuel qui sera partagé. Vous pourrez modifier le texte à l'étape suivante.
+              {t('shareSuccess.visualSubtitle', "Voici le visuel qui sera partagé. Vous pourrez modifier le texte à l'étape suivante.")}
             </Text>
           </View>
         </View>
@@ -87,7 +92,7 @@ export default function ShareSuccessVisualScreen() {
             {/* Pill: Transaction réussie */}
             <View style={styles.statusPillWrap}>
               <View style={styles.statusPill}>
-                <Text style={styles.statusPillText}>Transaction réussie !</Text>
+                <Text style={styles.statusPillText}>{t('shareSuccess.txSuccess', 'Transaction réussie !')}</Text>
                 <View style={styles.checkBadgeGreen}>
                   <Ionicons name="checkmark" size={12} color="#FFFFFF" />
                 </View>
@@ -96,7 +101,7 @@ export default function ShareSuccessVisualScreen() {
 
             {/* Headline */}
             <Text style={styles.headlineText}>
-              J'ai <Text style={styles.goldText}>{actionType}</Text> des fonds
+              {t('shareSuccess.sentFundsPre', "J'ai")} <Text style={styles.goldText}>{actionType}</Text> {t('shareSuccess.sentFundsPost', 'des fonds')}
             </Text>
 
             {/* Huge Amount */}
@@ -112,7 +117,7 @@ export default function ShareSuccessVisualScreen() {
               <View style={styles.usersRow}>
                 {/* Sender */}
                 <View style={styles.userCol}>
-                  <Text style={styles.userLabel}>De</Text>
+                  <Text style={styles.userLabel}>{t('shareSuccess.from', 'De')}</Text>
                   <View style={styles.userAvatarWrap}>
                     <Image source={{ uri: 'https://i.pravatar.cc/150?img=12' }} style={styles.avatarImg} />
                   </View>
@@ -127,7 +132,7 @@ export default function ShareSuccessVisualScreen() {
 
                 {/* Recipient */}
                 <View style={styles.userCol}>
-                  <Text style={styles.userLabel}>Vers</Text>
+                  <Text style={styles.userLabel}>{t('shareSuccess.to', 'Vers')}</Text>
                   <View style={[styles.userAvatarWrap, styles.userAvatarShielded]}>
                     <Ionicons name="person" size={24} color="#CBD5E1" />
                   </View>
@@ -145,7 +150,7 @@ export default function ShareSuccessVisualScreen() {
                     <View style={styles.purplePolyBadge}>
                       <Text style={{ color: '#FFF', fontSize: 10, fontWeight: 'bold' }}>∞</Text>
                     </View>
-                    <Text style={styles.metaLabel}>Réseau</Text>
+                    <Text style={styles.metaLabel}>{t('shareSuccess.network', 'Réseau')}</Text>
                   </View>
                   <Text style={styles.metaValue}>{network}</Text>
                 </View>
@@ -153,7 +158,7 @@ export default function ShareSuccessVisualScreen() {
                 <View style={styles.metaCol}>
                   <View style={styles.metaIconRow}>
                     <Ionicons name="calendar-outline" size={14} color="#94A3B8" />
-                    <Text style={styles.metaLabel}>Date</Text>
+                    <Text style={styles.metaLabel}>{t('shareSuccess.date', 'Date')}</Text>
                   </View>
                   <Text style={styles.metaValue}>{date}</Text>
                 </View>
@@ -161,7 +166,7 @@ export default function ShareSuccessVisualScreen() {
                 <View style={styles.metaCol}>
                   <View style={styles.metaIconRow}>
                     <Ionicons name="pricetag-outline" size={14} color="#94A3B8" />
-                    <Text style={styles.metaLabel}>ID de transaction</Text>
+                    <Text style={styles.metaLabel}>{t('shareSuccess.txId', 'ID de transaction')}</Text>
                   </View>
                   <View style={styles.hashCopyRow}>
                     <Text style={styles.metaValue} numberOfLines={1}>{txHash}</Text>
@@ -174,12 +179,12 @@ export default function ShareSuccessVisualScreen() {
             {/* Visual Card Footer */}
             <View style={styles.cardFooter}>
               <View style={styles.footerLeft}>
-                <Text style={styles.footerSecurityText}>Sécurisé sur blockchains,</Text>
-                <Text style={styles.footerHighlightText}>Sans frontière ni intermédiaire</Text>
+                <Text style={styles.footerSecurityText}>{t('shareSuccess.securedBlockchain', 'Sécurisé sur blockchains,')}</Text>
+                <Text style={styles.footerHighlightText}>{t('shareSuccess.noBorder', 'Sans frontière ni intermédiaire')}</Text>
                 
                 <View style={styles.footerDivider} />
 
-                <Text style={styles.wannaText}>Wanna do the same?</Text>
+                <Text style={styles.wannaText}>{t('shareSuccess.wannaDoSame', 'Wanna do the same?')}</Text>
                 <Text style={styles.joinText}>Join Dizzit<Text style={{ color: '#FFC759' }}>Up</Text></Text>
 
                 <View style={styles.urlPill}>
@@ -194,7 +199,7 @@ export default function ShareSuccessVisualScreen() {
                   style={styles.logoCircleFooter} 
                 />
                 <Text style={styles.footerBrandTitle}>Dizzit<Text style={{ color: '#FFC759' }}>Up</Text></Text>
-                <Text style={styles.footerBrandTagline}>Send More, Get More</Text>
+                <Text style={styles.footerBrandTagline}>{t('shareSuccess.sendMoreGetMore', 'Send More, Get More')}</Text>
               </View>
             </View>
 
@@ -204,12 +209,12 @@ export default function ShareSuccessVisualScreen() {
           <View style={styles.controlsRow}>
             <TouchableOpacity style={styles.controlBtn} onPress={toggleModifyVisual} activeOpacity={0.8}>
               <Ionicons name="pencil-outline" size={18} color="#1A2840" style={{ marginRight: 8 }} />
-              <Text style={styles.controlBtnText}>Modifier le visuel</Text>
+              <Text style={styles.controlBtnText}>{t('shareSuccess.modifyVisual', 'Modifier le visuel')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.controlBtn} onPress={() => setIsFullscreen(true)} activeOpacity={0.8}>
               <Ionicons name="expand-outline" size={18} color="#1A2840" style={{ marginRight: 8 }} />
-              <Text style={styles.controlBtnText}>Plein écran</Text>
+              <Text style={styles.controlBtnText}>{t('shareSuccess.fullscreen', 'Plein écran')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -219,13 +224,13 @@ export default function ShareSuccessVisualScreen() {
               <Ionicons name="shield-outline" size={20} color="#D97706" />
             </View>
             <Text style={styles.privacyBannerText}>
-              Vos informations personnelles sont protégées. Seuls le pays et le prénom sont visibles.
+              {t('shareSuccess.privacyNote', 'Vos informations personnelles sont protégées. Seuls le pays et le prénom sont visibles.')}
             </Text>
           </View>
 
           {/* Bottom Primary Action Button */}
           <TouchableOpacity style={styles.btnPrimary} onPress={handleContinue} activeOpacity={0.88}>
-            <Text style={styles.btnPrimaryText}>Continuer</Text>
+            <Text style={styles.btnPrimaryText}>{t('shareSuccess.continue', 'Continuer')}</Text>
             <Ionicons name="arrow-forward" size={20} color="#1A2840" style={styles.btnArrowRight} />
           </TouchableOpacity>
 
@@ -248,7 +253,7 @@ export default function ShareSuccessVisualScreen() {
                   </View>
                   <Text style={styles.hashtagText}>#NoBorder<Text style={{ color: '#FFC759' }}>NoMiddleman</Text></Text>
                 </View>
-                <Text style={styles.headlineText}>J'ai <Text style={styles.goldText}>{actionType}</Text> des fonds</Text>
+                <Text style={styles.headlineText}>{t('shareSuccess.sentFundsPre', "J'ai")} <Text style={styles.goldText}>{actionType}</Text> {t('shareSuccess.sentFundsPost', 'des fonds')}</Text>
                 <Text style={styles.amountLargeText}>{amount} {token}</Text>
                 <Text style={styles.amountSubText}>via DZYWallet</Text>
               </View>

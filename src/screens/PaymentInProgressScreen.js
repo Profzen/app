@@ -4,9 +4,11 @@ import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
+import { useApp } from '../context/AppContext';
 
 export default function PaymentInProgressScreen() {
   const navigation = useNavigation();
+  const { t } = useApp();
   return (
     <SafeAreaView style={styles.safeArea}>
       
@@ -15,7 +17,7 @@ export default function PaymentInProgressScreen() {
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#1A2840" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Paiement en cours</Text>
+        <Text style={styles.headerTitle}>{t('paymentInProgress.title', 'Payment in Progress')}</Text>
         <TouchableOpacity style={styles.iconBtn}>
           <Ionicons name="headset-outline" size={24} color="#1A2840" />
         </TouchableOpacity>
@@ -25,10 +27,9 @@ export default function PaymentInProgressScreen() {
         
         {/* Status Text */}
         <View style={styles.statusHeader}>
-          <Text style={styles.statusTitle}>Votre paiement est en cours</Text>
+          <Text style={styles.statusTitle}>{t('paymentInProgress.title', 'Payment in Progress')}</Text>
           <Text style={styles.statusSubtitle}>
-            Ne quittez pas l'application.{'\n'}
-            La transaction est en cours de traitement sur la blockchain.
+            {t('paymentInProgress.subtitle', 'Do not leave the app. The transaction is being confirmed on the blockchain.')}
           </Text>
         </View>
 
@@ -43,7 +44,7 @@ export default function PaymentInProgressScreen() {
               </View>
             </View>
             <Text style={styles.stepTitleCompleted}>DZY Wallet</Text>
-            <Text style={styles.stepSubtitle}>Paiement initié</Text>
+            <Text style={styles.stepSubtitle}>{t('paymentInProgress.dzyWalletStep', 'Payment initiated')}</Text>
           </View>
           
           <View style={[styles.stepLine, styles.stepLineCompleted]} />
@@ -56,7 +57,7 @@ export default function PaymentInProgressScreen() {
               </View>
             </View>
             <Text style={styles.stepTitleInProgress}>Smart Contract</Text>
-            <Text style={styles.stepSubtitle}>En traitement</Text>
+            <Text style={styles.stepSubtitle}>{t('paymentInProgress.smartContractStep', 'Processing')}</Text>
           </View>
           
           <View style={[styles.stepLine, styles.stepLinePending]} />
@@ -66,19 +67,19 @@ export default function PaymentInProgressScreen() {
               <Ionicons name="storefront-outline" size={24} color="#64748B" />
             </View>
             <Text style={styles.stepTitlePending}>Jumia Sénégal</Text>
-            <Text style={styles.stepSubtitle}>En attente</Text>
+            <Text style={styles.stepSubtitle}>{t('paymentInProgress.merchantStep', 'Pending')}</Text>
           </View>
 
         </View>
 
         {/* Détails de la transaction */}
         <View style={styles.cardSection}>
-          <Text style={styles.cardTitle}>Détails de la transaction</Text>
+          <Text style={styles.cardTitle}>{t('paymentInProgress.txDetails', 'Transaction details')}</Text>
           
           <View style={styles.detailRow}>
             <View style={styles.detailLabelRow}>
               <Ionicons name="scan-outline" size={16} color="#1A2840" style={{marginRight: 8}} />
-              <Text style={styles.detailLabel}>Vous payez</Text>
+              <Text style={styles.detailLabel}>{t('paymentInProgress.youPay', 'You pay')}</Text>
             </View>
             <View style={styles.detailValueRow}>
               <CryptoIcon symbol="USDC" size={24} />
@@ -91,7 +92,7 @@ export default function PaymentInProgressScreen() {
           <View style={styles.detailRow}>
             <View style={styles.detailLabelRow}>
               <Ionicons name="cube-outline" size={16} color="#1A2840" style={{marginRight: 8}} />
-              <Text style={styles.detailLabel}>Réseau</Text>
+              <Text style={styles.detailLabel}>{t('paymentInProgress.network', 'Network')}</Text>
             </View>
             <View style={styles.detailValueRow}>
               <CryptoIcon symbol="POL" size={24} />
@@ -104,7 +105,7 @@ export default function PaymentInProgressScreen() {
           <View style={styles.detailRow}>
             <View style={styles.detailLabelRow}>
               <Ionicons name="person-outline" size={16} color="#1A2840" style={{marginRight: 8}} />
-              <Text style={styles.detailLabel}>Adresse du vendeur</Text>
+              <Text style={styles.detailLabel}>{t('paymentInProgress.merchantAddress', 'Merchant address')}</Text>
             </View>
             <Text style={styles.detailValue}>jumia.sn</Text>
           </View>
@@ -114,7 +115,7 @@ export default function PaymentInProgressScreen() {
           <View style={styles.detailRow}>
             <View style={styles.detailLabelRow}>
               <Ionicons name="calendar-outline" size={16} color="#1A2840" style={{marginRight: 8}} />
-              <Text style={styles.detailLabel}>Commande</Text>
+              <Text style={styles.detailLabel}>{t('paymentInProgress.order', 'Order')}</Text>
             </View>
             <Text style={styles.detailValue}>JM-2026-000152</Text>
           </View>
@@ -124,10 +125,10 @@ export default function PaymentInProgressScreen() {
           <View style={styles.detailRow}>
             <View style={styles.detailLabelRow}>
               <Ionicons name="time-outline" size={16} color="#1A2840" style={{marginRight: 8}} />
-              <Text style={styles.detailLabel}>Statut</Text>
+              <Text style={styles.detailLabel}>{t('paymentInProgress.status', 'Status')}</Text>
             </View>
             <View style={styles.statusBadgeYellow}>
-              <Text style={styles.statusBadgeTextYellow}>En cours</Text>
+              <Text style={styles.statusBadgeTextYellow}>{t('paymentInProgress.inProgress', 'In progress')}</Text>
             </View>
           </View>
 
@@ -136,7 +137,7 @@ export default function PaymentInProgressScreen() {
         {/* Confirmation blockchain */}
         <View style={styles.cardSection}>
           <View style={styles.blockchainHeader}>
-            <Text style={styles.cardTitle}>Confirmation blockchain</Text>
+            <Text style={styles.cardTitle}>{t('paymentInProgress.blockchainConfirm', 'Blockchain confirmation')}</Text>
             <View style={styles.networkBadge}>
               <CryptoIcon symbol="POL" size={20} />
               <Text style={styles.networkBadgeText}>Polygon</Text>
@@ -144,8 +145,8 @@ export default function PaymentInProgressScreen() {
           </View>
 
           <View style={styles.progressHeader}>
-            <Text style={styles.progressLabel}>En attente de confirmations réseau...</Text>
-            <Text style={styles.progressValue}>Confirmation <Text style={styles.progressValueHighlight}>2 / 6</Text></Text>
+            <Text style={styles.progressLabel}>{t('paymentInProgress.waitingConfirm', 'Waiting for network confirmations...')}</Text>
+            <Text style={styles.progressValue}>{t('paymentInProgress.confirmCount', { current: 2, total: 6, defaultValue: 'Confirmation 2 / 6' })}</Text>
           </View>
 
           <View style={styles.progressBarTrack}>
@@ -155,17 +156,17 @@ export default function PaymentInProgressScreen() {
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
               <Ionicons name="time-outline" size={18} color="#3B82F6" style={{marginBottom: 4}} />
-              <Text style={styles.statLabel}>Temps estimé</Text>
-              <Text style={styles.statValue}>~ 45 secondes</Text>
+              <Text style={styles.statLabel}>{t('paymentInProgress.estTime', 'Estimated time')}</Text>
+              <Text style={styles.statValue}>~ 45s</Text>
             </View>
             <View style={styles.statItem}>
               <Ionicons name="shield-checkmark-outline" size={18} color="#3B82F6" style={{marginBottom: 4}} />
-              <Text style={styles.statLabel}>Sécurité</Text>
-              <Text style={styles.statValue}>100% sécurisée</Text>
+              <Text style={styles.statLabel}>{t('paymentInProgress.security', 'Security')}</Text>
+              <Text style={styles.statValue}>100%</Text>
             </View>
             <View style={styles.statItem}>
               <Ionicons name="cube-outline" size={18} color="#3B82F6" style={{marginBottom: 4}} />
-              <Text style={styles.statLabel}>Bloc actuel</Text>
+              <Text style={styles.statLabel}>{t('paymentInProgress.currentBlock', 'Current block')}</Text>
               <Text style={styles.statValue}>#57,892,431</Text>
             </View>
           </View>
@@ -177,14 +178,14 @@ export default function PaymentInProgressScreen() {
             <Ionicons name="lock-closed-outline" size={20} color="#1A2840" />
           </View>
           <View style={styles.securityBannerContent}>
-            <Text style={styles.securityBannerText}>Votre paiement est sécurisé par un smart contract.{'\n'}Le vendeur recevra les fonds après confirmation de la transaction sur la blockchain.</Text>
+            <Text style={styles.securityBannerText}>{t('paymentInProgress.smartContractSecurityNote', 'Your payment is secured by a smart contract. The seller will receive funds after blockchain confirmation.')}</Text>
           </View>
         </View>
 
         {/* Cancel Button */}
         <TouchableOpacity style={styles.btnCancel} onPress={() => navigation.navigate('PaymentSuccessScreen')}>
           <Ionicons name="checkmark-circle-outline" size={20} color="#3B82F6" style={{marginRight: 8}} />
-          <Text style={styles.btnCancelText}>Simuler la confirmation du paiement</Text>
+          <Text style={styles.btnCancelText}>{t('paymentInProgress.simulateConfirm', 'Simulate payment confirmation')}</Text>
         </TouchableOpacity>
 
       </ScrollView>

@@ -6,13 +6,33 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
+import { useApp } from '../context/AppContext';
 
 export default function OrderConfirmationScreen() {
   const navigation = useNavigation();
+  const { t } = useApp();
   const [toast, setToast] = useState(null);
   const orderUrl = 'jumia.sn/orders/JM-2026-000152';
-  const shareOrder = async () => { try { await Share.share({title:'Achetez-moi ceci',message:`Pouvez-vous payer ce produit pour moi ? ${orderUrl}`}); } finally { setToast({title:'Commande partagée',message:'La demande de paiement est prête.'}); } };
-  const copyOrder = async () => { await Clipboard.setStringAsync(orderUrl); setToast({title:'Lien copié',message:'Le lien de commande est dans le presse-papiers.'}); };
+  const shareOrder = async () => { 
+    try { 
+      await Share.share({
+        title: t('orderConfirmation.shareOrder', 'Buy this for me'),
+        message: `${t('orderConfirmation.shareDesc', 'Can you pay this product for me?')} ${orderUrl}`
+      }); 
+    } finally { 
+      setToast({
+        title: t('product.sharedTitle', 'Order shared'),
+        message: t('product.sharedDesc', 'Sharing link prepared successfully.')
+      }); 
+    } 
+  };
+  const copyOrder = async () => { 
+    await Clipboard.setStringAsync(orderUrl); 
+    setToast({
+      title: t('common.copied', 'Link copied'),
+      message: t('orderConfirmation.noteDesc', 'Order link is in clipboard.')
+    }); 
+  };
   return (
     <SafeAreaView style={styles.safeArea}>
       
@@ -21,7 +41,7 @@ export default function OrderConfirmationScreen() {
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#1A2840" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Résumé et confirmation</Text>
+        <Text style={styles.headerTitle}>{t('orderConfirmation.title', 'Summary & Confirmation')}</Text>
         <TouchableOpacity style={styles.iconBtn}>
           <Ionicons name="headset-outline" size={24} color="#1A2840" />
         </TouchableOpacity>
@@ -35,15 +55,15 @@ export default function OrderConfirmationScreen() {
             <Ionicons name="lock-closed-outline" size={20} color="#1A2840" />
           </View>
           <View style={styles.securityAlertContent}>
-            <Text style={styles.securityAlertTitle}>Vérifiez et confirmez votre achat</Text>
-            <Text style={styles.securityAlertText}>Votre paiement sera envoyé en toute sécurité au vendeur après confirmation sur la blockchain.</Text>
+            <Text style={styles.securityAlertTitle}>{t('orderConfirmation.alertTitle', 'Review and confirm your purchase')}</Text>
+            <Text style={styles.securityAlertText}>{t('orderConfirmation.alertDesc', 'Your payment will be securely sent to the seller after blockchain confirmation.')}</Text>
           </View>
           <Ionicons name="shield-checkmark" size={40} color="#FFDCA8" style={styles.securityAlertBgIcon} />
         </View>
 
         {/* Vous achetez Section */}
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Vous achetez</Text>
+          <Text style={styles.sectionTitle}>{t('orderConfirmation.youAreBuying', 'You are buying')}</Text>
           <View style={styles.productRow}>
             <View style={styles.productImageContainer}>
               <View style={styles.mockProductImage} />
@@ -59,12 +79,12 @@ export default function OrderConfirmationScreen() {
                 <Ionicons name="checkmark-circle" size={12} color="#3B82F6" style={{marginLeft: 4}} />
               </View>
               
-              <Text style={styles.orderNumber}>Commande #JM-2026-000152</Text>
+              <Text style={styles.orderNumber}>{t('orderConfirmation.orderNumber', { number: 'JM-2026-000152', defaultValue: 'Order #JM-2026-000152' })}</Text>
             </View>
             <View style={styles.productPriceCol}>
               <Text style={styles.productPrice}>155 000 FCFA</Text>
               <View style={styles.qtyBadge}>
-                <Text style={styles.qtyBadgeText}>Qté : 1</Text>
+                <Text style={styles.qtyBadgeText}>{t('orderVerification.qty', 'Qty')} : 1</Text>
               </View>
             </View>
           </View>
@@ -72,10 +92,10 @@ export default function OrderConfirmationScreen() {
 
         {/* Détails du paiement */}
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Détails du paiement</Text>
+          <Text style={styles.sectionTitle}>{t('orderConfirmation.paymentDetails', 'Payment details')}</Text>
           
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Vous payez avec</Text>
+            <Text style={styles.detailLabel}>{t('orderConfirmation.youPayWith', 'You pay with')}</Text>
             <View style={styles.detailValueRow}>
               <CryptoIcon symbol="USDC" size={24} />
               <Text style={styles.detailValue}>USDC</Text>
@@ -85,7 +105,7 @@ export default function OrderConfirmationScreen() {
           <View style={styles.divider} />
           
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Réseau sélectionné</Text>
+            <Text style={styles.detailLabel}>{t('orderConfirmation.selectedNetwork', 'Selected network')}</Text>
             <View style={styles.detailValueRow}>
               <CryptoIcon symbol="POL" size={24} />
               <Text style={styles.detailValue}>Polygon</Text>
@@ -95,32 +115,32 @@ export default function OrderConfirmationScreen() {
           <View style={styles.divider} />
           
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Montant à payer</Text>
+            <Text style={styles.detailLabel}>{t('orderConfirmation.amountToPay', 'Amount to pay')}</Text>
             <Text style={styles.detailValue}>38,95 USDC</Text>
           </View>
           
           <View style={styles.divider} />
           
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Livraison</Text>
-            <Text style={styles.detailValue}>2 jours ouvrés à Lomé, Togo</Text>
+            <Text style={styles.detailLabel}>{t('orderVerification.delivery', 'Delivery')}</Text>
+            <Text style={styles.detailValue}>2 {t('orderVerification.homeDeliveryDesc', '2 - 4 business days')} à Lomé, Togo</Text>
           </View>
           
           <View style={styles.divider} />
           
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Adresse de livraison</Text>
+            <Text style={styles.detailLabel}>{t('orderVerification.deliveryAddress', 'Delivery address')}</Text>
             <Text style={styles.detailValue}>Lomé, Togo</Text>
           </View>
         </View>
 
         {/* Répartition du paiement */}
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Répartition du paiement</Text>
+          <Text style={styles.sectionTitle}>{t('orderConfirmation.paymentBreakdown', 'Payment breakdown')}</Text>
           
           <View style={styles.breakdownRow}>
             <View style={styles.breakdownLabelRow}>
-              <Text style={styles.breakdownLabel}>Montant envoyé au vendeur</Text>
+              <Text style={styles.breakdownLabel}>{t('orderConfirmation.amountSentToSeller', 'Amount sent to seller')}</Text>
               <Ionicons name="information-circle-outline" size={14} color="#64748B" style={{marginLeft: 4}} />
             </View>
             <View style={styles.breakdownValueCol}>
@@ -131,18 +151,18 @@ export default function OrderConfirmationScreen() {
           
           <View style={styles.breakdownRow}>
             <View style={styles.breakdownLabelRow}>
-              <Text style={styles.breakdownLabel}>Frais DizzitUp</Text>
+              <Text style={styles.breakdownLabel}>{t('orderConfirmation.dizzitupFee', 'DizzitUp fee')}</Text>
               <Ionicons name="information-circle-outline" size={14} color="#64748B" style={{marginLeft: 4}} />
             </View>
             <View style={styles.breakdownValueCol}>
               <Text style={styles.breakdownValueMain}>0,00 USDC</Text>
-              <Text style={styles.breakdownValueSub}>Gratuit</Text>
+              <Text style={styles.breakdownValueSub}>{t('orderConfirmation.free', 'Free')}</Text>
             </View>
           </View>
 
           <View style={styles.breakdownRow}>
             <View style={styles.breakdownLabelRow}>
-              <Text style={styles.breakdownLabel}>Frais réseau (estimés)</Text>
+              <Text style={styles.breakdownLabel}>{t('orderVerification.networkFeeEst', 'Estimated network fee')}</Text>
               <Ionicons name="information-circle-outline" size={14} color="#64748B" style={{marginLeft: 4}} />
             </View>
             <View style={styles.breakdownValueCol}>
@@ -152,7 +172,7 @@ export default function OrderConfirmationScreen() {
           </View>
 
           <View style={styles.totalBox}>
-            <Text style={styles.totalLabel}>Vous paierez au total</Text>
+            <Text style={styles.totalLabel}>{t('orderConfirmation.totalYouPay', 'Total you will pay')}</Text>
             <View style={styles.totalValueCol}>
               <Text style={styles.totalMain}>38,95 USDC</Text>
               <Text style={styles.totalSub}>≈ 154 900 FCFA</Text>
@@ -162,10 +182,10 @@ export default function OrderConfirmationScreen() {
 
         {/* Informations de la transaction */}
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Informations de la transaction</Text>
+          <Text style={styles.sectionTitle}>{t('orderConfirmation.txInfo', 'Transaction information')}</Text>
           
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>URL de la commande</Text>
+            <Text style={styles.infoLabel}>{t('orderConfirmation.orderUrl', 'Order URL')}</Text>
             <TouchableOpacity style={styles.infoValueRow} onPress={copyOrder}>
               <Text style={styles.infoValueBlue}>jumia.sn/orders/JM-2026-000152</Text>
               <Ionicons name="copy-outline" size={14} color="#3B82F6" style={{marginLeft: 6}} />
@@ -176,13 +196,13 @@ export default function OrderConfirmationScreen() {
           
           <View style={styles.noteRow}>
             <View style={styles.noteContent}>
-              <Text style={styles.noteLabel}>Note</Text>
-              <Text style={styles.noteText}>Le vendeur recevra le paiement en USDC après confirmation de la transaction sur la blockchain.</Text>
+              <Text style={styles.noteLabel}>{t('orderConfirmation.note', 'Note')}</Text>
+              <Text style={styles.noteText}>{t('orderConfirmation.noteDesc', 'The seller will receive the payment in USDC after transaction confirmation on the blockchain.')}</Text>
             </View>
             <View style={styles.securityBadge}>
               <Ionicons name="shield-checkmark" size={24} color="#10B981" />
               <View>
-                <Text style={styles.securityBadgeTitle}>Paiement 100% sécurisé</Text>
+                <Text style={styles.securityBadgeTitle}>{t('orderVerification.securePaymentTitle', '100% Secure payment')}</Text>
                 <Text style={styles.securityBadgeDesc}>par smart contract</Text>
               </View>
             </View>
@@ -196,13 +216,13 @@ export default function OrderConfirmationScreen() {
               <Ionicons name="people-outline" size={24} color="#3B82F6" />
             </View>
             <View style={styles.shareContent}>
-              <Text style={styles.shareTitle}>Achetez-moi ceci</Text>
-              <Text style={styles.shareText}>Vous pouvez partager cette commande avec un proche qui pourra payer ce produit pour vous.</Text>
+              <Text style={styles.shareTitle}>{t('orderConfirmation.shareOrder', 'Send to a contact')}</Text>
+              <Text style={styles.shareText}>{t('orderConfirmation.shareDesc', 'You can share this order with someone close who can pay for you.')}</Text>
             </View>
           </View>
           <TouchableOpacity style={styles.btnShare} onPress={shareOrder}>
             <Ionicons name="arrow-redo-outline" size={16} color="#3B82F6" style={{marginRight: 6}} />
-            <Text style={styles.btnShareText}>Envoyer à un contact</Text>
+            <Text style={styles.btnShareText}>{t('orderConfirmation.shareOrder', 'Send to a contact')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -215,9 +235,9 @@ export default function OrderConfirmationScreen() {
           <View style={styles.btnConfirmCenter}>
             <View style={styles.btnConfirmTitleRow}>
               <Ionicons name="lock-closed-outline" size={16} color="#1A2840" style={{marginRight: 6}} />
-              <Text style={styles.btnConfirmTitle}>Confirmer l'achat</Text>
+              <Text style={styles.btnConfirmTitle}>{t('orderConfirmation.confirmPurchase', 'Confirm purchase')}</Text>
             </View>
-            <Text style={styles.btnConfirmSub}>Vous serez redirigé pour valider la transaction</Text>
+            <Text style={styles.btnConfirmSub}>{t('orderConfirmation.confirmSub', 'You will be redirected to validate the transaction')}</Text>
           </View>
           <View style={{flex: 1, alignItems: 'flex-end'}}>
             <Ionicons name="chevron-forward" size={20} color="#1A2840" />

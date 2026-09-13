@@ -20,10 +20,10 @@ const getCurrencyOptions = (t) => [
 ];
 
 const getNetworkOptions = (t) => [
-  { value: 'base', label: 'Base', subtitle: 'Recommandé', iconSymbol: 'BASE', color: '#0052FF' },
-  { value: 'polygon', label: 'Polygon', subtitle: 'Rapide et économique', iconSymbol: 'MATIC', color: '#8247E5' },
-  { value: 'ethereum', label: 'Ethereum', subtitle: 'Réseau principal', iconSymbol: 'ETH', color: '#627EEA' },
-  { value: 'solana', label: 'Solana', subtitle: 'Haute performance', iconSymbol: 'SOL', color: '#14F195' },
+  { value: 'base', label: 'Base', subtitle: t ? t('topUpWallet.recommended', 'Recommended') : 'Recommended', iconSymbol: 'BASE', color: '#0052FF' },
+  { value: 'polygon', label: 'Polygon', subtitle: t ? t('topUpWallet.fastAndAffordable', 'Fast and economical') : 'Fast and economical', iconSymbol: 'MATIC', color: '#8247E5' },
+  { value: 'ethereum', label: 'Ethereum', subtitle: t ? t('topUpWallet.mainNetwork', 'Main network') : 'Main network', iconSymbol: 'ETH', color: '#627EEA' },
+  { value: 'solana', label: 'Solana', subtitle: t ? t('topUpWallet.highPerformance', 'High performance') : 'High performance', iconSymbol: 'SOL', color: '#14F195' },
 ];
 
 export default function TopUpWalletDetailsScreen() {

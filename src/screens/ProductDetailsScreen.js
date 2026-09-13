@@ -5,6 +5,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Dimensions
 import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
+import { useApp } from '../context/AppContext';
 
 const { width } = Dimensions.get('window');
 
@@ -20,6 +21,7 @@ const defaultProduct = {
 
 export default function ProductDetailsScreen({ route }) {
   const navigation = useNavigation();
+  const { t } = useApp();
   const productParam = route?.params?.product;
   const product = productParam || defaultProduct;
   const shop = route?.params?.shop;
@@ -28,7 +30,19 @@ export default function ProductDetailsScreen({ route }) {
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [toast, setToast] = useState(null);
 
-  const shareProduct = async () => { try { await Share.share({title: product.name, message: `Découvrez le ${product.name} sur DizzitUp.`}); } finally { setToast({title: 'Produit partagé', message: 'Le partage a été préparé avec succès.'}); } };
+  const shareProduct = async () => { 
+    try { 
+      await Share.share({
+        title: product.name, 
+        message: t('product.shareMessage', 'Check out {{name}} on DizzitUp.', { name: product.name })
+      }); 
+    } finally { 
+      setToast({
+        title: t('product.sharedTitle', 'Product shared'), 
+        message: t('product.sharedDesc', 'Sharing link prepared successfully.')
+      }); 
+    } 
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -90,19 +104,19 @@ export default function ProductDetailsScreen({ route }) {
               <Ionicons name="star" size={14} color="#F59E0B" />
               <Ionicons name="star-half" size={14} color="#F59E0B" />
               <Text style={styles.ratingText}>4.6</Text>
-              <Text style={styles.reviewsText}>(3,235 avis)</Text>
+              <Text style={styles.reviewsText}>{t('product.reviewsCount', '(3,235 reviews)', { count: '3,235' })}</Text>
             </View>
 
             <View style={styles.stockBadge}>
               <View style={styles.stockDot} />
-              <Text style={styles.stockText}>{product.stock || 'En stock'}</Text>
+              <Text style={styles.stockText}>{product.stock || t('product.inStock', 'In stock')}</Text>
             </View>
 
             <Text style={styles.priceText}>{product.price}</Text>
 
             {/* Payment Methods */}
             <View style={styles.paymentCard}>
-              <Text style={styles.paymentCardTitle}>Moyens de paiement acceptés</Text>
+              <Text style={styles.paymentCardTitle}>{t('product.acceptedPaymentMethods', 'Accepted payment methods')}</Text>
               <View style={styles.paymentIconsRow}>
                 {['USDT', 'USDC', 'EURC', 'DZY'].map((symbol) => <View key={symbol} style={styles.paymentItem}><CryptoIcon symbol={symbol} size={24} /><Text style={styles.tokenLabel}>{symbol}</Text></View>)}
               </View>
@@ -112,8 +126,8 @@ export default function ProductDetailsScreen({ route }) {
             <View style={styles.securityBanner}>
               <Ionicons name="shield-checkmark-outline" size={24} color="#3B82F6" style={{marginRight: 8}} />
               <View style={{flex: 1}}>
-                <Text style={styles.securityTitle}>Achat 100% sécurisé</Text>
-                <Text style={styles.securityText}>Payez en toute sécurité avec vos cryptos préférées.</Text>
+                <Text style={styles.securityTitle}>{t('product.securePurchaseTitle', '100% Secure purchase')}</Text>
+                <Text style={styles.securityText}>{t('product.securePurchaseDesc', 'Pay securely with your favorite cryptocurrencies.')}</Text>
               </View>
             </View>
 
@@ -124,7 +138,7 @@ export default function ProductDetailsScreen({ route }) {
 
         {/* Description Section */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Description</Text>
+          <Text style={styles.sectionTitle}>{t('product.description', 'Description')}</Text>
           <View style={styles.descRow}>
             <Text style={styles.descText} numberOfLines={descriptionExpanded ? undefined : 3}>
               Le Samsung Galaxy A14 allie performance et élégance. Profitez d'un grand écran immersif, d'une batterie longue durée et d'un design moderne pour vous accompagner au quotidien.
@@ -139,7 +153,7 @@ export default function ProductDetailsScreen({ route }) {
 
         {/* Caractéristiques Section */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Caractéristiques</Text>
+          <Text style={styles.sectionTitle}>{t('product.specs', 'Specifications')}</Text>
           <View style={styles.featuresGrid}>
             
             <View style={styles.featureItem}>
@@ -218,7 +232,7 @@ export default function ProductDetailsScreen({ route }) {
               </View>
               <View style={styles.featureContent}>
                 <Text style={styles.featureLabel}>Connectivité</Text>
-                <Text style={styles.featureValue}>4G LTE, Wi-Fi, Bluetooth 5.2</Text>
+                <Text style={styles.featureValue}>4G LTE, Wi-Fi, Bluetooth</Text>
               </View>
             </View>
 
@@ -247,27 +261,27 @@ export default function ProductDetailsScreen({ route }) {
 
         {/* Livraison & Retrait Section */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Livraison & retrait</Text>
+          <Text style={styles.sectionTitle}>{t('product.deliveryAndPickup', 'Delivery & pickup')}</Text>
           <View style={styles.deliveryCard}>
             <View style={styles.deliveryRow}>
               <View style={styles.deliveryItem}>
                 <Ionicons name="bus-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
                 <View>
-                  <Text style={styles.deliveryLabel}>Livraison à domicile</Text>
+                  <Text style={styles.deliveryLabel}>{t('product.homeDelivery', 'Home delivery')}</Text>
                   <Text style={styles.deliveryValue}>1 à 3 jours ouvrés</Text>
                 </View>
               </View>
               <View style={styles.deliveryItem}>
                 <Ionicons name="storefront-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
                 <View>
-                  <Text style={styles.deliveryLabel}>Retrait en boutique</Text>
+                  <Text style={styles.deliveryLabel}>{t('product.storePickup', 'Store pickup')}</Text>
                   <Text style={styles.deliveryValue}>Aujourd'hui</Text>
                 </View>
               </View>
               <View style={styles.deliveryItem}>
                 <Ionicons name="shield-checkmark-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
                 <View>
-                  <Text style={styles.deliveryLabel}>Frais de livraison</Text>
+                  <Text style={styles.deliveryLabel}>{t('product.deliveryFees', 'Delivery fee')}</Text>
                   <Text style={styles.deliveryValue}>À partir de 1 000 FCFA</Text>
                 </View>
               </View>
@@ -277,7 +291,7 @@ export default function ProductDetailsScreen({ route }) {
 
         {/* Vendu par Section */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Vendu par</Text>
+          <Text style={styles.sectionTitle}>{t('product.soldBy', 'Sold by')}</Text>
           <View style={styles.vendorRow}>
             <View style={styles.vendorLogoCircle}>
               <Text style={styles.vendorLogoText}>JUMIA</Text>
@@ -299,7 +313,7 @@ export default function ProductDetailsScreen({ route }) {
             </View>
             <TouchableOpacity style={styles.btnStore} onPress={() => navigation.navigate('ShopDetailsScreen')}>
               <Ionicons name="storefront-outline" size={16} color="#1A2840" style={{marginRight: 8}} />
-              <Text style={styles.btnStoreText}>Voir la boutique</Text>
+              <Text style={styles.btnStoreText}>{t('btnVisit', 'Voir la boutique')}</Text>
               <Ionicons name="chevron-forward" size={16} color="#1A2840" style={{marginLeft: 8}} />
             </TouchableOpacity>
           </View>
@@ -309,13 +323,13 @@ export default function ProductDetailsScreen({ route }) {
 
       {/* Bottom Sticky Action Bar */}
       <View style={styles.bottomActionBar}>
-        <TouchableOpacity style={styles.btnContact} onPress={() => setToast({title: 'Contact vendeur', message: 'Une conversation avec Jumia Sénégal a été ouverte.'})}>
+        <TouchableOpacity style={styles.btnContact} onPress={() => setToast({title: t('product.contactSeller', 'Contact seller'), message: t('product.sharedDesc', 'Une conversation a été ouverte.')})}>
           <Ionicons name="chatbubble-outline" size={18} color="#3B82F6" style={{marginRight: 8}} />
-          <Text style={styles.btnContactText}>Contacter le vendeur</Text>
+          <Text style={styles.btnContactText}>{t('product.contactSeller', 'Contact seller')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.btnBuy} onPress={() => navigation.navigate('OrderVerificationScreen')}>
           <Ionicons name="cart-outline" size={18} color="#1A2840" style={{marginRight: 8}} />
-          <Text style={styles.btnBuyText}>Acheter maintenant</Text>
+          <Text style={styles.btnBuyText}>{t('product.buyNow', 'Buy now')}</Text>
         </TouchableOpacity>
       </View>
       {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}

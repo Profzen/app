@@ -10,9 +10,11 @@ import { SecurityBanner } from '../components/SecurityBanner';
 import { SocialLogins } from '../components/SocialLogins';
 import { FooterTerms } from '../components/FooterTerms';
 import { OtpInput } from '../components/OtpInput';
+import { useApp } from '../context/AppContext';
 
 export default function VerificationScreen() {
   const navigation = useNavigation();
+  const { t } = useApp();
   const [code, setCode] = useState('');
   const [timeLeft, setTimeLeft] = useState(45);
   const [isLoading, setIsLoading] = useState(false);
@@ -38,7 +40,7 @@ export default function VerificationScreen() {
     setTimeout(() => {
       setIsResending(false);
       setTimeLeft(45);
-      alert("Nouveau code envoyé (Simulé)");
+      alert(t('verificationStep.newCodeSent', 'New code sent (Simulated)'));
     }, 1000);
   };
 
@@ -77,9 +79,9 @@ export default function VerificationScreen() {
           <Ionicons name="chevron-back" size={24} color={theme.colors.primary} />
           </TouchableOpacity>
           <View style={styles.loginLinkContainer}>
-            <Text style={styles.loginText}>Déjà un compte ? </Text>
-            <TouchableOpacity>
-              <Text style={styles.loginLink}>Se connecter</Text>
+            <Text style={styles.loginText}>{t('verificationStep.alreadyAccount', 'Already have an account?')} </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
+              <Text style={styles.loginLink}>{t('verificationStep.signIn', 'Sign in')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -91,10 +93,9 @@ export default function VerificationScreen() {
             style={styles.logo} 
             resizeMode="contain"
           />
-          <Text style={styles.mainTitle}>Vérifiez votre compte</Text>
+          <Text style={styles.mainTitle}>{t('verificationStep.verifyAccount', 'Verify your account')}</Text>
           <Text style={styles.subTitle}>
-            Plus qu'une étape pour sécuriser votre compte{'\n'}
-            et profiter de <Text style={{color: theme.colors.accent}}>DizzitUp</Text>.
+            {t('verificationStep.almostThere', 'One more step to secure your account\nand enjoy DizzitUp.')}
           </Text>
         </View>
 
@@ -103,15 +104,15 @@ export default function VerificationScreen() {
 
         {/* Verification Form */}
         <View style={styles.formContainer}>
-          <Text style={styles.sectionTitle}>Vérifiez votre email ou votre téléphone</Text>
+          <Text style={styles.sectionTitle}>{t('verificationStep.verifyEmailPhone', 'Verify your email or phone')}</Text>
           
           <Text style={styles.verificationText}>
-            Nous avons envoyé un code de vérification à{'\n'}
+            {t('verificationStep.codeSentTo', 'We sent a verification code to')}{'\n'}
             <Text style={styles.emailText}>exemple@email.com</Text>{'   '}
-            <Text style={styles.modifyText}>Modifier</Text>
+            <Text style={styles.modifyText}>{t('common.edit', 'Edit')}</Text>
           </Text>
 
-          <Text style={styles.sectionSubtitle}>Entrez le code à 6 chiffres</Text>
+          <Text style={styles.sectionSubtitle}>{t('verificationStep.enter6Digit', 'Enter the 6-digit code')}</Text>
           
           <OtpInput length={6} value={code} onChange={setCode} />
 
@@ -123,7 +124,7 @@ export default function VerificationScreen() {
           >
             <Ionicons name="time-outline" size={20} color={theme.colors.accent} />
             <Text style={[styles.timerText, isResending && {color: theme.colors.textSecondary}]}>
-              {isResending ? 'Envoi en cours...' : (timeLeft > 0 ? `Renvoyer le code dans ${formatTime(timeLeft)}` : 'Renvoyer le code maintenant')}
+              {isResending ? t('verificationStep.resending', 'Sending...') : (timeLeft > 0 ? t('verificationStep.resendIn', { time: formatTime(timeLeft), defaultValue: `Resend code in ${formatTime(timeLeft)}` }) : t('verificationStep.resendNow', 'Resend code now'))}
             </Text>
           </TouchableOpacity>
 
@@ -131,7 +132,7 @@ export default function VerificationScreen() {
           <SecurityBanner icon={<DizzitCoinIcon />} />
 
           <DizzitButton 
-            title="Continuer" 
+            title={t('verificationStep.continueBtn', 'Continue')} 
             icon={<Ionicons name="arrow-forward" size={20} color={theme.colors.textPrimary} />} 
             onPress={handleVerify}
             isLoading={isLoading}

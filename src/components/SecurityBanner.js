@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
+import { useApp } from '../context/AppContext';
 
 export const SecurityBanner = ({ icon, title, description }) => {
+  const { t } = useApp();
   const DefaultShieldIcon = () => (
     <View style={styles.shieldContainer}>
       <Ionicons name="shield-outline" size={20} color="#1A73E8" />
@@ -16,9 +18,9 @@ export const SecurityBanner = ({ icon, title, description }) => {
         {icon ? icon : <DefaultShieldIcon />}
       </View>
       <View style={styles.texts}>
-        <Text style={styles.title}>{title || 'Vos données sont sécurisées'}</Text>
+        <Text style={styles.title}>{title || t('auth.dataSecureTitle', 'Your data is secure')}</Text>
         <Text style={styles.desc}>
-          {description || 'Vos données sont protégées avec le plus\nhaut niveau de sécurité.'}
+          {description || t('auth.dataSecureDesc', 'Your data is protected with the highest level of security.')}
         </Text>
       </View>
     </View>

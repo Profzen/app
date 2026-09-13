@@ -3,42 +3,44 @@ import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useApp } from '../context/AppContext';
 
 export default function FiltersScreen() {
   const navigation = useNavigation();
+  const { t } = useApp();
   const [selectedType, setSelectedType] = useState('all');
   const [selectedDirection, setSelectedDirection] = useState('all');
   const [selectedPeriod, setSelectedPeriod] = useState('all');
 
   const transactionTypes = [
-    { id: 'all', title: 'Toutes les transactions' },
-    { id: 'bills', title: 'Paiement de factures', subtitle: 'Éducation, Santé, Électricité, Prestations intellectuelles...', icon: 'receipt-outline', iconColor: '#3B82F6', iconBg: '#EFF6FF' },
-    { id: 'phone', title: 'Recharge téléphonique', icon: 'phone-portrait-outline', iconColor: '#10B981', iconBg: '#ECFDF5' },
-    { id: 'vouchers', title: "Achat de bons d'achat", subtitle: 'Gift Cards, Vouchers', icon: 'card-outline', iconColor: '#F59E0B', iconBg: '#FFFBEB' },
-    { id: 'products', title: 'Achat de produits physiques', icon: 'bag-handle-outline', iconColor: '#8B5CF6', iconBg: '#F5F3FF' },
-    { id: 'topup', title: 'Recharge du portefeuille DZYWallet', icon: 'wallet-outline', iconColor: '#3B82F6', iconBg: '#EFF6FF' },
-    { id: 'send', title: 'Envoi de fonds', icon: 'arrow-up-outline', iconColor: '#10B981', iconBg: '#ECFDF5', rotateIcon: '45deg' },
-    { id: 'receive', title: 'Réception de fonds', icon: 'arrow-down-outline', iconColor: '#10B981', iconBg: '#ECFDF5' },
-    { id: 'swap', title: 'Swap / Bridge de jetons', icon: 'swap-horizontal-outline', iconColor: '#8B5CF6', iconBg: '#F5F3FF' },
-    { id: 'cashout', title: 'Cash-out (sortie en monnaie locale)', icon: 'business-outline', iconColor: '#EF4444', iconBg: '#FEF2F2' },
-    { id: 'stake', title: 'Stake (Épargne)', icon: 'server-outline', iconColor: '#F59E0B', iconBg: '#FFFBEB' },
-    { id: 'invite', title: 'Invitation & référencement', icon: 'person-add-outline', iconColor: '#8B5CF6', iconBg: '#F5F3FF' },
+    { id: 'all', title: t('filters.allTransactions', 'All transactions') },
+    { id: 'bills', title: t('filters.billPayment', 'Bill payment'), subtitle: t('filters.billPaymentSub', 'Education, Health, Electricity, Consulting...'), icon: 'receipt-outline', iconColor: '#3B82F6', iconBg: '#EFF6FF' },
+    { id: 'phone', title: t('filters.phoneRecharge', 'Mobile recharge'), icon: 'phone-portrait-outline', iconColor: '#10B981', iconBg: '#ECFDF5' },
+    { id: 'vouchers', title: t('filters.vouchers', "Vouchers purchase"), subtitle: t('filters.vouchersSub', 'Gift Cards, Vouchers'), icon: 'card-outline', iconColor: '#F59E0B', iconBg: '#FFFBEB' },
+    { id: 'products', title: t('filters.physicalProducts', 'Physical goods purchase'), icon: 'bag-handle-outline', iconColor: '#8B5CF6', iconBg: '#F5F3FF' },
+    { id: 'topup', title: t('filters.walletTopup', 'DZYWallet top-up'), icon: 'wallet-outline', iconColor: '#3B82F6', iconBg: '#EFF6FF' },
+    { id: 'send', title: t('filters.sendFunds', 'Send funds'), icon: 'arrow-up-outline', iconColor: '#10B981', iconBg: '#ECFDF5', rotateIcon: '45deg' },
+    { id: 'receive', title: t('filters.receiveFunds', 'Receive funds'), icon: 'arrow-down-outline', iconColor: '#10B981', iconBg: '#ECFDF5' },
+    { id: 'swap', title: t('filters.swapTokens', 'Token swap / bridge'), icon: 'swap-horizontal-outline', iconColor: '#8B5CF6', iconBg: '#F5F3FF' },
+    { id: 'cashout', title: t('filters.cashout', 'Cash-out (local currency withdrawal)'), icon: 'business-outline', iconColor: '#EF4444', iconBg: '#FEF2F2' },
+    { id: 'stake', title: t('filters.stake', 'Stake (Savings)'), icon: 'server-outline', iconColor: '#F59E0B', iconBg: '#FFFBEB' },
+    { id: 'invite', title: t('filters.invite', 'Invite & referral'), icon: 'person-add-outline', iconColor: '#8B5CF6', iconBg: '#F5F3FF' },
   ];
 
   const transactionDirections = [
-    { id: 'all', title: 'Toutes' },
-    { id: 'out', title: 'Sortant (envoyé)', icon: 'arrow-up-outline', iconColor: '#EF4444', iconBg: '#FEF2F2' },
-    { id: 'in', title: 'Entrant (reçu)', icon: 'arrow-down-outline', iconColor: '#10B981', iconBg: '#ECFDF5' },
-    { id: 'internal', title: 'Interne à DZYWallet', icon: 'swap-horizontal-outline', iconColor: '#8B5CF6', iconBg: '#F5F3FF' },
+    { id: 'all', title: t('filters.all', 'All') },
+    { id: 'out', title: t('filters.outgoing', 'Outgoing (sent)'), icon: 'arrow-up-outline', iconColor: '#EF4444', iconBg: '#FEF2F2' },
+    { id: 'in', title: t('filters.incoming', 'Incoming (received)'), icon: 'arrow-down-outline', iconColor: '#10B981', iconBg: '#ECFDF5' },
+    { id: 'internal', title: t('filters.internal', 'Internal DZYWallet'), icon: 'swap-horizontal-outline', iconColor: '#8B5CF6', iconBg: '#F5F3FF' },
   ];
 
   const periods = [
-    { id: 'all', title: 'Tout le temps' },
-    { id: '7d', title: '7 derniers jours' },
-    { id: '30d', title: '30 derniers jours' },
-    { id: '3m', title: '3 derniers mois' },
-    { id: '6m', title: '6 derniers mois' },
-    { id: 'custom', title: 'Choisir une période', hasCalendarIcon: true },
+    { id: 'all', title: t('filters.allTime', 'All time') },
+    { id: '7d', title: t('filters.last7Days', 'Last 7 days') },
+    { id: '30d', title: t('filters.last30Days', 'Last 30 days') },
+    { id: '3m', title: t('filters.last3Months', 'Last 3 months') },
+    { id: '6m', title: t('filters.last6Months', 'Last 6 months') },
+    { id: 'custom', title: t('filters.customPeriod', 'Choose a period'), hasCalendarIcon: true },
   ];
 
   const renderRadioOption = (isSelected) => (
@@ -57,8 +59,8 @@ export default function FiltersScreen() {
             <Ionicons name="close" size={24} color="#1A2840" />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
-            <Text style={styles.pageTitle}>Filtres</Text>
-            <Text style={styles.pageSubtitle}>Affinez la liste des transactions</Text>
+            <Text style={styles.pageTitle}>{t('filters.title', 'Filters')}</Text>
+            <Text style={styles.pageSubtitle}>{t('filters.subtitle', 'Refine your transaction list')}</Text>
           </View>
           <View style={{width: 44}} /> {/* Placeholder for balance */}
         </View>
@@ -70,7 +72,7 @@ export default function FiltersScreen() {
             <View style={styles.sectionIconBg}>
               <Ionicons name="receipt-outline" size={20} color="#1A2840" />
             </View>
-            <Text style={styles.sectionTitle}>Type de transaction</Text>
+            <Text style={styles.sectionTitle}>{t('filters.transactionType', 'Transaction type')}</Text>
           </View>
 
           <View style={styles.optionsCard}>
@@ -110,7 +112,7 @@ export default function FiltersScreen() {
             <View style={styles.sectionIconBg}>
               <Ionicons name="swap-horizontal-outline" size={20} color="#1A2840" />
             </View>
-            <Text style={styles.sectionTitle}>Sens de la transaction</Text>
+            <Text style={styles.sectionTitle}>{t('filters.direction', 'Transaction direction')}</Text>
           </View>
 
           <View style={styles.optionsCard}>
@@ -142,7 +144,7 @@ export default function FiltersScreen() {
             <View style={styles.sectionIconBg}>
               <Ionicons name="calendar-outline" size={20} color="#1A2840" />
             </View>
-            <Text style={styles.sectionTitle}>Période</Text>
+            <Text style={styles.sectionTitle}>{t('filters.period', 'Time period')}</Text>
           </View>
 
           <View style={styles.optionsCard}>
@@ -173,7 +175,7 @@ export default function FiltersScreen() {
         <View style={styles.bottomActions}>
           <TouchableOpacity style={styles.applyBtn} onPress={() => navigation.goBack()}>
             <Ionicons name="funnel-outline" size={20} color="#FFFFFF" style={{marginRight: 8}} />
-            <Text style={styles.applyBtnText}>Appliquer les filtres</Text>
+            <Text style={styles.applyBtnText}>{t('filters.apply', 'Apply filters')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.resetBtn} onPress={() => {
             setSelectedType('all');
@@ -181,7 +183,7 @@ export default function FiltersScreen() {
             setSelectedPeriod('all');
           }}>
             <Ionicons name="refresh" size={20} color="#1A2840" style={{marginRight: 8}} />
-            <Text style={styles.resetBtnText}>Réinitialiser</Text>
+            <Text style={styles.resetBtnText}>{t('filters.reset', 'Reset')}</Text>
           </TouchableOpacity>
         </View>
 

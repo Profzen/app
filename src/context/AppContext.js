@@ -485,9 +485,18 @@ export function AppProvider({ children }) {
     const langDict = TRANSLATIONS[language] || TRANSLATIONS.en;
     // Helper to traverse flat keys OR nested object paths (e.g. 'common.buttons.save')
     const getNestedValue = (obj, path) => {
-      if (!obj || typeof obj !== 'object') return undefined;
-      if (obj[path] !== undefined && obj[path] !== null) return obj[path];
-      return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+      if (!obj || typeof obj !== 'object' || !path || typeof path !== 'string') return undefined;
+      let target;
+      if (obj[path] !== undefined && obj[path] !== null) {
+        target = obj[path];
+      } else {
+        target = path.split('.').reduce((acc, part) => (acc && typeof acc === 'object') ? acc[part] : undefined, obj);
+      }
+      if (typeof target === 'string') return target;
+      if (typeof target === 'object' && target !== null && typeof target.title === 'string') {
+        return target.title;
+      }
+      return undefined;
     };
     
     let val = getNestedValue(langDict, key);

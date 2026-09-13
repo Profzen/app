@@ -6,12 +6,32 @@ import { Ionicons, Feather } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import * as Clipboard from 'expo-clipboard';
 import AppToast from '../components/AppToast';
+import { useApp } from '../context/AppContext';
 
 export default function PaymentSuccessScreen() {
   const navigation = useNavigation();
+  const { t } = useApp();
   const [toast, setToast] = useState(null);
-  const shareReceipt = async () => { try { await Share.share({title:'Reçu DizzitUp',message:'Paiement réussi — 20.50 USD — Transaction DZY20240518104532'}); } finally { setToast({title:'Reçu partagé',message:'Le partage a été préparé.'}); } };
-  const copyTransaction = async () => { await Clipboard.setStringAsync('DZY20240518104532'); setToast({title:'Numéro copié',message:'La référence est dans le presse-papiers.'}); };
+  const shareReceipt = async () => { 
+    try { 
+      await Share.share({
+        title: t('paymentSuccess.shareTitle', 'DizzitUp Receipt'),
+        message: t('paymentSuccess.shareMessage', { amount: '20.50 USD', tx: 'DZY20240518104532', defaultValue: 'Successful payment — 20.50 USD — Transaction DZY20240518104532' })
+      }); 
+    } finally { 
+      setToast({
+        title: t('paymentSuccess.receiptSharedTitle', 'Receipt shared'),
+        message: t('paymentSuccess.receiptSharedDesc', 'Share sheet prepared.')
+      }); 
+    } 
+  };
+  const copyTransaction = async () => { 
+    await Clipboard.setStringAsync('DZY20240518104532'); 
+    setToast({
+      title: t('paymentSuccess.txCopiedTitle', 'Transaction ID copied'),
+      message: t('paymentSuccess.txCopiedDesc', 'Reference copied to clipboard.')
+    }); 
+  };
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -22,7 +42,7 @@ export default function PaymentSuccessScreen() {
             <Ionicons name="notifications-outline" size={22} color="#1A2840" />
             <View style={styles.badge} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconBtn} onPress={shareReceipt} accessibilityLabel="Partager le reçu">
+          <TouchableOpacity style={styles.iconBtn} onPress={shareReceipt} accessibilityLabel={t('paymentSuccess.receiptSharedTitle', 'Share receipt')}>
             <Ionicons name="share-outline" size={22} color="#1A2840" />
           </TouchableOpacity>
         </View>
@@ -37,12 +57,12 @@ export default function PaymentSuccessScreen() {
               </View>
             </View>
             
-            <Text style={styles.successTitle}>Paiement réussi !</Text>
-            <Text style={styles.successSub}>Votre paiement a été effectué avec succès.</Text>
+            <Text style={styles.successTitle}>{t('paymentSuccess.title', 'Payment Successful!')}</Text>
+            <Text style={styles.successSub}>{t('paymentSuccess.subtitle', 'Your payment was processed successfully.')}</Text>
             
             <View style={styles.secureBadge}>
               <Ionicons name="shield-checkmark-outline" size={14} color="#10B981" />
-              <Text style={styles.secureText}>Transaction 100% sécurisée</Text>
+              <Text style={styles.secureText}>{t('paymentSuccess.secure', '100% Secure Transaction')}</Text>
             </View>
           </View>
 
@@ -62,7 +82,7 @@ export default function PaymentSuccessScreen() {
                 </View>
               </View>
               <View style={styles.statusBadge}>
-                <Text style={styles.statusText}>Succès</Text>
+                <Text style={styles.statusText}>{t('paymentSuccess.statusSuccess', 'Success')}</Text>
               </View>
             </View>
 
@@ -72,7 +92,7 @@ export default function PaymentSuccessScreen() {
                 <Ionicons name="phone-portrait-outline" size={20} color="#10B981" />
               </View>
               <View style={styles.serviceInfo}>
-                <Text style={styles.serviceName}>Recharge mobile</Text>
+                <Text style={styles.serviceName}>{t('paymentSuccess.mobileRecharge', 'Mobile Recharge')}</Text>
                 <Text style={styles.serviceProvider}>MTN Nigeria</Text>
               </View>
               <Text style={styles.serviceAmount}>20.00 USD</Text>
@@ -82,12 +102,12 @@ export default function PaymentSuccessScreen() {
 
             {/* Detailed Info Rows */}
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Date et heure</Text>
+              <Text style={styles.detailLabel}>{t('paymentSuccess.dateTime', 'Date & Time')}</Text>
               <Text style={styles.detailValue}>18 Mai 2024 • 10:45 AM</Text>
             </View>
 
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Méthode de paiement</Text>
+              <Text style={styles.detailLabel}>{t('paymentSuccess.paymentMethod', 'Payment Method')}</Text>
               <View style={styles.paymentMethod}>
                 <Image source={{uri: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png'}} style={styles.usdcIcon} />
                 <Text style={styles.detailValue}>USDC</Text>
@@ -95,17 +115,17 @@ export default function PaymentSuccessScreen() {
             </View>
 
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Frais de service</Text>
+              <Text style={styles.detailLabel}>{t('paymentSuccess.serviceFee', 'Service Fee')}</Text>
               <Text style={styles.detailValue}>0.50 USD</Text>
             </View>
 
             <View style={[styles.detailRow, styles.totalRow]}>
-              <Text style={styles.detailLabel}>Total payé</Text>
+              <Text style={styles.detailLabel}>{t('paymentSuccess.totalPaid', 'Total Paid')}</Text>
               <Text style={styles.totalValue}>20.50 USD</Text>
             </View>
 
             <View style={[styles.detailRow, {marginBottom: 0}]}>
-              <Text style={styles.detailLabel}>Numéro de transaction</Text>
+              <Text style={styles.detailLabel}>{t('paymentSuccess.txNumber', 'Transaction ID')}</Text>
               <View style={styles.txNumberRow}>
                 <Text style={styles.txNumberValue}>DZY20240518104532</Text>
                 <TouchableOpacity style={{marginLeft: 8}} onPress={copyTransaction}>
@@ -125,10 +145,10 @@ export default function PaymentSuccessScreen() {
               </View>
             </View>
             <View style={styles.rewardContent}>
-              <Text style={styles.rewardTitle}>Vous avez gagné <Text style={styles.rewardHighlight}>2.50 DZY</Text> en Cashback !</Text>
-              <Text style={styles.rewardSub}>Cette récompense a été créditée dans votre DZYWallet.</Text>
+              <Text style={styles.rewardTitle}>{t('paymentSuccess.cashbackWon', { amount: '2.50', defaultValue: 'You won 2.50 DZY in Cashback!' })}</Text>
+              <Text style={styles.rewardSub}>{t('paymentSuccess.cashbackCredited', 'This reward has been credited to your DZYWallet.')}</Text>
               <TouchableOpacity style={styles.rewardLink} onPress={() => navigation.navigate('RewardsScreen')}>
-                <Text style={styles.rewardLinkText}>Voir mes Rewards</Text>
+                <Text style={styles.rewardLinkText}>{t('paymentSuccess.viewRewards', 'View my Rewards')}</Text>
                 <Ionicons name="arrow-forward" size={14} color="#1A2840" />
               </TouchableOpacity>
             </View>
@@ -168,12 +188,12 @@ export default function PaymentSuccessScreen() {
             </View>
 
             <View style={styles.shareTextWrap}>
-              <Text style={styles.shareCtaTitle}>Partager mon succès</Text>
+              <Text style={styles.shareCtaTitle}>{t('paymentSuccess.shareMySuccess', 'Share my success')}</Text>
               <Text style={styles.shareCtaSub1}>
-                <Text style={styles.goldText}>Gagnez 1 DZY</Text> en identifiant <Text style={styles.goldText}>@DizzitUp</Text>
+                {t('paymentSuccess.shareRewardSub', 'Earn 1 DZY by tagging @DizzitUp')}
               </Text>
               <Text style={styles.shareCtaSub2}>
-                Publiez une carte DizzitUp personnalisée de cette transaction
+                {t('paymentSuccess.shareCustomCard', 'Publish a customized DizzitUp card of this transaction')}
               </Text>
             </View>
 
@@ -184,17 +204,17 @@ export default function PaymentSuccessScreen() {
           <View style={styles.actionButtons}>
           <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation.navigate('TransactionHistoryScreen')}>
               <Ionicons name="receipt-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
-              <Text style={styles.primaryBtnText}>Voir le reçu</Text>
+              <Text style={styles.primaryBtnText}>{t('paymentSuccess.viewReceipt', 'View receipt')}</Text>
             </TouchableOpacity>
 
             <View style={styles.secondaryBtnRow}>
           <TouchableOpacity style={styles.secondaryBtn} onPress={() => navigation.navigate('ShopsScreen')}>
                 <Ionicons name="refresh-outline" size={20} color="#1A2840" style={{marginRight: 6}} />
-                <Text style={styles.secondaryBtnText}>Faire un autre paiement</Text>
+                <Text style={styles.secondaryBtnText}>{t('paymentSuccess.makeAnotherPayment', 'Make another payment')}</Text>
               </TouchableOpacity>
           <TouchableOpacity style={styles.secondaryBtn} onPress={() => navigation.navigate('HomeScreen')}>
                 <Ionicons name="home-outline" size={20} color="#1A2840" style={{marginRight: 6}} />
-                <Text style={styles.secondaryBtnText}>Retour à l'accueil</Text>
+                <Text style={styles.secondaryBtnText}>{t('paymentSuccess.backToHome', 'Back to Home')}</Text>
               </TouchableOpacity>
             </View>
           </View>

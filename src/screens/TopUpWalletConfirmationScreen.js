@@ -6,9 +6,11 @@ import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
+import { useApp } from '../context/AppContext';
 
 export default function TopUpWalletConfirmationScreen() {
   const navigation = useNavigation();
+  const { t } = useApp();
   const [toast, setToast] = useState(null);
 
   return (
@@ -20,7 +22,7 @@ export default function TopUpWalletConfirmationScreen() {
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={24} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.pageTitle}>Recharger le portefeuille</Text>
+          <Text style={styles.pageTitle}>{t('topUpWallet.title', 'Top up wallet')}</Text>
           <TouchableOpacity style={styles.iconBtn}>
             <Ionicons name="help-circle-outline" size={24} color="#1A2840" />
           </TouchableOpacity>
@@ -37,7 +39,7 @@ export default function TopUpWalletConfirmationScreen() {
                   <Ionicons name="checkmark" size={8} color="#FFFFFF" />
                 </View>
               </View>
-              <Text style={styles.stepText}>Mode de paiement</Text>
+              <Text style={styles.stepText}>{t('topUpWallet.paymentMethodStep', 'Payment method')}</Text>
             </View>
             <View style={[styles.stepLine, styles.stepLineActive]} />
             
@@ -48,7 +50,7 @@ export default function TopUpWalletConfirmationScreen() {
                   <Ionicons name="checkmark" size={8} color="#FFFFFF" />
                 </View>
               </View>
-              <Text style={styles.stepText}>Détails</Text>
+              <Text style={styles.stepText}>{t('topUpWallet.detailsStep', 'Details')}</Text>
             </View>
             <View style={[styles.stepLine, styles.stepLineActive]} />
             
@@ -59,7 +61,7 @@ export default function TopUpWalletConfirmationScreen() {
                   <Ionicons name="checkmark" size={8} color="#FFFFFF" />
                 </View>
               </View>
-              <Text style={styles.stepText}>Résumé</Text>
+              <Text style={styles.stepText}>{t('topUpWallet.summaryStep', 'Summary')}</Text>
             </View>
             <View style={[styles.stepLine, styles.stepLineActive]} />
             
@@ -70,7 +72,7 @@ export default function TopUpWalletConfirmationScreen() {
                   <Ionicons name="checkmark" size={8} color="#FFFFFF" />
                 </View>
               </View>
-              <Text style={styles.stepText}>Paiement</Text>
+              <Text style={styles.stepText}>{t('topUpWallet.paymentStep', 'Payment')}</Text>
             </View>
             <View style={[styles.stepLine, styles.stepLineActive]} />
 
@@ -78,7 +80,7 @@ export default function TopUpWalletConfirmationScreen() {
               <View style={[styles.stepCircle, styles.stepCircleActive]}>
                 <Text style={[styles.stepNumber, styles.stepNumberActive]}>5</Text>
               </View>
-              <Text style={[styles.stepText, styles.stepTextActive]}>Confirmation</Text>
+              <Text style={[styles.stepText, styles.stepTextActive]}>{t('topUpWallet.confirmationStep', 'Confirmation')}</Text>
             </View>
           </View>
 
@@ -98,20 +100,19 @@ export default function TopUpWalletConfirmationScreen() {
           </View>
 
           {/* Titles */}
-          <Text style={styles.mainTitle}>Paiement réussi !</Text>
+          <Text style={styles.mainTitle}>{t('topUpWallet.paymentSuccessTitle', 'Payment successful!')}</Text>
           <Text style={styles.mainSubtitle}>
-            Votre recharge a été effectuée avec succès.{'\n'}
-            Les cryptos ont été créditées sur votre portefeuille.
+            {t('topUpWallet.paymentSuccessSubtitle', 'Your top-up was completed successfully.\nThe crypto has been credited to your wallet.')}
           </Text>
 
           {/* Details Card */}
           <View style={styles.detailsCard}>
-            <Text style={styles.cardHeaderTitle}>DÉTAILS DE LA TRANSACTION</Text>
+            <Text style={styles.cardHeaderTitle}>{t('topUpWallet.transactionDetails', 'TRANSACTION DETAILS')}</Text>
 
             <View style={styles.detailRow}>
               <View style={styles.detailLeft}>
                 <CryptoIcon symbol="USDC" size={32} />
-                <Text style={styles.detailLabel}>Vous avez reçu</Text>
+                <Text style={styles.detailLabel}>{t('topUpWallet.youReceived', 'You received')}</Text>
               </View>
               <Text style={styles.detailValueBold}>10 USDC</Text>
             </View>
@@ -123,7 +124,7 @@ export default function TopUpWalletConfirmationScreen() {
                 <View style={styles.iconWrapper}>
                   <Ionicons name="git-network-outline" size={16} color="#3B82F6" />
                 </View>
-                <Text style={styles.detailLabel}>Réseau</Text>
+                <Text style={styles.detailLabel}>{t('orderVerification.network', 'Network')}</Text>
               </View>
               <View style={styles.networkRow}>
                 <Text style={styles.detailValueBold}>Polygon</Text>
@@ -140,7 +141,7 @@ export default function TopUpWalletConfirmationScreen() {
                 <View style={styles.iconWrapper}>
                   <Ionicons name="time-outline" size={16} color="#3B82F6" />
                 </View>
-                <Text style={styles.detailLabel}>Date et heure</Text>
+                <Text style={styles.detailLabel}>{t('paymentSuccess.dateTime', 'Date and time')}</Text>
               </View>
               <Text style={styles.detailValueBold}>30 Mai 2025 à 09:41</Text>
             </View>
@@ -152,7 +153,7 @@ export default function TopUpWalletConfirmationScreen() {
                 <View style={styles.iconWrapper}>
                   <Ionicons name="document-text-outline" size={16} color="#3B82F6" />
                 </View>
-                <Text style={styles.detailLabel}>Montant payé</Text>
+                <Text style={styles.detailLabel}>{t('topUpWallet.amountPaid', 'Amount paid')}</Text>
               </View>
               <Text style={styles.detailValueBold}>10,50 USD</Text>
             </View>
@@ -164,9 +165,9 @@ export default function TopUpWalletConfirmationScreen() {
                 <View style={styles.iconWrapper}>
                   <Ionicons name="card-outline" size={16} color="#3B82F6" />
                 </View>
-                <Text style={styles.detailLabel}>Méthode de paiement</Text>
+                <Text style={styles.detailLabel}>{t('topUpWallet.paymentMethod', 'Payment method')}</Text>
               </View>
-              <Text style={styles.detailValueBold}>Carte bancaire •••• 4242</Text>
+              <Text style={styles.detailValueBold}>{t('withdrawFunds.bankCard', 'Bank card')} •••• 4242</Text>
             </View>
 
             <View style={styles.divider} />
@@ -176,7 +177,7 @@ export default function TopUpWalletConfirmationScreen() {
                 <View style={styles.iconWrapper}>
                   <Text style={{color: '#3B82F6', fontSize: 14, fontWeight: 'bold'}}>#</Text>
                 </View>
-                <Text style={styles.detailLabel}>ID de transaction</Text>
+                <Text style={styles.detailLabel}>{t('paymentSuccess.transactionId', 'Transaction ID')}</Text>
               </View>
               <View style={styles.txIdCol}>
                 <View style={styles.txIdRow}>
@@ -184,7 +185,7 @@ export default function TopUpWalletConfirmationScreen() {
                   <Ionicons name="copy-outline" size={14} color="#3B82F6" style={{marginLeft: 8}} />
                 </View>
                 <View style={styles.txLinkRow}>
-                  <Text style={styles.txLinkText}>Voir sur Polygonscan</Text>
+                  <Text style={styles.txLinkText}>{t('topUpWallet.viewOnExplorer', 'View on block explorer')}</Text>
                   <Ionicons name="open-outline" size={12} color="#3B82F6" style={{marginLeft: 4}} />
                 </View>
               </View>
@@ -198,9 +199,9 @@ export default function TopUpWalletConfirmationScreen() {
               <Ionicons name="lock-closed" size={12} color="#FFFFFF" style={{position: 'absolute'}} />
             </View>
             <View style={styles.successContent}>
-              <Text style={styles.successTitle}>Transaction sécurisée</Text>
+              <Text style={styles.successTitle}>{t('topUpWallet.secureTransaction', 'Secure transaction')}</Text>
               <Text style={styles.successDesc}>
-                Vos cryptos sont maintenant disponibles{'\n'}dans votre portefeuille DZYwallet.
+                {t('topUpWallet.cryptoAvailable', 'Your crypto is now available in your DZYwallet.')}
               </Text>
             </View>
           </View>
@@ -238,12 +239,12 @@ export default function TopUpWalletConfirmationScreen() {
             </View>
 
             <View style={styles.shareTextWrap}>
-              <Text style={styles.shareCtaTitle}>Partager mon succès</Text>
+              <Text style={styles.shareCtaTitle}>{t('paymentSuccess.shareTitle', 'Share my success')}</Text>
               <Text style={styles.shareCtaSub1}>
-                <Text style={styles.goldText}>Gagnez 1 DZY</Text> en identifiant <Text style={styles.goldText}>@DizzitUp</Text>
+                <Text style={styles.goldText}>{t('paymentSuccess.earnDzy', 'Earn 1 DZY')}</Text> {t('paymentSuccess.tagPrompt', 'by tagging @DizzitUp')}
               </Text>
               <Text style={styles.shareCtaSub2}>
-                Publiez une carte DizzitUp personnalisée de cette transaction
+                {t('paymentSuccess.shareDesc', 'Publish a custom DizzitUp card of this transaction')}
               </Text>
             </View>
 
@@ -253,12 +254,12 @@ export default function TopUpWalletConfirmationScreen() {
           {/* Buttons */}
           <TouchableOpacity style={styles.btnPrimary} onPress={() => navigation.navigate('AssetsListScreen')}>
             <Ionicons name="wallet-outline" size={20} color="#1A2840" style={styles.btnIconLeft} />
-            <Text style={styles.btnPrimaryText}>Voir mon portefeuille DZYwallet</Text>
+            <Text style={styles.btnPrimaryText}>{t('topUpWallet.viewMyWallet', 'View my DZYwallet')}</Text>
             <Ionicons name="arrow-forward" size={20} color="#1A2840" style={styles.btnIconRight} />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.btnSecondary} onPress={() => navigation.navigate('TopUpWalletScreen')}>
-            <Text style={styles.btnSecondaryText}>Effectuer une autre recharge</Text>
+            <Text style={styles.btnSecondaryText}>{t('topUpWallet.topUpAnother', 'Make another top-up')}</Text>
           </TouchableOpacity>
 
         </ScrollView>

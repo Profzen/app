@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useApp } from '../context/AppContext';
 
 export default function ShareSuccessPlatformScreen() {
   const navigation = useNavigation();
   const route = useRoute();
+  const { t } = useApp();
 
   const transactionData = route.params?.transactionData || {
     type: 'send',
@@ -44,8 +46,8 @@ export default function ShareSuccessPlatformScreen() {
           </TouchableOpacity>
           
           <View style={styles.headerTitleWrap}>
-            <Text style={styles.headerTitle}>Partager mon succès</Text>
-            <Text style={styles.headerSubtitle}>Choisissez où publier votre carte DizzitUp</Text>
+            <Text style={styles.headerTitle}>{t('shareSuccess.headerTitle', 'Partager mon succès')}</Text>
+            <Text style={styles.headerSubtitle}>{t('shareSuccess.headerSubtitle', 'Choisissez où publier votre carte DizzitUp')}</Text>
           </View>
 
           <TouchableOpacity style={styles.helpBtn}>
@@ -61,7 +63,7 @@ export default function ShareSuccessPlatformScreen() {
               <View style={[styles.stepCircle, styles.stepCircleActive]}>
                 <Text style={styles.stepNumberActive}>1</Text>
               </View>
-              <Text style={[styles.stepText, styles.stepTextActive]}>Réseau social</Text>
+              <Text style={[styles.stepText, styles.stepTextActive]}>{t('shareSuccess.stepSocial', 'Réseau social')}</Text>
             </View>
 
             <View style={[styles.stepLine, styles.stepLineActive]} />
@@ -70,7 +72,7 @@ export default function ShareSuccessPlatformScreen() {
               <View style={styles.stepCircle}>
                 <Text style={styles.stepNumber}>2</Text>
               </View>
-              <Text style={styles.stepText}>Visuel</Text>
+              <Text style={styles.stepText}>{t('shareSuccess.stepVisual', 'Visuel')}</Text>
             </View>
 
             <View style={styles.stepLine} />
@@ -79,7 +81,7 @@ export default function ShareSuccessPlatformScreen() {
               <View style={styles.stepCircle}>
                 <Text style={styles.stepNumber}>3</Text>
               </View>
-              <Text style={styles.stepText}>Légende</Text>
+              <Text style={styles.stepText}>{t('shareSuccess.stepCaption', 'Légende')}</Text>
             </View>
           </View>
 
@@ -98,16 +100,16 @@ export default function ShareSuccessPlatformScreen() {
 
             <View style={styles.rewardTextWrap}>
               <Text style={styles.rewardTitle}>
-                Partagez votre succès et gagnez <Text style={styles.goldText}>1 DZY</Text>
+                {t('shareSuccess.rewardTitlePre', 'Partagez votre succès et gagnez')} <Text style={styles.goldText}>1 DZY</Text>
               </Text>
               <Text style={styles.rewardSub}>
-                Publiez votre carte DizzitUp et taguez @DizzitUp
+                {t('shareSuccess.rewardSub', 'Publiez votre carte DizzitUp et taguez @DizzitUp')}
               </Text>
             </View>
           </View>
 
           {/* Section Title */}
-          <Text style={styles.sectionTitle}>Sélectionnez une plateforme</Text>
+          <Text style={styles.sectionTitle}>{t('shareSuccess.selectPlatform', 'Sélectionnez une plateforme')}</Text>
 
           {/* Platform Grid */}
           <View style={styles.gridContainer}>
@@ -144,7 +146,7 @@ export default function ShareSuccessPlatformScreen() {
               <Ionicons name="shield-outline" size={20} color="#3B82F6" />
             </View>
             <Text style={styles.infoTextPrivacy}>
-              Le visuel généré masquera les informations sensibles du bénéficiaire. Son pays et son drapeau resteront visibles.
+              {t('shareSuccess.privacyInfo', 'Le visuel généré masquera les informations sensibles du bénéficiaire. Son pays et son drapeau resteront visibles.')}
             </Text>
           </View>
 
@@ -154,7 +156,7 @@ export default function ShareSuccessPlatformScreen() {
               <Ionicons name="link-outline" size={18} color="#D97706" />
             </View>
             <Text style={styles.infoTextReferral}>
-              Lien d'invitation traçable inclus pour vos récompenses.
+              {t('shareSuccess.referralInfo', "Lien d'invitation traçable inclus pour vos récompenses.")}
             </Text>
           </View>
 
@@ -164,7 +166,7 @@ export default function ShareSuccessPlatformScreen() {
             onPress={() => navigation.navigate('HomeScreen')}
             activeOpacity={0.8}
           >
-            <Text style={styles.btnSecondaryText}>Plus tard</Text>
+            <Text style={styles.btnSecondaryText}>{t('shareSuccess.later', 'Plus tard')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -172,7 +174,7 @@ export default function ShareSuccessPlatformScreen() {
             onPress={handleContinue}
             activeOpacity={0.88}
           >
-            <Text style={styles.btnPrimaryText}>Continuer</Text>
+            <Text style={styles.btnPrimaryText}>{t('shareSuccess.continue', 'Continuer')}</Text>
           </TouchableOpacity>
 
           <View style={{ height: 20 }} />

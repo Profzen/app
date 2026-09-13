@@ -38,7 +38,7 @@ const HIDE_WEB_CHROME_SCRIPT = `
 export default function ServiceCheckoutScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { session, language } = useApp();
+  const { session, language, t } = useApp();
   
   const { product, beneficiary } = route.params;
   
@@ -153,7 +153,7 @@ export default function ServiceCheckoutScreen() {
         setLoadingContext(false);
       } catch (err) {
         console.error("Failed to initialize checkout", err);
-        setErrorMsg("Erreur d'initialisation du paiement sécurisé.");
+        setErrorMsg(t('serviceCheckout.initError', 'Secure payment initialization failed.'));
         setLoadingContext(false);
       }
     };
@@ -165,10 +165,10 @@ export default function ServiceCheckoutScreen() {
     const url = navState.url;
     // Intercept success/cancel URLs to close the WebView
     if (url.includes('/order-success') || url.includes('success=true')) {
-      AppToast.showSuccess("Paiement réussi !");
+      AppToast.showSuccess(t('serviceCheckout.paymentSuccess', 'Payment successful!'));
       navigation.navigate('ContactHistoryScreen', { contact: beneficiary });
     } else if (url.includes('/order-cancel') || url.includes('cancel=true')) {
-      AppToast.showError("Paiement annulé.");
+      AppToast.showError(t('serviceCheckout.paymentCancelled', 'Payment cancelled.'));
       navigation.goBack();
     }
   };
@@ -186,7 +186,7 @@ export default function ServiceCheckoutScreen() {
               <Ionicons name="close" size={24} color="#1A2840" />
             </TouchableOpacity>
             <View style={styles.headerTitleWrap}>
-              <Text style={styles.headerTitle}>Paiement Sécurisé</Text>
+              <Text style={styles.headerTitle}>{t('serviceCheckout.title', 'Secure Checkout')}</Text>
               <View style={styles.secureBadge}>
                 <Ionicons name="lock-closed" size={10} color="#10B981" />
                 <Text style={styles.secureText}>256-BIT SSL</Text>
@@ -199,14 +199,14 @@ export default function ServiceCheckoutScreen() {
         {loadingContext ? (
           <View style={styles.loadingCenter}>
             <ActivityIndicator size="large" color="#FFC759" />
-            <Text style={styles.loadingText}>Initialisation du paiement sécurisé...</Text>
+            <Text style={styles.loadingText}>{t('serviceCheckout.initLoading', 'Initializing secure payment...')}</Text>
           </View>
         ) : errorMsg ? (
           <View style={styles.errorCenter}>
             <Ionicons name="warning" size={48} color="#EF4444" />
             <Text style={styles.errorText}>{errorMsg}</Text>
             <TouchableOpacity style={styles.retryBtn} onPress={() => navigation.goBack()}>
-              <Text style={styles.retryBtnText}>Retour</Text>
+              <Text style={styles.retryBtnText}>{t('serviceCheckout.back', 'Back')}</Text>
             </TouchableOpacity>
           </View>
         ) : checkoutUrl ? (

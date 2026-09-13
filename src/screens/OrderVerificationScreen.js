@@ -4,9 +4,11 @@ import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
+import { useApp } from '../context/AppContext';
 
 export default function OrderVerificationScreen() {
   const navigation = useNavigation();
+  const { t } = useApp();
   const [quantity, setQuantity] = useState(1);
   const [deliveryOption, setDeliveryOption] = useState('domicile'); // 'domicile', 'boutique'
   const [paymentMethod, setPaymentMethod] = useState('USDT'); // 'USDT', 'USDC', 'EURC', 'DZY'
@@ -17,20 +19,20 @@ export default function OrderVerificationScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#1A2840" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Vérification de la commande</Text>
+        <Text style={styles.headerTitle}>{t('orderVerification.title', 'Order Verification')}</Text>
         <TouchableOpacity style={styles.iconBtn}>
           <Ionicons name="headset-outline" size={24} color="#1A2840" />
         </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
+
         {/* Seller Info */}
         <View style={styles.sellerRow}>
           <View style={styles.sellerLogo}>
@@ -40,7 +42,7 @@ export default function OrderVerificationScreen() {
             <Text style={styles.sellerProduct}>Samsung Galaxy A14</Text>
             <View style={styles.sellerNameRow}>
               <Text style={styles.sellerName}>Jumia Sénégal</Text>
-              <Ionicons name="checkmark-circle" size={14} color="#3B82F6" style={{marginLeft: 4}} />
+              <Ionicons name="checkmark-circle" size={14} color="#3B82F6" style={{ marginLeft: 4 }} />
             </View>
           </View>
         </View>
@@ -56,9 +58,9 @@ export default function OrderVerificationScreen() {
             </View>
             <Text style={styles.productTitle}>Samsung Galaxy A14</Text>
             <Text style={styles.productPrice}>155 000 FCFA</Text>
-            
+
             <View style={styles.quantityRow}>
-              <Text style={styles.qtyLabel}>Qté</Text>
+              <Text style={styles.qtyLabel}>{t('orderVerification.qty', 'Qty')}</Text>
               <View style={styles.qtyControls}>
                 <TouchableOpacity style={styles.qtyBtn} onPress={decrement}>
                   <Ionicons name="remove" size={16} color="#1A2840" />
@@ -78,11 +80,11 @@ export default function OrderVerificationScreen() {
             <Ionicons name="location-outline" size={20} color="#3B82F6" />
           </View>
           <View style={styles.addressInfo}>
-            <Text style={styles.sectionLabel}>Adresse de livraison</Text>
+            <Text style={styles.sectionLabel}>{t('orderVerification.deliveryAddress', 'Delivery address')}</Text>
             <Text style={styles.addressValue}>Lomé, Togo</Text>
           </View>
           <TouchableOpacity style={styles.btnModifier}>
-            <Text style={styles.btnModifierText}>Modifier</Text>
+            <Text style={styles.btnModifierText}>{t('orderVerification.modify', 'Edit')}</Text>
             <Ionicons name="chevron-forward" size={16} color="#3B82F6" />
           </TouchableOpacity>
         </View>
@@ -93,10 +95,10 @@ export default function OrderVerificationScreen() {
             <View style={styles.iconCircle}>
               <Ionicons name="bus-outline" size={20} color="#3B82F6" />
             </View>
-            <Text style={styles.sectionLabel}>Option de livraison</Text>
+            <Text style={styles.sectionLabel}>{t('orderVerification.deliveryOption', 'Delivery option')}</Text>
           </View>
           <View style={styles.deliveryOptionsRow}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.deliveryOption, deliveryOption === 'domicile' && styles.optionSelected]}
               onPress={() => setDeliveryOption('domicile')}
             >
@@ -104,12 +106,12 @@ export default function OrderVerificationScreen() {
                 {deliveryOption === 'domicile' && <View style={styles.radioInner} />}
               </View>
               <View>
-                <Text style={styles.optionTitle}>Livraison à domicile</Text>
-                <Text style={styles.optionDesc}>2 - 4 jours ouvrés</Text>
+                <Text style={styles.optionTitle}>{t('product.homeDelivery', 'Home delivery')}</Text>
+                <Text style={styles.optionDesc}>{t('orderVerification.homeDeliveryDesc', '2 - 4 business days')}</Text>
               </View>
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.deliveryOption, deliveryOption === 'boutique' && styles.optionSelected]}
               onPress={() => setDeliveryOption('boutique')}
             >
@@ -117,8 +119,8 @@ export default function OrderVerificationScreen() {
                 {deliveryOption === 'boutique' && <View style={styles.radioInner} />}
               </View>
               <View>
-                <Text style={styles.optionTitle}>Retrait en boutique</Text>
-                <Text style={styles.optionDesc}>Disponible aujourd'hui</Text>
+                <Text style={styles.optionTitle}>{t('product.storePickup', 'Store pickup')}</Text>
+                <Text style={styles.optionDesc}>{t('orderVerification.storePickupDesc', 'Available today')}</Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -130,12 +132,12 @@ export default function OrderVerificationScreen() {
             <View style={styles.iconCircle}>
               <Ionicons name="wallet-outline" size={20} color="#3B82F6" />
             </View>
-            <Text style={styles.sectionLabel}>Payer avec</Text>
+            <Text style={styles.sectionLabel}>{t('orderVerification.payWith', 'Pay with')}</Text>
           </View>
 
           <View style={styles.paymentList}>
             {/* USDT */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.paymentMethodItem, paymentMethod === 'USDT' && styles.optionSelected]}
               onPress={() => setPaymentMethod('USDT')}
             >
@@ -157,7 +159,7 @@ export default function OrderVerificationScreen() {
             </TouchableOpacity>
 
             {/* USDC */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.paymentMethodItem, paymentMethod === 'USDC' && styles.optionSelected]}
               onPress={() => setPaymentMethod('USDC')}
             >
@@ -179,7 +181,7 @@ export default function OrderVerificationScreen() {
             </TouchableOpacity>
 
             {/* EURC */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.paymentMethodItem, paymentMethod === 'EURC' && styles.optionSelected]}
               onPress={() => setPaymentMethod('EURC')}
             >
@@ -201,7 +203,7 @@ export default function OrderVerificationScreen() {
             </TouchableOpacity>
 
             {/* DZY */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.paymentMethodItem, paymentMethod === 'DZY' && styles.optionSelected]}
               onPress={() => setPaymentMethod('DZY')}
             >
@@ -227,51 +229,51 @@ export default function OrderVerificationScreen() {
         {/* Blockchain Network */}
         <View style={styles.networkSection}>
           <View style={styles.networkHeader}>
-            <Text style={styles.sectionLabel}>Réseau blockchain</Text>
+            <Text style={styles.sectionLabel}>{t('orderVerification.blockchainNetwork', 'Blockchain network')}</Text>
             <TouchableOpacity>
-              <Text style={styles.networkHelpText}>Qu'est-ce que c'est ?</Text>
+              <Text style={styles.networkHelpText}>{t('orderVerification.whatIsThis', 'What is this?')}</Text>
             </TouchableOpacity>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.networkScroll}>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={[styles.networkOption, network === 'Polygon' && styles.optionSelected]}
               onPress={() => setNetwork('Polygon')}
             >
-              <View style={[styles.radioOuter, network === 'Polygon' && styles.radioOuterSelected, {marginRight: 8}]}>
+              <View style={[styles.radioOuter, network === 'Polygon' && styles.radioOuterSelected, { marginRight: 8 }]}>
                 {network === 'Polygon' && <View style={styles.radioInner} />}
               </View>
               <CryptoIcon symbol="POL" size={30} />
               <Text style={styles.networkOptionText}>Polygon</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.networkOption, network === 'Base' && styles.optionSelected]}
               onPress={() => setNetwork('Base')}
             >
-              <View style={[styles.radioOuter, network === 'Base' && styles.radioOuterSelected, {marginRight: 8}]}>
+              <View style={[styles.radioOuter, network === 'Base' && styles.radioOuterSelected, { marginRight: 8 }]}>
                 {network === 'Base' && <View style={styles.radioInner} />}
               </View>
-              <View style={[styles.networkIcon, {backgroundColor: '#3B82F6'}]}><Text style={styles.networkIconText}>B</Text></View>
+              <View style={[styles.networkIcon, { backgroundColor: '#3B82F6' }]}><Text style={styles.networkIconText}>B</Text></View>
               <Text style={styles.networkOptionText}>Base</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.networkOption, network === 'Ethereum' && styles.optionSelected]}
               onPress={() => setNetwork('Ethereum')}
             >
-              <View style={[styles.radioOuter, network === 'Ethereum' && styles.radioOuterSelected, {marginRight: 8}]}>
+              <View style={[styles.radioOuter, network === 'Ethereum' && styles.radioOuterSelected, { marginRight: 8 }]}>
                 {network === 'Ethereum' && <View style={styles.radioInner} />}
               </View>
               <CryptoIcon symbol="ETH" size={30} />
               <Text style={styles.networkOptionText}>Ethereum</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.networkOption, network === 'Solana' && styles.optionSelected]}
               onPress={() => setNetwork('Solana')}
             >
-              <View style={[styles.radioOuter, network === 'Solana' && styles.radioOuterSelected, {marginRight: 8}]}>
+              <View style={[styles.radioOuter, network === 'Solana' && styles.radioOuterSelected, { marginRight: 8 }]}>
                 {network === 'Solana' && <View style={styles.radioInner} />}
               </View>
               <CryptoIcon symbol="SOL" size={30} />
@@ -283,29 +285,29 @@ export default function OrderVerificationScreen() {
 
         {/* Order Summary */}
         <View style={styles.summarySection}>
-          <Text style={styles.sectionLabel}>Résumé de la commande</Text>
-          
+          <Text style={styles.sectionLabel}>{t('orderVerification.orderSummary', 'Order summary')}</Text>
+
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Sous-total (Produit)</Text>
+            <Text style={styles.summaryLabel}>{t('orderVerification.subtotal', 'Subtotal (Product)')}</Text>
             <Text style={styles.summaryValue}>155 000 FCFA</Text>
           </View>
-          
+
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Livraison</Text>
+            <Text style={styles.summaryLabel}>{t('orderVerification.delivery', 'Delivery')}</Text>
             <Text style={styles.summaryValue}>2 000 FCFA</Text>
           </View>
-          
+
           <View style={styles.summaryRow}>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={styles.summaryLabel}>Frais réseau (estimés)</Text>
-              <Ionicons name="information-circle-outline" size={14} color="#64748B" style={{marginLeft: 4}} />
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={styles.summaryLabel}>{t('orderVerification.networkFeeEst', 'Estimated network fee')}</Text>
+              <Ionicons name="information-circle-outline" size={14} color="#64748B" style={{ marginLeft: 4 }} />
             </View>
             <Text style={styles.summaryValue}>≈ 0,10 USDC</Text>
           </View>
-          
+
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Vous paierez</Text>
-            <View style={{alignItems: 'flex-end'}}>
+            <Text style={styles.totalLabel}>{t('orderVerification.youWillPay', 'You will pay')}</Text>
+            <View style={{ alignItems: 'flex-end' }}>
               <Text style={styles.totalValueMain}>38,95 USDC</Text>
               <Text style={styles.totalValueSub}>≈ 25 595 FCFA</Text>
             </View>
@@ -317,14 +319,14 @@ export default function OrderVerificationScreen() {
       {/* Bottom Action Bar */}
       <View style={styles.bottomActionBar}>
         <View style={styles.securityInfo}>
-          <Ionicons name="shield-checkmark-outline" size={20} color="#3B82F6" style={{marginRight: 8}} />
+          <Ionicons name="shield-checkmark-outline" size={20} color="#3B82F6" style={{ marginRight: 8 }} />
           <View>
-            <Text style={styles.securityTitle}>Paiement 100% sécurisé</Text>
-            <Text style={styles.securityDesc}>Vos fonds sont protégés</Text>
+            <Text style={styles.securityTitle}>{t('orderVerification.securePaymentTitle', '100% Secure payment')}</Text>
+            <Text style={styles.securityDesc}>{t('orderVerification.securePaymentDesc', 'Your funds are protected')}</Text>
           </View>
         </View>
         <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('OrderConfirmationScreen')}>
-          <Text style={styles.btnContinueText}>Continuer</Text>
+          <Text style={styles.btnContinueText}>{t('orderVerification.continueBtn', 'Continue')}</Text>
           <Ionicons name="chevron-forward" size={18} color="#1A2840" />
         </TouchableOpacity>
       </View>
