@@ -10,6 +10,7 @@ import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
 import { useApp } from '../context/AppContext';
 import contactService from '../services/contactService';
 import { getFullCountryName } from '../utils/countryCurrencyUtils';
+import { SwipeRow } from 'react-native-swipe-list-view';
 
 const quickActions = [
   { id: '1', titleKey: 'contacts.qa_essentials', defaultTitle: "Essentials\n& All", icon: "bag-handle-outline", color: "#8B5CF6", bgColor: "#F5F3FF" },
@@ -42,6 +43,7 @@ export default function ContactsScreen() {
   const [toast, setToast] = useState(null);
   const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'nearby', 'favorites', 'africa', 'world'
   const [searchQuery, setSearchQuery] = useState('');
+  const [contactToDelete, setContactToDelete] = useState(null);
 
   const nextScreen = route.params?.nextScreen;
   const actionRoutes = {
@@ -309,17 +311,26 @@ export default function ContactsScreen() {
               </View>
             ) : (
               filteredContacts.map((contact) => (
-                <ContactRow 
-                  key={contact.id} 
-                  contact={contact} 
-                  onPress={() => {
-                    if (nextScreen) {
-                      navigation.navigate(nextScreen, { beneficiary: contact, contact });
-                    } else {
-                      setSelectedContact(contact);
-                    }
-                  }}
-                />
+                <SwipeRow key={contact.id} rightOpenValue={-80} disableRightSwipe={true} closeOnRowPress={true}>
+                  <View style={styles.rowBack}>
+                    <TouchableOpacity style={styles.backRightBtn} onPress={() => setContactToDelete(contact)}>
+                      <Ionicons name="trash-outline" size={24} color="#FFFFFF" />
+                      <Text style={styles.backRightBtnText}>{t('contacts.action_delete', 'Delete')}</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={{backgroundColor: '#FFFFFF'}}>
+                    <ContactRow 
+                      contact={contact} 
+                      onPress={() => {
+                        if (nextScreen) {
+                          navigation.navigate(nextScreen, { beneficiary: contact, contact });
+                        } else {
+                          setSelectedContact(contact);
+                        }
+                      }}
+                    />
+                  </View>
+                </SwipeRow>
               ))
             )}
           </View>
@@ -344,6 +355,31 @@ export default function ContactsScreen() {
           }}
         />
 
+        <Modal visible={!!contactToDelete} transparent animationType="fade">
+          <View style={styles.deleteModalOverlay}>
+            <View style={styles.deleteModalContainer}>
+              <View style={styles.deleteModalIconWrap}>
+                <Ionicons name="warning-outline" size={32} color="#EF4444" />
+              </View>
+              <Text style={styles.deleteModalTitle}>{t('contacts.confirm_delete_title', 'Delete Beneficiary')}</Text>
+              <Text style={styles.deleteModalDesc}>
+                {t('contacts.confirm_delete_desc', 'Are you sure you want to delete {{name}} from your beneficiaries?').replace('{{name}}', contactToDelete?.name || '')}
+              </Text>
+              <View style={styles.deleteModalActions}>
+                <TouchableOpacity style={styles.deleteModalCancelBtn} onPress={() => setContactToDelete(null)}>
+                  <Text style={styles.deleteModalCancelText}>{t('contacts.confirm_delete_cancel', 'Cancel')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.deleteModalConfirmBtn} onPress={() => {
+                  if(contactToDelete) removeContact(contactToDelete.id);
+                  setContactToDelete(null);
+                }}>
+                  <Text style={styles.deleteModalConfirmText}>{t('contacts.confirm_delete_confirm', 'Yes, Delete')}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
         {/* Invite Banner (Floating) */}
         {showInvite && (
           <View style={styles.inviteBannerWrapper}>
@@ -358,7 +394,13 @@ export default function ContactsScreen() {
                 <Text style={styles.inviteBannerText}>
                   {t('home.inviteBannerDesc', "Envoyez de l'argent, achetez, payez des factures et gagnez des récompenses ensemble.")}
                 </Text>
-                <TouchableOpacity style={styles.inviteBtn} onPress={() => shareInviteLink()}>
+                <TouchableOpacity 
+                  style={styles.inviteBtn} 
+                  onPress={() => {
+                    const code = user?.id ? `DZY-${user.id.substring(0, 6).toUpperCase()}` : 'DZY500';
+                    shareInviteLink(code);
+                  }}
+                >
                   <Text style={styles.inviteBtnText}>{t('home.btnInviteNow', "Inviter maintenant")}</Text>
                 </TouchableOpacity>
               </View>
@@ -597,4 +639,17 @@ const styles = StyleSheet.create({
   emptySubtitle: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#64748B', textAlign: 'center', marginBottom: 16 },
   addFirstBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFC759', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
   addFirstBtnText: { fontFamily: 'Inter_700Bold', fontSize: 12, color: '#071D54' },
+  rowBack: { alignItems: 'center', backgroundColor: '#EF4444', flex: 1, flexDirection: 'row', justifyContent: 'flex-end', paddingRight: 0 },
+  backRightBtn: { alignItems: 'center', bottom: 0, justifyContent: 'center', position: 'absolute', top: 0, width: 80, right: 0 },
+  backRightBtnText: { color: '#FFF', fontFamily: 'Inter_600SemiBold', fontSize: 10, marginTop: 4 },
+  deleteModalOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.6)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  deleteModalContainer: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 24, width: '100%', maxWidth: 340, alignItems: 'center', elevation: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 20 },
+  deleteModalIconWrap: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#FEF2F2', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
+  deleteModalTitle: { fontFamily: 'Inter_700Bold', fontSize: 20, color: '#0F172A', marginBottom: 8, textAlign: 'center' },
+  deleteModalDesc: { fontFamily: 'Inter_400Regular', fontSize: 14, color: '#64748B', textAlign: 'center', marginBottom: 24, lineHeight: 20 },
+  deleteModalActions: { flexDirection: 'row', width: '100%', justifyContent: 'space-between' },
+  deleteModalCancelBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#F1F5F9', marginRight: 8, alignItems: 'center' },
+  deleteModalCancelText: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#334155' },
+  deleteModalConfirmBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#EF4444', marginLeft: 8, alignItems: 'center' },
+  deleteModalConfirmText: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#FFFFFF' }
 });

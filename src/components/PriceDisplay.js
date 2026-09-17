@@ -1,89 +1,99 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
+import { getCountryCurrencyInfo, convertCurrencyAmount } from '../utils/countryCurrencyUtils';
+import { currencyRateService } from '../services/currencyRateService';
 import { useApp } from '../context/AppContext';
-import { supabase } from '../services/supabaseClient';
 
-const FALLBACK_RATES = {
-  USD: 1, USDT: 1, USDC: 1, WBTC: 0.000015, DZY: 0.1,
-  EUR: 0.96, GBP: 0.79, NGN: 1600, GHS: 15.5, KES: 160,
-  ZAR: 19, EGP: 48, XOF: 605, XAF: 605, TZS: 2550,
-  UGX: 3800, RWF: 1280, ETB: 57, MAD: 10, DZD: 135, MGA: 4600
-};
-
-export default function PriceDisplay({ amount, baseCurrency = 'XOF', style, textStyle }) {
+export default function PriceDisplay({ 
+  amount = 0, 
+  baseCurrency = 'USD', 
+  quantity = 1,
+  size = 'medium',
+  targetCountry,
+  style, 
+  textStyle 
+}) {
   const { user } = useApp();
-  const [rates, setRates] = useState({});
+  const [, setRateVersion] = useState(0);
 
   useEffect(() => {
-    const fetchRates = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('exchange_rates')
-          .select('target_currency, rate')
-          .eq('base_currency', 'USD')
-          .eq('status', 'active');
-          
-        if (!error && data && data.length > 0) {
-          const ratesMap = {};
-          data.forEach(r => ratesMap[r.target_currency] = r.rate);
-          ratesMap['USD'] = 1;
-          setRates(ratesMap);
-        } else {
-          setRates(FALLBACK_RATES);
-        }
-      } catch (e) {
-        console.warn('Failed to fetch rates from DB, using fallback', e);
-        setRates(FALLBACK_RATES);
-      }
-    };
-    fetchRates();
+    // Re-render when live exchange rates update from Supabase
+    const unsubscribe = currencyRateService.subscribe(() => {
+      setRateVersion((v) => v + 1);
+    });
+    return unsubscribe;
   }, []);
 
-  // Determine user's local currency
-  const userCountryKey = (user?.COI || user?.country || 'Senegal').toLowerCase().trim();
+  // Determine user's local currency based on geolocalization / profile / merchant region
+  const userCountryKey = (
+    targetCountry ||
+    user?.COI ||
+    user?.country ||
+    user?.country_name ||
+    'Algeria' // active marketplace geolocated context
+  ).toLowerCase().trim();
+
   const primaryCountry = getCountryCurrencyInfo(userCountryKey);
-  const localCurrency = primaryCountry.currency;
+  const localCurrency = primaryCountry?.currency || 'DZD';
 
-  const currentRates = Object.keys(rates).length > 0 ? rates : FALLBACK_RATES;
+  const totalBaseAmount = (Number(amount) || 0) * (Number(quantity) || 1);
 
-  // Convert baseAmount to USD
-  const baseRateToUsd = currentRates[baseCurrency] || FALLBACK_RATES[baseCurrency] || 1;
-  const amountInUsd = amount / baseRateToUsd;
-
-  // Calculate local amount and DZY amount
-  const localRate = currentRates[localCurrency] || FALLBACK_RATES[localCurrency] || 1;
-  const localAmount = amountInUsd * localRate;
-  
-  // 1 USD = 10 DZY
-  const dzyAmount = amountInUsd * (currentRates['DZY'] || 10);
-  const usdtAmount = amountInUsd * (currentRates['USDT'] || 1);
+  // Derive amounts using unified conversion utility
+  const localAmount = convertCurrencyAmount(totalBaseAmount, baseCurrency, localCurrency);
+  const dzyAmount = convertCurrencyAmount(totalBaseAmount, baseCurrency, 'DZY');
+  const usdtAmount = convertCurrencyAmount(totalBaseAmount, baseCurrency, 'USDT');
 
   const formatLocal = (num) => (num || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   const formatCompact = (num) => {
     if (!num) return "0";
     if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
     if (num >= 1000) return (num / 1000).toFixed(1).replace('.0', '') + 'k';
-    return num.toFixed(2);
+    return num.toFixed(1);
   };
   
   const displayCurrency = (localCurrency === 'XOF' || localCurrency === 'XAF') ? 'F CFA' : localCurrency;
+  const isLarge = size === 'large';
+  const isCompact = size === 'compact';
+
+  const rtlCurrencies = ['DZD', 'د.ج', 'MAD', 'د.م.', 'EGP', 'ج.م', 'TND', 'د.ت', 'LYD', 'د.ل'];
+  const isRtl = rtlCurrencies.includes(localCurrency);
 
   return (
-    <View style={[styles.container, style]}>
+    <View style={[styles.container, isLarge && styles.containerLarge, style]}>
       {/* PRIMARY: Local Currency - Large and Bold */}
-      <View style={styles.primaryRow}>
-        <Text style={[styles.localCurrencyText, textStyle]}>{displayCurrency}</Text>
-        <Text style={[styles.localAmountText, textStyle]}>{formatLocal(localAmount)}</Text>
+      <View style={[styles.primaryRow, isLarge && styles.primaryRowLarge]}>
+        {isRtl ? (
+          <>
+            <Text style={[styles.localAmountText, isLarge && styles.localAmountLarge, isCompact && styles.localAmountCompact, textStyle]}>
+              {formatLocal(localAmount)}
+            </Text>
+            <Text style={[styles.localCurrencyText, isLarge && styles.localCurrencyLarge, isCompact && styles.localCurrencyCompact, textStyle]}>
+              {displayCurrency}
+            </Text>
+          </>
+        ) : (
+          <>
+            <Text style={[styles.localCurrencyText, isLarge && styles.localCurrencyLarge, isCompact && styles.localCurrencyCompact, textStyle]}>
+              {displayCurrency}
+            </Text>
+            <Text style={[styles.localAmountText, isLarge && styles.localAmountLarge, isCompact && styles.localAmountCompact, textStyle]}>
+              {formatLocal(localAmount)}
+            </Text>
+          </>
+        )}
       </View>
 
-      {/* SECONDARY: DZY (LEFT) and USDT (RIGHT) */}
-      <View style={styles.secondaryRow}>
-        <View style={styles.dzyBadge}>
-          <Text style={styles.dzyBadgeText}>{formatCompact(dzyAmount)} DZY</Text>
+      {/* SECONDARY: DZY (LEFT) and USDT (RIGHT) Badges */}
+      <View style={[styles.secondaryRow, isLarge && styles.secondaryRowLarge]}>
+        <View style={[styles.dzyBadge, isLarge && styles.dzyBadgeLarge]}>
+          <Text style={[styles.dzyBadgeText, isLarge && styles.dzyBadgeTextLarge]}>
+            {formatCompact(dzyAmount)} DZY
+          </Text>
         </View>
-        <View style={styles.usdtBadge}>
-          <Text style={styles.usdtBadgeText}>{usdtAmount.toFixed(2)} USDT</Text>
+        <View style={[styles.usdtBadge, isLarge && styles.usdtBadgeLarge]}>
+          <Text style={[styles.usdtBadgeText, isLarge && styles.usdtBadgeTextLarge]}>
+            {usdtAmount.toFixed(2)} USDT
+          </Text>
         </View>
       </View>
     </View>
@@ -94,57 +104,100 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'column',
     alignItems: 'flex-start',
-    gap: 4,
-    marginVertical: 4,
+    gap: 3,
+    marginVertical: 2,
+  },
+  containerLarge: {
+    gap: 6,
+    marginVertical: 6,
   },
   primaryRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
     gap: 4,
   },
+  primaryRowLarge: {
+    gap: 6,
+  },
   localCurrencyText: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 12,
-    color: 'rgba(32, 54, 91, 0.7)',
+    color: '#64748B',
+  },
+  localCurrencyLarge: {
+    fontSize: 16,
+    color: '#475569',
+    fontFamily: 'Inter_700Bold',
+  },
+  localCurrencyCompact: {
+    fontSize: 10.5,
   },
   localAmountText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 16,
-    color: '#20365B',
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 15,
+    color: '#1A2840',
+  },
+  localAmountLarge: {
+    fontSize: 24,
+    color: '#1A2840',
+    lineHeight: 28,
+  },
+  localAmountCompact: {
+    fontSize: 13,
   },
   secondaryRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 5,
+  },
+  secondaryRowLarge: {
+    gap: 8,
   },
   dzyBadge: {
-    backgroundColor: 'rgba(255, 199, 89, 0.15)',
-    borderColor: 'rgba(255, 199, 89, 0.4)',
+    backgroundColor: '#FFFBEB',
+    borderColor: '#FDE68A',
     borderWidth: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2.5,
     borderRadius: 6,
-    marginRight: 6,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  dzyBadgeLarge: {
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
   dzyBadgeText: {
     fontFamily: 'Inter_700Bold',
+    fontSize: 10.5,
+    color: '#B45309',
+  },
+  dzyBadgeTextLarge: {
     fontSize: 12,
-    color: '#AA843B',
   },
   usdtBadge: {
-    backgroundColor: '#F0FDF4',
-    borderColor: '#BBF7D0',
+    backgroundColor: '#ECFDF5',
+    borderColor: '#A7F3D0',
     borderWidth: 1,
     paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+    paddingVertical: 2.5,
+    borderRadius: 6,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  usdtBadgeLarge: {
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
   usdtBadgeText: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 10,
-    color: '#15803D',
+    color: '#047857',
+  },
+  usdtBadgeTextLarge: {
+    fontSize: 11.5,
   },
 });

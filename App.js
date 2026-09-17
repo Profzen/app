@@ -1,4 +1,16 @@
 import 'react-native-get-random-values';
+if (typeof global.window === 'undefined') {
+  global.window = global;
+}
+if (typeof global.crypto !== 'object') {
+  global.crypto = {};
+}
+if (typeof global.crypto.getRandomValues !== 'function') {
+  global.crypto.getRandomValues = require('react-native-get-random-values').getRandomValues;
+}
+if (typeof window.crypto !== 'object') {
+  window.crypto = global.crypto;
+}
 import React from 'react';
 import { View, ActivityIndicator, StatusBar, LogBox, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';

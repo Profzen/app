@@ -7,40 +7,64 @@ import BottomNavBar from '../components/BottomNavBar';
 import * as Clipboard from 'expo-clipboard';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
+import { getFlagEmoji, getCountryFromPhone, getFullCountryName } from '../utils/countryCurrencyUtils';
 
-export default function PaymentSuccessScreen() {
+export default function PaymentSuccessScreen({ route }) {
   const navigation = useNavigation();
-  const { t } = useApp();
+  const { t, user, language } = useApp();
   const [toast, setToast] = useState(null);
-  const shareReceipt = async () => { 
-    try { 
+
+  const tx = route?.params?.transaction || {};
+  const txRef = tx.orderId || tx.id || tx.txHash || (tx.created_at ? 'ORD-' + new Date(tx.created_at).getTime() : 'ORD-' + Date.now());
+  const displayAmount = tx.amount
+    ? `${Number(tx.amount).toLocaleString(language === 'en' ? 'en-US' : 'fr-FR')} ${tx.currency || 'FCFA'}`
+    : (tx.amountCrypto || '');
+  const recipientName = tx.recipientName || tx.recipient || user?.name || user?.email || '';
+  const recipientSub = tx.recipientAddress || tx.phone || (user?.city ? `${user.city}, ${user.country || ''}` : '');
+  const serviceTitle = tx.title || t('paymentSuccess.marketplacePurchase', 'Achat Marketplace');
+  const merchantName = tx.merchantName || t('paymentSuccess.partnerMerchant', 'Commerçant Partenaire');
+  const paymentMethodName = tx.paymentMethod || 'DZY Wallet';
+  const dateFormatted = tx.date
+    ? new Date(tx.date).toLocaleDateString(language === 'en' ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    : new Date().toLocaleDateString(language === 'en' ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+  // Resolve recipient country and real flag
+  const resolvedCountry = tx.recipientCountry || tx.recipient?.country || tx.merchantCountry || user?.country || '';
+  const resolvedPhone = tx.recipientPhone || tx.phone || tx.recipient?.phone || user?.phone || '';
+  const countryFromPhone = getCountryFromPhone(resolvedPhone);
+  const recipientCountryName = resolvedCountry || getFullCountryName(countryFromPhone) || '';
+  const recipientFlag = getFlagEmoji(resolvedCountry || countryFromPhone);
+
+  const shareReceipt = async () => {
+    try {
       await Share.share({
         title: t('paymentSuccess.shareTitle', 'DizzitUp Receipt'),
-        message: t('paymentSuccess.shareMessage', { amount: '20.50 USD', tx: 'DZY20240518104532', defaultValue: 'Successful payment — 20.50 USD — Transaction DZY20240518104532' })
-      }); 
-    } finally { 
+        message: `${serviceTitle} • ${displayAmount} • ${t('paymentSuccess.orderRef', 'Réf')}: ${txRef}${tx.escrowPin ? ` • PIN: ${tx.escrowPin}` : ''}`
+      });
+    } finally {
       setToast({
-        title: t('paymentSuccess.receiptSharedTitle', 'Receipt shared'),
-        message: t('paymentSuccess.receiptSharedDesc', 'Share sheet prepared.')
-      }); 
-    } 
+        title: t('paymentSuccess.receiptSharedTitle', 'Reçu partagé'),
+        message: t('paymentSuccess.receiptSharedDesc', 'Lien de partage prêt.')
+      });
+    }
   };
-  const copyTransaction = async () => { 
-    await Clipboard.setStringAsync('DZY20240518104532'); 
+
+  const copyTransaction = async () => {
+    await Clipboard.setStringAsync(txRef);
     setToast({
-      title: t('paymentSuccess.txCopiedTitle', 'Transaction ID copied'),
-      message: t('paymentSuccess.txCopiedDesc', 'Reference copied to clipboard.')
-    }); 
+      title: t('paymentSuccess.txCopiedTitle', 'Réf copiée'),
+      message: t('paymentSuccess.txCopiedDesc', 'Référence copiée dans le presse-papier.'),
+    });
   };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        
+
         {/* Header (Top Right Icons only) */}
         <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.iconBtn}>
-            <Ionicons name="notifications-outline" size={22} color="#1A2840" />
-            <View style={styles.badge} />
+          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('HomeScreen')}>
+            <Ionicons name="home-outline" size={22} color="#1A2840" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconBtn} onPress={shareReceipt} accessibilityLabel={t('paymentSuccess.receiptSharedTitle', 'Share receipt')}>
             <Ionicons name="share-outline" size={22} color="#1A2840" />
@@ -48,7 +72,7 @@ export default function PaymentSuccessScreen() {
         </View>
 
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-          
+
           {/* Success Animation / Icon Area */}
           <View style={styles.successArea}>
             <View style={styles.successHalo}>
@@ -56,79 +80,101 @@ export default function PaymentSuccessScreen() {
                 <Ionicons name="checkmark-sharp" size={48} color="#FFFFFF" />
               </View>
             </View>
-            
-            <Text style={styles.successTitle}>{t('paymentSuccess.title', 'Payment Successful!')}</Text>
-            <Text style={styles.successSub}>{t('paymentSuccess.subtitle', 'Your payment was processed successfully.')}</Text>
-            
+
+            <Text style={styles.successTitle}>{t('paymentSuccess.title', 'Paiement Réussi !')}</Text>
+            <Text style={styles.successSub}>
+              {tx.escrowPin
+                ? t('paymentSuccess.fundsEscrowed', 'Vos fonds sont sécurisés sous séquestre escrow.')
+                : t('paymentSuccess.subtitle', 'Votre paiement a été validé avec succès.')}
+            </Text>
+
             <View style={styles.secureBadge}>
               <Ionicons name="shield-checkmark-outline" size={14} color="#10B981" />
-              <Text style={styles.secureText}>{t('paymentSuccess.secure', '100% Secure Transaction')}</Text>
+              <Text style={styles.secureText}>{t('paymentSuccess.secure', '100% Sécurisé par Smart Contract Escrow')}</Text>
             </View>
           </View>
 
+          {/* Secret Escrow PIN Banner for Buy Goods */}
+          {!!tx.escrowPin && (
+            <View style={styles.escrowSuccessCard}>
+              <View style={styles.escrowSuccessHeader}>
+                <Ionicons name="key" size={18} color="#FFB800" />
+                <Text style={styles.escrowSuccessTitle}>{t('paymentSuccess.escrowPinTitle', 'Votre Code Secret de Livraison')}</Text>
+              </View>
+              <View style={styles.escrowPinDisplay}>
+                <Text style={styles.escrowPinText}>{tx.escrowPin}</Text>
+              </View>
+              <Text style={styles.escrowSuccessNote}>
+                {t('paymentSuccess.escrowPinNote', 'Donnez ce code secret à 4 chiffres au livreur UNIQUEMENT après réception et vérification physique de vos articles.')}
+              </Text>
+            </View>
+          )}
+
           {/* Transaction Details Card */}
           <View style={styles.detailsCard}>
-            
-            {/* Contact Row */}
+
+            {/* Contact / Recipient Row */}
             <View style={styles.contactRow}>
-              <Image source={{uri: 'https://i.pravatar.cc/150?img=47'}} style={styles.contactAvatar} />
+              <View style={styles.contactAvatarFallback}>
+                <Text style={styles.contactAvatarText}>{recipientName.slice(0, 2).toUpperCase()}</Text>
+              </View>
               <View style={styles.contactInfo}>
-                <Text style={styles.contactName}>Mama Kemi Adebayo</Text>
-                <Text style={styles.contactRelation}>Mère</Text>
+                <Text style={styles.contactName}>{recipientName}</Text>
+                <Text style={styles.contactRelation}>{serviceTitle}</Text>
                 <View style={styles.contactLocation}>
                   <Ionicons name="location-outline" size={12} color="#6B7280" />
-                  <Text style={styles.contactLocationText}>Lagos, Nigeria </Text>
-                  <Image source={{uri: 'https://flagcdn.com/w40/ng.png'}} style={styles.flagIcon} />
+                  <Text style={styles.contactLocationText}>{recipientFlag ? `${recipientFlag} ` : ''}{recipientSub}</Text>
                 </View>
               </View>
               <View style={styles.statusBadge}>
-                <Text style={styles.statusText}>{t('paymentSuccess.statusSuccess', 'Success')}</Text>
+                <Text style={styles.statusText}>{t('paymentSuccess.statusSuccess', 'Validé')}</Text>
               </View>
             </View>
 
-            {/* Service Row */}
+            {/* Service / Merchant Row */}
             <View style={styles.serviceRow}>
               <View style={styles.serviceIconBox}>
-                <Ionicons name="phone-portrait-outline" size={20} color="#10B981" />
+                <Ionicons name="storefront-outline" size={20} color="#10B981" />
               </View>
               <View style={styles.serviceInfo}>
-                <Text style={styles.serviceName}>{t('paymentSuccess.mobileRecharge', 'Mobile Recharge')}</Text>
-                <Text style={styles.serviceProvider}>MTN Nigeria</Text>
+                <Text style={styles.serviceName}>{serviceTitle}</Text>
+                <Text style={styles.serviceProvider}>{merchantName}</Text>
               </View>
-              <Text style={styles.serviceAmount}>20.00 USD</Text>
+              <Text style={styles.serviceAmount}>{displayAmount}</Text>
             </View>
 
             <View style={styles.divider} />
 
             {/* Detailed Info Rows */}
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>{t('paymentSuccess.dateTime', 'Date & Time')}</Text>
-              <Text style={styles.detailValue}>18 Mai 2024 • 10:45 AM</Text>
+              <Text style={styles.detailLabel}>{t('paymentSuccess.dateTime', 'Date & Heure')}</Text>
+              <Text style={styles.detailValue}>{dateFormatted}</Text>
             </View>
 
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>{t('paymentSuccess.paymentMethod', 'Payment Method')}</Text>
+              <Text style={styles.detailLabel}>{t('paymentSuccess.paymentMethod', 'Moyen de paiement')}</Text>
               <View style={styles.paymentMethod}>
-                <Image source={{uri: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png'}} style={styles.usdcIcon} />
-                <Text style={styles.detailValue}>USDC</Text>
+                <Text style={styles.detailValueBold}>{paymentMethodName}</Text>
               </View>
             </View>
 
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>{t('paymentSuccess.serviceFee', 'Service Fee')}</Text>
-              <Text style={styles.detailValue}>0.50 USD</Text>
-            </View>
+            {!!tx.amountCrypto && (
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>{t('paymentSuccess.cryptoDebited', 'Montant Crypto débité')}</Text>
+                <Text style={styles.detailValue}>{tx.amountCrypto}</Text>
+              </View>
+            )}
 
             <View style={[styles.detailRow, styles.totalRow]}>
-              <Text style={styles.detailLabel}>{t('paymentSuccess.totalPaid', 'Total Paid')}</Text>
-              <Text style={styles.totalValue}>20.50 USD</Text>
+              <Text style={styles.detailLabel}>{t('paymentSuccess.totalPaid', 'Total réglé')}</Text>
+              <Text style={styles.totalValue}>{displayAmount}</Text>
             </View>
 
-            <View style={[styles.detailRow, {marginBottom: 0}]}>
-              <Text style={styles.detailLabel}>{t('paymentSuccess.txNumber', 'Transaction ID')}</Text>
+            <View style={[styles.detailRow, { marginBottom: 0 }]}>
+              <Text style={styles.detailLabel}>{t('paymentSuccess.orderRef', 'Réf Commande')}</Text>
               <View style={styles.txNumberRow}>
-                <Text style={styles.txNumberValue}>DZY20240518104532</Text>
-                <TouchableOpacity style={{marginLeft: 8}} onPress={copyTransaction}>
+                <Text style={styles.txNumberValue}>{txRef}</Text>
+                <TouchableOpacity style={{ marginLeft: 8 }} onPress={copyTransaction}>
                   <Ionicons name="copy-outline" size={16} color="#6B7280" />
                 </TouchableOpacity>
               </View>
@@ -139,7 +185,7 @@ export default function PaymentSuccessScreen() {
           {/* Cashback Reward Banner */}
           <View style={styles.rewardBanner}>
             <View style={styles.giftIconWrapper}>
-              <Text style={{fontSize: 48}}>🎁</Text>
+              <Text style={{ fontSize: 48 }}>🎁</Text>
               <View style={styles.giftCheck}>
                 <Ionicons name="checkmark" size={14} color="#FFFFFF" />
               </View>
@@ -155,19 +201,19 @@ export default function PaymentSuccessScreen() {
           </View>
 
           {/* Partager mon succès CTA Card */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.shareCtaCard}
             onPress={() => {
               navigation.navigate('ShareSuccessPlatformScreen', {
                 transactionData: {
                   type: 'payment',
-                  amount: '20.50',
-                  token: 'USD',
-                  recipientName: 'Mama Kemi Adebayo',
-                  recipientCountry: 'Nigeria',
-                  recipientFlag: '🇳🇬',
-                  date: '18 Mai 2024 • 10:45 AM',
-                  txHash: 'DZY20240518104532',
+                  amount: tx.amount ? String(tx.amount) : '',
+                  token: tx.currency || 'FCFA',
+                  recipientName: recipientName || merchantName,
+                  recipientCountry: recipientCountryName || user?.country || '',
+                  recipientFlag: recipientFlag,
+                  date: dateFormatted,
+                  txHash: txRef,
                   actionType: 'payé',
                 },
               });
@@ -181,7 +227,7 @@ export default function PaymentSuccessScreen() {
                 <View style={[styles.sparkRay, { transform: [{ rotate: '0deg' }] }]} />
                 <View style={[styles.sparkRay, { transform: [{ rotate: '30deg' }] }]} />
               </View>
-              
+
               <View style={styles.shareWhiteSquare}>
                 <Ionicons name="share-social-outline" size={24} color="#071D54" />
               </View>
@@ -202,24 +248,24 @@ export default function PaymentSuccessScreen() {
 
           {/* Action Buttons */}
           <View style={styles.actionButtons}>
-          <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation.navigate('TransactionHistoryScreen')}>
-              <Ionicons name="receipt-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
+            <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation.navigate('TransactionHistoryScreen')}>
+              <Ionicons name="receipt-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
               <Text style={styles.primaryBtnText}>{t('paymentSuccess.viewReceipt', 'View receipt')}</Text>
             </TouchableOpacity>
 
             <View style={styles.secondaryBtnRow}>
-          <TouchableOpacity style={styles.secondaryBtn} onPress={() => navigation.navigate('ShopsScreen')}>
-                <Ionicons name="refresh-outline" size={20} color="#1A2840" style={{marginRight: 6}} />
+              <TouchableOpacity style={styles.secondaryBtn} onPress={() => navigation.navigate('ShopsScreen')}>
+                <Ionicons name="refresh-outline" size={20} color="#1A2840" style={{ marginRight: 6 }} />
                 <Text style={styles.secondaryBtnText}>{t('paymentSuccess.makeAnotherPayment', 'Make another payment')}</Text>
               </TouchableOpacity>
-          <TouchableOpacity style={styles.secondaryBtn} onPress={() => navigation.navigate('HomeScreen')}>
-                <Ionicons name="home-outline" size={20} color="#1A2840" style={{marginRight: 6}} />
+              <TouchableOpacity style={styles.secondaryBtn} onPress={() => navigation.navigate('HomeScreen')}>
+                <Ionicons name="home-outline" size={20} color="#1A2840" style={{ marginRight: 6 }} />
                 <Text style={styles.secondaryBtnText}>{t('paymentSuccess.backToHome', 'Back to Home')}</Text>
               </TouchableOpacity>
             </View>
           </View>
-          
-          <View style={{height: 30}} />
+
+          <View style={{ height: 30 }} />
         </ScrollView>
 
         <BottomNavBar activeTab="Accueil" />
@@ -318,6 +364,66 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#10B981',
     marginLeft: 6,
+  },
+  escrowSuccessCard: {
+    backgroundColor: '#FFFBEB',
+    marginHorizontal: 16,
+    marginTop: 20,
+    borderRadius: 16,
+    padding: 18,
+    borderWidth: 1.5,
+    borderColor: '#FDE68A',
+    alignItems: 'center',
+  },
+  escrowSuccessHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
+  },
+  escrowSuccessTitle: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 15,
+    color: '#92400E',
+  },
+  escrowPinDisplay: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#F59E0B',
+    borderStyle: 'dashed',
+    borderRadius: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    marginVertical: 8,
+  },
+  escrowPinText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 28,
+    letterSpacing: 8,
+    color: '#B45309',
+    textAlign: 'center',
+  },
+  escrowSuccessNote: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12,
+    color: '#78350F',
+    textAlign: 'center',
+    lineHeight: 18,
+    marginTop: 4,
+  },
+  contactAvatarFallback: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#EEF2F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  contactAvatarText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 16,
+    color: '#1A2840',
   },
   detailsCard: {
     backgroundColor: '#FFFFFF',
@@ -435,6 +541,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#1A2840',
   },
+  detailValueBold: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: '#1A2840',
+  },
   paymentMethod: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -517,7 +628,7 @@ const styles = StyleSheet.create({
     color: '#1A2840',
     marginRight: 4,
   },
-  
+
   /* Partager mon succès CTA Card Styles */
   shareCtaCard: {
     backgroundColor: '#071D54',

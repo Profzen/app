@@ -1,8 +1,9 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useEffect } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 
 export default function WithdrawFundsMobileMoneyProcessingScreen() {
@@ -73,9 +74,8 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
       } catch (err) {
         console.error("Cashout API error:", err);
         if (isMounted) {
-          Alert.alert(t('common.error', 'Error'), err.message || t('withdrawFunds.withdrawalFailed', 'Withdrawal failed'), [
-            { text: "OK", onPress: () => navigation.goBack() }
-          ]);
+          AppToast.showError(err.message || t('withdrawFunds.withdrawalFailed', 'Withdrawal failed'), t('common.error', 'Error'));
+          navigation.goBack();
         }
       }
     };

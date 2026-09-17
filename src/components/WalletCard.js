@@ -11,14 +11,21 @@ import { supabase } from '../services/supabaseClient';
 
 export default function WalletCard({ balances, badgeTitle }) {
   const navigation = useNavigation();
-  const { hideBalance, toggleHideBalance, t, user } = useApp();
+  const { hideBalance, toggleHideBalance, t, user, userCountry } = useApp();
 
   const isVisible = !hideBalance;
   
   const mainBalance = balances?.DZY || 0;
   
-  const userCountryKey = (user?.country || '').toLowerCase().trim();
-  const primaryCountry = getCountryCurrencyInfo(userCountryKey);
+  // Use IP-detected userCountry first (like TopUpScreen / OrderVerificationScreen do),
+  // then fall back to the profile's registered country
+  const geoCountryKey = (
+    userCountry ||
+    user?.country_code ||
+    user?.country ||
+    'us'
+  ).toLowerCase().trim();
+  const primaryCountry = getCountryCurrencyInfo(geoCountryKey);
 
   let secondaryCountry = getCountryCurrencyInfo('united states');
   if (primaryCountry.currency === 'USD') {

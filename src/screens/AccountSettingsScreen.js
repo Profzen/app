@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Platform, StatusBar, Switch, Modal, Alert, Linking, Image } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Platform, StatusBar, Switch, Modal, Linking, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
@@ -193,7 +193,10 @@ export default function AccountSettingsScreen() {
           <View style={styles.settingsCard}>
             
             {/* Change Password (placeholder for future implementation) */}
-            <TouchableOpacity style={[styles.settingRow, styles.settingDivider]} onPress={() => Alert.alert("Coming Soon", "Change password functionality will be available in the next update.")}>
+            <TouchableOpacity
+              style={[styles.settingRow, styles.settingDivider]}
+              onPress={() => AppToast.showInfo(t('settings.comingSoonMsg', 'Change password functionality will be available in the next update.'), t('settings.comingSoon', 'Coming Soon'))}
+            >
               <View style={[styles.settingIcon, { backgroundColor: '#EFF6FF' }]}>
                 <Ionicons name="key-outline" size={22} color="#3B82F6" />
               </View>

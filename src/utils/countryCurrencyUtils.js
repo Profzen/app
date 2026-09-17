@@ -319,3 +319,24 @@ export const resolveBeneficiaryCountry = (beneficiary = {}, options = {}) => {
     source: 'unknown'
   };
 };
+
+export const getFlagEmoji = (countryCodeOrName) => {
+  if (!countryCodeOrName) return '🌍';
+  let iso = String(countryCodeOrName).trim();
+  if (iso.length !== 2) {
+    const info = getCountryCurrencyInfo(iso);
+    iso = info?.code || '';
+  }
+  if (!iso || iso.length !== 2) return '🌍';
+  const codePoints = iso.toUpperCase().split('').map(char => 127397 + char.charCodeAt());
+  return String.fromCodePoint(...codePoints);
+};
+
+import { currencyRateService, EMERGENCY_RATES } from '../services/currencyRateService';
+
+export const EXCHANGE_RATES_TO_USD = EMERGENCY_RATES;
+
+export const convertCurrencyAmount = (amount, fromCurrency = 'USD', toCurrency = 'USD') => {
+  return currencyRateService.convert(amount, fromCurrency, toCurrency);
+};
+

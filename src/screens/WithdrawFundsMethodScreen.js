@@ -1,16 +1,43 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
+import { getPaymentRailEligibility, COUNTRY_METADATA } from '../services/paymentCorridorService';
+import PaymentRegionModal from '../components/PaymentRegionModal';
 
 export default function WithdrawFundsMethodScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { t } = useApp();
+  const { user, t, language, userCountry, setUserCountry } = useApp();
   const { amount, currency, selectedToken, selectedNetwork } = route.params || {};
   const [selectedMethod, setSelectedMethod] = useState('bank'); // 'bank' or 'mobile'
+
+  const [destinationCountry, setDestinationCountry] = useState(() => {
+    const raw = (userCountry || user?.country_code || user?.country || 'DZ').toUpperCase().trim();
+    return raw.length === 2 ? raw : (raw === 'FRANCE' ? 'FR' : raw === 'MAROC' ? 'MA' : 'DZ');
+  });
+  const [regionModalVisible, setRegionModalVisible] = useState(false);
+
+  // Sync with userCountry when geolocation resolves asynchronously
+  useEffect(() => {
+    if (userCountry && typeof userCountry === 'string' && userCountry.length === 2) {
+      setDestinationCountry(userCountry.toUpperCase());
+    }
+  }, [userCountry]);
+
+  // Compute rail eligibility for 'offramp' flow
+  const railEligibility = useMemo(() => {
+    return getPaymentRailEligibility(destinationCountry, 'offramp', language);
+  }, [destinationCountry, language]);
+
+  // If mobile is selected but not supported, fallback to 'bank'
+  useEffect(() => {
+    if (selectedMethod === 'mobile' && !railEligibility.momo.enabled) {
+      setSelectedMethod('bank');
+    }
+  }, [destinationCountry, railEligibility.momo.enabled]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -60,6 +87,22 @@ export default function WithdrawFundsMethodScreen() {
           <Text style={styles.stepOverTitle}>{t('withdrawFunds.step2Of5', 'Step 2/5')}</Text>
           <Text style={styles.mainTitle}>{t('withdrawFunds.chooseMethodTitle', 'Choose your receiving method')}</Text>
           <Text style={styles.mainSubtitle}>{t('withdrawFunds.chooseMethodSubtitle', 'Select how you would like to receive your funds.')}</Text>
+
+          {/* Destination Country Indicator & Switcher */}
+          <View style={styles.countrySelectionRow}>
+            <Text style={styles.countrySelectionLabel}>
+              {t('paymentRails.withdrawRegionLabel', 'Pays de réception des fonds :')}
+            </Text>
+            <TouchableOpacity
+              style={styles.countryPill}
+              onPress={() => setRegionModalVisible(true)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.countryPillFlag}>{railEligibility.countryFlag}</Text>
+              <Text style={styles.countryPillText}>{railEligibility.countryName || destinationCountry}</Text>
+              <Ionicons name="chevron-down" size={12} color="#1D4ED8" style={{ marginLeft: 4 }} />
+            </TouchableOpacity>
+          </View>
 
           {/* Methods Cards */}
           
@@ -135,70 +178,127 @@ export default function WithdrawFundsMethodScreen() {
           </TouchableOpacity>
 
           {/* Card 2: Mobile Money */}
-          <TouchableOpacity 
-            style={[styles.methodCard, selectedMethod === 'mobile' && styles.methodCardSelectedMobile]}
-            onPress={() => setSelectedMethod('mobile')}
-            activeOpacity={0.8}
-          >
-            <View style={styles.cardTop}>
-              <View style={styles.cardTopLeft}>
-                <View style={[styles.cardIconCircle, {backgroundColor: selectedMethod === 'mobile' ? '#DBEAFE' : '#F1F5F9'}]}>
-                  <Ionicons name="phone-portrait-outline" size={28} color={selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'} />
-                </View>
-                <View style={styles.cardHeaderInfo}>
-                  <Text style={styles.cardTitle}>{t('withdrawFunds.mobileMoney', 'Mobile Money')}</Text>
-                  
-                  <View style={styles.featuresList}>
-                    <View style={styles.featureItem}>
-                      <Ionicons name="checkmark-circle" size={14} color={selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'} />
-                      <Text style={styles.featureText}>{t('withdrawFunds.instantReception', 'Instant reception')}</Text>
+          {railEligibility.momo.enabled ? (
+            <TouchableOpacity 
+              style={[styles.methodCard, selectedMethod === 'mobile' && styles.methodCardSelectedMobile]}
+              onPress={() => setSelectedMethod('mobile')}
+              activeOpacity={0.8}
+            >
+              <View style={styles.cardTop}>
+                <View style={styles.cardTopLeft}>
+                  <View style={[styles.cardIconCircle, {backgroundColor: selectedMethod === 'mobile' ? '#DBEAFE' : '#F1F5F9'}]}>
+                    <Ionicons name="phone-portrait-outline" size={28} color={selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'} />
+                  </View>
+                  <View style={styles.cardHeaderInfo}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Text style={styles.cardTitle}>{t('withdrawFunds.mobileMoney', 'Mobile Money')}</Text>
+                      <View style={[styles.badgeRecommended, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
+                        <Text style={[styles.badgeRecommendedText, { color: '#065F46' }]}>
+                          {railEligibility.momo.operators.length > 0 ? railEligibility.momo.operators.slice(0, 2).join(', ') : 'Disponible'}
+                        </Text>
+                      </View>
                     </View>
-                    <View style={styles.featureItem}>
-                      <Ionicons name="checkmark-circle" size={14} color={selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'} />
-                      <Text style={styles.featureText}>{t('withdrawFunds.available247', 'Available 24/7')}</Text>
-                    </View>
-                    <View style={styles.featureItem}>
-                      <Ionicons name="checkmark-circle" size={14} color={selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'} />
-                      <Text style={styles.featureText}>{t('withdrawFunds.idealDailyUsage', 'Ideal for daily use')}</Text>
+                    
+                    <View style={styles.featuresList}>
+                      <View style={styles.featureItem}>
+                        <Ionicons name="checkmark-circle" size={14} color={selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'} />
+                        <Text style={styles.featureText}>{t('withdrawFunds.instantReception', 'Instant reception')}</Text>
+                      </View>
+                      <View style={styles.featureItem}>
+                        <Ionicons name="checkmark-circle" size={14} color={selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'} />
+                        <Text style={styles.featureText}>{t('withdrawFunds.available247', 'Available 24/7')}</Text>
+                      </View>
+                      <View style={styles.featureItem}>
+                        <Ionicons name="checkmark-circle" size={14} color={selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'} />
+                        <Text style={styles.featureText}>
+                          {t('paymentRails.momoWithdrawAvailable', `Retrait instantané vers ${railEligibility.momo.operators.join(', ')}.`, {
+                            operators: railEligibility.momo.operators.join(', ')
+                          })}
+                        </Text>
+                      </View>
                     </View>
                   </View>
                 </View>
+                <Ionicons name="chevron-forward" size={20} color="#1A2840" style={styles.chevronIcon} />
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#1A2840" style={styles.chevronIcon} />
-            </View>
 
-            <View style={styles.cardDivider} />
+              <View style={styles.cardDivider} />
 
-            <View style={styles.cardStatsRow}>
-              <View style={styles.statItem}>
-                <View style={[styles.statIconCircle, {backgroundColor: selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'}]}>
-                  <Ionicons name="time-outline" size={12} color="#FFF" />
+              <View style={styles.cardStatsRow}>
+                <View style={styles.statItem}>
+                  <View style={[styles.statIconCircle, {backgroundColor: selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'}]}>
+                    <Ionicons name="time-outline" size={12} color="#FFF" />
+                  </View>
+                  <View>
+                    <Text style={styles.statLabel}>{t('withdrawFunds.delay', 'Delay')}</Text>
+                    <Text style={styles.statValue}>{t('withdrawFunds.delayInstant', 'Instant')}</Text>
+                  </View>
                 </View>
-                <View>
-                  <Text style={styles.statLabel}>{t('withdrawFunds.delay', 'Delay')}</Text>
-                  <Text style={styles.statValue}>{t('withdrawFunds.delayInstant', 'Instant')}</Text>
+                <View style={styles.statItem}>
+                  <View style={[styles.statIconCircle, {backgroundColor: selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'}]}>
+                    <Text style={{color: '#FFF', fontSize: 10, fontWeight: 'bold'}}>%</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.statLabel}>{t('withdrawFunds.dizzitupFee', 'DizzitUp Fee')}</Text>
+                    <Text style={styles.statValue}>1,5%</Text>
+                  </View>
+                </View>
+                <View style={styles.statItem}>
+                  <View style={[styles.statIconCircle, {backgroundColor: selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'}]}>
+                    <Ionicons name="git-network-outline" size={12} color="#FFF" />
+                  </View>
+                  <View>
+                    <Text style={styles.statLabel}>{t('withdrawFunds.networkFee', 'Network Fee')}</Text>
+                    <Text style={styles.statValue}>Polygon Network</Text>
+                  </View>
                 </View>
               </View>
-              <View style={styles.statItem}>
-                <View style={[styles.statIconCircle, {backgroundColor: selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'}]}>
-                  <Text style={{color: '#FFF', fontSize: 10, fontWeight: 'bold'}}>%</Text>
+            </TouchableOpacity>
+          ) : (
+            /* Card 2 Disabled: Mobile Money for Unsupported Country */
+            <TouchableOpacity 
+              style={[styles.methodCard, styles.methodCardDisabled]}
+              onPress={() => setRegionModalVisible(true)}
+              activeOpacity={0.8}
+            >
+              <View style={styles.cardTop}>
+                <View style={styles.cardTopLeft}>
+                  <View style={[styles.cardIconCircle, {backgroundColor: '#F1F5F9'}]}>
+                    <Ionicons name="phone-portrait-outline" size={28} color="#94A3B8" />
+                  </View>
+                  <View style={styles.cardHeaderInfo}>
+                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                      <Text style={[styles.cardTitle, {color: '#94A3B8'}]}>{t('withdrawFunds.mobileMoney', 'Mobile Money')}</Text>
+                      <View style={[styles.badgeComingSoon, { backgroundColor: '#F1F5F9', borderColor: '#E2E8F0' }]}>
+                        <Ionicons name="lock-closed" size={10} color="#64748B" style={{ marginRight: 2 }} />
+                        <Text style={[styles.badgeComingSoonText, { color: '#64748B' }]}>
+                          {t('paymentRails.unavailableInCountry', `Indisponible en/au ${railEligibility.countryName}`, {
+                            country: railEligibility.countryName,
+                          })}
+                        </Text>
+                      </View>
+                    </View>
+                    
+                    <Text style={styles.disabledCardSubtext}>
+                      {t(
+                        'paymentRails.momoWithdrawUnavailable',
+                        `Le retrait Mobile Money n'est pas disponible pour ${railEligibility.countryName}. Il est actif dans 18 pays d'Afrique (Bénin, Sénégal, Côte d'Ivoire, Kenya...).`,
+                        { country: railEligibility.countryName }
+                      )}
+                    </Text>
+                  </View>
                 </View>
-                <View>
-                  <Text style={styles.statLabel}>{t('withdrawFunds.dizzitupFee', 'DizzitUp Fee')}</Text>
-                  <Text style={styles.statValue}>2,0%</Text>
-                </View>
+                <TouchableOpacity
+                  style={styles.btnChangeCountrySmall}
+                  onPress={() => setRegionModalVisible(true)}
+                >
+                  <Text style={styles.btnChangeCountrySmallText}>
+                    {t('paymentRails.switchCountry', 'Changer')}
+                  </Text>
+                </TouchableOpacity>
               </View>
-              <View style={styles.statItem}>
-                <View style={[styles.statIconCircle, {backgroundColor: selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'}]}>
-                  <Ionicons name="git-network-outline" size={12} color="#FFF" />
-                </View>
-                <View>
-                  <Text style={styles.statLabel}>{t('withdrawFunds.networkFee', 'Network Fee')}</Text>
-                  <Text style={styles.statValue}>{t('withdrawFunds.variable', 'Variable')}</Text>
-                </View>
-              </View>
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          )}
 
           {/* Card 3: Carte bancaire (Disabled) */}
           <View style={[styles.methodCard, styles.methodCardDisabled]}>
@@ -280,11 +380,23 @@ export default function WithdrawFundsMethodScreen() {
           </View>
 
           {/* Continue Button */}
-          <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('WithdrawFundsMobileMoneySummaryScreen', { amount, currency, selectedToken, selectedNetwork, selectedMethod })}>
+          <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('WithdrawFundsMobileMoneySummaryScreen', { amount, currency, selectedToken, selectedNetwork, selectedMethod, destinationCountry })}>
             <Text style={styles.btnContinueText}>{t('withdrawFunds.continueBtn', 'Continue')}</Text>
           </TouchableOpacity>
 
         </ScrollView>
+
+        {/* Region Switcher Modal */}
+        <PaymentRegionModal
+          visible={regionModalVisible}
+          onClose={() => setRegionModalVisible(false)}
+          currentCountryCode={destinationCountry}
+          onSelectCountry={(code) => {
+            setDestinationCountry(code);
+            if (setUserCountry) setUserCountry(code);
+          }}
+          onSelectAlternativeMethod={(method) => setSelectedMethod(method === 'card' ? 'bank' : 'bank')}
+        />
       </View>
     </SafeAreaView>
   );
@@ -552,5 +664,62 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold',
     fontSize: 16,
     color: '#1A2840',
+  },
+  countrySelectionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 16,
+  },
+  countrySelectionLabel: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: '#475569',
+  },
+  countryPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  countryPillFlag: {
+    fontSize: 14,
+    marginRight: 5,
+  },
+  countryPillText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 12,
+    color: '#1D4ED8',
+  },
+  disabledCardSubtext: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    color: '#64748B',
+    lineHeight: 16,
+    marginTop: 4,
+    paddingRight: 6,
+  },
+  btnChangeCountrySmall: {
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    alignSelf: 'center',
+    marginLeft: 6,
+  },
+  btnChangeCountrySmallText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    color: '#1D4ED8',
   },
 });

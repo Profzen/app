@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Dimensions, Share, Platform, StatusBar, ActivityIndicator, ImageBackground } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
+import PriceDisplay from '../components/PriceDisplay';
 import { useBuyGoods } from '../hooks/useBuyGoods';
 import { useApp } from '../context/AppContext';
 import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
@@ -15,7 +16,7 @@ export default function ShopDetailsScreen({ route }) {
   const shopParam = route?.params?.shop;
   const initialShop = shopParam || {};
 
-  const { t } = useApp();
+  const { t, cartCount } = useApp();
   const { fetchStoreDetails, fetchAllProducts } = useBuyGoods();
 
   const [shop, setShop] = useState(initialShop);
@@ -29,6 +30,27 @@ export default function ShopDetailsScreen({ route }) {
   const [paymentInfoExpanded, setPaymentInfoExpanded] = useState(false);
   const [toast, setToast] = useState(null);
 
+  const shopCategoriesList = useMemo(() => {
+    const raw = shop.shop_categories || shop.raw?.shop_categories || shop.category;
+    if (!raw) return [t('shop.badges.marketplace', 'Marketplace')];
+    if (Array.isArray(raw)) {
+      return raw.map(c => (typeof c === 'string' ? c.trim() : (c?.name || String(c)))).filter(Boolean);
+    }
+    if (typeof raw === 'string') {
+      const trimmed = raw.trim();
+      if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (Array.isArray(parsed)) {
+            return parsed.map(c => (typeof c === 'string' ? c.trim() : (c?.name || String(c)))).filter(Boolean);
+          }
+        } catch (e) {}
+      }
+      return trimmed.split(',').map(c => c.trim()).filter(Boolean);
+    }
+    return [t('shop.badges.marketplace', 'Marketplace')];
+  }, [shop.shop_categories, shop.raw?.shop_categories, shop.category, t]);
+
   const getFlagCode = (countryInput) => {
     if (!countryInput) return 'us';
     if (countryInput.length === 2) return countryInput.toLowerCase();
@@ -41,20 +63,26 @@ export default function ShopDetailsScreen({ route }) {
     const loadData = async () => {
       setLoading(true);
       const slugOrId = initialShop.slug || initialShop.id;
+      let storeProds = [];
       if (slugOrId) {
         const storeDetails = await fetchStoreDetails(slugOrId);
-        if (storeDetails) {
-          setShop(prev => ({ ...prev, ...storeDetails }));
+        if (storeDetails?.merchant) {
+          setShop(prev => ({ ...prev, ...storeDetails.merchant, raw: storeDetails.merchant }));
+        }
+        if (storeDetails?.products && Array.isArray(storeDetails.products) && storeDetails.products.length > 0) {
+          storeProds = storeDetails.products;
         }
       }
 
-      const allProds = await fetchAllProducts();
-      const merchantId = initialShop.id;
-      const storeProducts = merchantId
-        ? allProds.filter(p => p.merchant_id === merchantId || (p.merchant && p.merchant.id === merchantId))
-        : allProds;
+      if (storeProds.length === 0) {
+        const allProds = await fetchAllProducts();
+        const merchantId = initialShop.id || shop.id;
+        storeProds = merchantId
+          ? allProds.filter(p => (p.merchant_id === merchantId || p.merchant?.id === merchantId) && (p.status === 'active' || p.status === 'published' || !p.status))
+          : allProds.filter(p => p.status === 'active' || p.status === 'published' || !p.status);
+      }
 
-      setProducts(storeProducts);
+      setProducts(storeProds);
       setLoading(false);
     };
 
@@ -67,25 +95,65 @@ export default function ShopDetailsScreen({ route }) {
 
   const shareShop = async () => {
     const shopName = shop.shop_name || shop.name || 'Boutique';
-    const shopSlug = shop.slug || 'boutique';
-    const formatForUrl = (text) => text ? text.toLowerCase().replace(/\s+/g, '-') : 'unknown';
-    const countryStr = formatForUrl(shop.country || 'sn');
-    const cityStr = formatForUrl(shop.city_village || 'dakar');
-    const shopUrl = `dizzitup://DZYstore/${countryStr}/${cityStr}/${shopSlug}`;
+    const shopSlug = shop.slug || shop.id || 'boutique';
+    const shopUrl = `https://dizzitup.com/stores/${shopSlug}`;
 
     try {
       await Share.share({
         title: shopName,
-        message: t('shop.share.message', `Découvrez la boutique ${shopName} sur DizzitUp : ${shopUrl}`, { name: shopName, url: shopUrl })
+        message: t('shop.giftRequestShopMsg', `Découvrez la boutique ${shopName} sur DizzitUp : ${shopUrl}`, { name: shopName, url: shopUrl })
       });
       setToast({
-        title: t('shop.share.success_title', 'Boutique partagée'),
-        message: t('shop.share.success_msg', 'Le partage a été préparé avec succès.')
+        title: t('shop.shareSuccessTitle', 'Boutique partagée'),
+        message: t('shop.shareSuccessDesc', 'Le partage a été préparé avec succès.')
       });
     } catch {
       setToast({
-        title: t('shop.share.copied_title', 'Lien copié'),
-        message: t('shop.share.copied_msg', `${shopUrl} a été copié.`, { url: shopUrl })
+        title: t('shop.shareCopiedTitle', 'Lien copié'),
+        message: `${shopUrl}`
+      });
+    }
+  };
+
+  const shareShopGiftRequest = async () => {
+    const shopName = shop.shop_name || shop.name || 'Boutique';
+    const shopSlug = shop.slug || shop.id || 'boutique';
+    const shopUrl = `https://dizzitup.com/stores/${shopSlug}`;
+    try {
+      await Share.share({
+        title: t('shop.giftRequestTitle', `Achetez-le moi sur DizzitUp : ${shopName}`, { name: shopName }),
+        message: t('shop.giftRequestShopMsg', `Offrez-moi des articles de la boutique ${shopName} sur DizzitUp : ${shopUrl}`, { name: shopName, url: shopUrl })
+      });
+      setToast({
+        title: t('shop.shareSuccessTitle', 'Lien cadeau partagé'),
+        message: t('shop.shareSuccessDesc', 'Le lien de la boutique a été partagé.')
+      });
+    } catch {
+      setToast({
+        title: t('shop.shareCopiedTitle', 'Lien copié'),
+        message: `${shopUrl}`
+      });
+    }
+  };
+
+  const shareProductGift = async (product) => {
+    const pName = product.name || product.title || 'Produit';
+    const pPrice = product.price ? `${product.price.toLocaleString('fr-FR')} ${product.currency || 'USD'}` : '';
+    const shopName = shop.shop_name || shop.name || 'Boutique DizzitUp';
+    const productUrl = `https://dizzitup.com/product/${product.id}`;
+    try {
+      await Share.share({
+        title: t('shop.giftProductTitle', `Achetez-moi ceci : ${pName}`, { name: pName }),
+        message: t('shop.giftProductMsg', `J'aimerais ce produit sur DizzitUp : ${pName} (${pPrice}) chez ${shopName}. Vous pouvez me l'offrir ici : ${productUrl}`, { name: pName, price: pPrice, shop: shopName, url: productUrl })
+      });
+      setToast({
+        title: t('shop.shareSuccessTitle', 'Lien cadeau partagé'),
+        message: t('shop.shareSuccessDesc', 'Le lien du produit a été partagé.')
+      });
+    } catch {
+      setToast({
+        title: t('shop.shareCopiedTitle', 'Lien copié'),
+        message: `${productUrl}`
       });
     }
   };
@@ -100,6 +168,23 @@ export default function ShopDetailsScreen({ route }) {
             <Ionicons name="arrow-back" size={22} color="#1A2840" />
           </TouchableOpacity>
           <View style={styles.headerRightIcons}>
+            <TouchableOpacity
+              style={styles.iconBtnRight}
+              onPress={() => {
+                if (cartCount > 0) {
+                  navigation.navigate('OrderVerificationScreen');
+                } else {
+                  setToast({ title: t('cart.emptyTitle', 'Panier vide'), message: t('cart.emptyDesc', 'Votre panier ne contient aucun article pour l\'instant.') });
+                }
+              }}
+            >
+              <Ionicons name="cart-outline" size={18} color="#1A2840" />
+              {cartCount > 0 && (
+                <View style={styles.cartBadge}>
+                  <Text style={styles.cartBadgeText}>{cartCount}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
             <TouchableOpacity style={styles.iconBtnRight} onPress={() => setFavorite(!favorite)}>
               <Ionicons name={favorite ? "heart" : "heart-outline"} size={18} color={favorite ? "#EF4444" : "#1A2840"} />
             </TouchableOpacity>
@@ -138,9 +223,13 @@ export default function ShopDetailsScreen({ route }) {
             {/* Circular Logo overlay */}
             <View style={styles.logoContainer}>
               <View style={styles.logoCircle}>
-                <Image source={shop.shop_logo_url ? { uri: shop.shop_logo_url } : require('../../assets/brand/dizzitup_logo_cercle.png')} style={{ width: 36, height: 36, borderRadius: 18 }} resizeMode="contain" />
+                {(shop.shop_logo_url || shop.logoUrl) ? (
+                  <Image source={{ uri: shop.shop_logo_url || shop.logoUrl }} style={{ width: 44, height: 44, borderRadius: 22 }} resizeMode="cover" />
+                ) : (
+                  <Image source={require('../../assets/brand/shop_placeholder.jpg')} style={{ width: 44, height: 44, borderRadius: 22 }} resizeMode="cover" />
+                )}
               </View>
-              {shop.verified && (
+              {(shop.is_verified || shop.verified) && (
                 <View style={styles.verifiedBadge}>
                   <Ionicons name="checkmark-circle" size={20} color="#10B981" />
                 </View>
@@ -152,7 +241,7 @@ export default function ShopDetailsScreen({ route }) {
           <View style={styles.shopInfoHeader}>
             <View style={styles.shopNameRow}>
               <Text style={styles.shopName}>{shop.shop_name || shop.name || t('shop.default_name', 'Boutique')}</Text>
-              {shop.verified && <Ionicons name="checkmark-circle" size={18} color="#3B82F6" style={{ marginLeft: 6 }} />}
+              {(shop.is_verified || shop.verified) && <Ionicons name="checkmark-circle" size={18} color="#3B82F6" style={{ marginLeft: 6 }} />}
               <View style={styles.flagCityBadge}>
                 <Image source={{ uri: `https://flagcdn.com/w20/${getFlagCode(shop.country || shop.raw?.country || shop.country_code)}.png` }} style={{ width: 16, height: 11, marginRight: 4, borderRadius: 2 }} />
                 <Text style={styles.flagCityText}>
@@ -169,22 +258,26 @@ export default function ShopDetailsScreen({ route }) {
                 <Ionicons name="bus-outline" size={12} color="#64748B" style={{ marginRight: 4 }} />
                 <Text style={[styles.statusBadgeText, { color: '#64748B' }]}>{shop.deliveryTime || '24h'}</Text>
               </View>
-              <View style={[styles.statusBadge, { backgroundColor: '#F5F3FF' }]}>
-                <Text style={[styles.statusBadgeText, { color: '#8B5CF6' }]}>{shop.shop_categories || shop.category || t('shop.badges.marketplace', 'Marketplace')}</Text>
-              </View>
+              {shopCategoriesList.map((cat, idx) => (
+                <View key={idx} style={[styles.statusBadge, { backgroundColor: '#F5F3FF', borderWidth: 1, borderColor: '#EDE9FE' }]}>
+                  <Text style={[styles.statusBadgeText, { color: '#7C3AED' }]}>{cat}</Text>
+                </View>
+              ))}
             </View>
-
-            <Text style={styles.shopType}>{t('shop.badges.online_shopping', 'Shopping en ligne')}</Text>
 
             <View style={styles.shopMetaRow}>
               <Ionicons name="star" size={13} color="#F59E0B" />
-              <Text style={styles.ratingText}>4.6</Text>
-              <Text style={styles.reviewsText}>(3,215 {t('shop.stats.reviews_verified', 'avis vérifiés')})</Text>
+              <Text style={styles.ratingText}>{shop.rating || '5.0'}</Text>
+              <Text style={styles.reviewsText}>({shop.review_count || shop.reviews || t('shop.reviews.verifiedMerchant', 'Marchand vérifié')})</Text>
               <Text style={styles.dotSeparator}>•</Text>
               <Ionicons name="location-outline" size={13} color="#64748B" />
               <Text style={styles.locationText}>{shop.location || [shop.city_village || shop.raw?.city_village || shop.city, shop.country || shop.raw?.country].filter(Boolean).join(', ')}</Text>
-              <Text style={styles.dotSeparator}>•</Text>
-              <Text style={styles.distanceText}>1,5 km</Text>
+              {!!shop.distance && (
+                <>
+                  <Text style={styles.dotSeparator}>•</Text>
+                  <Text style={styles.distanceText}>{shop.distance}</Text>
+                </>
+              )}
             </View>
           </View>
 
@@ -193,24 +286,24 @@ export default function ShopDetailsScreen({ route }) {
             <View style={styles.statItem}>
               <Ionicons name="cube-outline" size={18} color="#1A2840" />
               <View style={{ marginLeft: 8 }}>
-                <Text style={styles.statNumber}>12 540</Text>
+                <Text style={styles.statNumber}>{products.length}</Text>
                 <Text style={styles.statLabel}>{t('shop.stats.products', 'Produits')}</Text>
               </View>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Ionicons name="people-outline" size={18} color="#1A2840" />
+              <Ionicons name="shield-checkmark-outline" size={18} color="#10B981" />
               <View style={{ marginLeft: 8 }}>
-                <Text style={styles.statNumber}>52,3 k</Text>
-                <Text style={styles.statLabel}>{t('shop.stats.followers', 'Abonnés')}</Text>
+                <Text style={styles.statNumber}>{shop.is_verified ? t('shop.stats.verified', 'Vérifié') : t('shop.stats.partner', 'Partenaire')}</Text>
+                <Text style={styles.statLabel}>Escrow</Text>
               </View>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Ionicons name="person-outline" size={18} color="#1A2840" />
+              <Ionicons name="flash-outline" size={18} color="#F59E0B" />
               <View style={{ marginLeft: 8 }}>
-                <Text style={styles.statNumber}>128</Text>
-                <Text style={styles.statLabel}>{t('shop.stats.following', 'Abonnements')}</Text>
+                <Text style={styles.statNumber}>{shop.deliveryTime || '24-48h'}</Text>
+                <Text style={styles.statLabel}>{t('shop.info.delivery', 'Livraison')}</Text>
               </View>
             </View>
           </View>
@@ -351,29 +444,10 @@ export default function ShopDetailsScreen({ route }) {
             )}
           </View>
 
-          {/* Primary Action Buttons */}
-          <View style={styles.actionButtonsRow}>
-            <TouchableOpacity style={styles.btnAcheter} onPress={() => navigation.navigate('ShopProductsScreen')}>
-              <Ionicons name="cart-outline" size={18} color="#1A2840" style={{ marginRight: 6 }} />
-              <View>
-                <Text style={styles.btnAcheterTitle}>{t('shop.actions.buy', 'Acheter')}</Text>
-                <Text style={styles.btnAcheterSub}>Buy</Text>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.btnAchetezMoi} onPress={() => setToast({ title: t('shop.actions.buy_me', 'Achetez-le moi'), message: t('shop.toast.gift_link_generated', 'Lien cadeau généré.') })}>
-              <Ionicons name="gift-outline" size={18} color="#1A2840" style={{ marginRight: 6 }} />
-              <View>
-                <Text style={styles.btnAchetezMoiTitle}>{t('shop.actions.buy_me', 'Achetez-le moi')}</Text>
-                <Text style={styles.btnAchetezMoiSub}>Buy me</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-
           {/* Produits populaires */}
           <View style={styles.sectionHeaderRow}>
             <Text style={styles.sectionTitle}>{t('shop.sections.popular_products', 'Produits populaires')}</Text>
-            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => navigation.navigate('ShopProductsScreen')}>
+            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => navigation.navigate('ShopProductsScreen', { shop: shop })}>
               <Text style={styles.showAllText}>{t('common.viewAll', 'Voir tout')}</Text>
               <Ionicons name="arrow-forward" size={14} color="#3B82F6" style={{ marginLeft: 4 }} />
             </TouchableOpacity>
@@ -381,36 +455,44 @@ export default function ShopDetailsScreen({ route }) {
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.productsScroll}>
             {loading && <ActivityIndicator size="large" color="#3B82F6" style={{ margin: 20 }} />}
-            {!loading && products.length === 0 && <Text style={{ margin: 20, color: '#64748B' }}>Aucun produit trouvé.</Text>}
+            {!loading && products.length === 0 && <Text style={{ margin: 20, color: '#64748B' }}>{t('shop.products.no_products_found', 'Aucun produit trouvé.')}</Text>}
             {products.map(product => (
               <View key={product.id} style={styles.productCard}>
                 <TouchableOpacity style={styles.heartIcon} onPress={() => setProductFavorites((items) => items.includes(product.id) ? items.filter((id) => id !== product.id) : [...items, product.id])}>
                   <Ionicons name={productFavorites.includes(product.id) ? "heart" : "heart-outline"} size={16} color="#F59E0B" />
                 </TouchableOpacity>
 
-                <View style={[styles.productImgPlaceholder, { padding: 0, overflow: 'hidden' }]}>
-                  {product.product_images && product.product_images.length > 0 ? (
-                    <Image source={{ uri: product.product_images[0] }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
-                  ) : product.images && product.images.length > 0 ? (
-                    <Image source={{ uri: product.images[0] }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
-                  ) : product.thumbnail ? (
-                    <Image source={{ uri: product.thumbnail }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
-                  ) : (
-                    <Image source={require('../../assets/brand/product_no_image.jpg')} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
-                  )}
-                </View>
+                <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('ProductDetailsScreen', { product, shop })}>
+                  <View style={[styles.productImgPlaceholder, { padding: 0, overflow: 'hidden' }]}>
+                    {product.product_images && product.product_images.length > 0 ? (
+                      <Image source={{ uri: product.product_images[0] }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                    ) : product.images && product.images.length > 0 ? (
+                      <Image source={{ uri: product.images[0] }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                    ) : product.thumbnail ? (
+                      <Image source={{ uri: product.thumbnail }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                    ) : (
+                      <Image source={require('../../assets/brand/product_no_image.jpg')} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                    )}
+                  </View>
+                </TouchableOpacity>
 
                 <View style={styles.productInfo}>
-                  <Text style={styles.productName} numberOfLines={1}>{product.name || 'Produit'}</Text>
-                  <Text style={styles.productPrice}>{product.price ? product.price.toLocaleString('fr-FR') + ' FCFA' : 'Prix non défini'}</Text>
-                  <Text style={styles.productStock}>{product.stock_quantity > 0 ? t('shop.products.in_stock', 'En stock') : t('outOfStock', 'Rupture')}</Text>
+                  <Text style={styles.productName} numberOfLines={1}>{product.name || product.title || 'Produit'}</Text>
+                  <PriceDisplay 
+                    amount={product.price || 0} 
+                    baseCurrency={product.currency || shop?.currency || 'XOF'} 
+                    size="compact"
+                    targetCountry={shop?.country}
+                  />
+                  <Text style={styles.productStock}>{product.stock_quantity > 0 || !product.stock_quantity ? t('shop.products.in_stock', 'En stock') : t('outOfStock', 'Rupture')}</Text>
                 </View>
 
-                <TouchableOpacity style={styles.btnBuySmall} onPress={() => navigation.navigate('ProductDetailsScreen', { product })}>
+                <TouchableOpacity style={styles.btnBuySmall} onPress={() => navigation.navigate('ProductDetailsScreen', { product, shop })}>
                   <Text style={styles.btnBuySmallText}>{t('shop.actions.buy', 'Acheter')}</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.btnBuyMeSmall} onPress={() => setToast({ title: t('shop.actions.buy_me', 'Achetez-moi'), message: t('shop.toast.gift_link_generated', 'Lien cadeau généré.') })}>
+                <TouchableOpacity style={styles.btnBuyMeSmall} onPress={() => shareProductGift(product)}>
+                  <Ionicons name="gift-outline" size={11} color="#1A2840" style={{ marginRight: 3 }} />
                   <Text style={styles.btnBuyMeSmallText}>{t('shop.actions.buy_me', 'Achetez-moi')}</Text>
                 </TouchableOpacity>
               </View>
@@ -524,4 +606,21 @@ const styles = StyleSheet.create({
   aboutTextContainer: { flexDirection: 'row', alignItems: 'flex-end', marginTop: 4 },
   aboutText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 12, color: '#6B7280', lineHeight: 18, paddingRight: 8 },
   aboutChevron: { paddingBottom: 2 },
+  cartBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#EF4444',
+    borderRadius: 8,
+    minWidth: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 3,
+  },
+  cartBadgeText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 9,
+    color: '#FFFFFF',
+  },
 });

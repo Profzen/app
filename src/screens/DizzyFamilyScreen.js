@@ -9,10 +9,11 @@ import { useApp } from '../context/AppContext';
 
 export default function DizzyFamilyScreen() {
   const navigation = useNavigation();
-  const { language, t } = useApp();
+  const { language, t, user } = useApp();
   const [toast, setToast] = useState(null);
 
-  const referralCode = 'DAVID5';
+  // Generate the dynamic referral code using DZY- and the first 6 characters of the user's ID
+  const referralCode = user?.id ? `DZY-${user.id.substring(0, 6).toUpperCase()}` : 'DZY500';
 
   const handleBack = () => {
     if (navigation.canGoBack()) navigation.goBack();
