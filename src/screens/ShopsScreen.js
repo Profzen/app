@@ -341,11 +341,12 @@ export default function ShopsScreen() {
                 return (
                   <TouchableOpacity key={shop.id} style={styles.shopGridCard} onPress={() => navigation.navigate('ShopDetailsScreen', { shop: shop })}>
                     <View style={styles.shopGridImageContainer}>
-                      {shop.bannerUrl ? (
-                        <Image source={{ uri: shop.bannerUrl }} style={styles.shopGridBanner} />
-                      ) : (
-                        <View style={[styles.shopGridBanner, { backgroundColor: '#F1F5F9' }]} />
-                      )}
+                      <Image
+                        source={shop.bannerUrl ? { uri: shop.bannerUrl } : require('../../assets/brand/store_default_banner.jpg')}
+                        defaultSource={require('../../assets/brand/store_default_banner.jpg')}
+                        style={styles.shopGridBanner}
+                        resizeMode="cover"
+                      />
 
                       <View style={styles.shopGridLogoWrapper}>
                         {shop.logoUrl ? (

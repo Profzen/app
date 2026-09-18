@@ -1,8 +1,8 @@
 import { Share, Platform } from 'react-native';
 
 export const shareInviteLink = async (refCode = 'DZY500') => {
-  const inviteUrl = `https://dizzitup.com/invite?ref=${refCode}`;
-  const message = `Rejoins-moi sur DizzitUp pour envoyer des Stablecoins, recharger des mobiles et payer des factures en Afrique sans frais ! Reçois $5 en DZY à l'inscription. Télécharge l'application ou clique ici : ${inviteUrl}`;
+  const inviteUrl = `https://dizzitup.com?ref=${refCode}`;
+  const message = `Join me on DizzitUp to support wisely your family in Africa by covering their needs while developing local economy. Buy goods, Pay bills, Invest in local businesses. Use my referral code ${refCode} to earn rewards: ${inviteUrl}`;
 
   try {
     if (Platform.OS === 'web' && navigator.share) {

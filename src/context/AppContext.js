@@ -1,9 +1,7 @@
 import React, { createContext, useState, useContext, useCallback, useEffect } from 'react';
-import { Platform, Alert } from 'react-native';
+import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SHOPS_MOCK } from '../mocks/shopsMock';
-import { CONTACTS_MOCK } from '../mocks/contactsMock';
 import enDict from '../i18n/locales/en.json';
 import frDict from '../i18n/locales/fr.json';
 import ptDict from '../i18n/locales/pt.json';
@@ -13,6 +11,9 @@ import arDict from '../i18n/locales/ar.json';
 const TRANSLATIONS = { en: enDict, fr: frDict, pt: ptDict, am: amDict, ar: arDict };
 import { supabase } from '../services/supabaseClient';
 import { transactionService } from '../services/transactionService';
+import contactService from '../services/contactService';
+import { buyGoodsApi } from '../services/buyGoodsApi';
+import { detectUserCountry, getCachedCountry, setManualCountry } from '../services/geolocationService';
 
 const AppContext = createContext();
 
@@ -49,10 +50,78 @@ export function AppProvider({ children }) {
     };
     hydrateCachedUser();
   }, []);
+
+  const [detectedCountry, setDetectedCountry] = useState(getCachedCountry() || 'DZ');
+  const [userSelectedCountry, setUserSelectedCountry] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const initGeolocation = async () => {
+      try {
+        const stored = await AsyncStorage.getItem('dizzit_user_selected_country');
+        if (stored && stored.length === 2 && isMounted) {
+          setUserSelectedCountry(stored.toUpperCase());
+        }
+        const detected = await detectUserCountry(user?.country_of_residence || user?.country);
+        if (detected && isMounted) {
+          setDetectedCountry(detected);
+        }
+      } catch (err) {
+        console.log("Error initializing geolocation:", err);
+      }
+    };
+    initGeolocation();
+    return () => { isMounted = false; };
+  }, [user?.country_of_residence, user?.country]);
+
+  const userCountry = userSelectedCountry || 
+    detectedCountry || 
+    (user?.country_code && user.country_code.length === 2 ? user.country_code : null) || 
+    (user?.country && user.country.length === 2 ? user.country : null) || 
+    'DZ';
+
+  const handleSetUserCountry = async (code) => {
+    if (!code || typeof code !== 'string') return;
+    const clean = code.trim().toUpperCase();
+    if (clean.length === 2) {
+      setUserSelectedCountry(clean);
+      await setManualCountry(clean);
+    }
+  };
+
+  const handleClearUserCountry = async () => {
+    setUserSelectedCountry(null);
+    try {
+      await AsyncStorage.removeItem('dizzit_user_selected_country');
+    } catch (e) {}
+    const fresh = await detectUserCountry();
+    if (fresh) setDetectedCountry(fresh);
+  };
+
+  const [cart, setCart] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [isTransactionsLoading, setIsTransactionsLoading] = useState(false);
   const [isAppLocked, setIsAppLocked] = useState(false);
   const [isCheckingLock, setIsCheckingLock] = useState(true);
+
+  // Cart Hydration
+  useEffect(() => {
+    const hydrateCart = async () => {
+      try {
+        const stored = await AsyncStorage.getItem('@dizzitup_cart');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            setCart(parsed);
+          }
+        }
+      } catch (err) {
+        console.log("Error hydrating cart:", err);
+      }
+    };
+    hydrateCart();
+  }, []);
+
   const [appSettings, setAppSettings] = useState({
     support_email: 'support@dizzitup.com',
     whatsapp_number: '+228 90 00 00 00',
@@ -206,8 +275,14 @@ export function AppProvider({ children }) {
               fetchedDizzyToken = syncData.token;
             }
             if (syncData.user) {
-              fetchedEvmAddress = syncData.user.evmAddress || syncData.user.walletAddress || fetchedEvmAddress;
-              fetchedSolanaAddress = syncData.user.solanaAddress || fetchedSolanaAddress;
+              // Only use sync-buygoods address as fallback — do NOT overwrite the user's
+              // primary dizzy-wallet address (from Supabase evm_wallet_address)
+              if (!fetchedEvmAddress) {
+                fetchedEvmAddress = syncData.user.evmAddress || syncData.user.walletAddress || '';
+              }
+              if (!fetchedSolanaAddress) {
+                fetchedSolanaAddress = syncData.user.solanaAddress || '';
+              }
             }
           } else {
             console.log("sync-buygoods failed with status:", syncRes.status);
@@ -274,32 +349,41 @@ export function AppProvider({ children }) {
           if (fetchedDizzyToken) {
             const bData = await fetchBalance(fetchedDizzyToken);
             if (bData) {
+              let sumPersonalTokensUsd = 0;
               if (bData.balances) {
                 rawBalancesArray = bData.balances;
                 bData.balances.forEach(b => {
                   const cur = (b.currency || b.token || b.symbol || '').toUpperCase();
-                  if (cur) newBalances[cur] = parseFloat(b.balance || 0);
+                  const bal = parseFloat(b.balance || 0);
+                  if (cur) newBalances[cur] = bal;
+                  const uv = parseFloat(b.usdValue);
+                  if (!isNaN(uv) && uv > 0) {
+                    sumPersonalTokensUsd += uv;
+                  } else if (['USDT', 'USDC', 'USD'].includes(cur)) {
+                    sumPersonalTokensUsd += bal;
+                  } else if (cur === 'EURC') {
+                    sumPersonalTokensUsd += bal * 1.08;
+                  }
                 });
               }
-              if (bData.totalUsdValue !== undefined) {
-                const usdVal = parseFloat(bData.totalUsdValue || 0);
-                totalUsdValue = usdVal;
-                newBalances['DZY'] = usdVal * 10;
-                newBalances['USD'] = usdVal;
-                try {
-                  const rateRes = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-                  if (rateRes.ok) {
-                    const rateData = await rateRes.json();
-                    const rates = rateData.rates || {};
-                    Object.keys(rates).forEach(fiat => {
-                      newBalances[fiat] = usdVal * rates[fiat];
-                    });
-                  }
-                } catch (rateErr) {
-                  newBalances['UGX'] = usdVal * 3750;
-                  newBalances['EUR'] = usdVal * 0.92;
-                  newBalances['XOF'] = usdVal * 605;
+              const backendUsd = bData.totalUsdValue !== undefined ? parseFloat(bData.totalUsdValue || 0) : 0;
+              const usdVal = Math.max(backendUsd, sumPersonalTokensUsd);
+              totalUsdValue = usdVal;
+              newBalances['DZY'] = usdVal * 10;
+              newBalances['USD'] = usdVal;
+              try {
+                const rateRes = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+                if (rateRes.ok) {
+                  const rateData = await rateRes.json();
+                  const rates = rateData.rates || {};
+                  Object.keys(rates).forEach(fiat => {
+                    newBalances[fiat] = usdVal * rates[fiat];
+                  });
                 }
+              } catch (rateErr) {
+                newBalances['UGX'] = usdVal * 3750;
+                newBalances['EUR'] = usdVal * 0.92;
+                newBalances['XOF'] = usdVal * 605;
               }
             }
           }
@@ -307,25 +391,34 @@ export function AppProvider({ children }) {
           if (fetchedBusinessDizzyToken) {
             const bData = await fetchBalance(fetchedBusinessDizzyToken);
             if (bData) {
+              let sumBusinessTokensUsd = 0;
               if (bData.balances) {
                 businessRawBalancesArray = bData.balances;
                 bData.balances.forEach(b => {
                   const cur = (b.currency || b.token || b.symbol || '').toUpperCase();
-                  if (cur) businessBalances[cur] = parseFloat(b.balance || 0);
-                });
-              }
-              if (bData.totalUsdValue !== undefined) {
-                const usdVal = parseFloat(bData.totalUsdValue || 0);
-                businessTotalUsdValue = usdVal;
-                businessBalances['DZY'] = usdVal * 10;
-                businessBalances['USD'] = usdVal;
-                const knownCryptoTokens = ['POL', 'USDT', 'USDC', 'ETH', 'BTC', 'WBTC', 'SOL', 'MATIC', 'BNB', 'DAI'];
-                Object.keys(newBalances).forEach(key => {
-                  if (key !== 'DZY' && key !== 'USD' && !knownCryptoTokens.includes(key) && newBalances[key]) {
-                     businessBalances[key] = (newBalances[key] / (newBalances['USD'] || 1)) * usdVal;
+                  const bal = parseFloat(b.balance || 0);
+                  if (cur) businessBalances[cur] = bal;
+                  const uv = parseFloat(b.usdValue);
+                  if (!isNaN(uv) && uv > 0) {
+                    sumBusinessTokensUsd += uv;
+                  } else if (['USDT', 'USDC', 'USD'].includes(cur)) {
+                    sumBusinessTokensUsd += bal;
+                  } else if (cur === 'EURC') {
+                    sumBusinessTokensUsd += bal * 1.08;
                   }
                 });
               }
+              const backendBizUsd = bData.totalUsdValue !== undefined ? parseFloat(bData.totalUsdValue || 0) : 0;
+              const usdVal = Math.max(backendBizUsd, sumBusinessTokensUsd);
+              businessTotalUsdValue = usdVal;
+              businessBalances['DZY'] = usdVal * 10;
+              businessBalances['USD'] = usdVal;
+              const knownCryptoTokens = ['POL', 'USDT', 'USDC', 'ETH', 'BTC', 'WBTC', 'SOL', 'MATIC', 'BNB', 'DAI'];
+              Object.keys(newBalances).forEach(key => {
+                if (key !== 'DZY' && key !== 'USD' && !knownCryptoTokens.includes(key) && newBalances[key]) {
+                   businessBalances[key] = (newBalances[key] / (newBalances['USD'] || 1)) * usdVal;
+                }
+              });
             }
           }
         } catch (e) {
@@ -342,6 +435,17 @@ export function AppProvider({ children }) {
           setIsTransactionsLoading(false);
         }
 
+        const isMerchant = fetchedRole === 'merchant';
+        const primaryBalances = (isMerchant && (businessTotalUsdValue > 0 || Object.keys(businessBalances).length > 0))
+          ? businessBalances
+          : newBalances;
+        const primaryRawBalances = (isMerchant && businessRawBalancesArray.length > 0)
+          ? businessRawBalancesArray
+          : rawBalancesArray;
+        const primaryTotalUsd = (isMerchant && businessTotalUsdValue > 0)
+          ? businessTotalUsdValue
+          : totalUsdValue;
+
         const fullUserData = {
           name: fetchedName,
           firstName: fetchedFirstName,
@@ -353,12 +457,15 @@ export function AppProvider({ children }) {
           city: fetchedCity,
           phone: fetchedPhone,
           avatar: fetchedAvatar ? { uri: fetchedAvatar } : null,
-          balanceDZY: newBalances.DZY,
-          balanceUSDT: newBalances.USDT,
-          balanceCFA: newBalances.XOF || newBalances.CFA,
-          totalUsdValue: totalUsdValue,
-          allBalances: newBalances,
-          rawBalances: rawBalancesArray,
+          balanceDZY: primaryBalances.DZY ?? (primaryTotalUsd * 10),
+          balanceUSDT: primaryBalances.USDT,
+          balanceCFA: primaryBalances.XOF || primaryBalances.CFA,
+          totalUsdValue: primaryTotalUsd,
+          allBalances: primaryBalances,
+          rawBalances: primaryRawBalances,
+          personalBalances: newBalances,
+          personalRawBalances: rawBalancesArray,
+          personalTotalUsdValue: totalUsdValue,
           merchantProfile: fetchedMerchantProfile,
           evmAddress: fetchedEvmAddress,
           solanaAddress: fetchedSolanaAddress,
@@ -372,6 +479,16 @@ export function AppProvider({ children }) {
         };
         setUser(fullUserData);
         AsyncStorage.setItem('@dizzitup_cached_user', JSON.stringify(fullUserData)).catch(() => {});
+        
+        if (contactService?.getBeneficiaries) {
+          contactService.getBeneficiaries(sessionObj.user.id).then(res => {
+            if (res && res.success && Array.isArray(res.data)) {
+              setContacts(res.data);
+            }
+          }).catch(err => console.log('Error fetching beneficiaries:', err));
+        }
+      } else {
+        setContacts([]);
       }
       setIsUserLoading(false);
     };
@@ -387,10 +504,32 @@ export function AppProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const [shops, setShops] = useState(SHOPS_MOCK);
-  const [contacts, setContacts] = useState(CONTACTS_MOCK);
-  const [favorites, setFavorites] = useState(['jumia-sn', '1']);
-  const [cart, setCart] = useState([]);
+  const [shops, setShops] = useState([]);
+  const [contacts, setContacts] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+
+  // Hydrate favorites from AsyncStorage
+  useEffect(() => {
+    const hydrateFavorites = async () => {
+      try {
+        const stored = await AsyncStorage.getItem('@dizzitup_favorites');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) setFavorites(parsed);
+        }
+      } catch (e) {}
+    };
+    hydrateFavorites();
+  }, []);
+
+  // Hydrate shops dynamically from buyGoodsApi
+  useEffect(() => {
+    buyGoodsApi.getMerchants().then(data => {
+      if (Array.isArray(data) && data.length > 0) {
+        setShops(data);
+      }
+    }).catch(() => {});
+  }, []);
 
   const [accountMode, setAccountMode] = useState('personal');
   const [hideBalance, setHideBalance] = useState(false);
@@ -446,13 +585,29 @@ export function AppProvider({ children }) {
     });
   }, [handleSetLanguage]);
 
-  const t = useCallback((key, fallback = '') => {
+  const t = useCallback((key, fallbackOrParams = '', maybeParams = null) => {
+    let fallback = typeof fallbackOrParams === 'string' 
+      ? fallbackOrParams 
+      : (fallbackOrParams && typeof fallbackOrParams === 'object' && fallbackOrParams.defaultValue) 
+        ? fallbackOrParams.defaultValue 
+        : '';
+    let params = (typeof fallbackOrParams === 'object' && fallbackOrParams !== null) ? fallbackOrParams : maybeParams;
+
     const langDict = TRANSLATIONS[language] || TRANSLATIONS.en;
     // Helper to traverse flat keys OR nested object paths (e.g. 'common.buttons.save')
     const getNestedValue = (obj, path) => {
-      if (!obj || typeof obj !== 'object') return undefined;
-      if (obj[path] !== undefined && obj[path] !== null) return obj[path];
-      return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+      if (!obj || typeof obj !== 'object' || !path || typeof path !== 'string') return undefined;
+      let target;
+      if (obj[path] !== undefined && obj[path] !== null) {
+        target = obj[path];
+      } else {
+        target = path.split('.').reduce((acc, part) => (acc && typeof acc === 'object') ? acc[part] : undefined, obj);
+      }
+      if (typeof target === 'string') return target;
+      if (typeof target === 'object' && target !== null && typeof target.title === 'string') {
+        return target.title;
+      }
+      return undefined;
     };
     
     let val = getNestedValue(langDict, key);
@@ -465,13 +620,23 @@ export function AppProvider({ children }) {
       val = getNestedValue(TRANSLATIONS.en, key);
     }
     
-    return val || fallback || key;
+    let result = val || fallback || key;
+
+    if (params && typeof params === 'object' && typeof result === 'string') {
+      result = result.replace(/\{\{(\w+)\}\}/g, (_, k) => {
+        return params[k] !== undefined && params[k] !== null ? String(params[k]) : `{{${k}}}`;
+      });
+    }
+
+    return result;
   }, [language]);
 
   const toggleFavorite = (id) => {
-    setFavorites(prev => 
-      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
-    );
+    setFavorites(prev => {
+      const updated = prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id];
+      AsyncStorage.setItem('@dizzitup_favorites', JSON.stringify(updated)).catch(() => {});
+      return updated;
+    });
   };
 
   const updateUserProfile = async (payload) => {
@@ -512,9 +677,117 @@ export function AppProvider({ children }) {
     }
   };
 
-  const addToCart = (product) => {
-    setCart(prev => [...prev, product]);
+  const saveCartToStorage = async (newCart) => {
+    setCart(newCart);
+    try {
+      await AsyncStorage.setItem('@dizzitup_cart', JSON.stringify(newCart));
+    } catch (err) {
+      console.log("Error saving cart to storage:", err);
+    }
   };
+
+  const addToCart = (product, quantity = 1, merchant = null, force = false) => {
+    if (!product) return { success: false };
+
+    // Extract numerical price
+    let rawPrice = product.price;
+    if (typeof rawPrice === 'string') {
+      rawPrice = parseFloat(rawPrice.replace(/[^0-9.]/g, '')) || 0;
+    } else if (product.variants?.[0]?.prices?.[0]?.amount) {
+      rawPrice = parseFloat(product.variants[0].prices[0].amount) || 0;
+    }
+    const numPrice = Number(rawPrice) || 0;
+
+    const mId = merchant?.id || product.merchant_id || product.merchant?.id || product.raw?.id || null;
+    const mName = merchant?.shop_name || merchant?.name || product.merchant?.shop_name || product.merchant?.name || t('paymentSuccess.partnerMerchant', 'Commerçant Partenaire');
+    const mCountry = merchant?.country || product.merchant?.country || '';
+    const mCity = merchant?.city_village || product.merchant?.city_village || '';
+
+    // Single-merchant constraint check
+    if (cart.length > 0 && !force) {
+      const existingMerchantId = cart[0].merchantId;
+      if (mId && existingMerchantId && mId !== existingMerchantId) {
+        return {
+          success: false,
+          conflict: true,
+          currentMerchantName: cart[0].merchantName,
+          newMerchantName: mName,
+        };
+      }
+    }
+
+    const itemImage = (product.product_images && product.product_images.length > 0)
+      ? product.product_images[0]
+      : (product.images && product.images.length > 0)
+      ? product.images[0]
+      : product.thumbnail || product.image || null;
+
+    const newItem = {
+      id: product.id || product._id || `item_${Date.now()}`,
+      productId: product.id || product._id || `p_${Date.now()}`,
+      name: product.title || product.name || t('product.notFound', 'Produit'),
+      price: numPrice,
+      currency: product.currency || 'XOF',
+      quantity: Math.max(1, Number(quantity) || 1),
+      image: itemImage,
+      merchantId: mId,
+      merchantName: mName,
+      merchantCountry: mCountry,
+      merchantCity: mCity,
+      category: product.category || 'Marketplace',
+    };
+
+    let updated;
+    if (force && cart.length > 0 && cart[0].merchantId !== mId) {
+      updated = [newItem];
+    } else {
+      const existingIndex = cart.findIndex(i => (i.productId === newItem.productId || i.id === newItem.id));
+      if (existingIndex > -1) {
+        updated = [...cart];
+        updated[existingIndex] = {
+          ...updated[existingIndex],
+          quantity: updated[existingIndex].quantity + newItem.quantity,
+        };
+      } else {
+        updated = [...cart, newItem];
+      }
+    }
+
+    saveCartToStorage(updated);
+    return { success: true, count: updated.reduce((acc, i) => acc + (i.quantity || 1), 0) };
+  };
+
+  const removeFromCart = (productId) => {
+    const updated = cart.filter(i => i.productId !== productId && i.id !== productId);
+    saveCartToStorage(updated);
+  };
+
+  const updateCartQuantity = (productId, newQuantity) => {
+    if (newQuantity <= 0) {
+      removeFromCart(productId);
+      return;
+    }
+    const updated = cart.map(i => {
+      if (i.productId === productId || i.id === productId) {
+        return { ...i, quantity: newQuantity };
+      }
+      return i;
+    });
+    saveCartToStorage(updated);
+  };
+
+  const clearCart = () => {
+    saveCartToStorage([]);
+  };
+
+  const cartCount = cart.reduce((acc, i) => acc + (Number(i.quantity) || 1), 0);
+  const cartTotal = cart.reduce((acc, i) => acc + ((Number(i.price) || 0) * (Number(i.quantity) || 1)), 0);
+  const cartMerchant = cart.length > 0 ? {
+    id: cart[0].merchantId,
+    name: cart[0].merchantName,
+    country: cart[0].merchantCountry,
+    city: cart[0].merchantCity,
+  } : null;
 
   const updateBalance = (amountDZY) => {
     setUser(prev => ({
@@ -553,7 +826,14 @@ export function AppProvider({ children }) {
       favorites,
       toggleFavorite,
       cart,
+      setCart,
       addToCart,
+      removeFromCart,
+      updateCartQuantity,
+      clearCart,
+      cartCount,
+      cartTotal,
+      cartMerchant,
       updateBalance,
       accountMode,
       setAccountMode,
@@ -567,7 +847,11 @@ export function AppProvider({ children }) {
       setIsAppLocked,
       isCheckingLock,
       updateUserProfile,
-      appSettings
+      appSettings,
+      userCountry,
+      detectedCountry,
+      setUserCountry: handleSetUserCountry,
+      clearUserCountry: handleClearUserCountry,
     }}>
       {children}
     </AppContext.Provider>

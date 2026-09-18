@@ -62,3 +62,4 @@ dist-ldci-check/
 add_keys.mjs
 add_security_keys.mjs
 inject_merchant_keys.mjs
+scratch/

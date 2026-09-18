@@ -1,12 +1,14 @@
 import React from 'react';
 import { Text, StyleSheet } from 'react-native';
 import { theme } from '../theme/theme';
+import { useApp } from '../context/AppContext';
 
 export const FooterTerms = () => {
+  const { t } = useApp();
   return (
     <Text style={styles.footerText}>
-      En vous inscrivant, vous acceptez nos <Text style={styles.linkText}>Conditions d'utilisation</Text>{'\n'}
-      et notre <Text style={styles.linkText}>Politique de confidentialité</Text>
+      {t('auth.termsAgreement', 'By signing up, you agree to our')} <Text style={styles.linkText}>{t('auth.termsOfService', 'Terms of Service')}</Text>{'\n'}
+      {t('auth.andOur', 'and our')} <Text style={styles.linkText}>{t('auth.privacyPolicy', 'Privacy Policy')}</Text>
     </Text>
   );
 };

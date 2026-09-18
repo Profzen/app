@@ -3,9 +3,11 @@ import React from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useApp } from '../context/AppContext';
 
 export default function SendMoneySummaryScreen() {
   const navigation = useNavigation();
+  const { t } = useApp();
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -17,7 +19,7 @@ export default function SendMoneySummaryScreen() {
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <Ionicons name="arrow-redo" size={20} color="#1A2840" style={styles.headerIcon} />
-            <Text style={styles.headerTitle}>envoyer des Stablecoins</Text>
+            <Text style={styles.headerTitle}>{t('sendMoney.headerTitle', 'Send Stablecoins')}</Text>
           </View>
           <TouchableOpacity style={styles.iconBtn}>
             <Ionicons name="ellipsis-horizontal" size={20} color="#1A2840" />
@@ -26,8 +28,8 @@ export default function SendMoneySummaryScreen() {
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          <Text style={styles.pageTitle}>Récapitulatif</Text>
-          <Text style={styles.pageSubtitle}>Vérifiez les informations avant de confirmer la transaction.</Text>
+          <Text style={styles.pageTitle}>{t('sendMoney.summaryTitle', 'Summary')}</Text>
+          <Text style={styles.pageSubtitle}>{t('sendMoney.summarySubtitle', 'Review the details before confirming the transaction.')}</Text>
 
           {/* Details Card */}
           <View style={styles.detailsCard}>
@@ -37,7 +39,7 @@ export default function SendMoneySummaryScreen() {
                 <View style={[styles.detailIconBox, {backgroundColor: '#FEF3C7'}]}>
                   <Ionicons name="wallet-outline" size={20} color="#1A2840" />
                 </View>
-                <Text style={styles.detailLabel}>Vous envoyez</Text>
+                <Text style={styles.detailLabel}>{t('sendMoney.youSend', 'You send')}</Text>
               </View>
               <View style={styles.detailRight}>
                 <Text style={styles.detailAmount}>4 000</Text>
@@ -53,7 +55,7 @@ export default function SendMoneySummaryScreen() {
                 <View style={[styles.detailIconBox, {backgroundColor: '#F1F5F9'}]}>
                   <Ionicons name="receipt-outline" size={20} color="#1A2840" />
                 </View>
-                <Text style={styles.detailLabel}>Frais de transaction</Text>
+                <Text style={styles.detailLabel}>{t('sendMoney.txFee', 'Transaction fee')}</Text>
               </View>
               <View style={styles.detailRight}>
                 <Text style={styles.detailAmount}>12</Text>
@@ -69,7 +71,7 @@ export default function SendMoneySummaryScreen() {
                 <View style={[styles.detailIconBox, {backgroundColor: '#EEF2FF'}]}>
                   <Ionicons name="arrow-forward-outline" size={20} color="#1A2840" />
                 </View>
-                <Text style={styles.detailLabel}>Méthode d'envoi</Text>
+                <Text style={styles.detailLabel}>{t('sendMoney.sendMethod', 'Sending method')}</Text>
               </View>
               <View style={styles.methodRight}>
                 <View style={styles.dzyLogoBox}>
@@ -88,7 +90,7 @@ export default function SendMoneySummaryScreen() {
               style={styles.recipientAvatar} 
             />
             <Text style={styles.recipientName}>Rajo Ratovoniasina</Text>
-            <Text style={styles.recipientSub}>va recevoir</Text>
+            <Text style={styles.recipientSub}>{t('sendMoney.willReceive', 'will receive')}</Text>
             
             <View style={styles.receiveBox}>
               <View style={styles.receiveAmountRow}>
@@ -105,7 +107,7 @@ export default function SendMoneySummaryScreen() {
               <View style={[styles.detailIconBox, {backgroundColor: '#FEF3C7'}]}>
                 <Ionicons name="shield-checkmark-outline" size={20} color="#1A2840" />
               </View>
-              <Text style={styles.totalLabel}>Total à payer</Text>
+              <Text style={styles.totalLabel}>{t('orderConfirmation.amountToPay', 'Total to pay')}</Text>
             </View>
             <View style={styles.detailRight}>
               <Text style={styles.totalAmount}>4 012</Text>
@@ -118,10 +120,10 @@ export default function SendMoneySummaryScreen() {
         {/* Action Buttons */}
         <View style={styles.footer}>
           <TouchableOpacity style={styles.btnPrev} onPress={() => navigation.goBack()}>
-            <Text style={styles.btnPrevText}>Précédent</Text>
+            <Text style={styles.btnPrevText}>{t('common.previous', 'Previous')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.btnNext} onPress={() => navigation.navigate('SendMoneySuccessScreen')}>
-            <Text style={styles.btnNextText}>Confirmer</Text>
+            <Text style={styles.btnNextText}>{t('common.confirm', 'Confirm')}</Text>
           </TouchableOpacity>
         </View>
 

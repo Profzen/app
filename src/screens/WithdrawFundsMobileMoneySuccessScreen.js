@@ -4,9 +4,11 @@ import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AppToast from '../components/AppToast';
+import { useApp } from '../context/AppContext';
 
 export default function WithdrawFundsMobileMoneySuccessScreen() {
   const navigation = useNavigation();
+  const { t } = useApp();
   const [toast, setToast] = useState(null);
 
   return (
@@ -18,7 +20,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={24} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.pageTitle}>Retirer des fonds vers Mobile Money</Text>
+          <Text style={styles.pageTitle}>{t('withdrawFunds.titleToMobileMoney', 'Withdraw funds to Mobile Money')}</Text>
           <TouchableOpacity style={styles.iconBtn}>
             <Ionicons name="headset-outline" size={24} color="#1A2840" />
           </TouchableOpacity>
@@ -54,9 +56,9 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
           </View>
 
           {/* Titles */}
-          <Text style={styles.stepOverTitleSuccess}>Étape 5/5</Text>
-          <Text style={styles.mainTitle}>Retrait réussi !</Text>
-          <Text style={styles.mainSubtitle}>Votre retrait a été effectué avec succès.</Text>
+          <Text style={styles.stepOverTitleSuccess}>{t('withdrawFunds.step5Of5', 'Step 5/5')}</Text>
+          <Text style={styles.mainTitle}>{t('withdrawFunds.successTitle', 'Withdrawal successful!')}</Text>
+          <Text style={styles.mainSubtitle}>{t('withdrawFunds.successSubtitle', 'Your withdrawal has been completed successfully.')}</Text>
 
           {/* Huge Main Card with light green top background */}
           <View style={styles.successCardContainer}>
@@ -84,7 +86,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
               {/* Amounts Header */}
               <View style={styles.amountsHeader}>
                 <View style={styles.amountCol}>
-                  <Text style={styles.amountLabel}>Vous retirez</Text>
+                  <Text style={styles.amountLabel}>{t('withdrawFunds.youWithdraw', 'You withdraw')}</Text>
                   <Text style={styles.amountValue}>250 000 FCFA</Text>
                   <Text style={styles.amountSub}>≈ 250,00 USDC</Text>
                 </View>
@@ -94,7 +96,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
                 </View>
 
                 <View style={styles.amountColRight}>
-                  <Text style={styles.amountLabel}>Vous recevez</Text>
+                  <Text style={styles.amountLabel}>{t('withdrawFunds.youReceive', 'You receive')}</Text>
                   <Text style={styles.amountValueGreen}>247 000 FCFA</Text>
                   <Text style={styles.amountSub}>via Mixx by Yas (Togo)</Text>
                 </View>
@@ -108,7 +110,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
                   <View style={[styles.detailIconCircle, {backgroundColor: '#ECFDF5'}]}>
                     <Ionicons name="business" size={14} color="#10B981" />
                   </View>
-                  <Text style={styles.detailLabel}>Moyen de retrait</Text>
+                  <Text style={styles.detailLabel}>{t('withdrawFunds.withdrawalMethod', 'Withdrawal method')}</Text>
                 </View>
                 <View style={styles.detailRight}>
                   <Text style={styles.detailValueRegular}>Mixx by Yas (Togo)</Text>
@@ -121,7 +123,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
                   <View style={[styles.detailIconCircle, {backgroundColor: '#EFF6FF'}]}>
                     <Text style={{color: '#3B82F6', fontSize: 10, fontWeight: 'bold'}}>$</Text>
                   </View>
-                  <Text style={styles.detailLabel}>Votre DZYwallet a été débité de</Text>
+                  <Text style={styles.detailLabel}>{t('withdrawFunds.walletWasDebited', 'Your DZYwallet was debited by')}</Text>
                 </View>
                 <Text style={styles.detailValueRegular}>251,40 USDC</Text>
               </View>
@@ -131,7 +133,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
                   <View style={[styles.detailIconCircle, {backgroundColor: '#ECFDF5'}]}>
                     <Ionicons name="git-network-outline" size={14} color="#10B981" />
                   </View>
-                  <Text style={styles.detailLabel}>Réseau</Text>
+                  <Text style={styles.detailLabel}>{t('common.network', 'Network')}</Text>
                 </View>
                 <View style={styles.detailRight}>
                   <Text style={styles.detailValueRegular}>Polygon </Text>
@@ -146,12 +148,12 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
                   <View style={[styles.detailIconCircle, {backgroundColor: '#F5F3FF'}]}>
                     <Ionicons name="document-text-outline" size={14} color="#8B5CF6" />
                   </View>
-                  <Text style={styles.detailLabel}>Transaction de vente</Text>
+                  <Text style={styles.detailLabel}>{t('withdrawFunds.sellTransaction', 'Sell transaction')}</Text>
                 </View>
                 <View style={styles.detailRight}>
                   <Text style={styles.detailValueRegular}>Sell 251,40 USDC</Text>
                   <View style={styles.successBadge}>
-                    <Text style={styles.successBadgeText}>Succès</Text>
+                    <Text style={styles.successBadgeText}>{t('common.success', 'Success')}</Text>
                   </View>
                 </View>
               </View>
@@ -161,7 +163,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
                   <View style={[styles.detailIconCircle, {backgroundColor: '#F5F3FF'}]}>
                     <Ionicons name="open-outline" size={14} color="#8B5CF6" />
                   </View>
-                  <Text style={styles.detailLabel}>Voir sur la blockchain</Text>
+                  <Text style={styles.detailLabel}>{t('withdrawFunds.viewOnBlockchain', 'View on blockchain')}</Text>
                 </View>
                 <View style={styles.detailRight}>
                   <Text style={styles.detailValueBlue}>0xA1b2...4fE6d7</Text>
@@ -174,7 +176,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
                   <View style={[styles.detailIconCircle, {backgroundColor: '#EFF6FF'}]}>
                     <Ionicons name="calendar-outline" size={14} color="#3B82F6" />
                   </View>
-                  <Text style={styles.detailLabel}>Date et heure</Text>
+                  <Text style={styles.detailLabel}>{t('orderVerification.dateTime', 'Date and time')}</Text>
                 </View>
                 <Text style={styles.detailValueRegular}>30 juin 2025 à 14:32</Text>
               </View>
@@ -184,7 +186,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
                   <View style={[styles.detailIconCircle, {backgroundColor: '#FFFBEB'}]}>
                     <Ionicons name="id-card-outline" size={14} color="#F59E0B" />
                   </View>
-                  <Text style={styles.detailLabel}>ID de retrait</Text>
+                  <Text style={styles.detailLabel}>{t('withdrawFunds.withdrawalId', 'Withdrawal ID')}</Text>
                 </View>
                 <View style={styles.detailRight}>
                   <Text style={styles.detailValueRegular}>DZTR-250630-143245</Text>
@@ -197,7 +199,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
                   <View style={[styles.detailIconCircle, {backgroundColor: '#ECFDF5'}]}>
                     <Ionicons name="person-outline" size={14} color="#10B981" />
                   </View>
-                  <Text style={styles.detailLabel}>Destinataire</Text>
+                  <Text style={styles.detailLabel}>{t('orderVerification.recipient', 'Recipient')}</Text>
                 </View>
                 <Text style={styles.detailValueRegular}>+228 90 12 34 56</Text>
               </View>
@@ -211,7 +213,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
               <Ionicons name="shield-checkmark-outline" size={20} color="#10B981" />
             </View>
             <Text style={styles.successBannerText}>
-              Vous recevrez une notification dès que les fonds{'\n'}sont disponibles sur votre compte Mixx.
+              {t('withdrawFunds.fundsAvailableNotice', 'You will receive a notification as soon as the funds\nare available on your Mixx account.')}
             </Text>
           </View>
 
@@ -250,11 +252,11 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
 
             <View style={styles.shareTextWrap}>
               <Text style={styles.shareCtaSub1}>
-                <Text style={styles.goldText}>Gagnez 1 DZY</Text> en identifiant <Text style={styles.goldText}>@DizzitUp</Text>
+                <Text style={styles.goldText}>{t('shareSuccess.rewardTitle', 'Earn 1 DZY by tagging @DizzitUp')}</Text>
               </Text>
-              <Text style={styles.shareCtaTitle}>Partager mon succès</Text>
+              <Text style={styles.shareCtaTitle}>{t('shareSuccess.title', 'Share my success')}</Text>
               <Text style={styles.shareCtaSub2}>
-                Publiez une carte DizzitUp personnalisée de cette transaction
+                {t('shareSuccess.rewardSub', 'Publish a customized DizzitUp card of this transaction')}
               </Text>
             </View>
 
@@ -265,12 +267,12 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
           <View style={styles.actionButtonsContainer}>
             <TouchableOpacity style={styles.btnOutline} onPress={() => navigation.navigate('TransactionHistoryScreen')}>
               <Ionicons name="time-outline" size={18} color="#1A2840" style={{marginRight: 6}} />
-              <Text style={styles.btnOutlineText}>Voir l'historique</Text>
+              <Text style={styles.btnOutlineText}>{t('withdrawFunds.viewHistory', 'View history')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.btnPrimary} onPress={() => navigation.navigate('WithdrawFundsScreen')}>
               <Ionicons name="refresh-outline" size={18} color="#1A2840" style={{marginRight: 6}} />
-              <Text style={styles.btnPrimaryText}>Effectuer un autre retrait</Text>
+              <Text style={styles.btnPrimaryText}>{t('withdrawFunds.withdrawAnother', 'Make another withdrawal')}</Text>
             </TouchableOpacity>
           </View>
 

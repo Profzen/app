@@ -7,15 +7,17 @@ import * as Clipboard from 'expo-clipboard';
 import BottomNavBar from '../components/BottomNavBar';
 import AppSelect from '../components/AppSelect';
 import CryptoIcon from '../components/CryptoIcon';
+import { useApp } from '../context/AppContext';
 
 export default function ReceiveFundsScreen() {
   const navigation = useNavigation();
+  const { t, user } = useApp();
   const [activeTab, setActiveTab] = useState('adresse');
   const [selectedChain, setSelectedChain] = useState('POL');
   const [copied, setCopied] = useState(false);
-  const address = '0xA9651F585c8A8D5dFFE0483d4d36B7Ed80786bC4';
+  const address = user?.evmAddress || user?.businessEvmAddress || '0xA9651F585c8A8D5dFFE0483d4d36B7Ed80786bC4';
   const copyAddress = async () => { await Clipboard.setStringAsync(address); setCopied(true); };
-  const shareAddress = () => Share.share({message: `Adresse DizzitUp ${selectedChain}: ${address}`});
+  const shareAddress = () => Share.share({message: `DizzitUp ${selectedChain}: ${address}`});
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -24,7 +26,7 @@ export default function ReceiveFundsScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#1A2840" />
+            <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <View style={styles.headerRight}>
             <TouchableOpacity style={[styles.iconBtn, {marginRight: 8}]}>
@@ -47,17 +49,17 @@ export default function ReceiveFundsScreen() {
               <Ionicons name="sync" size={24} color="#1A2840" />
             </View>
             <View style={styles.titleTexts}>
-              <Text style={styles.pageTitle}>Recevoir fonds</Text>
+              <Text style={styles.pageTitle}>{t('receiveFunds.title', 'Receive funds')}</Text>
               <View style={styles.secureTag}>
                 <View style={styles.secureDot} />
-                <Text style={styles.secureText}>SÉCURISÉ</Text>
+                <Text style={styles.secureText}>{t('receiveFunds.secure', 'SECURE')}</Text>
               </View>
             </View>
           </View>
 
           {/* Blockchain Selector */}
           <View style={styles.blockchainSection}>
-            <Text style={styles.sectionLabel}>CHOISIR LA BLOCKCHAIN</Text>
+            <Text style={styles.sectionLabel}>{t('receiveFunds.chooseBlockchain', 'CHOOSE BLOCKCHAIN')}</Text>
             <AppSelect
               value={selectedChain}
               options={[
@@ -68,7 +70,7 @@ export default function ReceiveFundsScreen() {
                 { value: 'BNB Chain', label: 'BNB Chain', isCrypto: true, cryptoSymbol: 'BNB Chain' },
               ]}
               onChange={setSelectedChain}
-              title="Choisir la blockchain"
+              title={t('receiveFunds.chooseBlockchainTitle', 'Choose blockchain')}
               renderLeading={(option) => <CryptoIcon symbol={option.value} size={28} style={{marginRight: 10}} />}
             />
           </View>
@@ -80,7 +82,7 @@ export default function ReceiveFundsScreen() {
               onPress={() => setActiveTab('adresse')}
               activeOpacity={0.8}
             >
-              <Text style={[styles.tabText, activeTab === 'adresse' && styles.tabTextActive]}>ADRESSE</Text>
+              <Text style={[styles.tabText, activeTab === 'adresse' && styles.tabTextActive]}>{t('receiveFunds.tabAddress', 'ADDRESS')}</Text>
               {activeTab === 'adresse' && <View style={styles.tabIndicator} />}
             </TouchableOpacity>
             <TouchableOpacity 
@@ -88,7 +90,7 @@ export default function ReceiveFundsScreen() {
               onPress={() => setActiveTab('scanner')}
               activeOpacity={0.8}
             >
-              <Text style={[styles.tabText, activeTab === 'scanner' && styles.tabTextActive]}>SCANNER QR</Text>
+              <Text style={[styles.tabText, activeTab === 'scanner' && styles.tabTextActive]}>{t('receiveFunds.tabQr', 'SCAN QR')}</Text>
               {activeTab === 'scanner' && <View style={styles.tabIndicator} />}
             </TouchableOpacity>
           </View>
@@ -101,7 +103,7 @@ export default function ReceiveFundsScreen() {
             {/* Top of Card */}
             <View style={styles.cardTop}>
               <View style={styles.evmTag}>
-                <Text style={styles.evmText}>EVM RÉSEAU</Text>
+                <Text style={styles.evmText}>{t('receiveFunds.evmNetwork', 'EVM NETWORK')}</Text>
               </View>
               <View style={styles.polygonIconBgSmall}>
                 <Ionicons name="infinite" size={14} color="#FFFFFF" />
@@ -110,22 +112,22 @@ export default function ReceiveFundsScreen() {
             
             <View style={styles.cardAccessRow}>
               <View style={styles.accessDot} />
-              <Text style={styles.accessText}>ACCÈS SÉCURISÉ</Text>
+              <Text style={styles.accessText}>{t('receiveFunds.secureAccess', 'SECURE ACCESS')}</Text>
             </View>
 
             <Text style={styles.addressText}>
-              0xA9651F585c8A8D5dFFE0483d4d36B7{'\n'}Ed80786bC4
+              {address ? `${address.slice(0, 32)}\n${address.slice(32)}` : ''}
             </Text>
 
             {/* Bottom of Card */}
             <View style={styles.cardFooter}>
               <View style={styles.cardFooterLeft}>
                 <Ionicons name="sync-outline" size={14} color="#94A3B8" style={{marginRight: 6}} />
-                <Text style={styles.cardFooterText}>NŒUD DIZZITUP V2.4</Text>
+                <Text style={styles.cardFooterText}>{t('receiveFunds.nodeVersion', 'DIZZITUP NODE V2.4')}</Text>
               </View>
               <View style={styles.cardFooterRight}>
                 <Ionicons name="shield-checkmark" size={14} color="#10B981" style={{marginRight: 4}} />
-                <Text style={styles.verifiedText}>VÉRIFIÉ</Text>
+                <Text style={styles.verifiedText}>{t('receiveFunds.verified', 'VERIFIED')}</Text>
               </View>
             </View>
           </View>
@@ -134,11 +136,11 @@ export default function ReceiveFundsScreen() {
           <View style={styles.actionBtnsRow}>
             <TouchableOpacity style={styles.btnCopy} onPress={copyAddress}>
               <Ionicons name="copy-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
-              <Text style={styles.btnCopyText}>{copied ? 'COPIÉ' : 'COPIER'}</Text>
+              <Text style={styles.btnCopyText}>{copied ? t('receiveFunds.copied', 'COPIED') : t('receiveFunds.copy', 'COPY')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.btnShare} onPress={shareAddress}>
               <Ionicons name="share-outline" size={20} color="#FFFFFF" style={{marginRight: 8}} />
-              <Text style={styles.btnShareText}>PARTAGER</Text>
+              <Text style={styles.btnShareText}>{t('receiveFunds.share', 'SHARE')}</Text>
             </TouchableOpacity>
           </View>
           </>
@@ -148,9 +150,9 @@ export default function ReceiveFundsScreen() {
             <View style={styles.qrCard}>
               <View style={styles.qrHeader}>
                 <Ionicons name="scan-outline" size={24} color="#1A2840" style={{marginRight: 8}} />
-                <Text style={styles.qrTitle}>Scanner pour payer</Text>
+                <Text style={styles.qrTitle}>{t('receiveFunds.scanToPay', 'Scan to pay')}</Text>
               </View>
-              <Text style={styles.qrSubtitle}>Ceci est votre adresse dédiée pour Polygon</Text>
+              <Text style={styles.qrSubtitle}>{t('receiveFunds.dedicatedAddress', 'This is your dedicated address for')} {selectedChain}</Text>
               
               <View style={styles.qrCodeWrapper}>
                 <Ionicons name="qr-code" size={180} color="#1A2840" />
@@ -158,7 +160,7 @@ export default function ReceiveFundsScreen() {
 
               <View style={styles.qrFooter}>
                 <Ionicons name="shield-checkmark" size={16} color="#3B82F6" style={{marginRight: 6}} />
-                <Text style={styles.qrFooterText}>Transaction 100% sécurisée</Text>
+                <Text style={styles.qrFooterText}>{t('receiveFunds.secureTransaction', '100% secure transaction')}</Text>
               </View>
             </View>
           </>
@@ -167,7 +169,7 @@ export default function ReceiveFundsScreen() {
           {/* Bottom Security Banner */}
           <View style={styles.bottomBanner}>
             <View style={styles.accessDot} />
-            <Text style={styles.bottomBannerText}>NŒUD DE TRANSACTION SÉCURISÉ</Text>
+            <Text style={styles.bottomBannerText}>{t('receiveFunds.secureTransactionNode', 'SECURE TRANSACTION NODE')}</Text>
           </View>
 
         </ScrollView>

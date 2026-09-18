@@ -4,9 +4,11 @@ import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
+import { useApp } from '../context/AppContext';
 
 export default function TopUpWalletScreen() {
   const navigation = useNavigation();
+  const { t } = useApp();
   const [selectedMethod, setSelectedMethod] = useState('card');
   const [modalVisible, setModalVisible] = useState(false);
   const [modalContent, setModalContent] = useState('card');
@@ -20,7 +22,7 @@ export default function TopUpWalletScreen() {
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={24} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.pageTitle}>Recharger le portefeuille</Text>
+          <Text style={styles.pageTitle}>{t('topUpWallet.title', 'Top up wallet')}</Text>
           <TouchableOpacity style={styles.iconBtn}>
             <Ionicons name="help-circle-outline" size={24} color="#1A2840" />
           </TouchableOpacity>
@@ -34,7 +36,7 @@ export default function TopUpWalletScreen() {
               <View style={[styles.stepCircle, styles.stepCircleActive]}>
                 <Text style={[styles.stepNumber, styles.stepNumberActive]}>1</Text>
               </View>
-              <Text style={[styles.stepText, styles.stepTextActive]}>Mode de paiement</Text>
+              <Text style={[styles.stepText, styles.stepTextActive]}>{t('topUpWallet.paymentMethodStep', 'Payment method')}</Text>
             </View>
             <View style={[styles.stepLine, styles.stepLineActive]} />
             
@@ -42,7 +44,7 @@ export default function TopUpWalletScreen() {
               <View style={styles.stepCircle}>
                 <Text style={styles.stepNumber}>2</Text>
               </View>
-              <Text style={styles.stepText}>Détails</Text>
+              <Text style={styles.stepText}>{t('topUpWallet.detailsStep', 'Details')}</Text>
             </View>
             <View style={styles.stepLine} />
             
@@ -50,7 +52,7 @@ export default function TopUpWalletScreen() {
               <View style={styles.stepCircle}>
                 <Text style={styles.stepNumber}>3</Text>
               </View>
-              <Text style={styles.stepText}>Résumé</Text>
+              <Text style={styles.stepText}>{t('topUpWallet.summaryStep', 'Summary')}</Text>
             </View>
             <View style={styles.stepLine} />
             
@@ -58,7 +60,7 @@ export default function TopUpWalletScreen() {
               <View style={styles.stepCircle}>
                 <Text style={styles.stepNumber}>4</Text>
               </View>
-              <Text style={styles.stepText}>Paiement</Text>
+              <Text style={styles.stepText}>{t('topUpWallet.paymentStep', 'Payment')}</Text>
             </View>
             <View style={styles.stepLine} />
 
@@ -66,14 +68,14 @@ export default function TopUpWalletScreen() {
               <View style={styles.stepCircle}>
                 <Text style={styles.stepNumber}>5</Text>
               </View>
-              <Text style={styles.stepText}>Confirmation</Text>
+              <Text style={styles.stepText}>{t('topUpWallet.confirmationStep', 'Confirmation')}</Text>
             </View>
           </View>
 
           {/* Titles */}
-          <Text style={styles.mainTitle}>Choisissez votre mode de paiement</Text>
+          <Text style={styles.mainTitle}>{t('topUpWallet.chooseMethodTitle', 'Choose your payment method')}</Text>
           <Text style={styles.mainSubtitle}>
-            Achetez des cryptomonnaies en toute sécurité{'\n'}avec le mode de paiement qui vous convient.
+            {t('topUpWallet.chooseMethodSubtitle', 'Buy cryptocurrencies securely with the payment method that suits you.')}
           </Text>
 
           {/* Method 1: Carte Bancaire */}
@@ -94,7 +96,7 @@ export default function TopUpWalletScreen() {
               </View>
               <View style={styles.methodInfo}>
                 <View style={styles.methodTitleRow}>
-                  <Text style={styles.methodTitle}>Carte bancaire</Text>
+                  <Text style={styles.methodTitle}>{t('withdrawFunds.bankCard', 'Bank card')}</Text>
                   <View style={styles.radioContainer}>
                     {selectedMethod === 'card' ? (
                       <Ionicons name="checkmark-circle" size={24} color="#FFB800" />
@@ -113,7 +115,7 @@ export default function TopUpWalletScreen() {
                   </Text>
                 </Text>
                 <View style={styles.recommendedBadge}>
-                  <Text style={styles.recommendedText}>Recommandé</Text>
+                  <Text style={styles.recommendedText}>{t('withdrawFunds.recommended', 'Recommended')}</Text>
                 </View>
               </View>
             </View>
@@ -121,15 +123,15 @@ export default function TopUpWalletScreen() {
             <View style={styles.featuresRow}>
               <View style={styles.featureItem}>
                 <Ionicons name="shield-checkmark-outline" size={16} color="#1A2840" style={{marginRight: 8}} />
-                <Text style={styles.featureText}>Sécurisé</Text>
+                <Text style={styles.featureText}>{t('topUpWallet.secure', 'Secure')}</Text>
               </View>
               <View style={styles.featureItem}>
                 <Ionicons name="time-outline" size={16} color="#1A2840" style={{marginRight: 8}} />
-                <Text style={styles.featureText}>Transactions{'\n'}instantanées</Text>
+                <Text style={styles.featureText}>{t('topUpWallet.instantTransactions', 'Instant\ntransactions')}</Text>
               </View>
               <View style={styles.featureItem}>
                 <Ionicons name="globe-outline" size={16} color="#1A2840" style={{marginRight: 8}} />
-                <Text style={styles.featureText}>Disponible{'\n'}partout</Text>
+                <Text style={styles.featureText}>{t('topUpWallet.availableEverywhere', 'Available\neverywhere')}</Text>
               </View>
             </View>
           </TouchableOpacity>
@@ -151,7 +153,7 @@ export default function TopUpWalletScreen() {
               </View>
               <View style={styles.methodInfo}>
                 <View style={styles.methodTitleRow}>
-                  <Text style={styles.methodTitle}>Mobile Money</Text>
+                  <Text style={styles.methodTitle}>{t('withdrawFunds.mobileMoney', 'Mobile Money')}</Text>
                   <View style={styles.radioContainer}>
                     {selectedMethod === 'momo' ? (
                       <Ionicons name="checkmark-circle" size={24} color="#FFB800" />
@@ -172,7 +174,7 @@ export default function TopUpWalletScreen() {
                   <Text style={{ fontSize: 11, color: '#10B981', fontFamily: 'Inter_500Medium' }}>Prefer transaction on Polygon or Base</Text>
                 </Text>
                 <View style={styles.countryBadge}>
-                  <Text style={styles.countryBadgeText}>20 pays</Text>
+                  <Text style={styles.countryBadgeText}>{t('topUpWallet.countriesCount', '20 countries')}</Text>
                 </View>
               </View>
             </View>
@@ -180,15 +182,15 @@ export default function TopUpWalletScreen() {
             <View style={styles.featuresRow}>
               <View style={styles.featureItem}>
                 <Ionicons name="flash-outline" size={16} color="#1A2840" style={{marginRight: 8}} />
-                <Text style={styles.featureText}>Frais réduits</Text>
+                <Text style={styles.featureText}>{t('topUpWallet.reducedFees', 'Low fees')}</Text>
               </View>
               <View style={styles.featureItem}>
                 <Ionicons name="time-outline" size={16} color="#1A2840" style={{marginRight: 8}} />
-                <Text style={styles.featureText}>Paiements rapides</Text>
+                <Text style={styles.featureText}>{t('topUpWallet.fastPayments', 'Fast payments')}</Text>
               </View>
               <View style={styles.featureItem}>
                 <Ionicons name="lock-closed-outline" size={16} color="#1A2840" style={{marginRight: 8}} />
-                <Text style={styles.featureText}>Sécurisé</Text>
+                <Text style={styles.featureText}>{t('topUpWallet.secure', 'Secure')}</Text>
               </View>
             </View>
           </TouchableOpacity>
@@ -199,15 +201,13 @@ export default function TopUpWalletScreen() {
               <Ionicons name="shield-checkmark" size={16} color="#FFFFFF" />
             </View>
             <Text style={styles.infoText}>
-              Vos fonds sont protégés par un chiffrement{'\n'}
-              de niveau bancaire et des partenaires de{'\n'}
-              confiance.
+              {t('topUpWallet.fundsProtected', 'Your funds are protected by bank-level encryption and trusted partners.')}
             </Text>
           </View>
 
           {/* Continue Button */}
           <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate(selectedMethod === 'card' ? 'TopUpWalletDetailsScreen' : 'TopUpDetailsScreen')}>
-            <Text style={styles.btnContinueText}>Continuer</Text>
+            <Text style={styles.btnContinueText}>{t('withdrawFunds.continueBtn', 'Continue')}</Text>
             <Ionicons name="arrow-forward" size={20} color="#1A2840" />
           </TouchableOpacity>
 

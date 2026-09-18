@@ -1,15 +1,16 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useEffect } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 
 export default function WithdrawFundsMobileMoneyProcessingScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const { amount, currency, selectedToken, selectedNetwork, selectedMethod } = route.params || {};
-  const { user, session } = useApp();
+  const { user, session, t } = useApp();
 
   useEffect(() => {
     let isMounted = true;
@@ -73,16 +74,15 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
       } catch (err) {
         console.error("Cashout API error:", err);
         if (isMounted) {
-          Alert.alert("Erreur", err.message || "Le retrait a échoué", [
-            { text: "OK", onPress: () => navigation.goBack() }
-          ]);
+          AppToast.showError(err.message || t('withdrawFunds.withdrawalFailed', 'Withdrawal failed'), t('common.error', 'Error'));
+          navigation.goBack();
         }
       }
     };
     
     processCashout();
     return () => { isMounted = false; };
-  }, [navigation, amount, selectedToken, selectedNetwork, selectedMethod, user, session]);
+  }, [navigation, amount, selectedToken, selectedNetwork, selectedMethod, user, session, t]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -93,7 +93,7 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
           <TouchableOpacity style={styles.iconCircleBtn} onPress={() => navigation.goBack()}>
             <Ionicons name="chevron-back" size={20} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.pageTitle}>Retirer des fonds vers Mobile Money</Text>
+          <Text style={styles.pageTitle}>{t('withdrawFunds.titleToMobileMoney', 'Withdraw funds to Mobile Money')}</Text>
           <TouchableOpacity style={styles.iconCircleBtn}>
             <Ionicons name="headset-outline" size={20} color="#1A2840" />
           </TouchableOpacity>
@@ -129,10 +129,10 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
           </View>
 
           {/* Titles & Step Indicator */}
-          <Text style={styles.stepOverTitle}>Étape 4/5</Text>
-          <Text style={styles.mainTitle}>Retrait en cours</Text>
+          <Text style={styles.stepOverTitle}>{t('withdrawFunds.step4Of5', 'Step 4/5')}</Text>
+          <Text style={styles.mainTitle}>{t('withdrawFunds.processingTitle', 'Withdrawal in progress')}</Text>
           <Text style={styles.mainSubtitle}>
-            Votre transaction est en cours de traitement.{'\n'}Veuillez ne pas quitter cette page.
+            {t('withdrawFunds.processingSubtitle', 'Your transaction is being processed.\nPlease do not leave this page.')}
           </Text>
 
           {/* Main Card Container */}
@@ -151,7 +151,7 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
                   </View>
                   <View>
                     <Text style={styles.nodeTitle}>DZY Wallet</Text>
-                    <Text style={styles.nodeSubtitle}>Vérification de solde</Text>
+                    <Text style={styles.nodeSubtitle}>{t('withdrawFunds.balanceCheck', 'Balance check')}</Text>
                   </View>
                 </View>
                 <View style={styles.checkCircleDone}>
@@ -171,8 +171,8 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
                     <Ionicons name="hourglass-outline" size={22} color="#F59E0B" />
                   </View>
                   <View>
-                    <Text style={styles.nodeTitle}>Traitement en cours</Text>
-                    <Text style={styles.nodeSubtitle}>Réseau blockchain Polygon</Text>
+                    <Text style={styles.nodeTitle}>{t('withdrawFunds.inProgress', 'In progress')}</Text>
+                    <Text style={styles.nodeSubtitle}>Polygon blockchain network</Text>
                   </View>
                 </View>
                 <View style={styles.spinnerCircle} />
@@ -191,7 +191,7 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
                   </View>
                   <View>
                     <Text style={styles.nodeTitle}>Mixx by Yas (Togo)</Text>
-                    <Text style={styles.nodeSubtitle}>Envoi vers Mobile Money</Text>
+                    <Text style={styles.nodeSubtitle}>{t('withdrawFunds.sendToMomo', 'Send to Mobile Money')}</Text>
                   </View>
                 </View>
                 <View style={styles.spinnerCircleLight} />
@@ -205,9 +205,9 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
                   <Ionicons name="time-outline" size={24} color="#F59E0B" />
                 </View>
                 <View style={styles.statusHeaderTextContainer}>
-                  <Text style={styles.statusTitle}>Traitement en cours...</Text>
+                  <Text style={styles.statusTitle}>{t('withdrawFunds.processingTitle', 'Processing...')}</Text>
                   <Text style={styles.statusDesc}>
-                    Votre retrait est en cours de traitement.{'\n'}Merci de patienter quelques instants.
+                    {t('withdrawFunds.waitMoments', 'Your withdrawal is being processed.\nPlease wait a few moments.')}
                   </Text>
                 </View>
               </View>
@@ -216,13 +216,13 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
 
               <View style={styles.statusStatsRow}>
                 <View style={styles.statCol}>
-                  <Text style={styles.statLabel}>Temps estimé</Text>
-                  <Text style={styles.statValue}>2 à 5 minutes</Text>
+                  <Text style={styles.statLabel}>{t('paymentInProgress.estimatedTime', 'Estimated time')}</Text>
+                  <Text style={styles.statValue}>{t('withdrawFunds.minutes2to5', '2 to 5 minutes')}</Text>
                 </View>
                 <View style={styles.statDividerVertical} />
                 <View style={styles.statCol}>
-                  <Text style={styles.statLabel}>Statut</Text>
-                  <Text style={styles.statValueYellow}>En cours</Text>
+                  <Text style={styles.statLabel}>{t('paymentInProgress.status', 'Status')}</Text>
+                  <Text style={styles.statValueYellow}>{t('withdrawFunds.inProgress', 'In progress')}</Text>
                 </View>
               </View>
             </View>
@@ -235,14 +235,14 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
               <Ionicons name="information-circle" size={20} color="#475569" />
             </View>
             <Text style={styles.infoBannerText}>
-              Vous recevrez une notification dès que le retrait sera finalisé avec succès.
+              {t('withdrawFunds.notificationNotice', 'You will receive a notification as soon as the withdrawal is finalized successfully.')}
             </Text>
           </View>
 
           {/* Footer Badge (Sécurisé par DizzitUp) */}
           <View style={styles.footerBadge}>
             <Ionicons name="shield-checkmark-outline" size={18} color="#1A2840" style={{ marginRight: 6 }} />
-            <Text style={styles.footerBadgeText}>Sécurisé par DizzitUp</Text>
+            <Text style={styles.footerBadgeText}>{t('withdrawFunds.securedByDizzitup', 'Secured by DizzitUp')}</Text>
           </View>
 
           <View style={{ height: 20 }} />

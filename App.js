@@ -1,4 +1,16 @@
 import 'react-native-get-random-values';
+if (typeof global.window === 'undefined') {
+  global.window = global;
+}
+if (typeof global.crypto !== 'object') {
+  global.crypto = {};
+}
+if (typeof global.crypto.getRandomValues !== 'function') {
+  global.crypto.getRandomValues = require('react-native-get-random-values').getRandomValues;
+}
+if (typeof window.crypto !== 'object') {
+  window.crypto = global.crypto;
+}
 import React from 'react';
 import { View, ActivityIndicator, StatusBar, LogBox, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -10,6 +22,7 @@ import { AppProvider } from './src/context/AppContext';
 import { CrossmintProvider } from '@crossmint/client-sdk-react-native-ui';
 import * as SplashScreen from 'expo-splash-screen';
 import AnimatedSplashScreen from './src/components/AnimatedSplashScreen';
+import { GlobalToast } from './src/components/AppToast';
 import { Modal } from 'react-native';
 
 // Keep the native splash screen visible while fonts are loading
@@ -123,6 +136,9 @@ export default function App() {
       {!animationComplete && (
         <AnimatedSplashScreen onAnimationComplete={() => setAnimationComplete(true)} />
       )}
+
+      {/* Beautiful Animated Toast Container */}
+      <GlobalToast />
     </View>
   );
 }

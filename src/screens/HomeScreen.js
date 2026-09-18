@@ -62,8 +62,12 @@ export default function HomeScreen() {
   }, [fetchMerchants, fetchAllProducts, user?.COI, user?.country]);
 
   useEffect(() => {
-    if (user && user.allBalances) {
-      setWalletBalances(user.allBalances);
+    if (user) {
+      const isMerchant = user?.role === 'merchant';
+      const balances = (isMerchant && user?.businessBalances && Object.keys(user.businessBalances).length > 0)
+        ? user.businessBalances
+        : (user?.allBalances || {});
+      setWalletBalances(balances);
     }
   }, [user]);
 
@@ -307,7 +311,11 @@ export default function HomeScreen() {
                   const locationStr = `${shop.city_village || 'Local'}, ${shop.country || 'Global'}`;
                   return (
                     <TouchableOpacity key={shop.id || index} style={styles.timelineCard} onPress={() => navigation.navigate('ShopDetailsScreen', { shop })}>
-                      <Image source={shop.shop_logo_url ? { uri: shop.shop_logo_url } : require('../../assets/brand/shop_placeholder.jpg')} style={styles.timelineImage} />
+                      <Image
+                        source={shop.shop_logo_url ? { uri: shop.shop_logo_url } : (shop.shop_banner_url ? { uri: shop.shop_banner_url } : require('../../assets/brand/store_default_banner.jpg'))}
+                        defaultSource={require('../../assets/brand/store_default_banner.jpg')}
+                        style={styles.timelineImage}
+                      />
                       <View style={styles.timelineCardContent}>
                         <View style={styles.timelineBadge}><Text style={styles.timelineBadgeText}>{language === 'en' ? 'Featured' : 'En vedette'}</Text></View>
                         <Text style={styles.timelineTitle} numberOfLines={1}>{shop.shop_name}</Text>
@@ -329,7 +337,12 @@ export default function HomeScreen() {
                 {newsProducts.length > 0 ? newsProducts.map((product, index) => {
                   return (
                     <TouchableOpacity key={product.id || index} style={styles.timelineCard} onPress={() => navigation.navigate('ProductDetailsScreen', { product })}>
-                      <Image source={product.product_images && product.product_images.length > 0 ? { uri: product.product_images[0] } : product.thumbnail ? { uri: product.thumbnail } : product.images && product.images.length > 0 ? { uri: product.images[0] } : require('../../assets/brand/dizzitup_logo_cercle.png')} style={styles.timelineImage} resizeMode="cover" />
+                      <Image
+                        source={product.product_images && product.product_images.length > 0 ? { uri: product.product_images[0] } : product.thumbnail ? { uri: product.thumbnail } : product.images && product.images.length > 0 ? { uri: product.images[0] } : require('../../assets/brand/product_no_image.jpg')}
+                        defaultSource={require('../../assets/brand/product_no_image.jpg')}
+                        style={styles.timelineImage}
+                        resizeMode="cover"
+                      />
                       <View style={styles.timelineCardContent}>
                         <View style={[styles.timelineBadge, { backgroundColor: '#F3E8FF' }]}><Text style={[styles.timelineBadgeText, { color: '#9333EA' }]}>{language === 'en' ? 'New' : 'Nouveau'}</Text></View>
                         <Text style={styles.timelineTitle} numberOfLines={1}>{product.name || product.title || 'Produit'}</Text>

@@ -1,7 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, StatusBar, KeyboardAvoidingView, Alert, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, StatusBar, KeyboardAvoidingView, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
 import { DizzitInput } from '../components/DizzitInput';
@@ -189,9 +189,9 @@ export default function LoginScreen() {
 
         {/* Signup Link */}
         <View style={styles.signupContainer}>
-          <Text style={styles.signupText}>{t('auth.no_account', "Vous n'avez pas de compte ? ")}</Text>
+          <Text style={styles.signupText}>{t('auth.dontHaveAccount', "Vous n'avez pas de compte ? ")}</Text>
           <TouchableOpacity onPress={() => Linking.openURL('https://dizzitup.com/user-registration-login?mode=signup')}>
-            <Text style={styles.signupLink}>{t('auth.sign_up', "S'inscrire")}</Text>
+            <Text style={styles.signupLink}>{t('auth.signUp', "S'inscrire")}</Text>
           </TouchableOpacity>
         </View>
         </ScrollView>

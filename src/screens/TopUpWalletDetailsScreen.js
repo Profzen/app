@@ -20,10 +20,10 @@ const getCurrencyOptions = (t) => [
 ];
 
 const getNetworkOptions = (t) => [
-  { value: 'base', label: 'Base', subtitle: 'Recommandé', iconSymbol: 'BASE', color: '#0052FF' },
-  { value: 'polygon', label: 'Polygon', subtitle: 'Rapide et économique', iconSymbol: 'MATIC', color: '#8247E5' },
-  { value: 'ethereum', label: 'Ethereum', subtitle: 'Réseau principal', iconSymbol: 'ETH', color: '#627EEA' },
-  { value: 'solana', label: 'Solana', subtitle: 'Haute performance', iconSymbol: 'SOL', color: '#14F195' },
+  { value: 'base', label: 'Base', subtitle: t ? t('topUpWallet.recommended', 'Recommended') : 'Recommended', iconSymbol: 'BASE', color: '#0052FF' },
+  { value: 'polygon', label: 'Polygon', subtitle: t ? t('topUpWallet.fastAndAffordable', 'Fast and economical') : 'Fast and economical', iconSymbol: 'MATIC', color: '#8247E5' },
+  { value: 'ethereum', label: 'Ethereum', subtitle: t ? t('topUpWallet.mainNetwork', 'Main network') : 'Main network', iconSymbol: 'ETH', color: '#627EEA' },
+  { value: 'solana', label: 'Solana', subtitle: t ? t('topUpWallet.highPerformance', 'High performance') : 'High performance', iconSymbol: 'SOL', color: '#14F195' },
 ];
 
 export default function TopUpWalletDetailsScreen() {
@@ -37,6 +37,7 @@ export default function TopUpWalletDetailsScreen() {
   const [currency, setCurrency] = useState('USDC');
   const [network, setNetwork] = useState('base');
   const [orderIdentifier, setOrderIdentifier] = useState(null);
+  const [clientSecret, setClientSecret] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -69,6 +70,7 @@ export default function TopUpWalletDetailsScreen() {
 
       const result = await transactionService.createCrossmintOnrampOrder(session.access_token, payload);
       setOrderIdentifier(result.orderId);
+      setClientSecret(result.clientSecret || null);
     } catch (err) {
       console.error(err);
       setError(err.message || t('topup.network_error'));
@@ -196,13 +198,21 @@ export default function TopUpWalletDetailsScreen() {
             ) : orderIdentifier ? (
               <View style={styles.crossmintContainer}>
                 <CrossmintEmbeddedCheckout
-                  paymentMethod="fiat"
-                  orderIdentifier={orderIdentifier}
-                  environment={process.env.EXPO_PUBLIC_CROSSMINT_CLIENT_SIDE_API_KEY?.startsWith('sk_test') ? 'staging' : 'production'}
+                  orderId={orderIdentifier}
+                  clientSecret={clientSecret}
+                  payment={{
+                    receiptEmail: user?.email || session?.user?.email,
+                    fiat: {
+                      enabled: true,
+                      allowedMethods: { card: true, applePay: true, googlePay: true },
+                    },
+                    crypto: { enabled: false },
+                    defaultMethod: 'fiat',
+                  }}
                   onEvent={(event) => {
                     console.log("Crossmint Event:", event);
                     if (event.type === 'payment:process.succeeded') {
-                      navigation.navigate('TopUpWalletPaymentScreen'); // success screen
+                      navigation.navigate('TopUpWalletPaymentScreen');
                     } else if (event.type === 'payment:process.failed') {
                       setError(t('topup.payment_failed'));
                     } else if (event.type === 'payment:process.rejected') {

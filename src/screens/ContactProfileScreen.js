@@ -1,10 +1,11 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar, Linking, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
+import AppConfirmModal from '../components/AppConfirmModal';
 import Avatar from '../components/Avatar';
 
 import * as Clipboard from 'expo-clipboard';
@@ -15,14 +16,15 @@ export default function ContactProfileScreen({ route }) {
   const { t } = useApp();
   const navigation = useNavigation();
   const contact = route?.params?.contact;
+  const [optionsModalVisible, setOptionsModalVisible] = useState(false);
 
   if (!contact) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-          <Text style={styles.contactName}>Contact introuvable</Text>
+          <Text style={styles.contactName}>{t('contacts.notFound', 'Contact not found')}</Text>
           <TouchableOpacity style={styles.btnSendMoney} onPress={() => navigation.goBack()}>
-             <Text style={styles.btnSendMoneyText}>Retour</Text>
+             <Text style={styles.btnSendMoneyText}>{t('common.back', 'Back')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -53,7 +55,7 @@ export default function ContactProfileScreen({ route }) {
               <Ionicons name="pencil-outline" size={18} color="#20365B" />
             </TouchableOpacity>
             <View style={styles.pillDivider} />
-            <TouchableOpacity style={styles.actionPillBtn} onPress={() => Alert.alert('Options', 'Voulez-vous bloquer ou supprimer ce contact?', [{text: 'Annuler', style: 'cancel'}, {text: 'Supprimer', style: 'destructive', onPress: () => AppToast.showInfo('Fonctionnalité en cours de développement') }])}>
+            <TouchableOpacity style={styles.actionPillBtn} onPress={() => setOptionsModalVisible(true)}>
               <Ionicons name="ellipsis-horizontal" size={18} color="#20365B" />
             </TouchableOpacity>
           </View>
@@ -286,6 +288,23 @@ export default function ContactProfileScreen({ route }) {
 
         <BottomNavBar activeTab="contacts" />
       </View>
+
+      <AppConfirmModal
+        visible={optionsModalVisible}
+        title={t('contacts.optionsTitle', 'Contact Options')}
+        message={t('contacts.optionsDesc', 'Would you like to block or delete this contact?')}
+        icon="person-remove-outline"
+        iconColor="#EF4444"
+        iconBg="#FEF2F2"
+        confirmVariant="danger"
+        cancelText={t('common.cancel', 'Cancel')}
+        confirmText={t('common.delete', 'Delete')}
+        onCancel={() => setOptionsModalVisible(false)}
+        onConfirm={() => {
+          setOptionsModalVisible(false);
+          AppToast.showInfo(t('common.comingSoon', 'Feature in progress'));
+        }}
+      />
     </SafeAreaView>
   );
 }

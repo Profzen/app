@@ -3,10 +3,12 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Image, TextInput, Share, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AppToast from '../components/AppToast';
+import { useApp } from '../context/AppContext';
 
 export default function ShareSuccessCaptionScreen() {
   const navigation = useNavigation();
   const route = useRoute();
+  const { t } = useApp();
 
   const { platform = 'whatsapp', transactionData = {}, cardStyle = '#071D54' } = route.params || {};
 
@@ -35,23 +37,29 @@ export default function ShareSuccessCaptionScreen() {
     try {
       if (Platform.OS === 'web' && navigator.share) {
         await navigator.share({
-          title: 'Partager mon succès DizzitUp',
+          title: t('shareSuccess.shareModalTitle', 'Partager mon succès DizzitUp'),
           text: captionText,
           url: 'https://dizzitup.com/join',
         });
       } else {
         await Share.share({
-          title: 'Partager mon succès DizzitUp',
+          title: t('shareSuccess.shareModalTitle', 'Partager mon succès DizzitUp'),
           message: captionText,
           url: 'https://dizzitup.com/join',
         });
       }
-      setToast({ title: 'Félicitations !', message: 'Succès partagé ! 1 DZY a été crédité sur votre compte.' });
+      setToast({ 
+        title: t('shareSuccess.toastShareSuccessTitle', 'Félicitations !'), 
+        message: t('shareSuccess.toastShareSuccessMsg', 'Succès partagé ! 1 DZY a été crédité sur votre compte.') 
+      });
       setTimeout(() => {
         navigation.navigate('RewardsScreen');
       }, 1500);
     } catch (error) {
-      setToast({ title: 'Succès partagé', message: '1 DZY crédité dans vos Rewards !' });
+      setToast({ 
+        title: t('shareSuccess.toastShareTitle', 'Succès partagé'), 
+        message: t('shareSuccess.toastShareMsg', '1 DZY crédité dans vos Rewards !') 
+      });
       setTimeout(() => {
         navigation.navigate('RewardsScreen');
       }, 1500);
@@ -69,8 +77,8 @@ export default function ShareSuccessCaptionScreen() {
           </TouchableOpacity>
 
           <View style={styles.headerTitleWrap}>
-            <Text style={styles.headerTitle}>Rédiger votre message</Text>
-            <Text style={styles.headerStepBadge}>Étape 3 sur 3</Text>
+            <Text style={styles.headerTitle}>{t('shareSuccess.writeMessage', 'Rédiger votre message')}</Text>
+            <Text style={styles.headerStepBadge}>{t('shareSuccess.step3of3', 'Étape 3 sur 3')}</Text>
           </View>
         </View>
 
@@ -82,7 +90,7 @@ export default function ShareSuccessCaptionScreen() {
               <View style={[styles.stepCircle, styles.stepCircleActive]}>
                 <Ionicons name="checkmark" size={14} color="#1A2840" />
               </View>
-              <Text style={styles.stepTextActive}>Choisir le réseau</Text>
+              <Text style={styles.stepTextActive}>{t('shareSuccess.step1ChooseNetwork', 'Choisir le réseau')}</Text>
             </View>
 
             <View style={[styles.stepLine, styles.stepLineActive]} />
@@ -91,7 +99,7 @@ export default function ShareSuccessCaptionScreen() {
               <View style={[styles.stepCircle, styles.stepCircleActive]}>
                 <Ionicons name="checkmark" size={14} color="#1A2840" />
               </View>
-              <Text style={styles.stepTextActive}>Aperçu du visuel</Text>
+              <Text style={styles.stepTextActive}>{t('shareSuccess.step2VisualPreview', 'Aperçu du visuel')}</Text>
             </View>
 
             <View style={[styles.stepLine, styles.stepLineActive]} />
@@ -100,13 +108,13 @@ export default function ShareSuccessCaptionScreen() {
               <View style={[styles.stepCircle, styles.stepCircleActive]}>
                 <Text style={styles.stepNumberActive}>3</Text>
               </View>
-              <Text style={[styles.stepTextActive, { color: '#FFC759', fontFamily: 'Inter_700Bold' }]}>Rédiger le message</Text>
+              <Text style={[styles.stepTextActive, { color: '#FFC759', fontFamily: 'Inter_700Bold' }]}>{t('shareSuccess.step3WriteMessage', 'Rédiger le message')}</Text>
             </View>
           </View>
 
           {/* Subtitle intro */}
           <Text style={styles.introSubtitle}>
-            Modifiez votre message si vous le souhaitez{'\n'}et partagez votre succès.
+            {t('shareSuccess.captionSubtitle', 'Modifiez votre message si vous le souhaitez\net partagez votre succès.')}
           </Text>
 
           {/* Condensed Visual Card Preview */}
@@ -121,22 +129,22 @@ export default function ShareSuccessCaptionScreen() {
 
             <View style={styles.statusPillWrap}>
               <View style={styles.statusPill}>
-                <Text style={styles.statusPillText}>Transaction réussie !</Text>
+                <Text style={styles.statusPillText}>{t('shareSuccess.txSuccess', 'Transaction réussie !')}</Text>
                 <View style={styles.checkBadgeGreen}>
                   <Ionicons name="checkmark" size={12} color="#FFFFFF" />
                 </View>
               </View>
             </View>
 
-            <Text style={styles.headlineText}>J'ai <Text style={styles.goldText}>{actionType}</Text> des fonds</Text>
+            <Text style={styles.headlineText}>{t('shareSuccess.iHave', "J'ai")} <Text style={styles.goldText}>{actionType}</Text> {t('shareSuccess.funds', 'des fonds')}</Text>
             <Text style={styles.amountLargeText}>{amount} {token}</Text>
-            <Text style={styles.amountSubText}>via <Text style={{ color: '#FFC759', fontFamily: 'SpaceGrotesk_700Bold' }}>DZYWallet</Text></Text>
+            <Text style={styles.amountSubText}>{t('shareSuccess.via', 'via')} <Text style={{ color: '#FFC759', fontFamily: 'SpaceGrotesk_700Bold' }}>DZYWallet</Text></Text>
 
             {/* Inset box */}
             <View style={styles.insetBox}>
               <View style={styles.usersRow}>
                 <View style={styles.userCol}>
-                  <Text style={styles.userLabel}>De</Text>
+                  <Text style={styles.userLabel}>{t('shareSuccess.from', 'De')}</Text>
                   <View style={styles.userAvatarWrap}>
                     <Image source={{ uri: 'https://i.pravatar.cc/150?img=12' }} style={styles.avatarImg} />
                   </View>
@@ -149,7 +157,7 @@ export default function ShareSuccessCaptionScreen() {
                 </View>
 
                 <View style={styles.userCol}>
-                  <Text style={styles.userLabel}>Vers</Text>
+                  <Text style={styles.userLabel}>{t('shareSuccess.to', 'Vers')}</Text>
                   <View style={[styles.userAvatarWrap, styles.userAvatarShielded]}>
                     <Ionicons name="person" size={20} color="#CBD5E1" />
                   </View>
@@ -162,15 +170,15 @@ export default function ShareSuccessCaptionScreen() {
 
               <View style={styles.metaRow}>
                 <View style={styles.metaCol}>
-                  <Text style={styles.metaLabel}>Réseau</Text>
+                  <Text style={styles.metaLabel}>{t('shareSuccess.network', 'Réseau')}</Text>
                   <Text style={styles.metaValue}>{network}</Text>
                 </View>
                 <View style={styles.metaCol}>
-                  <Text style={styles.metaLabel}>Date</Text>
+                  <Text style={styles.metaLabel}>{t('shareSuccess.date', 'Date')}</Text>
                   <Text style={styles.metaValue}>{date}</Text>
                 </View>
                 <View style={styles.metaCol}>
-                  <Text style={styles.metaLabel}>ID de transaction</Text>
+                  <Text style={styles.metaLabel}>{t('shareSuccess.txId', 'ID de transaction')}</Text>
                   <Text style={styles.metaValue} numberOfLines={1}>{txHash}</Text>
                 </View>
               </View>
@@ -179,8 +187,8 @@ export default function ShareSuccessCaptionScreen() {
             {/* Footer */}
             <View style={styles.cardFooter}>
               <View style={styles.footerLeft}>
-                <Text style={styles.footerSecurityText}>Sécurisé sur blockchains,</Text>
-                <Text style={styles.footerHighlightText}>Sans frontière ni Intermédiaire</Text>
+                <Text style={styles.footerSecurityText}>{t('shareSuccess.securedOnChain', 'Sécurisé sur blockchains,')}</Text>
+                <Text style={styles.footerHighlightText}>{t('shareSuccess.noBorderNoMiddleman', 'Sans frontière ni Intermédiaire')}</Text>
               </View>
 
               <View style={styles.footerRight}>
@@ -195,7 +203,7 @@ export default function ShareSuccessCaptionScreen() {
 
           {/* Section: Votre message */}
           <View style={styles.captionBoxContainer}>
-            <Text style={styles.captionBoxTitle}>Votre message</Text>
+            <Text style={styles.captionBoxTitle}>{t('shareSuccess.yourMessage', 'Votre message')}</Text>
 
             <View style={styles.captionInputCard}>
               <TextInput
@@ -217,7 +225,7 @@ export default function ShareSuccessCaptionScreen() {
                 >
                   <Ionicons name="pencil-outline" size={16} color="#1A2840" style={{ marginRight: 6 }} />
                   <Text style={styles.btnCustomizeText}>
-                    {isEditable ? 'Valider le message' : 'Personnaliser le message'}
+                    {isEditable ? t('shareSuccess.validateMessage', 'Valider le message') : t('shareSuccess.customizeMessage', 'Personnaliser le message')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -227,13 +235,13 @@ export default function ShareSuccessCaptionScreen() {
           {/* Main Action Button */}
           <TouchableOpacity style={styles.btnPrimaryShare} onPress={handleShare} activeOpacity={0.88}>
             <Ionicons name="share-social-outline" size={22} color="#1A2840" style={{ marginRight: 10 }} />
-            <Text style={styles.btnPrimaryShareText}>Partagez et gagnez 1 DZY</Text>
+            <Text style={styles.btnPrimaryShareText}>{t('shareSuccess.shareAndEarn', 'Partagez et gagnez 1 DZY')}</Text>
           </TouchableOpacity>
 
           {/* Security Note at bottom */}
           <View style={styles.bottomSecurityRow}>
             <Ionicons name="lock-closed-outline" size={14} color="#94A3B8" style={{ marginRight: 6 }} />
-            <Text style={styles.bottomSecurityText}>Partagez en toute sécurité. Vos données restent privées.</Text>
+            <Text style={styles.bottomSecurityText}>{t('shareSuccess.shareSecurityNote', 'Partagez en toute sécurité. Vos données restent privées.')}</Text>
           </View>
 
           <View style={{ height: 20 }} />

@@ -3,10 +3,12 @@ import React from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useApp } from '../context/AppContext';
 
 export default function WithdrawFundsMobileMoneySummaryScreen() {
   const navigation = useNavigation();
   const route = useRoute();
+  const { t } = useApp();
   const { amount, currency, selectedToken, selectedNetwork, selectedMethod } = route.params || {};
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -17,7 +19,7 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={24} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.pageTitle}>Retirer des fonds vers Mobile Money</Text>
+          <Text style={styles.pageTitle}>{t('withdrawFunds.titleToMobileMoney', 'Withdraw funds to Mobile Money')}</Text>
           <TouchableOpacity style={styles.iconBtn}>
             <Ionicons name="headset-outline" size={24} color="#1A2840" />
           </TouchableOpacity>
@@ -53,9 +55,9 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
           </View>
 
           {/* Titles */}
-          <Text style={styles.stepOverTitle}>Étape 3/5</Text>
-          <Text style={styles.mainTitle}>Résumé de votre transaction</Text>
-          <Text style={styles.mainSubtitle}>Vérifiez les détails ci-dessous avant de confirmer votre retrait.</Text>
+          <Text style={styles.stepOverTitle}>{t('withdrawFunds.step3Of5', 'Step 3/5')}</Text>
+          <Text style={styles.mainTitle}>{t('withdrawFunds.summaryTitle', 'Transaction summary')}</Text>
+          <Text style={styles.mainSubtitle}>{t('withdrawFunds.summarySubtitle', 'Review the details below before confirming your withdrawal.')}</Text>
 
           {/* Main Summary Card */}
           <View style={styles.summaryCard}>
@@ -67,7 +69,7 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
                   <Ionicons name="arrow-up" size={16} color="#D97706" />
                 </View>
                 <View>
-                  <Text style={styles.summaryLabel}>Vous retirez</Text>
+                  <Text style={styles.summaryLabel}>{t('withdrawFunds.youWithdraw', 'You withdraw')}</Text>
                   <Text style={styles.summaryValueBig}>250 000 FCFA</Text>
                 </View>
               </View>
@@ -86,9 +88,9 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
                   <Ionicons name="wallet" size={16} color="#1E3A8A" />
                 </View>
                 <View>
-                  <Text style={styles.summaryLabel}>Votre DZYwallet est débité de</Text>
+                  <Text style={styles.summaryLabel}>{t('withdrawFunds.walletDebited', 'Your DZYwallet is debited by')}</Text>
                   <Text style={styles.summaryValueBig}>251,40 USDC</Text>
-                  <Text style={styles.summaryRate}>(Taux : 1 USDC = 995,62 FCFA)</Text>
+                  <Text style={styles.summaryRate}>{t('withdrawFunds.exchangeRate', { token: 'USDC', rate: '995,62', curr: 'FCFA', defaultValue: 'Rate: 1 USDC = 995,62 FCFA' })}</Text>
                 </View>
               </View>
               <View style={styles.tokenBadge}>
@@ -108,9 +110,9 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
                   <Ionicons name="arrow-down" size={16} color="#059669" />
                 </View>
                 <View>
-                  <Text style={styles.summaryLabel}>Vous recevez</Text>
+                  <Text style={styles.summaryLabel}>{t('withdrawFunds.youReceive', 'You receive')}</Text>
                   <Text style={styles.summaryValueBig}>247 000 FCFA</Text>
-                  <Text style={styles.summaryLabel}>sur votre wallet Mixx</Text>
+                  <Text style={styles.summaryLabel}>{t('withdrawFunds.onWallet', { name: 'Mixx', defaultValue: 'on your Mixx wallet' })}</Text>
                 </View>
               </View>
               <View style={styles.providerBadgeContainer}>
@@ -127,7 +129,7 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
             {/* Fees */}
             <View style={styles.feeRow}>
               <View style={styles.feeLabelRow}>
-                <Text style={styles.feeLabel}>Frais DizzitUp</Text>
+                <Text style={styles.feeLabel}>{t('withdrawFunds.dizzitupFee', 'DizzitUp Fee')}</Text>
                 <Ionicons name="information-circle-outline" size={14} color="#94A3B8" style={{marginLeft: 4}} />
               </View>
               <Text style={styles.feeValue}>7 500 FCFA (3,00%)</Text>
@@ -135,7 +137,7 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
 
             <View style={styles.feeRow}>
               <View style={styles.feeLabelRow}>
-                <Text style={styles.feeLabel}>Frais réseau (Mixin Network)</Text>
+                <Text style={styles.feeLabel}>{t('withdrawFunds.networkFee', 'Network Fee')} (Mixin Network)</Text>
                 <Ionicons name="information-circle-outline" size={14} color="#94A3B8" style={{marginLeft: 4}} />
               </View>
               <Text style={styles.feeValue}>0 FCFA (0%)</Text>
@@ -143,7 +145,7 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
 
             {/* Total */}
             <View style={styles.totalBanner}>
-              <Text style={styles.totalLabel}>Vous recevrez au total</Text>
+              <Text style={styles.totalLabel}>{t('withdrawFunds.youReceiveTotal', 'You will receive in total')}</Text>
               <Text style={styles.totalValue}>247 000 FCFA</Text>
             </View>
 
@@ -151,16 +153,16 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
 
           {/* Sell Transaction Card */}
           <View style={styles.sellCard}>
-            <Text style={styles.feeLabel}>Transaction de vente</Text>
+            <Text style={styles.feeLabel}>{t('withdrawFunds.sellTransaction', 'Sell transaction')}</Text>
             <View style={styles.sellRow}>
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <Text style={styles.sellTitle}>Sell 251,40 USDC</Text>
                 <View style={styles.successBadge}>
-                  <Text style={styles.successBadgeText}>Succès</Text>
+                  <Text style={styles.successBadgeText}>{t('common.success', 'Success')}</Text>
                 </View>
               </View>
               <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text style={styles.linkText}>Voir sur la blockchain</Text>
+                <Text style={styles.linkText}>{t('withdrawFunds.viewOnBlockchain', 'View on blockchain')}</Text>
                 <Ionicons name="open-outline" size={14} color="#3B82F6" style={{marginLeft: 4}} />
               </TouchableOpacity>
             </View>
@@ -172,14 +174,14 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
               <Ionicons name="information" size={16} color="#FFFFFF" />
             </View>
             <Text style={styles.infoBannerText}>
-              Le montant final peut varier légèrement en fonction du taux au moment du traitement de la transaction.
+              {t('withdrawFunds.rateVariationNotice', 'The final amount may vary slightly depending on the exchange rate at the time of processing.')}
             </Text>
           </View>
 
           {/* Continue Button */}
           <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('WithdrawFundsMobileMoneyProcessingScreen', { amount, currency, selectedToken, selectedNetwork, selectedMethod })}>
             <Ionicons name="lock-closed" size={18} color="#1A2840" style={{marginRight: 8}} />
-            <Text style={styles.btnContinueText}>Confirmer le retrait</Text>
+            <Text style={styles.btnContinueText}>{t('withdrawFunds.confirmWithdrawal', 'Confirm withdrawal')}</Text>
           </TouchableOpacity>
 
         </ScrollView>

@@ -69,8 +69,9 @@ export default function AssetListScreen() {
   };
 
   const isMerchant = user?.role === 'merchant';
-  const totalUsdValue = user?.totalUsdValue || 0;
-  const currentRawBalances = user?.rawBalances || [];
+  const currentRawBalances = isMerchant
+    ? (user?.businessRawBalances?.length ? user.businessRawBalances : (user?.rawBalances || []))
+    : (user?.rawBalances || []);
   
   const groupedTokens = useMemo(() => {
     const groups = {};
@@ -120,9 +121,22 @@ export default function AssetListScreen() {
     return result;
   }, [currentRawBalances]);
 
+  const totalUsdValue = useMemo(() => {
+    // 1. Calculate sum from individual token usdValues (excluding DZY)
+    const tokenSum = groupedTokens.reduce((sum, t) => {
+      if (t.symbol === 'DZY') return sum;
+      return sum + (parseFloat(t.usdValue) || 0);
+    }, 0);
+    // 2. Check backend totals
+    const backendTotal = isMerchant
+      ? (user?.businessTotalUsdValue || user?.totalUsdValue || 0)
+      : (user?.totalUsdValue || 0);
+    return Math.max(tokenSum, backendTotal);
+  }, [groupedTokens, isMerchant, user]);
+
   const fallbackDZY = user?.balanceDZY || 0;
   const dzyToken = groupedTokens.find(t => t.symbol === 'DZY') || { symbol: 'DZY', balance: 0, usdValue: 0 };
-  dzyToken.balance = dzyToken.balance || fallbackDZY;
+  dzyToken.balance = totalUsdValue > 0 ? (totalUsdValue * 10) : fallbackDZY;
   dzyToken.usdValue = totalUsdValue;
   const otherTokens = groupedTokens.filter(t => t.symbol !== 'DZY');
 
@@ -418,8 +432,10 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   sectionTitle: {
+    flex: 1,
+    flexShrink: 1,
     fontFamily: theme.typography.fontFamily.bold,
-    fontSize: 16,
+    fontSize: 15,
     color: '#20365B',
   },
   card: {

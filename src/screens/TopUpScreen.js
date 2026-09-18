@@ -1,17 +1,56 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
+import { getPaymentRailEligibility, COUNTRY_METADATA } from '../services/paymentCorridorService';
+import PaymentRegionModal from '../components/PaymentRegionModal';
 
 export default function TopUpScreen() {
   const navigation = useNavigation();
-  const { t } = useApp();
-  const [selectedMethod, setSelectedMethod] = useState('momo');
+  const { user, t, language, userCountry, setUserCountry } = useApp();
+
+  const [topupCountry, setTopupCountry] = useState(() => {
+    const raw = (userCountry || user?.country_code || user?.country || 'DZ').toUpperCase().trim();
+    return raw.length === 2 ? raw : (raw === 'FRANCE' ? 'FR' : raw === 'MAROC' ? 'MA' : 'DZ');
+  });
+  const [regionModalVisible, setRegionModalVisible] = useState(false);
+
+  // Sync with userCountry when geolocation resolves asynchronously
+  useEffect(() => {
+    if (userCountry && typeof userCountry === 'string' && userCountry.length === 2) {
+      setTopupCountry(userCountry.toUpperCase());
+    }
+  }, [userCountry]);
+
+  const railEligibility = useMemo(() => {
+    return getPaymentRailEligibility(topupCountry, 'onramp', language);
+  }, [topupCountry, language]);
+
+  // Set default method: if momo enabled, 'momo'; if momo disabled (e.g. Algeria, France, Morocco), 'card'
+  const [selectedMethod, setSelectedMethod] = useState(() => {
+    const initialCountry = (userCountry || user?.country_code || user?.country || 'DZ').toUpperCase().trim();
+    const initEligibility = getPaymentRailEligibility(initialCountry.length === 2 ? initialCountry : 'DZ', 'onramp', language);
+    return initEligibility.momo.enabled ? 'momo' : 'card';
+  });
+
+  useEffect(() => {
+    if (selectedMethod === 'momo' && !railEligibility.momo.enabled) {
+      setSelectedMethod('card');
+    }
+  }, [topupCountry, railEligibility.momo.enabled]);
+
   const [toast, setToast] = useState(null);
+
+  const handleContinue = () => {
+    navigation.navigate(
+      selectedMethod === 'momo' ? 'TopUpDetailsScreen' : 'TopUpWalletDetailsScreen',
+      { paymentMethod: selectedMethod, country: topupCountry }
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -70,62 +109,118 @@ export default function TopUpScreen() {
             {t('topup.buy_crypto_securely', 'Buy crypto securely with Mobile Money or Credit Card')}
           </Text>
 
-          {/* Option 1: Mobile Money (Selected per Mockup) */}
-          <TouchableOpacity 
-            style={[styles.methodCard, selectedMethod === 'momo' && styles.methodCardActive]}
-            onPress={() => setSelectedMethod('momo')}
-            activeOpacity={0.85}
-          >
-            <View style={styles.methodTopRow}>
-              {/* Graphic box */}
-              <View style={styles.methodIconBox}>
-                <View style={styles.phoneIllustration}>
-                  <View style={styles.phoneScreen} />
-                  <View style={styles.phoneCoin}>
-                    <Text style={styles.phoneCoinText}>MoMo</Text>
+          {/* Destination Country Indicator & Switcher */}
+          <View style={styles.topupCountryRow}>
+            <Text style={styles.topupCountryLabel}>
+              {t('paymentRails.topupRegionLabel', 'Région de paiement :')}
+            </Text>
+            <TouchableOpacity
+              style={styles.topupCountryPill}
+              onPress={() => setRegionModalVisible(true)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.topupCountryFlag}>{railEligibility.countryFlag}</Text>
+              <Text style={styles.topupCountryText}>{railEligibility.countryName || topupCountry}</Text>
+              <Ionicons name="chevron-down" size={12} color="#1D4ED8" style={{ marginLeft: 4 }} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Option 1: Mobile Money */}
+          {railEligibility.momo.enabled ? (
+            <TouchableOpacity 
+              style={[styles.methodCard, selectedMethod === 'momo' && styles.methodCardActive]}
+              onPress={() => setSelectedMethod('momo')}
+              activeOpacity={0.85}
+            >
+              <View style={styles.methodTopRow}>
+                {/* Graphic box */}
+                <View style={styles.methodIconBox}>
+                  <View style={styles.phoneIllustration}>
+                    <View style={styles.phoneScreen} />
+                    <View style={styles.phoneCoin}>
+                      <Text style={styles.phoneCoinText}>MoMo</Text>
+                    </View>
                   </View>
+                </View>
+
+                <View style={styles.methodInfo}>
+                  <Text style={styles.methodTitle}>{t('topup.mobile_money')}</Text>
+                  <Text style={styles.methodSubtitle}>
+                    {railEligibility.momo.operators.length > 0
+                      ? railEligibility.momo.operators.slice(0, 3).join(', ')
+                      : t('topup.mobile_money_desc')}
+                  </Text>
+                  <View style={styles.paysBadge}>
+                    <Text style={styles.paysBadgeText}>
+                      {railEligibility.countryFlag} {railEligibility.countryName}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.radioWrap}>
+                  {selectedMethod === 'momo' ? (
+                    <View style={styles.radioOuterActive}>
+                      <View style={styles.radioInnerActive} />
+                    </View>
+                  ) : (
+                    <View style={styles.radioInactive} />
+                  )}
                 </View>
               </View>
 
-              <View style={styles.methodInfo}>
-                <Text style={styles.methodTitle}>{t('topup.mobile_money')}</Text>
-                <Text style={styles.methodSubtitle}>{t('topup.mobile_money_desc')}</Text>
-                <View style={styles.paysBadge}>
-                  <Text style={styles.paysBadgeText}>20 Pays</Text>
+              {/* Bottom 3-Column Features */}
+              <View style={styles.featuresRow}>
+                <View style={styles.featureCol}>
+                  <Ionicons name="shield-checkmark-outline" size={15} color="#1A2840" style={{ marginRight: 4 }} />
+                  <Text style={styles.featureText}>{t('topup.features.lowFees', 'Frais réduits')}</Text>
+                </View>
+
+                <View style={styles.featureCol}>
+                  <Ionicons name="flash-outline" size={15} color="#1A2840" style={{ marginRight: 4 }} />
+                  <Text style={styles.featureText}>{t('topup.features.fastPayments', 'Paiements rapides')}</Text>
+                </View>
+
+                <View style={styles.featureCol}>
+                  <Ionicons name="lock-closed-outline" size={15} color="#1A2840" style={{ marginRight: 4 }} />
+                  <Text style={styles.featureText}>{t('topup.features.secure', 'Sécurisé')}</Text>
                 </View>
               </View>
+            </TouchableOpacity>
+          ) : (
+            /* Option 1 Disabled: Mobile Money for Unsupported Country */
+            <TouchableOpacity 
+              style={styles.disabledTopupCard}
+              onPress={() => setRegionModalVisible(true)}
+              activeOpacity={0.8}
+            >
+              <View style={styles.methodTopRow}>
+                <View style={[styles.methodIconBox, { backgroundColor: '#F1F5F9' }]}>
+                  <Ionicons name="phone-portrait-outline" size={32} color="#94A3B8" />
+                </View>
 
-              <View style={styles.radioWrap}>
-                {selectedMethod === 'momo' ? (
-                  <View style={styles.radioOuterActive}>
-                    <View style={styles.radioInnerActive} />
+                <View style={styles.methodInfo}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={[styles.methodTitle, { color: '#94A3B8' }]}>{t('topup.mobile_money')}</Text>
+                    <View style={styles.disabledTopupBadge}>
+                      <Ionicons name="lock-closed" size={10} color="#64748B" style={{ marginRight: 2 }} />
+                      <Text style={styles.disabledTopupBadgeText}>
+                        {t('paymentRails.unavailableInCountry', `Indisponible en/au ${railEligibility.countryName}`, {
+                          country: railEligibility.countryName,
+                        })}
+                      </Text>
+                    </View>
                   </View>
-                ) : (
-                  <View style={styles.radioInactive} />
-                )}
+                  <Text style={styles.disabledTopupSubtext}>
+                    {t(
+                      'paymentRails.momoUnavailableExplanation',
+                      `Le paiement Mobile Money n'est pas disponible pour ${railEligibility.countryName}. Il est actif dans 20 pays d'Afrique (Bénin, Côte d'Ivoire, Sénégal, Togo, Cameroun, Kenya...).`,
+                      { country: railEligibility.countryName }
+                    )}
+                  </Text>
+                </View>
               </View>
-            </View>
-
-            {/* Detected Operator Row is removed for this generic crypto topup screen */}
-
-            {/* Bottom 3-Column Features */}
-            <View style={styles.featuresRow}>
-              <View style={styles.featureCol}>
-                <Ionicons name="shield-checkmark-outline" size={15} color="#1A2840" style={{ marginRight: 4 }} />
-                <Text style={styles.featureText}>Frais réduits</Text>
-              </View>
-
-              <View style={styles.featureCol}>
-                <Ionicons name="flash-outline" size={15} color="#1A2840" style={{ marginRight: 4 }} />
-                <Text style={styles.featureText}>Paiements rapides</Text>
-              </View>
-
-              <View style={styles.featureCol}>
-                <Ionicons name="lock-closed-outline" size={15} color="#1A2840" style={{ marginRight: 4 }} />
-                <Text style={styles.featureText}>Sécurisé</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          )}
 
           {/* Option 2: Carte bancaire */}
           <TouchableOpacity 
@@ -165,49 +260,72 @@ export default function TopUpScreen() {
             <View style={styles.featuresRow}>
               <View style={styles.featureCol}>
                 <Ionicons name="shield-checkmark-outline" size={15} color="#0052FF" style={{ marginRight: 4 }} />
-                <Text style={styles.featureText}>Sécurisé</Text>
+                <Text style={styles.featureText}>{t('topup.features.secure', 'Sécurisé')}</Text>
               </View>
 
               <View style={styles.featureCol}>
                 <Ionicons name="globe-outline" size={15} color="#0052FF" style={{ marginRight: 4 }} />
-                <Text style={styles.featureText}>Disponible partout</Text>
+                <Text style={styles.featureText}>{t('topup.features.availableEverywhere', 'Disponible partout')}</Text>
               </View>
 
               <View style={styles.featureCol}>
                 <Ionicons name="lock-closed-outline" size={15} color="#0052FF" style={{ marginRight: 4 }} />
-                <Text style={styles.featureText}>Transactions fiables</Text>
+                <Text style={styles.featureText}>{t('topup.features.reliableTransactions', 'Transactions fiables')}</Text>
               </View>
             </View>
           </TouchableOpacity>
 
-          {/* Blockchain Info Banner Card */}
-          <View style={styles.infoBannerCard}>
-            <View style={styles.bulbIconWrapper}>
-              <Text style={{fontSize: 16}}>💡</Text>
+          {/* Smart Contextual Info Banner */}
+          {railEligibility.momo.enabled ? (
+            /* MoMo SUPPORTED: green confirmation */
+            <View style={styles.infoBannerGreen}>
+              <View style={styles.bannerIconWrapper}>
+                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+              </View>
+              <Text style={styles.infoBannerTextGreen}>
+                <Text style={{fontFamily: 'Inter_700Bold'}}>{t('topup.recommended', 'Recommended:')} </Text>
+                {t('topup.recommended_desc', 'For best experience in Africa, use Mobile Money on Polygon network')}
+              </Text>
             </View>
-            <Text style={styles.infoBannerText}>
-              <Text style={{fontFamily: 'Inter_700Bold'}}>{t('topup.recommended', 'Recommended:')} </Text>
-              {t('topup.recommended_desc', 'For best experience in Africa, use Mobile Money on Polygon network')}
-            </Text>
-          </View>
+          ) : (
+            /* MoMo NOT SUPPORTED: info note about card */
+            <View style={styles.infoBannerIndigo}>
+              <View style={styles.bannerIconWrapper}>
+                <Ionicons name="information-circle" size={20} color="#6366F1" />
+              </View>
+              <Text style={styles.infoBannerTextIndigo}>
+                <Text style={{fontFamily: 'Inter_700Bold'}}>{t('paymentRails.notAvailableTitle', 'Mobile Money unavailable')} </Text>
+                {t(
+                  'paymentRails.cardAlternativeNote',
+                  `Mobile Money is not yet available in ${railEligibility.countryName || topupCountry}. Use your Visa or Mastercard card to top up your account from anywhere in the world.`,
+                  { country: railEligibility.countryName || topupCountry }
+                )}
+              </Text>
+            </View>
+          )}
 
-          {/* Continue Button */}
-          <TouchableOpacity 
-            style={styles.btnContinue} 
-            onPress={() => navigation.navigate(
-              selectedMethod === 'momo' ? 'TopUpDetailsScreen' : 'TopUpWalletDetailsScreen',
-              { paymentMethod: selectedMethod }
-            )}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.btnContinueText}>{t('topup.continue', 'CONTINUE')}</Text>
+          {/* Bottom Bar Continue Button */}
+          <TouchableOpacity style={styles.btnContinue} onPress={handleContinue}>
+            <Text style={styles.btnContinueText}>{t('topup.continue', 'CONTINUER')}</Text>
             <Ionicons name="arrow-forward" size={18} color="#FFC759" />
           </TouchableOpacity>
 
           <View style={{ height: 20 }} />
         </ScrollView>
 
-        <BottomNavBar activeTab="home" />
+        {/* Region Switcher Modal */}
+        <PaymentRegionModal
+          visible={regionModalVisible}
+          onClose={() => setRegionModalVisible(false)}
+          currentCountryCode={topupCountry}
+          onSelectCountry={(code) => {
+            setTopupCountry(code);
+            if (setUserCountry) setUserCountry(code);
+          }}
+          onSelectAlternativeMethod={(method) => setSelectedMethod(method)}
+        />
+
+        <BottomNavBar activeTab="wallet" />
         {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
       </View>
     </SafeAreaView>
@@ -264,11 +382,113 @@ const styles = StyleSheet.create({
   featuresRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
   featureCol: { flexDirection: 'row', alignItems: 'center' },
   featureText: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#1A2840' },
-  infoBannerCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFBEB', borderRadius: 12, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: '#FDE68A' },
-  bulbIconWrapper: { marginRight: 10 },
-  infoBannerText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 12, color: '#1A2840', lineHeight: 18 },
+  /* Dynamic info banners — distinct from card options */
+  infoBannerGreen: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#ECFDF5',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#6EE7B7',
+  },
+  infoBannerIndigo: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#EEF2FF',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#C7D2FE',
+  },
+  bannerIconWrapper: { marginRight: 10, marginTop: 1 },
+  infoBannerTextGreen: {
+    flex: 1,
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12,
+    color: '#065F46',
+    lineHeight: 18,
+  },
+  infoBannerTextIndigo: {
+    flex: 1,
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12,
+    color: '#3730A3',
+    lineHeight: 18,
+  },
   btnContinue: { 
     flexDirection: 'row', backgroundColor: '#1A2840', paddingVertical: 15, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginTop: 10, marginBottom: 10, shadowColor: '#1A2840', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 6, elevation: 4 
   },
-  btnContinueText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#FFC759', textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 8 }
+  btnContinueText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#FFC759', textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 8 },
+  topupCountryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 16,
+  },
+  topupCountryLabel: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: '#475569',
+  },
+  topupCountryPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  topupCountryFlag: {
+    fontSize: 14,
+    marginRight: 5,
+  },
+  topupCountryText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 12,
+    color: '#1D4ED8',
+  },
+  disabledTopupCard: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    borderStyle: 'dashed',
+    borderRadius: 18,
+    padding: 14,
+    marginBottom: 14,
+    opacity: 0.9,
+  },
+  disabledTopupBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    marginLeft: 8,
+  },
+  disabledTopupBadgeText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 9.5,
+    color: '#64748B',
+  },
+  disabledTopupSubtext: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    color: '#64748B',
+    lineHeight: 16,
+    marginTop: 4,
+  },
 });

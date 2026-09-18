@@ -5,30 +5,154 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Dimensions
 import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
+import AppConfirmModal from '../components/AppConfirmModal';
+import PriceDisplay from '../components/PriceDisplay';
+import { useApp } from '../context/AppContext';
+import { convertCurrencyAmount } from '../utils/countryCurrencyUtils';
 
 const { width } = Dimensions.get('window');
 
-const defaultProduct = {
-  id: '1',
-  name: 'Samsung Galaxy A14',
-  price: '155 000 FCFA',
-  desc1: 'Smartphone',
-  desc2: '64 Go • 4 Go RAM',
-  stock: 'En stock',
-  category: 'Téléphones & Tablettes'
-};
-
 export default function ProductDetailsScreen({ route }) {
   const navigation = useNavigation();
-  const productParam = route?.params?.product;
-  const product = productParam || defaultProduct;
+  const { t, cart, addToCart, cartCount, language } = useApp();
+  const product = route?.params?.product;
   const shop = route?.params?.shop;
 
+  const [quantity, setQuantity] = useState(1);
   const [favorite, setFavorite] = useState(false);
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [toast, setToast] = useState(null);
+  const [conflictModal, setConflictModal] = useState(null);
 
-  const shareProduct = async () => { try { await Share.share({title: product.name, message: `Découvrez le ${product.name} sur DizzitUp.`}); } finally { setToast({title: 'Produit partagé', message: 'Le partage a été préparé avec succès.'}); } };
+  if (!product) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color="#1A2840" />
+          </TouchableOpacity>
+        </View>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+          <Ionicons name="cube-outline" size={56} color="#94A3B8" />
+          <Text style={{ fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#1A2840', marginTop: 16 }}>
+            {t('product.notFound', 'Product not found')}
+          </Text>
+          <TouchableOpacity
+            style={{ marginTop: 20, backgroundColor: '#FFB800', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24 }}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={{ fontFamily: 'Inter_600SemiBold', color: '#1A2840' }}>{t('common.back', 'Back')}</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const rawCurrency = product.currency || shop?.currency || 'USD';
+  const displayCurrency = rawCurrency === 'XOF' ? 'FCFA' : rawCurrency;
+  const numLocale = language === 'en' ? 'en-US' : 'fr-FR';
+
+  const rawAmount = typeof product.price === 'number' 
+    ? product.price 
+    : (product.variants?.[0]?.prices?.[0]?.amount || product.amount || product.price);
+  const displayPrice = (rawAmount !== undefined && rawAmount !== null && !isNaN(Number(rawAmount)))
+    ? `${Number(rawAmount).toLocaleString(numLocale)} ${displayCurrency}`
+    : (product.price || '');
+
+  // Dynamic delivery fee from merchant settings in buygoods backend
+  const rawDeliveryFee = (shop?.delivery_fee !== undefined && shop?.delivery_fee !== null)
+    ? Number(shop.delivery_fee)
+    : (product?.merchant?.delivery_fee !== undefined && product?.merchant?.delivery_fee !== null)
+    ? Number(product.merchant.delivery_fee)
+    : null;
+
+  const standardDeliveryFee = rawDeliveryFee !== null
+    ? (rawDeliveryFee > 0 ? convertCurrencyAmount(rawDeliveryFee, shop?.currency || 'XOF', rawCurrency) : 0)
+    : 0;
+
+  const deliveryFeeFormatted = standardDeliveryFee > 0
+    ? `${Number(standardDeliveryFee).toLocaleString(numLocale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ${displayCurrency}`
+    : t('orderVerification.free', 'Gratuit');
+
+  const merchantName = shop?.shop_name || shop?.name || product?.merchant?.shop_name || product?.merchant?.name || t('paymentSuccess.partnerMerchant', 'Partner Merchant');
+  const merchantInitial = (merchantName || 'DZ').slice(0, 2).toUpperCase();
+  const merchantLogo = shop?.shop_logo_url || shop?.logoUrl || shop?.raw?.shop_logo_url || product?.merchant?.shop_logo_url || product?.merchant?.logoUrl || product?.merchant_logo;
+
+  const handleAddToCart = (force = false) => {
+    const res = addToCart(product, quantity, shop, force);
+    if (res.conflict) {
+      setConflictModal({
+        title: t('cart.conflictTitle', 'Different shop in cart'),
+        message: t('cart.conflictMsg', {
+          currentMerchantName: res.currentMerchantName,
+          newMerchantName: res.newMerchantName,
+          defaultValue: `Your cart already contains items from "${res.currentMerchantName}". Would you like to clear your cart and start fresh with "${res.newMerchantName}"?`
+        }),
+        onConfirm: () => {
+          setConflictModal(null);
+          handleAddToCart(true);
+        },
+      });
+      return;
+    }
+    if (res.success) {
+      setToast({
+        title: t('cart.addedSuccessTitle', 'Item added!'),
+        message: t('cart.addedSuccessMsg', {
+          qty: quantity,
+          name: product.name || product.title,
+          count: res.count,
+          defaultValue: `${quantity}x ${product.name || product.title} added to cart (${res.count} items).`
+        }),
+      });
+    }
+  };
+
+  const handleBuyNow = () => {
+    addToCart(product, quantity, shop, true);
+    navigation.navigate('OrderVerificationScreen', {
+      directOrder: {
+        product,
+        shop,
+        quantity,
+      }
+    });
+  };
+
+  const shareProduct = async () => { 
+    try { 
+      await Share.share({
+        title: product.name || product.title, 
+        message: t('product.shareMessage', 'Check out {{name}} on DizzitUp.', { name: product.name || product.title })
+      }); 
+    } finally { 
+      setToast({
+        title: t('product.sharedTitle', 'Product shared'), 
+        message: t('product.sharedDesc', 'Sharing link prepared successfully.')
+      }); 
+    } 
+  };
+
+  const shareProductGift = async () => { 
+    const pName = product.name || product.title || 'Produit';
+    const sName = merchantName || 'DizzitUp';
+    const productUrl = `https://dizzitup.com/product/${product.id}`;
+    try { 
+      await Share.share({
+        title: t('shop.giftProductTitle', `Achetez-moi ceci : ${pName}`, { name: pName }), 
+        message: t('shop.giftProductMsg', `J'aimerais ce produit sur DizzitUp : ${pName} (${displayPrice}) chez ${sName}. Vous pouvez me l'offrir ici : ${productUrl}`, { name: pName, price: displayPrice, shop: sName, url: productUrl })
+      }); 
+      setToast({
+        title: t('shop.shareSuccessTitle', 'Lien cadeau prêt'), 
+        message: t('shop.shareSuccessDesc', 'Le lien du produit a été partagé avec succès.')
+      }); 
+    } catch {
+      setToast({
+        title: t('shop.shareCopiedTitle', 'Lien copié'),
+        message: `${productUrl}`
+      });
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -39,6 +163,26 @@ export default function ProductDetailsScreen({ route }) {
           <Ionicons name="arrow-back" size={24} color="#1A2840" />
         </TouchableOpacity>
         <View style={styles.headerRightIcons}>
+          <TouchableOpacity
+            style={styles.iconBtnRight}
+            onPress={() => {
+              if (cartCount > 0) {
+                navigation.navigate('OrderVerificationScreen');
+              } else {
+                setToast({
+                  title: t('cart.emptyTitle', 'Panier vide'),
+                  message: t('cart.emptyDesc', 'Votre panier ne contient aucun article pour l\'instant.')
+                });
+              }
+            }}
+          >
+            <Ionicons name="cart-outline" size={20} color="#1A2840" />
+            {cartCount > 0 && (
+              <View style={styles.cartBadge}>
+                <Text style={styles.cartBadgeText}>{cartCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
           <TouchableOpacity style={styles.iconBtnRight} onPress={() => setFavorite(!favorite)}>
             <Ionicons name={favorite ? "heart" : "heart-outline"} size={20} color={favorite ? "#EF4444" : "#1A2840"} />
           </TouchableOpacity>
@@ -56,7 +200,22 @@ export default function ProductDetailsScreen({ route }) {
           {/* Left Column: Images */}
           <View style={styles.leftCol}>
             <View style={styles.mainImageContainer}>
-              <Image source={require('../../assets/promo_shop.png')} style={{ width: '100%', height: 180, borderRadius: 12 }} resizeMode="contain" />
+              <Image
+                source={
+                  (product.product_images && product.product_images.length > 0)
+                    ? { uri: product.product_images[0] }
+                    : (product.images && product.images.length > 0)
+                    ? { uri: product.images[0] }
+                    : product.thumbnail
+                    ? { uri: product.thumbnail }
+                    : product.image
+                    ? { uri: product.image }
+                    : require('../../assets/brand/product_no_image.jpg')
+                }
+                defaultSource={require('../../assets/brand/product_no_image.jpg')}
+                style={{ width: '100%', height: 180, borderRadius: 12 }}
+                resizeMode="cover"
+              />
             </View>
           </View>
 
@@ -75,19 +234,44 @@ export default function ProductDetailsScreen({ route }) {
               <Ionicons name="star" size={14} color="#F59E0B" />
               <Ionicons name="star-half" size={14} color="#F59E0B" />
               <Text style={styles.ratingText}>4.6</Text>
-              <Text style={styles.reviewsText}>(3,235 avis)</Text>
+              <Text style={styles.reviewsText}>{t('product.reviewsCount', '(3,235 reviews)', { count: '3,235' })}</Text>
             </View>
 
-            <View style={styles.stockBadge}>
-              <View style={styles.stockDot} />
-              <Text style={styles.stockText}>{product.stock || 'En stock'}</Text>
-            </View>
+            {/* Multi-Currency Price Display: Local currency first, USDT & DZY */}
+            <PriceDisplay
+              amount={rawAmount}
+              baseCurrency={rawCurrency}
+              quantity={quantity}
+              size="large"
+              targetCountry={shop?.country || product?.merchant?.country}
+              style={{ marginVertical: 8 }}
+            />
 
-            <Text style={styles.priceText}>{product.price}</Text>
+            {/* Quantity Selector */}
+            <View style={styles.qtyContainer}>
+              <Text style={styles.qtyLabel}>{t('orderVerification.qty', 'Quantité')}</Text>
+              <View style={styles.qtyControls}>
+                <TouchableOpacity
+                  style={styles.qtyBtn}
+                  onPress={() => setQuantity(prev => Math.max(1, prev - 1))}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="remove" size={16} color="#1A2840" />
+                </TouchableOpacity>
+                <Text style={styles.qtyValue}>{quantity}</Text>
+                <TouchableOpacity
+                  style={styles.qtyBtn}
+                  onPress={() => setQuantity(prev => prev + 1)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="add" size={16} color="#1A2840" />
+                </TouchableOpacity>
+              </View>
+            </View>
 
             {/* Payment Methods */}
             <View style={styles.paymentCard}>
-              <Text style={styles.paymentCardTitle}>Moyens de paiement acceptés</Text>
+              <Text style={styles.paymentCardTitle}>{t('product.acceptedPaymentMethods', 'Accepted payment methods')}</Text>
               <View style={styles.paymentIconsRow}>
                 {['USDT', 'USDC', 'EURC', 'DZY'].map((symbol) => <View key={symbol} style={styles.paymentItem}><CryptoIcon symbol={symbol} size={24} /><Text style={styles.tokenLabel}>{symbol}</Text></View>)}
               </View>
@@ -97,8 +281,8 @@ export default function ProductDetailsScreen({ route }) {
             <View style={styles.securityBanner}>
               <Ionicons name="shield-checkmark-outline" size={24} color="#3B82F6" style={{marginRight: 8}} />
               <View style={{flex: 1}}>
-                <Text style={styles.securityTitle}>Achat 100% sécurisé</Text>
-                <Text style={styles.securityText}>Payez en toute sécurité avec vos cryptos préférées.</Text>
+                <Text style={styles.securityTitle}>{t('product.securePurchaseTitle', '100% Secure purchase')}</Text>
+                <Text style={styles.securityText}>{t('product.securePurchaseDesc', 'Pay securely with your favorite cryptocurrencies.')}</Text>
               </View>
             </View>
 
@@ -109,10 +293,10 @@ export default function ProductDetailsScreen({ route }) {
 
         {/* Description Section */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Description</Text>
+          <Text style={styles.sectionTitle}>{t('product.description', 'Description')}</Text>
           <View style={styles.descRow}>
             <Text style={styles.descText} numberOfLines={descriptionExpanded ? undefined : 3}>
-              Le Samsung Galaxy A14 allie performance et élégance. Profitez d'un grand écran immersif, d'une batterie longue durée et d'un design moderne pour vous accompagner au quotidien.
+              {product.description || product.subtitle || t('product.defaultDesc', 'Product guaranteed and verified by our DizzitUp partner merchant network.')}
             </Text>
             <TouchableOpacity style={styles.descChevron} onPress={() => setDescriptionExpanded(!descriptionExpanded)}>
               <Ionicons name={descriptionExpanded ? "chevron-up" : "chevron-down"} size={20} color="#1A2840" />
@@ -124,7 +308,7 @@ export default function ProductDetailsScreen({ route }) {
 
         {/* Caractéristiques Section */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Caractéristiques</Text>
+          <Text style={styles.sectionTitle}>{t('product.specs', 'Specifications')}</Text>
           <View style={styles.featuresGrid}>
             
             <View style={styles.featureItem}>
@@ -132,98 +316,38 @@ export default function ProductDetailsScreen({ route }) {
                 <Ionicons name="phone-portrait-outline" size={16} color="#3B82F6" />
               </View>
               <View style={styles.featureContent}>
-                <Text style={styles.featureLabel}>Écran</Text>
-                <Text style={styles.featureValue}>6.6" FHD+ PLS LCD</Text>
+                <Text style={styles.featureLabel}>{t('product.category', 'Category')}</Text>
+                <Text style={styles.featureValue}>{product.category || product.desc1 || t('common.general', 'General')}</Text>
               </View>
             </View>
 
             <View style={styles.featureItem}>
               <View style={styles.featureIconBox}>
-                <Ionicons name="camera-reverse-outline" size={16} color="#3B82F6" />
+                <Ionicons name="shield-checkmark-outline" size={16} color="#3B82F6" />
               </View>
               <View style={styles.featureContent}>
-                <Text style={styles.featureLabel}>Caméra frontale</Text>
-                <Text style={styles.featureValue}>13 MP</Text>
+                <Text style={styles.featureLabel}>{t('product.warranty', 'Warranty')}</Text>
+                <Text style={styles.featureValue}>{product.warranty || t('product.warrantyVal', 'DizzitUp Warranty')}</Text>
               </View>
             </View>
 
             <View style={styles.featureItem}>
               <View style={styles.featureIconBox}>
-                <Ionicons name="hardware-chip-outline" size={16} color="#3B82F6" />
+                <Ionicons name="lock-closed-outline" size={16} color="#3B82F6" />
               </View>
               <View style={styles.featureContent}>
-                <Text style={styles.featureLabel}>Mémoire (RAM)</Text>
-                <Text style={styles.featureValue}>4 Go</Text>
+                <Text style={styles.featureLabel}>{t('product.protection', 'Protection')}</Text>
+                <Text style={styles.featureValue}>{t('product.protectionVal', '4-digit Escrow payment')}</Text>
               </View>
             </View>
 
             <View style={styles.featureItem}>
               <View style={styles.featureIconBox}>
-                <Ionicons name="cpu-outline" size={16} color="#3B82F6" />
+                <Ionicons name="cube-outline" size={16} color="#3B82F6" />
               </View>
               <View style={styles.featureContent}>
-                <Text style={styles.featureLabel}>Processeur</Text>
-                <Text style={styles.featureValue}>Octa-core 2.0 GHz</Text>
-              </View>
-            </View>
-
-            <View style={styles.featureItem}>
-              <View style={styles.featureIconBox}>
-                <Ionicons name="save-outline" size={16} color="#3B82F6" />
-              </View>
-              <View style={styles.featureContent}>
-                <Text style={styles.featureLabel}>Stockage</Text>
-                <Text style={styles.featureValue}>64 Go</Text>
-              </View>
-            </View>
-
-            <View style={styles.featureItem}>
-              <View style={styles.featureIconBox}>
-                <Ionicons name="notifications-outline" size={16} color="#3B82F6" />
-              </View>
-              <View style={styles.featureContent}>
-                <Text style={styles.featureLabel}>Système</Text>
-                <Text style={styles.featureValue}>Android 13, One UI</Text>
-              </View>
-            </View>
-
-            <View style={styles.featureItem}>
-              <View style={styles.featureIconBox}>
-                <Ionicons name="battery-full-outline" size={16} color="#3B82F6" />
-              </View>
-              <View style={styles.featureContent}>
-                <Text style={styles.featureLabel}>Batterie</Text>
-                <Text style={styles.featureValue}>5 000 mAh</Text>
-              </View>
-            </View>
-
-            <View style={styles.featureItem}>
-              <View style={styles.featureIconBox}>
-                <Ionicons name="wifi-outline" size={16} color="#3B82F6" />
-              </View>
-              <View style={styles.featureContent}>
-                <Text style={styles.featureLabel}>Connectivité</Text>
-                <Text style={styles.featureValue}>4G LTE, Wi-Fi, Bluetooth 5.2</Text>
-              </View>
-            </View>
-
-            <View style={styles.featureItem}>
-              <View style={styles.featureIconBox}>
-                <Ionicons name="camera-outline" size={16} color="#3B82F6" />
-              </View>
-              <View style={styles.featureContent}>
-                <Text style={styles.featureLabel}>Caméra arrière</Text>
-                <Text style={styles.featureValue}>50 MP + 2 MP + 2 MP</Text>
-              </View>
-            </View>
-
-            <View style={styles.featureItem}>
-              <View style={styles.featureIconBox}>
-                <Ionicons name="color-palette-outline" size={16} color="#3B82F6" />
-              </View>
-              <View style={styles.featureContent}>
-                <Text style={styles.featureLabel}>Couleur</Text>
-                <Text style={styles.featureValue}>Noir</Text>
+                <Text style={styles.featureLabel}>{t('product.condition', 'Condition')}</Text>
+                <Text style={styles.featureValue}>{product.condition || (product.stock ? t('product.inStock', 'In stock') : t('product.brandNew', 'New in stock'))}</Text>
               </View>
             </View>
 
@@ -232,28 +356,28 @@ export default function ProductDetailsScreen({ route }) {
 
         {/* Livraison & Retrait Section */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Livraison & retrait</Text>
+          <Text style={styles.sectionTitle}>{t('product.deliveryAndPickup', 'Delivery & pickup')}</Text>
           <View style={styles.deliveryCard}>
             <View style={styles.deliveryRow}>
               <View style={styles.deliveryItem}>
                 <Ionicons name="bus-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
                 <View>
-                  <Text style={styles.deliveryLabel}>Livraison à domicile</Text>
-                  <Text style={styles.deliveryValue}>1 à 3 jours ouvrés</Text>
+                  <Text style={styles.deliveryLabel}>{t('product.homeDelivery', 'Home delivery')}</Text>
+                  <Text style={styles.deliveryValue}>{t('product.deliveryDelay', '1 to 3 business days')}</Text>
                 </View>
               </View>
               <View style={styles.deliveryItem}>
                 <Ionicons name="storefront-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
                 <View>
-                  <Text style={styles.deliveryLabel}>Retrait en boutique</Text>
-                  <Text style={styles.deliveryValue}>Aujourd'hui</Text>
+                  <Text style={styles.deliveryLabel}>{t('product.storePickup', 'Store pickup')}</Text>
+                  <Text style={styles.deliveryValue}>{t('product.pickupToday', 'Today')}</Text>
                 </View>
               </View>
               <View style={styles.deliveryItem}>
                 <Ionicons name="shield-checkmark-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
                 <View>
-                  <Text style={styles.deliveryLabel}>Frais de livraison</Text>
-                  <Text style={styles.deliveryValue}>À partir de 1 000 FCFA</Text>
+                  <Text style={styles.deliveryLabel}>{t('product.deliveryFees', 'Delivery fee')}</Text>
+                  <Text style={styles.deliveryValue}>{t('product.fromDeliveryFee', `From ${deliveryFeeFormatted}`, { fee: deliveryFeeFormatted })}</Text>
                 </View>
               </View>
             </View>
@@ -262,48 +386,96 @@ export default function ProductDetailsScreen({ route }) {
 
         {/* Vendu par Section */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Vendu par</Text>
+          <Text style={styles.sectionTitle}>{t('product.soldBy', 'Sold by')}</Text>
           <View style={styles.vendorRow}>
-            <View style={styles.vendorLogoCircle}>
-              <Text style={styles.vendorLogoText}>JUMIA</Text>
-            </View>
+            {merchantLogo ? (
+              <View style={styles.vendorLogoImageWrapper}>
+                <Image
+                  source={{ uri: merchantLogo }}
+                  style={styles.vendorLogoImage}
+                  resizeMode="cover"
+                />
+              </View>
+            ) : (
+              <View style={styles.vendorMonogramContainer}>
+                <Text style={styles.vendorMonogramText}>{merchantInitial}</Text>
+                <View style={styles.vendorVerifiedTag}>
+                  <Text style={styles.vendorVerifiedTagText}>VERIFIED</Text>
+                </View>
+              </View>
+            )}
             <View style={styles.vendorContent}>
               <View style={styles.vendorNameRow}>
-                <Text style={styles.vendorName}>Jumia Sénégal</Text>
+                <Text style={styles.vendorName} numberOfLines={1}>{merchantName}</Text>
                 <Ionicons name="checkmark-circle" size={16} color="#3B82F6" style={{marginLeft: 4}} />
               </View>
               <View style={styles.vendorCategoryBadge}>
-                <Text style={styles.vendorCategoryText}>Marketplace</Text>
+                <Text style={styles.vendorCategoryText}>{t('product.verifiedPartner', 'Verified Merchant')}</Text>
               </View>
-              <Text style={styles.vendorSince}>Membre depuis 2016</Text>
-              <View style={styles.vendorRatingRow}>
-                <Ionicons name="star" size={12} color="#F59E0B" />
-                <Text style={styles.vendorRating}>4.6</Text>
-                <Text style={styles.vendorReviews}>(3,235 avis)</Text>
-              </View>
+              <Text style={styles.vendorSince}>{t('product.partnerPlatform', 'DizzitUp Partner')}</Text>
             </View>
-            <TouchableOpacity style={styles.btnStore} onPress={() => navigation.navigate('ShopDetailsScreen')}>
-              <Ionicons name="storefront-outline" size={16} color="#1A2840" style={{marginRight: 8}} />
-              <Text style={styles.btnStoreText}>Voir la boutique</Text>
-              <Ionicons name="chevron-forward" size={16} color="#1A2840" style={{marginLeft: 8}} />
+            <TouchableOpacity style={styles.btnStore} onPress={() => navigation.navigate('ShopDetailsScreen', { shop: shop || { id: product?.merchant_id, name: merchantName } })}>
+              <Ionicons name="storefront-outline" size={16} color="#1A2840" style={{marginRight: 6}} />
+              <Text style={styles.btnStoreText}>{t('product.visitShop', 'Store')}</Text>
+              <Ionicons name="chevron-forward" size={14} color="#1A2840" style={{marginLeft: 4}} />
             </TouchableOpacity>
           </View>
         </View>
 
       </ScrollView>
 
-      {/* Bottom Sticky Action Bar */}
+      {/* Bottom Floating Ergonomic Action Bar */}
       <View style={styles.bottomActionBar}>
-        <TouchableOpacity style={styles.btnContact} onPress={() => setToast({title: 'Contact vendeur', message: 'Une conversation avec Jumia Sénégal a été ouverte.'})}>
-          <Ionicons name="chatbubble-outline" size={18} color="#3B82F6" style={{marginRight: 8}} />
-          <Text style={styles.btnContactText}>Contacter le vendeur</Text>
+        {/* Buy Me / Diaspora Gift Action */}
+        <TouchableOpacity
+          style={styles.btnGiftModern}
+          onPress={shareProductGift}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="gift-outline" size={18} color="#2563EB" style={{ marginRight: 5 }} />
+          <Text style={styles.btnGiftModernText} numberOfLines={1}>{t('shop.actions.buy_me', 'Buy me')}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.btnBuy} onPress={() => navigation.navigate('OrderVerificationScreen')}>
-          <Ionicons name="cart-outline" size={18} color="#1A2840" style={{marginRight: 8}} />
-          <Text style={styles.btnBuyText}>Acheter maintenant</Text>
+
+        {/* Add to Cart Action */}
+        <TouchableOpacity 
+          style={styles.btnCartModern} 
+          onPress={() => handleAddToCart(false)}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="cart-outline" size={18} color="#1A2840" style={{ marginRight: 5 }} />
+          <Text style={styles.btnCartModernText} numberOfLines={1}>{t('product.addToCart', 'Add to cart')}</Text>
+          {cartCount > 0 && (
+            <View style={styles.cartCountDot}>
+              <Text style={styles.cartCountDotText}>{cartCount}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+
+        {/* Primary CTA: Buy Now */}
+        <TouchableOpacity 
+          style={styles.btnBuyModern} 
+          onPress={handleBuyNow}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="flash" size={16} color="#1A2840" style={{ marginRight: 5 }} />
+          <Text style={styles.btnBuyModernText}>{t('product.buyNow', 'Buy now')}</Text>
         </TouchableOpacity>
       </View>
       {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
+
+      <AppConfirmModal
+        visible={!!conflictModal}
+        title={conflictModal?.title}
+        message={conflictModal?.message}
+        icon="cart-outline"
+        iconColor="#FFB800"
+        iconBg="#FFFBEB"
+        cancelText={t('common.cancel', 'Cancel')}
+        confirmText={t('cart.replaceBtn', 'Replace cart')}
+        confirmVariant="warning"
+        onCancel={() => setConflictModal(null)}
+        onConfirm={conflictModal?.onConfirm}
+      />
 
     </SafeAreaView>
   );
@@ -350,13 +522,14 @@ const styles = StyleSheet.create({
     paddingBottom: 100, // space for sticky bottom bar
   },
   topSection: {
-    flexDirection: 'row',
+    flexDirection: width < 380 ? 'column' : 'row',
     paddingHorizontal: 16,
     paddingBottom: 24,
   },
   leftCol: {
-    width: '40%',
-    marginRight: 16,
+    width: width < 380 ? '100%' : '42%',
+    marginRight: width < 380 ? 0 : 16,
+    marginBottom: width < 380 ? 16 : 0,
   },
   mainImageContainer: {
     backgroundColor: '#F8FAFC',
@@ -644,19 +817,56 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  vendorLogoCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#FF9E00',
+  vendorLogoImageWrapper: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    overflow: 'hidden',
+    marginRight: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
   },
-  vendorLogoText: {
+  vendorLogoImage: {
+    width: '100%',
+    height: '100%',
+  },
+  vendorMonogramContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: '#1A2840',
+    borderWidth: 2,
+    borderColor: '#FFC759',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+    shadowColor: '#1A2840',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  vendorMonogramText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 18,
+    color: '#FFC759',
+    letterSpacing: 0.5,
+  },
+  vendorVerifiedTag: {
+    backgroundColor: '#FFC759',
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 3,
+    marginTop: 1,
+  },
+  vendorVerifiedTagText: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 12,
-    color: '#FFFFFF',
+    fontSize: 7,
+    color: '#1A2840',
+    letterSpacing: 0.5,
   },
   vendorContent: {
     flex: 1,
@@ -696,7 +906,7 @@ const styles = StyleSheet.create({
   },
   vendorRating: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 11,
+    fontSize: 12,
     color: '#1A2840',
     marginLeft: 4,
   },
@@ -726,41 +936,143 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 12,
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 8,
   },
-  btnContact: {
-    flex: 1,
+  cartBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#EF4444',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  cartBadgeText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 10,
+    color: '#FFFFFF',
+  },
+  qtyContainer: {
     flexDirection: 'row',
-    height: 50,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#3B82F6',
-    borderRadius: 12,
+    borderColor: '#E2E8F0',
+  },
+  qtyLabel: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: '#64748B',
+  },
+  qtyControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  qtyBtn: {
+    width: 28,
+    height: 28,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 8,
   },
-  btnContactText: {
+  qtyValue: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 14,
+    color: '#1A2840',
+    marginHorizontal: 10,
+    minWidth: 18,
+    textAlign: 'center',
+  },
+  btnGiftModern: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 46,
+    paddingHorizontal: 12,
+    borderRadius: 23,
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+    marginRight: 6,
+  },
+  btnGiftModernText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 11.5,
+    color: '#1D4ED8',
+  },
+  btnCartModern: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 46,
+    paddingHorizontal: 12,
+    borderRadius: 23,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginRight: 6,
+  },
+  btnCartModernText: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 13,
-    color: '#3B82F6',
+    fontSize: 11.5,
+    color: '#1A2840',
   },
-  btnBuy: {
+  cartCountDot: {
+    position: 'absolute',
+    top: -6,
+    right: -8,
+    backgroundColor: '#EF4444',
+    borderRadius: 8,
+    minWidth: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 3,
+  },
+  cartCountDotText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 9,
+    color: '#FFFFFF',
+  },
+  btnBuyModern: {
     flex: 1,
     flexDirection: 'row',
-    height: 50,
-    backgroundColor: '#FFB800',
-    borderRadius: 12,
-    justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
+    justifyContent: 'center',
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: '#FFB800',
+    shadowColor: '#FFB800',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  btnBuyText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 13,
+  btnBuyModernText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 13.5,
     color: '#1A2840',
   },
 });

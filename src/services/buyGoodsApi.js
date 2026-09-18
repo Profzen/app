@@ -56,6 +56,16 @@ export const buyGoodsApi = {
     }
   },
 
+  getMerchantProducts: async (merchantId) => {
+    try {
+      const all = await buyGoodsApi.getAllProducts();
+      return all.filter(p => (p.merchant_id === merchantId || p.merchant?.id === merchantId));
+    } catch (error) {
+      console.error('buyGoodsApi.getMerchantProducts Error:', error);
+      return [];
+    }
+  },
+
   getAllProducts: async (category = '') => {
     try {
       let url = `${BASE_URL}/public/products`;
@@ -156,5 +166,55 @@ export const buyGoodsApi = {
       console.error('buyGoodsApi.markAllMerchantNotificationsAsRead Error:', error);
       return false;
     }
+  },
+
+  orchestratePayment: async (paymentDto) => {
+    try {
+      const response = await fetch(`${BASE_URL}/payments/orchestrate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(paymentDto),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Payment orchestration failed');
+      }
+      return data;
+    } catch (error) {
+      console.error('buyGoodsApi.orchestratePayment Error:', error);
+      throw error;
+    }
+  },
+
+  getPaymentStatus: async (orderId) => {
+    try {
+      const response = await fetch(`${BASE_URL}/payments/status/${orderId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch payment status');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('buyGoodsApi.getPaymentStatus Error:', error);
+      throw error;
+    }
+  },
+
+  createMarketplaceTransaction: async (transactionData) => {
+    try {
+      const response = await fetch(`${BASE_URL}/marketplace/transactions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(transactionData),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || data.message || 'Transaction creation failed');
+      }
+      return data;
+    } catch (error) {
+      console.error('buyGoodsApi.createMarketplaceTransaction Error:', error);
+      throw error;
+    }
   }
 };
+

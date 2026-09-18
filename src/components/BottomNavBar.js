@@ -37,7 +37,7 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
     { id: '5', icon: 'add-circle-outline', color: '#10B981', bgColor: '#ECFDF5', label: t('actionTopUp', 'Recharger'), route: 'TopUpScreen' },
     { id: '6', icon: 'storefront-outline', color: '#F59E0B', bgColor: '#FFFBEB', label: t('actionReferStore', 'Référer un shop'), route: 'ReferBusinessScreen' },
     { id: '7', icon: 'swap-horizontal', color: '#3B82F6', bgColor: '#EFF6FF', label: t('tabSwap', 'Échanger'), route: 'SwapTokensScreen' },
-    { id: '8', icon: 'qr-code-outline', color: '#10B981', bgColor: '#F0FDFA', label: 'Scan & Cash', route: 'LocalExchangeScreen' },
+    { id: '8', icon: 'qr-code-outline', color: '#10B981', bgColor: '#F0FDFA', label: t('actionScanCash', 'Scan & Cash'), route: 'LocalExchangeScreen' },
   ];
 
   const closeAndNavigate = (route) => {

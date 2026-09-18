@@ -3,9 +3,11 @@ import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useApp } from '../context/AppContext';
 
 export default function SendMoneyPinScreen() {
   const navigation = useNavigation();
+  const { t } = useApp();
   const [pin, setPin] = useState('1'); // Initial state with 1 digit to match mockup
 
   const handleKeyPress = (val) => {
@@ -50,7 +52,7 @@ export default function SendMoneyPinScreen() {
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <Ionicons name="arrow-redo" size={20} color="#1A2840" style={styles.headerIcon} />
-            <Text style={styles.headerTitle}>envoyer des Stablecoins</Text>
+            <Text style={styles.headerTitle}>{t('sendMoney.headerTitle', 'Send Stablecoins')}</Text>
           </View>
           <TouchableOpacity style={styles.iconBtn}>
             <Ionicons name="ellipsis-horizontal" size={20} color="#1A2840" />
@@ -59,9 +61,9 @@ export default function SendMoneyPinScreen() {
 
         <ScrollView style={{flex: 1}} contentContainerStyle={{flexGrow: 1, paddingBottom: 24}} showsVerticalScrollIndicator={false}>
           <View style={styles.content}>
-            <Text style={styles.pageTitle}>Saisissez votre code PIN</Text>
+            <Text style={styles.pageTitle}>{t('sendMoney.enterPin', 'Enter your PIN code')}</Text>
             <Text style={styles.pageSubtitle}>
-              Entrez votre code PIN à 6 chiffres pour{'\n'}confirmer cette transaction.
+              {t('sendMoney.enterPinDesc', 'Enter your 6-digit PIN code to\nconfirm this transaction.')}
             </Text>
 
             {/* PIN Input Boxes */}
@@ -120,8 +122,8 @@ export default function SendMoneyPinScreen() {
               <Ionicons name="shield-checkmark-outline" size={24} color="#1A2840" />
             </View>
             <View style={styles.securityContent}>
-              <Text style={styles.securityTitle}>Vos transactions sont sécurisées</Text>
-              <Text style={styles.securityDesc}>Nous protégeons vos fonds et vos informations à chaque étape.</Text>
+              <Text style={styles.securityTitle}>{t('sendMoney.transactionsSecure', 'Your transactions are secure')}</Text>
+              <Text style={styles.securityDesc}>{t('sendMoney.securityDesc', 'We protect your funds and information at every step.')}</Text>
             </View>
           </View>
         </ScrollView>

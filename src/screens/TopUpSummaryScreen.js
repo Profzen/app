@@ -10,7 +10,7 @@ import { transactionService } from '../services/transactionService';
 export default function TopUpSummaryScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { phone, countryCode, operator, amount, token, paymentMethod } = route.params || {};
+  const { phone, countryCode, country, operator, amount, token, paymentMethod } = route.params || {};
   const { dizzyToken, userProfile, evmAddress, t } = useContext(AppContext);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -20,12 +20,14 @@ export default function TopUpSummaryScreen() {
       setLoading(true);
       setError(null);
       
+      const targetCountry = country || userProfile?.country_of_residence || 'BJ';
+
       const payload = {
         amount: parseFloat(amount || '10'),
         walletAddress: evmAddress,
-        country: userProfile?.country_of_residence || 'TG',
+        country: targetCountry,
         paymentMethod: paymentMethod === 'momo' ? 'momo' : 'card',
-        phoneNumber: `${countryCode}${phone}`.replace(/\s+/g, ''),
+        phoneNumber: `${countryCode || ''}${phone || ''}`.replace(/\s+/g, ''),
         token: token || 'USDC',
         chain: 'base'
       };

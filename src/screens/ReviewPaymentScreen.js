@@ -5,6 +5,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, 
 import { Ionicons } from '@expo/vector-icons';
 import AppSelect from '../components/AppSelect';
 import AppToast from '../components/AppToast';
+import { useApp } from '../context/AppContext';
 
 const paymentCurrencies = [
   { value: 'USD', label: '🇺🇸 USD' },
@@ -15,6 +16,7 @@ const paymentCurrencies = [
 
 export default function ReviewPaymentScreen() {
   const navigation = useNavigation();
+  const { t } = useApp();
   const [selectedPayment, setSelectedPayment] = useState('card');
   const [amount, setAmount] = useState('20');
   const [currency, setCurrency] = useState('USD');
@@ -31,7 +33,7 @@ export default function ReviewPaymentScreen() {
               <Ionicons name="arrow-back" size={22} color="#1A2840" />
             </TouchableOpacity>
             <View style={styles.headerTitleWrap}>
-              <Text style={styles.headerTitle}>Vérifier et payer</Text>
+              <Text style={styles.headerTitle}>{t('reviewPayment.title', 'Review and Pay')}</Text>
             </View>
             <View style={styles.headerIcons}>
               <TouchableOpacity style={styles.iconButton}>
@@ -46,7 +48,7 @@ export default function ReviewPaymentScreen() {
               </TouchableOpacity>
             </View>
           </View>
-          <Text style={styles.headerSubtitle}>Vérifiez les détails de votre paiement et confirmez pour continuer.</Text>
+          <Text style={styles.headerSubtitle}>{t('reviewPayment.subtitle', 'Review your payment details and confirm to continue.')}</Text>
         </View>
 
         <ScrollView 
@@ -78,7 +80,7 @@ export default function ReviewPaymentScreen() {
 
               <TouchableOpacity style={styles.editButton} onPress={() => navigation.navigate('PayBillsScreen')}>
                 <Ionicons name="create-outline" size={14} color="#1A2840" style={{ marginRight: 4 }} />
-                <Text style={styles.editButtonText}>Modifier</Text>
+                <Text style={styles.editButtonText}>{t('common.edit', 'Edit')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -89,18 +91,18 @@ export default function ReviewPaymentScreen() {
               <Ionicons name="phone-portrait-outline" size={20} color="#10B981" />
             </View>
             <View style={styles.serviceTextWrap}>
-              <Text style={styles.serviceTitle}>Recharge mobile</Text>
+              <Text style={styles.serviceTitle}>{t('paymentSuccess.mobileRecharge', 'Mobile Recharge')}</Text>
               <Text style={styles.serviceSubtitle}>MTN Nigeria</Text>
             </View>
             <TouchableOpacity style={styles.editButton} onPress={() => navigation.navigate('ChooseServiceScreen')}>
               <Ionicons name="create-outline" size={14} color="#1A2840" style={{ marginRight: 4 }} />
-              <Text style={styles.editButtonText}>Modifier</Text>
+              <Text style={styles.editButtonText}>{t('common.edit', 'Edit')}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Amount Input & Currency Selector Section */}
           <View style={styles.amountSection}>
-            <Text style={styles.inputLabel}>Montant</Text>
+            <Text style={styles.inputLabel}>{t('common.amount', 'Amount')}</Text>
             <View style={styles.amountInputRow}>
               <View style={styles.inputContainer}>
                 <TextInput 
@@ -114,7 +116,7 @@ export default function ReviewPaymentScreen() {
                 value={currency} 
                 options={paymentCurrencies} 
                 onChange={setCurrency} 
-                title="Devise" 
+                title={t('common.currency', 'Currency')} 
                 style={styles.currencySelector} 
                 textStyle={styles.currencyText} 
               />
@@ -124,7 +126,7 @@ export default function ReviewPaymentScreen() {
 
           {/* Payment Methods (Payer avec) */}
           <View style={styles.paymentMethodsSection}>
-            <Text style={styles.sectionTitle}>Payer avec</Text>
+            <Text style={styles.sectionTitle}>{t('orderVerification.payWith', 'Pay with')}</Text>
 
             {/* Option 1: Card Payment */}
             <TouchableOpacity 
@@ -136,7 +138,7 @@ export default function ReviewPaymentScreen() {
                 <Ionicons name="card-outline" size={20} color="#1A2840" />
               </View>
               <View style={styles.paymentInfo}>
-                <Text style={styles.paymentTitle}>Card Payment</Text>
+                <Text style={styles.paymentTitle}>{t('reviewPayment.cardPayment', 'Card Payment')}</Text>
                 <Text style={styles.paymentSubtitle}>Visa, Mastercard, Amex</Text>
               </View>
               <View style={styles.selectedCheckCircle}>
@@ -154,7 +156,7 @@ export default function ReviewPaymentScreen() {
                 <Ionicons name="wallet-outline" size={20} color="#1A2840" />
               </View>
               <View style={styles.paymentInfo}>
-                <Text style={styles.paymentTitle}>DZYwallet (Stablecoins & DZY)</Text>
+                <Text style={styles.paymentTitle}>{t('reviewPayment.dzyWalletOption', 'DZYwallet (Stablecoins & DZY)')}</Text>
                 <Text style={styles.paymentSubtitle}>USDC, USDT, EURC, DZY</Text>
               </View>
               <Ionicons name="chevron-down" size={18} color="#1A2840" />
@@ -171,32 +173,31 @@ export default function ReviewPaymentScreen() {
                   <Ionicons name="phone-portrait-outline" size={20} color="#1A2840" />
                 </View>
                 <View style={styles.paymentInfo}>
-                  <Text style={styles.paymentTitle}>Mobile Money (opérateurs)</Text>
-                  <Text style={styles.paymentSubtitle}>Payer avec Mobile Money</Text>
+                  <Text style={styles.paymentTitle}>{t('reviewPayment.mobileMoney', 'Mobile Money (operators)')}</Text>
+                  <Text style={styles.paymentSubtitle}>{t('reviewPayment.payWithMobileMoney', 'Pay with Mobile Money')}</Text>
                 </View>
                 <View style={styles.radioOuterCircle}>
                   {selectedPayment === 'mobile' && <View style={styles.radioInnerCircle} />}
                 </View>
               </TouchableOpacity>
               <Text style={styles.mobileMoneySubtext}>
-                Disponible uniquement dans les pays couverts{'\n'}
-                Les options réelles peuvent varier localement. <Ionicons name="information-circle-outline" size={12} color="#6B7280" />
+                {t('reviewPayment.mobileMoneyNote', 'Available only in covered countries\nActual options may vary locally.')} <Ionicons name="information-circle-outline" size={12} color="#6B7280" />
               </Text>
             </View>
           </View>
 
           {/* Payment Details Breakdown Card */}
           <View style={styles.detailsSection}>
-            <Text style={styles.detailsHeader}>Détails du paiement</Text>
+            <Text style={styles.detailsHeader}>{t('orderConfirmation.paymentDetails', 'Payment details')}</Text>
             
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Montant</Text>
+              <Text style={styles.detailLabel}>{t('common.amount', 'Amount')}</Text>
               <Text style={styles.detailValue}>20.00 USD</Text>
             </View>
             
             <View style={styles.detailRow}>
               <View style={styles.detailLabelWithIcon}>
-                <Text style={styles.detailLabel}>Frais de service</Text>
+                <Text style={styles.detailLabel}>{t('paymentSuccess.serviceFee', 'Service Fee')}</Text>
                 <Ionicons name="information-circle-outline" size={13} color="#9CA3AF" style={{ marginLeft: 4 }} />
               </View>
               <Text style={styles.detailValue}>0.50 USD</Text>
@@ -205,7 +206,7 @@ export default function ReviewPaymentScreen() {
             <View style={styles.dashedLine} />
 
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Total à payer</Text>
+              <Text style={styles.totalLabel}>{t('orderConfirmation.amountToPay', 'Total to pay')}</Text>
               <Text style={styles.totalValue}>20.50 USD</Text>
             </View>
           </View>
@@ -216,8 +217,8 @@ export default function ReviewPaymentScreen() {
               <Ionicons name="shield-checkmark-outline" size={18} color="#10B981" />
             </View>
             <View style={styles.securityInfo}>
-              <Text style={styles.securityTitle}>Paiement 100% sécurisé</Text>
-              <Text style={styles.securityText}>Vos fonds sont protégés par le protocole de sécurité DZYwallet.</Text>
+              <Text style={styles.securityTitle}>{t('orderVerification.securePaymentTitle', '100% Secure payment')}</Text>
+              <Text style={styles.securityText}>{t('reviewPayment.securityNote', 'Your funds are protected by the DZYwallet security protocol.')}</Text>
             </View>
           </View>
 
@@ -232,14 +233,14 @@ export default function ReviewPaymentScreen() {
             activeOpacity={0.8}
           >
             <Ionicons name="lock-closed" size={16} color="#1A2840" style={{ marginRight: 8 }} />
-            <Text style={styles.ctaButtonText}>Payer & envoyer</Text>
+            <Text style={styles.ctaButtonText}>{t('reviewPayment.payAndSend', 'Pay & send')}</Text>
             <Ionicons name="arrow-forward" size={18} color="#1A2840" style={{ marginLeft: 8 }} />
           </TouchableOpacity>
 
           {/* Step Indicator 4/4 */}
           <View style={styles.stepProgressRow}>
             <Ionicons name="shield-checkmark-outline" size={14} color="#6B7280" style={{ marginRight: 4 }} />
-            <Text style={styles.stepProgressText}>Paiement 4/4 : Vérification et confirmation</Text>
+            <Text style={styles.stepProgressText}>{t('reviewPayment.stepProgress', 'Payment 4/4 : Review & confirmation')}</Text>
           </View>
 
           {/* Progress Bar (All 4 segments active) */}

@@ -10,12 +10,15 @@ import CashierSendFundsScreen from '../screens/CashierSendFundsScreen';
 import CashierSuccessScreen from '../screens/CashierSuccessScreen';
 import CashRegisterScreen from '../screens/CashRegisterScreen';
 import ChooseServiceScreen from '../screens/ChooseServiceScreen';
+import BillDetailsScreen from '../screens/BillDetailsScreen';
+import ExploreGiftCardsScreen from '../screens/ExploreGiftCardsScreen';
 import ContactHistoryScreen from '../screens/ContactHistoryScreen';
 import ContactProfileScreen from '../screens/ContactProfileScreen';
 import ContactsManageScreen from '../screens/ContactsManageScreen';
 import ContactsScreen from '../screens/ContactsScreen';
 import EditBeneficiaryScreen from '../screens/EditBeneficiaryScreen';
 import ServiceCheckoutScreen from '../screens/ServiceCheckoutScreen';
+import PayBillsSummaryScreen from '../screens/PayBillsSummaryScreen';
 import DashboardEngScreen from '../screens/DashboardEngScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import FiltersScreen from '../screens/FiltersScreen';
@@ -121,6 +124,8 @@ export default function AppNavigator() {
       <Stack.Screen name="CashierSuccessScreen" component={CashierSuccessScreen} />
       <Stack.Screen name="CashRegisterScreen" component={CashRegisterScreen} />
       <Stack.Screen name="ChooseServiceScreen" component={ChooseServiceScreen} />
+      <Stack.Screen name="BillDetailsScreen" component={BillDetailsScreen} />
+      <Stack.Screen name="ExploreGiftCardsScreen" component={ExploreGiftCardsScreen} />
       <Stack.Screen name="ContactHistoryScreen" component={ContactHistoryScreen} />
       <Stack.Screen name="ContactProfileScreen" component={ContactProfileScreen} />
       <Stack.Screen name="ContactsManageScreen" component={ContactsManageScreen} />
@@ -131,6 +136,7 @@ export default function AppNavigator() {
         component={ServiceCheckoutScreen} 
         options={{ presentation: 'transparentModal', animation: 'slide_from_bottom' }}
       />
+      <Stack.Screen name="PayBillsSummaryScreen" component={PayBillsSummaryScreen} />
       <Stack.Screen name="DashboardEngScreen" component={DashboardEngScreen} />
       <Stack.Screen name="DashboardScreen" component={DashboardScreen} />
       <Stack.Screen name="FiltersScreen" component={FiltersScreen} />

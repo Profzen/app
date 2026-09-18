@@ -9,16 +9,23 @@ import { useApp } from '../context/AppContext';
 import { isSmallScreen } from '../utils/responsive';
 import { supabase } from '../services/supabaseClient';
 
-export default function WalletCard({ balances }) {
+export default function WalletCard({ balances, badgeTitle }) {
   const navigation = useNavigation();
-  const { hideBalance, toggleHideBalance, t, user } = useApp();
+  const { hideBalance, toggleHideBalance, t, user, userCountry } = useApp();
 
   const isVisible = !hideBalance;
   
   const mainBalance = balances?.DZY || 0;
   
-  const userCountryKey = (user?.country || '').toLowerCase().trim();
-  const primaryCountry = getCountryCurrencyInfo(userCountryKey);
+  // Use IP-detected userCountry first (like TopUpScreen / OrderVerificationScreen do),
+  // then fall back to the profile's registered country
+  const geoCountryKey = (
+    userCountry ||
+    user?.country_code ||
+    user?.country ||
+    'us'
+  ).toLowerCase().trim();
+  const primaryCountry = getCountryCurrencyInfo(geoCountryKey);
 
   let secondaryCountry = getCountryCurrencyInfo('united states');
   if (primaryCountry.currency === 'USD') {
@@ -75,7 +82,7 @@ export default function WalletCard({ balances }) {
             <View>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={styles.badgeText}>
-                  {user?.role === 'merchant' ? t('wallet.business_wallet', 'BUSINESS WALLET') : 'TOTAL DZY INDEX'}
+                  {badgeTitle || (user?.role === 'merchant' ? t('wallet.business_wallet', 'BUSINESS WALLET') : 'TOTAL DZY INDEX')}
                 </Text>
                 {user?.role === 'merchant' && (
                   <View style={{ backgroundColor: '#8B5CF6', borderRadius: 4, paddingHorizontal: 4, paddingVertical: 1, marginLeft: 6 }}>
