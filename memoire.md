@@ -2452,3 +2452,205 @@ A la fin de chaque session ou apres toute modification majeure, l'IA DOIT mettre
 ## 📜 Règle d'Or (Mise à jour du Mémoire)
 
 À la fin de chaque session ou après toute modification majeure, l'IA DOIT mettre à jour ce fichier `memoire.md` pour garantir la continuité entre sessions, **sans pour autant pusher vers `origin/develop` pour cette seule raison**.
+
+---
+
+## 💬 Retours Slack & Directives Client (Session Septembre 2026 - Lot 1)
+
+### 1. Directive Majeure Solofo sur la Langue par Défaut & Cohérence Visuelle
+- **Constat Solofo (13 Septembre)** : *"Please use English now for everything you put on the app bcoz no one wants to carry on testing it due to this mixture display we have until now."*
+- **Conséquence & Action requise** :
+  - L'application doit être **100% en anglais par défaut** pour les tests.
+  - Élimination absolue des affichages mixtes (mélange de français et d'anglais sur un même écran ou dans des descriptions/boutons).
+  - Contrôle systématique des fallbacks et des libellés dans les dictionnaires.
+
+### 2. Retours Solofo sur l'Achat de Produits Physiques ("Buying Physical Goods")
+- **Incohérences UX relevées par Solofo** :
+  - De nombreuses incohérences UX sur l'achat de biens physiques (même si l'escrow n'est pas encore finalisé).
+  - Vérifier et réviser pas à pas les boutons :
+    - `Buy` & `Buy me`
+    - Clic sur un produit et redirection
+  - **Incohérence des fiches produits détectée** : Exemple sur la capture Solofo où un compresseur d'air (*Total Air Compressor 300Lit*) affiche en description un texte de *Samsung Galaxy A14*. Les données de mock/API doivent être cohérentes avec les titres et catégories.
+  - **Alignement Web impératif** : Vérifier la version Web de DizzitUp et s'aligner rigoureusement dessus.
+
+### 3. Google Play Console (Coordination Abdel-Aziz & Solofo)
+- Invitations reçues pour la Google Play Console.
+- Instructions reçues pour les revues requises par Google.
+- Déposer le premier fichier `.aab` (issu du build 35/38) pour initialiser l'app.
+
+### 4. Bilan des Travaux d'Assia (Lot 1)
+- **Pay Bills & Reloadly** : Connexion améliorée aux facturiers en direct (Reloadly), détection dynamique du pays (bénéficiaire, indicatif téléphonique, profil) au lieu de valeurs en dur, correction des codes ISO pays, et option de paiement direct par numéro de téléphone pour les paiements ponctuels.
+- **Branding & Identité** : Remplacement des éléments temporaires par les assets officiels de la marque DizzitUp.
+- **Refonte Écran DZY Rewards** :
+  - Séparation nette du solde DZY Rewards et des soldes USDC/USDT pour éviter toute confusion utilisateur.
+  - Soldes *Available DZY* et *Total Earned DZY*.
+  - Parrainage avec code et partage.
+  - 5% de cashback sur les factures et recharges.
+  - Récompenses commerçant/POS, sections Staking et Ambassadeur.
+  - Onglet des avantages DZY (frais de transfert réduits, statut privilégié, partenaires).
+
+---
+
+## 💬 Retours Slack & Directives Client (Session Septembre 2026 - Lot 2)
+
+### 1. Politique DZY Rewards & Décisions Stratégiques Solofo (Document Officiel Juillet 2026)
+- **Règles Majeures jusqu'au TGE (Token Generation Event - estimé Fin d'Année)** :
+  - **AUCUN DZY ne peut être envoyé, acheté, swappé contre des stablecoins ni retiré en MoMo**.
+  - **Le paiement direct en DZY ne sera pas autorisé avant le TGE**.
+  - **La comptabilité des DZY gagnés (Earned DZY) se fait à 100% OFF-CHAIN dans l'enregistrement Supabase de chaque utilisateur**.
+  - Les boutons de cash-out/swap sur DZY ne doivent donc pas faire de promesse trompeuse on-chain, mais refléter fidèlement ce statut de points fidélité off-chain pré-TGE.
+
+### 2. Barème Officiel de Cashback & Modèle 3-Tier (DizzyFamily V6)
+- **Taux de conversion de référence** : **1 DZY = 0.10 USD** (au TGE).
+- **Pourcentages de Cashback selon le moyen de paiement** :
+  - Paiement en **DZY** : **5%** de cashback (Valable pour Recharge mobile, Factures et Achats de biens).
+  - Paiement en **Stablecoins** : **3%** (Tier 1) / 2% (Tier 2 & 3).
+  - Paiement en **Mobile Money** : **2%** (Tier 1) / 0% (Tier 2).
+  - Paiement par **Carte bancaire** : **1%** (Tier 1) / 0% (Tier 2).
+- **Récompenses d'actions & Parrainage** :
+  - Inscription / Sign-up : **5 DZY**.
+  - Top-up portefeuille par Mobile Money : **1%** en DZY.
+  - Parrainage utilisateur réussi : **1 USD** (en DZY).
+  - Parrainage commerçant réussi : **5 USD** (en DZY).
+  - Envoi à un nouvel utilisateur non inscrit : **1 USD**.
+  - Partage/Like de publication DizzitUp : **2 DZY** (Forward) / **1 DZY** (Like).
+
+### 3. Simplification V1 demandée par Solofo sur l'Écran DZY Rewards
+- Solofo demande de **retirer les sections Staking et Programme Ambassadeurs** pour le moment : jugées trop précoces pour la V1.
+- Afficher clairement le tableau complet des pourcentages de cashback selon la méthode de paiement plutôt que de ne citer que les 5%.
+
+---
+
+## 💬 Retours Slack & Directives Client (Session Septembre 2026 - Lot 3)
+
+### 1. BUG CRITIQUE : "Buy Now Wrong Connection" (Achat de Biens)
+- **Constat Solofo (14 Septembre)** : En cliquant sur "Buy now" depuis un produit (ex: un service ou formation *DeFi & New Corporate Finance Strategy 101* de *EYOU*), l'écran de vérification de commande ouvrait systématiquement un écran codé en dur pour un *Samsung Galaxy A14 (155 000 FCFA)* vendu par *Jumia Sénégal* !
+- **Action requise** :
+  - La navigation vers l'écran de commande (`OrderVerificationScreen.js` / `OrderConfirmationScreen.js`) doit passer l'objet produit cliqué en paramètre (`route.params.product`) et hydrater dynamiquement :
+    - Titre du produit
+    - Prix et devise du produit
+    - Vendeur réel (Merchant / Shop)
+    - Image réelle
+    - Options de livraison adaptées (physique vs service digital/retrait).
+  - Nettoyer les mocks de description pour que la description corresponde bien à l'article affiché.
+
+### 2. BUG LIEN D'INVITATION / PARRAINAGE (Erreur 404 sur Web)
+- **Constat Solofo (15 Septembre)** : Le lien de parrainage partagé par les utilisateurs (`https://dizzitup.com/invite/DZY-FD4810`) débouche sur une erreur **404 Page Not Found** dans le navigateur des destinataires.
+- **Action requise** :
+  - Vérifier la structure de l'URL générée dans [`shareHelper.js`](file:///g:/zen/projets/DizzitApp/app/src/utils/shareHelper.js) ou les composants de parrainage.
+  - Aligner l'URL sur le format géré par la plateforme Web (ou ajouter les redirections appropriées).
+
+### 3. GÉOLOCALISATION & DÉSACTIVATION CONDITIONNELLE DU MOBILE MONEY (MOMO)
+- **Constat Solofo (15 Septembre)** : En France, l'option Mobile Money (MoMo) reste active sur l'écran de rechargement/on-ramp, alors qu'elle devrait être grisée/désactivée hors Afrique.
+- **Actions requises** :
+  - **Désactivation/Grisage conditionnel** : Si l'utilisateur est détecté ou géolocalisé en France, Europe, USA ou tout pays sans couverture MoMo, l'option Mobile Money doit être grisée (`disabled`) avec un message explicatif clair (*« Non disponible dans votre région / Pays non couvert »*), ne laissant actifs que Carte bancaire et Crypto.
+  - **Consentement explicite de Géolocalisation** : Intégrer une demande d'autorisation/consentement claire et propre à l'utilisateur avant d'accéder à la géolocalisation.
+
+### 4. DISTRIBUTION DES BUILDS & NOTIFICATIONS TESTEURS
+- Solofo a signalé que plusieurs testeurs n'avaient pas reçu la notification automatique du Build 34 sur TestFlight / Android.
+- S'assurer que les testeurs sont bien ajoutés dans les groupes de test Apple TestFlight et que le binaire est actif.
+
+---
+
+## 💬 Retours Slack & Directives Client (Session Septembre 2026 - Lot 4)
+
+### 1. RETOURS ENTHOUSIASTES SUR LE BUILD 35 (Solofo - 18 Septembre)
+- **Message Solofo (7:15 AM)** : *"Build 35: This is gorgeous & beautiful. Thx. I will text today but i need the 2 URLs to share. And a list of: delivered features, your request for test (specific features you want people to test), not to mention bugs bcoz we are working on them."*
+- **Livrables à fournir immédiatement à Solofo pour sa communication aux testeurs et investisseurs** :
+  1. Les **2 URLs de partage** :
+     - TestFlight iOS : lien public / App Store Connect.
+     - Android : lien de téléchargement direct APK/AAB (GitHub Release Build 35).
+  2. La **liste des fonctionnalités livrées** (*Delivered features*).
+  3. Les **consignes de test ciblées** (*Request for test : parcours spécifiques à tester par les utilisateurs*).
+  4. La mention de ne pas s'attarder sur les bugs en cours de correction.
+
+### 2. CORRECTIONS UI/UX DEMANDÉES SUR LES BOUTIQUES (`ShopDetailsScreen.js`)
+- **Suppression des boutons globaux `Buy` et `Buy me`** : Sur la page de détails d'une boutique, Solofo a constaté que deux gros boutons `Buy` et `Buy me` étaient placés au milieu de l'écran sous les infos de paiement, au-dessus des produits populaires.
+- **Règle impérative Solofo** : Les boutons `Buy` et `Buy me` **ne doivent exister que sur chaque carte produit individuel** et sur la page de détail d'un produit, JAMAIS en bloc flottant global sur la page boutique.
+
+### 3. GESTION DES CONTACTS (`ContactsScreen.js`)
+- **Synchronisation des contacts (`Sync contacts`)** : Actuellement, cliquer sur « Synchroniser vos contacts » ne déclenche pas d'import réel ni d'état de chargement clair. Intégrer la demande d'autorisation native des contacts du smartphone et l'importation.
+- **Glissement Gauche/Droite (Swipe Action)** : Solofo a testé le swipe sur les lignes de contacts dans *Mes bénéficiaires* (`My beneficiaries`) et rien ne se passe. Rétablir/activer le composant de swipe pour afficher les actions rapides (Favori/Étoile, Modifier/Crayon, Supprimer/Corbeille) comme prévu dans la maquette M63.
+
+### 4. CRASH DU CHECKOUT PAR CARTE BANCAIRE (USDC sur Base)
+- **Rapport de crash envoyé par Solofo depuis TestFlight** : *"Crashed after clicking on Checkout (buy 10 USDC/Base by card)"*.
+- Vérifier la robustesse du composant de paiement par carte / Crossmint ou Ecobank lors du checkout de 10 USDC sur le réseau Base pour éradiquer tout plantage.
+
+---
+
+## 💬 Retours Slack & Directives Client (Session Septembre 2026 - Lot 5)
+
+### 1. Synthèse Complète des Mises à Jour Livrées par Assia (Matin du 18 Septembre - 9h25)
+- **Devise locale & Géolocalisation** :
+  - Détection automatique de la devise locale selon la localisation de l'utilisateur.
+  - Soldes du Wallet et de la Home affichés dynamiquement en monnaie locale.
+- **Mobile Money & Top-Up** :
+  - Intégration des informations de pays pris en charge pour le Mobile Money.
+  - Disponibilité selon la géolocalisation : MoMo activé pour les pays supportés et **automatiquement grisé/désactivé** pour les pays non supportés (ex: France/Europe).
+- **Shopping & Avis** :
+  - Ajout du filtre de produits intelligent dans les boutiques (`ShopSmartFilterModal`).
+  - Ajout du flux de notation et d'avis marchands (`WriteReviewModal` & `reviewService`).
+- **Contacts** :
+  - Bouton renommé en « Gérer les contacts » (*Manage Contacts*) pour clarifier l'action.
+  - Implémentation du swipe pour suppression de contact (*Delete contact* visible sur le Build 35).
+- **Protection Escrow & PIN de livraison** :
+  - Écran de confirmation de commande intégrant le code secret PIN à 4 chiffres (*Your Secret Delivery PIN Code*) et la protection Escrow DizzitUp.
+
+### 2. Répartition Claire des Rôles & Tâches Immédiates
+- **Nathan Dwashu** : Travaux backend en cours (Medusa / API backend) à intégrer dès disponibilité.
+- **Assia** : Boutons de téléchargement App Store / Google Play dans le footer, préparation Google Play / Play Store, flux d'e-mails de release et formulaires testeurs sur Brevo.
+- **Abdel-Aziz (Notre périmètre d'action)** :
+  1. **Fournir à Solofo le pack complet pour son message d'annonce aux testeurs** :
+     - Les 2 liens (TestFlight iOS & GitHub Release Build 35 APK/AAB).
+     - La liste des fonctionnalités livrées (*Delivered features*).
+     - Les consignes de test spécifiques (*Request for test*).
+  2. **Ajustement UI Boutique (`ShopDetailsScreen.js`)** :
+     - Retirer définitivement les deux boutons flottants `Buy` et `Buy me` situés sous les informations de paiement au milieu de la boutique.
+  3. **Vérification de la langue par défaut** :
+     - S'assurer que le mode par défaut de l'app pour les testeurs est **100% en anglais**, sans affichage mixte (ni titres/descriptions orphelines en français).
+  4. **Validation de la non-régression du Checkout par carte (USDC sur Base)** :
+     - Contrôler le correctif anti-crash sur le checkout par carte bancaire.
+  5. **Synchronisation Git & Dépôt Play Console** :
+     - Synchroniser `front-back` avec les 10 commits de `origin/develop`.
+     - Préparer le téléversement du fichier `DizzitUp.aab` sur la Google Play Console.
+
+---
+
+## 📋 Plan d'Action Validé : Correctifs Ciblés, Uniformisation Anglais & Déploiement
+
+### Phase 1 : Synchronisation Git
+- Pull de `origin/develop` (commit `f336307`) dans la branche de travail locale `front-back`.
+- Vérification de l'arbre de travail propre et validation du build Babel initial.
+
+### Phase 2 : Éradication du Bug 404 du Lien de Parrainage
+- Remplacer `https://dizzitup.com/invite/${referralCode}` par `https://dizzitup.com?ref=${referralCode}` dans `src/screens/RewardsScreen.js`.
+- Synchroniser la clé `share_message` dans les 5 dictionnaires (`en.json`, `fr.json`, `pt.json`, `ar.json`, `am.json`).
+
+### Phase 3 : Basculement de la Langue par Défaut en Anglais (`'en'`)
+- Modifier `src/context/AppContext.js` : initialisation de `language` sur `'en'` au lieu de `'fr'`.
+- Sécuriser les fallbacks textuels par défaut en anglais.
+
+### Phase 4 : Traduction des Badges Blockchain & Textes Checkout
+- Dans `src/screens/OrderVerificationScreen.js`, remplacer les tags français codés en dur (`Rapide & Éco`, `Faibles frais`, `Ultra-rapide`, `L1 Sécurisé`) par des libellés anglais (`Fast & Eco`, `Low fees`, `Ultra-fast`, `Secure L1`).
+- Nettoyer les fallbacks de secours français dans `OrderVerificationScreen.js` et `OrderConfirmationScreen.js`.
+
+### Phase 5 : Simplification V1 Écran DZY Rewards
+- Dans `src/screens/RewardsScreen.js`, masquer les sections *Staking* et *Ambassadeurs* conformément à la politique pré-TGE de Solofo.
+
+### Phase 6 : Nettoyage CSS Boutique
+- Supprimer le code CSS mort dans `ShopDetailsScreen.js` (`actionButtonsRow`, `btnAcheter`, etc.).
+
+### Phase 7 : Initialisation Google Play Console & Pipeline CI/CD
+- Télécharger l'AAB officiel du Build 35 depuis GitHub Releases.
+- Assister le téléversement sur la Google Play Console.
+- Préparer l'étape `r0adkll/upload-google-play` dans `build-android.yml`.
+
+### Phase 8 : Validation Technique & Release
+- Contrôle de compilation Babel à 100% sur tous les fichiers.
+- Mise à jour finale du mémoire et commit groupé sur `front-back`.
+
+
+
+
+
+
