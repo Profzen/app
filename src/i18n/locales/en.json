@@ -5231,7 +5231,7 @@
     "faq_item_3": "No complicated tiers: everyone gets fair, high-yield cashback based directly on the payment method used.",
     "faq_item_4": "Tokens accumulate safely in your account before TGE, where they will convert 1:1 to on-chain Polygon DZY.",
     "modal_close": "Got it",
-    "share_message": "Join me on DizzitUp to send money, shop, and pay bills in Africa with zero hassle! Use my referral code {{code}} to earn rewards: https://dizzitup.com/invite/{{code}}",
+    "share_message": "Join me on DizzitUp to send money, shop, and pay bills in Africa with zero hassle! Use my referral code {{code}} to earn rewards: https://dizzitup.com?ref={{code}}",
     "token_info_banner": "DZY is the official utility token of the DizzitUp ecosystem built on Polygon ERC-20, guaranteeing fast, low-cost, and secure transactions.",
     "footer_terms": "Rewards are calculated automatically and credited directly to your DZY account."
   },

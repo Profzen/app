@@ -102,7 +102,7 @@ export default function RewardsScreen() {
     try {
       const shareMsg = t(
         'rewards.share_message',
-        'Join me on DizzitUp to send money, shop, and pay bills in Africa with zero hassle! Use my referral code {{code}} to earn rewards: https://dizzitup.com/invite/{{code}}',
+        'Join me on DizzitUp to send money, shop, and pay bills in Africa with zero hassle! Use my referral code {{code}} to earn rewards: https://dizzitup.com?ref={{code}}',
         { code: referralCode }
       );
       await Share.share({

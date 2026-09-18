@@ -366,7 +366,7 @@ export default function OrderConfirmationScreen({ route }) {
                   {item.name}
                 </Text>
                 <View style={styles.shopRow}>
-                  <Text style={styles.shopName}>{orderData.merchant?.name || t('paymentSuccess.partnerMerchant', 'Commerçant Partenaire')}</Text>
+                  <Text style={styles.shopName}>{orderData.merchant?.name || t('paymentSuccess.partnerMerchant', 'Partner Merchant')}</Text>
                   <Ionicons name="checkmark-circle" size={12} color="#3B82F6" style={{ marginLeft: 4 }} />
                 </View>
               </View>
@@ -375,7 +375,7 @@ export default function OrderConfirmationScreen({ route }) {
                   {(Number(item.price) || 0).toLocaleString(numLocale)} {displayCurrency}
                 </Text>
                 <View style={styles.qtyBadge}>
-                  <Text style={styles.qtyBadgeText}>{t('orderConfirmation.qty', `Qté: ${item.quantity}`, { qty: item.quantity })}</Text>
+                  <Text style={styles.qtyBadgeText}>{t('orderConfirmation.qty', `Qty: ${item.quantity}`, { qty: item.quantity })}</Text>
                 </View>
               </View>
             </View>

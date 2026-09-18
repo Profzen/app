@@ -533,7 +533,7 @@ export function AppProvider({ children }) {
 
   const [accountMode, setAccountMode] = useState('personal');
   const [hideBalance, setHideBalance] = useState(false);
-  const [language, setLanguage] = useState('fr'); // 'en' | 'fr' | 'pt' | 'am' | 'ar'
+  const [language, setLanguage] = useState('en'); // Default to English for international & tester consistency ('en' | 'fr' | 'pt' | 'am' | 'ar')
 
   const handleSetLanguage = useCallback((newLang) => {
     const saveLang = (lang) => {

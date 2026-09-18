@@ -5020,7 +5020,7 @@
     "faq_item_3": "Sem níveis complicados: todos recebem recompensas justas com base no método de pagamento utilizado.",
     "faq_item_4": "Os tokens acumulam com segurança antes do TGE, onde se tornarão 100% utilizáveis na rede Polygon.",
     "modal_close": "Entendido",
-    "share_message": "Junte-se a mim na DizzitUp para enviar dinheiro, comprar e pagar contas na África com zero taxas! Use meu código {{code}}: https://dizzitup.com/invite/{{code}}",
+    "share_message": "Junte-se a mim na DizzitUp para enviar dinheiro, comprar e pagar contas na África com zero taxas! Use meu código {{code}}: https://dizzitup.com?ref={{code}}",
     "token_info_banner": "DZY é o token de utilidade oficial do ecossistema DizzitUp desenvolvido na Polygon ERC-20, garantindo transações rápidas, econômicas e seguras.",
     "footer_terms": "As recompensas são calculadas automaticamente e creditadas diretamente na sua conta DZY."
   },

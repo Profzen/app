@@ -5038,7 +5038,7 @@
     "faq_item_3": "ውስብስብ ደረጃዎች የሉም፡ ሁሉም ሰው በሚከፍልበት ዘዴ መሠረት ፍትሃዊ ተመላሽ ያገኛል።",
     "faq_item_4": "ቶከኖች ከ TGE በፊት በአስተማማኝ ሁኔታ ይሰበሰባሉ።",
     "modal_close": "ተረድቻለሁ",
-    "share_message": "በአፍሪካ ውስጥ ያለ ምንም ክፍያ ገንዘብ ለመላክ እና ሂሳብ ለመክፈል DizzitUp ን ይቀላቀሉ! የመጋበዣ ኮዴን {{code}} ይጠቀሙ፡ https://dizzitup.com/invite/{{code}}",
+    "share_message": "በአፍሪካ ውስጥ ያለ ምንም ክፍያ ገንዘብ ለመላክ እና ሂሳብ ለመክፈል DizzitUp ን ይቀላቀሉ! የመጋበዣ ኮዴን {{code}} ይጠቀሙ፡ https://dizzitup.com?ref={{code}}",
     "token_info_banner": "DZY በ Polygon ERC-20 ላይ የተገነባ የ DizzitUp ይፋዊ የጥቅም ቶከን ሲሆን ፈጣን፣ ዝቅተኛ ወጪ እና አስተማማኝ ግብይቶችን ያረጋግጣል።",
     "footer_terms": "ሽልማቶች በራስ-ሰር ይሰላሉ እና በቀጥታ ወደ DZY መለያዎ ገቢ ይደረጋሉ።"
   },

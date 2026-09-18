@@ -2649,6 +2649,28 @@ A la fin de chaque session ou apres toute modification majeure, l'IA DOIT mettre
 - Contrôle de compilation Babel à 100% sur tous les fichiers.
 - Mise à jour finale du mémoire et commit groupé sur `front-back`.
 
+---
+
+## 🚀 Réalisations Effectuées & Livrées (Session du 18 Septembre 2026)
+
+1. **Synchronisation Git Réussie** :
+   - Fusion complète de `origin/develop` (`f336307`) dans `front-back` sans aucun conflit (stratégie *ort*).
+   - Intégration de 100% des avancées d'Assia et Nathan (corridors de paiement, devises locales dynamiques, swipe contact, avis boutiques).
+2. **Éradication Définitive du Bug 404 du Lien de Parrainage** :
+   - Remplacement de `dizzitup.com/invite/{{code}}` par l'URL web valide `https://dizzitup.com?ref={{code}}` dans [`RewardsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/RewardsScreen.js) et dans les 5 dictionnaires (`en.json`, `fr.json`, `pt.json`, `ar.json`, `am.json`).
+3. **Application 100% en Anglais par Défaut** :
+   - Dans [`AppContext.js`](file:///g:/zen/projets/DizzitApp/app/src/context/AppContext.js), basculement officiel de `language` initial à `'en'` (au lieu de `'fr'`).
+   - Tout premier lancement et installation de test démarre désormais strictement en Anglais, résolvant le problème de mélange linguistique relevé par Solofo.
+4. **Anglicisation des Badges Blockchain & Checkout** :
+   - Dans [`OrderVerificationScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/OrderVerificationScreen.js), conversion des badges réseaux en anglais (`Fast & Eco`, `Low fees`, `Ultra-fast`, `Secure L1`).
+   - Remplacement des fallbacks français de secours par des libellés anglais cohérents dans `OrderVerificationScreen.js` et `OrderConfirmationScreen.js`.
+5. **Nettoyage CSS Boutique** :
+   - Élimination des styles morts résiduels dans [`ShopDetailsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ShopDetailsScreen.js).
+6. **Validation Babel & JSON** :
+   - 100% des fichiers JavaScript transformés avec succès par Babel (`babel-preset-expo`).
+   - 100% des 5 dictionnaires JSON validés sans erreur de syntaxe.
+
+
 
 
 

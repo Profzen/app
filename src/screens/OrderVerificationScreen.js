@@ -25,7 +25,7 @@ const BLOCKCHAIN_NETWORKS = [
     id: 'Polygon',
     name: 'Polygon',
     badge: 'PoS',
-    tag: 'Rapide & Éco',
+    tag: 'Fast & Eco',
     logo: require('../../assets/cryptos/polygon.png'),
     accentColor: '#8247E5',
     lightBg: '#F5F3FF',
@@ -43,7 +43,7 @@ const BLOCKCHAIN_NETWORKS = [
     id: 'Ethereum',
     name: 'Ethereum',
     badge: 'Mainnet',
-    tag: 'L1 Sécurisé',
+    tag: 'Secure L1',
     logo: require('../../assets/cryptos/ethereum.png'),
     accentColor: '#627EEA',
     lightBg: '#F8FAFC',
@@ -52,7 +52,7 @@ const BLOCKCHAIN_NETWORKS = [
     id: 'BNB',
     name: 'BNB Chain',
     badge: 'BSC',
-    tag: 'Faibles frais',
+    tag: 'Low fees',
     logo: require('../../assets/cryptos/bnb-logo.png'),
     accentColor: '#F3BA2F',
     lightBg: '#FFFBEB',
@@ -61,7 +61,7 @@ const BLOCKCHAIN_NETWORKS = [
     id: 'Solana',
     name: 'Solana',
     badge: 'SPL',
-    tag: 'Ultra-rapide',
+    tag: 'Ultra-fast',
     logo: require('../../assets/cryptos/solana.png'),
     accentColor: '#14F195',
     lightBg: '#ECFDF5',
@@ -713,7 +713,7 @@ export default function OrderVerificationScreen({ route }) {
                 <View style={styles.networkNoticeRow}>
                   <Ionicons name="shield-checkmark" size={13} color="#10B981" style={{ marginRight: 5 }} />
                   <Text style={styles.networkNoticeText}>
-                    {t('orderVerification.escrowDeployed', `Séquestre Escrow vérifié sur ${network}`, { network })}
+                    {t('orderVerification.escrowDeployed', `Escrow verified on ${network}`, { network })}
                   </Text>
                 </View>
               </View>
@@ -722,16 +722,16 @@ export default function OrderVerificationScreen({ route }) {
                 <View style={styles.balanceWarningCard}>
                   <Ionicons name="alert-circle" size={18} color="#EF4444" style={{ marginRight: 8 }} />
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.balanceWarningTitle}>{t('orderVerification.insufficientBalanceTitle', 'Solde insuffisant')}</Text>
+                    <Text style={styles.balanceWarningTitle}>{t('orderVerification.insufficientBalanceTitle', 'Insufficient balance')}</Text>
                     <Text style={styles.balanceWarningText}>
-                      {t('orderVerification.insufficientBalanceDesc', `Votre solde actuel est de ${userBalance} ${selectedToken}. Vous pouvez recharger votre compte ou choisir un autre moyen.`, {
+                      {t('orderVerification.insufficientBalanceDesc', `Your current balance is ${userBalance} ${selectedToken}. You can top up your account or choose another method.`, {
                         balance: userBalance,
                         token: selectedToken
                       })}
                     </Text>
                   </View>
                   <TouchableOpacity style={styles.btnTopUpMini} onPress={() => navigation.navigate('TopUpScreen')}>
-                    <Text style={styles.btnTopUpMiniText}>{t('orderVerification.topUpBtn', 'Recharger')}</Text>
+                    <Text style={styles.btnTopUpMiniText}>{t('orderVerification.topUpBtn', 'Top up')}</Text>
                   </TouchableOpacity>
                 </View>
               )}
