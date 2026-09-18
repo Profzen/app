@@ -2670,6 +2670,33 @@ A la fin de chaque session ou apres toute modification majeure, l'IA DOIT mettre
    - 100% des fichiers JavaScript transformés avec succès par Babel (`babel-preset-expo`).
    - 100% des 5 dictionnaires JSON validés sans erreur de syntaxe.
 
+---
+
+## 📱 Statut Google Play Console & Préparation CI/CD (18 Septembre 2026 - 21h45)
+
+### 1. Diagnostic de l'Accès Google Play
+- **Connexion réussie** : L'adresse `profzzen@gmail.com` a bien rejoint le compte d'organisation Google Play Console de **DizzitUp** (ID de compte : `6579020134614916823`).
+- **Blocage constaté à la racine** :
+  - L'écran d'accueil affichait l'erreur `(7295B70D)` avec un chargement infini.
+  - L'onglet *Utilisateurs et autorisations* a révélé le statut : 🔒 **« Autorisation nécessaire »**.
+  - **Explication** : Le compte développeur invité ne dispose pas encore des droits d'administration ni de la permission spécifique *"Créer et modifier des applications"*. De plus, comme aucun conteneur d'application n'a encore été créé sur la console DizzitUp, l'accès au tableau de bord des applications est restreint.
+
+### 2. Message Officiel Transmis à Solofo
+Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès :
+> *"Hi @Solofo, I logged into the Google Play Console for DizzitUp, but my user profile currently shows: 🔒 (Permission required). Since there are no apps created yet, I cannot create the first app container with my current permissions. Could you please either: 1) Grant my account (profzzen@gmail.com) Admin rights (or check 'Create and modify apps') under Users and permissions so I can create the app and upload the .aab bundle directly, OR 2) Create the app container from your end so I can access it immediately? Note: Google strictly requires a first manual upload of the .aab bundle to initialize the app signature before we can configure Google Cloud service account keys and fully automate the CI/CD pipeline (so future builds deploy automatically to the Play Store like we do with TestFlight). Thanks!"*
+
+### 3. Fichier Binaire AAB Prêt au Téléversement
+- Le fichier officiel compilé **`DizzitUp.aab`** du Build #35 est déjà téléchargé et prêt à être déposé dans la piste de **Test Interne** (*Internal Testing*) dès déblocage des droits par Solofo.
+
+### 4. État des Branches & Prochaine Étape
+- **Branche active** : `front-back` (Commit `c70017f`).
+- **Arbre de travail** : 100% propre (`clean`), synchronisé avec les derniers commits d'Assia (`f336307`) et enrichi de tous les correctifs.
+- **En attente** : Attribution des droits Google Play Console par Solofo pour :
+  1. Déposer le premier fichier `.aab`.
+  2. Générer la clé de compte de service Google Cloud (`PLAY_STORE_JSON_KEY`).
+  3. Ajouter la tâche de déploiement automatique dans `.github/workflows/build-android.yml`.
+
+
 
 
 
