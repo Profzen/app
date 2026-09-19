@@ -10,6 +10,7 @@
   "8": "8",
   "9": "9",
   "copied_title": "{{label}} copiado!",
+
   "finance": {
     "stakeholders": {
       "families": {
@@ -3434,6 +3435,8 @@
     "view_rewards_dashboard": "Ver Painel de Recompensas"
   },
   "home": {
+    "openPos": "Ponto de Venda (TPA)",
+    "openPosSub": "Receber Pagamento",
     "todos": {
       "low_balance": {
         "title": "Saldo baixo,\nrecarregue sua conta",
@@ -4299,7 +4302,7 @@
     "recipientAddressLabel": "Endereço / Cidade de entrega",
     "namePlaceholder": "Ex: João Silva",
     "addressPlaceholder": "Bairro, Rua, Cidade",
-    "cryptoTab": "DZY & Cripto",
+    "cryptoTab": "DZY & Stablecoins",
     "cardTab": "Cartão Bancário",
     "momoTab": "Mobile Money",
     "cardVisaMc": "Visa & Mastercard",

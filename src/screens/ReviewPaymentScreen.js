@@ -16,11 +16,30 @@ const paymentCurrencies = [
 
 export default function ReviewPaymentScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
   const { t } = useApp();
+
+  // Extract dynamic params if passed, fallback to default for demo purposes
+  const {
+    transactionData = {
+      beneficiaryName: 'Mama Kemi Adebayo',
+      beneficiaryRelation: 'Mère',
+      location: 'Lagos, Nigeria 🇳🇬',
+      serviceTitle: 'Mobile Recharge',
+      serviceSubtitle: 'MTN Nigeria',
+      amount: '20',
+      currency: 'USD',
+      convertedAmount: '≈ 32,250 NGN',
+      fee: '0.50'
+    }
+  } = route.params || {};
+
   const [selectedPayment, setSelectedPayment] = useState('card');
-  const [amount, setAmount] = useState('20');
-  const [currency, setCurrency] = useState('USD');
+  const [amount, setAmount] = useState(transactionData.amount);
+  const [currency, setCurrency] = useState(transactionData.currency);
   const [toast, setToast] = useState(null);
+
+  const totalAmount = (parseFloat(amount || '0') + parseFloat(transactionData.fee || '0')).toFixed(2);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -60,21 +79,24 @@ export default function ReviewPaymentScreen() {
           <View style={styles.beneficiaryCard}>
             <View style={styles.beneficiaryMain}>
               <View style={styles.avatarContainer}>
-                <Image 
-                  source={{ uri: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80' }} 
-                  style={styles.avatar} 
-                />
+                <View style={[styles.avatar, { justifyContent: 'center', alignItems: 'center' }]}>
+                  <Text style={{ fontSize: 18, color: '#6B7280' }}>
+                    {transactionData.beneficiaryName.charAt(0).toUpperCase()}
+                  </Text>
+                </View>
                 <View style={styles.verifiedCheckBadge}>
                   <Ionicons name="checkmark" size={10} color="#FFFFFF" />
                 </View>
               </View>
 
               <View style={styles.beneficiaryDetails}>
-                <Text style={styles.beneficiaryName}>Mama Kemi Adebayo</Text>
-                <Text style={styles.beneficiaryRelation}>Mère</Text>
+                <Text style={styles.beneficiaryName}>{transactionData.beneficiaryName}</Text>
+                {transactionData.beneficiaryRelation ? (
+                  <Text style={styles.beneficiaryRelation}>{transactionData.beneficiaryRelation}</Text>
+                ) : null}
                 <View style={styles.locationRow}>
                   <Ionicons name="location-outline" size={12} color="#6B7280" style={{ marginRight: 4 }} />
-                  <Text style={styles.detailText}>Lagos, Nigeria 🇳🇬</Text>
+                  <Text style={styles.detailText}>{transactionData.location}</Text>
                 </View>
               </View>
 
@@ -91,8 +113,8 @@ export default function ReviewPaymentScreen() {
               <Ionicons name="phone-portrait-outline" size={20} color="#10B981" />
             </View>
             <View style={styles.serviceTextWrap}>
-              <Text style={styles.serviceTitle}>{t('paymentSuccess.mobileRecharge', 'Mobile Recharge')}</Text>
-              <Text style={styles.serviceSubtitle}>MTN Nigeria</Text>
+              <Text style={styles.serviceTitle}>{transactionData.serviceTitle}</Text>
+              <Text style={styles.serviceSubtitle}>{transactionData.serviceSubtitle}</Text>
             </View>
             <TouchableOpacity style={styles.editButton} onPress={() => navigation.navigate('ChooseServiceScreen')}>
               <Ionicons name="create-outline" size={14} color="#1A2840" style={{ marginRight: 4 }} />
@@ -121,7 +143,7 @@ export default function ReviewPaymentScreen() {
                 textStyle={styles.currencyText} 
               />
             </View>
-            <Text style={styles.convertedAmount}>≈ 32,250 NGN</Text>
+            <Text style={styles.convertedAmount}>{transactionData.convertedAmount}</Text>
           </View>
 
           {/* Payment Methods (Payer avec) */}
@@ -192,7 +214,7 @@ export default function ReviewPaymentScreen() {
             
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>{t('common.amount', 'Amount')}</Text>
-              <Text style={styles.detailValue}>20.00 USD</Text>
+              <Text style={styles.detailValue}>{amount} {currency}</Text>
             </View>
             
             <View style={styles.detailRow}>
@@ -200,14 +222,14 @@ export default function ReviewPaymentScreen() {
                 <Text style={styles.detailLabel}>{t('paymentSuccess.serviceFee', 'Service Fee')}</Text>
                 <Ionicons name="information-circle-outline" size={13} color="#9CA3AF" style={{ marginLeft: 4 }} />
               </View>
-              <Text style={styles.detailValue}>0.50 USD</Text>
+              <Text style={styles.detailValue}>{transactionData.fee} {currency}</Text>
             </View>
 
             <View style={styles.dashedLine} />
 
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>{t('orderConfirmation.amountToPay', 'Total to pay')}</Text>
-              <Text style={styles.totalValue}>20.50 USD</Text>
+              <Text style={styles.totalValue}>{totalAmount} {currency}</Text>
             </View>
           </View>
 

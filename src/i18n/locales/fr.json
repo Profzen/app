@@ -9,6 +9,7 @@
   "7": "7",
   "8": "8",
   "9": "9",
+
   "finance": {
     "stakeholders": {
       "families": {
@@ -3649,6 +3650,8 @@
     "view_rewards_dashboard": "Voir le tableau de bord Rewards"
   },
   "home": {
+    "openPos": "Caisse (TPE)",
+    "openPosSub": "Encaisser un paiement client",
     "todos": {
       "low_balance": {
         "title": "Solde faible,\nrechargez votre compte",
@@ -4572,7 +4575,7 @@
     "recipientAddressLabel": "Adresse / Ville de livraison",
     "namePlaceholder": "Ex : Koffi Mensah",
     "addressPlaceholder": "Quartier, Rue, Ville",
-    "cryptoTab": "DZY & Crypto",
+    "cryptoTab": "DZY & Stablecoins",
     "cardTab": "Carte Bancaire",
     "momoTab": "Mobile Money",
     "cardVisaMc": "Visa & Mastercard",

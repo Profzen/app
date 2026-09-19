@@ -201,6 +201,7 @@
     "backHome": "Back to Home",
     "footerLink": "Beta Status"
   },
+
   "nav": {
     "buy": "Buy",
     "pay": "Pay",
@@ -3601,6 +3602,8 @@
     "view_rewards_dashboard": "View Rewards Dashboard"
   },
   "home": {
+    "openPos": "Point of Sale (POS)",
+    "openPosSub": "Receive Customer Payment",
     "todos": {
       "low_balance": {
         "title": "Low balance,\ntop up your account",
@@ -4524,7 +4527,7 @@
     "recipientAddressLabel": "Delivery address / City",
     "namePlaceholder": "e.g. John Doe",
     "addressPlaceholder": "Neighborhood, Street, City",
-    "cryptoTab": "DZY & Crypto",
+    "cryptoTab": "DZY & Stablecoins",
     "cardTab": "Bank Card",
     "momoTab": "Mobile Money",
     "cardVisaMc": "Visa & Mastercard",

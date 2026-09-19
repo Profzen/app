@@ -8,6 +8,7 @@ import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Platform, 
 import { Ionicons } from '@expo/vector-icons';
 import WalletCard from '../components/WalletCard';
 import BottomNavBar from '../components/BottomNavBar';
+import AppToast from '../components/AppToast';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
 import { useApp } from '../context/AppContext';
@@ -26,6 +27,7 @@ export default function HomeScreen() {
   const [timelineTab, setTimelineTab] = useState('featured');
   const [featuredShops, setFeaturedShops] = useState([]);
   const [newsProducts, setNewsProducts] = useState([]);
+  const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '' });
   const { fetchMerchants, fetchAllProducts, loading: dataLoading } = useBuyGoods();
 
   useEffect(() => {
@@ -168,7 +170,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
             <View style={styles.headerIcons}>
               <LanguageSelector />
-              <TouchableOpacity style={styles.iconButton}>
+              <TouchableOpacity style={styles.iconButton} onPress={() => setToastInfo({ visible: true, title: t('common.comingSoon', 'Coming soon'), message: t('notifications.comingSoon', 'Notification system is currently under development.') })}>
                 <Ionicons name="notifications-outline" size={18} color="#1A2840" />
                 <View style={styles.notificationDot} />
               </TouchableOpacity>
@@ -186,7 +188,27 @@ export default function HomeScreen() {
               <ActivityIndicator size="large" color="#FFC759" />
             </View>
           ) : (
-            <WalletCard balances={walletBalances} />
+            <View>
+              <WalletCard balances={walletBalances} />
+              
+              {/* POS (Cash Register) Quick Access for Merchants */}
+              {user?.role === 'merchant' && (
+                <TouchableOpacity 
+                  style={styles.merchantPosButton}
+                  onPress={() => navigation.navigate('CashRegisterScreen')}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.posIconContainer}>
+                    <Ionicons name="calculator" size={24} color="#FFF" />
+                  </View>
+                  <View style={styles.posTextContainer}>
+                    <Text style={styles.posButtonTitle}>{t('home.openPos', 'Ouvrir la Caisse (TPE)')}</Text>
+                    <Text style={styles.posButtonSub}>{t('home.openPosSub', 'Encaisser un paiement client')}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color="#8B5CF6" />
+                </TouchableOpacity>
+              )}
+            </View>
           )}
 
           {isUserLoading && !user?.id ? (
@@ -384,6 +406,7 @@ export default function HomeScreen() {
         <BottomNavBar
           activeTab="Home"
         />
+        <AppToast visible={toastInfo.visible} title={toastInfo.title} message={toastInfo.message} type="info" onClose={() => setToastInfo({ ...toastInfo, visible: false })} />
       </View>
     </SafeAreaView>
   );
@@ -463,6 +486,42 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF', 
     boxShadow: '0px 4px 12px #0A1737', 
     overflow: 'hidden' 
+  },
+  merchantPosButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F3FF',
+    marginHorizontal: isSmallScreen ? 14 : 20,
+    marginTop: 4,
+    marginBottom: 4,
+    padding: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#EDE9FE',
+  },
+  posIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#8B5CF6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+    boxShadow: '0px 4px 8px rgba(139, 92, 246, 0.4)',
+  },
+  posTextContainer: {
+    flex: 1,
+  },
+  posButtonTitle: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 15,
+    color: '#4C1D95',
+    marginBottom: 2,
+  },
+  posButtonSub: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 11,
+    color: '#7C3AED',
   },
   todoCardHeader: { paddingHorizontal: 12, marginTop: 0, marginBottom: 0, paddingVertical: 8 },
   todoListContainer: { paddingHorizontal: 12 },

@@ -15,9 +15,10 @@ import { useApp } from '../context/AppContext';
 import { supabase } from '../services/supabaseClient';
 import { isSmallScreen, isShortScreen } from '../utils/responsive';
 
-export default function RegisterScreen() {
+export default function MerchantRegistrationScreen() {
   const navigation = useNavigation();
   const { language, t } = useApp();
+  const [businessName, setBusinessName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [parrain, setParrain] = useState('');
@@ -44,23 +45,23 @@ export default function RegisterScreen() {
   };
 
   const handleRegister = async () => {
-    if (!email || !password || strength < 2) return;
+    if (!businessName || !email || !password || strength < 2) {
+      setToastInfo({ visible: true, title: t('common.error', 'Error'), message: t('auth.fillRequiredFields', 'Please fill all required fields correctly.'), type: 'error' });
+      return;
+    }
     
     setIsLoading(true);
 
     try {
-      // Basic Supabase signup
-      // If emailOrPhone is a phone number, Supabase requires it in E.164 format via signUp({ phone: ... })
-      // For simplicity here we assume email, but in a robust system we'd detect phone vs email.
       const isPhone = /^\+?[0-9]{7,15}$/.test(email);
-
       const credentials = isPhone ? { phone: email, password } : { email, password };
 
       const { data, error } = await supabase.auth.signUp({
         ...credentials,
         options: {
           data: {
-            role: 'user',
+            role: 'merchant',
+            business_name: businessName,
             auth_provider: 'email',
             referral_code: parrain || null,
           }
@@ -110,9 +111,9 @@ export default function RegisterScreen() {
             style={styles.logo} 
             resizeMode="contain"
           />
-          <Text style={styles.mainTitle}>{t('auth.createAccount', 'Create an account')}</Text>
+          <Text style={styles.mainTitle}>{t('auth.createMerchantAccount', 'Register your Business')}</Text>
           <Text style={styles.subTitle}>
-            {t('auth.signUpSubtitle', 'Join DizzitUp and access a complete\nfinancial and digital ecosystem.')}
+            {t('auth.merchantSignUpSubtitle', 'Join as a merchant and start accepting payments via DizzitUp.')}
           </Text>
         </View>
 
@@ -121,6 +122,14 @@ export default function RegisterScreen() {
 
         {/* Form */}
         <View style={styles.formContainer}>
+          <DizzitInput
+            label={t('auth.businessName', 'Business Name')}
+            placeholder={t('auth.businessNamePlaceholder', 'Enter your business or shop name')}
+            value={businessName}
+            onChangeText={setBusinessName}
+            iconLeft={<Ionicons name="briefcase-outline" size={20} color={theme.colors.primary} />}
+          />
+
           <DizzitInput
             label={t('auth.enterEmailOrPhone', 'Enter your email or phone number')}
             placeholder={t('auth.enterEmailOrPhonePlaceholder', 'Enter your email or phone number')}
@@ -169,25 +178,22 @@ export default function RegisterScreen() {
             style={{marginTop: theme.spacing.sm}}
             onPress={handleRegister}
             isLoading={isLoading}
-            disabled={!email || !password || strength < 2}
+            disabled={!businessName || !email || !password || strength < 2}
           />
         </View>
 
-        {/* Social Logins */}
-        <SocialLogins />
-
-        {/* Merchant Link */}
+        {/* Normal User Link */}
         <View style={styles.merchantLinkContainer}>
           <View style={styles.merchantPromoBox}>
             <View style={styles.merchantPromoIcon}>
-              <Ionicons name="storefront-outline" size={20} color={theme.colors.accent} />
+              <Ionicons name="person-outline" size={20} color={theme.colors.accent} />
             </View>
             <View style={styles.merchantPromoTextContainer}>
-              <Text style={styles.merchantPromoTitle}>{t('auth.areYouBusiness', 'Are you a business or shop owner?')}</Text>
-              <Text style={styles.merchantPromoSub}>{t('auth.merchantSub', 'Accept payments easily')}</Text>
+              <Text style={styles.merchantPromoTitle}>{t('auth.notABusiness', 'Not a business owner?')}</Text>
+              <Text style={styles.merchantPromoSub}>{t('auth.registerNormalUserSub', 'Create a personal account')}</Text>
             </View>
-            <TouchableOpacity onPress={() => navigation.navigate('MerchantRegistrationScreen')} style={styles.merchantPromoButton}>
-              <Text style={styles.merchantPromoButtonText}>{t('auth.registerMerchant', 'Register')}</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('RegisterScreen')} style={styles.merchantPromoButton}>
+              <Text style={styles.merchantPromoButtonText}>{t('auth.registerNormalUser', 'Register')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -232,7 +238,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: theme.radii.full,
+    borderRadius: 50,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     shadowColor: '#000',

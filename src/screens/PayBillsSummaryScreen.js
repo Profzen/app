@@ -208,7 +208,42 @@ export default function PayBillsSummaryScreen() {
     try {
       if (selectedMethod === 'wallet') {
         // DizzitUp Wallet (Crypto/USDC) payment flow
-        AppToast.showSuccess(t('paybillsSummary.orderCreatedSuccess', 'Order initiated successfully!'));
+        let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
+        if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
+        
+        // Ensure user is authenticated to use wallet
+        if (!session?.access_token) {
+          throw new Error(t('paybillsSummary.walletAuthError', 'You must be logged in to use DizzitUp Wallet.'));
+        }
+
+        const payload = {
+          toAddress: '0xTreasuryAddress', // TODO: Fetch dynamic treasury/merchant address if needed
+          amount: parseFloat(totalCost),
+          token: currency === 'DZY' ? 'DZY' : 'USDC', // Defaulting to USDC if not DZY
+          chain: 'Polygon',
+          metadata: { 
+            serviceType,
+            recipientName,
+            recipientPhone,
+            orderId: `PB-${Date.now()}`
+          }
+        };
+
+        const res = await fetch(`${DIZZY_URL}/wallet/send`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || t('paybillsSummary.walletError', 'Error during wallet payment'));
+        }
+
+        AppToast.showSuccess(t('paybillsSummary.orderCreatedSuccess', 'Payment completed successfully!'));
         navigation.navigate('PaymentSuccessScreen', {
           transaction: {
             title: getServiceTitle(),
@@ -217,8 +252,11 @@ export default function PayBillsSummaryScreen() {
             recipient: recipientName,
             phone: recipientPhone,
             date: new Date().toISOString(),
+            orderId: data.txHash || data.transaction?.id || `PB-${Date.now()}`
           }
         });
+        setLoading(false);
+        return;
       } else if (selectedMethod === 'card') {
         // Ecobank Card Payment (Visa / Mastercard via CyberSource Secure Acceptance)
         const baseUrl = getPayBillsApiUrl();

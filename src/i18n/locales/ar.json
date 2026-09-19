@@ -10,6 +10,7 @@
   "8": "8",
   "9": "9",
   "copied_title": "تم نسخ {{label}}!",
+
   "finance": {
     "stakeholders": {
       "families": {
@@ -3485,6 +3486,8 @@
     "view_rewards_dashboard": "عرض لوحة تحكم المكافآت"
   },
   "home": {
+    "openPos": "نقطة البيع (POS)",
+    "openPosSub": "استلام الدفع",
     "todos": {
       "low_balance": {
         "title": "الرصيد منخفض،\nأعد شحن حسابك",
@@ -4325,7 +4328,7 @@
     "recipientAddressLabel": "عنوان التوصيل / المدينة",
     "namePlaceholder": "مثال: أحمد محمد",
     "addressPlaceholder": "الحي، الشارع، المدينة",
-    "cryptoTab": "DZY والعملات الرقمية",
+    "cryptoTab": "DZY والعملات المستقرة",
     "cardTab": "بطاقة مصرفية",
     "momoTab": "الدفع عبر الهاتف",
     "cardVisaMc": "فيزا وماستركارد",

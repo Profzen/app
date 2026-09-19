@@ -1,7 +1,7 @@
-﻿import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
 import { useApp } from '../context/AppContext';
@@ -10,7 +10,7 @@ import BottomNavBar from '../components/BottomNavBar';
 export default function CashierScanScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { t } = useApp();
+  const { t, user } = useApp();
   const { amount = '0', currency = 'XOF', equivalent = '0.00', token = 'USDT' } = route.params || {};
 
   return (
@@ -81,21 +81,25 @@ export default function CashierScanScreen() {
             </View>
           </View>
 
-          {/* QR Code Container Box */}
+          {/* Dynamic QR Code */}
           <View style={styles.qrSectionWrapper}>
             <View style={styles.qrCardContainer}>
               <View style={styles.mockQrGraphic}>
-                <Ionicons name="qr-code-outline" size={170} color="#1A2840" />
+                <Image 
+                  source={{ uri: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(JSON.stringify({ merchantId: user?.id, amount, currency, token, type: 'merchant_payment' }))}` }}
+                  style={{ width: 170, height: 170 }}
+                  resizeMode="contain"
+                />
               </View>
             </View>
 
             <TouchableOpacity 
               style={styles.refreshQrBtn} 
-              onPress={() => navigation.navigate('CashierSuccessScreen')}
+              onPress={() => navigation.navigate('CashierCameraScreen')}
               activeOpacity={0.7}
             >
-              <Ionicons name="scan-outline" size={16} color="#20365B" style={{ marginRight: 6 }} />
-              <Text style={styles.refreshQrText}>{t('pos.refresh_qr', 'Actualiser le QR Code')}</Text>
+              <Ionicons name="camera-outline" size={16} color="#20365B" style={{ marginRight: 6 }} />
+              <Text style={styles.refreshQrText}>{t('pos.scan_customer', 'Scanner le client')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -183,7 +187,9 @@ const styles = StyleSheet.create({
   networkNameText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#FFFFFF', marginLeft: 4 },
   qrSectionWrapper: { alignItems: 'center', marginBottom: 20 },
   qrCardContainer: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 18, boxShadow: '0px 4px 16px #000', marginBottom: 12, borderWidth: 1, borderColor: '#F0F2F5' },
-  mockQrGraphic: { justifyContent: 'center', alignItems: 'center' },
+  maintenanceGraphic: { justifyContent: 'center', alignItems: 'center', paddingVertical: 20 },
+  maintenanceTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#1A2840', marginTop: 12, marginBottom: 8 },
+  maintenanceDesc: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#64748B', textAlign: 'center', lineHeight: 20, paddingHorizontal: 10 },
   refreshQrBtn: { flexDirection: 'row', alignItems: 'center', paddingVertical: 4 },
   refreshQrText: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#20365B' },
   statusBannerCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F0F6FF', borderRadius: 16, padding: 14, marginBottom: 12 },

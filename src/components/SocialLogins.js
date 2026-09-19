@@ -3,6 +3,8 @@ import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
 import { useApp } from '../context/AppContext';
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 import { supabase } from '../services/supabaseClient';
 import AppToast from './AppToast';
 
@@ -12,22 +14,49 @@ export const SocialLogins = ({ variant = 'row' }) => {
   const dividerText = t('auth.orContinueWith', 'or continue with');
 
   const handleSocialLogin = async (providerName) => {
-    setToastInfo({
-      visible: true,
-      title: t('common.comingSoon', 'Coming soon'),
-      message: t('auth.socialLoginComingSoon', `Logging in with ${providerName} is not available yet.`).replace('{{provider}}', providerName),
-      type: 'info'
-    });
-    return;
+    if (providerName === 'X' || providerName === 'Apple') {
+      setToastInfo({
+        visible: true,
+        title: t('common.comingSoon', 'Coming soon'),
+        message: t('auth.socialLoginComingSoon', `Logging in with ${providerName} is not available yet.`).replace('{{provider}}', providerName),
+        type: 'info'
+      });
+      return;
+    }
 
     try {
       const providerId = providerName.toLowerCase();
+      const redirectTo = Linking.createURL('/auth-callback');
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: providerId,
+        options: {
+          redirectTo,
+          skipBrowserRedirect: true,
+        },
       });
 
       if (error) {
         throw error;
+      }
+      
+      if (data?.url) {
+        // Open the browser for authentication
+        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+        
+        if (result.type === 'success' && result.url) {
+          // Parse the URL and pass it to Supabase to extract the session
+          const urlParams = new URL(result.url.replace('#', '?'));
+          const accessToken = urlParams.searchParams.get('access_token');
+          const refreshToken = urlParams.searchParams.get('refresh_token');
+          
+          if (accessToken && refreshToken) {
+            await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken
+            });
+          }
+        }
       }
     } catch (error) {
       setToastInfo({
@@ -57,11 +86,11 @@ export const SocialLogins = ({ variant = 'row' }) => {
             <Ionicons name="logo-apple" size={28} color={theme.colors.textPrimary} />
             <Text style={styles.squareText}>Apple</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.squareButton} onPress={() => handleSocialLogin('Facebook')}>
-            <Ionicons name="logo-facebook" size={28} color="#1877F2" />
-            <Text style={styles.squareText}>Facebook</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.squareButton} onPress={() => handleSocialLogin('X')}>
+        <TouchableOpacity style={styles.squareButton} onPress={() => handleSocialLogin('Facebook')}>
+          <Ionicons name="logo-facebook" size={28} color="#1877F2" />
+          <Text style={styles.squareText}>Facebook</Text>
+        </TouchableOpacity>
+          <TouchableOpacity style={[styles.squareButton, { opacity: 0.5 }]} onPress={() => handleSocialLogin('X')}>
             <Text style={{fontWeight: 'bold', fontSize: 24, color: theme.colors.textPrimary}}>X</Text>
             <Text style={styles.squareText}>X (Twitter)</Text>
           </TouchableOpacity>
@@ -92,7 +121,7 @@ export const SocialLogins = ({ variant = 'row' }) => {
           <Ionicons name="logo-facebook" size={24} color="#1877F2" />
           <Text style={styles.socialText}>Facebook</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.socialButton} onPress={() => handleSocialLogin('X')}>
+        <TouchableOpacity style={[styles.socialButton, { opacity: 0.5 }]} onPress={() => handleSocialLogin('X')}>
           <Text style={styles.xIcon}>X</Text>
           <Text style={styles.socialText}>X (Twitter)</Text>
         </TouchableOpacity>
@@ -136,7 +165,6 @@ const styles = StyleSheet.create({
     borderRadius: theme.radii.md,
     justifyContent: 'center',
     alignItems: 'center',
-    opacity: 0.5,
   },
   socialText: {
     fontFamily: theme.typography.fontFamily.medium,
@@ -163,7 +191,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    opacity: 0.5,
   },
   squareText: {
     fontFamily: theme.typography.fontFamily.medium,

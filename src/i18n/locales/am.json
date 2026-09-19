@@ -10,6 +10,7 @@
   "8": "8",
   "9": "9",
   "copied_title": "{{label}} ተቀድቷል!",
+
   "finance": {
     "stakeholders": {
       "families": {
@@ -3452,6 +3453,8 @@
     "view_rewards_dashboard": "የሽልማት ዳሽቦርድ ይመልከቱ"
   },
   "home": {
+    "openPos": "የሽያጭ ነጥብ (POS)",
+    "openPosSub": "የደንበኛ ክፍያ መቀበል",
     "todos": {
       "low_balance": {
         "title": "ዝቅተኛ ቀሪ ሂሳብ፣\nመለያዎን ይሙሉ",
@@ -4225,7 +4228,7 @@
     "recipientAddressLabel": "የማድረሻ አድራሻ / ከተማ",
     "namePlaceholder": "ለምሳሌ: ዮሐንስ",
     "addressPlaceholder": "ሰፈር፣ መንገድ፣ ከተማ",
-    "cryptoTab": "DZY እና ክሪፕቶ",
+    "cryptoTab": "DZY እና ስቴብልኮይኖች",
     "cardTab": "የባንክ ካርድ",
     "momoTab": "ሞባይል ገንዘብ",
     "cardVisaMc": "ቪዛ እና ማስተርካርድ",

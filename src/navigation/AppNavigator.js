@@ -6,6 +6,7 @@ import UnlockScreen from '../screens/UnlockScreen';
 
 import AssetListScreen from '../screens/AssetListScreen';
 import CashierScanScreen from '../screens/CashierScanScreen';
+import CashierCameraScreen from '../screens/CashierCameraScreen';
 import CashierSendFundsScreen from '../screens/CashierSendFundsScreen';
 import CashierSuccessScreen from '../screens/CashierSuccessScreen';
 import CashRegisterScreen from '../screens/CashRegisterScreen';
@@ -120,6 +121,7 @@ export default function AppNavigator() {
       <Stack.Screen name="PersonalAccountScreen" component={PersonalAccountScreen} />
       <Stack.Screen name="AssetListScreen" component={AssetListScreen} />
       <Stack.Screen name="CashierScanScreen" component={CashierScanScreen} />
+      <Stack.Screen name="CashierCameraScreen" component={CashierCameraScreen} />
       <Stack.Screen name="CashierSendFundsScreen" component={CashierSendFundsScreen} />
       <Stack.Screen name="CashierSuccessScreen" component={CashierSuccessScreen} />
       <Stack.Screen name="CashRegisterScreen" component={CashRegisterScreen} />

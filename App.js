@@ -24,6 +24,9 @@ import * as SplashScreen from 'expo-splash-screen';
 import AnimatedSplashScreen from './src/components/AnimatedSplashScreen';
 import { GlobalToast } from './src/components/AppToast';
 import { Modal } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
+
+WebBrowser.maybeCompleteAuthSession();
 
 // Keep the native splash screen visible while fonts are loading
 SplashScreen.preventAutoHideAsync().catch(() => {});
