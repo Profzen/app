@@ -9,6 +9,7 @@ import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import contactService from '../services/contactService';
 import { supabase } from '../services/supabaseClient';
+import { isValidPhoneNumber } from 'libphonenumber-js';
 
 const AVATARS = [
   { id: 'avatar_1', emoji: '👩' },
@@ -174,13 +175,30 @@ export default function EditBeneficiaryScreen({ route }) {
     AppToast.showSuccess(t('beneficiary_management.edit.sync_success', "Wallets synchronisés avec succès"));
   };
 
-  const handleSave = async () => {
+    const handleSave = async () => {
     if (!formData.first_name && !formData.last_name) {
       AppToast.showError(t('beneficiary_management.edit.save_req_name', "Le nom est obligatoire"));
       return;
     }
-    if (!formData.phone && !formData.email) {
-      AppToast.showError(t('beneficiary_management.edit.save_req_contact', "Le téléphone ou l'email est obligatoire"));
+    
+    if (!formData.phone) {
+      AppToast.showError(t('beneficiary_management.edit.save_req_phone', "Le numéro de téléphone est obligatoire"));
+      return;
+    }
+
+    const selectedCountry = countries.find(c => c.name === formData.country);
+    const countryCode = selectedCountry ? selectedCountry.code : undefined;
+    
+    // Clean up spaces before validation
+    const cleanPhone = formData.phone.trim();
+    
+    if (!isValidPhoneNumber(cleanPhone, countryCode)) {
+      AppToast.showError(t('beneficiary_management.edit.invalid_phone', "Le numéro de téléphone n'est pas valide"));
+      return;
+    }
+
+    if (formData.email && !/^\S+@\S+\.\S+$/.test(formData.email)) {
+      AppToast.showError(t('beneficiary_management.edit.invalid_email', "L'adresse email n'est pas valide"));
       return;
     }
 
@@ -295,7 +313,7 @@ export default function EditBeneficiaryScreen({ route }) {
             <View style={styles.row}>
               <View style={{ flex: 1 }}>
                 <DizzitInput
-                  label={t('beneficiary_management.edit.phone', 'Téléphone')}
+                  label={t('beneficiary_management.edit.phone', 'Téléphone') + ' *'}
                   placeholder={t('beneficiary_management.edit.phone_placeholder', '+228...')}
                   keyboardType="phone-pad"
                   value={formData.phone}

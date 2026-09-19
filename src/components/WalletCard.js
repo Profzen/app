@@ -8,23 +8,36 @@ import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
 import { useApp } from '../context/AppContext';
 import { isSmallScreen } from '../utils/responsive';
 import { supabase } from '../services/supabaseClient';
+import { EMERGENCY_RATES } from '../services/currencyRateService';
 
 export default function WalletCard({ balances, badgeTitle }) {
   const navigation = useNavigation();
-  const { hideBalance, toggleHideBalance, t, user, userCountry } = useApp();
+  const { hideBalance, toggleHideBalance, t, user, detectedCountry, getEffectiveWalletCountry } = useApp();
 
   const isVisible = !hideBalance;
   
   const mainBalance = balances?.DZY || 0;
   
-  // Use IP-detected userCountry first (like TopUpScreen / OrderVerificationScreen do),
-  // then fall back to the profile's registered country
-  const geoCountryKey = (
-    userCountry ||
-    user?.country_code ||
-    user?.country ||
-    'us'
-  ).toLowerCase().trim();
+  // Resolve local fiat currency strictly according to priority:
+  // 1. Real physical geolocation (detectedCountry)
+  // 2. If geolocation failed:
+  //    - If merchant/business card: merchant country from DB (user?.merchantProfile?.country)
+  //    - If regular user: user country from settings (user?.country_of_residence || user?.country)
+  // 3. Fallback: 'us'
+  const isBusinessCard = user?.role === 'merchant' || (badgeTitle && badgeTitle.toUpperCase().includes('BUSINESS'));
+  
+  let targetCountryKey = null;
+  if (getEffectiveWalletCountry) {
+    targetCountryKey = getEffectiveWalletCountry(isBusinessCard);
+  } else if (detectedCountry && typeof detectedCountry === 'string' && detectedCountry.length === 2) {
+    targetCountryKey = detectedCountry;
+  } else if (isBusinessCard) {
+    targetCountryKey = user?.merchantProfile?.country || user?.merchantProfile?.country_code;
+  } else {
+    targetCountryKey = user?.country_of_residence || user?.country || user?.country_code;
+  }
+  
+  const geoCountryKey = (targetCountryKey || 'us').toLowerCase().trim();
   const primaryCountry = getCountryCurrencyInfo(geoCountryKey);
 
   let secondaryCountry = getCountryCurrencyInfo('united states');
@@ -32,7 +45,7 @@ export default function WalletCard({ balances, badgeTitle }) {
     secondaryCountry = getCountryCurrencyInfo('france');
   }
 
-  const [exchangeRates, setExchangeRates] = useState({});
+  const [exchangeRates, setExchangeRates] = useState(EMERGENCY_RATES || {});
 
   useEffect(() => {
     const fetchRates = async () => {
@@ -44,8 +57,8 @@ export default function WalletCard({ balances, badgeTitle }) {
           .eq('status', 'active');
           
         if (!error && data && data.length > 0) {
-          const ratesMap = {};
-          data.forEach(r => ratesMap[r.target_currency] = r.rate);
+          const ratesMap = { ...(EMERGENCY_RATES || {}) };
+          data.forEach(r => ratesMap[r.target_currency] = Number(r.rate));
           ratesMap['USD'] = 1;
           setExchangeRates(ratesMap);
         }
@@ -60,7 +73,7 @@ export default function WalletCard({ balances, badgeTitle }) {
   const dzyInUsd = mainBalance * 0.10;
   
   // Convert USD equivalent to Local Fiat
-  const localRate = exchangeRates[primaryCountry.currency] || 1;
+  const localRate = exchangeRates[primaryCountry.currency] || EMERGENCY_RATES?.[primaryCountry.currency] || 1;
   const primaryBalance = dzyInUsd * localRate;
   
   // Convert USD equivalent to Secondary Fiat (usually USD, so rate is 1, or EUR)

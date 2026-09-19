@@ -1,19 +1,23 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar, Modal, Dimensions, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import CryptoIcon from '../components/CryptoIcon';
 import AppSelect from '../components/AppSelect';
 import { useApp } from '../context/AppContext';
 import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
+import { EMERGENCY_RATES } from '../services/currencyRateService';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const isSmallScreen = SCREEN_HEIGHT < 720;
+
 export default function CashRegisterScreen() {
   const navigation = useNavigation();
-  const { t, user } = useApp();
+  const { t, user, detectedCountry, getEffectiveWalletCountry } = useApp();
   const [activeTab, setActiveTab] = useState('billets');
   const [selectedToken, setSelectedToken] = useState('USDT');
   const [amount, setAmount] = useState('0');
@@ -27,10 +31,18 @@ export default function CashRegisterScreen() {
     setTimeout(() => setToast({ visible: false, message: '' }), 3500);
   };
 
-  // Use merchant's country from settings to determine initial fiat currency dynamically
-  const defaultCurrency = getCountryCurrencyInfo(user?.country || '').currency;
-  const [currency, setCurrency] = useState(defaultCurrency);
-  const [rates, setRates] = useState({ XOF: 600, XAF: 600, GHS: 12, NGN: 1100, USD: 1 }); // Fallback rates
+  // Priority: 1. Geolocation -> 2. Merchant business country (e.g. Madagascar -> MGA) -> 3. User country from settings
+  let initialCountryKey = null;
+  if (getEffectiveWalletCountry) {
+    initialCountryKey = getEffectiveWalletCountry(true);
+  } else if (detectedCountry) {
+    initialCountryKey = detectedCountry;
+  } else {
+    initialCountryKey = user?.merchantProfile?.country || user?.country || '';
+  }
+  const defaultCurrency = getCountryCurrencyInfo(initialCountryKey || '').currency;
+  const [currency, setCurrency] = useState(defaultCurrency || 'USD');
+  const [rates, setRates] = useState({ ...EMERGENCY_RATES }); // Fallback rates including MGA: 4500, XOF: 605, etc.
 
   useEffect(() => {
     fetch('https://api.exchangerate-api.com/v4/latest/USD')
@@ -97,12 +109,12 @@ export default function CashRegisterScreen() {
     <TouchableOpacity
       style={styles.keyBtn}
       onPress={() => handleKeyPress(key)}
-      activeOpacity={0.7}
+      activeOpacity={0.6}
     >
       {icon ? (
-        <Ionicons name={icon} size={22} color="#FFFFFF" />
+        <Ionicons name={icon} size={20} color="#FFC759" />
       ) : (
-        <Text style={styles.keyText}>{key}</Text>
+        <Text style={[styles.keyText, key === ',' && styles.commaText]}>{key}</Text>
       )}
     </TouchableOpacity>
   );
@@ -130,7 +142,7 @@ export default function CashRegisterScreen() {
           <View style={{ width: 38 }} />
         </View>
 
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={[styles.scrollView, styles.scrollContent]}>
 
           {/* Top 2 Mode Switcher Tabs Container */}
           <View style={[styles.modeSwitchContainer, activeTab === 'billets' && styles.modeSwitchContainerDark]}>
@@ -178,57 +190,75 @@ export default function CashRegisterScreen() {
             /* Main Dark Blue Terminal Card */
             <View style={styles.terminalCard}>
 
-              {/* Top Row: Montant & Token Pills */}
+              {/* Top Header Controls: Currency Selector (Left) + Token Pills (Right) */}
               <View style={styles.cardHeaderRow}>
-                <View style={styles.montantLabelGroup}>
-                  <Ionicons name="open-outline" size={16} color="#FFFFFF" style={{ marginRight: 4 }} />
-                  <Text style={styles.montantLabelText}>{t('pos.amount', 'Montant')}</Text>
-                </View>
+                <AppSelect
+                  value={currency}
+                  options={Object.keys(rates).sort().map((val) => ({ value: val, label: val, flagUrl: getFlagUrl(val) }))}
+                  onChange={setCurrency}
+                  title={t('pos.choose_currency', 'Choisir la devise')}
+                  renderCustomTrigger={({ setOpen }) => (
+                    <TouchableOpacity
+                      style={styles.currencySelectBtn}
+                      onPress={() => setOpen(true)}
+                      activeOpacity={0.75}
+                    >
+                      <Image
+                        source={{ uri: getFlagUrl(currency) }}
+                        style={styles.currencyFlag}
+                      />
+                      <Text style={styles.currencySelectText}>{currency}</Text>
+                      <Ionicons name="chevron-down" size={13} color="#FFC759" style={{ marginLeft: 3 }} />
+                    </TouchableOpacity>
+                  )}
+                />
 
                 <View style={styles.tokenPillsContainer}>
                   <TouchableOpacity
                     style={[styles.tokenPill, selectedToken === 'USDT' && styles.tokenPillActive]}
                     onPress={() => setSelectedToken('USDT')}
+                    activeOpacity={0.75}
                   >
-                    <CryptoIcon symbol="USDT" size={18} />
+                    <CryptoIcon symbol="USDT" size={15} />
                     <Text style={[styles.tokenPillText, selectedToken === 'USDT' && styles.tokenPillTextActive]}>USDT</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
                     style={[styles.tokenPill, selectedToken === 'USDC' && styles.tokenPillActive]}
                     onPress={() => setSelectedToken('USDC')}
+                    activeOpacity={0.75}
                   >
-                    <CryptoIcon symbol="USDC" size={18} />
+                    <CryptoIcon symbol="USDC" size={15} />
                     <Text style={[styles.tokenPillText, selectedToken === 'USDC' && styles.tokenPillTextActive]}>USDC</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
                     style={[styles.tokenPill, selectedToken === 'DZY' && styles.tokenPillActive]}
                     onPress={() => setSelectedToken('DZY')}
+                    activeOpacity={0.75}
                   >
-                    <CryptoIcon symbol="DZY" size={18} />
+                    <CryptoIcon symbol="DZY" size={15} />
                     <Text style={[styles.tokenPillText, selectedToken === 'DZY' && styles.tokenPillTextActive]}>DZY</Text>
                   </TouchableOpacity>
                 </View>
               </View>
 
-              {/* Currency Selector Dropdown */}
-              <View style={styles.currencyRow}>
-                <AppSelect
-                  value={currency}
-                  options={Object.keys(rates).sort().map((val) => ({ value: val, label: val, flagUrl: getFlagUrl(val) }))}
-                  onChange={setCurrency}
-                  title={t('pos.choose_currency', 'Choisir la devise')}
-                  style={styles.currencySelectBtn}
-                  textStyle={styles.currencySelectText}
-                  chevronColor="#FFC759"
-                />
-              </View>
-
               {/* Amount Display */}
               <View style={styles.amountDisplayGroup}>
                 <Text style={styles.montantTitleText}>{t('pos.amount_to_pay', 'Montant à payer')}</Text>
-                <Text style={styles.mainAmountText}>{amount || '0'}</Text>
+                <View style={styles.amountNumberRow}>
+                  <Text
+                    style={[
+                      styles.mainAmountText,
+                      amount.length > 7 && { fontSize: isSmallScreen ? 26 : 30 },
+                      amount.length > 10 && { fontSize: isSmallScreen ? 20 : 24 }
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {amount || '0'}
+                  </Text>
+                  <Text style={styles.amountCurrencySuffix}>{currency}</Text>
+                </View>
                 <View style={styles.equivBadgePill}>
                   <Text style={styles.equivBadgeText}>≈ {equivalentTokenAmount} {selectedToken}</Text>
                 </View>
@@ -269,7 +299,7 @@ export default function CashRegisterScreen() {
                 })}
                 activeOpacity={0.85}
               >
-                <Ionicons name="qr-code-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
+                <Ionicons name="qr-code-outline" size={19} color="#1A2840" style={{ marginRight: 8 }} />
                 <Text style={styles.btnReceivePaymentText}>{t('pos.receive_payment', 'Recevoir le paiement')}</Text>
               </TouchableOpacity>
 
@@ -362,8 +392,8 @@ export default function CashRegisterScreen() {
             </View>
           )}
 
-          <View style={{ height: 20 }} />
-        </ScrollView>
+          <View style={{ height: 10 }} />
+        </View>
 
         <BottomNavBar activeTab="home" />
 
@@ -402,49 +432,215 @@ export default function CashRegisterScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1, backgroundColor: '#FFFFFF',
-    paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 14,
+    paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 4 : 10,
   },
   container: { flex: 1, backgroundColor: '#FFFFFF' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 10 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingBottom: isSmallScreen ? 4 : 8,
+  },
   iconSquareBtn: { width: 38, height: 38, borderRadius: 12, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
   headerTitleWrap: { alignItems: 'center' },
-  pageTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 17, color: '#1A2840' },
+  pageTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16.5, color: '#1A2840' },
   pageSubtitle: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#6B7280' },
   scrollView: { flex: 1 },
-  scrollContent: { paddingTop: 6, paddingBottom: 30 },
-  modeSwitchContainer: { flexDirection: 'row', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 18, padding: 4, marginHorizontal: 16, marginBottom: 16 },
+  scrollContent: { flex: 1, paddingTop: 2, paddingBottom: 6 },
+  modeSwitchContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 16,
+    padding: 3,
+    marginHorizontal: 16,
+    marginBottom: isSmallScreen ? 6 : 10,
+  },
   modeSwitchContainerDark: { backgroundColor: '#071D54', borderColor: '#071D54' },
-  modeTabBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderRadius: 14 },
+  modeTabBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: isSmallScreen ? 6 : 8,
+    borderRadius: 12,
+  },
   modeTabBtnActiveQR: { backgroundColor: '#071D54' },
   modeTabBtnInactiveQR: { backgroundColor: 'transparent' },
   modeTabBtnActiveBillets: { backgroundColor: '#FFC759' },
-  modeTabText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840', textAlign: 'center', lineHeight: 15 },
+  modeTabText: { fontFamily: 'Inter_600SemiBold', fontSize: 11.5, color: '#1A2840', textAlign: 'center', lineHeight: 14 },
   modeTabTextActive: { color: '#FFFFFF' },
-  modeTabTextActiveBillets: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 12, color: '#1A2840', textAlign: 'center', lineHeight: 15 },
-  terminalCard: { backgroundColor: '#20365B', borderRadius: 24, padding: 18, marginHorizontal: 16 },
-  cardHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  montantLabelGroup: { flexDirection: 'row', alignItems: 'center' },
-  montantLabelText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#FFFFFF' },
-  tokenPillsContainer: { flexDirection: 'row', gap: 6 },
-  tokenPill: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 8, paddingVertical: 5, borderRadius: 12 },
-  tokenPillActive: { backgroundColor: '#FFC759' },
-  tokenPillText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#FFFFFF', marginLeft: 4 },
-  tokenPillTextActive: { color: '#1A2840' },
-  currencyRow: { alignItems: 'flex-end', marginBottom: 16 },
-  currencySelectBtn: { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#FFC759', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, minHeight: 30 },
-  currencySelectText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 12, color: '#FFC759' },
-  amountDisplayGroup: { alignItems: 'center', marginBottom: 24 },
-  montantTitleText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#FFC759', marginBottom: 4 },
-  mainAmountText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 48, color: '#FFFFFF', lineHeight: 56, marginBottom: 8 },
-  equivBadgePill: { backgroundColor: 'rgba(255,255,255,0.08)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 14, paddingVertical: 5, borderRadius: 16 },
-  equivBadgeText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#FFC759' },
-  keypadGrid: { marginBottom: 20 },
-  keypadRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
-  keyBtn: { width: '31%', height: 48, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
-  keyText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 22, color: '#FFFFFF' },
-  btnReceivePayment: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFC759', height: 48, borderRadius: 14 },
-  btnReceivePaymentText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#1A2840' },
-  billetsContainer: { backgroundColor: '#20365B', borderRadius: 24, padding: 20, marginHorizontal: 16 },
+  modeTabTextActiveBillets: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11.5, color: '#1A2840', textAlign: 'center', lineHeight: 14 },
+  terminalCard: {
+    flex: 1,
+    backgroundColor: '#1E3557',
+    borderRadius: 22,
+    padding: isSmallScreen ? 10 : 14,
+    marginHorizontal: 16,
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    shadowColor: '#071D54',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: isSmallScreen ? 4 : 6,
+  },
+  currencySelectBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 199, 89, 0.14)',
+    borderWidth: 1,
+    borderColor: '#FFC759',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    height: 32,
+  },
+  currencyFlag: {
+    width: 18,
+    height: 14,
+    borderRadius: 2,
+    marginRight: 6,
+  },
+  currencySelectText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 12.5,
+    color: '#FFC759',
+    letterSpacing: 0.5,
+  },
+  tokenPillsContainer: {
+    flexDirection: 'row',
+    gap: 5,
+  },
+  tokenPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    paddingHorizontal: 7,
+    paddingVertical: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  tokenPillActive: {
+    backgroundColor: '#FFC759',
+    borderColor: '#FFC759',
+  },
+  tokenPillText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 11,
+    color: '#FFFFFF',
+    marginLeft: 4,
+  },
+  tokenPillTextActive: {
+    color: '#1A2840',
+  },
+  amountDisplayGroup: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: isSmallScreen ? 4 : 8,
+  },
+  montantTitleText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11.5,
+    color: '#94A3B8',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: 2,
+  },
+  amountNumberRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  mainAmountText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: isSmallScreen ? 34 : 40,
+    color: '#FFFFFF',
+    lineHeight: isSmallScreen ? 40 : 46,
+    textAlign: 'center',
+  },
+  amountCurrencySuffix: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: isSmallScreen ? 14 : 16,
+    color: '#FFC759',
+    marginLeft: 6,
+  },
+  equivBadgePill: {
+    backgroundColor: 'rgba(255, 199, 89, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 199, 89, 0.25)',
+    paddingHorizontal: 12,
+    paddingVertical: 3.5,
+    borderRadius: 14,
+  },
+  equivBadgeText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11.5,
+    color: '#FFC759',
+  },
+  keypadGrid: {
+    marginVertical: isSmallScreen ? 2 : 6,
+  },
+  keypadRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: isSmallScreen ? 6 : 8,
+  },
+  keyBtn: {
+    width: '31%',
+    height: isSmallScreen ? 42 : 46,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.12,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  keyText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: isSmallScreen ? 19 : 21,
+    color: '#FFFFFF',
+  },
+  commaText: {
+    fontSize: 22,
+    color: '#CBD5E1',
+  },
+  btnReceivePayment: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFC759',
+    height: isSmallScreen ? 44 : 48,
+    borderRadius: 14,
+    marginTop: isSmallScreen ? 2 : 6,
+    shadowColor: '#FFC759',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  btnReceivePaymentText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 15,
+    color: '#1A2840',
+  },
+  billetsContainer: { flex: 1, backgroundColor: '#20365B', borderRadius: 24, padding: 20, marginHorizontal: 16 },
   infoBtnTopRight: { alignSelf: 'flex-end', padding: 4 },
   billetsTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 22, color: '#FFFFFF', textAlign: 'center', marginBottom: 6 },
   billetsSub: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#9CA3AF', textAlign: 'center', lineHeight: 18, marginBottom: 24 },

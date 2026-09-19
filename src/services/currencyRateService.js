@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+import { supabase } from './supabaseClient.js';
 
 // Emergency offline rates (identical to buy-goods-frontend/src/services/currencyService.js)
 export const EMERGENCY_RATES = {

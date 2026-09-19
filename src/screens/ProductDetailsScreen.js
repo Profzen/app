@@ -268,21 +268,94 @@ export default function ProductDetailsScreen({ route }) {
                 </TouchableOpacity>
               </View>
             </View>
+          </View>
+        </View>
 
-            {/* Payment Methods */}
-            <View style={styles.paymentCard}>
-              <Text style={styles.paymentCardTitle}>{t('product.acceptedPaymentMethods', 'Accepted payment methods')}</Text>
-              <View style={styles.paymentIconsRow}>
-                {['USDT', 'USDC', 'EURC', 'DZY'].map((symbol) => <View key={symbol} style={styles.paymentItem}><CryptoIcon symbol={symbol} size={24} /><Text style={styles.tokenLabel}>{symbol}</Text></View>)}
+        <View style={styles.divider} />
+
+        {/* Accepted Payment Methods Section */}
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>{t('product.acceptedPaymentMethods', 'Accepted payment methods')}</Text>
+          <View style={styles.paymentCard}>
+            
+            {/* 1. Visa, Mastercard */}
+            <View style={styles.paymentMethodRow}>
+              <View style={styles.cardLogoBadge}>
+                <Text style={styles.visaLogoText}>VISA</Text>
+                <View style={styles.mcCirclesWrap}>
+                  <View style={[styles.mcCircle, { backgroundColor: '#EB001B' }]} />
+                  <View style={[styles.mcCircle, { backgroundColor: '#F79E1B', marginLeft: -5, opacity: 0.95 }]} />
+                </View>
+              </View>
+              <View style={styles.paymentMethodInfo}>
+                <Text style={styles.paymentMethodTitle}>{t('product.visaMastercard', 'Visa, Mastercard')}</Text>
+                <Text style={styles.paymentMethodSubtitle}>{t('product.visaMastercardSub', 'International credit & debit cards (3D Secure)')}</Text>
+              </View>
+              <View style={styles.paymentMethodTag}>
+                <Ionicons name="shield-checkmark" size={11} color="#2563EB" style={{ marginRight: 3 }} />
+                <Text style={styles.paymentMethodTagText}>3D Secure</Text>
+              </View>
+            </View>
+
+            {/* 2. Mobile Money */}
+            <View style={styles.paymentMethodRow}>
+              <View style={[styles.paymentMethodIconBox, { backgroundColor: '#FEF3C7', borderColor: '#FDE68A' }]}>
+                <Ionicons name="phone-portrait-outline" size={20} color="#D97706" />
+              </View>
+              <View style={styles.paymentMethodInfo}>
+                <Text style={styles.paymentMethodTitle}>{t('product.mobileMoney', 'Mobile Money')}</Text>
+                <Text style={styles.paymentMethodSubtitle}>{t('product.mobileMoneySub', 'Orange Money, MTN MoMo, Moov, Wave...')}</Text>
+              </View>
+              <View style={[styles.paymentMethodTag, { backgroundColor: '#FEF3C7', borderColor: '#FDE68A' }]}>
+                <Ionicons name="flash" size={10} color="#D97706" style={{ marginRight: 3 }} />
+                <Text style={[styles.paymentMethodTagText, { color: '#B45309' }]}>Instant</Text>
+              </View>
+            </View>
+
+            {/* 3. Stablecoins (USDC, USDT, EURC) - No mention of 'Crypto' */}
+            <View style={styles.paymentMethodRow}>
+              <View style={[styles.paymentMethodIconBox, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
+                <View style={styles.multiCryptoRow}>
+                  <CryptoIcon symbol="USDT" size={18} />
+                  <View style={{ marginLeft: -6 }}>
+                    <CryptoIcon symbol="USDC" size={18} />
+                  </View>
+                  <View style={{ marginLeft: -6 }}>
+                    <CryptoIcon symbol="EURC" size={18} />
+                  </View>
+                </View>
+              </View>
+              <View style={styles.paymentMethodInfo}>
+                <Text style={styles.paymentMethodTitle}>{t('product.stablecoins', 'Stablecoins (USDT, USDC, EURC)')}</Text>
+                <Text style={styles.paymentMethodSubtitle}>{t('product.stablecoinsSub', 'USDC, USDT, EURC (1:1 USD / EUR)')}</Text>
+              </View>
+              <View style={[styles.paymentMethodTag, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
+                <Text style={[styles.paymentMethodTagText, { color: '#059669' }]}>0% Fee</Text>
+              </View>
+            </View>
+
+            {/* 4. DZY Token */}
+            <View style={[styles.paymentMethodRow, { marginBottom: 6 }]}>
+              <View style={[styles.paymentMethodIconBox, { backgroundColor: '#FFFDF0', borderColor: '#FDE68A' }]}>
+                <CryptoIcon symbol="DZY" size={26} />
+              </View>
+              <View style={styles.paymentMethodInfo}>
+                <Text style={styles.paymentMethodTitle}>{t('product.dzyToken', 'DZY Token')}</Text>
+                <Text style={styles.paymentMethodSubtitle}>{t('product.dzyTokenSub', 'Native DizzitUp digital token & discounts')}</Text>
+              </View>
+              <View style={[styles.paymentMethodTag, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}>
+                <Text style={[styles.paymentMethodTagText, { color: '#1D4ED8' }]}>Rewards</Text>
               </View>
             </View>
 
             {/* Security Banner */}
             <View style={styles.securityBanner}>
-              <Ionicons name="shield-checkmark-outline" size={24} color="#3B82F6" style={{marginRight: 8}} />
-              <View style={{flex: 1}}>
+              <View style={styles.securityIconBox}>
+                <Ionicons name="shield-checkmark" size={18} color="#2563EB" />
+              </View>
+              <View style={styles.securityContent}>
                 <Text style={styles.securityTitle}>{t('product.securePurchaseTitle', '100% Secure purchase')}</Text>
-                <Text style={styles.securityText}>{t('product.securePurchaseDesc', 'Pay securely with your favorite cryptocurrencies.')}</Text>
+                <Text style={styles.securityText}>{t('product.securePurchaseDesc', 'Pay securely with Cards, Mobile Money, Stablecoins or DZY Token.')}</Text>
               </View>
             </View>
 
@@ -337,7 +410,7 @@ export default function ProductDetailsScreen({ route }) {
               </View>
               <View style={styles.featureContent}>
                 <Text style={styles.featureLabel}>{t('product.protection', 'Protection')}</Text>
-                <Text style={styles.featureValue}>{t('product.protectionVal', '4-digit Escrow payment')}</Text>
+                <Text style={styles.featureValue}>{t('product.protectionVal', '4-digit Secure PIN payment')}</Text>
               </View>
             </View>
 
@@ -663,62 +736,140 @@ const styles = StyleSheet.create({
     color: '#3B82F6',
   },
   paymentCard: {
-    backgroundColor: '#FFFBEB',
-    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
     padding: 12,
-    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#1A2840',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  paymentCardTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 10,
-    color: '#1A2840',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  paymentIconsRow: {
+  paymentMethodRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-  },
-  paymentItem: {
-    alignItems: 'center',
-    marginHorizontal: 4,
-  },
-  tokenIcon: {
-    width: 24,
-    height: 24,
+    backgroundColor: '#F8FAFC',
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 8,
+  },
+  cardLogoBadge: {
+    width: 48,
+    height: 38,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 12,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  visaLogoText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 11,
+    fontWeight: '900',
+    fontStyle: 'italic',
+    color: '#1A1F71',
+    letterSpacing: 0.5,
+    lineHeight: 13,
+  },
+  mcCirclesWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  mcCircle: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+  },
+  paymentMethodIconBox: {
+    width: 48,
+    height: 38,
+    borderRadius: 8,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  multiCryptoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  paymentMethodInfo: {
+    flex: 1,
+    marginRight: 8,
+  },
+  paymentMethodTitle: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 13,
+    color: '#1A2840',
     marginBottom: 2,
   },
-  tokenIconText: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: 'bold',
+  paymentMethodSubtitle: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    color: '#64748B',
+    lineHeight: 15,
   },
-  tokenLabel: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 8,
-    color: '#1A2840',
+  paymentMethodTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EFF6FF',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+  },
+  paymentMethodTagText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 10,
+    color: '#1E40AF',
   },
   securityBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#EFF6FF',
     borderRadius: 12,
-    padding: 12,
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+    padding: 10,
+    marginTop: 4,
+  },
+  securityIconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#DBEAFE',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  securityContent: {
+    flex: 1,
   },
   securityTitle: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 10,
-    color: '#1A2840',
+    fontSize: 11,
+    color: '#1E40AF',
     marginBottom: 2,
   },
   securityText: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 9,
-    color: '#64748B',
+    fontSize: 10,
+    color: '#3B82F6',
+    lineHeight: 14,
   },
   divider: {
     height: 1,

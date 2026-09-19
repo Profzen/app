@@ -51,7 +51,7 @@ export function AppProvider({ children }) {
     hydrateCachedUser();
   }, []);
 
-  const [detectedCountry, setDetectedCountry] = useState(getCachedCountry() || 'DZ');
+  const [detectedCountry, setDetectedCountry] = useState(getCachedCountry() || null);
   const [userSelectedCountry, setUserSelectedCountry] = useState(null);
 
   useEffect(() => {
@@ -62,7 +62,7 @@ export function AppProvider({ children }) {
         if (stored && stored.length === 2 && isMounted) {
           setUserSelectedCountry(stored.toUpperCase());
         }
-        const detected = await detectUserCountry(user?.country_of_residence || user?.country);
+        const detected = await detectUserCountry();
         if (detected && isMounted) {
           setDetectedCountry(detected);
         }
@@ -72,13 +72,34 @@ export function AppProvider({ children }) {
     };
     initGeolocation();
     return () => { isMounted = false; };
-  }, [user?.country_of_residence, user?.country]);
+  }, []);
 
   const userCountry = userSelectedCountry || 
     detectedCountry || 
     (user?.country_code && user.country_code.length === 2 ? user.country_code : null) || 
     (user?.country && user.country.length === 2 ? user.country : null) || 
     'DZ';
+
+  /**
+   * Resolve wallet balance country:
+   * 1. Physical geolocated country (detectedCountry)
+   * 2. If geolocation failed:
+   *    - For merchant: merchant business country from DB (e.g. Madagascar for EYOU)
+   *    - For regular user: user country from settings / profile
+   * 3. Fallback: 'US'
+   */
+  const getEffectiveWalletCountry = (isBusinessContext = false) => {
+    if (detectedCountry && typeof detectedCountry === 'string' && detectedCountry.length === 2) {
+      return detectedCountry;
+    }
+    if (isBusinessContext || user?.role === 'merchant') {
+      const bizCountry = user?.merchantProfile?.country || user?.merchantProfile?.country_code;
+      if (bizCountry) return bizCountry;
+    }
+    const userSettingsCountry = user?.country_of_residence || user?.country || user?.country_code;
+    if (userSettingsCountry) return userSettingsCountry;
+    return 'US';
+  };
 
   const handleSetUserCountry = async (code) => {
     if (!code || typeof code !== 'string') return;
@@ -850,6 +871,7 @@ export function AppProvider({ children }) {
       appSettings,
       userCountry,
       detectedCountry,
+      getEffectiveWalletCountry,
       setUserCountry: handleSetUserCountry,
       clearUserCountry: handleClearUserCountry,
     }}>

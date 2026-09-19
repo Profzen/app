@@ -332,7 +332,7 @@ export const getFlagEmoji = (countryCodeOrName) => {
   return String.fromCodePoint(...codePoints);
 };
 
-import { currencyRateService, EMERGENCY_RATES } from '../services/currencyRateService';
+import { currencyRateService, EMERGENCY_RATES } from '../services/currencyRateService.js';
 
 export const EXCHANGE_RATES_TO_USD = EMERGENCY_RATES;
 

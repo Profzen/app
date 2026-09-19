@@ -295,7 +295,7 @@ export default function ShopDetailsScreen({ route }) {
               <Ionicons name="shield-checkmark-outline" size={18} color="#10B981" />
               <View style={{ marginLeft: 8 }}>
                 <Text style={styles.statNumber}>{shop.is_verified ? t('shop.stats.verified', 'Vérifié') : t('shop.stats.partner', 'Partenaire')}</Text>
-                <Text style={styles.statLabel}>Escrow</Text>
+                <Text style={styles.statLabel}>{t('shop.stats.escrow', 'Secure')}</Text>
               </View>
             </View>
             <View style={styles.statDivider} />
