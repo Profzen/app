@@ -288,7 +288,7 @@ export default function PayBillsSummaryScreen() {
           firstName: fName,
           surname: lName,
           email: userEmail,
-          senderPhoneNumber: userPhone,
+          senderPhoneNumber: user?.phone || recipientPhone || '',
           productType: serviceType,
           senderCity: beneficiary.city || 'Lome',
           benPhoneNumber: recipientPhone,

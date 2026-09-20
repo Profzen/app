@@ -245,7 +245,7 @@ export default function ExploreGiftCardsScreen() {
 
           {/* Filter Tabs (ALL / BRAND / CATEGORY) */}
           <View style={styles.tabsRow}>
-            {TABS.map(tab => {
+            {CATEGORIES.map(tab => {
               const isActive = activeTab === tab.id;
               return (
                 <TouchableOpacity

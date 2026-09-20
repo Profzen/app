@@ -29,7 +29,7 @@ const getNetworkOptions = (t) => [
 export default function TopUpWalletDetailsScreen() {
   const navigation = useNavigation();
   const { session, user, t } = useApp();
-  const evmAddress = user?.evmAddress || user?.businessEvmAddress || '';
+  const evmAddress = user?.role === 'merchant' && user?.businessEvmAddress ? user.businessEvmAddress : user?.evmAddress || '';
   
   const currencyOptions = getCurrencyOptions(t);
   const networkOptions = getNetworkOptions(t);
