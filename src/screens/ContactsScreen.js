@@ -302,11 +302,11 @@ export default function ContactsScreen() {
             ) : filteredContacts.length === 0 ? (
               <View style={styles.emptyContainer}>
                 <Ionicons name="people-outline" size={44} color="#CBD5E1" />
-                <Text style={styles.emptyTitle}>{t('contacts.no_beneficiaries', 'Aucun bénéficiaire pour le moment')}</Text>
-                <Text style={styles.emptySubtitle}>{t('contacts.add_first_sub', 'Ajoutez vos bénéficiaires pour leur envoyer des fonds et payer leurs factures.')}</Text>
+                <Text style={styles.emptyTitle}>{t('contacts.no_beneficiaries', 'No beneficiaries yet')}</Text>
+                <Text style={styles.emptySubtitle}>{t('contacts.add_first_sub', 'Add your beneficiaries to send them funds and pay their bills.')}</Text>
                 <TouchableOpacity style={styles.addFirstBtn} onPress={() => navigation.navigate('ContactsManageScreen')}>
                   <Ionicons name="person-add" size={16} color="#071D54" style={{ marginRight: 6 }} />
-                  <Text style={styles.addFirstBtnText}>{t('contacts.add_beneficiary', 'Ajouter un bénéficiaire')}</Text>
+                  <Text style={styles.addFirstBtnText}>{t('contacts.add_beneficiary', 'Add a beneficiary')}</Text>
                 </TouchableOpacity>
               </View>
             ) : (

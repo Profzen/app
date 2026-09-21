@@ -201,7 +201,6 @@
     "backHome": "Back to Home",
     "footerLink": "Beta Status"
   },
-
   "nav": {
     "buy": "Buy",
     "pay": "Pay",
@@ -4034,7 +4033,10 @@
     "confirm_delete_title": "Delete Beneficiary",
     "confirm_delete_desc": "Are you sure you want to delete {{name}} from your beneficiaries?",
     "confirm_delete_cancel": "Cancel",
-    "confirm_delete_confirm": "Yes, Delete"
+    "confirm_delete_confirm": "Yes, Delete",
+    "no_beneficiaries": "No beneficiaries yet",
+    "add_first_sub": "Add your beneficiaries to send them funds and pay their bills.",
+    "add_beneficiary": "Add a beneficiary"
   },
   "beneficiary_management": {
     "edit": {

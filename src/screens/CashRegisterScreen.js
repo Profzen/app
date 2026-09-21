@@ -142,7 +142,7 @@ export default function CashRegisterScreen() {
           <View style={{ width: 38 }} />
         </View>
 
-        <View style={[styles.scrollView, styles.scrollContent]}>
+        <View style={styles.fixedScreenContent}>
 
           {/* Top 2 Mode Switcher Tabs Container */}
           <View style={[styles.modeSwitchContainer, activeTab === 'billets' && styles.modeSwitchContainerDark]}>
@@ -430,6 +430,12 @@ export default function CashRegisterScreen() {
 }
 
 const styles = StyleSheet.create({
+  fixedScreenContent: {
+    flex: 1,
+    paddingTop: 2,
+    paddingBottom: 4,
+    justifyContent: 'space-between',
+  },
   safeArea: {
     flex: 1, backgroundColor: '#FFFFFF',
     paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 4 : 10,
@@ -492,7 +498,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: isSmallScreen ? 4 : 6,
+    marginBottom: 2,
   },
   currencySelectBtn: {
     flexDirection: 'row',
@@ -547,7 +553,7 @@ const styles = StyleSheet.create({
   amountDisplayGroup: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: isSmallScreen ? 4 : 8,
+    paddingVertical: isSmallScreen ? 2 : 4,
   },
   montantTitleText: {
     fontFamily: 'Inter_600SemiBold',
@@ -590,16 +596,16 @@ const styles = StyleSheet.create({
     color: '#FFC759',
   },
   keypadGrid: {
-    marginVertical: isSmallScreen ? 2 : 6,
+    marginVertical: 2,
   },
   keypadRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: isSmallScreen ? 6 : 8,
+    marginBottom: 4,
   },
   keyBtn: {
     width: '31%',
-    height: isSmallScreen ? 42 : 46,
+    height: isSmallScreen ? 36 : 40,
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 14,
     borderWidth: 1,

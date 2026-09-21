@@ -30,13 +30,13 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
   };
 
   const QUICK_ACTIONS = [
-    { id: '1', icon: 'bag-handle-outline', color: '#3B82F6', bgColor: '#EFF6FF', label: t('actionBuyGoods', 'Acheter des biens'), route: 'ShopsScreen' },
-    { id: '2', icon: 'document-text-outline', color: '#8B5CF6', bgColor: '#F5F3FF', label: t('actionPayBills', 'Payer des factures'), route: 'ContactsScreen' },
-    { id: '3', icon: 'cart-outline', color: '#F59E0B', bgColor: '#FFFBEB', label: t('actionRequestMoney', 'Demander des fonds'), route: 'ReceiveFundsV2Screen' },
-    { id: '4', icon: 'people-outline', color: '#10B981', bgColor: '#ECFDF5', label: t('actionSendMoney', 'Envoyer des Stablecoins'), route: 'ContactsScreen' },
-    { id: '5', icon: 'add-circle-outline', color: '#10B981', bgColor: '#ECFDF5', label: t('actionTopUp', 'Recharger'), route: 'TopUpScreen' },
-    { id: '6', icon: 'storefront-outline', color: '#F59E0B', bgColor: '#FFFBEB', label: t('actionReferStore', 'Référer un shop'), route: 'ReferBusinessScreen' },
-    { id: '7', icon: 'swap-horizontal', color: '#3B82F6', bgColor: '#EFF6FF', label: t('tabSwap', 'Échanger'), route: 'SwapTokensScreen' },
+    { id: '1', icon: 'bag-handle-outline', color: '#3B82F6', bgColor: '#EFF6FF', label: t('actionBuyGoods', 'Buy goods'), route: 'ShopsScreen' },
+    { id: '2', icon: 'document-text-outline', color: '#8B5CF6', bgColor: '#F5F3FF', label: t('actionPayBills', 'Pay bills'), route: 'PayBillsScreen' },
+    { id: '3', icon: 'cart-outline', color: '#F59E0B', bgColor: '#FFFBEB', label: t('actionRequestMoney', 'Request money'), route: 'ReceiveFundsV2Screen' },
+    { id: '4', icon: 'people-outline', color: '#10B981', bgColor: '#ECFDF5', label: t('actionSendMoney', 'Send money'), route: 'ContactsScreen' },
+    { id: '5', icon: 'add-circle-outline', color: '#10B981', bgColor: '#ECFDF5', label: t('actionTopUp', 'Top-up'), route: 'TopUpScreen' },
+    { id: '6', icon: 'storefront-outline', color: '#F59E0B', bgColor: '#FFFBEB', label: t('actionReferStore', 'Refer a store'), route: 'ReferBusinessScreen' },
+    { id: '7', icon: 'swap-horizontal', color: '#3B82F6', bgColor: '#EFF6FF', label: t('tabSwap', 'Swap'), route: 'SwapTokensScreen' },
     { id: '8', icon: 'qr-code-outline', color: '#10B981', bgColor: '#F0FDFA', label: t('actionScanCash', 'Scan & Cash'), route: 'LocalExchangeScreen' },
   ];
 

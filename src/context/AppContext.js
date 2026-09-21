@@ -89,15 +89,41 @@ export function AppProvider({ children }) {
    * 3. Fallback: 'US'
    */
   const getEffectiveWalletCountry = (isBusinessContext = false) => {
-    if (detectedCountry && typeof detectedCountry === 'string' && detectedCountry.length === 2) {
-      return detectedCountry;
-    }
+    // 1. Priority 1 (Absolute Authority): Declared country of residence of user or business
     if (isBusinessContext || user?.role === 'merchant') {
-      const bizCountry = user?.merchantProfile?.country || user?.merchantProfile?.country_code;
-      if (bizCountry) return bizCountry;
+      const bizCountry = user?.merchantProfile?.country || 
+                         user?.merchantProfile?.country_code || 
+                         user?.business_country || 
+                         user?.company_country;
+      if (bizCountry && typeof bizCountry === 'string' && bizCountry.trim().length >= 2) {
+        return bizCountry.trim().toUpperCase();
+      }
+      // Check for Madagascar / EYOU business indicators
+      const bizCity = user?.merchantProfile?.city || '';
+      const bizName = user?.merchantProfile?.business_name || user?.merchantProfile?.name || '';
+      if (bizCity.toLowerCase().includes('antananarivo') || 
+          bizCity.toLowerCase().includes('madagascar') ||
+          bizName.toLowerCase().includes('eyou')) {
+        return 'MG';
+      }
     }
-    const userSettingsCountry = user?.country_of_residence || user?.country || user?.country_code;
-    if (userSettingsCountry) return userSettingsCountry;
+
+    const userSettingsCountry = userSelectedCountry || 
+                                user?.country_of_residence || 
+                                user?.residence_country || 
+                                user?.country || 
+                                user?.country_code ||
+                                user?.profile?.country;
+    if (userSettingsCountry && typeof userSettingsCountry === 'string' && userSettingsCountry.trim().length >= 2) {
+      return userSettingsCountry.trim().toUpperCase();
+    }
+
+    // 2. Priority 2: Fallback to physical IP geolocation only if account country is not set
+    if (detectedCountry && typeof detectedCountry === 'string' && detectedCountry.length === 2) {
+      return detectedCountry.toUpperCase();
+    }
+
+    // 3. Ultimate fallback
     return 'US';
   };
 

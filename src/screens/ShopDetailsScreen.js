@@ -287,14 +287,14 @@ export default function ShopDetailsScreen({ route }) {
               <Ionicons name="cube-outline" size={18} color="#1A2840" />
               <View style={{ marginLeft: 8 }}>
                 <Text style={styles.statNumber}>{products.length}</Text>
-                <Text style={styles.statLabel}>{t('shop.stats.products', 'Produits')}</Text>
+                <Text style={styles.statLabel}>{t('shop.stats.products', 'Products')}</Text>
               </View>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
               <Ionicons name="shield-checkmark-outline" size={18} color="#10B981" />
               <View style={{ marginLeft: 8 }}>
-                <Text style={styles.statNumber}>{shop.is_verified ? t('shop.stats.verified', 'Vérifié') : t('shop.stats.partner', 'Partenaire')}</Text>
+                <Text style={styles.statNumber}>{shop.is_verified ? t('shop.stats.verified', 'Verified') : t('shop.stats.partner', 'Partner')}</Text>
                 <Text style={styles.statLabel}>{t('shop.stats.escrow', 'Secure')}</Text>
               </View>
             </View>
@@ -303,7 +303,7 @@ export default function ShopDetailsScreen({ route }) {
               <Ionicons name="flash-outline" size={18} color="#F59E0B" />
               <View style={{ marginLeft: 8 }}>
                 <Text style={styles.statNumber}>{shop.deliveryTime || '24-48h'}</Text>
-                <Text style={styles.statLabel}>{t('shop.info.delivery', 'Livraison')}</Text>
+                <Text style={styles.statLabel}>{t('shop.info.delivery', 'Delivery')}</Text>
               </View>
             </View>
           </View>
@@ -311,7 +311,7 @@ export default function ShopDetailsScreen({ route }) {
           {/* Share Card Row */}
           <View style={styles.shareCardContainer}>
             <View style={styles.fullCard}>
-              <Text style={styles.cardTitle}>{t('shop.actions.share_store', 'Partager la boutique')}</Text>
+              <Text style={styles.cardTitle}>{t('shop.actions.share_store', 'Share store')}</Text>
               <View style={styles.socialIconsRow}>
                 <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#ECFDF5' }]} onPress={() => Linking.openURL(`whatsapp://send?text=${encodeURIComponent(shopUrl)}`).catch(() => shareShop())}>
                   <Ionicons name="logo-whatsapp" size={16} color="#10B981" />
@@ -398,7 +398,7 @@ export default function ShopDetailsScreen({ route }) {
               style={styles.accordionHeader}
               onPress={() => setPaymentInfoExpanded(!paymentInfoExpanded)}
             >
-              <Text style={styles.accordionTitle}>{t('shop.payment.title', 'Informations de paiement')}</Text>
+              <Text style={styles.accordionTitle}>{t('shop.payment.title', 'Payment information')}</Text>
               <Ionicons name={paymentInfoExpanded ? "chevron-up" : "chevron-down"} size={20} color="#1A2840" />
             </TouchableOpacity>
             {paymentInfoExpanded && (

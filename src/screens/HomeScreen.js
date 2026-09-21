@@ -202,8 +202,8 @@ export default function HomeScreen() {
                     <Ionicons name="calculator" size={24} color="#FFF" />
                   </View>
                   <View style={styles.posTextContainer}>
-                    <Text style={styles.posButtonTitle}>{t('home.openPos', 'Ouvrir la Caisse (TPE)')}</Text>
-                    <Text style={styles.posButtonSub}>{t('home.openPosSub', 'Encaisser un paiement client')}</Text>
+                    <Text style={styles.posButtonTitle}>{t('home.openPos', 'Point of Sale (POS)')}</Text>
+                    <Text style={styles.posButtonSub}>{t('home.openPosSub', 'In-store Stablecoins & DZY payment')}</Text>
                   </View>
                   <Ionicons name="chevron-forward" size={20} color="#8B5CF6" />
                 </TouchableOpacity>
@@ -218,7 +218,7 @@ export default function HomeScreen() {
           ) : (
             <View style={styles.todoCard}>
               <View style={[styles.sectionHeader, styles.todoCardHeader]}>
-                <Text style={styles.sectionTitle}>{t('todoTitle', 'À faire')}</Text>
+                <Text style={styles.sectionTitle}>{t('todoTitle', 'To-do list')}</Text>
                 <TouchableOpacity onPress={() => navigation.navigate('TodoListScreen')}>
                   <Text style={styles.viewAllText}>{t('viewAll', 'View all')}</Text>
                 </TouchableOpacity>
@@ -248,14 +248,14 @@ export default function HomeScreen() {
                   </TouchableOpacity>
                   <View style={styles.inviteContent}>
                     <Text style={styles.inviteTitle}>
-                      {t('home.inviteBannerTitle_1', "Invitez vos amis\net gagnez ")}
-                      <Text style={{ color: '#3B82F6' }}>{t('home.inviteBannerAmount', "$5 en DZY")}</Text>
+                      {t('home.inviteBannerTitle_1', "Invite friends\nand earn ")}
+                      <Text style={{ color: '#3B82F6' }}>{t('home.inviteBannerAmount', "$5 in DZY")}</Text>
                     </Text>
                     <Text style={styles.inviteSubtitle}>
-                      {t('home.inviteBannerDesc', "Envoyez des fonds, achetez,\npayez vos factures et gagnez.")}
+                      {t('home.inviteBannerDesc', "Send funds, shop,\npay bills and earn rewards.")}
                     </Text>
                     <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#071D54' }]} onPress={() => navigation.navigate('RewardsScreen')}>
-                      <Text style={styles.inviteButtonText}>{t('home.btnInviteNow', 'Inviter')}</Text>
+                      <Text style={styles.inviteButtonText}>{t('home.btnInviteNow', 'Invite')}</Text>
                     </TouchableOpacity>
                   </View>
                   <View style={styles.inviteGraphic}>
@@ -277,14 +277,14 @@ export default function HomeScreen() {
                   </TouchableOpacity>
                   <View style={styles.inviteContent}>
                     <Text style={styles.inviteTitle}>
-                      {t('home.referBannerTitle_1', "Référencez un commerce\net gagnez ")}
-                      <Text style={{ color: '#10B981' }}>{t('home.referBannerAmount', "$10 en DZY")}</Text>
+                      {t('home.referBannerTitle_1', "Refer a store\nand earn ")}
+                      <Text style={{ color: '#10B981' }}>{t('home.referBannerAmount', "$10 in DZY")}</Text>
                     </Text>
                     <Text style={styles.inviteSubtitle}>
-                      {t('home.referBannerDesc', "Recommandez un business\net gagnez des récompenses.")}
+                      {t('home.referBannerDesc', "Recommend a business\nand earn rewards.")}
                     </Text>
                     <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#10B981' }]} onPress={() => navigation.navigate('ShopsScreen')}>
-                      <Text style={styles.inviteButtonText}>{t('home.btnReferNow', 'Référencer')}</Text>
+                      <Text style={styles.inviteButtonText}>{t('home.btnReferNow', 'Refer')}</Text>
                     </TouchableOpacity>
                   </View>
                   <View style={styles.storeGraphic}>

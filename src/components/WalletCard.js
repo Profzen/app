@@ -29,12 +29,12 @@ export default function WalletCard({ balances, badgeTitle }) {
   let targetCountryKey = null;
   if (getEffectiveWalletCountry) {
     targetCountryKey = getEffectiveWalletCountry(isBusinessCard);
+  } else if (isBusinessCard && (user?.merchantProfile?.country || user?.merchantProfile?.country_code)) {
+    targetCountryKey = user?.merchantProfile?.country || user?.merchantProfile?.country_code;
+  } else if (user?.country_of_residence || user?.country || user?.country_code) {
+    targetCountryKey = user?.country_of_residence || user?.country || user?.country_code;
   } else if (detectedCountry && typeof detectedCountry === 'string' && detectedCountry.length === 2) {
     targetCountryKey = detectedCountry;
-  } else if (isBusinessCard) {
-    targetCountryKey = user?.merchantProfile?.country || user?.merchantProfile?.country_code;
-  } else {
-    targetCountryKey = user?.country_of_residence || user?.country || user?.country_code;
   }
   
   const geoCountryKey = (targetCountryKey || 'us').toLowerCase().trim();

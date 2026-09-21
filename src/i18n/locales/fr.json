@@ -9,7 +9,6 @@
   "7": "7",
   "8": "8",
   "9": "9",
-
   "finance": {
     "stakeholders": {
       "families": {
@@ -3658,8 +3657,8 @@
     "view_rewards_dashboard": "Voir le tableau de bord Rewards"
   },
   "home": {
-    "openPos": "Caisse (TPE)",
-    "openPosSub": "Encaisser un paiement client",
+    "openPos": "Point de Vente (POS)",
+    "openPosSub": "Paiement en magasin Stablecoins & DZY",
     "todos": {
       "low_balance": {
         "title": "Solde faible,\nrechargez votre compte",
@@ -4082,7 +4081,10 @@
     "confirm_delete_title": "Supprimer le bénéficiaire",
     "confirm_delete_desc": "Êtes-vous sûr de vouloir supprimer {{name}} de vos bénéficiaires ?",
     "confirm_delete_cancel": "Annuler",
-    "confirm_delete_confirm": "Oui, supprimer"
+    "confirm_delete_confirm": "Oui, supprimer",
+    "no_beneficiaries": "Aucun bénéficiaire pour le moment",
+    "add_first_sub": "Ajoutez vos bénéficiaires pour leur envoyer des fonds et payer leurs factures.",
+    "add_beneficiary": "Ajouter un bénéficiaire"
   },
   "beneficiary_management": {
     "edit": {
