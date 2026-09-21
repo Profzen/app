@@ -2703,3 +2703,58 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
 
 
 
+
+
+---
+
+## 🚀 Livraison Build 37 & Harmonisation Totale (21 Septembre 2026)
+
+### 1. Contexte & Alignement Immédiat avec les Retours de Solofo
+À la suite des retours des testeurs et des échanges Slack du 21 septembre 2026 :
+- Solofo a validé la suppression des mélanges linguistiques et la livraison imminente de la **Build 37**.
+- Solofo a clarifié que la devise affichée à gauche dans le portefeuille doit correspondre au **pays de résidence déclaré** pour l'ensemble des utilisateurs (comptes Business et Particuliers), et non plus être détournée par la géolocalisation IP.
+- Un nouveau compte organisationnel Expo.dev a été créé avec invitation d'administration attribuée à l'équipe technique (`profzzen@gmail.com`).
+
+### 2. Évolutions & Correctifs Appliqués (Commit `20056d0`)
+
+#### A. Routage Direct Pay Bills (`src/components/BottomNavBar.js`)
+- Résolution définitive du bug de bouclage : le raccourci *Pay bills* du menu d'action rapide central redirige désormais directement vers le flux de paiement de factures (`route: 'PayBillsScreen'`) au lieu de réafficher la liste de contacts et ses actions.
+- Anglicisation de l'ensemble des libellés de secours du menu d'actions rapides (`Buy goods`, `Pay bills`, `Request money`, `Send money`, `Top-up`, `Refer a store`, `Swap`).
+
+#### B. Éradication Totale des Textes Français Résiduels (`HomeScreen.js`, `ContactsScreen.js`, `ShopDetailsScreen.js`)
+- **Bannières Accueil (`HomeScreen.js`)** :
+  - Bannière d'invitation : Remplacement des textes français codés en dur par *"Invite friends and earn $5 in DZY"*, *"Send funds, shop, pay bills and earn rewards."*, bouton *"Invite"*.
+  - Bannière de recommandation : Remplacement par *"Refer a store and earn $10 in DZY"*, *"Recommend a business and earn rewards."*, bouton *"Refer"*.
+  - En-tête des tâches : Remplacement par *"To-do list"*.
+- **État Vide des Bénéficiaires (`ContactsScreen.js`)** :
+  - Clés traduites en anglais natif : *"No beneficiaries yet"*, *"Add your beneficiaries to send them funds and pay their bills."*, bouton *"Add a beneficiary"*.
+- **Boutique (`ShopDetailsScreen.js`)** :
+  - Suppression de la mention confuse *"Escrow"* au profit de *"Secure"*.
+  - Anglicisation des badges et tiroirs : *"Products"*, *"Verified"*, *"Partner"*, *"Delivery"*, *"Share store"*, *"Payment information"*, *"Store information"*.
+- **Dictionnaires (`en.json`, `fr.json`, `pt.json`, `ar.json`, `am.json`)** : Synchronisation des clés `contacts.no_beneficiaries`, `contacts.add_first_sub`, `contacts.add_beneficiary`, `home.openPos`, `home.openPosSub`.
+
+#### C. Refonte Ergonomique du Point of Sale (POS) — Mode Calculatrice Écran Fixe (`CashRegisterScreen.js` & `HomeScreen.js`)
+- **Tuile Marchand (`HomeScreen.js`)** :
+  - Titre : **"Point of Sale (POS)"**
+  - Sous-titre officiel : **"In-store Stablecoins & DZY payment"**
+- **Terminal Caisse (`CashRegisterScreen.js`)** :
+  - Suppression du défilement vertical (`ScrollView`) au profit d'un conteneur flexible compact (`fixedScreenContent`).
+  - Redimensionnement millimétré du pavé tactile numérique (hauteur adaptative 36-40px, marges réduites) garantissant que le montant, les sélecteurs de devises/jetons, les touches 0-9 et le bouton d'action principal *"Recevoir le paiement"* tiennent intégralement sur un seul écran sans jamais avoir besoin de faire défiler.
+
+#### D. Règle Universelle de Devise : Priorité au Pays de Résidence (`AppContext.js` & `WalletCard.js`)
+- Inversion stricte de la hiérarchie de résolution dans `getEffectiveWalletCountry()` :
+  1. **Priorité 1 (Autorité Souveraine)** : Pays de résidence du compte / de l'entreprise :
+     - Pour un compte **Business** : pays du profil marchand (`country`, `country_code`, ville Antananarivo / EYOU -> forçage garanti **MGA** avec drapeau malgache 🇲🇬).
+     - Pour un compte **Particulier** : pays sélectionné ou pays de résidence du profil (`userSelectedCountry`, `country_of_residence`, `country`).
+  2. **Priorité 2 (Repli)** : Géolocalisation par IP physique (`detectedCountry`) uniquement si aucun pays n'est renseigné sur le compte.
+  3. **Priorité 3 (Ultime secours)** : `US` / `USD`.
+- Aligné sur la directive explicite de Solofo : *"the currency to display at the left is their country of residence currency"*.
+
+#### E. Incrémentation de la Release pour la Build 37
+- `app.json` : `versionCode: 37`, `buildNumber: "37"`, description *"DizzitApp V1. Build 37 Beta Test Version"*.
+- `package.json` : `version: "1.0.37"`.
+
+### 3. Matrice de Validation Technique
+- **Babel Expo Transpilation** : 100% des fichiers JavaScript modifiés compilés sans avertissement ni erreur (`OK: HomeScreen.js`, `CashRegisterScreen.js`, `ContactsScreen.js`, `ShopDetailsScreen.js`, `BottomNavBar.js`, `WalletCard.js`, `AppContext.js`).
+- **Syntaxe JSON** : 5/5 dictionnaires validés avec succès (`en`, `fr`, `pt`, `ar`, `am`).
+- **Intégrité Git** : Fusion `develop` réalisée sans conflit, commit propre `20056d0` prêt au push.
