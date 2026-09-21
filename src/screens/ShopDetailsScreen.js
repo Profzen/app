@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Dimensions, Share, Platform, StatusBar, ActivityIndicator, ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Dimensions, Share, Platform, StatusBar, ActivityIndicator, ImageBackground, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
@@ -295,7 +295,7 @@ export default function ShopDetailsScreen({ route }) {
               <Ionicons name="shield-checkmark-outline" size={18} color="#10B981" />
               <View style={{ marginLeft: 8 }}>
                 <Text style={styles.statNumber}>{shop.is_verified ? t('shop.stats.verified', 'Vérifié') : t('shop.stats.partner', 'Partenaire')}</Text>
-                <Text style={styles.statLabel}>Escrow</Text>
+                <Text style={styles.statLabel}>{t('shop.stats.escrow', 'Secure')}</Text>
               </View>
             </View>
             <View style={styles.statDivider} />
@@ -313,16 +313,19 @@ export default function ShopDetailsScreen({ route }) {
             <View style={styles.fullCard}>
               <Text style={styles.cardTitle}>{t('shop.actions.share_store', 'Partager la boutique')}</Text>
               <View style={styles.socialIconsRow}>
-                <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#ECFDF5' }]} onPress={shareShop}>
+                <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#ECFDF5' }]} onPress={() => Linking.openURL(`whatsapp://send?text=${encodeURIComponent(shopUrl)}`).catch(() => shareShop())}>
                   <Ionicons name="logo-whatsapp" size={16} color="#10B981" />
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#EFF6FF' }]} onPress={shareShop}>
+                <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#EFF6FF' }]} onPress={() => Linking.openURL(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shopUrl)}`).catch(() => shareShop())}>
                   <Ionicons name="logo-facebook" size={16} color="#3B82F6" />
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#F5F3FF' }]} onPress={shareShop}>
+                <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#F5F3FF' }]} onPress={() => {
+                  copyToClipboard('Lien Instagram', shopUrl);
+                  Linking.openURL('instagram://app').catch(() => shareShop());
+                }}>
                   <Ionicons name="logo-instagram" size={16} color="#8B5CF6" />
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#F8FAFC' }]} onPress={shareShop}>
+                <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#F8FAFC' }]} onPress={() => Linking.openURL(`https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`).catch(() => shareShop())}>
                   <Text style={{ fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840' }}>X</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#EFF6FF' }]} onPress={shareShop}>

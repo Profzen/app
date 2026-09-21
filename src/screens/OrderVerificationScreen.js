@@ -561,7 +561,7 @@ export default function OrderVerificationScreen({ route }) {
             >
               <Ionicons name="wallet-outline" size={16} color={paymentRail === 'crypto' ? '#1A2840' : '#64748B'} />
               <Text style={[styles.railTabText, paymentRail === 'crypto' && styles.railTabTextActive]}>
-                {t('orderVerification.cryptoTab', 'DZY & Crypto')}
+                {t('orderVerification.cryptoTab', 'DZY & Stablecoins')}
               </Text>
             </TouchableOpacity>
 

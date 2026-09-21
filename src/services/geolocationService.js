@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 let memoryCountry = null;
 
-const COUNTRY_NAME_TO_CODE = {
+export const COUNTRY_NAME_TO_CODE = {
   'ALGERIA': 'DZ', 'ALGÉRIE': 'DZ', 'ALGERIE': 'DZ',
   'BENIN': 'BJ', 'BÉNIN': 'BJ',
   'FRANCE': 'FR',
@@ -10,7 +10,7 @@ const COUNTRY_NAME_TO_CODE = {
   'TOGO': 'TG',
   'MADAGASCAR': 'MG',
   'SENEGAL': 'SN', 'SÉNÉGAL': 'SN',
-  'IVORY COAST': 'CI', 'COTE D\'IVOIRE': 'CI', 'CÔTE D’IVOIRE': 'CI', 'COTE D’IVOIRE': 'CI',
+  'IVORY COAST': 'CI', "COTE D'IVOIRE": 'CI', 'CÔTE D’IVOIRE': 'CI', 'COTE D’IVOIRE': 'CI',
   'CAMEROON': 'CM', 'CAMEROUN': 'CM',
   'KENYA': 'KE',
   'NIGERIA': 'NG',
@@ -24,37 +24,45 @@ const COUNTRY_NAME_TO_CODE = {
   'UNITED KINGDOM': 'GB', 'ROYAUME-UNI': 'GB', 'UK': 'GB',
 };
 
+// 6 Fast, independent IP Geolocation endpoints in priority order
+const GEO_PROVIDERS = [
+  { url: 'https://api.country.is/', extract: (d) => d?.country },
+  { url: 'https://freeipapi.com/api/json', extract: (d) => d?.countryCode },
+  { url: 'https://ipwho.is/', extract: (d) => d?.country_code },
+  { url: 'https://api.ip.sb/geoip', extract: (d) => d?.country_code },
+  { url: 'https://ipinfo.io/json', extract: (d) => d?.country },
+  { url: 'https://api.db-ip.com/v2/free/self', extract: (d) => d?.countryCode },
+];
+
 /**
- * Detect user's actual physical country via IP geolocation with local caching.
- * Real IP location takes precedence over registration profile strings so traveling/diaspora
- * or testing users see their real physical payment rails.
- * @param {string} userProfileCountry - Optional fallback country code or name from user profile
- * @returns {Promise<string>} 2-letter ISO country code (e.g. 'DZ', 'MA', 'FR', 'TN', 'IN', 'BJ', 'TG', 'MG')
+ * Detect user's actual physical country via IP geolocation with multiple fallbacks.
+ * Queries fast IP providers sequentially with 2.5s timeouts.
+ * @param {string} [userProfileCountry] - Optional fallback country code or name from profile/settings
+ * @returns {Promise<string|null>} 2-letter ISO country code (e.g. 'FR', 'MG', 'DZ', 'BJ', 'US') or fallback
  */
 export async function detectUserCountry(userProfileCountry) {
-  // 1. Query fast IP geolocation services first (REAL PHYSICAL LOCATION)
-  const geoApis = [
-    'https://api.country.is/',
-    'https://ipwho.is/',
-    'https://api.ip.sb/geoip',
-  ];
-
-  for (const apiUrl of geoApis) {
+  // 1. Query fast IP geolocation services (REAL PHYSICAL LOCATION)
+  for (const provider of GEO_PROVIDERS) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
-      const res = await fetch(apiUrl, { signal: controller.signal });
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+      const res = await fetch(provider.url, {
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (Mobile; DizzitApp)',
+        },
+      });
       clearTimeout(timeoutId);
 
       if (res.ok) {
         const data = await res.json();
-        let rawCode = null;
-        if (apiUrl.includes('country.is')) rawCode = data.country;
-        else if (apiUrl.includes('ipwho.is') || apiUrl.includes('ip.sb')) rawCode = data.country_code;
+        const raw = provider.extract(data);
 
-        if (rawCode && typeof rawCode === 'string') {
-          const code = rawCode.trim().substring(0, 2).toUpperCase();
-          if (code.length === 2) {
+        if (raw && typeof raw === 'string') {
+          const code = raw.trim().substring(0, 2).toUpperCase();
+          if (/^[A-Z]{2}$/.test(code)) {
             memoryCountry = code;
             AsyncStorage.setItem('dizzit_detected_country', code).catch(() => {});
             return code;
@@ -62,11 +70,11 @@ export async function detectUserCountry(userProfileCountry) {
         }
       }
     } catch (e) {
-      // Continue to next provider
+      // Failover to next IP provider immediately
     }
   }
 
-  // 2. Fallback to memory cache
+  // 2. Fallback to memory cache from current session
   if (memoryCountry) {
     return memoryCountry;
   }
@@ -74,18 +82,19 @@ export async function detectUserCountry(userProfileCountry) {
   // 3. Fallback to AsyncStorage cache from previous IP detection
   try {
     const cached = await AsyncStorage.getItem('dizzit_detected_country');
-    if (cached && cached.length === 2) {
-      memoryCountry = cached;
-      return cached;
+    if (cached && typeof cached === 'string' && /^[A-Z]{2}$/i.test(cached.trim())) {
+      const code = cached.trim().toUpperCase();
+      memoryCountry = code;
+      return code;
     }
   } catch (e) {
     // Ignore cache read errors
   }
 
-  // 4. Fallback to userProfileCountry only if IP detection failed (offline)
+  // 4. Fallback to profile / settings country if provided
   if (userProfileCountry && typeof userProfileCountry === 'string') {
     const clean = userProfileCountry.trim().toUpperCase();
-    if (clean.length === 2) {
+    if (/^[A-Z]{2}$/.test(clean)) {
       memoryCountry = clean;
       return clean;
     }
@@ -96,7 +105,7 @@ export async function detectUserCountry(userProfileCountry) {
     }
   }
 
-  return 'DZ';
+  return null;
 }
 
 export async function setManualCountry(code) {
@@ -135,6 +144,6 @@ export async function getEffectiveCountry(userProfileCountry) {
 }
 
 export function getCachedCountry() {
-  return memoryCountry || 'DZ';
+  return memoryCountry || null;
 }
 

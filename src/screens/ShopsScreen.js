@@ -195,7 +195,7 @@ export default function ShopsScreen() {
             <View style={{ marginRight: 8 }}>
               <LanguageSelector />
             </View>
-            <TouchableOpacity style={styles.iconBtnRight} onPress={() => navigation.navigate('NotificationsScreen')}>
+            <TouchableOpacity style={styles.iconBtnRight} onPress={() => setToast({ title: t('common.comingSoon', 'Coming soon'), message: t('notifications.comingSoon', 'Notification system is currently under development.') })}>
               <Ionicons name="notifications-outline" size={20} color="#1A2840" />
               <View style={styles.notificationDot}>
                 <Text style={{ color: '#FFFFFF', fontSize: 7, fontWeight: 'bold', textAlign: 'center' }}>1</Text>

@@ -10,6 +10,7 @@
   "8": "8",
   "9": "9",
   "copied_title": "تم نسخ {{label}}!",
+
   "finance": {
     "stakeholders": {
       "families": {
@@ -1290,8 +1291,16 @@
     "deliveryFees": "رسوم التوصيل",
     "specs": "المواصفات",
     "securePurchaseTitle": "شراء آمن 100%",
-    "securePurchaseDesc": "ادفع بأمان باستخدام عملاتك المشفرة المفضلة.",
+    "securePurchaseDesc": "ادفع بأمان بواسطة البطاقات أو الدفع عبر الهاتف أو العملات المستقرة أو رمز DZY.",
     "acceptedPaymentMethods": "طرق الدفع المقبولة",
+    "visaMastercard": "فيزا، ماستركارد",
+    "visaMastercardSub": "بطاقات مصرفية دولية (3D Secure)",
+    "mobileMoney": "الدفع عبر الهاتف (Mobile Money)",
+    "mobileMoneySub": "أورنج موني، MTN MoMo، موف، ويف...",
+    "stablecoins": "العملات المستقرة (USDT, USDC, EURC)",
+    "stablecoinsSub": "USDC، USDT، EURC (1:1 دولار / يورو)",
+    "dzyToken": "رمز DZY",
+    "dzyTokenSub": "رمز DizzitUp الرقمي وخصومات حصرية",
     "inStock": "متوفر في المخزون",
     "reviewsCount": "({{count}} تقييم)",
     "shareMessage": "اكتشف {{name}} على DizzitUp.",
@@ -1301,7 +1310,7 @@
     "warranty": "الضمان",
     "warrantyVal": "ضمان ديزيت اب",
     "protection": "الحماية",
-    "protectionVal": "دفع بالضمان المالي 4 أرقام",
+    "protectionVal": "دفع آمن برمز PIN مكون من 4 أرقام",
     "condition": "الحالة",
     "brandNew": "جديد في المخزون",
     "deliveryDelay": "من 1 إلى 3 أيام عمل",
@@ -3485,6 +3494,8 @@
     "view_rewards_dashboard": "عرض لوحة تحكم المكافآت"
   },
   "home": {
+    "openPos": "نقطة البيع (POS)",
+    "openPosSub": "الدفع في المتجر (Stablecoins و DZY)",
     "todos": {
       "low_balance": {
         "title": "الرصيد منخفض،\nأعد شحن حسابك",
@@ -4325,7 +4336,7 @@
     "recipientAddressLabel": "عنوان التوصيل / المدينة",
     "namePlaceholder": "مثال: أحمد محمد",
     "addressPlaceholder": "الحي، الشارع، المدينة",
-    "cryptoTab": "DZY والعملات الرقمية",
+    "cryptoTab": "DZY والعملات المستقرة",
     "cardTab": "بطاقة مصرفية",
     "momoTab": "الدفع عبر الهاتف",
     "cardVisaMc": "فيزا وماستركارد",

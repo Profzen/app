@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, StatusBar, LayoutAnimation, UIManager, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, StatusBar, LayoutAnimation, UIManager, Image, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -72,6 +72,14 @@ export default function AssetListScreen() {
   const currentRawBalances = isMerchant
     ? (user?.businessRawBalances?.length ? user.businessRawBalances : (user?.rawBalances || []))
     : (user?.rawBalances || []);
+  
+  const handleBuySell = (type) => {
+    if (type === 'buy') {
+      navigation.navigate('TopUpWalletScreen');
+    } else {
+      navigation.navigate('WithdrawFundsScreen');
+    }
+  };
   
   const groupedTokens = useMemo(() => {
     const groups = {};
@@ -230,10 +238,10 @@ export default function AssetListScreen() {
            </View>
            
            <View style={styles.dzyBottomRow}>
-             <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#FFC759' }]}>
+             <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#FFC759' }]} onPress={() => handleBuySell('buy')}>
                <Text style={[styles.actionBtnText, { color: '#20365B' }]}>{t('wallet.buy', 'Buy')}</Text>
              </TouchableOpacity>
-             <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#20365B' }]}>
+             <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#20365B' }]} onPress={() => handleBuySell('sell')}>
                <Text style={[styles.actionBtnText, { color: '#FFFFFF' }]}>{t('wallet.sell', 'Sell')}</Text>
              </TouchableOpacity>
            </View>
@@ -265,8 +273,8 @@ export default function AssetListScreen() {
                   
                   {canBuySell && (
                     <View style={styles.miniActionButtons}>
-                      <View style={styles.miniBtnYellow}><Text style={styles.miniBtnYellowText}>{t('wallet.buy', 'Buy')}</Text></View>
-                      <View style={styles.miniBtnDark}><Text style={styles.miniBtnDarkText}>{t('wallet.sell', 'Sell')}</Text></View>
+                      <TouchableOpacity style={styles.miniBtnYellow} onPress={() => handleBuySell('buy')}><Text style={styles.miniBtnYellowText}>{t('wallet.buy', 'Buy')}</Text></TouchableOpacity>
+                      <TouchableOpacity style={styles.miniBtnDark} onPress={() => handleBuySell('sell')}><Text style={styles.miniBtnDarkText}>{t('wallet.sell', 'Sell')}</Text></TouchableOpacity>
                     </View>
                   )}
                   

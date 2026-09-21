@@ -189,9 +189,13 @@ export default function LoginScreen() {
 
         {/* Signup Link */}
         <View style={styles.signupContainer}>
-          <Text style={styles.signupText}>{t('auth.dontHaveAccount', "Vous n'avez pas de compte ? ")}</Text>
-          <TouchableOpacity onPress={() => Linking.openURL('https://dizzitup.com/user-registration-login?mode=signup')}>
-            <Text style={styles.signupLink}>{t('auth.signUp', "S'inscrire")}</Text>
+          <Text style={styles.signupText}>{t('auth.dontHaveAccount', "Vous n'avez pas de compte ?")}</Text>
+          <TouchableOpacity 
+            style={styles.signupButtonSmooth}
+            onPress={() => navigation.navigate('RegisterScreen')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.signupButtonText}>{t('auth.signUp', "S'inscrire")}</Text>
           </TouchableOpacity>
         </View>
         </ScrollView>
@@ -307,19 +311,31 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   signupContainer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: isShortScreen ? 12 : theme.spacing.xl,
     marginBottom: isShortScreen ? 8 : theme.spacing.lg,
+    width: '100%',
   },
   signupText: {
     fontFamily: theme.typography.fontFamily.medium,
     fontSize: theme.typography.sizes.sm,
     color: theme.colors.textSecondary,
+    marginBottom: 12,
   },
-  signupLink: {
-    fontFamily: theme.typography.fontFamily.bold,
+  signupButtonSmooth: {
+    paddingVertical: 10,
+    paddingHorizontal: 32,
+    borderRadius: theme.radii.full || 25,
+    borderWidth: 1.5,
+    borderColor: theme.colors.accent,
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  signupButtonText: {
+    fontFamily: theme.typography.fontFamily.semiBold,
     fontSize: theme.typography.sizes.sm,
     color: theme.colors.accent,
   },

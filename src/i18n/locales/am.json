@@ -10,6 +10,7 @@
   "8": "8",
   "9": "9",
   "copied_title": "{{label}} ተቀድቷል!",
+
   "finance": {
     "stakeholders": {
       "families": {
@@ -1991,8 +1992,16 @@
     "deliveryFees": "የማድረሻ ክፍያ",
     "specs": "ዝርዝር መረጃዎች",
     "securePurchaseTitle": "100% ደህንነቱ የተጠበቀ ግዢ",
-    "securePurchaseDesc": "በሚመርጡት ክሪፕቶ ደህንነቱ በተጠበቀ ሁኔታ ይክፈሉ።",
+    "securePurchaseDesc": "በካርድ፣ በሞባይል ማኒ፣ በStablecoins ወይም በDZY ቶከን ደህንነቱ በተጠበቀ ሁኔታ ይክፈሉ።",
     "acceptedPaymentMethods": "ተቀባይነት ያላቸው የክፍያ ዘዴዎች",
+    "visaMastercard": "Visa፣ Mastercard",
+    "visaMastercardSub": "ዓለም አቀፍ የባንክ ካርዶች (3D Secure)",
+    "mobileMoney": "ሞባይል ማኒ (Mobile Money)",
+    "mobileMoneySub": "Orange Money፣ MTN MoMo፣ Moov፣ Wave...",
+    "stablecoins": "Stablecoins (USDT፣ USDC፣ EURC)",
+    "stablecoinsSub": "USDC፣ USDT፣ EURC (1:1 USD / EUR)",
+    "dzyToken": "DZY ቶከን",
+    "dzyTokenSub": "የDizzitUp ዲጂታል ቶከን እና ቅናሾች",
     "inStock": "በመጋዘን ውስጥ አለ",
     "reviewsCount": "({{count}} ግምገማዎች)",
     "shareMessage": "DizzitUp ላይ {{name}} ይመልከቱ።",
@@ -2002,7 +2011,7 @@
     "warranty": "ዋስትና",
     "warrantyVal": "የዲዚትአፕ ዋስትና",
     "protection": "ጥበቃ",
-    "protectionVal": "ባለ 4 አሃዝ ኤስክሮው ክፍያ",
+    "protectionVal": "በ4 አሃዝ ፒን ደህንነቱ የተጠበቀ ክፍያ",
     "condition": "ሁኔታ",
     "brandNew": "አዲስ በመጋዘን አለ",
     "deliveryDelay": "ከ1 እስከ 3 የስራ ቀናት",
@@ -3452,6 +3461,8 @@
     "view_rewards_dashboard": "የሽልማት ዳሽቦርድ ይመልከቱ"
   },
   "home": {
+    "openPos": "የሽያጭ ነጥብ (POS)",
+    "openPosSub": "በሱቅ ውስጥ ክፍያ (Stablecoins እና DZY)",
     "todos": {
       "low_balance": {
         "title": "ዝቅተኛ ቀሪ ሂሳብ፣\nመለያዎን ይሙሉ",
@@ -4225,7 +4236,7 @@
     "recipientAddressLabel": "የማድረሻ አድራሻ / ከተማ",
     "namePlaceholder": "ለምሳሌ: ዮሐንስ",
     "addressPlaceholder": "ሰፈር፣ መንገድ፣ ከተማ",
-    "cryptoTab": "DZY እና ክሪፕቶ",
+    "cryptoTab": "DZY እና ስቴብልኮይኖች",
     "cardTab": "የባንክ ካርድ",
     "momoTab": "ሞባይል ገንዘብ",
     "cardVisaMc": "ቪዛ እና ማስተርካርድ",

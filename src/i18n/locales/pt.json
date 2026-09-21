@@ -10,6 +10,7 @@
   "8": "8",
   "9": "9",
   "copied_title": "{{label}} copiado!",
+
   "finance": {
     "stakeholders": {
       "families": {
@@ -1970,8 +1971,16 @@
     "deliveryFees": "Taxa de entrega",
     "specs": "Especificações",
     "securePurchaseTitle": "Compra 100% segura",
-    "securePurchaseDesc": "Pague com segurança com as suas criptomoedas favoritas.",
+    "securePurchaseDesc": "Pague com segurança com Cartões, Mobile Money, Stablecoins ou Token DZY.",
     "acceptedPaymentMethods": "Métodos de pagamento aceites",
+    "visaMastercard": "Visa, Mastercard",
+    "visaMastercardSub": "Cartões de crédito e débito internacionais (3D Secure)",
+    "mobileMoney": "Mobile Money",
+    "mobileMoneySub": "Orange Money, MTN MoMo, Moov, Wave...",
+    "stablecoins": "Stablecoins (USDT, USDC, EURC)",
+    "stablecoinsSub": "USDC, USDT, EURC (1:1 USD / EUR)",
+    "dzyToken": "Token DZY",
+    "dzyTokenSub": "Token nativo DizzitUp e descontos exclusivos",
     "inStock": "Em stock",
     "reviewsCount": "({{count}} avaliações)",
     "shareMessage": "Descubra {{name}} no DizzitUp.",
@@ -1981,7 +1990,7 @@
     "warranty": "Garantia",
     "warrantyVal": "Garantia DizzitUp",
     "protection": "Proteção",
-    "protectionVal": "Pagamento Escrow de 4 dígitos",
+    "protectionVal": "Pagamento seguro com código PIN",
     "condition": "Condição",
     "brandNew": "Novo em estoque",
     "deliveryDelay": "1 a 3 dias úteis",
@@ -3434,6 +3443,8 @@
     "view_rewards_dashboard": "Ver Painel de Recompensas"
   },
   "home": {
+    "openPos": "Ponto de Venda (TPA)",
+    "openPosSub": "Receber Pagamento",
     "todos": {
       "low_balance": {
         "title": "Saldo baixo,\nrecarregue sua conta",
@@ -4299,7 +4310,7 @@
     "recipientAddressLabel": "Endereço / Cidade de entrega",
     "namePlaceholder": "Ex: João Silva",
     "addressPlaceholder": "Bairro, Rua, Cidade",
-    "cryptoTab": "DZY & Cripto",
+    "cryptoTab": "DZY & Stablecoins",
     "cardTab": "Cartão Bancário",
     "momoTab": "Mobile Money",
     "cardVisaMc": "Visa & Mastercard",

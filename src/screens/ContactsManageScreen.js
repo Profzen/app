@@ -72,6 +72,10 @@ export default function ContactsManageScreen() {
   const [bannerVisible, setBannerVisible] = useState(true);
   const [toast, setToast] = useState(null);
 
+  const contactsWithoutPhone = useMemo(() => {
+    return contactItems.filter(c => !c.phone || c.phone.trim() === '');
+  }, [contactItems]);
+
   const quickAction = (id) => {
     if (id === '1') navigation.navigate('EditBeneficiaryScreen'); else if (id === '2') setToast({ title: 'Action requise', message: 'Veuillez sélectionner un bénéficiaire dans la liste pour le modifier.' });
     else if (id === '3') setToast({ title: 'Liste actualisée', message: 'Tous vos bénéficiaires sont affichés.' });
@@ -127,6 +131,37 @@ export default function ContactsManageScreen() {
               <Text style={styles.searchSubText}>{t('contacts.search_hint', 'Nom, téléphone, email, ville ou pays')}</Text>
             </View>
           </View>
+
+          {/* To-Do: Missing Phone Numbers Banner */}
+          {contactsWithoutPhone.length > 0 && (
+            <View style={{ backgroundColor: '#FFFBEB', marginHorizontal: 16, borderRadius: 12, padding: 16, marginBottom: 24, borderWidth: 1, borderColor: '#FDE68A' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                <Ionicons name="warning" size={24} color="#D97706" />
+                <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 14, color: '#92400E', marginLeft: 8 }}>
+                  {t('contacts.missing_phone_title', 'Action requise')}
+                </Text>
+              </View>
+              <Text style={{ fontFamily: 'Inter_500Medium', fontSize: 12, color: '#B45309', marginBottom: 12 }}>
+                {contactsWithoutPhone.length} {t('contacts.missing_phone_desc', "bénéficiaire(s) nécessite(nt) l'ajout d'un numéro de téléphone obligatoire.")}
+              </Text>
+              {contactsWithoutPhone.slice(0, 3).map(contact => (
+                <TouchableOpacity 
+                  key={contact.id} 
+                  style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', padding: 8, borderRadius: 8, marginBottom: 8, borderWidth: 1, borderColor: '#FEF3C7' }}
+                  onPress={() => navigation.navigate('EditBeneficiaryScreen', { isEditing: true, beneficiary: contact })}
+                >
+                  <Avatar image={contact.image} name={contact.name} size={32} />
+                  <Text style={{ flex: 1, marginLeft: 8, fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840' }}>{contact.name}</Text>
+                  <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 11, color: '#3B82F6' }}>{t('contacts.update', 'Mettre à jour')}</Text>
+                </TouchableOpacity>
+              ))}
+              {contactsWithoutPhone.length > 3 && (
+                <Text style={{ textAlign: 'center', fontFamily: 'Inter_500Medium', fontSize: 11, color: '#D97706', marginTop: 4 }}>
+                  + {contactsWithoutPhone.length - 3} {t('contacts.others', 'autre(s)')}
+                </Text>
+              )}
+            </View>
+          )}
 
           {/* Actions rapides */}
           <Text style={styles.sectionTitle}>{t('contacts.quick_actions', 'Actions rapides')}</Text>
