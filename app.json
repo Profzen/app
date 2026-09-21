@@ -57,10 +57,10 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "cb443e23-61ff-47de-8f7d-45919575a57d"
+        "projectId": "485a099a-a88c-4405-9211-8abd9429ac31"
       }
     },
-    "owner": "profzen",
+    "owner": "dizzitup",
     "description": "DizzitApp V1. Build 37 Beta Test Version"
   }
 }

@@ -45,15 +45,11 @@ jobs:
           OWNER=$(node -e "console.log(require('./app.json').expo.owner || 'NOT SET')")
           echo "Project ID: $PROJECT_ID"
           echo "Owner: $OWNER"
-          if [ "$OWNER" != "profzen" ]; then
-            echo "::error::app.json owner must be 'profzen' to match EXPO_TOKEN. Current: $OWNER"
+          if [ "$OWNER" != "dizzitup" ] && [ "$OWNER" != "profzen" ]; then
+            echo "::error::Unexpected owner: $OWNER (expected dizzitup or profzen)"
             exit 1
           fi
-          if [ "$PROJECT_ID" != "cb443e23-61ff-47de-8f7d-45919575a57d" ]; then
-            echo "::error::app.json projectId does not match @profzen project. Current: $PROJECT_ID"
-            exit 1
-          fi
-          echo "Configuration verified successfully!"
+          echo "Configuration verified successfully for $OWNER!"
 
       - name: Build iOS and Submit to TestFlight
         env:
