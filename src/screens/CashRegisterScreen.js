@@ -17,7 +17,7 @@ const isSmallScreen = SCREEN_HEIGHT < 720;
 
 export default function CashRegisterScreen() {
   const navigation = useNavigation();
-  const { t, user, detectedCountry, getEffectiveWalletCountry } = useApp();
+  const { t, user, detectedCountry, getEffectiveWalletCountry, getEffectivePosCountry } = useApp();
   const [activeTab, setActiveTab] = useState('qr');
   const [selectedToken, setSelectedToken] = useState('USDT');
   const [amount, setAmount] = useState('0');
@@ -31,18 +31,29 @@ export default function CashRegisterScreen() {
     setTimeout(() => setToast({ visible: false, message: '' }), 3500);
   };
 
-  // Priority: 1. Geolocation -> 2. Merchant business country (e.g. Madagascar -> MGA) -> 3. User country from settings
+  // Rule 2 (POS): Store/business country currency first, regardless of user's current IP location
   let initialCountryKey = null;
-  if (getEffectiveWalletCountry) {
-    initialCountryKey = getEffectiveWalletCountry(true);
+  if (getEffectivePosCountry) {
+    initialCountryKey = getEffectivePosCountry();
+  } else if (user?.merchantProfile?.country || user?.merchantProfile?.country_code || user?.merchantProfile?.business_country) {
+    initialCountryKey = user?.merchantProfile?.country || user?.merchantProfile?.country_code || user?.merchantProfile?.business_country;
+  } else if (getEffectiveWalletCountry) {
+    initialCountryKey = getEffectiveWalletCountry('pos');
   } else if (detectedCountry) {
     initialCountryKey = detectedCountry;
   } else {
-    initialCountryKey = user?.merchantProfile?.country || user?.country || '';
+    initialCountryKey = user?.country || '';
   }
   const defaultCurrency = getCountryCurrencyInfo(initialCountryKey || '').currency;
   const [currency, setCurrency] = useState(defaultCurrency || 'USD');
   const [rates, setRates] = useState({ ...EMERGENCY_RATES }); // Fallback rates including MGA: 4500, XOF: 605, etc.
+
+  // Sync currency if merchant profile finishes loading with a dedicated store currency
+  useEffect(() => {
+    if (defaultCurrency && currency === 'USD' && defaultCurrency !== 'USD') {
+      setCurrency(defaultCurrency);
+    }
+  }, [defaultCurrency]);
 
   useEffect(() => {
     fetch('https://api.exchangerate-api.com/v4/latest/USD')

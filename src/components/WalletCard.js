@@ -18,23 +18,18 @@ export default function WalletCard({ balances, badgeTitle }) {
   
   const mainBalance = balances?.DZY || 0;
   
-  // Resolve local fiat currency strictly according to priority:
-  // 1. Real physical geolocation (detectedCountry)
-  // 2. If geolocation failed:
-  //    - If merchant/business card: merchant country from DB (user?.merchantProfile?.country)
-  //    - If regular user: user country from settings (user?.country_of_residence || user?.country)
-  // 3. Fallback: 'us'
+  // Rule 1 (Wallet): IP geolocation first, residence/account country fallback
   const isBusinessCard = user?.role === 'merchant' || (badgeTitle && badgeTitle.toUpperCase().includes('BUSINESS'));
   
   let targetCountryKey = null;
   if (getEffectiveWalletCountry) {
     targetCountryKey = getEffectiveWalletCountry(isBusinessCard);
+  } else if (detectedCountry && typeof detectedCountry === 'string' && detectedCountry.length === 2) {
+    targetCountryKey = detectedCountry;
   } else if (isBusinessCard && (user?.merchantProfile?.country || user?.merchantProfile?.country_code)) {
     targetCountryKey = user?.merchantProfile?.country || user?.merchantProfile?.country_code;
   } else if (user?.country_of_residence || user?.country || user?.country_code) {
     targetCountryKey = user?.country_of_residence || user?.country || user?.country_code;
-  } else if (detectedCountry && typeof detectedCountry === 'string' && detectedCountry.length === 2) {
-    targetCountryKey = detectedCountry;
   }
   
   const geoCountryKey = (targetCountryKey || 'us').toLowerCase().trim();

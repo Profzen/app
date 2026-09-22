@@ -81,33 +81,66 @@ export function AppProvider({ children }) {
     'DZ';
 
   /**
-   * Resolve wallet balance country:
-   * 1. Physical geolocated country (detectedCountry)
-   * 2. If geolocation failed:
-   *    - For merchant: merchant business country from DB (e.g. Madagascar for EYOU)
-   *    - For regular user: user country from settings / profile
-   * 3. Fallback: 'US'
+   * Rule 1 (Wallet): IP geolocation first, residence/account country fallback.
+   * For the user/merchant wallet (Home & Dashboard), the currency follows the user's
+   * current detected location. Account/residence country is only a fallback if geolocation fails.
    */
-  const getEffectiveWalletCountry = (isBusinessContext = false) => {
-    // 1. Priority 1 (Absolute Authority): Declared country of residence of user or business
-    if (isBusinessContext || user?.role === 'merchant') {
+  const getEffectiveWalletCountry = (isBusinessCard = false) => {
+    // Forward to POS logic if explicitly requested
+    if (isBusinessCard === 'pos') {
+      return getEffectivePosCountry();
+    }
+
+    // 1. Priority 1: User manual country selection or physical IP geolocation
+    if (userSelectedCountry && typeof userSelectedCountry === 'string' && userSelectedCountry.length === 2) {
+      return userSelectedCountry.toUpperCase();
+    }
+    if (detectedCountry && typeof detectedCountry === 'string' && detectedCountry.length === 2) {
+      return detectedCountry.toUpperCase();
+    }
+
+    // 2. Priority 2: Fallback to residence / account country if geolocation is unavailable
+    if (isBusinessCard || user?.role === 'merchant') {
       const bizCountry = user?.merchantProfile?.country || 
                          user?.merchantProfile?.country_code || 
+                         user?.merchantProfile?.business_country || 
                          user?.business_country || 
                          user?.company_country;
       if (bizCountry && typeof bizCountry === 'string' && bizCountry.trim().length >= 2) {
         return bizCountry.trim().toUpperCase();
       }
-      // Check for Madagascar / EYOU business indicators
-      const bizCity = user?.merchantProfile?.city || '';
-      const bizName = user?.merchantProfile?.business_name || user?.merchantProfile?.name || '';
-      if (bizCity.toLowerCase().includes('antananarivo') || 
-          bizCity.toLowerCase().includes('madagascar') ||
-          bizName.toLowerCase().includes('eyou')) {
-        return 'MG';
-      }
     }
 
+    const userSettingsCountry = user?.country_of_residence || 
+                                user?.residence_country || 
+                                user?.country || 
+                                user?.country_code ||
+                                user?.profile?.country;
+    if (userSettingsCountry && typeof userSettingsCountry === 'string' && userSettingsCountry.trim().length >= 2) {
+      return userSettingsCountry.trim().toUpperCase();
+    }
+
+    // 3. Fallback
+    return 'US';
+  };
+
+  /**
+   * Rule 2 (POS): Store/business country currency, regardless of current IP location.
+   * For Merchant POS (Cash Register), use the store/business country (local currency).
+   * No hardcoded country/business-specific logic. Works dynamically for every merchant, store, country.
+   */
+  const getEffectivePosCountry = () => {
+    // 1. Priority 1: Store/business country currency (regardless of IP location)
+    const bizCountry = user?.merchantProfile?.country || 
+                       user?.merchantProfile?.country_code || 
+                       user?.merchantProfile?.business_country || 
+                       user?.business_country || 
+                       user?.company_country;
+    if (bizCountry && typeof bizCountry === 'string' && bizCountry.trim().length >= 2) {
+      return bizCountry.trim().toUpperCase();
+    }
+
+    // 2. Priority 2: User account / residence country fallback
     const userSettingsCountry = userSelectedCountry || 
                                 user?.country_of_residence || 
                                 user?.residence_country || 
@@ -118,12 +151,12 @@ export function AppProvider({ children }) {
       return userSettingsCountry.trim().toUpperCase();
     }
 
-    // 2. Priority 2: Fallback to physical IP geolocation only if account country is not set
+    // 3. Priority 3: Fallback to physical IP geolocation if no store/business country is available
     if (detectedCountry && typeof detectedCountry === 'string' && detectedCountry.length === 2) {
       return detectedCountry.toUpperCase();
     }
 
-    // 3. Ultimate fallback
+    // 4. Fallback
     return 'US';
   };
 
@@ -898,6 +931,7 @@ export function AppProvider({ children }) {
       userCountry,
       detectedCountry,
       getEffectiveWalletCountry,
+      getEffectivePosCountry,
       setUserCountry: handleSetUserCountry,
       clearUserCountry: handleClearUserCountry,
     }}>

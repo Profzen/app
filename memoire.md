@@ -2898,3 +2898,17 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
   - `src/screens/CashRegisterScreen.js` : `activeTab` initialisé à `'qr'` (la calculatrice POS / Receive Payment s'affiche par défaut en premier au lieu du scanner de billets).
   - `src/screens/TopUpWalletScreen.js` : Retrait de *"PayGate"* remplacé par la liste directe des opérateurs grand public (`"Togocom, Moov, Orange, MTN, Wave..."`).
   - `src/i18n/locales/am.json` : Suppression de la mention technique `"KkiaPay / PawaPay"` remplacée par `"ደህንነቱ የተጠበቀ ክፍያ"` (Secure Payment).
+
+### 8. Séparation des Règles de Devises Wallet vs POS (Retour Technique Assia)
+
+- **Date** : 22 Septembre 2026
+- **Branche** : `front-back`
+- **Clarification demandée par Assia** :
+  1. **Wallet (Portefeuille utilisateur & marchand)** : Géolocalisation IP d'abord (`detectedCountry`). Le pays du compte / de résidence ne sert que de repli (fallback) si la géolocalisation IP est indisponible.
+  2. **Merchant POS (Terminal de Caisse Marchand)** : Utilise toujours la devise du pays de la boutique / du commerce (`store/business country`), indépendamment de la localisation IP du smartphone.
+  3. **Zéro code en dur** : Suppression totale de toute condition codée en dur pour EYOU ou Madagascar. Résolution 100% dynamique pour l'ensemble des marchands, pays et commerces.
+- **Fichiers modifiés** :
+  - `src/context/AppContext.js` : Séparation de `getEffectiveWalletCountry()` (IP first) et `getEffectivePosCountry()` (Store country first, sans exception en dur), exportées dans le contexte.
+  - `src/screens/CashRegisterScreen.js` : Branchement sur `getEffectivePosCountry()`.
+  - `src/components/WalletCard.js` : Priorité stricte IP first avec fallback compte/résidence.
+
