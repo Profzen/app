@@ -18,7 +18,7 @@ const isSmallScreen = SCREEN_HEIGHT < 720;
 export default function CashRegisterScreen() {
   const navigation = useNavigation();
   const { t, user, detectedCountry, getEffectiveWalletCountry } = useApp();
-  const [activeTab, setActiveTab] = useState('billets');
+  const [activeTab, setActiveTab] = useState('qr');
   const [selectedToken, setSelectedToken] = useState('USDT');
   const [amount, setAmount] = useState('0');
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();

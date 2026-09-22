@@ -2885,3 +2885,16 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
 3. **Pousser les itérations** :
    - Commiter sur `front-back` et faire `git push origin front-back`.
    - **Ne merger sur `develop` que lorsque la version complète est prête à être distribuée à l'équipe**.
+
+### 7. Ajustements Post-Build 41 (Validation Solofo & Retours Immédiats)
+
+- **Date** : 22 Septembre 2026
+- **Branche** : `front-back`
+- **Retours de Solofo (CEO)** :
+  1. *Validation très enthousiaste* de la version iOS TestFlight Build 41 (*"C'est un saut quantique:)", "It is beautiful, congrats guys!", validation du paiement direct numéro mobile*).
+  2. Demande d'afficher la calculatrice POS en premier écran à l'ouverture du terminal caisse.
+  3. Demande de masquer tout nom de prestataire technique on/off rampers (notamment *"PayGate"*).
+- **Correctifs Appliqués** :
+  - `src/screens/CashRegisterScreen.js` : `activeTab` initialisé à `'qr'` (la calculatrice POS / Receive Payment s'affiche par défaut en premier au lieu du scanner de billets).
+  - `src/screens/TopUpWalletScreen.js` : Retrait de *"PayGate"* remplacé par la liste directe des opérateurs grand public (`"Togocom, Moov, Orange, MTN, Wave..."`).
+  - `src/i18n/locales/am.json` : Suppression de la mention technique `"KkiaPay / PawaPay"` remplacée par `"ደህንነቱ የተጠበቀ ክፍያ"` (Secure Payment).

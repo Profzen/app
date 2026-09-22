@@ -163,7 +163,7 @@ export default function TopUpWalletScreen() {
                   </View>
                 </View>
                 <Text style={styles.methodDesc}>
-                  PayGate (Togocom, Moov, Mixx by Yas...){'\n'}
+                  Togocom, Moov, Orange, MTN, Wave...{'\n'}
                   <Text 
                     style={styles.infoLink} 
                     onPress={() => { setModalContent('momo'); setModalVisible(true); }}
