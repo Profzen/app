@@ -2758,3 +2758,130 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
 - **Babel Expo Transpilation** : 100% des fichiers JavaScript modifiés compilés sans avertissement ni erreur (`OK: HomeScreen.js`, `CashRegisterScreen.js`, `ContactsScreen.js`, `ShopDetailsScreen.js`, `BottomNavBar.js`, `WalletCard.js`, `AppContext.js`).
 - **Syntaxe JSON** : 5/5 dictionnaires validés avec succès (`en`, `fr`, `pt`, `ar`, `am`).
 - **Intégrité Git** : Fusion `develop` réalisée sans conflit, commit propre `20056d0` prêt au push.
+
+
+---
+
+## 🏆 SYNTHÈSE GLOBALE & DOCUMENT DE REPRISE OPÉRATIONNELLE (22 Septembre 2026)
+
+> **DOCUMENT MAÎTRE DE REPRISE** : Ce document centralise l'état réel et complet du projet DizzitApp après la livraison de la Build 37 (Build #43 Android / Build #41 iOS). Il sert de référence unique pour reprendre le projet dans n'importe quelle nouvelle discussion sans aucune perte de contexte.
+
+---
+
+### 1. Organisation des Branches Git & Politique de Déploiement
+
+- **Branche de Travail & Développement Actif** : `front-back`
+  - Toutes les modifications locales et itérations doivent être poussées sur `origin/front-back` :
+    ```bash
+    git push origin front-back
+    ```
+- **Branche de Déploiement & Production CI/CD** : `develop`
+  - ⚠️ **RÈGLE STRICTE** : Ne pousser sur `origin/develop` que lorsque les fonctionnalités sont 100% testées et prêtes à être compilées pour les testeurs.
+  - Tout push sur `develop` déclenche automatiquement les deux pipelines GitHub Actions :
+    1. `deploy-ios.yml` : Build iOS sur EAS Cloud (@dizzitup) + soumission automatique sur TestFlight.
+    2. `build-android.yml` : Compilation native Android + publication automatique de la Release GitHub (APK + AAB).
+
+---
+
+### 2. Répertoire Complet des Identifiants & Configuration EAS / Apple
+
+| Paramètre | Valeur Exacte | Rôle / Emplacement |
+| :--- | :--- | :--- |
+| **Organisation Expo** | `@dizzitup` | Compte d'organisation officiel de Solofo |
+| **URL Projet Expo** | [expo.dev/accounts/dizzitup/projects/dizzitapp-v2](https://expo.dev/accounts/dizzitup/projects/dizzitapp-v2) | Tableau de bord de supervision EAS |
+| **EAS Project ID** | `485a099a-a88c-4405-9211-8abd9429ac31` | Inscrit dans `app.json` sous `extra.eas.projectId` |
+| **Bundle ID (iOS) / Package (Android)** | `com.dizzitup.app` | Identifiant unique de l'application sur Apple et Google |
+| **Distribution Certificate iOS** | `iPhone Distribution: DizzitUp (948RWU4PMF)` | S/N: `369BDC522DD7A132C40B781D5254599F` (Expire le **09/08/2027**) |
+| **Fichier Certificat Local** | `G:\zen\projets\DizzitApp\app\DizzitUp_Distribution.p12` | Mot de passe : `DizzitUp2026#` |
+| **Provisioning Profile iOS** | `DizzitApp_2026` (`DizzitApp_2026.mobileprovision`) | UUID: `b8dfe157-213f-4299-bb7d-ac1212e42134` (Expire le **09/08/2027**) |
+| **App Store Connect Key ID** | `4S4J7Q3V9S` | Clé API pour soumission automatique TestFlight |
+| **App Store Connect Issuer ID** | `36e0cd09-4437-4ec4-9269-4b9e474d31f4` | Identifiant de l'émetteur App Store Connect |
+| **Fichier Clé Privée ASC** | `G:\zen\projets\DizzitApp\app\AuthKey_4S4J7Q3V9S.p8` | Enregistrée sous le nom `DizzitUp Key` sur Expo |
+| **Compte Administrateur EAS** | `profzen` (`profzzen@gmail.com`) | Rôle: **Admin** sur l'organisation `dizzitup` |
+
+---
+
+### 3. État des Livrables & Liens de Téléchargement
+
+#### A. Build Android (Build #43) — DISPONIBLE & EN LIGNE
+- **Statut** : ✅ Compilé avec succès via GitHub Actions en 28m01s.
+- **Tag GitHub Release** : `android-v43`
+- **Téléchargement direct de l'APK** :  
+  👉 [https://github.com/Dizzitup/dizzitapp-v2/releases/tag/android-v43](https://github.com/Dizzitup/dizzitapp-v2/releases/tag/android-v43)
+
+#### B. Build iOS (Build 41) — COMPILÉ AVEC SUCCÈS SUR EAS CLOUD
+- **Statut** : ✅ Compilé avec succès en 5m05s sous le compte `@dizzitup`.
+- **Fichier Archive .ipa généré** :  
+  👉 [https://expo.dev/artifacts/eas/6mXiNFxwoRGnCW7tivXk92_MB57jst0mEepNNEulCzw.ipa](https://expo.dev/artifacts/eas/6mXiNFxwoRGnCW7tivXk92_MB57jst0mEepNNEulCzw.ipa)
+- **Lien du Build EAS** :  
+  👉 [https://expo.dev/accounts/dizzitup/projects/dizzitapp-v2/builds/2d4dfdf6-d732-4e1f-b165-7911a73382d1](https://expo.dev/accounts/dizzitup/projects/dizzitapp-v2/builds/2d4dfdf6-d732-4e1f-b165-7911a73382d1)
+
+---
+
+### 4. Bilan Exhaustif des Correctifs Appliqués (Séance du 22 Septembre 2026)
+
+1. **Routage Direct Pay Bills (`src/components/BottomNavBar.js`)** :
+   - Ligne 34 : `route` basculée de `ContactsScreen` à `PayBillsScreen`. Le clic sur le bouton jaune central puis sur *Pay bills* ouvre immédiatement le service de paiement de factures sans reboucler sur la liste de contacts.
+   - Anglicisation de tous les libellés de secours (`Buy goods`, `Pay bills`, `Request money`, `Send money`, `Top-up`, `Refer a store`, `Swap`).
+
+2. **Éradication Totale des Textes Français Résiduels (100% Anglais Natif)** :
+   - **Accueil (`src/screens/HomeScreen.js`)** :
+     - Bannières d'invitation : Remplacement des textes français codés en dur par *"Invite friends and earn $5 in DZY"*, *"Send funds, shop, pay bills and earn rewards."*, bouton *"Invite"*.
+     - Bannières de recommandation : *"Refer a store and earn $10 in DZY"*, *"Recommend a business and earn rewards."*, bouton *"Refer"*.
+     - Liste de tâches : *"To-do list"*.
+   - **Bénéficiaires (`src/screens/ContactsScreen.js`)** :
+     - Textes d'état vide : *"No beneficiaries yet"*, *"Add your beneficiaries to send them funds and pay their bills."*, bouton *"Add a beneficiary"*.
+   - **Boutique (`src/screens/ShopDetailsScreen.js`)** :
+     - Suppression de la mention confuse *"Escrow"* remplacée par *"Secure"*.
+     - Badges et tiroirs en anglais : *"Products"*, *"Verified"*, *"Partner"*, *"Delivery"*, *"Share store"*, *"Payment information"*, *"Store information"*.
+   - **Configuration par défaut (`src/context/AppContext.js`)** : Démarrage garanti à 100% en anglais (`language: 'en'`).
+   - **Dictionnaires (`en.json`, `fr.json`, `pt.json`, `ar.json`, `am.json`)** : Synchronisation des clés `contacts` et `home`.
+
+3. **Refonte POS (Point of Sale) — Calculatrice 1 Écran Fixe (`CashRegisterScreen.js` & `HomeScreen.js`)** :
+   - **Tuile Marchand Accueil** : Titre **"Point of Sale (POS)"**, sous-titre officiel **"In-store Stablecoins & DZY payment"**.
+   - **Écran Terminal Caisse** : Remplacement du `ScrollView` par un conteneur rigide `fixedScreenContent` (`flex: 1`). Touches numériques ajustées (hauteur 36-40px, marges resserrées). L'ensemble sélecteur, montant, conversion crypto, pavé numérique 0-9 et bouton *"Recevoir le paiement"* tient à 100% sur un seul écran sans aucun défilement.
+
+4. **Règle Universelle de Devise : Priorité au Pays de Résidence (`AppContext.js` & `WalletCard.js`)** :
+   - Directive de Solofo : *"the currency to display at the left is their country of residence currency"*.
+   - Hiérarchie souveraine appliquée dans `getEffectiveWalletCountry()` :
+     1. **Priorité 1** : Pays de résidence déclaré du compte (Profil marchand pour les Business, ex: Antananarivo / EYOU $ightarrow$ **MGA** avec drapeau 🇲🇬 ; Profil utilisateur pour les Particuliers).
+     2. **Priorité 2 (Repli)** : Géolocalisation IP physique uniquement si aucun pays n'est renseigné.
+     3. **Priorité 3** : USD.
+
+5. **Mise à Jour de Version** :
+   - `app.json` : `versionCode: 37`, `buildNumber: "37"`, description *"DizzitApp V1. Build 37 Beta Test Version"*.
+   - `package.json` : `version: "1.0.37"`.
+
+---
+
+### 5. Répartition des Rôles de l'Équipe
+
+- **Abdel-Aziz (Toi / Développeur Principal Mobile)** :
+  - Gestion du code React Native, des flux métier (Pay Bills, POS, devises, parrainage).
+  - Gestion du pipeline Expo EAS (@dizzitup) et des releases GitHub.
+- **Assia** :
+  - Gestion de la Google Play Console (assets graphiques, descriptions, screenshots, vidéo YouTube, formulaires de testeurs).
+  - Gestion du numéro de mobile obligatoire pour les contacts et de la détection de l'opérateur réseau.
+- **Solofo (Product Owner / CEO)** :
+  - Propriétaire de l'organisation Expo.dev (`dizzitup`) et gestionnaire des abonnements de builds EAS.
+  - Validation des retours utilisateurs et priorisation des releases.
+
+---
+
+### 6. Marche à Suivre pour les Prochaines Sessions
+
+1. **Reprendre le travail** :
+   - Toujours travailler sur la branche `front-back` :
+     ```bash
+     cd G:\zen\projets\DizzitApp\app
+     git checkout front-back
+     git pull origin front-back
+     ```
+2. **Tester les modifications** :
+   - Valider la syntaxe avec Babel :
+     ```bash
+     node -e "const babel = require('@babel/core'); babel.transformFileSync('src/screens/HomeScreen.js', { presets: ['babel-preset-expo'] }); console.log('OK');"
+     ```
+3. **Pousser les itérations** :
+   - Commiter sur `front-back` et faire `git push origin front-back`.
+   - **Ne merger sur `develop` que lorsque la version complète est prête à être distribuée à l'équipe**.
