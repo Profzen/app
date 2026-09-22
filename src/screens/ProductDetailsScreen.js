@@ -1,4 +1,4 @@
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Dimensions, Share, Platform, StatusBar } from 'react-native';
@@ -23,6 +23,9 @@ export default function ProductDetailsScreen({ route }) {
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [toast, setToast] = useState(null);
   const [conflictModal, setConflictModal] = useState(null);
+
+  const insets = useSafeAreaInsets();
+  const bottomPadding = Math.max(insets.bottom, Platform.OS === 'ios' ? 24 : 16);
 
   if (!product) {
     return (
@@ -498,7 +501,7 @@ export default function ProductDetailsScreen({ route }) {
       </ScrollView>
 
       {/* Bottom Floating Ergonomic Action Bar */}
-      <View style={styles.bottomActionBar}>
+      <View style={[styles.bottomActionBar, { paddingBottom: bottomPadding }]}>
         {/* Buy Me / Diaspora Gift Action */}
         <TouchableOpacity
           style={styles.btnGiftModern}

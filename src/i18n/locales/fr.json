@@ -4552,7 +4552,8 @@
     "orderFailed": "Échec de la création de la commande. Veuillez réessayer.",
     "paymentSuccess": "Paiement effectué avec succès !",
     "paymentFailed": "Le paiement a été refusé ou annulé. Veuillez réessayer.",
-    "momoInitiated": "Demande de paiement Mobile Money envoyée sur votre téléphone."
+    "momoInitiated": "Demande de paiement Mobile Money envoyée sur votre téléphone.",
+    "momoNotAvailable": "Non disponible en {{country}}"
   },
   "actionScanCash": "Scan & Retrait",
   "orderVerification": {

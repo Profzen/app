@@ -17,7 +17,8 @@ import * as WebBrowser from 'expo-web-browser';
 import { WebView } from 'react-native-webview';
 import { useApp } from '../context/AppContext';
 import AppToast from '../components/AppToast';
-import { getIsoCountryCode, resolveBeneficiaryCountry } from '../utils/countryCurrencyUtils';
+import { getIsoCountryCode, resolveBeneficiaryCountry, getCountryFromPhone } from '../utils/countryCurrencyUtils';
+import { ALL_COUNTRIES } from '../utils/countriesData';
 
 const { width } = Dimensions.get('window');
 const isSmallDevice = width < 375;
@@ -53,6 +54,8 @@ export default function PayBillsSummaryScreen() {
   const [cyberSourceData, setCyberSourceData] = useState(null);
   const [showCyberSourceModal, setShowCyberSourceModal] = useState(false);
 
+
+
   // Delivered vs Total calculation
   const currency = plan.currency || 'USD';
   const deliveredCurrency = plan.destinationCurrency || plan.receiveCurrency || currency;
@@ -68,6 +71,20 @@ export default function PayBillsSummaryScreen() {
   const recipientName = `${beneficiary.first_name || ''} ${beneficiary.last_name || ''}`.trim() || beneficiary.name || t('paybillsSummary.beneficiary', 'Beneficiary');
   const recipientPhone = beneficiary.phone || beneficiary.phoneNumber || '';
   const providerName = provider.name || provider.operatorName || t('paybillsSummary.operator', 'Provider');
+
+  const { countryCode: countryIso } = resolveBeneficiaryCountry(beneficiary, {
+    phone: recipientPhone,
+    user,
+    fallback: 'TG',
+  });
+  
+  const senderCountryIso = getIsoCountryCode(user?.country || user?.country_code || user?.country_name) 
+    || (user?.phone ? getCountryFromPhone(user.phone) : null) || 'FR';
+
+  const momoSupportedCountries = ['TG', 'BJ', 'CI', 'SN', 'ML', 'BF', 'NE', 'GW'];
+  const isMomoSupported = momoSupportedCountries.includes(senderCountryIso);
+  const countryObj = ALL_COUNTRIES.find(c => c.code === senderCountryIso);
+  const senderCountryName = countryObj ? (countryObj.translations?.[language] || countryObj.name) : senderCountryIso;
 
   const getServiceTitle = () => {
     if (serviceType === 'utilities' || serviceType === 'utility') {
@@ -585,25 +602,33 @@ export default function PayBillsSummaryScreen() {
 
             {/* Mobile Money Option */}
             <TouchableOpacity
-              style={[styles.methodCard, selectedMethod === 'momo' && styles.methodCardActive]}
-              onPress={() => setSelectedMethod('momo')}
-              activeOpacity={0.7}
+              style={[
+                styles.methodCard, 
+                selectedMethod === 'momo' && styles.methodCardActive,
+                !isMomoSupported && { opacity: 0.5 }
+              ]}
+              onPress={() => isMomoSupported && setSelectedMethod('momo')}
+              activeOpacity={isMomoSupported ? 0.7 : 1}
+              disabled={!isMomoSupported}
             >
               <View style={styles.methodRadioOuter}>
                 {selectedMethod === 'momo' && <View style={styles.methodRadioInner} />}
               </View>
-              <View style={[styles.methodIconBadge, { backgroundColor: '#F0FDF4' }]}>
-                <Ionicons name="phone-portrait" size={18} color="#16A34A" />
+              <View style={[styles.methodIconBadge, { backgroundColor: isMomoSupported ? '#F0FDF4' : '#F1F5F9' }]}>
+                <Ionicons name="phone-portrait" size={18} color={isMomoSupported ? "#16A34A" : "#94A3B8"} />
               </View>
               <View style={styles.methodInfo}>
-                <Text style={styles.methodTitle}>{t('paybillsSummary.mobileMoney', 'Mobile Money')}</Text>
+                <Text style={[styles.methodTitle, !isMomoSupported && { color: '#94A3B8' }]}>{t('paybillsSummary.mobileMoney', 'Mobile Money')}</Text>
                 <Text style={styles.methodSubtitle} numberOfLines={1}>
-                  {t('paybillsSummary.mobileMoneySub', 'Orange, MTN, Moov, Wave')}
+                  {isMomoSupported 
+                    ? t('paybillsSummary.mobileMoneySub', 'Orange, MTN, Moov, Wave')
+                    : t('paybillsSummary.momoNotAvailable', 'Not available in {{country}}', { country: senderCountryName })
+                  }
                 </Text>
               </View>
             </TouchableOpacity>
 
-            {/* Card Payment Option */}
+            {/* Credit Card Option */}
             <TouchableOpacity
               style={[styles.methodCard, selectedMethod === 'card' && styles.methodCardActive]}
               onPress={() => setSelectedMethod('card')}
