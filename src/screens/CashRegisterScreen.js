@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
   pageTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16.5, color: '#1A2840' },
   pageSubtitle: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#6B7280' },
   scrollView: { flex: 1 },
-  scrollContent: { flex: 1, paddingTop: 2, paddingBottom: 6 },
+  scrollContent: { flex: 1, paddingTop: 2, paddingBottom: 85 },
   modeSwitchContainer: {
     flexDirection: 'row',
     backgroundColor: '#F8FAFC',

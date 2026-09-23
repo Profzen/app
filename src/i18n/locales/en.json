@@ -4504,7 +4504,8 @@
     "orderFailed": "Failed to create order. Please try again.",
     "paymentSuccess": "Payment completed successfully!",
     "paymentFailed": "Payment was declined or cancelled. Please try again.",
-    "momoInitiated": "Mobile Money payment prompt sent to your phone."
+    "momoInitiated": "Mobile Money payment prompt sent to your phone.",
+    "momoNotAvailable": "Not available in {{country}}"
   },
   "actionScanCash": "Scan & Cash",
   "orderVerification": {

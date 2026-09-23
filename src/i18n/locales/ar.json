@@ -4302,7 +4302,8 @@
     "orderFailed": "فشل في إنشاء الطلب. يرجى المحاولة مرة أخرى.",
     "paymentSuccess": "تم إتمام الدفع بنجاح!",
     "paymentFailed": "تم رفض الدفع أو إلغاؤه. يرجى المحاولة مجددًا.",
-    "momoInitiated": "تم إرسال طلب دفع Mobile Money إلى هاتفك."
+    "momoInitiated": "تم إرسال طلب دفع Mobile Money إلى هاتفك.",
+    "momoNotAvailable": "غير متوفر في {{country}}"
   },
   "actionScanCash": "المسح والسحب",
   "orderVerification": {

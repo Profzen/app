@@ -4276,7 +4276,8 @@
     "orderFailed": "Falha ao criar o pedido. Por favor, tente novamente.",
     "paymentSuccess": "Pagamento concluído com sucesso!",
     "paymentFailed": "O pagamento foi recusado ou cancelado. Por favor, tente novamente.",
-    "momoInitiated": "Solicitação de pagamento Mobile Money enviada para o seu telefone."
+    "momoInitiated": "Solicitação de pagamento Mobile Money enviada para o seu telefone.",
+    "momoNotAvailable": "Não disponível em {{country}}"
   },
   "actionScanCash": "Scan & Saque",
   "orderVerification": {

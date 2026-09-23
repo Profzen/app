@@ -23,10 +23,10 @@ export default function WithdrawFundsScreen() {
 
   // 2. Token selection with live balances
   const tokens = useMemo(() => [
-    { id: 'USDC', name: 'USDC', balance: user?.allBalances?.USDC ? `${user.allBalances.USDC}` : '1 250,00', network: 'Polygon' },
-    { id: 'USDT', name: 'USDT', balance: user?.allBalances?.USDT ? `${user.allBalances.USDT}` : '930,00', network: 'Polygon' },
-    { id: 'EURC', name: 'EURC', balance: user?.allBalances?.EURC ? `${user.allBalances.EURC}` : '420,00', network: 'Base' },
-    { id: 'DZY', name: 'DZY', balance: user?.balanceDZY ? `${user.balanceDZY}` : '12 500', network: 'Polygon' },
+    { id: 'USDC', name: 'USDC', balance: user?.allBalances?.USDC ? parseFloat(user.allBalances.USDC).toFixed(2) : '1 250,00', network: 'Polygon' },
+    { id: 'USDT', name: 'USDT', balance: user?.allBalances?.USDT ? parseFloat(user.allBalances.USDT).toFixed(2) : '930,00', network: 'Polygon' },
+    { id: 'EURC', name: 'EURC', balance: user?.allBalances?.EURC ? parseFloat(user.allBalances.EURC).toFixed(2) : '420,00', network: 'Base' },
+    { id: 'DZY', name: 'DZY', balance: user?.balanceDZY ? parseFloat(user.balanceDZY).toFixed(2) : '12 500', network: 'Polygon' },
   ], [user?.allBalances, user?.balanceDZY]);
 
   // 3. Auto-detected blockchain network based on selected token
@@ -425,18 +425,18 @@ const styles = StyleSheet.create({
   },
   gridContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     justifyContent: 'space-between',
     marginBottom: 16,
+    gap: 8,
   },
   gridItemCard: {
-    width: '23%', // approx 4 items per row, or we could use flex: 1 and map
+    flex: 1,
     backgroundColor: '#FAFAFA',
     borderWidth: 1,
     borderColor: '#F1F5F9',
     borderRadius: 16,
     paddingVertical: 16,
-    paddingHorizontal: 8,
+    paddingHorizontal: 4,
     alignItems: 'center',
     marginBottom: 12,
     position: 'relative',
@@ -526,6 +526,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   btnContinue: {
+    flexDirection: 'row',
     backgroundColor: '#FFB800',
     paddingVertical: 18,
     borderRadius: 16,

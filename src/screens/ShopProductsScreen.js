@@ -1684,7 +1684,7 @@ const styles = StyleSheet.create({
   footerFeaturesScroll: {
     paddingHorizontal: 16,
     paddingTop: 16,
-    paddingBottom: 24,
+    paddingBottom: 85,
   },
   featureItem: {
     flexDirection: 'row',

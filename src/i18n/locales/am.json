@@ -4202,7 +4202,8 @@
     "paymentFailed": "ክፍያው ተቀባይነት አላገኘም ወይም ተሰርዟል። እባክዎ እንደገና ይሞክሩ።",
     "orderCreatedSuccess": "ትዕዛዝ በስኬት ተጀምሯል!",
     "momoInitiated": "የሞባይል ገንዘብ ክፍያ ጥያቄ ወደ ስልክዎ ተልኳል።",
-    "orderFailed": "ትዕዛዙን ማስኬድ አልተሳካም። እባክዎ እንደገና ይሞክሩ።"
+    "orderFailed": "ትዕዛዙን ማስኬድ አልተሳካም። እባክዎ እንደገና ይሞክሩ።",
+    "momoNotAvailable": "በ {{country}} አይገኝም"
   },
   "actionScanCash": "ስካን እና ወጪ",
   "orderVerification": {
