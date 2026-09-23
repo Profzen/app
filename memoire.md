@@ -2923,5 +2923,42 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
      - Renommage de *"Sync your contacts"* / *"Sync"* en *"Manage your contacts"* / *"Manage"* (pointant vers `ContactsScreen`), conformément à la demande de Solofo en attendant l'intégration de la synchro répertoire complète.
   3. **Déduplication des Bénéficiaires Pay Bills (`PayBillsScreen.js`)** :
      - Ajout d'un filtre de déduplication par téléphone normalisé et ID unique (`seenBeneficiaries`) garantissant qu'aucun contact en double n'apparaît dans la liste de sélection de paiement de factures.
+  4. **Intégration des Mises à Jour Ergonomiques d'Assia** :
+     - Fusion du commit `818ad50` (`origin/develop`) apportant la détection de disponibilité du Mobile Money selon le pays de l'émetteur dans `PayBillsSummaryScreen.js`, l'ajustement des safe-area insets sur `ProductDetailsScreen.js`, et l'alignement des décimales de jetons dans `WithdrawFundsScreen.js`.
+
+---
+
+### 10. Déploiement Release Build 43 (iOS) / Build 44 (Android) & Activation Lien Public (23 Septembre 2026)
+
+- **Date** : 23 Septembre 2026
+- **Branches Git** : 
+  - `front-back` : Branche de développement actif (synchronisée avec `origin/front-back`).
+  - `develop` : Branche de release CI/CD (synchronisée avec `origin/develop`, commit `f08ce74`).
+- **Demande de Solofo** : *"Please Merge everything you have and Push on both Testflight and Google Play."*
+
+#### A. Bilan des Livrables Produits
+
+1. **Android (Build #44) — ✅ SUCCÈS TOTAL & DISPONIBLE** :
+   - Pipeline GitHub Actions : Exécuté avec succès en 24m36s.
+   - Tag GitHub Release : `android-v44`.
+   - Fichiers disponibles : APK universel pour tests directs + bundle AAB pour la Google Play Console.
+   - Lien direct : [GitHub Releases DizzitApp](https://github.com/Dizzitup/dizzitapp-v2/releases/tag/android-v44).
+
+2. **iOS (Build 43) — ✅ COMPILATION RÉUSSIE SUR EAS CLOUD & SOUMISSION TESTFLIGHT** :
+   - Compilation EAS Cloud : Réussie en 5 minutes sous l'organisation officielle `@dizzitup`.
+   - Fichier Archive .ipa officiel généré : [Télécharger l'IPA sur Expo EAS](https://expo.dev/artifacts/eas/gp3-j5Ba9E-_-_LxAAdOHTs9J5iKMNwozOYSvNahxfo.ipa) (Build ID `31b504b6-5fd2-4425-9b4c-6f60eec42494`).
+   - Soumission automatique TestFlight : Transmise avec succès aux serveurs d'Apple ([Soumission EAS #4c37b94f](https://expo.dev/accounts/dizzitup/projects/dizzitapp-v2/submissions/4c37b94f-951c-4dbf-b781-db3caeba0b32)).
+   - **Diagnostic technique Timeout GitHub** : Le job GitHub Actions a atteint son timeout de 90 minutes car la commande `--auto-submit` attendait en direct le traitement final des symboles Apple. Le binaire iOS n'en a pas moins été parfaitement compilé et injecté dans TestFlight.
+
+3. **Activation du Lien Public TestFlight par Solofo** :
+   - Suite aux plaintes d'un actionnaire qui n'arrivait pas à télécharger l'app sur iPhone avec les liens bruts, Solofo a activé le **Lien Public TestFlight officiel d'Apple** pour les testeurs externes :
+     👉 `https://testflight.apple.com/join/...` (accessible depuis [App Store Connect DizzitApp](https://appstoreconnect.apple.com/apps/6799749556/testflight/ios)).
+   - Ce lien permet à tout testeur ou investisseur sur iPhone d'installer DizzitApp en un clic via l'application native TestFlight.
+
+#### B. État Actuel du Projet & Prochaines Étapes
+- **Code source** : 100% propre, compilé et validé via Babel.
+- **Dernières fonctionnalités incluses** : Caisse POS avec calculatrice par défaut, devise dynamique par pays marchand (sans exception en dur), partage natif d'invitation avec referral URL, To-do list "Manage contacts", liste des bénéficiaires dédupliquée.
+- **En attente** : Retours des tests de Solofo sur le Build 43/44 et suite des échanges sur les fonctionnalités de rétention / notifications.
+
 
 
