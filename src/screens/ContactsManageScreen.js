@@ -264,7 +264,13 @@ export default function ContactsManageScreen() {
               <Text style={styles.inviteBannerText}>
                 {t('home.inviteBannerDesc', "Envoyez de l'argent, achetez, payez des factures et gagnez des récompenses ensemble.")}
               </Text>
-              <TouchableOpacity style={styles.inviteBtn} onPress={() => navigation.navigate('RewardsScreen')}>
+              <TouchableOpacity 
+                style={styles.inviteBtn} 
+                onPress={() => {
+                  const code = user?.id ? `DZY-${user.id.substring(0, 6).toUpperCase()}` : 'DZY500';
+                  shareInviteLink(code);
+                }}
+              >
                 <Text style={styles.inviteBtnText}>{t('home.btnInviteNow', "Inviter maintenant")}</Text>
               </TouchableOpacity>
             </View>
@@ -343,7 +349,17 @@ function ContactActionSheet({ contact, visible, onClose, onNavigate, onDelete, o
             <SheetGridAction icon="arrow-up-outline" label={t('contacts.action_send', 'Envoyer')} color="#10B981" bgColor="#ECFDF5" onPress={() => onNavigate('SendMoneyScreen')} />
             <SheetGridAction icon="cash-outline" label={t('contacts.action_request', 'Demander')} color="#F59E0B" bgColor="#FFF7E6" onPress={() => onNavigate('ReceiveFundsV2Screen')} />
             <SheetGridAction icon="bag-handle-outline" label={t('contacts.action_pay', 'Payer')} color="#3B82F6" bgColor="#EFF6FF" onPress={() => onNavigate('ChooseServiceScreen')} />
-            <SheetGridAction icon="person-add-outline" label={t('contacts.action_invite', 'Inviter')} color="#8B5CF6" bgColor="#F5F3FF" onPress={() => onNavigate('RewardsScreen')} />
+            <SheetGridAction 
+              icon="person-add-outline" 
+              label={t('contacts.action_invite', 'Inviter')} 
+              color="#8B5CF6" 
+              bgColor="#F5F3FF" 
+              onPress={() => {
+                setSelectedContact(null);
+                const code = user?.id ? `DZY-${user.id.substring(0, 6).toUpperCase()}` : 'DZY500';
+                shareInviteLink(code);
+              }} 
+            />
           </View>
 
           <View style={styles.sheetListGroup}>

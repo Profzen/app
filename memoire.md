@@ -2912,3 +2912,16 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
   - `src/screens/CashRegisterScreen.js` : Branchement sur `getEffectivePosCountry()`.
   - `src/components/WalletCard.js` : Priorité stricte IP first avec fallback compte/résidence.
 
+### 9. Correctifs Post-Build 42 (Retours Slack Solofo & Assia - 23 Septembre 2026)
+
+- **Date** : 23 Septembre 2026
+- **Branche** : `front-back`
+- **Correctifs Appliqués** :
+  1. **Flux d'Invitation Amis (`HomeScreen.js`, `ContactsManageScreen.js`, `ContactsScreen.js`)** :
+     - Remplacement de la navigation erronée vers `RewardsScreen` par l'appel direct au partage natif (`shareInviteLink(code)`). Le clic sur *"Invite"* / *"Inviter maintenant"* ouvre immédiatement la feuille de partage système (WhatsApp, SMS, presse-papier) avec le lien officiel de parrainage (`https://dizzitup.com?ref=...`).
+  2. **To-Do List Accueil (`HomeScreen.js`)** :
+     - Renommage de *"Sync your contacts"* / *"Sync"* en *"Manage your contacts"* / *"Manage"* (pointant vers `ContactsScreen`), conformément à la demande de Solofo en attendant l'intégration de la synchro répertoire complète.
+  3. **Déduplication des Bénéficiaires Pay Bills (`PayBillsScreen.js`)** :
+     - Ajout d'un filtre de déduplication par téléphone normalisé et ID unique (`seenBeneficiaries`) garantissant qu'aucun contact en double n'apparaît dans la liste de sélection de paiement de factures.
+
+

@@ -78,11 +78,11 @@ export default function HomeScreen() {
   
   TODO_LIST.push({
     id: '1',
-    icon: 'sync-outline',
+    icon: 'people-outline',
     iconColor: '#3B82F6',
     iconBgColor: '#EFF6FF',
-    title: t('contacts.sync', 'Synchroniser vos contacts'),
-    buttonText: t('common.sync', 'Sync'),
+    title: t('contacts.manage_contacts_title', 'Manage your contacts'),
+    buttonText: t('common.manage', 'Manage'),
     buttonColor: '#3B82F6',
     buttonBgColor: '#EFF6FF',
     route: 'ContactsScreen'
@@ -254,7 +254,13 @@ export default function HomeScreen() {
                     <Text style={styles.inviteSubtitle}>
                       {t('home.inviteBannerDesc', "Send funds, shop,\npay bills and earn rewards.")}
                     </Text>
-                    <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#071D54' }]} onPress={() => navigation.navigate('RewardsScreen')}>
+                    <TouchableOpacity 
+                      style={[styles.inviteButton, { backgroundColor: '#071D54' }]} 
+                      onPress={() => {
+                        const code = user?.id ? `DZY-${user.id.substring(0, 6).toUpperCase()}` : 'DZY500';
+                        shareInviteLink(code);
+                      }}
+                    >
                       <Text style={styles.inviteButtonText}>{t('home.btnInviteNow', 'Invite')}</Text>
                     </TouchableOpacity>
                   </View>

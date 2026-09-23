@@ -103,8 +103,21 @@ export default function PayBillsScreen() {
                   raw: b,
                 };
               });
-              setBeneficiaries(formatted);
-              setSelectedContactId(formatted[0].id);
+
+              // Deduplicate beneficiaries by phone or id to prevent duplicates in the list
+              const seenBeneficiaries = new Set();
+              const uniqueFormatted = formatted.filter(b => {
+                const phoneClean = (b.phone || '').replace(/[\s-]/g, '');
+                const dedupeKey = phoneClean || b.id;
+                if (!dedupeKey) return true;
+                if (seenBeneficiaries.has(dedupeKey)) return false;
+                seenBeneficiaries.add(dedupeKey);
+                return true;
+              });
+              setBeneficiaries(uniqueFormatted);
+              if (uniqueFormatted.length > 0) {
+                setSelectedContactId(uniqueFormatted[0].id);
+              }
             } else {
               setBeneficiaries([]);
             }
