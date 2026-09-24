@@ -56,7 +56,7 @@ export default function MoreSettingsScreen() {
             <View style={{ marginRight: 8 }}>
               <LanguageSelector />
             </View>
-            <TouchableOpacity style={styles.notificationButton} accessibilityLabel="Notifications">
+            <TouchableOpacity style={styles.notificationButton} onPress={() => navigation.navigate('NotificationsScreen')} accessibilityLabel="Notifications">
               <Ionicons name="notifications-outline" size={20} color="#1A2840" />
               <View style={styles.notificationDot} />
             </TouchableOpacity>

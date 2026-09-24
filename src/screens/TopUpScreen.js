@@ -62,7 +62,7 @@ export default function TopUpScreen() {
             <Ionicons name="chevron-back" size={22} color="#1A2840" />
           </TouchableOpacity>
           <Text style={styles.pageTitle}>{t('topup.title')}</Text>
-          <TouchableOpacity style={styles.helpButton}>
+          <TouchableOpacity style={styles.helpButton} onPress={() => navigation.navigate('AskAminataScreen')}>
             <Ionicons name="help-circle-outline" size={22} color="#1A2840" />
           </TouchableOpacity>
         </View>

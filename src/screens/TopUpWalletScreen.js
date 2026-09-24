@@ -23,7 +23,7 @@ export default function TopUpWalletScreen() {
           <Ionicons name="chevron-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <Text style={styles.pageTitle}>{t('topUpWallet.title', 'Top up wallet')}</Text>
-          <TouchableOpacity style={styles.iconBtn}>
+          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('AskAminataScreen')}>
             <Ionicons name="help-circle-outline" size={24} color="#1A2840" />
           </TouchableOpacity>
         </View>

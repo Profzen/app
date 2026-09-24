@@ -354,40 +354,35 @@ export default function PayBillsScreen() {
             </View>
           </View>
 
-          {/* Quick Actions (4-column Grid) */}
-          <Text style={styles.sectionTitle}>{t('payBills.quickActionsTitle', 'Quick Actions')}</Text>
-          <View style={styles.quickActionsGrid}>
-            <TouchableOpacity style={styles.quickActionCard} onPress={() => navigation.navigate('ContactsManageScreen')}>
-              <View style={[styles.quickActionIconBg, { backgroundColor: '#FFF7E6' }]}>
-                <Ionicons name="person-add-outline" size={18} color="#D97706" />
-              </View>
-              <Text style={styles.quickActionTitle}>{t('contacts.add_beneficiary', 'Add beneficiary')}</Text>
+          {/* Compact Quick Actions Menu */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 16, paddingTop: 8 }}>
+            <TouchableOpacity 
+              style={{ flex: 1, flexDirection: 'column', alignItems: 'center', backgroundColor: '#FFF7E6', paddingVertical: 10, borderRadius: 16, marginRight: 8 }}
+              onPress={() => navigation.navigate('ContactsManageScreen')}
+            >
+              <Ionicons name="person-add-outline" size={18} color="#D97706" style={{ marginBottom: 4 }} />
+              <Text style={{ color: '#D97706', fontSize: 11, fontFamily: 'Inter_600SemiBold', textAlign: 'center' }}>{t('contacts.add_beneficiary', 'Add Contact')}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickActionCard} onPress={() => navigation.navigate('ContactsScreen')}>
-              <View style={[styles.quickActionIconBg, { backgroundColor: '#ECFDF5' }]}>
-                <Ionicons name="people-outline" size={18} color="#10B981" />
-              </View>
-              <Text style={styles.quickActionTitle}>{t('payBills.myBeneficiaries', 'My beneficiaries')}</Text>
+            <TouchableOpacity 
+              style={{ flex: 1, flexDirection: 'column', alignItems: 'center', backgroundColor: '#EFF6FF', paddingVertical: 10, borderRadius: 16, marginRight: 8 }}
+              onPress={() => shareInviteLink()}
+            >
+              <Ionicons name="paper-plane-outline" size={18} color="#3B82F6" style={{ marginBottom: 4 }} />
+              <Text style={{ color: '#3B82F6', fontSize: 11, fontFamily: 'Inter_600SemiBold', textAlign: 'center' }}>{t('home.btnInviteNow', 'Invite')}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.quickActionCard} onPress={() => shareInviteLink()}>
-              <View style={[styles.quickActionIconBg, { backgroundColor: '#EFF6FF' }]}>
-                <Ionicons name="paper-plane-outline" size={18} color="#3B82F6" />
-              </View>
-              <Text style={styles.quickActionTitle}>{t('home.btnInviteNow', 'Invite now')}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.quickActionCard} onPress={() => navigation.navigate('ShopsScreen')}>
-              <View style={[styles.quickActionIconBg, { backgroundColor: '#F5F3FF' }]}>
-                <Ionicons name="storefront-outline" size={18} color="#8B5CF6" />
-              </View>
-              <Text style={styles.quickActionTitle}>{t('home.btnReferNow', 'Refer a store')}</Text>
+            <TouchableOpacity 
+              style={{ flex: 1, flexDirection: 'column', alignItems: 'center', backgroundColor: '#F5F3FF', paddingVertical: 10, borderRadius: 16 }}
+              onPress={() => navigation.navigate('ShopsScreen')}
+            >
+              <Ionicons name="storefront-outline" size={18} color="#8B5CF6" style={{ marginBottom: 4 }} />
+              <Text style={{ color: '#8B5CF6', fontSize: 11, fontFamily: 'Inter_600SemiBold', textAlign: 'center' }}>{t('home.btnReferNow', 'Refer Store')}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Beneficiaries Section */}
-          <View style={styles.beneficiariesSectionHeader}>
+          <View style={[styles.beneficiariesSectionHeader, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 0 }]}>
             <Text style={styles.sectionTitle}>
               {t('payBills.myBeneficiaries', 'My Beneficiaries')}
               {beneficiaries.length > 0 ? ` (${beneficiaries.length})` : ''}

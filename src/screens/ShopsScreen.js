@@ -41,7 +41,7 @@ export default function ShopsScreen() {
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [bannerSlide, setBannerSlide] = useState(0);
   const [displayedCount, setDisplayedCount] = useState(6);
-  const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
+  const [viewMode, setViewMode] = useState('grid'); // 'list' or 'grid'
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -195,7 +195,7 @@ export default function ShopsScreen() {
             <View style={{ marginRight: 8 }}>
               <LanguageSelector />
             </View>
-            <TouchableOpacity style={styles.iconBtnRight} onPress={() => setToast({ title: t('common.comingSoon', 'Coming soon'), message: t('notifications.comingSoon', 'Notification system is currently under development.') })}>
+            <TouchableOpacity style={styles.iconBtnRight} onPress={() => navigation.navigate('NotificationsScreen')} accessibilityLabel="Notifications">
               <Ionicons name="notifications-outline" size={20} color="#1A2840" />
               <View style={styles.notificationDot}>
                 <Text style={{ color: '#FFFFFF', fontSize: 7, fontWeight: 'bold', textAlign: 'center' }}>1</Text>
@@ -254,17 +254,21 @@ export default function ShopsScreen() {
 
             {/* Actions rapides */}
             <Text style={styles.sectionTitle}>{t('shopsQuickActions', 'Quick Actions')}</Text>
-            <View style={styles.quickActionsGrid}>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
+            >
               {getQuickActions(t).map(action => (
-                <TouchableOpacity key={action.id} style={styles.quickActionCard} onPress={() => runQuickAction(action.id)}>
+                <TouchableOpacity key={action.id} style={[styles.quickActionCard, { width: 90, marginRight: 12, marginBottom: 0, height: 110 }]} onPress={() => runQuickAction(action.id)}>
                   <View style={[styles.quickActionIconContainer, { backgroundColor: action.iconBg }]}>
                     <Ionicons name={action.icon} size={22} color={action.color} />
                   </View>
                   <Text style={styles.quickActionTitle}>{action.title}</Text>
-                  <Text style={styles.quickActionSubtitle}>{action.subtitle}</Text>
+                  <Text style={styles.quickActionSubtitle} numberOfLines={3}>{action.subtitle}</Text>
                 </TouchableOpacity>
               ))}
-            </View>
+            </ScrollView>
           </View>
 
           {/* Index 1: Pinned / Sticky Header (My shops title, View toggle, Filter chips) */}

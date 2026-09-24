@@ -234,7 +234,7 @@ export default function PayBillsSummaryScreen() {
         }
 
         const payload = {
-          toAddress: '0xTreasuryAddress', // TODO: Fetch dynamic treasury/merchant address if needed
+          toAddress: process.env.EXPO_PUBLIC_TREASURY_ADDRESS || '0xTreasuryAddress', // TODO: Fetch dynamic treasury/merchant address if needed
           amount: parseFloat(totalCost),
           token: currency === 'DZY' ? 'DZY' : 'USDC', // Defaulting to USDC if not DZY
           chain: 'Polygon',

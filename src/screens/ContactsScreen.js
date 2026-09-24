@@ -171,19 +171,34 @@ export default function ContactsScreen() {
                 : t('contacts.subtitle', "Soutenez vos bénéficiaires : envoyez de l'argent, payez des factures et achetez l'essentiel en Afrique.")}
             </Text>
 
-            {/* Search Bar */}
-            <View style={styles.searchContainer}>
-              <Ionicons name="search-outline" size={20} color="#94A3B8" style={styles.searchIcon} />
-              <View style={{ flex: 1 }}>
-                <TextInput
-                  style={styles.searchInput}
-                  placeholder={t('contacts.search', 'Rechercher un contact')}
-                  placeholderTextColor="#64748B"
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                />
-                <Text style={styles.searchSubText}>{t('contacts.search_hint', 'Nom, téléphone, email, ville ou pays')}</Text>
-              </View>
+            {/* Sleek Search Bar */}
+            <View style={[styles.searchContainer, { 
+              paddingVertical: 10, 
+              paddingHorizontal: 16, 
+              borderRadius: 24, 
+              borderColor: '#FFC759', 
+              borderWidth: 1.5,
+              backgroundColor: '#FFFFFF',
+              shadowColor: '#FFC759',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.15,
+              shadowRadius: 10,
+              elevation: 4
+            }]}>
+              <Ionicons name="search" size={20} color="#D97706" style={{ marginRight: 10 }} />
+              <TextInput
+                style={{ flex: 1, fontFamily: 'Inter_500Medium', fontSize: 14, color: '#1A2840', padding: 0 }}
+                placeholder={t('contacts.search_hint_short', 'Search name, phone or email...')}
+                placeholderTextColor="#94A3B8"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                autoCorrect={false}
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+                  <Ionicons name="close-circle" size={18} color="#94A3B8" />
+                </TouchableOpacity>
+              )}
             </View>
 
             {nextScreen ? (
@@ -202,11 +217,15 @@ export default function ContactsScreen() {
             ) : (
               <>
                 <Text style={styles.sectionTitle}>{t('contacts.quick_actions', 'Actions rapides')}</Text>
-                <View style={styles.quickActionsGrid}>
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
+                >
                   {quickActions.map(action => (
                     <TouchableOpacity 
                       key={action.id} 
-                      style={styles.quickActionCard} 
+                      style={[styles.quickActionCard, { width: 85, marginRight: 12, marginBottom: 0, height: 96 }]} 
                       onPress={() => {
                         if (action.id === '6') {
                         handleUserInviteShare(session?.user);
@@ -228,7 +247,7 @@ export default function ContactsScreen() {
                       </Text>
                     </TouchableOpacity>
                   ))}
-                </View>
+                </ScrollView>
               </>
             )}
           </View>

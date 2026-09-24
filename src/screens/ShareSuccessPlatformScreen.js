@@ -50,7 +50,7 @@ export default function ShareSuccessPlatformScreen() {
             <Text style={styles.headerSubtitle}>{t('shareSuccess.headerSubtitle', 'Choisissez où publier votre carte DizzitUp')}</Text>
           </View>
 
-          <TouchableOpacity style={styles.helpBtn}>
+          <TouchableOpacity style={styles.helpBtn} onPress={() => navigation.navigate('AskAminataScreen')}>
             <Ionicons name="help-circle-outline" size={24} color="#1A2840" />
           </TouchableOpacity>
         </View>

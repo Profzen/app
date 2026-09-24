@@ -23,7 +23,7 @@ export default function CashierScanScreen() {
             <Ionicons name="arrow-back" size={20} color="#1A2840" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{t('pos.cash_desks', 'Caisse (TPE)')}</Text>
-          <TouchableOpacity style={styles.iconSquareBtn}>
+          <TouchableOpacity style={styles.iconSquareBtn} onPress={() => navigation.navigate('AskAminataScreen')}>
             <Ionicons name="help-circle-outline" size={20} color="#1A2840" />
           </TouchableOpacity>
         </View>
