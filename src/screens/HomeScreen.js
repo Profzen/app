@@ -10,7 +10,7 @@ import WalletCard from '../components/WalletCard';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
 import { LanguageSelector } from '../components/LanguageSelector';
-import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
+import { shareShopLink, handleUserInviteShare } from '../utils/shareHelper';
 import { useApp } from '../context/AppContext';
 import { useBuyGoods } from '../hooks/useBuyGoods';
 import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
@@ -257,8 +257,7 @@ export default function HomeScreen() {
                     <TouchableOpacity 
                       style={[styles.inviteButton, { backgroundColor: '#071D54' }]} 
                       onPress={() => {
-                        const code = user?.id ? `DZY-${user.id.substring(0, 6).toUpperCase()}` : 'DZY500';
-                        shareInviteLink(code);
+                        handleUserInviteShare(user);
                       }}
                     >
                       <Text style={styles.inviteButtonText}>{t('home.btnInviteNow', 'Invite')}</Text>

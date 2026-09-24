@@ -1048,7 +1048,8 @@
     "validate": "Validate Exchange",
     "all": "All",
     "auto": "Auto",
-    "beneficiary": "Beneficiary"
+    "beneficiary": "Beneficiary",
+    "manage": "Manage"
   },
   "profile": {
     "editProfile": "Edit profile",
@@ -4036,7 +4037,8 @@
     "confirm_delete_confirm": "Yes, Delete",
     "no_beneficiaries": "No beneficiaries yet",
     "add_first_sub": "Add your beneficiaries to send them funds and pay their bills.",
-    "add_beneficiary": "Add a beneficiary"
+    "add_beneficiary": "Add a beneficiary",
+    "manage_contacts_title": "Manage your contacts"
   },
   "beneficiary_management": {
     "edit": {

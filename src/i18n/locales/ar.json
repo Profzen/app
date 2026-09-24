@@ -2519,7 +2519,8 @@
     "success": "نجاح",
     "error": "خطأ",
     "auto": "تلقائي",
-    "beneficiary": "المستفيد"
+    "beneficiary": "المستفيد",
+    "manage": "إدارة"
   },
   "beneficiary": {
     "form": {
@@ -3917,7 +3918,8 @@
     "confirm_delete_title": "حذف المستفيد",
     "confirm_delete_desc": "هل أنت متأكد أنك تريد حذف {{name}} من قائمة المستفيدين؟",
     "confirm_delete_cancel": "إلغاء",
-    "confirm_delete_confirm": "نعم، احذف"
+    "confirm_delete_confirm": "نعم، احذف",
+    "manage_contacts_title": "إدارة جهات الاتصال الخاصة بك"
   },
   "beneficiary_management": {
     "edit": {

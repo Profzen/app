@@ -9,8 +9,8 @@ import Avatar from '../components/Avatar';
 import { useApp } from '../context/AppContext';
 import { useEffect } from 'react';
 import contactService from '../services/contactService';
-import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
-
+import { handleUserInviteShare } from '../utils/shareHelper';
+import ContactActionSheet from '../components/ContactActionSheet';
 const getFlagEmoji = (countryCode) => {
   if (!countryCode) return '🌍';
   const codePoints = countryCode
@@ -79,7 +79,7 @@ export default function ContactsManageScreen() {
   const quickAction = (id) => {
     if (id === '1') navigation.navigate('EditBeneficiaryScreen'); else if (id === '2') setToast({ title: 'Action requise', message: 'Veuillez sélectionner un bénéficiaire dans la liste pour le modifier.' });
     else if (id === '3') setToast({ title: 'Liste actualisée', message: 'Tous vos bénéficiaires sont affichés.' });
-    else shareInviteLink();
+    else handleUserInviteShare(user);
   };
   const removeContact = async (id) => {
     try {
@@ -267,8 +267,7 @@ export default function ContactsManageScreen() {
               <TouchableOpacity 
                 style={styles.inviteBtn} 
                 onPress={() => {
-                  const code = user?.id ? `DZY-${user.id.substring(0, 6).toUpperCase()}` : 'DZY500';
-                  shareInviteLink(code);
+                  handleUserInviteShare(user);
                 }}
               >
                 <Text style={styles.inviteBtnText}>{t('home.btnInviteNow', "Inviter maintenant")}</Text>
@@ -325,76 +324,7 @@ function ContactRow({ contact, onPress, onNavigate }) {
   );
 }
 
-function ContactActionSheet({ contact, visible, onClose, onNavigate, onDelete, onFavorite }) {
-  const { t } = useApp();
-  if (!contact) return null;
 
-  return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.sheetOverlay}>
-        <TouchableOpacity style={styles.sheetDismissArea} activeOpacity={1} onPress={onClose} />
-        
-        <View style={styles.sheetContainer}>
-          <View style={styles.sheetHandleWrap}>
-            <View style={styles.sheetHandle} />
-          </View>
-
-          <View style={styles.sheetHeader}>
-             <Avatar image={contact.image} name={contact.name} size={64} style={styles.sheetAvatar} />
-             <Text style={styles.sheetNameLg}>{contact.name}</Text>
-             <Text style={styles.sheetLocationLg}>{contact.flag} {contact.location}</Text>
-          </View>
-
-          <View style={styles.sheetActionsGrid}>
-            <SheetGridAction icon="arrow-up-outline" label={t('contacts.action_send', 'Envoyer')} color="#10B981" bgColor="#ECFDF5" onPress={() => onNavigate('SendMoneyScreen')} />
-            <SheetGridAction icon="cash-outline" label={t('contacts.action_request', 'Demander')} color="#F59E0B" bgColor="#FFF7E6" onPress={() => onNavigate('ReceiveFundsV2Screen')} />
-            <SheetGridAction icon="bag-handle-outline" label={t('contacts.action_pay', 'Payer')} color="#3B82F6" bgColor="#EFF6FF" onPress={() => onNavigate('ChooseServiceScreen')} />
-            <SheetGridAction 
-              icon="person-add-outline" 
-              label={t('contacts.action_invite', 'Inviter')} 
-              color="#8B5CF6" 
-              bgColor="#F5F3FF" 
-              onPress={() => {
-                setSelectedContact(null);
-                const code = user?.id ? `DZY-${user.id.substring(0, 6).toUpperCase()}` : 'DZY500';
-                shareInviteLink(code);
-              }} 
-            />
-          </View>
-
-          <View style={styles.sheetListGroup}>
-             <SheetListAction icon="star" label={t('contacts.action_add_favorite', 'Ajouter aux favoris')} color="#F59E0B" bgColor="#FEF3C7" onPress={() => onFavorite(contact)} />
-             <SheetListAction icon="pencil" label={t('contacts.action_edit', 'Modifier le contact')} color="#3B82F6" bgColor="#EFF6FF" onPress={() => onNavigate('EditBeneficiaryScreen', { isEditing: true, beneficiary: contact })} />
-             <SheetListAction icon="trash" label={t('contacts.action_delete', 'Supprimer le contact')} color="#EF4444" bgColor="#FEF2F2" onPress={() => onDelete(contact.id)} />
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-}
-
-function SheetGridAction({ icon, label, color, bgColor, onPress }) {
-  return (
-    <TouchableOpacity style={styles.gridActionBtn} onPress={onPress}>
-      <View style={[styles.gridActionIconWrap, { backgroundColor: bgColor }]}>
-        <Ionicons name={icon} size={28} color={color} />
-      </View>
-      <Text style={styles.gridActionLabel}>{label}</Text>
-    </TouchableOpacity>
-  );
-}
-
-function SheetListAction({ icon, label, onPress, color = '#64748B', bgColor = '#F1F5F9' }) {
-  return (
-    <TouchableOpacity style={styles.listActionBtn} onPress={onPress}>
-      <View style={[styles.listActionIconWrap, { backgroundColor: bgColor }]}>
-        <Ionicons name={icon} size={20} color={color} />
-      </View>
-      <Text style={[styles.listActionLabel, color === '#EF4444' && { color: '#EF4444' }]}>{label}</Text>
-      <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
-    </TouchableOpacity>
-  );
-}
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -660,106 +590,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 4,
   },
-  sheetOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.4)',
-    justifyContent: 'flex-end',
-  },
-  sheetDismissArea: {
-    flex: 1,
-  },
-  sheetContainer: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    paddingHorizontal: 20,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
-    maxHeight: '90%',
-  },
-  sheetHandleWrap: {
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  sheetHandle: {
-    width: 48,
-    height: 5,
-    backgroundColor: '#E2E8F0',
-    borderRadius: 3,
-  },
-  sheetHeader: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  sheetAvatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    marginBottom: 12,
-  },
-  sheetNameLg: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 20,
-    color: '#0F172A',
-    marginBottom: 4,
-  },
-  sheetLocationLg: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 13,
-    color: '#64748B',
-  },
-  sheetActionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 24,
-  },
-  gridActionBtn: {
-    width: '23%',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  gridActionIconWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  gridActionLabel: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-    color: '#334155',
-    textAlign: 'center',
-  },
-  sheetListGroup: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  listActionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
-  },
-  listActionIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#F1F5F9',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  listActionLabel: {
-    flex: 1,
-    fontFamily: 'Inter_500Medium',
-    fontSize: 14,
-    color: '#1E293B',
-  },
+
   toastWrap: { position: 'absolute', left: 14, right: 14, top: 70, zIndex: 50 },
   statusCol: {
     flex: 1,

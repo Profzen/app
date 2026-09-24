@@ -1048,7 +1048,8 @@
     "validate": "Valider l'échange",
     "all": "Tous",
     "auto": "Auto",
-    "beneficiary": "Bénéficiaire"
+    "beneficiary": "Bénéficiaire",
+    "manage": "Gérer"
   },
   "profile": {
     "editProfile": "Modifier le profil",
@@ -4084,7 +4085,8 @@
     "confirm_delete_confirm": "Oui, supprimer",
     "no_beneficiaries": "Aucun bénéficiaire pour le moment",
     "add_first_sub": "Ajoutez vos bénéficiaires pour leur envoyer des fonds et payer leurs factures.",
-    "add_beneficiary": "Ajouter un bénéficiaire"
+    "add_beneficiary": "Ajouter un bénéficiaire",
+    "manage_contacts_title": "Gérer vos contacts"
   },
   "beneficiary_management": {
     "edit": {

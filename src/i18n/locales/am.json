@@ -1049,7 +1049,8 @@
     "validate": "ልውውጡን አረጋግጥ",
     "all": "ሁሉም",
     "auto": "ራስ-ሰር",
-    "beneficiary": "ተጠቃሚ"
+    "beneficiary": "ተጠቃሚ",
+    "manage": "ያስተዳድሩ"
   },
   "profile": {
     "editProfile": "መገለጫ አስተካክል",
@@ -3884,7 +3885,8 @@
     "confirm_delete_title": "ተጠቃሚውን ሰርዝ",
     "confirm_delete_desc": "{{name}}ን ከተጠቃሚዎችዎ ዝርዝር ውስጥ መሰረዝ እንደሚፈልጉ እርግጠኛ ነዎት?",
     "confirm_delete_cancel": "ሰርዝ",
-    "confirm_delete_confirm": "አዎ፣ ሰርዝ"
+    "confirm_delete_confirm": "አዎ፣ ሰርዝ",
+    "manage_contacts_title": "እውቂያዎችዎን ያስተዳድሩ"
   },
   "beneficiary_management": {
     "edit": {

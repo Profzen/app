@@ -6,8 +6,9 @@ import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
 import Avatar from '../components/Avatar';
-import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
+import { handleUserInviteShare, shareShopLink } from '../utils/shareHelper';
 import { useApp } from '../context/AppContext';
+import ContactActionSheet from '../components/ContactActionSheet';
 import contactService from '../services/contactService';
 import { getFullCountryName } from '../utils/countryCurrencyUtils';
 import { SwipeRow } from 'react-native-swipe-list-view';
@@ -208,7 +209,7 @@ export default function ContactsScreen() {
                       style={styles.quickActionCard} 
                       onPress={() => {
                         if (action.id === '6') {
-                          shareInviteLink();
+                        handleUserInviteShare(session?.user);
                         } else if (action.id === '7') {
                           shareShopLink();
                         } else if (action.id === '8') {
@@ -397,8 +398,7 @@ export default function ContactsScreen() {
                 <TouchableOpacity 
                   style={styles.inviteBtn} 
                   onPress={() => {
-                    const code = user?.id ? `DZY-${user.id.substring(0, 6).toUpperCase()}` : 'DZY500';
-                    shareInviteLink(code);
+                    handleUserInviteShare(session?.user);
                   }}
                 >
                   <Text style={styles.inviteBtnText}>{t('home.btnInviteNow', "Inviter maintenant")}</Text>
@@ -455,76 +455,7 @@ function ContactRow({ contact, onPress }) {
   );
 }
 
-function ContactActionSheet({ contact, visible, onClose, onNavigate, onDelete, onFavorite }) {
-  const { t } = useApp();
-  if (!contact) return null;
 
-  return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.sheetOverlay}>
-        <TouchableOpacity style={styles.sheetDismissArea} activeOpacity={1} onPress={onClose} />
-        
-        <View style={styles.sheetContainer}>
-          <View style={styles.sheetHandleWrap}>
-            <View style={styles.sheetHandle} />
-          </View>
-
-          <View style={styles.sheetHeader}>
-             <Avatar image={contact.image} name={contact.name} size={64} style={styles.sheetAvatar} />
-             <Text style={styles.sheetNameLg}>{contact.name}</Text>
-             <Text style={styles.sheetLocationLg}>{contact.flag} {contact.location}</Text>
-          </View>
-
-          <View style={styles.sheetActionsGrid}>
-            <SheetGridAction icon="arrow-up-outline" label={t('contacts.action_send', 'Envoyer')} color="#10B981" bgColor="#ECFDF5" onPress={() => onNavigate('SendMoneyScreen')} />
-            <SheetGridAction icon="cash-outline" label={t('contacts.action_request', 'Demander')} color="#F59E0B" bgColor="#FFF7E6" onPress={() => onNavigate('ReceiveFundsV2Screen')} />
-            <SheetGridAction icon="bag-handle-outline" label={t('contacts.action_pay', 'Payer')} color="#3B82F6" bgColor="#EFF6FF" onPress={() => onNavigate('ChooseServiceScreen')} />
-            <SheetGridAction 
-              icon="person-add-outline" 
-              label={t('contacts.action_invite', 'Inviter')} 
-              color="#8B5CF6" 
-              bgColor="#F5F3FF" 
-              onPress={() => {
-                setSelectedContact(null);
-                const code = user?.id ? `DZY-${user.id.substring(0, 6).toUpperCase()}` : 'DZY500';
-                shareInviteLink(code);
-              }} 
-            />
-          </View>
-
-          <View style={styles.sheetListGroup}>
-             <SheetListAction icon="star" label={t('contacts.action_add_favorite', 'Ajouter aux favoris')} color="#F59E0B" bgColor="#FEF3C7" onPress={() => onFavorite(contact)} />
-             <SheetListAction icon="pencil" label={t('contacts.action_edit', 'Modifier le contact')} color="#3B82F6" bgColor="#EFF6FF" onPress={() => onNavigate('EditBeneficiaryScreen', { isEditing: true, beneficiary: contact })} />
-             <SheetListAction icon="trash" label={t('contacts.action_delete', 'Supprimer le contact')} color="#EF4444" bgColor="#FEF2F2" onPress={() => onDelete(contact.id)} />
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-}
-
-function SheetGridAction({ icon, label, color, bgColor, onPress }) {
-  return (
-    <TouchableOpacity style={styles.gridActionBtn} onPress={onPress}>
-      <View style={[styles.gridActionIconWrap, { backgroundColor: bgColor }]}>
-        <Ionicons name={icon} size={28} color={color} />
-      </View>
-      <Text style={styles.gridActionLabel}>{label}</Text>
-    </TouchableOpacity>
-  );
-}
-
-function SheetListAction({ icon, label, onPress, color = '#64748B', bgColor = '#F1F5F9' }) {
-  return (
-    <TouchableOpacity style={styles.listActionBtn} onPress={onPress}>
-      <View style={[styles.listActionIconWrap, { backgroundColor: bgColor }]}>
-        <Ionicons name={icon} size={20} color={color} />
-      </View>
-      <Text style={[styles.listActionLabel, color === '#EF4444' && { color: '#EF4444' }]}>{label}</Text>
-      <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
-    </TouchableOpacity>
-  );
-}
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FAFAFA', paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 14 },

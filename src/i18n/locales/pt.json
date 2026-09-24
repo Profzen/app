@@ -1002,7 +1002,8 @@
     "validate": "Validar troca",
     "all": "Todos",
     "auto": "Automático",
-    "beneficiary": "Beneficiário"
+    "beneficiary": "Beneficiário",
+    "manage": "Gerir"
   },
   "profile": {
     "editProfile": "Editar perfil",
@@ -3866,7 +3867,8 @@
     "confirm_delete_title": "Excluir Beneficiário",
     "confirm_delete_desc": "Tem certeza de que deseja excluir {{name}} dos seus beneficiários?",
     "confirm_delete_cancel": "Cancelar",
-    "confirm_delete_confirm": "Sim, excluir"
+    "confirm_delete_confirm": "Sim, excluir",
+    "manage_contacts_title": "Gerir os seus contactos"
   },
   "beneficiary_management": {
     "edit": {

@@ -55,3 +55,8 @@ export const shareShopLink = async (shopCode = 'SHOP2026') => {
     console.log('Share shop link cancelled or error:', error);
   }
 };
+
+export const handleUserInviteShare = (user) => {
+  const code = user?.id ? `DZY-${user.id.substring(0, 6).toUpperCase()}` : 'DZY500';
+  shareInviteLink(code);
+};
