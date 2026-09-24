@@ -5214,5 +5214,14 @@
     "momoWithdrawAvailable": "ወደ {{operators}} ፈጣን ገንዘብ ማውጣት።",
     "notAvailableTitle": "የሞባይል ገንዘብ አይገኝም",
     "cardAlternativeNote": "የሞባይል ገንዘብ እስካሁን በ{{country}} ውስጥ አይገኝም። የባንክ ካርድዎን (Visa / Mastercard) በመጠቀም ከየትኛውም የአለም ክፍል ሆነው መለያዎን ይሙሉ።"
-  }
+  },
+  "activityInboxTitle": "የእንቅስቃሴ ገቢ መልእክት",
+  "tabAll": "ሁሉም",
+  "tabTransactions": "ግብይቶች",
+  "tabAlerts": "ማሳወቂያዎች",
+  "tabPromos": "ማስተዋወቂያዎች",
+  "viewDetails": "ደረሰኝ ይመልከቱ",
+  "takeAction": "አሁን መፍትሄ ይስጡ",
+  "noActivityTitle": "ሁሉም ደርሷል!",
+  "noActivityMessage": "የገቢ መልእክት ሳጥንዎ ባዶ ነው። አዲስ ዝመናዎች፣ ግብይቶች እና ማሳሰቢያዎች እዚህ ይታያሉ።"
 }

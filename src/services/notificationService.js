@@ -1,4 +1,4 @@
-import * as Notifications from 'expo-notifications';
+
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
@@ -7,14 +7,19 @@ import supabase from './supabaseClient';
 
 export const navigationRef = createNavigationContainerRef();
 
+const isExpoGo = Constants.appOwnership === 'expo' || Constants.executionEnvironment === 'storeClient';
+
 // Configure how notifications appear when app is in foreground
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+if (!isExpoGo) {
+  const Notifications = require('expo-notifications');
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+}
 
 const PROJECT_ID =
   Constants?.expoConfig?.extra?.eas?.projectId ??
@@ -30,7 +35,14 @@ export const notificationService = {
       return null;
     }
 
+    // Expo Go limitation check MUST happen before any Notifications logic
+    if (isExpoGo) {
+      console.log('[notificationService] Push notifications require a development or production build');
+      return null;
+    }
+
     if (Platform.OS === 'android') {
+      const Notifications = require('expo-notifications');
       await Notifications.setNotificationChannelAsync('default', {
         name: 'DizzitApp Notifications',
         importance: Notifications.AndroidImportance.MAX,
@@ -44,12 +56,10 @@ export const notificationService = {
       return null;
     }
 
-    // Expo Go limitation check (SDK 50+ handles push differently in development builds)
-    if (Constants.appOwnership === 'expo') {
-      console.log('[notificationService] Push notifications require a development or production build');
-    }
+
 
     try {
+      const Notifications = require('expo-notifications');
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
       let finalStatus = existingStatus;
 

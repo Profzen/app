@@ -25,7 +25,8 @@ import AnimatedSplashScreen from './src/components/AnimatedSplashScreen';
 import { GlobalToast } from './src/components/AppToast';
 import { Modal } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import * as Notifications from 'expo-notifications';
+
+import Constants from 'expo-constants';
 import { navigationRef, notificationService } from './src/services/notificationService';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -115,7 +116,9 @@ export default function App() {
   React.useEffect(() => {
     let subscription;
     try {
-      if (Platform.OS !== 'web') {
+      const isExpoGo = Constants.appOwnership === 'expo' || Constants.executionEnvironment === 'storeClient';
+      if (Platform.OS !== 'web' && !isExpoGo) {
+        const Notifications = require('expo-notifications');
         subscription = Notifications.addNotificationResponseReceivedListener(response => {
           notificationService.handleNotificationResponse(response);
         });

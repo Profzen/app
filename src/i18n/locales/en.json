@@ -5401,5 +5401,14 @@
     "momoWithdrawAvailable": "Instant withdrawal to {{operators}}.",
     "notAvailableTitle": "Mobile Money unavailable",
     "cardAlternativeNote": "Mobile Money is not yet available in {{country}}. Use your Visa or Mastercard card to top up your account from anywhere in the world."
-  }
+  },
+  "activityInboxTitle": "Activity Inbox",
+  "tabAll": "All",
+  "tabTransactions": "Transactions",
+  "tabAlerts": "Alerts",
+  "tabPromos": "Promotions",
+  "viewDetails": "View Receipt",
+  "takeAction": "Resolve Now",
+  "noActivityTitle": "All caught up!",
+  "noActivityMessage": "Your inbox is empty. New updates, transactions, and reminders will appear here."
 }

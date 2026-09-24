@@ -5221,5 +5221,14 @@
     "momoWithdrawAvailable": "سحب فوري إلى {{operators}}.",
     "notAvailableTitle": "خدمة Mobile Money غير متاحة",
     "cardAlternativeNote": "خدمة Mobile Money غير متاحة حتى الآن في {{country}}. استخدم بطاقتك المصرفية (Visa / Mastercard) لتعبئة حسابك من أي مكان في العالم."
-  }
+  },
+  "activityInboxTitle": "صندوق النشاط",
+  "tabAll": "الكل",
+  "tabTransactions": "المعاملات",
+  "tabAlerts": "تنبيهات",
+  "tabPromos": "العروض",
+  "viewDetails": "عرض الإيصال",
+  "takeAction": "حل الآن",
+  "noActivityTitle": "أنت على اطلاع تام!",
+  "noActivityMessage": "صندوق الوارد الخاص بك فارغ. ستظهر التحديثات والمعاملات والتذكيرات الجديدة هنا."
 }

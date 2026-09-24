@@ -5196,5 +5196,14 @@
     "momoWithdrawAvailable": "Saque instantâneo para {{operators}}.",
     "notAvailableTitle": "Mobile Money indisponível",
     "cardAlternativeNote": "O Mobile Money ainda não está disponível para {{country}}. Use o seu cartão bancário (Visa / Mastercard) para recarregar sua conta de qualquer lugar do mundo."
-  }
+  },
+  "activityInboxTitle": "Caixa de Atividade",
+  "tabAll": "Tudo",
+  "tabTransactions": "Transações",
+  "tabAlerts": "Alertas",
+  "tabPromos": "Promoções",
+  "viewDetails": "Ver Recibo",
+  "takeAction": "Resolver Agora",
+  "noActivityTitle": "Tudo em dia!",
+  "noActivityMessage": "Sua caixa está vazia. Novas atualizações, transações e lembretes aparecerão aqui."
 }
