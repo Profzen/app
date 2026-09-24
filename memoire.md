@@ -2999,6 +2999,16 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
      - Ajout des accès directs à la chaîne YouTube officielle DizzitUp et son teaser vidéo.
      - Anglicisation native des textes par défaut dans `FeaturesBanner.js`.
 
+- **État Git & Validation** :
+  - Commit : `4d51f52` (*"feat(notifications): integrate expo-notifications engine, supabase push token sync, deep linking, and sync official app overview"*).
+  - Poussé avec succès sur `origin/front-back`.
+  - Validation Babel : 100% OK sur l'intégralité des fichiers modifiés.
+
+- **Prochaines Étapes / En Attente** :
+  - Côté Assia : Déploiement des Edge Functions Supabase pour l'envoi de push et configuration des tâches `pg_cron` (Rappels factures J+27 et Weekly Deals).
+  - Côté Assia : Ajout des 51 bêta-testeurs de l'équipe (export Brevo) sur TestFlight et Google Play Console.
+
+
 
 
 
