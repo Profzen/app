@@ -485,18 +485,17 @@ export default function ShopDetailsScreen({ route }) {
                     amount={product.price || 0} 
                     baseCurrency={product.currency || shop?.currency || 'XOF'} 
                     size="compact"
-                    targetCountry={shop?.country}
                   />
                   <Text style={styles.productStock}>{product.stock_quantity > 0 || !product.stock_quantity ? t('shop.products.in_stock', 'En stock') : t('outOfStock', 'Rupture')}</Text>
                 </View>
 
                 <TouchableOpacity style={styles.btnBuySmall} onPress={() => navigation.navigate('ProductDetailsScreen', { product, shop })}>
-                  <Text style={styles.btnBuySmallText}>{t('shop.actions.buy', 'Acheter')}</Text>
+                  <Text style={styles.btnBuySmallText} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy', 'Acheter')}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.btnBuyMeSmall} onPress={() => shareProductGift(product)}>
                   <Ionicons name="gift-outline" size={11} color="#1A2840" style={{ marginRight: 3 }} />
-                  <Text style={styles.btnBuyMeSmallText}>{t('shop.actions.buy_me', 'Achetez-moi')}</Text>
+                  <Text style={[styles.btnBuyMeSmallText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy_me', 'Achetez-moi')}</Text>
                 </TouchableOpacity>
               </View>
             ))}
@@ -594,10 +593,10 @@ const styles = StyleSheet.create({
   productName: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#1A2840', marginBottom: 2 },
   productPrice: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#1A2840', marginBottom: 2 },
   productStock: { fontFamily: 'Inter_500Medium', fontSize: 9, color: '#10B981' },
-  btnBuySmall: { backgroundColor: '#FFC759', paddingVertical: 5, borderRadius: 6, alignItems: 'center', marginBottom: 4 },
-  btnBuySmallText: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#1A2840' },
-  btnBuyMeSmall: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#FFC759', paddingVertical: 4, borderRadius: 6, alignItems: 'center' },
-  btnBuyMeSmallText: { fontFamily: 'Inter_600SemiBold', fontSize: 10, color: '#1A2840' },
+  btnBuySmall: { backgroundColor: '#FFC759', paddingVertical: 5, borderRadius: 6, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  btnBuySmallText: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#1A2840', textAlign: 'center' },
+  btnBuyMeSmall: { flexDirection: 'row', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#FFC759', paddingVertical: 4, borderRadius: 6, alignItems: 'center', justifyContent: 'center' },
+  btnBuyMeSmallText: { fontFamily: 'Inter_600SemiBold', fontSize: 10, color: '#1A2840', textAlign: 'center' },
   aboutSection: { paddingHorizontal: 16 },
   aboutTextContainer: { flexDirection: 'row', alignItems: 'flex-end', marginTop: 4 },
   aboutText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 12, color: '#6B7280', lineHeight: 18, paddingRight: 8 },

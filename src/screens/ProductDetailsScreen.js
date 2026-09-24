@@ -7,6 +7,7 @@ import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
 import AppConfirmModal from '../components/AppConfirmModal';
 import PriceDisplay from '../components/PriceDisplay';
+import PhysicalGoodsWarningModal from '../components/PhysicalGoodsWarningModal';
 import { useApp } from '../context/AppContext';
 import { convertCurrencyAmount } from '../utils/countryCurrencyUtils';
 
@@ -23,6 +24,8 @@ export default function ProductDetailsScreen({ route }) {
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [toast, setToast] = useState(null);
   const [conflictModal, setConflictModal] = useState(null);
+  const [warningModalVisible, setWarningModalVisible] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null); // 'cart' or 'buy'
 
   const insets = useSafeAreaInsets();
   const bottomPadding = Math.max(insets.bottom, Platform.OS === 'ios' ? 24 : 16);
@@ -81,7 +84,7 @@ export default function ProductDetailsScreen({ route }) {
   const merchantInitial = (merchantName || 'DZ').slice(0, 2).toUpperCase();
   const merchantLogo = shop?.shop_logo_url || shop?.logoUrl || shop?.raw?.shop_logo_url || product?.merchant?.shop_logo_url || product?.merchant?.logoUrl || product?.merchant_logo;
 
-  const handleAddToCart = (force = false) => {
+  const executeAddToCart = (force = false) => {
     const res = addToCart(product, quantity, shop, force);
     if (res.conflict) {
       setConflictModal({
@@ -93,7 +96,7 @@ export default function ProductDetailsScreen({ route }) {
         }),
         onConfirm: () => {
           setConflictModal(null);
-          handleAddToCart(true);
+          executeAddToCart(true);
         },
       });
       return;
@@ -111,7 +114,7 @@ export default function ProductDetailsScreen({ route }) {
     }
   };
 
-  const handleBuyNow = () => {
+  const executeBuyNow = () => {
     addToCart(product, quantity, shop, true);
     navigation.navigate('OrderVerificationScreen', {
       directOrder: {
@@ -120,6 +123,21 @@ export default function ProductDetailsScreen({ route }) {
         quantity,
       }
     });
+  };
+
+  const handleAddToCart = () => {
+    setPendingAction('cart');
+    setWarningModalVisible(true);
+  };
+
+  const handleBuyNow = () => {
+    setPendingAction('buy');
+    setWarningModalVisible(true);
+  };
+
+  const handleWarningContinue = () => {
+    setWarningModalVisible(false);
+    setPendingAction(null);
   };
 
   const shareProduct = async () => { 
@@ -246,7 +264,6 @@ export default function ProductDetailsScreen({ route }) {
               baseCurrency={rawCurrency}
               quantity={quantity}
               size="large"
-              targetCountry={shop?.country || product?.merchant?.country}
               style={{ marginVertical: 8 }}
             />
 
@@ -509,7 +526,7 @@ export default function ProductDetailsScreen({ route }) {
           activeOpacity={0.8}
         >
           <Ionicons name="gift-outline" size={18} color="#2563EB" style={{ marginRight: 5 }} />
-          <Text style={styles.btnGiftModernText} numberOfLines={1}>{t('shop.actions.buy_me', 'Buy me')}</Text>
+          <Text style={[styles.btnGiftModernText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy_me', 'Buy me')}</Text>
         </TouchableOpacity>
 
         {/* Add to Cart Action */}
@@ -519,10 +536,10 @@ export default function ProductDetailsScreen({ route }) {
           activeOpacity={0.8}
         >
           <Ionicons name="cart-outline" size={18} color="#1A2840" style={{ marginRight: 5 }} />
-          <Text style={styles.btnCartModernText} numberOfLines={1}>{t('product.addToCart', 'Add to cart')}</Text>
+          <Text style={[styles.btnCartModernText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('product.addToCart', 'Add to cart')}</Text>
           {cartCount > 0 && (
             <View style={styles.cartCountDot}>
-              <Text style={styles.cartCountDotText}>{cartCount}</Text>
+              <Text style={styles.cartCountDotText} adjustsFontSizeToFit numberOfLines={1}>{cartCount}</Text>
             </View>
           )}
         </TouchableOpacity>
@@ -534,7 +551,7 @@ export default function ProductDetailsScreen({ route }) {
           activeOpacity={0.85}
         >
           <Ionicons name="flash" size={16} color="#1A2840" style={{ marginRight: 5 }} />
-          <Text style={styles.btnBuyModernText}>{t('product.buyNow', 'Buy now')}</Text>
+          <Text style={[styles.btnBuyModernText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('product.buyNow', 'Buy now')}</Text>
         </TouchableOpacity>
       </View>
       {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
@@ -551,6 +568,12 @@ export default function ProductDetailsScreen({ route }) {
         confirmVariant="warning"
         onCancel={() => setConflictModal(null)}
         onConfirm={conflictModal?.onConfirm}
+      />
+
+      <PhysicalGoodsWarningModal 
+        visible={warningModalVisible}
+        onClose={() => setWarningModalVisible(false)}
+        onContinue={handleWarningContinue}
       />
 
     </SafeAreaView>
@@ -1160,11 +1183,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   btnGiftModern: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     height: 46,
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     borderRadius: 23,
     backgroundColor: '#EFF6FF',
     borderWidth: 1,
@@ -1175,13 +1199,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold',
     fontSize: 11.5,
     color: '#1D4ED8',
+    textAlign: 'center',
   },
   btnCartModern: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     height: 46,
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     borderRadius: 23,
     backgroundColor: '#F8FAFC',
     borderWidth: 1,
@@ -1192,6 +1218,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     fontSize: 11.5,
     color: '#1A2840',
+    textAlign: 'center',
   },
   cartCountDot: {
     position: 'absolute',
@@ -1211,11 +1238,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   btnBuyModern: {
-    flex: 1,
+    flex: 1.2,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     height: 46,
+    paddingHorizontal: 8,
     borderRadius: 23,
     backgroundColor: '#FFB800',
     shadowColor: '#FFB800',
@@ -1228,5 +1256,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold',
     fontSize: 13.5,
     color: '#1A2840',
+    textAlign: 'center',
   },
 });

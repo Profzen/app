@@ -13,7 +13,7 @@ export default function PriceDisplay({
   style, 
   textStyle 
 }) {
-  const { user } = useApp();
+  const { user, userCountry: contextCountry } = useApp();
   const [, setRateVersion] = useState(0);
 
   useEffect(() => {
@@ -27,6 +27,7 @@ export default function PriceDisplay({
   // Determine user's local currency based on geolocalization / profile / merchant region
   const userCountryKey = (
     targetCountry ||
+    contextCountry ||
     user?.COI ||
     user?.country ||
     user?.country_name ||

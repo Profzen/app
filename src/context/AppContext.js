@@ -583,12 +583,19 @@ export function AppProvider({ children }) {
       setIsUserLoading(false);
     };
 
+    let lastToken = null;
     supabase.auth.getSession().then(({ data: { session } }) => {
-      syncUser(session);
+      if (session?.access_token !== lastToken) {
+        lastToken = session?.access_token;
+        syncUser(session);
+      }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      syncUser(session);
+      if (session?.access_token !== lastToken) {
+        lastToken = session?.access_token;
+        syncUser(session);
+      }
     });
 
     return () => subscription.unsubscribe();

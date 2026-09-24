@@ -560,7 +560,7 @@ export default function OrderVerificationScreen({ route }) {
               onPress={() => setPaymentRail('crypto')}
             >
               <Ionicons name="wallet-outline" size={16} color={paymentRail === 'crypto' ? '#1A2840' : '#64748B'} />
-              <Text style={[styles.railTabText, paymentRail === 'crypto' && styles.railTabTextActive]}>
+              <Text style={[styles.railTabText, paymentRail === 'crypto' && styles.railTabTextActive]} adjustsFontSizeToFit numberOfLines={1}>
                 {t('orderVerification.cryptoTab', 'DZY & Stablecoins')}
               </Text>
             </TouchableOpacity>
@@ -570,7 +570,7 @@ export default function OrderVerificationScreen({ route }) {
               onPress={() => setPaymentRail('card')}
             >
               <Ionicons name="card-outline" size={16} color={paymentRail === 'card' ? '#1A2840' : '#64748B'} />
-              <Text style={[styles.railTabText, paymentRail === 'card' && styles.railTabTextActive]}>
+              <Text style={[styles.railTabText, paymentRail === 'card' && styles.railTabTextActive]} adjustsFontSizeToFit numberOfLines={1}>
                 {t('orderVerification.cardTab', 'Carte Bancaire')}
               </Text>
             </TouchableOpacity>
@@ -581,7 +581,7 @@ export default function OrderVerificationScreen({ route }) {
                 onPress={() => setPaymentRail('momo')}
               >
                 <Ionicons name="phone-portrait-outline" size={16} color={paymentRail === 'momo' ? '#1A2840' : '#64748B'} />
-                <Text style={[styles.railTabText, paymentRail === 'momo' && styles.railTabTextActive]}>
+                <Text style={[styles.railTabText, paymentRail === 'momo' && styles.railTabTextActive]} adjustsFontSizeToFit numberOfLines={1}>
                   {t('orderVerification.momoTab', 'Mobile Money')}
                 </Text>
               </TouchableOpacity>
@@ -591,8 +591,8 @@ export default function OrderVerificationScreen({ route }) {
                 onPress={() => setRegionModalVisible(true)}
                 activeOpacity={0.7}
               >
-                <Ionicons name="lock-closed" size={13} color="#94A3B8" style={{ marginRight: 4 }} />
-                <Text style={[styles.railTabText, styles.railTabTextDisabled]}>
+                <Ionicons name="lock-closed" size={13} color="#94A3B8" style={{ marginRight: 2 }} />
+                <Text style={[styles.railTabText, styles.railTabTextDisabled]} adjustsFontSizeToFit numberOfLines={1}>
                   {t('orderVerification.momoTab', 'Mobile Money')}
                 </Text>
                 <View style={styles.unavailableMiniDot} />
@@ -1227,9 +1227,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 2,
     borderRadius: 8,
-    gap: 4,
+    gap: 3,
   },
   railTabActive: {
     backgroundColor: '#FFB800',
@@ -1238,6 +1239,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     fontSize: 11,
     color: '#64748B',
+    flexShrink: 1,
   },
   railTabTextActive: {
     color: '#1A2840',

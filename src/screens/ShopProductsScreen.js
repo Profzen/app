@@ -477,7 +477,6 @@ export default function ShopProductsScreen({ route }) {
                       <PriceDisplay 
                         amount={product.price || (product.variants?.[0]?.prices?.[0]?.amount || 0)} 
                         baseCurrency={product.currency || shop.currency || 'XOF'} 
-                        targetCountry={shop?.country || product?.merchant?.country}
                       />
                       <Text style={styles.productStock}>
                         {(product.stock_quantity !== undefined && product.stock_quantity <= 0) ? t('outOfStock', 'Rupture') : (product.stock || t('shop.products.in_stock', 'En stock'))}
@@ -491,7 +490,7 @@ export default function ShopProductsScreen({ route }) {
                         onPress={() => navigation.navigate('ProductDetailsScreen', { product: product, shop: shop })}
                       >
                         <Ionicons name="cart-outline" size={13} color="#1A2840" style={{marginRight: 4}} />
-                        <Text style={styles.btnBuyCardText}>{t('shop.actions.buy', 'Acheter')}</Text>
+                        <Text style={[styles.btnBuyCardText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy', 'Acheter')}</Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity 
@@ -499,7 +498,7 @@ export default function ShopProductsScreen({ route }) {
                         onPress={() => shareProductGift(product)}
                       >
                         <Ionicons name="gift-outline" size={13} color="#1D4ED8" style={{marginRight: 4}} />
-                        <Text style={styles.btnBuyMeCardText}>{t('shop.actions.buy_me', 'Achetez-moi')}</Text>
+                        <Text style={[styles.btnBuyMeCardText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy_me', 'Achetez-moi')}</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
