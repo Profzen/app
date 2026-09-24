@@ -2923,5 +2923,92 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
      - Renommage de *"Sync your contacts"* / *"Sync"* en *"Manage your contacts"* / *"Manage"* (pointant vers `ContactsScreen`), conformément à la demande de Solofo en attendant l'intégration de la synchro répertoire complète.
   3. **Déduplication des Bénéficiaires Pay Bills (`PayBillsScreen.js`)** :
      - Ajout d'un filtre de déduplication par téléphone normalisé et ID unique (`seenBeneficiaries`) garantissant qu'aucun contact en double n'apparaît dans la liste de sélection de paiement de factures.
+  4. **Intégration des Mises à Jour Ergonomiques d'Assia** :
+     - Fusion du commit `818ad50` (`origin/develop`) apportant la détection de disponibilité du Mobile Money selon le pays de l'émetteur dans `PayBillsSummaryScreen.js`, l'ajustement des safe-area insets sur `ProductDetailsScreen.js`, et l'alignement des décimales de jetons dans `WithdrawFundsScreen.js`.
+
+---
+
+### 10. Déploiement Release Build 43 (iOS) / Build 44 (Android) & Activation Lien Public (23 Septembre 2026)
+
+- **Date** : 23 Septembre 2026
+- **Branches Git** : 
+  - `front-back` : Branche de développement actif (synchronisée avec `origin/front-back`).
+  - `develop` : Branche de release CI/CD (synchronisée avec `origin/develop`, commit `f08ce74`).
+- **Demande de Solofo** : *"Please Merge everything you have and Push on both Testflight and Google Play."*
+
+#### A. Bilan des Livrables Produits
+
+1. **Android (Build #44) — ✅ SUCCÈS TOTAL & DISPONIBLE** :
+   - Pipeline GitHub Actions : Exécuté avec succès en 24m36s.
+   - Tag GitHub Release : `android-v44`.
+   - Fichiers disponibles : APK universel pour tests directs + bundle AAB pour la Google Play Console.
+   - Lien direct : [GitHub Releases DizzitApp](https://github.com/Dizzitup/dizzitapp-v2/releases/tag/android-v44).
+
+2. **iOS (Build 43) — ✅ COMPILATION RÉUSSIE SUR EAS CLOUD & SOUMISSION TESTFLIGHT** :
+   - Compilation EAS Cloud : Réussie en 5 minutes sous l'organisation officielle `@dizzitup`.
+   - Fichier Archive .ipa officiel généré : [Télécharger l'IPA sur Expo EAS](https://expo.dev/artifacts/eas/gp3-j5Ba9E-_-_LxAAdOHTs9J5iKMNwozOYSvNahxfo.ipa) (Build ID `31b504b6-5fd2-4425-9b4c-6f60eec42494`).
+   - Soumission automatique TestFlight : Transmise avec succès aux serveurs d'Apple ([Soumission EAS #4c37b94f](https://expo.dev/accounts/dizzitup/projects/dizzitapp-v2/submissions/4c37b94f-951c-4dbf-b781-db3caeba0b32)).
+   - **Diagnostic technique Timeout GitHub** : Le job GitHub Actions a atteint son timeout de 90 minutes car la commande `--auto-submit` attendait en direct le traitement final des symboles Apple. Le binaire iOS n'en a pas moins été parfaitement compilé et injecté dans TestFlight.
+
+3. **Activation du Lien Public TestFlight par Solofo** :
+   - Suite aux plaintes d'un actionnaire qui n'arrivait pas à télécharger l'app sur iPhone avec les liens bruts, Solofo a activé le **Lien Public TestFlight officiel d'Apple** pour les testeurs externes :
+     👉 `https://testflight.apple.com/join/...` (accessible depuis [App Store Connect DizzitApp](https://appstoreconnect.apple.com/apps/6799749556/testflight/ios)).
+   - Ce lien permet à tout testeur ou investisseur sur iPhone d'installer DizzitApp en un clic via l'application native TestFlight.
+
+#### B. État Actuel du Projet & Prochaines Étapes
+- **Code source** : 100% propre, compilé et validé via Babel.
+- **Dernières fonctionnalités incluses** : Caisse POS avec calculatrice par défaut, devise dynamique par pays marchand (sans exception en dur), partage natif d'invitation avec referral URL, To-do list "Manage contacts", liste des bénéficiaires dédupliquée.
+
+---
+
+### 11. Moteur de Notifications Push & Synchronisation Présentation Officielle (24 Septembre 2026)
+
+- **Date** : 24 Septembre 2026
+- **Branche** : `front-back`
+- **Contexte & Accord d'Équipe (Slack)** :
+  - Proposition initiale par Abdel-Aziz des 4 leviers de rétention (Rappels de factures utilités, Récompenses DZY/Cashback, Confirmation transactions/livraisons, Bons plans commerces).
+  - Validation et enrichissement par Assia (Alertes réseau, corridors, feuille de route Edge Functions Supabase).
+  - Décision finale de Solofo : Priorité d'implémentation accordée aux rappels de factures (Idée #1) et bons plans (Idée #4), assortis du cadrage officiel du pitch produit / vidéo YouTube.
+  - Répartition des rôles validée par Assia : Abdel-Aziz gère le volet `expo-notifications` (requête de permission, collecte du token et écoute des clics avec deep linking), Assia gère les Edge Functions Supabase & `pg_cron`.
+
+- **Correctifs & Développements Appliqués** :
+  1. **Création du Service de Notifications Push (`src/services/notificationService.js`)** :
+     - Configuration du gestionnaire d'affichage en avant-plan (`setNotificationHandler`).
+     - Création du canal Android haute importance (`AndroidImportance.MAX`).
+     - Requête et vérification des permissions (`requestPermissionsAsync`).
+     - Récupération du token push Expo sécurisé avec le projectId EAS officiel (`485a099a-a88c-4405-9211-8abd9429ac31`).
+     - Synchronisation automatique vers la table `user_profiles` dans Supabase (`expo_push_token: token, push_notifications_enabled: true`).
+     - Moteur de Deep Linking (`handleNotificationResponse`) routant intelligemment selon le payload :
+       - `bill_reminder` / `utility` ➔ `BillDetailsScreen` / `PayBillsScreen`.
+       - `weekly_deal` / `deal` / `promo` ➔ `ProductDetailsScreen` / `ShopProductsScreen` / `ShopsScreen`.
+       - `exchange_rate` / `remittance` ➔ `SendMoneyScreen`.
+       - `rewards` / `cashback` ➔ `RewardsScreen`.
+       - `transaction` ➔ `TransactionHistoryScreen`.
+       - `contact_joined` ➔ `ContactsScreen`.
+  2. **Connexion Racine de l'App (`App.js`)** :
+     - Liaison de `navigationRef` sur `<NavigationContainer>` pour permettre le routage direct depuis les notifications.
+     - Enregistrement de l'écouteur de réponse `addNotificationResponseReceivedListener`.
+  3. **Auto-enregistrement à la Connexion (`src/context/AppContext.js`)** :
+     - Déclenchement automatique non-bloquant de l'enregistrement push dès qu'une session utilisateur est active, avec mise à jour immédiate de `user_profiles.expo_push_token`.
+  4. **Harmonisation des Paramètres (`src/screens/AccountSettingsScreen.js`)** :
+     - Utilisation unifiée de `notificationService.registerForPushNotificationsAsync()` lors du toggle manuel des notifications.
+  5. **Activation de l'Écran de Notifications depuis l'Accueil (`src/screens/HomeScreen.js`)** :
+     - Redirection du clic sur l'icône de cloche vers `NotificationsScreen` (suppression du toast temporaire "Coming soon").
+  6. **Alignement avec la Présentation Officielle de Solofo (`src/screens/AboutDizzitUpScreen.js` & `FeaturesBanner.js`)** :
+     - Intégration dans "À propos" de la section officielle "App Overview & Services" reprenant textuellement les capacités mondiales et marchands africains définies par Solofo.
+     - Ajout des accès directs à la chaîne YouTube officielle DizzitUp et son teaser vidéo.
+     - Anglicisation native des textes par défaut dans `FeaturesBanner.js`.
+
+- **État Git & Validation** :
+  - Commit : `4d51f52` (*"feat(notifications): integrate expo-notifications engine, supabase push token sync, deep linking, and sync official app overview"*).
+  - Poussé avec succès sur `origin/front-back`.
+  - Validation Babel : 100% OK sur l'intégralité des fichiers modifiés.
+
+- **Prochaines Étapes / En Attente** :
+  - Côté Assia : Déploiement des Edge Functions Supabase pour l'envoi de push et configuration des tâches `pg_cron` (Rappels factures J+27 et Weekly Deals).
+  - Côté Assia : Ajout des 51 bêta-testeurs de l'équipe (export Brevo) sur TestFlight et Google Play Console.
+
+
+
 
 

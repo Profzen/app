@@ -11,6 +11,7 @@ import AppToast from '../components/AppToast';
 
 import { useApp } from '../context/AppContext';
 import { supabase } from '../services/supabaseClient';
+import { notificationService } from '../services/notificationService';
 
 const getCurrencyFlag = (currencyCode) => {
   const map = {
@@ -133,23 +134,13 @@ export default function AccountSettingsScreen() {
       }
       
       try {
-        const Notifications = require('expo-notifications');
-        const { status: existingStatus } = await Notifications.getPermissionsAsync();
-        let finalStatus = existingStatus;
+        const token = await notificationService.registerForPushNotificationsAsync();
         
-        if (existingStatus !== 'granted') {
-          const { status } = await Notifications.requestPermissionsAsync();
-          finalStatus = status;
-        }
-        
-        if (finalStatus !== 'granted') {
+        if (!token) {
           setPushEnabled(false);
-          setToast({ title: "Error", message: "Failed to get push token" });
+          setToast({ title: "Error", message: "Failed to get push token. Please check permissions." });
           return;
         }
-        
-        const tokenData = await Notifications.getExpoPushTokenAsync().catch(e => { console.log(e); return null; });
-        const token = tokenData?.data || null;
         
         await updateUserProfile({ push_notifications_enabled: true, expo_push_token: token });
         setToast({ title: "Success", message: "Push notifications enabled" });

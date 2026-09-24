@@ -14,6 +14,7 @@ import { transactionService } from '../services/transactionService';
 import contactService from '../services/contactService';
 import { buyGoodsApi } from '../services/buyGoodsApi';
 import { detectUserCountry, getCachedCountry, setManualCountry } from '../services/geolocationService';
+import { notificationService } from '../services/notificationService';
 
 const AppContext = createContext();
 
@@ -566,6 +567,15 @@ export function AppProvider({ children }) {
               setContacts(res.data);
             }
           }).catch(err => console.log('Error fetching beneficiaries:', err));
+        }
+
+        // Auto-register and sync Expo Push Token to user_profiles table in Supabase
+        if (sessionObj.user.id) {
+          notificationService.registerForPushNotificationsAsync().then(token => {
+            if (token) {
+              notificationService.syncPushTokenToSupabase(sessionObj.user.id, token);
+            }
+          }).catch(err => console.log('Auto push registration error:', err));
         }
       } else {
         setContacts([]);
