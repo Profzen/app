@@ -21,7 +21,7 @@ export default function MoreSettingsScreen() {
     ...(user?.role === 'merchant' ? [{ id: 'business', title: t('settings.business', 'Business Account'), description: t('settings.business_desc', 'Gérer votre profil marchand et préférences'), icon: 'storefront-outline', color: '#8B5CF6', background: '#F5F3FF', route: 'BusinessAccountScreen' }] : []),
     { id: 'assistant', title: t('askAminata.title', 'Ask Aminata'), description: t('settings.assistant_desc', "Obtenez de l'aide auprès de notre assistant virtuel"), icon: 'help-circle-outline', color: '#F59E0B', background: '#FFFBEB', route: 'AskAminataScreen' },
     { id: 'loyalty', title: t('dizzyFamily.title', 'DizzyFamily Program'), description: t('settings.loyalty_desc', "Gagnez des récompenses et profitez d'avantages exclusifs"), icon: 'gift-outline', color: '#EF4444', background: '#FEF2F2', route: 'DizzyFamilyScreen' },
-    { id: 'about', title: t('aboutApp.title', 'About DizzitUp'), description: t('settings.about_desc', 'En savoir plus sur nous et notre mission'), icon: 'information-circle-outline', color: '#3B82F6', background: '#EFF6FF', route: 'AboutDizzitUpScreen' },
+    { id: 'about', title: t('aboutApp.title', 'About DizzitUp'), description: t('settings.about_desc', 'Learn more, mission & release notes'), icon: 'information-circle-outline', color: '#3B82F6', background: '#EFF6FF', route: 'AboutDizzitUpScreen', badge: 'Build 46' },
     { id: 'contact', title: t('contactSupport.title', 'Contact Us'), description: t('settings.contact_desc', "Entrez en contact avec notre équipe d'assistance"), icon: 'headset-outline', color: '#10B981', background: '#ECFDF5', route: 'ContactUsScreen' },
   ];
 
@@ -100,6 +100,11 @@ export default function MoreSettingsScreen() {
                   <Text style={styles.settingTitle}>{item.title}</Text>
                   <Text style={styles.settingDescription}>{item.description}</Text>
                 </View>
+                {item.badge ? (
+                  <View style={styles.buildBadgeRow}>
+                    <Text style={styles.buildBadgeRowText}>{item.badge}</Text>
+                  </View>
+                ) : null}
                 <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
               </TouchableOpacity>
             ))}
@@ -128,6 +133,11 @@ export default function MoreSettingsScreen() {
             <Ionicons name="log-out-outline" size={20} color="#EF4444" style={{ marginRight: 8 }} />
             <Text style={styles.logoutText}>{t('btnLogOut', 'Log out')}</Text>
           </TouchableOpacity>
+
+          {/* Version Footer */}
+          <View style={styles.footerVersion}>
+            <Text style={styles.footerVersionText}>DizzitApp v1.0.37 (Build 46) • Prod-Ready</Text>
+          </View>
 
           <View style={{ height: 20 }} />
         </ScrollView>
@@ -170,6 +180,10 @@ const styles = StyleSheet.create({
   merchantPromoTextContainer: { flex: 1, paddingRight: 8 },
   merchantPromoTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#92400E', marginBottom: 2 },
   merchantPromoDesc: { fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 16, color: '#B45309' },
+  buildBadgeRow: { backgroundColor: '#FFC759', paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6, marginRight: 6 },
+  buildBadgeRowText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 10, color: '#1A2840' },
+  footerVersion: { alignItems: 'center', justifyContent: 'center', marginTop: 14, marginBottom: 4 },
+  footerVersionText: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#9CA3AF' },
 });
 
 
