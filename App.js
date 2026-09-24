@@ -25,6 +25,8 @@ import AnimatedSplashScreen from './src/components/AnimatedSplashScreen';
 import { GlobalToast } from './src/components/AppToast';
 import { Modal } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
+import * as Notifications from 'expo-notifications';
+import { navigationRef, notificationService } from './src/services/notificationService';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -110,12 +112,31 @@ export default function App() {
     }
   }, [fontsLoaded]);
 
+  React.useEffect(() => {
+    let subscription;
+    try {
+      if (Platform.OS !== 'web') {
+        subscription = Notifications.addNotificationResponseReceivedListener(response => {
+          notificationService.handleNotificationResponse(response);
+        });
+      }
+    } catch (e) {
+      console.log('Notification listener error:', e);
+    }
+
+    return () => {
+      if (subscription && subscription.remove) {
+        subscription.remove();
+      }
+    };
+  }, []);
+
   if (!isAppReady) {
     return null; // Return null instead of ActivityIndicator to let Native splash show
   }
 
   const appNav = (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <AppNavigator />
     </NavigationContainer>
   );

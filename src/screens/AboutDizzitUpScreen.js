@@ -51,7 +51,7 @@ export default function AboutDizzitUpScreen() {
           <View style={styles.brandCard}>
             <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={styles.logoImage} resizeMode="contain" />
             <Text style={styles.appName}>DizzitUp Mobile App</Text>
-            <Text style={styles.versionText}>Version v2.4.0 (Build 2026.07)</Text>
+            <Text style={styles.versionText}>Version v1.0.37 (Build 44 / 2026)</Text>
             <View style={styles.statusBadge}>
               <View style={styles.statusDot} />
               <Text style={styles.statusText}>Prod-Ready • Web3 & Stablecoins</Text>
@@ -66,12 +66,70 @@ export default function AboutDizzitUpScreen() {
             </Text>
           </View>
 
+          {/* App Overview & Core Capabilities */}
+          <Text style={styles.sectionHeader}>{t('aboutApp.overviewTitle', 'APP OVERVIEW & SERVICES')}</Text>
+          <View style={styles.card}>
+            <Text style={styles.featureCategoryTitle}>
+              {t('aboutApp.worldwideTitle', 'FOR EVERYONE (BUYERS, MERCHANTS & BUSINESSES WORLDWIDE)')}
+            </Text>
+            <View style={styles.bulletItem}>
+              <Ionicons name="cart-outline" size={16} color="#FFC759" style={styles.bulletIcon} />
+              <Text style={styles.bulletText}>{t('aboutApp.featBuyGoods', 'Buy goods & essentials locally and cross-border')}</Text>
+            </View>
+            <View style={styles.bulletItem}>
+              <Ionicons name="flash-outline" size={16} color="#FFC759" style={styles.bulletIcon} />
+              <Text style={styles.bulletText}>{t('aboutApp.featPayBills', 'Pay bills (Electricity, Water, Internet, Tuition)')}</Text>
+            </View>
+            <View style={styles.bulletItem}>
+              <Ionicons name="phone-portrait-outline" size={16} color="#FFC759" style={styles.bulletIcon} />
+              <Text style={styles.bulletText}>{t('aboutApp.featRecharge', 'Recharge mobile airtime & data bundles')}</Text>
+            </View>
+            <View style={styles.bulletItem}>
+              <Ionicons name="card-outline" size={16} color="#FFC759" style={styles.bulletIcon} />
+              <Text style={styles.bulletText}>{t('aboutApp.featOnRamp', 'Buy / On-ramp / Top-up USD & EUR stablecoins (Visa, Mastercard & Mobile Money)')}</Text>
+            </View>
+            <View style={styles.bulletItem}>
+              <Ionicons name="cash-outline" size={16} color="#FFC759" style={styles.bulletIcon} />
+              <Text style={styles.bulletText}>{t('aboutApp.featOffRamp', 'Sell / Off-ramp / Cash-out USD & EUR stablecoins to local African money (Mobile Money or Bank account)')}</Text>
+            </View>
+            <View style={styles.bulletItem}>
+              <Ionicons name="globe-outline" size={16} color="#FFC759" style={styles.bulletIcon} />
+              <Text style={styles.bulletText}>{t('aboutApp.featSendReceive', 'Send & receive worldwide USD & EUR stablecoins instantly')}</Text>
+            </View>
+
+            <View style={[styles.divider, { marginVertical: 12 }]} />
+
+            <Text style={styles.featureCategoryTitle}>
+              {t('aboutApp.africaBizTitle', 'FOR BUSINESSES & MERCHANTS IN AFRICA')}
+            </Text>
+            <View style={styles.bulletItem}>
+              <Ionicons name="storefront-outline" size={16} color="#3B82F6" style={styles.bulletIcon} />
+              <Text style={styles.bulletText}>{t('aboutApp.bizSellGlobal', 'Sell products & services globally to the diaspora')}</Text>
+            </View>
+            <View style={styles.bulletItem}>
+              <Ionicons name="receipt-outline" size={16} color="#3B82F6" style={styles.bulletIcon} />
+              <Text style={styles.bulletText}>{t('aboutApp.bizInvoice', 'Invoice customers and send instant Pay links')}</Text>
+            </View>
+            <View style={styles.bulletItem}>
+              <Ionicons name="wallet-outline" size={16} color="#3B82F6" style={styles.bulletIcon} />
+              <Text style={styles.bulletText}>{t('aboutApp.bizSettle', 'Settle and get paid in USD, EUR stablecoins or local African money (Mobile Money or Bank account)')}</Text>
+            </View>
+          </View>
+
           {/* Information Links */}
           <Text style={styles.sectionHeader}>{t('aboutApp.legalTitle', 'LEGAL INFORMATION & WEBSITES')}</Text>
           <View style={styles.card}>
             <TouchableOpacity style={styles.linkRow} onPress={() => openLink('Site Web', 'https://dizzitup.com')}>
               <Ionicons name="globe-outline" size={20} color="#3B82F6" style={styles.linkIcon} />
               <Text style={styles.linkText}>{t('aboutApp.website', 'Official DizzitUp Website (dizzitup.com)')}</Text>
+              <Ionicons name="open-outline" size={16} color="#9CA3AF" />
+            </TouchableOpacity>
+
+            <View style={styles.divider} />
+
+            <TouchableOpacity style={styles.linkRow} onPress={() => openLink('YouTube', 'https://youtube.com/@dizzitup')}>
+              <Ionicons name="logo-youtube" size={20} color="#FF0000" style={styles.linkIcon} />
+              <Text style={styles.linkText}>{t('aboutApp.youtubeTeaser', 'Official YouTube Channel & App Teaser')}</Text>
               <Ionicons name="open-outline" size={16} color="#9CA3AF" />
             </TouchableOpacity>
 
@@ -114,6 +172,10 @@ export default function AboutDizzitUpScreen() {
             <TouchableOpacity style={styles.socialBtn} onPress={() => openLink('Telegram', 't.me/dizzitup')}>
               <Ionicons name="paper-plane" size={22} color="#229ED9" />
               <Text style={styles.socialName}>Telegram</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.socialBtn} onPress={() => openLink('YouTube', 'youtube.com/@dizzitup')}>
+              <Ionicons name="logo-youtube" size={22} color="#FF0000" />
+              <Text style={styles.socialName}>YouTube</Text>
             </TouchableOpacity>
           </View>
 
@@ -163,4 +225,8 @@ const styles = StyleSheet.create({
   socialName: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#4B5563', marginTop: 4 },
   contactBtn: { height: 50, borderRadius: 14, backgroundColor: '#FFC759', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', boxShadow: '0px 4px 8px #FFC759' },
   contactBtnText: { fontFamily: 'Inter_700Bold', fontSize: 15, color: '#1A2840' },
+  featureCategoryTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 12, color: '#1A2840', marginBottom: 8, letterSpacing: 0.5 },
+  bulletItem: { flexDirection: 'row', alignItems: 'flex-start', marginVertical: 4 },
+  bulletIcon: { marginRight: 8, marginTop: 2 },
+  bulletText: { flex: 1, fontFamily: 'Inter_500Medium', fontSize: 13, color: '#374151', lineHeight: 18 },
 });

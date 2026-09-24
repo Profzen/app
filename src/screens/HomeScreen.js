@@ -170,7 +170,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
             <View style={styles.headerIcons}>
               <LanguageSelector />
-              <TouchableOpacity style={styles.iconButton} onPress={() => setToastInfo({ visible: true, title: t('common.comingSoon', 'Coming soon'), message: t('notifications.comingSoon', 'Notification system is currently under development.') })}>
+              <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('NotificationsScreen')}>
                 <Ionicons name="notifications-outline" size={18} color="#1A2840" />
                 <View style={styles.notificationDot} />
               </TouchableOpacity>

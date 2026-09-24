@@ -2958,7 +2958,47 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
 #### B. État Actuel du Projet & Prochaines Étapes
 - **Code source** : 100% propre, compilé et validé via Babel.
 - **Dernières fonctionnalités incluses** : Caisse POS avec calculatrice par défaut, devise dynamique par pays marchand (sans exception en dur), partage natif d'invitation avec referral URL, To-do list "Manage contacts", liste des bénéficiaires dédupliquée.
-- **En attente** : Retours des tests de Solofo sur le Build 43/44 et suite des échanges sur les fonctionnalités de rétention / notifications.
+
+---
+
+### 11. Moteur de Notifications Push & Synchronisation Présentation Officielle (24 Septembre 2026)
+
+- **Date** : 24 Septembre 2026
+- **Branche** : `front-back`
+- **Contexte & Accord d'Équipe (Slack)** :
+  - Proposition initiale par Abdel-Aziz des 4 leviers de rétention (Rappels de factures utilités, Récompenses DZY/Cashback, Confirmation transactions/livraisons, Bons plans commerces).
+  - Validation et enrichissement par Assia (Alertes réseau, corridors, feuille de route Edge Functions Supabase).
+  - Décision finale de Solofo : Priorité d'implémentation accordée aux rappels de factures (Idée #1) et bons plans (Idée #4), assortis du cadrage officiel du pitch produit / vidéo YouTube.
+  - Répartition des rôles validée par Assia : Abdel-Aziz gère le volet `expo-notifications` (requête de permission, collecte du token et écoute des clics avec deep linking), Assia gère les Edge Functions Supabase & `pg_cron`.
+
+- **Correctifs & Développements Appliqués** :
+  1. **Création du Service de Notifications Push (`src/services/notificationService.js`)** :
+     - Configuration du gestionnaire d'affichage en avant-plan (`setNotificationHandler`).
+     - Création du canal Android haute importance (`AndroidImportance.MAX`).
+     - Requête et vérification des permissions (`requestPermissionsAsync`).
+     - Récupération du token push Expo sécurisé avec le projectId EAS officiel (`485a099a-a88c-4405-9211-8abd9429ac31`).
+     - Synchronisation automatique vers la table `user_profiles` dans Supabase (`expo_push_token: token, push_notifications_enabled: true`).
+     - Moteur de Deep Linking (`handleNotificationResponse`) routant intelligemment selon le payload :
+       - `bill_reminder` / `utility` ➔ `BillDetailsScreen` / `PayBillsScreen`.
+       - `weekly_deal` / `deal` / `promo` ➔ `ProductDetailsScreen` / `ShopProductsScreen` / `ShopsScreen`.
+       - `exchange_rate` / `remittance` ➔ `SendMoneyScreen`.
+       - `rewards` / `cashback` ➔ `RewardsScreen`.
+       - `transaction` ➔ `TransactionHistoryScreen`.
+       - `contact_joined` ➔ `ContactsScreen`.
+  2. **Connexion Racine de l'App (`App.js`)** :
+     - Liaison de `navigationRef` sur `<NavigationContainer>` pour permettre le routage direct depuis les notifications.
+     - Enregistrement de l'écouteur de réponse `addNotificationResponseReceivedListener`.
+  3. **Auto-enregistrement à la Connexion (`src/context/AppContext.js`)** :
+     - Déclenchement automatique non-bloquant de l'enregistrement push dès qu'une session utilisateur est active, avec mise à jour immédiate de `user_profiles.expo_push_token`.
+  4. **Harmonisation des Paramètres (`src/screens/AccountSettingsScreen.js`)** :
+     - Utilisation unifiée de `notificationService.registerForPushNotificationsAsync()` lors du toggle manuel des notifications.
+  5. **Activation de l'Écran de Notifications depuis l'Accueil (`src/screens/HomeScreen.js`)** :
+     - Redirection du clic sur l'icône de cloche vers `NotificationsScreen` (suppression du toast temporaire "Coming soon").
+  6. **Alignement avec la Présentation Officielle de Solofo (`src/screens/AboutDizzitUpScreen.js` & `FeaturesBanner.js`)** :
+     - Intégration dans "À propos" de la section officielle "App Overview & Services" reprenant textuellement les capacités mondiales et marchands africains définies par Solofo.
+     - Ajout des accès directs à la chaîne YouTube officielle DizzitUp et son teaser vidéo.
+     - Anglicisation native des textes par défaut dans `FeaturesBanner.js`.
+
 
 
 
