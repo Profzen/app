@@ -126,6 +126,20 @@ jobs:
           path: build-output/DizzitUp.aab
           retention-days: 14
 
+      - name: Setup EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Submit Android to Google Play
+        run: |
+          eas submit \
+            --platform android \
+            --profile production \
+            --path build-output/DizzitUp.aab \
+            --non-interactive
+
       - name: Build Summary
         if: always()
         run: |
