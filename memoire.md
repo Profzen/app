@@ -2882,7 +2882,15 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
      ```bash
      node -e "const babel = require('@babel/core'); babel.transformFileSync('src/screens/HomeScreen.js', { presets: ['babel-preset-expo'] }); console.log('OK');"
      ```
-3. **Pousser les itérations** :
+3. **Mettre à jour automatiquement les Release Notes In-App (Règle d'or Solofo)** :
+   - **Engagement strict de l'assistant IA** : À chaque fois qu'on termine une tâche ou qu'on s'apprête à faire un nouveau build (ex: Build 47), l'IA doit mettre à jour **automatiquement** dans `AboutDizzitUpScreen.js`, `MoreSettingsScreen.js` et `app.json` :
+     - La date de livraison (`Delivery date`).
+     - Le numéro de version & build (`Version & Build number`).
+     - La liste à puces des nouvelles fonctionnalités (`New features`).
+     - La liste à puces des correctifs appliqués (`Implemented fixes`).
+     - L'avertissement général (`General warning`).
+   - Cette mise à jour in-app est **systématique et obligatoire avant tout commit et push**. L'utilisateur n'a pas une seule ligne à écrire.
+4. **Pousser les itérations** :
    - Commiter sur `front-back` et faire `git push origin front-back`.
    - **Ne merger sur `develop` que lorsque la version complète est prête à être distribuée à l'équipe**.
 
@@ -3007,6 +3015,33 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
 - **Prochaines Étapes / En Attente** :
   - Côté Assia : Déploiement des Edge Functions Supabase pour l'envoi de push et configuration des tâches `pg_cron` (Rappels factures J+27 et Weekly Deals).
   - Côté Assia : Ajout des 51 bêta-testeurs de l'équipe (export Brevo) sur TestFlight et Google Play Console.
+
+---
+
+### 12. Intégration des Release Notes & Détails de Build In-App (Demande Solofo - 24 Septembre 2026)
+
+- **Date** : 24 Septembre 2026
+- **Branche** : `front-back`
+- **Demande de Solofo (Slack)** :
+  > *"I got the Build 46 but it is really frustrating not knowing what you have in hands. Please add for all next Build: « About DizzitApp » section with Version & Build number, Delivery date, New features, implemented Fixes, General warning."*
+- **Développements Appliqués** :
+  1. **Section Dédiée dans `AboutDizzitUpScreen.js`** :
+     - **Version & Build** : Badge `Build #46`, puce `v1.0.37`.
+     - **Delivery Date** : `September 24, 2026`.
+     - **New Features** : Moteur de notifications push Expo + Supabase, routeur de deep-linking rétention, catalogue officiel des capacités DizzitUp, liens vidéo YouTube.
+     - **Implemented Fixes** : Terminal caisse POS rigide 1 écran par défaut, priorité stricte IP first pour le wallet et boutique pour le POS, partage natif de referral URL, déduplication des bénéficiaires Pay Bills, cloche d'en-tête connectée.
+     - **General Warning** : Encadré ambre rappelant le statut de version Beta Test pour validation interne et testeurs TestFlight/Google Play.
+  2. **Harmonisation dans `MoreSettingsScreen.js`** :
+     - Badge visuel `Build 46` directement sur la ligne « About DizzitUp » dans les Settings.
+     - Pied de page élégant `DizzitApp v1.0.37 (Build 46) • Prod-Ready`.
+  3. **Alignement de Version dans `app.json`** :
+     - `buildNumber: "46"`, `versionCode: 46`, `description: "DizzitApp V1. Build 46 Beta Test Version"`.
+
+- **Règle Permanente de Projet (Engagement Automatique de l'Assistant IA)** :
+  - **À chaque fois qu'on termine une tâche ou qu'on s'apprête à faire un nouveau build (ex: Build 47), l'assistant IA met à jour automatiquement la date, le numéro de build et la liste des fonctionnalités/correctifs avant de commiter et pousser.**
+  - **L'utilisateur n'a pas une seule ligne à écrire.**
+
+
 
 
 

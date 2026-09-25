@@ -64,6 +64,119 @@ export default function AboutDizzitUpScreen() {
             </View>
           </View>
 
+          {/* Current Build Information & Release Notes */}
+          <Text style={styles.sectionHeader}>{t('aboutApp.buildSectionTitle', 'CURRENT BUILD & RELEASE NOTES')}</Text>
+          <View style={styles.buildCard}>
+            {/* Build Meta Header */}
+            <View style={styles.buildMetaRow}>
+              <View style={styles.buildChip}>
+                <Ionicons name="cube-outline" size={13} color="#1A2840" style={{ marginRight: 4 }} />
+                <Text style={styles.buildChipText}>Build #{buildNumber || '50'}</Text>
+              </View>
+              <View style={styles.versionChip}>
+                <Text style={styles.versionChipText}>v{appVersion}</Text>
+              </View>
+              <View style={styles.dateBadge}>
+                <Ionicons name="calendar-outline" size={12} color="#6B7280" style={{ marginRight: 4 }} />
+                <Text style={styles.dateBadgeText}>September 24, 2026</Text>
+              </View>
+            </View>
+
+            {/* New Features */}
+            <View style={styles.releaseSection}>
+              <View style={styles.releaseSectionHeader}>
+                <Ionicons name="sparkles" size={15} color="#10B981" style={{ marginRight: 6 }} />
+                <Text style={styles.releaseSectionTitle}>{t('aboutApp.newFeaturesTitle', 'NEW FEATURES')}</Text>
+              </View>
+              <View style={styles.releaseItem}>
+                <Text style={styles.releaseBullet}>•</Text>
+                <Text style={styles.releaseText}>
+                  <Text style={styles.releaseBold}>Push Notifications Engine: </Text>
+                  Automated background Expo Push Token registration & sync to Supabase (user_profiles).
+                </Text>
+              </View>
+              <View style={styles.releaseItem}>
+                <Text style={styles.releaseBullet}>•</Text>
+                <Text style={styles.releaseText}>
+                  <Text style={styles.releaseBold}>Retention Deep-Linking: </Text>
+                  Direct navigation from notifications (Utility bill reminders to Pay Bills, Weekly deals to Store, Exchange rates to Send Money).
+                </Text>
+              </View>
+              <View style={styles.releaseItem}>
+                <Text style={styles.releaseBullet}>•</Text>
+                <Text style={styles.releaseText}>
+                  <Text style={styles.releaseBold}>Official Capabilities Directory: </Text>
+                  Standardized overview for Worldwide users (Buy goods, Top-up, Cash-out) and African Merchants.
+                </Text>
+              </View>
+              <View style={styles.releaseItem}>
+                <Text style={styles.releaseBullet}>•</Text>
+                <Text style={styles.releaseText}>
+                  <Text style={styles.releaseBold}>Official Video Teasers: </Text>
+                  Direct access to DizzitUp official YouTube channel & overview video.
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.releaseDivider} />
+
+            {/* Implemented Fixes */}
+            <View style={styles.releaseSection}>
+              <View style={styles.releaseSectionHeader}>
+                <Ionicons name="checkmark-circle" size={15} color="#3B82F6" style={{ marginRight: 6 }} />
+                <Text style={styles.releaseSectionTitle}>{t('aboutApp.implementedFixesTitle', 'IMPLEMENTED FIXES')}</Text>
+              </View>
+              <View style={styles.releaseItem}>
+                <Text style={styles.releaseBullet}>•</Text>
+                <Text style={styles.releaseText}>
+                  <Text style={styles.releaseBold}>Point of Sale (POS): </Text>
+                  Full 1-screen non-scrolling cashier calculator with QR receive mode default.
+                </Text>
+              </View>
+              <View style={styles.releaseItem}>
+                <Text style={styles.releaseBullet}>•</Text>
+                <Text style={styles.releaseText}>
+                  <Text style={styles.releaseBold}>Universal Currency Priority: </Text>
+                  IP geolocation priority for personal wallet, store country priority for POS.
+                </Text>
+              </View>
+              <View style={styles.releaseItem}>
+                <Text style={styles.releaseBullet}>•</Text>
+                <Text style={styles.releaseText}>
+                  <Text style={styles.releaseBold}>Invite & Referral Links: </Text>
+                  Direct native OS share sheet with official referral link.
+                </Text>
+              </View>
+              <View style={styles.releaseItem}>
+                <Text style={styles.releaseBullet}>•</Text>
+                <Text style={styles.releaseText}>
+                  <Text style={styles.releaseBold}>Beneficiary Deduplication: </Text>
+                  Sanitized list in Pay Bills preventing duplicate recipients.
+                </Text>
+              </View>
+              <View style={styles.releaseItem}>
+                <Text style={styles.releaseBullet}>•</Text>
+                <Text style={styles.releaseText}>
+                  <Text style={styles.releaseBold}>Header Notification Bell: </Text>
+                  Connected directly to Notifications Center screen.
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.releaseDivider} />
+
+            {/* General Warning */}
+            <View style={styles.warningContainer}>
+              <View style={styles.warningHeader}>
+                <Ionicons name="warning-outline" size={15} color="#D97706" style={{ marginRight: 6 }} />
+                <Text style={styles.warningTitle}>{t('aboutApp.generalWarningTitle', 'GENERAL WARNING')}</Text>
+              </View>
+              <Text style={styles.warningText}>
+                {t('aboutApp.generalWarningText', 'Beta Test Version: This build is strictly intended for internal validation, TestFlight, and Google Play beta testers. Financial, mobile money, and blockchain operations may interact with test corridors. Please report any unexpected behavior to the team.')}
+              </Text>
+            </View>
+          </View>
+
           {/* Mission Statement */}
           <Text style={styles.sectionHeader}>{t('aboutApp.missionTitle', 'OUR MISSION')}</Text>
           <View style={styles.card}>
@@ -235,4 +348,26 @@ const styles = StyleSheet.create({
   bulletItem: { flexDirection: 'row', alignItems: 'flex-start', marginVertical: 4 },
   bulletIcon: { marginRight: 8, marginTop: 2 },
   bulletText: { flex: 1, fontFamily: 'Inter_500Medium', fontSize: 13, color: '#374151', lineHeight: 18 },
+
+  /* Build Card & Release Notes */
+  buildCard: { backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#E2E8F0', paddingHorizontal: 16, paddingVertical: 14, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 },
+  buildMetaRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', marginBottom: 12, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+  buildChip: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFC759', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, marginRight: 8 },
+  buildChipText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 12, color: '#1A2840' },
+  versionChip: { backgroundColor: '#F1F5F9', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, marginRight: 'auto' },
+  versionChipText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#475569' },
+  dateBadge: { flexDirection: 'row', alignItems: 'center' },
+  dateBadgeText: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#64748B' },
+  releaseSection: { marginVertical: 6 },
+  releaseSectionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  releaseSectionTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#1A2840', letterSpacing: 0.6 },
+  releaseItem: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 6, paddingLeft: 4 },
+  releaseBullet: { fontSize: 14, color: '#94A3B8', marginRight: 8, lineHeight: 18 },
+  releaseText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 17, color: '#334155' },
+  releaseBold: { fontFamily: 'Inter_700Bold', color: '#0F172A' },
+  releaseDivider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 10 },
+  warningContainer: { backgroundColor: '#FFFBEB', borderRadius: 10, borderWidth: 1, borderColor: '#FDE68A', padding: 12, marginTop: 6 },
+  warningHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
+  warningTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#B45309', letterSpacing: 0.5 },
+  warningText: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#92400E', lineHeight: 16 },
 });
