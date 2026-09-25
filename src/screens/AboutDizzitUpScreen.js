@@ -7,11 +7,17 @@ import * as WebBrowser from 'expo-web-browser';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
+import Constants from 'expo-constants';
 
 export default function AboutDizzitUpScreen() {
   const navigation = useNavigation();
   const { language, t } = useApp();
   const [toast, setToast] = useState(null);
+
+  const appVersion = Constants.expoConfig?.version || '1.0.0';
+  const buildNumber = Platform.OS === 'ios' 
+    ? Constants.expoConfig?.ios?.buildNumber 
+    : Constants.expoConfig?.android?.versionCode;
 
   const handleBack = () => {
     if (navigation.canGoBack()) navigation.goBack();
@@ -51,7 +57,7 @@ export default function AboutDizzitUpScreen() {
           <View style={styles.brandCard}>
             <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={styles.logoImage} resizeMode="contain" />
             <Text style={styles.appName}>DizzitUp Mobile App</Text>
-            <Text style={styles.versionText}>Version v1.0.37 (Build 44 / 2026)</Text>
+            <Text style={styles.versionText}>Version v{appVersion} (Build {buildNumber || '50'} / 2026)</Text>
             <View style={styles.statusBadge}>
               <View style={styles.statusDot} />
               <Text style={styles.statusText}>Prod-Ready • Web3 & Stablecoins</Text>
@@ -62,7 +68,7 @@ export default function AboutDizzitUpScreen() {
           <Text style={styles.sectionHeader}>{t('aboutApp.missionTitle', 'OUR MISSION')}</Text>
           <View style={styles.card}>
             <Text style={styles.missionText}>
-              {t('aboutApp.missionText', 'DizzitUp simplifies cross-border payments, remittances, e-commerce, and access to stablecoins (USDT, USDC, EURC, DZY) across Africa and worldwide. Our mission is to offer instant, secure, low-fee transactions for individuals and merchants.')}
+              {t('aboutApp.missionText', 'At DizzitUp, our mission is to break down financial borders and drive economic empowerment across Africa and the globe. We provide a seamless, Web3-powered ecosystem that bridges everyday commerce with the power of stablecoins (USDT, USDC, EURC, DZY). By democratizing access to instant, borderless, and low-fee financial services, we empower individuals, diaspora communities, and merchants to build wealth and transact with ultimate freedom, security, and trust.')}
             </Text>
           </View>
 

@@ -1,4 +1,4 @@
-name: Build Android (APK + AAB)
+name: Build and Deploy Android to Play Store
 
 on:
   push:
@@ -10,22 +10,11 @@ concurrency:
   group: android-build-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  EXPO_PUBLIC_DIZZY_WALLET_API_URL: https://wallet.dizzitup.com/api
-  EXPO_PUBLIC_BUY_GOODS_API_URL: https://buygoods-api.dizzitup.com/api
-  EXPO_PUBLIC_PAY_BILLS_API_URL: https://api.dizzitup.com
-  EXPO_PUBLIC_MEDUSA_API_URL: https://medusa.dizzitup.com/store
-  EXPO_PUBLIC_SUPABASE_URL: https://sdnpjglhcauispfrrhwh.supabase.co
-  EXPO_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkbnBqZ2xoY2F1aXNwZnJyaHdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEyMDg5NDUsImV4cCI6MjA3Njc4NDk0NX0.NR18FzE1lx0mzF3cTrkHEqAIaBBeM7zb54I83OjsM2E
-  EXPO_PUBLIC_CROSSMINT_CLIENT_SIDE_API_KEY: ck_production_672dJDwj8Mdcq6vVvJDn4ogiN7ncsh6untkkYA7tN52U2hfK5aZ86ax9tzNukFfkA3WGSnNfgVQFwYkAyxXNqj1ZPrz5e5zRy2gFXjFRb3hbLcVX56546u8137MqqpC4SzRMus1qLHQuDzeFFTPkoxbUzVA3sSyBWarLzNywdzqUesLJvGdSzira4Jp5Jkhs8jxCGQ5Vce2vag6ZK9bzwAS7
-  EXPO_PUBLIC_TREASURY_ADDRESS: "0xaf8c27DEFF694Ed5b0F7E98B8d947523AF2226a0"
 jobs:
   build-android:
-    name: Build Android APK and AAB
+    name: Build Android and Submit to Play Store
     runs-on: ubuntu-latest
-    timeout-minutes: 60
-    permissions:
-      contents: write
+    timeout-minutes: 90
 
     steps:
       - name: Checkout Repository
@@ -37,125 +26,38 @@ jobs:
           node-version: 22
           cache: 'npm'
 
-      - name: Setup Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: 'platform-tools'
-
-      - name: Setup Gradle Cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Generate Native Android Project
-        run: npx expo prebuild --platform android --clean
-
-      - name: Make Gradlew Executable
-        run: chmod +x ./android/gradlew
-
-      - name: Build Android Release APK
-        run: |
-          cd android
-          ./gradlew assembleRelease --no-daemon --stacktrace
-
-      - name: Build Android Release AAB
-        run: |
-          cd android
-          ./gradlew bundleRelease --no-daemon --stacktrace
-
-      - name: Locate and Rename Artifacts
-        run: |
-          mkdir -p build-output
-
-          APK_PATH=$(find android/app/build/outputs/apk -name "*.apk" | head -n 1)
-          if [ -n "$APK_PATH" ]; then
-            cp "$APK_PATH" build-output/DizzitUp.apk
-            echo " APK: $(du -h build-output/DizzitUp.apk | cut -f1)"
-          else
-            echo "::error::APK not found in build outputs"
-            exit 1
-          fi
-
-          AAB_PATH=$(find android/app/build/outputs/bundle -name "*.aab" | head -n 1)
-          if [ -n "$AAB_PATH" ]; then
-            cp "$AAB_PATH" build-output/DizzitUp.aab
-            echo " AAB: $(du -h build-output/DizzitUp.aab | cut -f1)"
-          else
-            echo "::error::AAB not found in build outputs"
-            exit 1
-          fi
-
-      - name: Publish to GitHub Releases
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: android-v${{ github.run_number }}
-          name: "Android Build #${{ github.run_number }}"
-          body: "DizzitUp Android Release APK and AAB (Build #${{ github.run_number }})"
-          files: |
-            build-output/DizzitUp.apk
-            build-output/DizzitUp.aab
-          make_latest: true
-
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        continue-on-error: true
-        with:
-          name: DizzitUp-APK
-          path: build-output/DizzitUp.apk
-          retention-days: 14
-
-      - name: Upload AAB Artifact
-        uses: actions/upload-artifact@v4
-        continue-on-error: true
-        with:
-          name: DizzitUp-AAB
-          path: build-output/DizzitUp.aab
-          retention-days: 14
-
       - name: Setup EAS CLI
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Submit Android to Google Play
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Verify EAS Authentication
+        run: eas whoami
+
+      - name: Build Android and Submit to Play Store
+        env:
+          EAS_BUILD_NO_EXPO_GO_WARNING: true
         run: |
-          eas submit \
+          eas build \
             --platform android \
             --profile production \
-            --path build-output/DizzitUp.aab \
+            --auto-submit \
             --non-interactive
 
       - name: Build Summary
         if: always()
         run: |
-          echo "##  Android Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "##  Android Build & Play Store Submission" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Artifact | Status | Size |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------|--------|------|" >> $GITHUB_STEP_SUMMARY
-          if [ -f "build-output/DizzitUp.apk" ]; then
-            echo "| **APK** |  Built | $(du -h build-output/DizzitUp.apk | cut -f1) |" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "| **APK** |  Failed | - |" >> $GITHUB_STEP_SUMMARY
-          fi
-          if [ -f "build-output/DizzitUp.aab" ]; then
-            echo "| **AAB** |  Built | $(du -h build-output/DizzitUp.aab | cut -f1) |" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "| **AAB** |  Failed | - |" >> $GITHUB_STEP_SUMMARY
-          fi
+          echo "| Detail | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Platform | Android |" >> $GITHUB_STEP_SUMMARY
+          echo "| Profile | Production |" >> $GITHUB_STEP_SUMMARY
+          echo "| Track | Internal Testing |" >> $GITHUB_STEP_SUMMARY
+          echo "| Auto-Submit | Google Play |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Download : [GitHub Releases](https://github.com/Dizzitup/dizzitapp-v2/releases)" >> $GITHUB_STEP_SUMMARY
+          echo " [View on Google Play Console](https://play.google.com/console/)" >> $GITHUB_STEP_SUMMARY
