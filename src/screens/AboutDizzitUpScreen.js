@@ -192,8 +192,8 @@ export default function AboutDizzitUpScreen() {
           {/* Mission Statement */}
           <Text style={styles.sectionHeader}>{t('aboutApp.missionTitle', 'OUR MISSION')}</Text>
           <View style={styles.card}>
-            <Text style={styles.missionText}>
-              {t('aboutApp.missionText', 'At DizzitUp, our mission is to break down financial borders and drive economic empowerment across Africa and the globe. We provide a seamless, Web3-powered ecosystem that bridges everyday commerce with the power of stablecoins (USDT, USDC, EURC, DZY). By democratizing access to instant, borderless, and low-fee financial services, we empower individuals, diaspora communities, and merchants to build wealth and transact with ultimate freedom, security, and trust.')}
+            <Text style={styles.missionText} selectable={true}>
+              {t('aboutApp.missionText', 'At DizzitUp, our mission is to break down financial borders and drive economic empowerment across Africa and the globe. We provide a seamless, Web3-powered ecosystem that bridges everyday commerce with the power of stablecoins (USDT, USDC, EURC) and our native reward token (DZY). By democratizing access to instant, borderless, and low-fee financial services, we empower individuals, diaspora communities, and merchants to build wealth and transact with ultimate freedom, security, and trust.')}
             </Text>
           </View>
 
