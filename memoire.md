@@ -2882,7 +2882,15 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
      ```bash
      node -e "const babel = require('@babel/core'); babel.transformFileSync('src/screens/HomeScreen.js', { presets: ['babel-preset-expo'] }); console.log('OK');"
      ```
-3. **Pousser les itérations** :
+3. **Mettre à jour automatiquement les Release Notes In-App (Règle d'or Solofo)** :
+   - **Engagement strict de l'assistant IA** : À chaque fois qu'on termine une tâche ou qu'on s'apprête à faire un nouveau build (ex: Build 47), l'IA doit mettre à jour **automatiquement** dans `AboutDizzitUpScreen.js`, `MoreSettingsScreen.js` et `app.json` :
+     - La date de livraison (`Delivery date`).
+     - Le numéro de version & build (`Version & Build number`).
+     - La liste à puces des nouvelles fonctionnalités (`New features`).
+     - La liste à puces des correctifs appliqués (`Implemented fixes`).
+     - L'avertissement général (`General warning`).
+   - Cette mise à jour in-app est **systématique et obligatoire avant tout commit et push**. L'utilisateur n'a pas une seule ligne à écrire.
+4. **Pousser les itérations** :
    - Commiter sur `front-back` et faire `git push origin front-back`.
    - **Ne merger sur `develop` que lorsque la version complète est prête à être distribuée à l'équipe**.
 
@@ -3028,6 +3036,11 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
      - Pied de page élégant `DizzitApp v1.0.37 (Build 46) • Prod-Ready`.
   3. **Alignement de Version dans `app.json`** :
      - `buildNumber: "46"`, `versionCode: 46`, `description: "DizzitApp V1. Build 46 Beta Test Version"`.
+
+- **Règle Permanente de Projet (Engagement Automatique de l'Assistant IA)** :
+  - **À chaque fois qu'on termine une tâche ou qu'on s'apprête à faire un nouveau build (ex: Build 47), l'assistant IA met à jour automatiquement la date, le numéro de build et la liste des fonctionnalités/correctifs avant de commiter et pousser.**
+  - **L'utilisateur n'a pas une seule ligne à écrire.**
+
 
 
 
