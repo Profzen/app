@@ -3066,19 +3066,30 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
 
 ---
 
-### 14. Cadrage du Tunnel d'Achat "Buy Goods" & Séquestre Escrow (Proposition Solofo - 25 Septembre 2026)
+### 14. Déroulement Build 52, Retours Solofo & Cadrage Escrow Checkout (25 Septembre 2026)
 
-- **Date** : 25 Septembre 2026
+- **Date** : 25 Septembre 2026 (Fin de journée)
 - **Branche** : `front-back`
-- **Contexte & Orientation de Solofo (Message Vocal)** :
-  1. **Félicitations pour le Build 52** : Appréciation très positive du travail réalisé sur l'interface et le parcours d'achat (fiche produit, sélecteur de devises/réseaux, gestion du séquestre escrow, code PIN secret de livraison).
-  2. **Directive sur les achats physiques (*Buy Goods*)** : **Ne pas bloquer ni masquer le tunnel en amont**. L'utilisateur doit pouvoir explorer librement tout le catalogue, ouvrir la fiche produit (`ProductDetailsScreen`), configurer son mode de livraison et son moyen de paiement (`OrderVerificationScreen`), et accéder au récapitulatif sécurisé avec le code PIN de livraison (`OrderConfirmationScreen`).
-  3. **Point d'arrêt ciblé au Checkout final** : Sur l'écran `OrderConfirmationScreen`, le bouton **« Confirmer et Payer »** n'exécute pas de prélèvement réel mais ouvre une modale élégante et informative.
-- **Spécification de la Modale Proposée (Option 1 retenue)** :
-  - **Titre** : *« Achats physiques bientôt disponibles ! »* / *« Physical Goods Coming Soon »*
-  - **Message** : Met en avant le protocole de séquestre décentralisé (*Escrow*) en cours de déploiement pour garantir une protection totale des fonds jusqu'à la remise et vérification en main propre du colis.
-  - **Action** : Bouton « Compris » pour revenir confortablement sans frustration.
-- **Statut** : Proposition soumise à Solofo pour validation avant écriture du code sur `front-back`.
+- **Synchronisation Remote & Actions d'Assia sur `origin/develop`** :
+  1. Assia a bien récupéré et fusionné notre travail de `front-back` (`c26e9ac`) dans `origin/develop` (commits `4a1fdd2` et `df9e4c8`).
+  2. Elle a intégré une modale de blocage précoce (`PhysicalGoodsWarningModal.js`, commit `2da2021`) sur la fiche produit (`ProductDetailsScreen.js`), branchée sur les boutons *« Ajouter au panier »* et *« Acheter maintenant »*.
+  3. Elle a ajusté le texte de mission (commit `df6d3c0`) en séparant le token DZY de la liste des stablecoins.
+- **Retour de Test de Solofo sur Build 52** :
+  1. **Devise validée** : Après désinstallation complète et réinstallation sur son téléphone en France, le Personal Wallet résout bien en **EUR (€)** et le terminal caisse POS résout bien en **MGA (🇲🇬)**.
+  2. **Problème identifié sur la Marketplace** : Au clic sur un produit ou sur l'ajout au panier, la modale d'Assia piégeait l'utilisateur dans une boucle *« Continue browsing »* sans jamais lui permettre d'accéder au panier ni au checkout.
+  3. **Message Vocal WhatsApp de Solofo (21h22)** :
+     - Éloge appuyé du parcours et du design de l'application (« C'est magnifique, super beau »).
+     - **Consigne formelle** : Ne surtout pas bloquer le parcours en amont ! L'utilisateur doit pouvoir explorer la fiche produit, voir les sélections de paiement, le réseau blockchain, la mention du séquestre et le code PIN de livraison.
+     - L'avertissement doit intervenir **uniquement au tout dernier clic du Checkout**, en valorisant le protocole de sécurisation par séquestre (**Escrow**) en cours de finalisation.
+- **Action Réalisée (Aziz ➔ Solofo)** :
+  - Envoi du message de proposition sur Slack avec le texte complet de la modale à afficher sur le bouton final *« Confirmer et Payer »* d'`OrderConfirmationScreen`.
+  - Attente de la validation de Solofo.
+- **Feuille de Route pour la Reprise Demain** :
+  1. Dès validation de Solofo, fusionner `origin/develop` dans `front-back`.
+  2. Retirer le blocage précoce de `ProductDetailsScreen.js` (permettre l'ajout au panier et le clic vers le checkout).
+  3. Câbler la modale explicative Escrow sur le bouton *« Confirmer et Payer »* de `OrderConfirmationScreen.js`.
+  4. Valider avec Babel, mettre à jour les release notes in-app, et pousser sur `front-back`.
+
 
 
 
