@@ -1,6 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Cellular from 'expo-cellular';
+import { Platform } from 'react-native';
 
 let memoryCountry = null;
+const BACKEND_GEO_URL = `${process.env.EXPO_PUBLIC_BUY_GOODS_API_URL || 'http://localhost:3001/api'}/public/geo/ip-country`;
+
 
 export const COUNTRY_NAME_TO_CODE = {
   'ALGERIA': 'DZ', 'ALGÉRIE': 'DZ', 'ALGERIE': 'DZ',
@@ -74,7 +78,46 @@ export async function detectUserCountry(userProfileCountry) {
     }
   }
 
-  // 2. Fallback to memory cache from current session
+  // 2. Priority 2: SIM Card Country Detection (Instant, VPN-proof)
+  try {
+    if (Platform.OS !== 'web' && Cellular.isoCountryCode) {
+      const code = Cellular.isoCountryCode.toUpperCase();
+      if (/^[A-Z]{2}$/.test(code)) {
+        memoryCountry = code;
+        AsyncStorage.setItem('dizzit_detected_country', code).catch(() => {});
+        console.log("📍 Geolocation via SIM Card:", code);
+        return code;
+      }
+    }
+  } catch (e) {
+    console.log("SIM Card detection failed", e);
+  }
+
+  // 3. Priority 3: Backend Edge IP Detection (Cloudflare / Hostinger proxy)
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const res = await fetch(BACKEND_GEO_URL, {
+      signal: controller.signal,
+      headers: { 'Accept': 'application/json' },
+    });
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.success && data.countryCode) {
+        const code = data.countryCode.toUpperCase();
+        memoryCountry = code;
+        AsyncStorage.setItem('dizzit_detected_country', code).catch(() => {});
+        console.log(`📍 Geolocation via Backend Edge (${data.source}):`, code);
+        return code;
+      }
+    }
+  } catch (e) {
+    console.log("Backend Edge detection failed", e);
+  }
+
+  // 4. Fallback to memory cache from current session
   if (memoryCountry) {
     return memoryCountry;
   }

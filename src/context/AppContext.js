@@ -92,19 +92,10 @@ export function AppProvider({ children }) {
       return getEffectivePosCountry();
     }
 
-    // 1. Priority 1 for BUSINESS WALLET: Business / Store country (e.g. EYOU in Madagascar -> MGA)
-    // A Business Wallet represents the merchant's business entity, which belongs to its registered store country,
-    // NEVER the temporary IP or roaming location of the smartphone!
-    if (isBusinessCard || user?.role === 'merchant') {
-      const bizCountry = user?.merchantProfile?.country || 
-                         user?.merchantProfile?.country_code || 
-                         user?.merchantProfile?.business_country || 
-                         user?.business_country || 
-                         user?.company_country;
-      if (bizCountry && typeof bizCountry === 'string' && bizCountry.trim().length >= 2) {
-        return bizCountry.trim().toUpperCase();
-      }
-    }
+    // 1. Priority 1 for ALL WALLETS & MARKETPLACE: Physical IP geolocation or manual country selection
+    // Wallets and marketplace prices should ALWAYS reflect the physical location of the user/smartphone 
+    // so they know how much their balance is worth locally right now and can buy things in their local currency,
+    // regardless of where their store is registered (which only applies to the POS).
 
     // 2. Priority 1 for PERSONAL WALLET: Physical IP geolocation or manual country selection
     if (userSelectedCountry && typeof userSelectedCountry === 'string' && userSelectedCountry.length === 2) {

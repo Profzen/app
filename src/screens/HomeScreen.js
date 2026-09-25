@@ -20,7 +20,7 @@ import { isSmallScreen, isShortScreen } from '../utils/responsive';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
-  const { language, toggleLanguage, t, user, isUserLoading } = useApp();
+  const { language, toggleLanguage, t, user, isUserLoading, detectedCountry } = useApp();
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [activeSlide, setActiveSlide] = useState(0);
   const [walletBalances, setWalletBalances] = useState({});
@@ -36,8 +36,8 @@ export default function HomeScreen() {
         const merchants = await fetchMerchants('');
         const products = await fetchAllProducts('');
 
-        // Apply COI or Geolocation logic
-        const targetCountry = (user?.COI || user?.country || 'Senegal').toLowerCase();
+        // Apply Geolocation logic primarily, fallback to COI or user country
+        const targetCountry = (detectedCountry || user?.COI || user?.country || 'Senegal').toLowerCase();
         
         let localMerchants = merchants.filter(m => (m.country || '').toLowerCase() === targetCountry);
         let localProducts = products.filter(p => (p.merchant?.country || '').toLowerCase() === targetCountry);
@@ -61,7 +61,7 @@ export default function HomeScreen() {
       }
     };
     loadRealData();
-  }, [fetchMerchants, fetchAllProducts, user?.COI, user?.country]);
+  }, [fetchMerchants, fetchAllProducts, user?.COI, user?.country, detectedCountry]);
 
   useEffect(() => {
     if (user) {

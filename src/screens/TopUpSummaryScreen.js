@@ -19,8 +19,7 @@ export default function TopUpSummaryScreen() {
     try {
       setLoading(true);
       setError(null);
-      
-      const targetCountry = country || userProfile?.country_of_residence || 'BJ';
+      const targetCountry = country || userProfile?.country_of_residence || userProfile?.country || 'TG';
 
       const payload = {
         amount: parseFloat(amount || '10'),

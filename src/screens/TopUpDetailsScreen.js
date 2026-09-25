@@ -95,7 +95,7 @@ export default function TopUpDetailsScreen({ route }) {
   const isUserCountrySupported = ALL_MOMO_CORRIDORS.includes((userCountry || '').toUpperCase());
   
   const initialCountry = countryOptions.find(
-    c => c.code === (passedCountry || (isUserCountrySupported ? userCountry : 'BJ')).toUpperCase()
+    c => c.code === (passedCountry || (isUserCountrySupported ? userCountry : 'TG')).toUpperCase()
   ) || countryOptions[0];
 
   const [selectedCountry, setSelectedCountry] = useState(initialCountry);

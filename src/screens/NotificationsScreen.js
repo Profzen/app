@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, 
+  View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, ScrollView, 
   Platform, LayoutAnimation, UIManager, Animated, Easing, Dimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -205,9 +205,13 @@ export default function NotificationsScreen() {
         </View>
         
         {/* Dynamic Category Tabs */}
-        <View style={styles.tabsContainer}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tabsContainer}
+        >
           {CATEGORIES.map(renderTab)}
-        </View>
+        </ScrollView>
       </Animated.View>
 
       {loading ? (

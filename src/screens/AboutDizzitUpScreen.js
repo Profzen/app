@@ -1,5 +1,5 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Linking, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -8,14 +8,59 @@ import Constants from 'expo-constants';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
+import { supabase } from '../services/supabaseClient';
 
 export default function AboutDizzitUpScreen() {
   const navigation = useNavigation();
   const { language, t } = useApp();
   const [toast, setToast] = useState(null);
+  const [releaseNotes, setReleaseNotes] = useState({ features: [], fixes: [], isLoading: true });
 
   const appVersion = Constants?.expoConfig?.version || '1.0.37';
   const appBuildNumber = Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '52';
+
+  const currentYear = new Date().getFullYear();
+  const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+  useEffect(() => {
+    const fetchReleaseNotes = async () => {
+      try {
+        let { data, error } = await supabase
+          .from('app_releases')
+          .select('new_features, fixes')
+          .eq('platform', 'all')
+          .eq('language', language.split('-')[0])
+          .eq('status', 'published')
+          .maybeSingle();
+
+        if (error) throw error;
+        
+        // Fall back to English if the current language has no release-note entry
+        if (!data) {
+          const fallback = await supabase
+            .from('app_releases')
+            .select('new_features, fixes')
+            .eq('platform', 'all')
+            .eq('language', 'en')
+            .eq('status', 'published')
+            .maybeSingle();
+            
+          if (fallback.error) throw fallback.error;
+          data = fallback.data;
+        }
+        
+        setReleaseNotes({
+          features: data?.new_features || [],
+          fixes: data?.fixes || [],
+          isLoading: false
+        });
+      } catch (err) {
+        console.log('Failed to fetch release notes, using default fallbacks:', err.message);
+        setReleaseNotes({ isLoading: false, features: [], fixes: [] });
+      }
+    };
+    fetchReleaseNotes();
+  }, [language]);
 
   const handleBack = () => {
     if (navigation.canGoBack()) navigation.goBack();
@@ -55,7 +100,7 @@ export default function AboutDizzitUpScreen() {
           <View style={styles.brandCard}>
             <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={styles.logoImage} resizeMode="contain" />
             <Text style={styles.appName}>DizzitUp Mobile App</Text>
-            <Text style={styles.versionText}>{`Version v${appVersion} (Build ${appBuildNumber} / 2026)`}</Text>
+            <Text style={styles.versionText}>{`Version v${appVersion} (Build ${appBuildNumber} / ${currentYear})`}</Text>
             <View style={styles.statusBadge}>
               <View style={styles.statusDot} />
               <Text style={styles.statusText}>Prod-Ready • Web3 & Stablecoins</Text>
@@ -76,7 +121,7 @@ export default function AboutDizzitUpScreen() {
               </View>
               <View style={styles.dateBadge}>
                 <Ionicons name="calendar-outline" size={12} color="#6B7280" style={{ marginRight: 4 }} />
-                <Text style={styles.dateBadgeText}>September 25, 2026</Text>
+                <Text style={styles.dateBadgeText}>{currentDate}</Text>
               </View>
             </View>
 
@@ -86,34 +131,20 @@ export default function AboutDizzitUpScreen() {
                 <Ionicons name="sparkles" size={15} color="#10B981" style={{ marginRight: 6 }} />
                 <Text style={styles.releaseSectionTitle}>{t('aboutApp.newFeaturesTitle', 'NEW FEATURES')}</Text>
               </View>
-              <View style={styles.releaseItem}>
-                <Text style={styles.releaseBullet}>•</Text>
-                <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Push Notifications Engine: </Text>
-                  Automated background Expo Push Token registration & sync to Supabase (user_profiles).
-                </Text>
-              </View>
-              <View style={styles.releaseItem}>
-                <Text style={styles.releaseBullet}>•</Text>
-                <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Retention Deep-Linking: </Text>
-                  Direct navigation from notifications (Utility bill reminders to Pay Bills, Weekly deals to Store, Exchange rates to Send Money).
-                </Text>
-              </View>
-              <View style={styles.releaseItem}>
-                <Text style={styles.releaseBullet}>•</Text>
-                <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Official Capabilities Directory: </Text>
-                  Standardized overview for Worldwide users (Buy goods, Top-up, Cash-out) and African Merchants.
-                </Text>
-              </View>
-              <View style={styles.releaseItem}>
-                <Text style={styles.releaseBullet}>•</Text>
-                <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Official Video Teasers: </Text>
-                  Direct access to DizzitUp official YouTube channel & overview video.
-                </Text>
-              </View>
+              {releaseNotes.isLoading ? (
+                <Text style={styles.releaseText}>Loading...</Text>
+              ) : releaseNotes.features.length > 0 ? (
+                releaseNotes.features.map((feature, index) => (
+                  <View key={index} style={styles.releaseItem}>
+                    <Text style={styles.releaseBullet}>•</Text>
+                    <Text style={styles.releaseText}>{feature}</Text>
+                  </View>
+                ))
+              ) : (
+                <View style={styles.releaseItem}>
+                  <Text style={styles.releaseText}>No release notes available.</Text>
+                </View>
+              )}
             </View>
 
             <View style={styles.releaseDivider} />
@@ -124,41 +155,24 @@ export default function AboutDizzitUpScreen() {
                 <Ionicons name="checkmark-circle" size={15} color="#3B82F6" style={{ marginRight: 6 }} />
                 <Text style={styles.releaseSectionTitle}>{t('aboutApp.implementedFixesTitle', 'IMPLEMENTED FIXES')}</Text>
               </View>
-              <View style={styles.releaseItem}>
-                <Text style={styles.releaseBullet}>•</Text>
-                <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Point of Sale (POS): </Text>
-                  Full 1-screen non-scrolling cashier calculator with QR receive mode default.
-                </Text>
-              </View>
-              <View style={styles.releaseItem}>
-                <Text style={styles.releaseBullet}>•</Text>
-                <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Universal Currency Priority: </Text>
-                  IP geolocation priority for personal wallet, store country priority for POS.
-                </Text>
-              </View>
-              <View style={styles.releaseItem}>
-                <Text style={styles.releaseBullet}>•</Text>
-                <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Invite & Referral Links: </Text>
-                  Direct native OS share sheet with official referral link.
-                </Text>
-              </View>
-              <View style={styles.releaseItem}>
-                <Text style={styles.releaseBullet}>•</Text>
-                <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Beneficiary Deduplication: </Text>
-                  Sanitized list in Pay Bills preventing duplicate recipients.
-                </Text>
-              </View>
-              <View style={styles.releaseItem}>
-                <Text style={styles.releaseBullet}>•</Text>
-                <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Header Notification Bell: </Text>
-                  Connected directly to Notifications Center screen.
-                </Text>
-              </View>
+              {releaseNotes.isLoading ? (
+                <Text style={styles.releaseText}>Loading...</Text>
+              ) : releaseNotes.fixes.length > 0 ? (
+                releaseNotes.fixes.map((fix, index) => (
+                  <View key={index} style={styles.releaseItem}>
+                    <Text style={styles.releaseBullet}>•</Text>
+                    <Text style={styles.releaseText}>{fix}</Text>
+                  </View>
+                ))
+              ) : (
+                <View style={styles.releaseItem}>
+                  <Text style={styles.releaseBullet}>•</Text>
+                  <Text style={styles.releaseText}>
+                    <Text style={styles.releaseBold}>{t('aboutApp.fixPosTitle', 'Point of Sale (POS): ')}</Text>
+                    {t('aboutApp.fixPosDesc', 'Full 1-screen non-scrolling cashier calculator with QR receive mode default.')}
+                  </Text>
+                </View>
+              )}
             </View>
 
             <View style={styles.releaseDivider} />
