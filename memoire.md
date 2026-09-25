@@ -3064,6 +3064,23 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
   4. **Incrémentation Build EAS** :
      - `app.json` : `buildNumber: "52"`, `versionCode: 52`, `description: "DizzitApp V1. Build 52 Beta Test Version"`.
 
+---
+
+### 14. Cadrage du Tunnel d'Achat "Buy Goods" & Séquestre Escrow (Proposition Solofo - 25 Septembre 2026)
+
+- **Date** : 25 Septembre 2026
+- **Branche** : `front-back`
+- **Contexte & Orientation de Solofo (Message Vocal)** :
+  1. **Félicitations pour le Build 52** : Appréciation très positive du travail réalisé sur l'interface et le parcours d'achat (fiche produit, sélecteur de devises/réseaux, gestion du séquestre escrow, code PIN secret de livraison).
+  2. **Directive sur les achats physiques (*Buy Goods*)** : **Ne pas bloquer ni masquer le tunnel en amont**. L'utilisateur doit pouvoir explorer librement tout le catalogue, ouvrir la fiche produit (`ProductDetailsScreen`), configurer son mode de livraison et son moyen de paiement (`OrderVerificationScreen`), et accéder au récapitulatif sécurisé avec le code PIN de livraison (`OrderConfirmationScreen`).
+  3. **Point d'arrêt ciblé au Checkout final** : Sur l'écran `OrderConfirmationScreen`, le bouton **« Confirmer et Payer »** n'exécute pas de prélèvement réel mais ouvre une modale élégante et informative.
+- **Spécification de la Modale Proposée (Option 1 retenue)** :
+  - **Titre** : *« Achats physiques bientôt disponibles ! »* / *« Physical Goods Coming Soon »*
+  - **Message** : Met en avant le protocole de séquestre décentralisé (*Escrow*) en cours de déploiement pour garantir une protection totale des fonds jusqu'à la remise et vérification en main propre du colis.
+  - **Action** : Bouton « Compris » pour revenir confortablement sans frustration.
+- **Statut** : Proposition soumise à Solofo pour validation avant écriture du code sur `front-back`.
+
+
 
 
 
