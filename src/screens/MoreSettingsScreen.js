@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
 import { LanguageSelector } from '../components/LanguageSelector';
+import Constants from 'expo-constants';
 import { useApp } from '../context/AppContext';
 
 
@@ -15,13 +16,16 @@ export default function MoreSettingsScreen() {
   const { language, toggleLanguage, t, user } = useApp();
   const [toast, setToast] = useState(null);
 
+  const appVersion = Constants?.expoConfig?.version || '1.0.37';
+  const appBuildNumber = Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '52';
+
   const SETTINGS = [
     { id: 'account', title: t('settings.general', 'Account Settings'), description: t('settings.account_desc', 'Gérer les préférences et la sécurité de votre compte'), icon: 'person-outline', color: '#3B82F6', background: '#EFF6FF', route: 'AccountSettingsScreen' },
     ...(user?.role !== 'merchant' ? [{ id: 'personal', title: t('settings.personal', 'Personal Account'), description: t('settings.personal_desc', 'Gérer vos informations personnelles et vérification'), icon: 'person-outline', color: '#10B981', background: '#ECFDF5', route: 'PersonalAccountScreen' }] : []),
     ...(user?.role === 'merchant' ? [{ id: 'business', title: t('settings.business', 'Business Account'), description: t('settings.business_desc', 'Gérer votre profil marchand et préférences'), icon: 'storefront-outline', color: '#8B5CF6', background: '#F5F3FF', route: 'BusinessAccountScreen' }] : []),
     { id: 'assistant', title: t('askAminata.title', 'Ask Aminata'), description: t('settings.assistant_desc', "Obtenez de l'aide auprès de notre assistant virtuel"), icon: 'help-circle-outline', color: '#F59E0B', background: '#FFFBEB', route: 'AskAminataScreen' },
     { id: 'loyalty', title: t('dizzyFamily.title', 'DizzyFamily Program'), description: t('settings.loyalty_desc', "Gagnez des récompenses et profitez d'avantages exclusifs"), icon: 'gift-outline', color: '#EF4444', background: '#FEF2F2', route: 'DizzyFamilyScreen' },
-    { id: 'about', title: t('aboutApp.title', 'About DizzitUp'), description: t('settings.about_desc', 'Learn more, mission & release notes'), icon: 'information-circle-outline', color: '#3B82F6', background: '#EFF6FF', route: 'AboutDizzitUpScreen', badge: 'Build 46' },
+    { id: 'about', title: t('aboutApp.title', 'About DizzitUp'), description: t('settings.about_desc', 'Learn more, mission & release notes'), icon: 'information-circle-outline', color: '#3B82F6', background: '#EFF6FF', route: 'AboutDizzitUpScreen', badge: `Build ${appBuildNumber}` },
     { id: 'contact', title: t('contactSupport.title', 'Contact Us'), description: t('settings.contact_desc', "Entrez en contact avec notre équipe d'assistance"), icon: 'headset-outline', color: '#10B981', background: '#ECFDF5', route: 'ContactUsScreen' },
   ];
 
@@ -136,7 +140,7 @@ export default function MoreSettingsScreen() {
 
           {/* Version Footer */}
           <View style={styles.footerVersion}>
-            <Text style={styles.footerVersionText}>DizzitApp v1.0.37 (Build 46) • Prod-Ready</Text>
+            <Text style={styles.footerVersionText}>{`DizzitApp v${appVersion} (Build ${appBuildNumber}) • Prod-Ready`}</Text>
           </View>
 
           <View style={{ height: 20 }} />

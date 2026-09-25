@@ -3041,6 +3041,30 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
   - **À chaque fois qu'on termine une tâche ou qu'on s'apprête à faire un nouveau build (ex: Build 47), l'assistant IA met à jour automatiquement la date, le numéro de build et la liste des fonctionnalités/correctifs avant de commiter et pousser.**
   - **L'utilisateur n'a pas une seule ligne à écrire.**
 
+---
+
+### 13. Correction Régression Devise Business Wallet & Dynamisation Build (Build 52 - 25 Septembre 2026)
+
+- **Date** : 25 Septembre 2026
+- **Branche** : `front-back` (à synchroniser sur `develop`)
+- **Problème Identifié par Solofo (Slack)** :
+  1. *Build 50* : Le numéro de build affiché dans « About DizzitUp » était resté figé sur Build 44 car il s'agissait d'une chaîne statique.
+  2. *Build 51 (Régression Majeure)* : Le Business Wallet PRO de la boutique **EYOU** (Madagascar) affichait le drapeau du Bénin 🇧🇯 et des Francs CFA (**XOF 1,126.46**) au lieu de l'Ariary malgache (**MGA** 🇲🇬).
+- **Cause Racine Technique** :
+  - La directive d'Assia du 22 septembre ("IP Geolocation first sur le wallet") avait placé `detectedCountry` avant les données du compte entreprise. Lors des tests de Solofo (ou via un réseau/roaming/VPN localisé au Bénin), la carte Business Wallet prenait l'IP au lieu du pays légal de la boutique.
+- **Correctifs Appliqués** :
+  1. **Hiérarchie Souveraine Rétablie dans `AppContext.js` (`getEffectiveWalletCountry`)** :
+     - Si `isBusinessCard === true` ou `user?.role === 'merchant'` : **Priorité 1 Absolue** au pays officiel de l'entreprise (`user.merchantProfile.country`, ex: Madagascar ➔ `MG` ➔ `MGA` avec drapeau 🇲🇬). La géolocalisation IP est **totalement ignorée** pour le Business Wallet.
+     - Pour les comptes individuels / Personal Wallet : conservation de la géolocalisation IP (`detectedCountry`) puis fallback résidence.
+  2. **Sécurisation dans `WalletCard.js`** :
+     - Fallback local réordonné pour prioriser systématiquement `user?.merchantProfile?.country` avant `detectedCountry` lorsque `isBusinessCard` est actif.
+  3. **Numéro de Version & Build 100% Dynamiques (`AboutDizzitUpScreen.js` & `MoreSettingsScreen.js`)** :
+     - Utilisation de `Constants.expoConfig.ios.buildNumber` et `Constants.expoConfig.version`.
+     - L'écran s'ajuste désormais automatiquement à chaque build EAS sans aucune intervention manuelle.
+  4. **Incrémentation Build EAS** :
+     - `app.json` : `buildNumber: "52"`, `versionCode: 52`, `description: "DizzitApp V1. Build 52 Beta Test Version"`.
+
+
 
 
 

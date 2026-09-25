@@ -4,20 +4,18 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Linking, P
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import * as WebBrowser from 'expo-web-browser';
+import Constants from 'expo-constants';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
-import Constants from 'expo-constants';
 
 export default function AboutDizzitUpScreen() {
   const navigation = useNavigation();
   const { language, t } = useApp();
   const [toast, setToast] = useState(null);
 
-  const appVersion = Constants.expoConfig?.version || '1.0.0';
-  const buildNumber = Platform.OS === 'ios' 
-    ? Constants.expoConfig?.ios?.buildNumber 
-    : Constants.expoConfig?.android?.versionCode;
+  const appVersion = Constants?.expoConfig?.version || '1.0.37';
+  const appBuildNumber = Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '52';
 
   const handleBack = () => {
     if (navigation.canGoBack()) navigation.goBack();
@@ -57,7 +55,7 @@ export default function AboutDizzitUpScreen() {
           <View style={styles.brandCard}>
             <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={styles.logoImage} resizeMode="contain" />
             <Text style={styles.appName}>DizzitUp Mobile App</Text>
-            <Text style={styles.versionText}>Version v{appVersion} (Build {buildNumber || '50'} / 2026)</Text>
+            <Text style={styles.versionText}>{`Version v${appVersion} (Build ${appBuildNumber} / 2026)`}</Text>
             <View style={styles.statusBadge}>
               <View style={styles.statusDot} />
               <Text style={styles.statusText}>Prod-Ready • Web3 & Stablecoins</Text>
@@ -71,14 +69,14 @@ export default function AboutDizzitUpScreen() {
             <View style={styles.buildMetaRow}>
               <View style={styles.buildChip}>
                 <Ionicons name="cube-outline" size={13} color="#1A2840" style={{ marginRight: 4 }} />
-                <Text style={styles.buildChipText}>Build #{buildNumber || '50'}</Text>
+                <Text style={styles.buildChipText}>{`Build #${appBuildNumber}`}</Text>
               </View>
               <View style={styles.versionChip}>
-                <Text style={styles.versionChipText}>v{appVersion}</Text>
+                <Text style={styles.versionChipText}>{`v${appVersion}`}</Text>
               </View>
               <View style={styles.dateBadge}>
                 <Ionicons name="calendar-outline" size={12} color="#6B7280" style={{ marginRight: 4 }} />
-                <Text style={styles.dateBadgeText}>September 24, 2026</Text>
+                <Text style={styles.dateBadgeText}>September 25, 2026</Text>
               </View>
             </View>
 
