@@ -105,7 +105,19 @@ export function AppProvider({ children }) {
       return detectedCountry.toUpperCase();
     }
 
-    // 3. Fallback for Personal Wallet: User profile residence / account country
+    // 3. Fallback for Wallets if IP geolocation fails
+    if (isBusinessCard === true) {
+      // Business Wallet Fallback: Merchant store country
+      const bizCountry = user?.merchantProfile?.country || 
+                         user?.merchantProfile?.country_code || 
+                         user?.business_country || 
+                         user?.company_country;
+      if (bizCountry && typeof bizCountry === 'string' && bizCountry.trim().length >= 2) {
+        return bizCountry.trim().toUpperCase();
+      }
+    }
+
+    // Personal Wallet Fallback (or if Business Wallet has no country): User profile residence
     const userSettingsCountry = user?.country_of_residence || 
                                 user?.residence_country || 
                                 user?.country || 
