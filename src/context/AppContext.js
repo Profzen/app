@@ -92,15 +92,9 @@ export function AppProvider({ children }) {
       return getEffectivePosCountry();
     }
 
-    // 1. Priority 1: User manual country selection or physical IP geolocation
-    if (userSelectedCountry && typeof userSelectedCountry === 'string' && userSelectedCountry.length === 2) {
-      return userSelectedCountry.toUpperCase();
-    }
-    if (detectedCountry && typeof detectedCountry === 'string' && detectedCountry.length === 2) {
-      return detectedCountry.toUpperCase();
-    }
-
-    // 2. Priority 2: Fallback to residence / account country if geolocation is unavailable
+    // 1. Priority 1 for BUSINESS WALLET: Business / Store country (e.g. EYOU in Madagascar -> MGA)
+    // A Business Wallet represents the merchant's business entity, which belongs to its registered store country,
+    // NEVER the temporary IP or roaming location of the smartphone!
     if (isBusinessCard || user?.role === 'merchant') {
       const bizCountry = user?.merchantProfile?.country || 
                          user?.merchantProfile?.country_code || 
@@ -112,6 +106,15 @@ export function AppProvider({ children }) {
       }
     }
 
+    // 2. Priority 1 for PERSONAL WALLET: Physical IP geolocation or manual country selection
+    if (userSelectedCountry && typeof userSelectedCountry === 'string' && userSelectedCountry.length === 2) {
+      return userSelectedCountry.toUpperCase();
+    }
+    if (detectedCountry && typeof detectedCountry === 'string' && detectedCountry.length === 2) {
+      return detectedCountry.toUpperCase();
+    }
+
+    // 3. Fallback for Personal Wallet: User profile residence / account country
     const userSettingsCountry = user?.country_of_residence || 
                                 user?.residence_country || 
                                 user?.country || 
@@ -121,7 +124,7 @@ export function AppProvider({ children }) {
       return userSettingsCountry.trim().toUpperCase();
     }
 
-    // 3. Fallback
+    // 4. Default fallback
     return 'US';
   };
 
