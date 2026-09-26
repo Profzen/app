@@ -3064,6 +3064,34 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
   4. **Incrémentation Build EAS** :
      - `app.json` : `buildNumber: "52"`, `versionCode: 52`, `description: "DizzitApp V1. Build 52 Beta Test Version"`.
 
+---
+
+### 14. Déroulement Build 52, Retours Solofo & Cadrage Escrow Checkout (25 Septembre 2026)
+
+- **Date** : 25 Septembre 2026 (Fin de journée)
+- **Branche** : `front-back`
+- **Synchronisation Remote & Actions d'Assia sur `origin/develop`** :
+  1. Assia a bien récupéré et fusionné notre travail de `front-back` (`c26e9ac`) dans `origin/develop` (commits `4a1fdd2` et `df9e4c8`).
+  2. Elle a intégré une modale de blocage précoce (`PhysicalGoodsWarningModal.js`, commit `2da2021`) sur la fiche produit (`ProductDetailsScreen.js`), branchée sur les boutons *« Ajouter au panier »* et *« Acheter maintenant »*.
+  3. Elle a ajusté le texte de mission (commit `df6d3c0`) en séparant le token DZY de la liste des stablecoins.
+- **Retour de Test de Solofo sur Build 52** :
+  1. **Devise validée** : Après désinstallation complète et réinstallation sur son téléphone en France, le Personal Wallet résout bien en **EUR (€)** et le terminal caisse POS résout bien en **MGA (🇲🇬)**.
+  2. **Problème identifié sur la Marketplace** : Au clic sur un produit ou sur l'ajout au panier, la modale d'Assia piégeait l'utilisateur dans une boucle *« Continue browsing »* sans jamais lui permettre d'accéder au panier ni au checkout.
+  3. **Message Vocal WhatsApp de Solofo (21h22)** :
+     - Éloge appuyé du parcours et du design de l'application (« C'est magnifique, super beau »).
+     - **Consigne formelle** : Ne surtout pas bloquer le parcours en amont ! L'utilisateur doit pouvoir explorer la fiche produit, voir les sélections de paiement, le réseau blockchain, la mention du séquestre et le code PIN de livraison.
+     - L'avertissement doit intervenir **uniquement au tout dernier clic du Checkout**, en valorisant le protocole de sécurisation par séquestre (**Escrow**) en cours de finalisation.
+- **Action Réalisée (Aziz ➔ Solofo)** :
+  - Envoi du message de proposition sur Slack avec le texte complet de la modale à afficher sur le bouton final *« Confirmer et Payer »* d'`OrderConfirmationScreen`.
+  - Attente de la validation de Solofo.
+- **Feuille de Route pour la Reprise Demain** :
+  1. Dès validation de Solofo, fusionner `origin/develop` dans `front-back`.
+  2. Retirer le blocage précoce de `ProductDetailsScreen.js` (permettre l'ajout au panier et le clic vers le checkout).
+  3. Câbler la modale explicative Escrow sur le bouton *« Confirmer et Payer »* de `OrderConfirmationScreen.js`.
+  4. Valider avec Babel, mettre à jour les release notes in-app, et pousser sur `front-back`.
+
+
+
 
 
 
