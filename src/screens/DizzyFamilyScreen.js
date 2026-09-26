@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
+import { shareInviteLink } from '../utils/shareHelper';
 
 export default function DizzyFamilyScreen() {
   const navigation = useNavigation();
@@ -74,10 +75,16 @@ export default function DizzyFamilyScreen() {
               <Text style={styles.referralLabel}>{t('dizzyFamily.unique_code', 'Code unique :')}</Text>
               <Text style={styles.referralCode}>{referralCode}</Text>
             </View>
-            <TouchableOpacity style={styles.copyBtn} onPress={handleCopyCode}>
-              <Ionicons name="copy-outline" size={18} color="#1A2840" style={{ marginRight: 4 }} />
-              <Text style={styles.copyBtnText}>{t('btnCopy', 'Copier')}</Text>
-            </TouchableOpacity>
+            <View style={styles.referralActionButtons}>
+              <TouchableOpacity style={styles.copyBtnSecondary} onPress={handleCopyCode}>
+                <Ionicons name="copy-outline" size={15} color="#1A2840" style={{ marginRight: 4 }} />
+                <Text style={styles.actionBtnText}>{t('btnCopy', 'Copier')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.shareBtnPrimary} onPress={() => shareInviteLink(referralCode)}>
+                <Ionicons name="paper-plane-outline" size={15} color="#1A2840" style={{ marginRight: 4 }} />
+                <Text style={styles.actionBtnText}>{t('common.share', 'Partager')}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Referral Stats */}
@@ -182,8 +189,10 @@ const styles = StyleSheet.create({
   referralLeft: { flex: 1 },
   referralLabel: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#6B7280' },
   referralCode: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 20, color: '#1A2840', letterSpacing: 2, marginTop: 2 },
-  copyBtn: { backgroundColor: '#FFC759', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12, flexDirection: 'row', alignItems: 'center' },
-  copyBtnText: { fontFamily: 'Inter_700Bold', fontSize: 13, color: '#1A2840' },
+  referralActionButtons: { flexDirection: 'row', alignItems: 'center' },
+  copyBtnSecondary: { backgroundColor: '#F3F4F6', paddingHorizontal: 11, paddingVertical: 8, borderRadius: 10, flexDirection: 'row', alignItems: 'center' },
+  shareBtnPrimary: { backgroundColor: '#FFC759', paddingHorizontal: 11, paddingVertical: 8, borderRadius: 10, flexDirection: 'row', alignItems: 'center', marginLeft: 6 },
+  actionBtnText: { fontFamily: 'Inter_700Bold', fontSize: 12, color: '#1A2840' },
   statsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 },
   statBox: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 1, borderColor: '#F0F2F5', padding: 12, alignItems: 'center', marginHorizontal: 4 },
   statNumber: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#1A2840', marginTop: 6 },

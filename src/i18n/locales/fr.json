@@ -5327,7 +5327,7 @@
     "faq_item_3": "Aucun niveau complexe : chacun bénéficie des mêmes excellents taux selon le mode de paiement utilisé.",
     "faq_item_4": "Vos jetons s'accumulent en toute sécurité avant le TGE, où ils deviendront 100% utilisables sur Polygon.",
     "modal_close": "Compris",
-    "share_message": "Rejoignez-moi sur DizzitUp pour envoyer de l'argent, faire des achats et payer des factures sans frais ! Utilisez mon code de parrainage {{code}} pour gagner des récompenses : https://dizzitup.com?ref={{code}}",
+    "share_message": "Rejoignez-moi sur DizzitUp pour envoyer de l'argent, faire des achats et payer des factures sans frais ! Utilisez mon code de parrainage {{code}} pour gagner des récompenses : https://dizzitup.com/invite?ref={{code}}",
     "token_info_banner": "DZY est le jeton d'utilité officiel de l'écosystème DizzitUp développé sur Polygon ERC-20, garantissant des transactions rapides, économiques et sécurisées.",
     "footer_terms": "Les récompenses sont calculées automatiquement et créditées directement sur votre compte DZY."
   },

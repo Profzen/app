@@ -3535,7 +3535,7 @@
     "generalWarningTitle": "AVISO GERAL",
     "generalWarningText": "Versão Beta Teste: Esta versão é estritamente destinada a validação interna, testadores do TestFlight e Google Play Beta. Operações financeiras, mobile money e blockchain podem interagir com ambientes de teste. Por favor, reporte qualquer comportamento inesperado à equipe.",
     "missionTitle": "NOSSA MISSÃO",
-    "missionText": "Na DizzitUp, nossa missão é quebrar fronteiras financeiras e impulsionar o empoderamento econômico em toda a África e o globo.",
+    "missionText": "Na DizzitUp, nossa missão é quebrar fronteiras financeiras e impulsionar o empoderamento econômico em toda a África e o globo. Oferecemos um ecossistema contínuo, alimentado pela Web3, que conecta o comércio diário com o poder das stablecoins (USDT, USDC, EURC) e nosso token de recompensa nativo (DZY). Ao democratizar o acesso a serviços financeiros instantâneos, sem fronteiras e com baixas taxas, capacitamos indivíduos, comunidades da diáspora e comerciantes a construir riqueza e realizar transações com total liberdade, segurança e confiança.",
     "overviewTitle": "VISÃO GERAL DO APP E SERVIÇOS",
     "worldwideTitle": "PARA TODOS (COMPRADORES, COMERCIANTES E EMPRESAS EM TODO O MUNDO)",
     "featBuyGoods": "Comprar produtos e itens essenciais local e internacionalmente",
@@ -5064,7 +5064,7 @@
     "faq_item_3": "Sem níveis complicados: todos recebem recompensas justas com base no método de pagamento utilizado.",
     "faq_item_4": "Os tokens acumulam com segurança antes do TGE, onde se tornarão 100% utilizáveis na rede Polygon.",
     "modal_close": "Entendido",
-    "share_message": "Junte-se a mim na DizzitUp para enviar dinheiro, comprar e pagar contas na África com zero taxas! Use meu código {{code}}: https://dizzitup.com?ref={{code}}",
+    "share_message": "Junte-se a mim na DizzitUp para enviar dinheiro, comprar e pagar contas na África com zero taxas! Use meu código {{code}}: https://dizzitup.com/invite?ref={{code}}",
     "token_info_banner": "DZY é o token de utilidade oficial do ecossistema DizzitUp desenvolvido na Polygon ERC-20, garantindo transações rápidas, econômicas e seguras.",
     "footer_terms": "As recompensas são calculadas automaticamente e creditadas diretamente na sua conta DZY."
   },

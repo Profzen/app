@@ -7,6 +7,7 @@ import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
 import { LanguageSelector } from '../components/LanguageSelector';
 import Constants from 'expo-constants';
+import * as Application from 'expo-application';
 import { useApp } from '../context/AppContext';
 
 
@@ -16,8 +17,8 @@ export default function MoreSettingsScreen() {
   const { language, toggleLanguage, t, user } = useApp();
   const [toast, setToast] = useState(null);
 
-  const appVersion = Constants?.expoConfig?.version || '1.0.37';
-  const appBuildNumber = Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '52';
+  const appVersion = Application.nativeApplicationVersion || Constants?.expoConfig?.version || '1.0.0';
+  const appBuildNumber = Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '—';
 
   const SETTINGS = [
     { id: 'account', title: t('settings.general', 'Account Settings'), description: t('settings.account_desc', 'Gérer les préférences et la sécurité de votre compte'), icon: 'person-outline', color: '#3B82F6', background: '#EFF6FF', route: 'AccountSettingsScreen' },

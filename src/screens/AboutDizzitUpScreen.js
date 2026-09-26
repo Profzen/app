@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import * as WebBrowser from 'expo-web-browser';
 import Constants from 'expo-constants';
+import * as Application from 'expo-application';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
@@ -16,8 +17,8 @@ export default function AboutDizzitUpScreen() {
   const [toast, setToast] = useState(null);
   const [releaseNotes, setReleaseNotes] = useState({ features: [], fixes: [], isLoading: true });
 
-  const appVersion = Constants?.expoConfig?.version || '1.0.37';
-  const appBuildNumber = Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '52';
+  const appVersion = Application.nativeApplicationVersion || Constants?.expoConfig?.version || '1.0.0';
+  const appBuildNumber = Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '—';
 
   const currentYear = new Date().getFullYear();
   const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });

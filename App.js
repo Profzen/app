@@ -138,8 +138,18 @@ export default function App() {
     return null; // Return null instead of ActivityIndicator to let Native splash show
   }
 
+  const linking = {
+    prefixes: ['dizzitup://', 'https://dizzitup.com', 'https://*.dizzitup.com'],
+    config: {
+      screens: {
+        RegisterScreen: 'invite',
+        RewardsScreen: 'rewards',
+      },
+    },
+  };
+
   const appNav = (
-    <NavigationContainer ref={navigationRef}>
+    <NavigationContainer ref={navigationRef} linking={linking}>
       <AppNavigator />
     </NavigationContainer>
   );

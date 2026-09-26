@@ -1,7 +1,7 @@
 import { Share, Platform } from 'react-native';
 
 export const shareInviteLink = async (refCode = 'DZY500') => {
-  const inviteUrl = `https://dizzitup.com?ref=${refCode}`;
+  const inviteUrl = `https://dizzitup.com/invite?ref=${refCode}`;
   const message = `Join me on DizzitUp to support wisely your family in Africa by covering their needs while developing local economy. Buy goods, Pay bills, Invest in local businesses. Use my referral code ${refCode} to earn rewards: ${inviteUrl}`;
 
   try {

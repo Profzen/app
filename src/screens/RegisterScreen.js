@@ -1,5 +1,5 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,14 +15,22 @@ import { useApp } from '../context/AppContext';
 import { supabase } from '../services/supabaseClient';
 import { isSmallScreen, isShortScreen } from '../utils/responsive';
 
-export default function RegisterScreen() {
+export default function RegisterScreen({ route }) {
   const navigation = useNavigation();
   const { language, t } = useApp();
+  const initialRef = route?.params?.ref || route?.params?.parrain || route?.params?.referral_code || '';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [parrain, setParrain] = useState('');
+  const [parrain, setParrain] = useState(initialRef);
   const [isLoading, setIsLoading] = useState(false);
   const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '', type: 'success' });
+
+  useEffect(() => {
+    const incomingRef = route?.params?.ref || route?.params?.parrain || route?.params?.referral_code;
+    if (incomingRef) {
+      setParrain(incomingRef);
+    }
+  }, [route?.params]);
 
   const getPasswordStrength = (pass) => {
     if (!pass) return 0;

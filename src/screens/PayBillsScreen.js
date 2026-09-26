@@ -41,7 +41,8 @@ const formatRelation = (rel, t) => {
 
 export default function PayBillsScreen() {
   const navigation = useNavigation();
-  const { t, session } = useApp();
+  const { t, session, user } = useApp();
+  const userRefCode = user?.referralCode || (user?.id ? `DZY-${user.id.substring(0, 6).toUpperCase()}` : 'DZY500');
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showPromo, setShowPromo] = useState(true);
@@ -366,7 +367,7 @@ export default function PayBillsScreen() {
 
             <TouchableOpacity 
               style={{ flex: 1, flexDirection: 'column', alignItems: 'center', backgroundColor: '#EFF6FF', paddingVertical: 10, borderRadius: 16, marginRight: 8 }}
-              onPress={() => shareInviteLink()}
+              onPress={() => shareInviteLink(userRefCode)}
             >
               <Ionicons name="paper-plane-outline" size={18} color="#3B82F6" style={{ marginBottom: 4 }} />
               <Text style={{ color: '#3B82F6', fontSize: 11, fontFamily: 'Inter_600SemiBold', textAlign: 'center' }}>{t('home.btnInviteNow', 'Invite')}</Text>
