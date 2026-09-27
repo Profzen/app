@@ -8,6 +8,8 @@ import { useApp } from '../context/AppContext';
 import { theme } from '../theme/theme';
 import { DizzitInput } from '../components/DizzitInput';
 import { supabase } from '../services/supabaseClient';
+import Constants from 'expo-constants';
+import * as Application from 'expo-application';
 
 export default function UnlockScreen() {
   const { t, setIsAppLocked } = useApp();
@@ -158,6 +160,11 @@ export default function UnlockScreen() {
             <Text style={styles.logoutText}>{t('auth.forgotPinLogout', 'Oublié ? Se déconnecter')}</Text>
           </TouchableOpacity>
 
+          <View style={styles.versionFooter}>
+            <Text style={styles.versionFooterText}>
+              {`v${Application.nativeApplicationVersion || Constants?.expoConfig?.version || '1.0.0'} • Build ${Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '56'}`}
+            </Text>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -246,5 +253,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#8B92A5',
     textDecorationLine: 'underline',
+  },
+  versionFooter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+    marginBottom: 8,
+  },
+  versionFooterText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 11,
+    color: '#94A3B8',
+    letterSpacing: 0.4,
   },
 });

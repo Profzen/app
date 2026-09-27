@@ -112,6 +112,25 @@ export default function WithdrawFundsScreen() {
             </View>
             <Text style={styles.equivText}>≈ {estimatedCrypto} {selectedToken}</Text>
 
+            {/* Quick Percentage Chips (Nexo UX benchmark requested by Solofo) */}
+            <View style={styles.percentRow}>
+              {[25, 50, 75, 100].map((pct) => (
+                <TouchableOpacity
+                  key={pct}
+                  style={styles.percentChip}
+                  onPress={() => {
+                    const selectedTokenObj = tokens.find(t => t.id === selectedToken) || tokens[0];
+                    const numBal = parseFloat(String(selectedTokenObj.balance).replace(/[^\d.]/g, '')) || 500;
+                    const calculatedLocal = Math.round(numBal * (pct / 100) * (localCurrency === 'MGA' ? 4500 : (localCurrency === 'EUR' ? 0.92 : 600)));
+                    setAmount(calculatedLocal.toLocaleString('fr-FR'));
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.percentChipText}>{pct}%</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
             <View style={styles.divider} />
 
             {/* Choisissez le jeton à débiter */}
@@ -377,6 +396,27 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#64748B',
     marginTop: 8,
+  },
+  percentRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginTop: 12,
+  },
+  percentChip: {
+    flex: 1,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  percentChipText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: '#1E293B',
   },
   detectedNetworkCard: {
     flexDirection: 'row',

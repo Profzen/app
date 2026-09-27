@@ -37,6 +37,9 @@ Nous avons adopté une architecture orientée **Composants Réutilisables** (dan
   - Utilisation de la librairie `@expo/vector-icons` (`Ionicons`).
   - **Règle stricte pour les assets** : Privilégier les fichiers images spécifiques (ex: `dizzitup logo cercle.png`) plutôt que des redessinages CSS ou des rognages hasardeux sur les fichiers horizontaux globaux. L'ajustement du padding interne d'une image peut se faire proprement avec `transform: [{scale: X}]`.
 - **Méthode de rendu privilégiée** : **TOUJOURS** utiliser le navigateur web (`npm run start` puis touche `w`) pour visualiser l'application en cours de développement. Cela évite les bugs liés aux versions périmées de l'application mobile Expo Go.
+- **Règle Souveraine d'Ingénierie : Zéro Hardcoding & Résolution Universelle (Directive Absolue)** :
+  - Lorsqu'un problème ou un cas de test est relevé sur un pays (ex: Togo, Madagascar, Bénin, etc.), un marchand spécifique ou une devise donnée, il est **STRICTEMENT INTERDIT de créer des conditions en dur (*hardcoding*) ciblant uniquement ce cas précis**.
+  - Tout correctif doit obligatoirement être pensé, architecturé et implémenté de manière **générale, standard et universelle** pour l'intégralité des 195 pays et devises du monde, tous les types de comptes et tous les flux. Zéro bricolage localisé.
 
 ---
 
@@ -2844,7 +2847,8 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
 4. **Règle Universelle de Devise : Priorité au Pays de Résidence (`AppContext.js` & `WalletCard.js`)** :
    - Directive de Solofo : *"the currency to display at the left is their country of residence currency"*.
    - Hiérarchie souveraine appliquée dans `getEffectiveWalletCountry()` :
-     1. **Priorité 1** : Pays de résidence déclaré du compte (Profil marchand pour les Business, ex: Antananarivo / EYOU $ightarrow$ **MGA** avec drapeau 🇲🇬 ; Profil utilisateur pour les Particuliers).
+     1. **Priorité 1** : Pays de résidence déclaré du compte (Profil marchand pour les Business, ex: Antananarivo / EYOU $
+ightarrow$ **MGA** avec drapeau 🇲🇬 ; Profil utilisateur pour les Particuliers).
      2. **Priorité 2 (Repli)** : Géolocalisation IP physique uniquement si aucun pays n'est renseigné.
      3. **Priorité 3** : USD.
 
@@ -2883,7 +2887,7 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
      node -e "const babel = require('@babel/core'); babel.transformFileSync('src/screens/HomeScreen.js', { presets: ['babel-preset-expo'] }); console.log('OK');"
      ```
 3. **Mettre à jour automatiquement les Release Notes In-App (Règle d'or Solofo)** :
-   - **Engagement strict de l'assistant IA** : À chaque fois qu'on termine une tâche ou qu'on s'apprête à faire un nouveau build (ex: Build 47), l'IA doit mettre à jour **automatiquement** dans `AboutDizzitUpScreen.js`, `MoreSettingsScreen.js` et `app.json` :
+   - **Engagement strict de l'assistant IA** : À chaque fois qu'on termine une tâche ou qu'on s'apprête à faire un nouveau build (ex: Build 47)![alt text](image.png), l'IA doit mettre à jour **automatiquement** dans `AboutDizzitUpScreen.js`, `MoreSettingsScreen.js` et `app.json` :
      - La date de livraison (`Delivery date`).
      - Le numéro de version & build (`Version & Build number`).
      - La liste à puces des nouvelles fonctionnalités (`New features`).
@@ -3066,29 +3070,173 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
 
 ---
 
-### 14. Déroulement Build 52, Retours Solofo & Cadrage Escrow Checkout (25 Septembre 2026)
+### 14. Cadrage du Tunnel d'Achat "Buy Goods" & Séquestre Escrow (Proposition Solofo - 25 Septembre 2026)
 
-- **Date** : 25 Septembre 2026 (Fin de journée)
+- **Date** : 25 Septembre 2026
 - **Branche** : `front-back`
-- **Synchronisation Remote & Actions d'Assia sur `origin/develop`** :
-  1. Assia a bien récupéré et fusionné notre travail de `front-back` (`c26e9ac`) dans `origin/develop` (commits `4a1fdd2` et `df9e4c8`).
-  2. Elle a intégré une modale de blocage précoce (`PhysicalGoodsWarningModal.js`, commit `2da2021`) sur la fiche produit (`ProductDetailsScreen.js`), branchée sur les boutons *« Ajouter au panier »* et *« Acheter maintenant »*.
-  3. Elle a ajusté le texte de mission (commit `df6d3c0`) en séparant le token DZY de la liste des stablecoins.
-- **Retour de Test de Solofo sur Build 52** :
-  1. **Devise validée** : Après désinstallation complète et réinstallation sur son téléphone en France, le Personal Wallet résout bien en **EUR (€)** et le terminal caisse POS résout bien en **MGA (🇲🇬)**.
-  2. **Problème identifié sur la Marketplace** : Au clic sur un produit ou sur l'ajout au panier, la modale d'Assia piégeait l'utilisateur dans une boucle *« Continue browsing »* sans jamais lui permettre d'accéder au panier ni au checkout.
-  3. **Message Vocal WhatsApp de Solofo (21h22)** :
-     - Éloge appuyé du parcours et du design de l'application (« C'est magnifique, super beau »).
-     - **Consigne formelle** : Ne surtout pas bloquer le parcours en amont ! L'utilisateur doit pouvoir explorer la fiche produit, voir les sélections de paiement, le réseau blockchain, la mention du séquestre et le code PIN de livraison.
-     - L'avertissement doit intervenir **uniquement au tout dernier clic du Checkout**, en valorisant le protocole de sécurisation par séquestre (**Escrow**) en cours de finalisation.
-- **Action Réalisée (Aziz ➔ Solofo)** :
-  - Envoi du message de proposition sur Slack avec le texte complet de la modale à afficher sur le bouton final *« Confirmer et Payer »* d'`OrderConfirmationScreen`.
-  - Attente de la validation de Solofo.
-- **Feuille de Route pour la Reprise Demain** :
-  1. Dès validation de Solofo, fusionner `origin/develop` dans `front-back`.
-  2. Retirer le blocage précoce de `ProductDetailsScreen.js` (permettre l'ajout au panier et le clic vers le checkout).
-  3. Câbler la modale explicative Escrow sur le bouton *« Confirmer et Payer »* de `OrderConfirmationScreen.js`.
-  4. Valider avec Babel, mettre à jour les release notes in-app, et pousser sur `front-back`.
+- **Contexte & Orientation de Solofo (Message Vocal)** :
+  1. **Félicitations pour le Build 52** : Appréciation très positive du travail réalisé sur l'interface et le parcours d'achat (fiche produit, sélecteur de devises/réseaux, gestion du séquestre escrow, code PIN secret de livraison).
+  2. **Directive sur les achats physiques (*Buy Goods*)** : **Ne pas bloquer ni masquer le tunnel en amont**. L'utilisateur doit pouvoir explorer librement tout le catalogue, ouvrir la fiche produit (`ProductDetailsScreen`), configurer son mode de livraison et son moyen de paiement (`OrderVerificationScreen`), et accéder au récapitulatif sécurisé avec le code PIN de livraison (`OrderConfirmationScreen`).
+  3. **Point d'arrêt ciblé au Checkout final** : Sur l'écran `OrderConfirmationScreen`, le bouton **« Confirmer et Payer »** n'exécute pas de prélèvement réel mais ouvre une modale élégante et informative.
+- **Spécification de la Modale Proposée (Option 1 retenue)** :
+  - **Titre** : *« Achats physiques bientôt disponibles ! »* / *« Physical Goods Coming Soon »*
+  - **Message** : Met en avant le protocole de séquestre décentralisé (*Escrow*) en cours de déploiement pour garantir une protection totale des fonds jusqu'à la remise et vérification en main propre du colis.
+  - **Action** : Bouton « Compris » pour revenir confortablement sans frustration.
+- **Statut** : Proposition validée par Solofo le 26 Septembre à 6h16 avec directive marketing intégrée.
+
+---
+
+### 15. Livraison Build 55 : Validation Escrow Marketing, Notation In-App & Cohérence Cash-Out (26 Septembre 2026)
+
+- **Date** : 26 Septembre 2026
+- **Branche** : `front-back`
+- **Contexte des Retours Slack Solofo (Matinée du 26 Septembre)** :
+  1. **Validation Escrow Marketing (6:16 AM)** : Solofo valide le déclenchement de la modale au dernier clic du checkout en demandant d'y incorporer expressément : *« On-chain escrow, DizzitUp innovation, unique au monde... En mieux écrit »*.
+  2. **Notation In-App & Partage Social post-transaction (7:22 AM)** : Demande explicite à Abdel-Aziz d'ajouter un composant de notation in-app 5 étoiles (style La Banque Postale) après chaque transaction exécutée, avec bouton de partage social du reçu.
+  3. **Incohérence Cash-Out EYOU Madagascar ➔ Mixx Togo (7:31 AM)** : Solofo a constaté que le résumé de retrait affichait en dur 250 000 FCFA Togo Mixx alors qu'il retirait des MGA pour EYOU Madagascar. Assia & Nathan révisent la table backend des corridors off-ramp, et côté mobile, les fallbacks statiques doivent être dynamisés.
+  4. **Benchmark UX Nexo Cash-out (8:00 AM)** : Proposer les boutons de montant rapide 25%, 50%, 75%, 100% sur l'écran de retrait.
+  5. **Affichage Version & Build dès les premiers écrans (9:49 AM)** : Solofo insiste pour que le numéro de build soit immédiatement visible sur les 2 premiers écrans (Splash / LoginScreen).
+  6. **Bug Build 54 vs 52 & Auto-install bloquée (9:55 AM)** : La version précédente n'avait pas incrémenté `app.json` (resté à 52), ce qui a empêché TestFlight de proposer la mise à jour automatique.
+
+- **Modifications & Correctifs Appliqués (Build 55)** :
+  1. **Configuration Native & Auto-install Rétablie** :
+     - `app.json` : `buildNumber: "55"`, `versionCode: 55`, `description: "DizzitApp V1. Build 55 Beta Test Version"`.
+  2. **Affichage Visible Version & Build sur les Premiers Écrans** :
+     - `LoginScreen.js` : Badge `Build 55` visible directement dans l'en-tête et pied de page `v1.0.0 • Build 55`.
+     - `RegisterScreen.js` : Footer `v1.0.0 • Build 55` sous les mentions légales.
+     - `UnlockScreen.js` : Footer `v1.0.0 • Build 55` pour identification immédiate lors des tests.
+  3. **Modale d'Innovation On-Chain Escrow au Checkout (`OrderConfirmationScreen.js`)** :
+     - Le tunnel d'achat physique reste 100% libre et ouvert.
+     - Au clic sur le bouton final *« Confirmer et Payer »*, ouverture de la modale valorisant l'innovation DizzitUp :
+       *« ON-CHAIN ESCROW • DIZZITUP INNOVATION »*
+       *« Découvrez notre protocole exclusif de Séquestre On-Chain (Escrow Protection) — une innovation DizzitUp unique au monde. Vos fonds restent protégés à 100% sur la blockchain sous smart contract et ne sont débloqués au commerçant qu'après remise en main propre et vérification de votre colis grâce à votre code PIN secret. »*
+     - Deux boutons d'action : *« Compris, continuer »* (retour boutique) et *« Simuler le reçu de commande »* (pour tests complets).
+  4. **Modale d'Évaluation In-App (5 Étoiles Store) & Partage Social (`RatingPromptModal.js`)** :
+     - Création du composant `src/components/RatingPromptModal.js` inspiré de l'UX iOS La Banque Postale.
+     - Déclenchement automatique fluide sur `PaymentSuccessScreen.js` et `SendMoneySuccessScreen.js`.
+     - Gestion des 5 étoiles interactives, bouton *« Not Now »* et redirection vers le store.
+  5. **Dynamisation Complète du Résumé Cash-Out (`WithdrawFundsMobileMoneySummaryScreen.js`)** :
+     - Résolution dynamique du pays (`destinationCountry` / Madagascar / Togo / Bénin / France / etc.), de la devise (`MGA`, `FCFA`, `EUR`, `USD`), du taux de change réel et du prestataire (Virement bancaire ou Mobile Money local adapté).
+     - Éradication définitive de tout affichage erroné "Mixx Togo" lors d'un retrait sur Madagascar ou un autre pays.
+  6. **Boutons Rapides de Pourcentage Nexo (`WithdrawFundsScreen.js`)** :
+     - Ajout des puces 25%, 50%, 75%, 100% calculant automatiquement le montant selon le solde de l'actif sélectionné.
+  7. **Mise à Jour In-App Release Notes (Règle d'or Solofo)** :
+     - `AboutDizzitUpScreen.js` et `MoreSettingsScreen.js` synchronisés sur Build 55 au 26 Septembre 2026.
+
+- **Fichiers Modifiés & Créés** :
+  - `src/components/RatingPromptModal.js` *(Nouveau composant de notation in-app 5 étoiles & redirection store)*
+  - `src/screens/LoginScreen.js` *(Badge Build 55 header et pied de page v1.0.0 • Build 55)*
+  - `src/screens/RegisterScreen.js` *(Pied de page v1.0.0 • Build 55 sous les CGU)*
+  - `src/screens/UnlockScreen.js` *(Pied de page v1.0.0 • Build 55 sous le bouton de déconnexion)*
+  - `src/screens/OrderConfirmationScreen.js` *(Modale On-chain Escrow DizzitUp Innovation au clic Confirmer et Payer)*
+  - `src/screens/PaymentSuccessScreen.js` *(Déclenchement automatique de la modale de notation & partage reçu)*
+  - `src/screens/SendMoneySuccessScreen.js` *(Déclenchement automatique de la modale de notation & partage transaction)*
+  - `src/screens/WithdrawFundsScreen.js` *(Puces de pourcentage Nexo 25%, 50%, 75%, 100%)*
+  - `src/screens/WithdrawFundsMobileMoneySummaryScreen.js` *(Résolution dynamique montant, devise, pays et prestataire)*
+  - `src/screens/AboutDizzitUpScreen.js` *(Notes de version Build 55 au 26 Septembre 2026)*
+  - `src/screens/MoreSettingsScreen.js` *(Badge Build 55 sur la ligne About DizzitUp)*
+  - `app.json` *(buildNumber: "55", versionCode: 55, description Build 55)*
+
+- **Matrice de Validation & Déploiement Git** :
+  - **Transpilation Babel Expo** : 100% OK sur l'ensemble des 11 fichiers sans aucune erreur de syntaxe.
+  - **Commit Git** : `2253c7c` (*"feat(release): delivery of Build 55 with on-chain escrow innovation modal, in-app rating prompt, nexo quick percentage chips, dynamic cash-out summary, and prominent build badges on primary screens"*).
+  - **Push Remote** : Poussé avec succès sur `origin/front-back`.
+  - **Communication Slack** : Message récapitulatif complet en anglais (sans émojis) transmis à Solofo, Assia et Nathan.
+  - **Statut Actuel** : Validé et absorbé dans le cycle Build 56.
+
+---
+
+### 16. Livraison Build 56 : Généralisation Universelle, CRUD Bénéficiaires Realtime, Nom Marchand Business Wallet & Dynamisme To-Do List (27 Septembre 2026)
+
+- **Date** : 27 Septembre 2026
+- **Branche** : `front-back`
+- **Contexte des Retours Slack Solofo (Matinée du 27 Septembre)** :
+  1. **Validation & Alignement Web/Mobile (2:34 AM)** : Solofo félicite pour le Build 55 et questionne Assia sur la synchronisation stricte entre l'App Mobile et le Front Web.
+  2. **To-Do List Connectée & Règle Marchand (2:45 AM)** :
+     - Constat de Solofo : la To-Do list se comportait comme une maquette statique déconnectée :
+       - Elle proposait de "Créer ma boutique DZYStore" à un utilisateur déjà connecté en compte Business (*DizzitUp Togo*).
+       - Elle permettait de cocher/décocher manuellement des tâches système de manière factice.
+  3. **Business Wallet & Identité Marchand (9:21 AM)** :
+     - Pour le compte marchand *DizzitUp Togo*, la devise locale doit impérativement afficher **XOF** (Franc CFA) et non EUR/USD.
+     - Demande d'afficher le **nom de l'entreprise/marchand** directement sous la mention "Business wallet", avec une police normale (*regular, not bold*).
+  4. **Gestion des Contacts - Résolution des 4 Bugs Critiques (9:34 AM)** :
+     - *Ajout de contact* : Un nouveau bénéficiaire (Assia) enregistré n'apparaissait pas dans la liste après validation.
+     - *Drapeaux manquants* : Plusieurs pays affichaient la mention littérale `"null"` à la place de l'emoji drapeau.
+     - *Texte français résiduel* : Présence en dur de `"Voir tout"` au lieu de la traduction dynamique (*"View all"*).
+     - *Mise à jour de contact* : La modification d'un contact dont le nom était un numéro (+251...) en "Solofo Ethiopia" ne persistait pas.
+     - *Temps réel* : Absence de réactivité immédiate lors des créations/modifications de contacts.
+  5. **Relations de Contact Alignées sur le Web (11:07 AM)** :
+     - Constat d'une divergence : l'option "Collègue / Colleague" existait sur le mobile mais pas sur le Web.
+     - Demande d'harmonisation stricte avec le Web et la base de données Supabase.
+  6. **Règle Souveraine d'Ingénierie (Directive Mandatée par l'Utilisateur)** :
+     - **ZÉRO HARDCODING** : Interdiction absolue de créer des conditions spécifiques en dur pour un seul pays (ex: Togo, Madagascar). Tous les correctifs doivent être 100% universels et s'appliquer dynamiquement aux 195 pays et devises du monde.
+
+- **Modifications & Correctifs Appliqués (Build 56)** :
+  1. **Architecture & Service CRUD Bénéficiaires (`contactService.js` & `EditBeneficiaryScreen.js`)** :
+     - Implémentation complète de la méthode `contactService.updateBeneficiary(beneficiaryId, contactData)` supportant les UUID string Supabase.
+     - Correction de l'appel `contactService.addBeneficiary(userId, payload)` avec transmission obligatoire et systématique de l'ID utilisateur connecté.
+     - Levée des blocages de validation et persistance intégrale de tous les champs (prénom, nom, téléphone étranger, email, pays, banques, adresses blockchain EVM/Solana).
+  2. **Synchronisation Réactive & Supabase Realtime (`ContactsScreen.js` & `ContactsManageScreen.js`)** :
+     - Intégration de `useFocusEffect` pour rafraîchir instantanément la liste dès le retour arrière (`navigation.goBack()`).
+     - Mise en place d'un canal de souscription Supabase Realtime (`postgres_changes` sur la table `beneficiaries`) déclenchant la mise à jour immédiate à chaud sans nécessiter de rafraîchissement manuel.
+  3. **Résolution Universelle des Drapeaux (Éradication du "null")** :
+     - Implémentation de la fonction `getUniversalFlag` basée sur le standard unicode ISO-2 (`String.fromCodePoint`).
+     - Si `flag_emoji` est absent, vide ou égal à `"null"` dans la table `countries` de Supabase, le drapeau officiel du pays est calculé automatiquement à partir de son code ISO (ex: AF ➔ 🇦🇫, DZ ➔ 🇩🇿, ET ➔ 🇪🇹). Zéro affichage `"null"` pour tous les 249 territoires du monde.
+  4. **Alignement des Relations de Contact avec le Web** :
+     - Suppression de l'option non reconnue "Collègue" pour matcher le Web Front-End (`Famille`, `Ami`, `Autre`).
+     - Ajout d'une tentative de récupération dynamique via la table `contact_relationships` de Supabase si présente.
+  5. **Internationalisation & Nettoyage Linguistique** :
+     - Remplacement du texte en dur `"Voir tout"` dans `ContactsManageScreen.js` par la clé de traduction réactive `t('viewAll', 'View all')`.
+  6. **Business Wallet PRO : Nom de l'Entreprise & Résolution Universelle des Devises (`WalletCard.js` & `AppContext.js`)** :
+     - Ajout de l'affichage du nom de l'entreprise (`merchantSubtitleText`, police regular blanche, taille 12) sous le badge "BUSINESS WALLET PRO".
+     - Résolution universelle du pays et de la devise siège de l'entreprise : `AppContext.js` analyse dynamiquement `country_code`, `country`, `city_village` ou le nom de l'entité pour garantir la devise souveraine (ex: DizzitUp Togo ➔ TG ➔ `XOF`, EYOU Madagascar ➔ MG ➔ `MGA`, Bénin ➔ `XOF`, Sénégal ➔ `XOF`, Cameroun ➔ `XAF`, Kenya ➔ `KES`, etc.).
+  7. **To-Do List Réactive & Orientée Action (`TodoListScreen.js`)** :
+     - Filtrage automatique : si l'utilisateur possède déjà une boutique ou un rôle marchand (`isMerchant === true`), la tâche "Créer ma boutique DZYStore" est masquée.
+     - Remplacement des cases à cocher manuelles factices : les tâches redirigent directement vers leurs écrans d'action réels (Recharge de portefeuille ➔ `TopUpScreen`, Profil ➔ `AccountSettingsScreen`, Cadeaux ➔ `ExploreGiftCardsScreen`).
+     - Statut d'achèvement lié à l'état réel du compte (solde disponible, profil complété).
+  8. **Incrémentation EAS Build 56 & Notes In-App** :
+     - `app.json` : `buildNumber: "56"`, `versionCode: 56`, `description: "DizzitApp V1. Build 56 Beta Test Version"`.
+     - Badges et numéros de build synchronisés sur `LoginScreen.js`, `RegisterScreen.js`, `UnlockScreen.js`, `MoreSettingsScreen.js` et `AboutDizzitUpScreen.js`.
+
+- **Fichiers Modifiés** :
+  - `src/services/contactService.js` *(Ajout updateBeneficiary & validation userId dans addBeneficiary)*
+  - `src/screens/EditBeneficiaryScreen.js` *(getUniversalFlag anti-null, synchro relations web, handleSave unifié)*
+  - `src/screens/ContactsScreen.js` *(useFocusEffect & canal Supabase Realtime postgres_changes)*
+  - `src/screens/ContactsManageScreen.js` *(useFocusEffect, Supabase Realtime & remplacement Voir tout par i18n)*
+  - `src/components/WalletCard.js` *(Nom de la boutique sous Business wallet en police regular & styles)*
+  - `src/context/AppContext.js` *(Résolution universelle multi-paliers de la devise siège marchand)*
+  - `src/screens/TodoListScreen.js` *(Exclusion boutique existante & redirection vers les vraies actions système)*
+  - `src/screens/AboutDizzitUpScreen.js` *(Release Notes complètes Build 56 au 27 Septembre 2026)*
+  - `src/screens/MoreSettingsScreen.js` *(Badge Build 56 et fallback version)*
+  - `src/screens/LoginScreen.js` *(Fallback Build 56)*
+  - `src/screens/RegisterScreen.js` *(Fallback Build 56)*
+  - `src/screens/UnlockScreen.js` *(Fallback Build 56)*
+  - `app.json` *(buildNumber: "56", versionCode: 56, description Build 56)*
+  - `memoire.md` *(Inscription de la Règle Souveraine d'Ingénierie & section 16)*
+
+- **Matrice de Validation & Déploiement Git** :
+  - **Syntaxe Babel JSX** : 100% validé sur les 12 fichiers sources sans la moindre erreur.
+  - **Commit Git initial** : `008df64` (*"feat(release): delivery of Build 56 with universal sovereign currency, realtime contacts CRUD, merchant name under business wallet, dynamic action-oriented todo list, and zero-hardcoding architectural standard"*).
+  - **Push Remote** : Poussé avec succès sur `origin/front-back`.
+
+- **Cadrage du Processus d'Onboarding Beta Testeurs & URLs Officielles (Échanges Slack Solofo)** :
+  1. **iOS (iPhone / iPad — Apple TestFlight)** :
+     - *Pré-inscription e-mail requise ?* **NON**, grâce au **Lien Public TestFlight (Public Join Link)**. N'importe quel détenteur d'iPhone peut cliquer sur ce lien unique et installer DizzitApp via TestFlight sans avoir besoin de renseigner son e-mail à l'avance (capacité jusqu'à 10 000 testeurs externes).
+     - *URL à transmettre* : Le lien public TestFlight généré sur App Store Connect (*DizzitApp > TestFlight > External Testing > Public Link*).
+  2. **Android (Google Play — Closed/Internal Testing)** :
+     - *Pré-inscription e-mail requise ?* **OUI**, exigence stricte de Google Play pour les canaux fermés. Le compte Google/Gmail du testeur doit obligatoirement figurer dans la liste des testeurs de la Play Console (gérée par Assia via l'export Brevo). Faute de quoi, Google Play affiche une erreur "Application non disponible".
+     - *URLs à transmettre pour la 1ère installation* :
+       - **Lien d'Opt-in Officiel Google Play (Recommandé pour 1ère installation)** : `https://play.google.com/apps/testing/com.dizzitup.app` (permet au testeur de cliquer sur "Devenir testeur" en 1 clic puis ouvre directement la fiche Google Play).
+       - **Fiche Google Play Store directe** : `https://play.google.com/store/apps/details?id=com.dizzitup.app` (accessible dès que l'opt-in a été effectué).
+  3. **Mécanique des Mises à Jour Futures (Zéro Réinstallation)** :
+     - Pour les testeurs déjà installés sur iOS ou Android, **aucun lien n'est à renvoyer et aucune désinstallation n'est requise**.
+     - Dès que le Build 56 (ou supérieur) est injecté sur TestFlight et Google Play, le système d'exploitation notifie automatiquement le testeur qui n'a plus qu'à cliquer sur **"Mettre à jour" (Update)**, conservant toutes ses données de session et profils intacts.
+
+- **État Actuel & Prochaines Actions** :
+  - **Branche** : `front-back` (synchronisée sur GitHub).
+  - **Statut** : En attente du retour de Solofo et Assia sur le fil Slack suite à la clarification des URLs et aux livrables du Build 56.
+  - **Prochaine étape** : Fusion de `front-back` sur `develop` et déclenchement de la pipeline de compilation EAS Cloud (Android AAB + iOS IPA TestFlight) pour le Build 56.
+
 
 
 

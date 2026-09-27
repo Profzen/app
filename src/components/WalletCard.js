@@ -90,14 +90,19 @@ export default function WalletCard({ balances, badgeTitle }) {
             <View>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={styles.badgeText}>
-                  {badgeTitle || (user?.role === 'merchant' ? t('wallet.business_wallet', 'BUSINESS WALLET') : 'TOTAL DZY INDEX')}
+                  {badgeTitle || (isBusinessCard ? t('wallet.business_wallet', 'BUSINESS WALLET') : 'TOTAL DZY INDEX')}
                 </Text>
-                {user?.role === 'merchant' && (
+                {isBusinessCard && (
                   <View style={{ backgroundColor: '#8B5CF6', borderRadius: 4, paddingHorizontal: 4, paddingVertical: 1, marginLeft: 6 }}>
                     <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 7, color: '#FFF' }}>PRO</Text>
                   </View>
                 )}
               </View>
+              {isBusinessCard && (user?.merchantProfile?.shop_name || user?.merchantProfile?.business_name) ? (
+                <Text style={styles.merchantSubtitleText}>
+                  {user?.merchantProfile?.shop_name || user?.merchantProfile?.business_name}
+                </Text>
+              ) : null}
               <Text style={styles.titleText}>10 DZY = $1.00 USD</Text>
             </View>
           </View>
@@ -208,6 +213,13 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: '#FFC759',
     letterSpacing: 0.5,
+  },
+  merchantSubtitleText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12,
+    color: '#FFFFFF',
+    marginTop: 2,
+    marginBottom: 1,
   },
   titleText: {
     fontFamily: 'Inter_500Medium',

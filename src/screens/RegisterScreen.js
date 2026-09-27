@@ -13,6 +13,8 @@ import { FooterTerms } from '../components/FooterTerms';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../services/supabaseClient';
+import Constants from 'expo-constants';
+import * as Application from 'expo-application';
 import { isSmallScreen, isShortScreen } from '../utils/responsive';
 
 export default function RegisterScreen({ route }) {
@@ -31,6 +33,9 @@ export default function RegisterScreen({ route }) {
       setParrain(incomingRef);
     }
   }, [route?.params]);
+
+  const appVersion = Application.nativeApplicationVersion || Constants?.expoConfig?.version || '1.0.0';
+  const appBuildNumber = Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '56';
 
   const getPasswordStrength = (pass) => {
     if (!pass) return 0;
@@ -202,6 +207,13 @@ export default function RegisterScreen({ route }) {
 
         {/* Footer */}
         <FooterTerms />
+
+        {/* Version & Build info for testers */}
+        <View style={styles.versionFooter}>
+          <Text style={styles.versionFooterText}>
+            {`v${appVersion} • Build ${appBuildNumber}`}
+          </Text>
+        </View>
         
         <View style={{height: 40}} />
       </ScrollView>
@@ -482,5 +494,17 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.fontFamily.semiBold,
     fontSize: 10,
     color: theme.colors.accent,
-  }
+  },
+  versionFooter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 12,
+    marginBottom: 6,
+  },
+  versionFooterText: {
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: 11,
+    color: '#94A3B8',
+    letterSpacing: 0.4,
+  },
 });
