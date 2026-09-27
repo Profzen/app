@@ -9,7 +9,8 @@ import Avatar from '../components/Avatar';
 import { useApp } from '../context/AppContext';
 import contactService from '../services/contactService';
 import { supabase } from '../services/supabaseClient';
-import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
+import ContactActionSheet from '../components/ContactActionSheet';
+import { handleUserInviteShare, shareInviteLink, shareShopLink } from '../utils/shareHelper';
 const getFlagEmoji = (countryCode) => {
   if (!countryCode) return '🌍';
   const codePoints = countryCode

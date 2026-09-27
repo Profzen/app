@@ -132,27 +132,40 @@ export default function AboutDizzitUpScreen() {
                 <Ionicons name="sparkles" size={15} color="#10B981" style={{ marginRight: 6 }} />
                 <Text style={styles.releaseSectionTitle}>{t('aboutApp.newFeaturesTitle', 'NEW FEATURES')}</Text>
               </View>
-              <View style={styles.releaseItem}>
-                <Text style={styles.releaseBullet}>•</Text>
-                <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Full Realtime Beneficiaries CRUD: </Text>
-                  Direct Supabase creation, editing (+updateBeneficiary), and instant realtime channel syncing across all devices and screens without manual reload.
-                </Text>
-              </View>
-              <View style={styles.releaseItem}>
-                <Text style={styles.releaseBullet}>•</Text>
-                <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Dynamic Action-Oriented To-Do List: </Text>
-                  Intelligently routes tasks to real screens (Recharge, Giftcards, Settings) and automatically filters out store creation for existing merchants.
-                </Text>
-              </View>
-              <View style={styles.releaseItem}>
-                <Text style={styles.releaseBullet}>•</Text>
-                <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Merchant Name on Business Wallet: </Text>
-                  Displays registered company/shop name in regular font under Business Wallet PRO for instant business identification.
-                </Text>
-              </View>
+              {releaseNotes.isLoading ? (
+                <Text style={styles.releaseText}>Loading...</Text>
+              ) : releaseNotes.features.length > 0 ? (
+                releaseNotes.features.map((feature, index) => (
+                  <View key={index} style={styles.releaseItem}>
+                    <Text style={styles.releaseBullet}>•</Text>
+                    <Text style={styles.releaseText}>{feature}</Text>
+                  </View>
+                ))
+              ) : (
+                <>
+                  <View style={styles.releaseItem}>
+                    <Text style={styles.releaseBullet}>•</Text>
+                    <Text style={styles.releaseText}>
+                      <Text style={styles.releaseBold}>Full Realtime Beneficiaries CRUD: </Text>
+                      Direct Supabase creation, editing (+updateBeneficiary), and instant realtime channel syncing across all devices and screens without manual reload.
+                    </Text>
+                  </View>
+                  <View style={styles.releaseItem}>
+                    <Text style={styles.releaseBullet}>•</Text>
+                    <Text style={styles.releaseText}>
+                      <Text style={styles.releaseBold}>Dynamic Action-Oriented To-Do List: </Text>
+                      Intelligently routes tasks to real screens (Recharge, Giftcards, Settings) and automatically filters out store creation for existing merchants.
+                    </Text>
+                  </View>
+                  <View style={styles.releaseItem}>
+                    <Text style={styles.releaseBullet}>•</Text>
+                    <Text style={styles.releaseText}>
+                      <Text style={styles.releaseBold}>Merchant Name on Business Wallet: </Text>
+                      Displays registered company/shop name in regular font under Business Wallet PRO for instant business identification.
+                    </Text>
+                  </View>
+                </>
+              )}
             </View>
 
             <View style={styles.releaseDivider} />
@@ -163,34 +176,47 @@ export default function AboutDizzitUpScreen() {
                 <Ionicons name="checkmark-circle" size={15} color="#3B82F6" style={{ marginRight: 6 }} />
                 <Text style={styles.releaseSectionTitle}>{t('aboutApp.implementedFixesTitle', 'IMPLEMENTED FIXES')}</Text>
               </View>
-              <View style={styles.releaseItem}>
-                <Text style={styles.releaseBullet}>•</Text>
-                <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Universal Flag Resolution (No More "null"): </Text>
-                  Algorithmic ISO-2 regional flag computation for all 249 countries eliminating null/blank emojis.
-                </Text>
-              </View>
-              <View style={styles.releaseItem}>
-                <Text style={styles.releaseBullet}>•</Text>
-                <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Universal Merchant Sovereign Currency: </Text>
-                  Robust multi-tiered resolution ensuring merchant headquarters currency (e.g. DizzitUp Togo ➔ XOF, EYOU Madagascar ➔ MGA) across all corridors.
-                </Text>
-              </View>
-              <View style={styles.releaseItem}>
-                <Text style={styles.releaseBullet}>•</Text>
-                <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Web-Aligned Contact Relationships: </Text>
-                  Synchronized with Web front-end and Supabase backend, removing legacy "Colleague" divergence.
-                </Text>
-              </View>
-              <View style={styles.releaseItem}>
-                <Text style={styles.releaseBullet}>•</Text>
-                <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Localization & i18n Cleanup: </Text>
-                  Replaced hardcoded French "Voir tout" in contacts management with dynamic multilingual translation key.
-                </Text>
-              </View>
+              {releaseNotes.isLoading ? (
+                <Text style={styles.releaseText}>Loading...</Text>
+              ) : releaseNotes.fixes.length > 0 ? (
+                releaseNotes.fixes.map((fix, index) => (
+                  <View key={index} style={styles.releaseItem}>
+                    <Text style={styles.releaseBullet}>•</Text>
+                    <Text style={styles.releaseText}>{fix}</Text>
+                  </View>
+                ))
+              ) : (
+                <>
+                  <View style={styles.releaseItem}>
+                    <Text style={styles.releaseBullet}>•</Text>
+                    <Text style={styles.releaseText}>
+                      <Text style={styles.releaseBold}>Universal Flag Resolution (No More "null"): </Text>
+                      Algorithmic ISO-2 regional flag computation for all 249 countries eliminating null/blank emojis.
+                    </Text>
+                  </View>
+                  <View style={styles.releaseItem}>
+                    <Text style={styles.releaseBullet}>•</Text>
+                    <Text style={styles.releaseText}>
+                      <Text style={styles.releaseBold}>Universal Merchant Sovereign Currency: </Text>
+                      Robust multi-tiered resolution ensuring merchant headquarters currency (e.g. DizzitUp Togo ➔ XOF, EYOU Madagascar ➔ MGA) across all corridors.
+                    </Text>
+                  </View>
+                  <View style={styles.releaseItem}>
+                    <Text style={styles.releaseBullet}>•</Text>
+                    <Text style={styles.releaseText}>
+                      <Text style={styles.releaseBold}>Web-Aligned Contact Relationships: </Text>
+                      Synchronized with Web front-end and Supabase backend, removing legacy "Colleague" divergence.
+                    </Text>
+                  </View>
+                  <View style={styles.releaseItem}>
+                    <Text style={styles.releaseBullet}>•</Text>
+                    <Text style={styles.releaseText}>
+                      <Text style={styles.releaseBold}>Localization & i18n Cleanup: </Text>
+                      Replaced hardcoded French "Voir tout" in contacts management with dynamic multilingual translation key.
+                    </Text>
+                  </View>
+                </>
+              )}
             </View>
 
             <View style={styles.releaseDivider} />
