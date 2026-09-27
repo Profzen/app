@@ -1,14 +1,14 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useMemo, useRef, useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Image, Modal, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
 import Avatar from '../components/Avatar';
 import { useApp } from '../context/AppContext';
-import { useEffect } from 'react';
 import contactService from '../services/contactService';
+import { supabase } from '../services/supabaseClient';
 import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
 
 const getFlagEmoji = (countryCode) => {
@@ -33,19 +33,18 @@ export default function ContactsManageScreen() {
     { id: '4', title: t('contacts.quick_action_5.title', "Inviter\nmes amis"), subtitle: t('contacts.quick_action_5.subtitle', "Invitez vos amis et\ngagnez $5 en DZY"), icon: "paper-plane-outline", color: "#F59E0B", subtitleColor: "#64748B", highlightColor: "#F59E0B", highlightText: "$5 en DZY" },
   ];
 
-  useEffect(() => {
-    fetchBeneficiaries();
-  }, [session]);
-
   const fetchBeneficiaries = async () => {
     if (!session?.user?.id) return;
     try {
       setLoading(true);
-      const data = await contactService.getBeneficiaries(session.user.id);
-      const mapped = data.data.map(b => ({
+      const res = await contactService.getBeneficiaries(session.user.id);
+      const list = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
+      const mapped = list.map(b => ({
         ...b,
         id: b.id,
-        name: b.full_name || `${b.first_name} ${b.last_name}`.trim(),
+        name: b.full_name || `${b.first_name || ''} ${b.last_name || ''}`.trim() || b.phone || 'Beneficiary',
+        first_name: b.first_name,
+        last_name: b.last_name,
         relation: b.relationship || t('contacts.relation.friend', 'Ami'),
         location: `${b.city || ''}, ${b.country_code || ''}`.trim().replace(/^,|,$/g, ''),
         country: b.country || b.country_name || (b.country_code ? (() => { try { return new Intl.DisplayNames(['en'], {type: 'region'}).of(b.country_code) } catch(e) { return b.country_code } })() : ''),
@@ -67,6 +66,37 @@ export default function ContactsManageScreen() {
       setLoading(false);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchBeneficiaries();
+    }, [session?.user?.id])
+  );
+
+  useEffect(() => {
+    fetchBeneficiaries();
+
+    if (!session?.user?.id) return;
+    const channel = supabase
+      .channel('public:manage_beneficiaries:' + session.user.id)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'beneficiaries',
+          filter: `user_id=eq.${session.user.id}`,
+        },
+        () => {
+          fetchBeneficiaries();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [session?.user?.id]);
 
   const [selectedContact, setSelectedContact] = useState(null);
   const [bannerVisible, setBannerVisible] = useState(true);
@@ -187,7 +217,7 @@ export default function ContactsManageScreen() {
           <View style={styles.sectionHeaderRow}>
             <Text style={styles.sectionTitle}>{t('contacts.my_beneficiaries', 'Mes bénéficiaires')}</Text>
             <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={styles.showAllText}>Voir tout</Text>
+              <Text style={styles.showAllText}>{t('viewAll', 'View all')}</Text>
               <Ionicons name="arrow-forward" size={16} color="#1A2840" style={{ marginLeft: 4 }} />
             </TouchableOpacity>
           </View>

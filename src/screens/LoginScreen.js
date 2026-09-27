@@ -27,7 +27,7 @@ export default function LoginScreen() {
   const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '', type: 'info' });
 
   const appVersion = Application.nativeApplicationVersion || Constants?.expoConfig?.version || '1.0.0';
-  const appBuildNumber = Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '55';
+  const appBuildNumber = Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '56';
   const [errorMessage, setErrorMessage] = useState(null);
 
   const handleLogin = async () => {

@@ -27,17 +27,30 @@ class ContactService {
    */
   async addBeneficiary(userId, contactData) {
     try {
+      if (!userId) {
+        throw new Error('User ID is required to add a beneficiary');
+      }
+
+      const insertPayload = {
+        user_id: userId,
+        first_name: contactData.first_name || '',
+        last_name: contactData.last_name || '',
+        relationship: contactData.relationship || contactData.relation || 'Friend',
+        country_code: contactData.country_code || (contactData.country ? contactData.country.slice(0, 2).toUpperCase() : 'US'),
+        country_name: contactData.country_name || contactData.country || '',
+        city: contactData.city || '',
+        phone: contactData.phone || '',
+        email: contactData.email || '',
+        bank_name: contactData.bank_name || '',
+        bank_account: contactData.bank_account || '',
+        evm_address: contactData.evm_address || '',
+        solana_address: contactData.solana_address || '',
+        avatar_url: contactData.avatar_url || '',
+      };
+
       const { data, error } = await supabase
         .from('beneficiaries')
-        .insert({
-          user_id: userId,
-          first_name: contactData.first_name,
-          last_name: contactData.last_name || '',
-          relationship: contactData.relationship || 'Ami',
-          country_code: contactData.country_code || 'US',
-          phone: contactData.phone || '',
-          email: contactData.email || '',
-        })
+        .insert(insertPayload)
         .select()
         .single();
 
@@ -46,6 +59,50 @@ class ContactService {
       return { success: true, data };
     } catch (error) {
       console.error('Error adding beneficiary:', error.message);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Update an existing beneficiary by ID (supports UUID strings and numeric IDs).
+   */
+  async updateBeneficiary(beneficiaryId, contactData) {
+    try {
+      if (!beneficiaryId) {
+        throw new Error('Beneficiary ID is required for update');
+      }
+
+      const updatePayload = {};
+      if (contactData.first_name !== undefined) updatePayload.first_name = contactData.first_name;
+      if (contactData.last_name !== undefined) updatePayload.last_name = contactData.last_name;
+      if (contactData.relationship !== undefined || contactData.relation !== undefined) {
+        updatePayload.relationship = contactData.relationship || contactData.relation;
+      }
+      if (contactData.country_code !== undefined) updatePayload.country_code = contactData.country_code;
+      if (contactData.country_name !== undefined || contactData.country !== undefined) {
+        updatePayload.country_name = contactData.country_name || contactData.country;
+      }
+      if (contactData.city !== undefined) updatePayload.city = contactData.city;
+      if (contactData.phone !== undefined) updatePayload.phone = contactData.phone;
+      if (contactData.email !== undefined) updatePayload.email = contactData.email;
+      if (contactData.bank_name !== undefined) updatePayload.bank_name = contactData.bank_name;
+      if (contactData.bank_account !== undefined) updatePayload.bank_account = contactData.bank_account;
+      if (contactData.evm_address !== undefined) updatePayload.evm_address = contactData.evm_address;
+      if (contactData.solana_address !== undefined) updatePayload.solana_address = contactData.solana_address;
+      if (contactData.avatar_url !== undefined) updatePayload.avatar_url = contactData.avatar_url;
+
+      const { data, error } = await supabase
+        .from('beneficiaries')
+        .update(updatePayload)
+        .eq('id', beneficiaryId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error updating beneficiary:', error.message);
       return { success: false, error: error.message };
     }
   }

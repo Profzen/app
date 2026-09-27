@@ -20,7 +20,25 @@ const AVATARS = [
   { id: 'avatar_6', emoji: '👴' },
 ];
 
-const RELATIONSHIPS = ['Famille', 'Ami', 'Collègue', 'Autre'];
+const DEFAULT_RELATIONSHIPS = ['Famille', 'Ami', 'Autre'];
+
+const getUniversalFlag = (emoji, code) => {
+  if (emoji && typeof emoji === 'string' && emoji.trim() !== '' && emoji !== 'null' && emoji !== 'NULL') {
+    return emoji;
+  }
+  if (code && typeof code === 'string' && code.length === 2) {
+    try {
+      const codePoints = code
+        .toUpperCase()
+        .split('')
+        .map(char => 127397 + char.charCodeAt(0));
+      return String.fromCodePoint(...codePoints);
+    } catch (e) {
+      return '🌍';
+    }
+  }
+  return '🌍';
+};
 
 export default function EditBeneficiaryScreen({ route }) {
   const navigation = useNavigation();
@@ -29,13 +47,15 @@ export default function EditBeneficiaryScreen({ route }) {
   const isEditing = route.params?.isEditing || false;
   const beneficiary = route.params?.beneficiary || {};
 
+  const [relationships, setRelationships] = useState(DEFAULT_RELATIONSHIPS);
+
   const [formData, setFormData] = useState({
     first_name: beneficiary.first_name || '',
     last_name: beneficiary.last_name || '',
-    relationship: beneficiary.relation || 'Famille',
+    relationship: beneficiary.relation || beneficiary.relationship || 'Famille',
     phone: beneficiary.phone || '',
     email: beneficiary.email || '',
-    country: beneficiary.location || '',
+    country: beneficiary.location || beneficiary.country || beneficiary.country_name || '',
     city: beneficiary.city || '',
     bank_name: beneficiary.bank_name || '',
     bank_account: beneficiary.bank_account || '',
@@ -60,7 +80,22 @@ export default function EditBeneficiaryScreen({ route }) {
 
   useEffect(() => {
     fetchCountries();
+    fetchRelationships();
   }, []);
+
+  const fetchRelationships = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('contact_relationships')
+        .select('name')
+        .order('id');
+      if (!error && data && data.length > 0) {
+        setRelationships(data.map(r => r.name));
+      }
+    } catch (e) {
+      // Fallback already defaults to Web-aligned ['Famille', 'Ami', 'Autre']
+    }
+  };
 
   const fetchCountries = async () => {
     try {
@@ -187,7 +222,7 @@ export default function EditBeneficiaryScreen({ route }) {
     }
 
     const selectedCountry = countries.find(c => c.name === formData.country);
-    const countryCode = selectedCountry ? selectedCountry.code : undefined;
+    const countryCode = selectedCountry ? selectedCountry.code : (formData.country && formData.country.length === 2 ? formData.country.toUpperCase() : undefined);
     
     // Clean up spaces before validation
     const cleanPhone = formData.phone.trim();
@@ -207,10 +242,13 @@ export default function EditBeneficiaryScreen({ route }) {
       const payload = {
         first_name: formData.first_name,
         last_name: formData.last_name,
+        relationship: formData.relationship,
         relation: formData.relationship,
         phone: formData.phone,
         email: formData.email,
         country: formData.country,
+        country_name: formData.country,
+        country_code: countryCode || (formData.country ? formData.country.slice(0, 2).toUpperCase() : 'US'),
         city: formData.city,
         bank_name: formData.bank_name,
         bank_account: formData.bank_account,
@@ -219,17 +257,20 @@ export default function EditBeneficiaryScreen({ route }) {
         avatar_url: formData.avatar_url,
       };
 
-      if (isEditing && beneficiary.id && typeof beneficiary.id !== 'string') {
-        await contactService.updateBeneficiary(beneficiary.id, payload);
+      const userId = session?.user?.id;
+      if (isEditing && beneficiary?.id) {
+        const updateRes = await contactService.updateBeneficiary(beneficiary.id, payload);
+        if (!updateRes.success) throw new Error(updateRes.error);
         AppToast.showSuccess(t('beneficiary_management.edit.save_success_edit', "Bénéficiaire modifié"));
       } else {
-        await contactService.addBeneficiary(payload);
+        const addRes = await contactService.addBeneficiary(userId, payload);
+        if (!addRes.success) throw new Error(addRes.error);
         AppToast.showSuccess(t('beneficiary_management.edit.save_success_add', "Bénéficiaire ajouté"));
       }
       navigation.goBack();
     } catch (err) {
       console.error("Save error:", err);
-      AppToast.showError(t('beneficiary_management.edit.save_error', "Erreur lors de l'enregistrement"));
+      AppToast.showError(err?.message || t('beneficiary_management.edit.save_error', "Erreur lors de l'enregistrement"));
     } finally {
       setIsSaving(false);
     }
@@ -237,7 +278,8 @@ export default function EditBeneficiaryScreen({ route }) {
 
   const getCountryFlag = (countryName) => {
     const c = countries.find(x => x.name === countryName);
-    return c ? c.flag_emoji : '🌍';
+    if (!c) return '🌍';
+    return getUniversalFlag(c.flag_emoji, c.code);
   };
 
   const filteredCities = citySearch 
@@ -289,7 +331,7 @@ export default function EditBeneficiaryScreen({ route }) {
 
             <Text style={styles.label}>{t('beneficiary_management.edit.relation', 'Relation')}</Text>
             <View style={styles.relationGrid}>
-              {RELATIONSHIPS.map((rel) => (
+              {relationships.map((rel) => (
                 <TouchableOpacity
                   key={rel}
                   style={[styles.chip, formData.relationship === rel && styles.chipSelected]}
@@ -299,7 +341,7 @@ export default function EditBeneficiaryScreen({ route }) {
                     {rel === 'Famille' ? t('beneficiary_management.edit.relation_family', 'Famille') :
                       rel === 'Ami' ? t('beneficiary_management.edit.relation_friend', 'Ami') :
                         rel === 'Collègue' ? t('beneficiary_management.edit.relation_colleague', 'Collègue') :
-                          t('beneficiary_management.edit.relation_other', 'Autre')}
+                          t('beneficiary_management.edit.relation_other', rel || 'Autre')}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -422,7 +464,7 @@ export default function EditBeneficiaryScreen({ route }) {
                       setShowCountryPicker(false);
                     }}
                   >
-                    <Text style={styles.modalItemText}>{item.flag_emoji} {item.name}</Text>
+                    <Text style={styles.modalItemText}>{getUniversalFlag(item.flag_emoji, item.code)} {item.name}</Text>
                     {formData.country === item.name && <Ionicons name="checkmark" size={20} color="#0052FF" />}
                   </TouchableOpacity>
                 )}

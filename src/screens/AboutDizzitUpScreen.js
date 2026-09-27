@@ -15,7 +15,7 @@ export default function AboutDizzitUpScreen() {
   const [toast, setToast] = useState(null);
 
   const appVersion = Constants?.expoConfig?.version || '1.0.37';
-  const appBuildNumber = Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '55';
+  const appBuildNumber = Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '56';
 
   const handleBack = () => {
     if (navigation.canGoBack()) navigation.goBack();
@@ -76,7 +76,7 @@ export default function AboutDizzitUpScreen() {
               </View>
               <View style={styles.dateBadge}>
                 <Ionicons name="calendar-outline" size={12} color="#6B7280" style={{ marginRight: 4 }} />
-                <Text style={styles.dateBadgeText}>September 26, 2026</Text>
+                <Text style={styles.dateBadgeText}>September 27, 2026</Text>
               </View>
             </View>
 
@@ -89,29 +89,22 @@ export default function AboutDizzitUpScreen() {
               <View style={styles.releaseItem}>
                 <Text style={styles.releaseBullet}>•</Text>
                 <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>In-App Rating Prompt (La Banque Postale UX): </Text>
-                  5-star store evaluation modal & social receipt sharing triggered after each executed transaction.
+                  <Text style={styles.releaseBold}>Full Realtime Beneficiaries CRUD: </Text>
+                  Direct Supabase creation, editing (+updateBeneficiary), and instant realtime channel syncing across all devices and screens without manual reload.
                 </Text>
               </View>
               <View style={styles.releaseItem}>
                 <Text style={styles.releaseBullet}>•</Text>
                 <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>On-Chain Escrow Innovation (DizzitUp World-First): </Text>
-                  Comprehensive modal highlighting decentralized escrow protection and secret delivery PIN at final physical checkout.
+                  <Text style={styles.releaseBold}>Dynamic Action-Oriented To-Do List: </Text>
+                  Intelligently routes tasks to real screens (Recharge, Giftcards, Settings) and automatically filters out store creation for existing merchants.
                 </Text>
               </View>
               <View style={styles.releaseItem}>
                 <Text style={styles.releaseBullet}>•</Text>
                 <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Quick Percentage Selectors (Nexo UX): </Text>
-                  Fast 25%, 50%, 75%, 100% amount chips for cash-out / withdrawals.
-                </Text>
-              </View>
-              <View style={styles.releaseItem}>
-                <Text style={styles.releaseBullet}>•</Text>
-                <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Direct Build Display on First Screens: </Text>
-                  Build # and version badges displayed prominently on Login, Splash, and Unlock screens.
+                  <Text style={styles.releaseBold}>Merchant Name on Business Wallet: </Text>
+                  Displays registered company/shop name in regular font under Business Wallet PRO for instant business identification.
                 </Text>
               </View>
             </View>
@@ -127,22 +120,29 @@ export default function AboutDizzitUpScreen() {
               <View style={styles.releaseItem}>
                 <Text style={styles.releaseBullet}>•</Text>
                 <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Cash-Out Multi-Country Consistency: </Text>
-                  Dynamically resolves destination country (e.g. Madagascar / MGA), net amount, and local rails instead of hardcoded Togo Mixx.
+                  <Text style={styles.releaseBold}>Universal Flag Resolution (No More "null"): </Text>
+                  Algorithmic ISO-2 regional flag computation for all 249 countries eliminating null/blank emojis.
                 </Text>
               </View>
               <View style={styles.releaseItem}>
                 <Text style={styles.releaseBullet}>•</Text>
                 <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Native Build Bump (Build 55): </Text>
-                  Synchronized app.json and native configs to 55, restoring TestFlight auto-installation without manual delete.
+                  <Text style={styles.releaseBold}>Universal Merchant Sovereign Currency: </Text>
+                  Robust multi-tiered resolution ensuring merchant headquarters currency (e.g. DizzitUp Togo ➔ XOF, EYOU Madagascar ➔ MGA) across all corridors.
                 </Text>
               </View>
               <View style={styles.releaseItem}>
                 <Text style={styles.releaseBullet}>•</Text>
                 <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Business Wallet Sovereign Priority: </Text>
-                  Guaranteed merchant country currency (EYOU Madagascar ➔ MGA 🇲🇬) isolating business wallets from IP roaming.
+                  <Text style={styles.releaseBold}>Web-Aligned Contact Relationships: </Text>
+                  Synchronized with Web front-end and Supabase backend, removing legacy "Colleague" divergence.
+                </Text>
+              </View>
+              <View style={styles.releaseItem}>
+                <Text style={styles.releaseBullet}>•</Text>
+                <Text style={styles.releaseText}>
+                  <Text style={styles.releaseBold}>Localization & i18n Cleanup: </Text>
+                  Replaced hardcoded French "Voir tout" in contacts management with dynamic multilingual translation key.
                 </Text>
               </View>
             </View>

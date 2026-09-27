@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useMemo, useRef, useState, useEffect } from 'react';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, TextInput, Image, Modal, Platform, StatusBar, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
@@ -9,6 +9,7 @@ import Avatar from '../components/Avatar';
 import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
 import { useApp } from '../context/AppContext';
 import contactService from '../services/contactService';
+import { supabase } from '../services/supabaseClient';
 import { getFullCountryName } from '../utils/countryCurrencyUtils';
 import { SwipeRow } from 'react-native-swipe-list-view';
 
@@ -96,8 +97,35 @@ export default function ContactsScreen() {
     setIsLoading(false);
   };
 
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchBeneficiaries();
+    }, [session?.user?.id])
+  );
+
   useEffect(() => {
     fetchBeneficiaries();
+
+    if (!session?.user?.id) return;
+    const channel = supabase
+      .channel('public:beneficiaries:' + session.user.id)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'beneficiaries',
+          filter: `user_id=eq.${session.user.id}`,
+        },
+        () => {
+          fetchBeneficiaries();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [session?.user?.id]);
 
   const removeContact = async (id) => {

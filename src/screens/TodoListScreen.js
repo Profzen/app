@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Platform, StatusBar } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Platform, StatusBar, Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
@@ -9,21 +9,89 @@ import { useApp } from '../context/AppContext';
 
 export default function TodoListScreen() {
   const navigation = useNavigation();
-  const { t } = useApp();
+  const { t, user } = useApp();
 
-  const [todos, setTodos] = useState([
-    { id: '1', titleKey: 'todoList.todo1Title', defaultTitle: 'Acheter un cadeau pour Abdou', categoryKey: 'todoList.categoryPayment', defaultCategory: 'Paiement', dueKey: 'todoList.dueToday', defaultDue: "Aujourd'hui", done: false, icon: 'bag-handle-outline', color: '#8B5CF6' },
-    { id: '2', titleKey: 'todoList.todo2Title', defaultTitle: 'Recharger le portefeuille', categoryKey: 'todoList.categoryWallet', defaultCategory: 'Portefeuille', dueKey: 'todoList.dueThisWeek', defaultDue: 'Cette semaine', done: false, icon: 'wallet-outline', color: '#EF4444' },
-    { id: '3', titleKey: 'todoList.todo3Title', defaultTitle: 'Compléter mon profil', categoryKey: 'todoList.categorySecurity', defaultCategory: 'Sécurité', dueKey: 'todoList.dueBeforeFriday', defaultDue: 'Avant vendredi', done: true, icon: 'shield-checkmark-outline', color: '#3B82F6' },
-    { id: '4', titleKey: 'todoList.todo4Title', defaultTitle: 'Créer ma boutique DZYStore', categoryKey: 'todoList.categoryBusiness', defaultCategory: 'Business', dueKey: 'todoList.dueThisMonth', defaultDue: 'Ce mois-ci', done: false, icon: 'storefront-outline', color: '#F59E0B' },
-  ]);
+  const isMerchant = user?.role === 'merchant' || !!user?.merchantProfile;
+  const isProfileComplete = !!(user?.name && (user?.email || user?.phone));
+  const hasFunds = (user?.totalUsdValue || user?.balanceDZY || 0) > 0;
+
+  const baseTasks = useMemo(() => {
+    const list = [
+      { 
+        id: '1', 
+        titleKey: 'todoList.todo1Title', 
+        defaultTitle: 'Acheter un cadeau pour Abdou', 
+        categoryKey: 'todoList.categoryPayment', 
+        defaultCategory: 'Paiement', 
+        dueKey: 'todoList.dueToday', 
+        defaultDue: "Aujourd'hui", 
+        done: false, 
+        icon: 'bag-handle-outline', 
+        color: '#8B5CF6',
+        actionRoute: 'ExploreGiftCardsScreen',
+        actionLabel: 'Acheter'
+      },
+      { 
+        id: '2', 
+        titleKey: 'todoList.todo2Title', 
+        defaultTitle: 'Recharger le portefeuille', 
+        categoryKey: 'todoList.categoryWallet', 
+        defaultCategory: 'Portefeuille', 
+        dueKey: 'todoList.dueThisWeek', 
+        defaultDue: 'Cette semaine', 
+        done: hasFunds, 
+        icon: 'wallet-outline', 
+        color: '#EF4444',
+        actionRoute: 'TopUpScreen',
+        actionLabel: 'Recharger'
+      },
+      { 
+        id: '3', 
+        titleKey: 'todoList.todo3Title', 
+        defaultTitle: 'Compléter mon profil', 
+        categoryKey: 'todoList.categorySecurity', 
+        defaultCategory: 'Sécurité', 
+        dueKey: 'todoList.dueBeforeFriday', 
+        defaultDue: 'Avant vendredi', 
+        done: isProfileComplete, 
+        icon: 'shield-checkmark-outline', 
+        color: '#3B82F6',
+        actionRoute: 'AccountSettingsScreen',
+        actionLabel: 'Compléter'
+      },
+    ];
+
+    // Only propose creating a DZYStore if the user does NOT already have a business / merchant profile
+    if (!isMerchant) {
+      list.push({ 
+        id: '4', 
+        titleKey: 'todoList.todo4Title', 
+        defaultTitle: 'Créer ma boutique DZYStore', 
+        categoryKey: 'todoList.categoryBusiness', 
+        defaultCategory: 'Business', 
+        dueKey: 'todoList.dueThisMonth', 
+        defaultDue: 'Ce mois-ci', 
+        done: false, 
+        icon: 'storefront-outline', 
+        color: '#F59E0B',
+        actionUrl: 'https://dizzitup.com/merchant-login-registration?mode=signup',
+        actionLabel: 'Créer'
+      });
+    }
+
+    return list;
+  }, [isMerchant, isProfileComplete, hasFunds]);
+
+  const [customTodos, setCustomTodos] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
   const [toast, setToast] = useState(false);
 
+  const allTodos = [...baseTasks, ...customTodos];
+
   const addTodo = () => {
     if (!title.trim()) return;
-    setTodos((items) => [{ 
+    setCustomTodos((items) => [{ 
       id: Date.now().toString(), 
       title: title.trim(), 
       categoryKey: 'todoList.categoryPersonal',
@@ -32,12 +100,25 @@ export default function TodoListScreen() {
       defaultDue: 'À planifier', 
       done: false, 
       icon: 'checkmark-circle-outline', 
-      color: '#10B981' 
+      color: '#10B981',
+      isCustom: true
     }, ...items]);
     setTitle(''); setShowForm(false); setToast(true);
   };
 
-  const pending = todos.filter((todo) => !todo.done).length;
+  const handleTaskAction = (todo) => {
+    if (todo.isCustom) {
+      setCustomTodos(items => items.map(it => it.id === todo.id ? { ...it, done: !it.done } : it));
+      return;
+    }
+    if (todo.actionRoute) {
+      navigation.navigate(todo.actionRoute);
+    } else if (todo.actionUrl) {
+      Linking.openURL(todo.actionUrl);
+    }
+  };
+
+  const pending = allTodos.filter((todo) => !todo.done).length;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -59,10 +140,10 @@ export default function TodoListScreen() {
           <View style={styles.summary}>
             <View>
               <Text style={styles.summaryLabel}>{t('todoList.progressLabel', 'Votre progression')}</Text>
-              <Text style={styles.summaryValue}>{todos.length - pending}/{todos.length} {t('todoList.completed', 'terminées')}</Text>
+              <Text style={styles.summaryValue}>{allTodos.length - pending}/{allTodos.length} {t('todoList.completed', 'terminées')}</Text>
             </View>
             <View style={styles.progress}>
-              <View style={[styles.progressFill, {width: `${todos.length ? ((todos.length-pending)/todos.length)*100 : 0}%`}]} />
+              <View style={[styles.progressFill, {width: `${allTodos.length ? ((allTodos.length-pending)/allTodos.length)*100 : 0}%`}]} />
             </View>
           </View>
 
@@ -89,7 +170,7 @@ export default function TodoListScreen() {
           )}
 
           <Text style={styles.sectionTitle}>{t('todoList.allTasks', 'Toutes les tâches')}</Text>
-          {todos.map((todo) => {
+          {allTodos.map((todo) => {
             const displayTitle = todo.titleKey ? t(todo.titleKey, todo.defaultTitle) : todo.title;
             const displayCat = todo.categoryKey ? t(todo.categoryKey, todo.defaultCategory) : todo.category;
             const displayDue = todo.dueKey ? t(todo.dueKey, todo.defaultDue) : todo.due;
@@ -97,7 +178,8 @@ export default function TodoListScreen() {
               <TouchableOpacity 
                 key={todo.id} 
                 style={styles.todo} 
-                onPress={() => setTodos((items) => items.map((item) => item.id===todo.id ? {...item, done: !item.done} : item))}
+                onPress={() => handleTaskAction(todo)}
+                activeOpacity={0.7}
               >
                 <View style={[styles.todoIcon, {backgroundColor: `${todo.color}18`}]}>
                   <Ionicons name={todo.icon} size={22} color={todo.color} />
@@ -106,7 +188,16 @@ export default function TodoListScreen() {
                   <Text style={[styles.todoTitle, todo.done && styles.done]}>{displayTitle}</Text>
                   <Text style={styles.todoMeta}>{displayCat} • {displayDue}</Text>
                 </View>
-                <Ionicons name={todo.done ? 'checkmark-circle' : 'ellipse-outline'} size={24} color={todo.done ? '#10B981' : '#CBD5E1'} />
+                {todo.done ? (
+                  <View style={styles.doneBadge}>
+                    <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+                  </View>
+                ) : (
+                  <View style={styles.actionBtnContainer}>
+                    <Text style={styles.actionBtnText}>{todo.actionLabel || 'Ouvrir'}</Text>
+                    <Ionicons name="chevron-forward" size={16} color="#0052FF" />
+                  </View>
+                )}
               </TouchableOpacity>
             );
           })}
@@ -130,4 +221,4 @@ export default function TodoListScreen() {
 
 const styles=StyleSheet.create({safeArea:{flex:1,backgroundColor:'#F8FAFC',
     paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 14,
-  },container:{flex:1},header:{flexDirection:'row',alignItems:'center',padding:18,backgroundColor:'#FFF',borderBottomWidth:1,borderBottomColor:'#EEF2F7', },back:{width:42,height:42,borderRadius:14,alignItems:'center',justifyContent:'center',marginRight:12},title:{fontFamily:'SpaceGrotesk_700Bold',fontSize:25,color:'#1A2840'},subtitle:{fontFamily:'Inter_400Regular',fontSize:13,color:'#64748B'},addHeader:{width:44,height:44,borderRadius:14,backgroundColor:'#FFC759',alignItems:'center',justifyContent:'center'},content:{padding:16,paddingBottom:35},summary:{backgroundColor:'#1A2840',borderRadius:20,padding:18,marginBottom:18},summaryLabel:{fontFamily:'Inter_500Medium',color:'#CBD5E1'},summaryValue:{fontFamily:'SpaceGrotesk_700Bold',fontSize:22,color:'#FFF',marginTop:4},progress:{height:7,borderRadius:4,backgroundColor:'#334155',marginTop:14,overflow:'hidden'},progressFill:{height:'100%',backgroundColor:'#FFC759'},form:{backgroundColor:'#FFF',borderRadius:18,padding:16,borderWidth:1,borderColor:'#F2C15B',marginBottom:18},formTitle:{fontFamily:'SpaceGrotesk_700Bold',fontSize:18,color:'#1A2840',marginBottom:10},input:{height:50,borderWidth:1,borderColor:'#E2E8F0',borderRadius:13,paddingHorizontal:14,fontFamily:'Inter_400Regular',outlineStyle:'none'},formActions:{flexDirection:'row',justifyContent:'flex-end',marginTop:12,gap:8},cancel:{padding:12},cancelText:{fontFamily:'Inter_600SemiBold',color:'#64748B'},save:{flexDirection:'row',alignItems:'center',backgroundColor:'#FFC759',borderRadius:12,paddingHorizontal:15,paddingVertical:11,gap:7},saveText:{fontFamily:'Inter_700Bold',color:'#1A2840'},sectionTitle:{fontFamily:'SpaceGrotesk_700Bold',fontSize:19,color:'#1A2840',marginBottom:10},todo:{flexDirection:'row',alignItems:'center',backgroundColor:'#FFF',borderRadius:16,padding:14,marginBottom:10,borderWidth:1,borderColor:'#EEF2F7'},todoIcon:{width:44,height:44,borderRadius:14,alignItems:'center',justifyContent:'center',marginRight:12},todoTitle:{fontFamily:'Inter_600SemiBold',fontSize:14,color:'#1A2840'},done:{textDecorationLine:'line-through',color:'#94A3B8'},todoMeta:{fontFamily:'Inter_400Regular',fontSize:11,color:'#64748B',marginTop:4},createBtn:{height:54,borderRadius:16,borderWidth:1.5,borderColor:'#FFC759',flexDirection:'row',alignItems:'center',justifyContent:'center',gap:8,marginTop:8},createText:{fontFamily:'Inter_700Bold',color:'#1A2840'}});
+  },container:{flex:1},header:{flexDirection:'row',alignItems:'center',padding:18,backgroundColor:'#FFF',borderBottomWidth:1,borderBottomColor:'#EEF2F7', },back:{width:42,height:42,borderRadius:14,alignItems:'center',justifyContent:'center',marginRight:12},title:{fontFamily:'SpaceGrotesk_700Bold',fontSize:25,color:'#1A2840'},subtitle:{fontFamily:'Inter_400Regular',fontSize:13,color:'#64748B'},addHeader:{width:44,height:44,borderRadius:14,backgroundColor:'#FFC759',alignItems:'center',justifyContent:'center'},content:{padding:16,paddingBottom:35},summary:{backgroundColor:'#1A2840',borderRadius:20,padding:18,marginBottom:18},summaryLabel:{fontFamily:'Inter_500Medium',color:'#CBD5E1'},summaryValue:{fontFamily:'SpaceGrotesk_700Bold',fontSize:22,color:'#FFF',marginTop:4},progress:{height:7,borderRadius:4,backgroundColor:'#334155',marginTop:14,overflow:'hidden'},progressFill:{height:'100%',backgroundColor:'#FFC759'},form:{backgroundColor:'#FFF',borderRadius:18,padding:16,borderWidth:1,borderColor:'#F2C15B',marginBottom:18},formTitle:{fontFamily:'SpaceGrotesk_700Bold',fontSize:18,color:'#1A2840',marginBottom:10},input:{height:50,borderWidth:1,borderColor:'#E2E8F0',borderRadius:13,paddingHorizontal:14,fontFamily:'Inter_400Regular',outlineStyle:'none'},formActions:{flexDirection:'row',justifyContent:'flex-end',marginTop:12,gap:8},cancel:{padding:12},cancelText:{fontFamily:'Inter_600SemiBold',color:'#64748B'},save:{flexDirection:'row',alignItems:'center',backgroundColor:'#FFC759',borderRadius:12,paddingHorizontal:15,paddingVertical:11,gap:7},saveText:{fontFamily:'Inter_700Bold',color:'#1A2840'},sectionTitle:{fontFamily:'SpaceGrotesk_700Bold',fontSize:19,color:'#1A2840',marginBottom:10},todo:{flexDirection:'row',alignItems:'center',backgroundColor:'#FFF',borderRadius:16,padding:14,marginBottom:10,borderWidth:1,borderColor:'#EEF2F7'},todoIcon:{width:44,height:44,borderRadius:14,alignItems:'center',justifyContent:'center',marginRight:12},todoTitle:{fontFamily:'Inter_600SemiBold',fontSize:14,color:'#1A2840'},done:{textDecorationLine:'line-through',color:'#94A3B8'},todoMeta:{fontFamily:'Inter_400Regular',fontSize:11,color:'#64748B',marginTop:4},actionBtnContainer:{flexDirection:'row',alignItems:'center',backgroundColor:'#EFF6FF',paddingHorizontal:10,paddingVertical:6,borderRadius:10,gap:3},actionBtnText:{fontFamily:'Inter_600SemiBold',fontSize:12,color:'#0052FF'},doneBadge:{padding:4},createBtn:{height:54,borderRadius:16,borderWidth:1.5,borderColor:'#FFC759',flexDirection:'row',alignItems:'center',justifyContent:'center',gap:8,marginTop:8},createText:{fontFamily:'Inter_700Bold',color:'#1A2840'}});

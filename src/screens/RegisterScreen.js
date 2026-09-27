@@ -27,7 +27,7 @@ export default function RegisterScreen() {
   const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '', type: 'success' });
 
   const appVersion = Application.nativeApplicationVersion || Constants?.expoConfig?.version || '1.0.0';
-  const appBuildNumber = Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '55';
+  const appBuildNumber = Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '56';
 
   const getPasswordStrength = (pass) => {
     if (!pass) return 0;

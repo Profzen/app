@@ -37,6 +37,9 @@ Nous avons adopté une architecture orientée **Composants Réutilisables** (dan
   - Utilisation de la librairie `@expo/vector-icons` (`Ionicons`).
   - **Règle stricte pour les assets** : Privilégier les fichiers images spécifiques (ex: `dizzitup logo cercle.png`) plutôt que des redessinages CSS ou des rognages hasardeux sur les fichiers horizontaux globaux. L'ajustement du padding interne d'une image peut se faire proprement avec `transform: [{scale: X}]`.
 - **Méthode de rendu privilégiée** : **TOUJOURS** utiliser le navigateur web (`npm run start` puis touche `w`) pour visualiser l'application en cours de développement. Cela évite les bugs liés aux versions périmées de l'application mobile Expo Go.
+- **Règle Souveraine d'Ingénierie : Zéro Hardcoding & Résolution Universelle (Directive Absolue)** :
+  - Lorsqu'un problème ou un cas de test est relevé sur un pays (ex: Togo, Madagascar, Bénin, etc.), un marchand spécifique ou une devise donnée, il est **STRICTEMENT INTERDIT de créer des conditions en dur (*hardcoding*) ciblant uniquement ce cas précis**.
+  - Tout correctif doit obligatoirement être pensé, architecturé et implémenté de manière **générale, standard et universelle** pour l'intégralité des 195 pays et devises du monde, tous les types de comptes et tous les flux. Zéro bricolage localisé.
 
 ---
 
@@ -3139,7 +3142,82 @@ ightarrow$ **MGA** avec drapeau 🇲🇬 ; Profil utilisateur pour les Particuli
   - **Commit Git** : `2253c7c` (*"feat(release): delivery of Build 55 with on-chain escrow innovation modal, in-app rating prompt, nexo quick percentage chips, dynamic cash-out summary, and prominent build badges on primary screens"*).
   - **Push Remote** : Poussé avec succès sur `origin/front-back`.
   - **Communication Slack** : Message récapitulatif complet en anglais (sans émojis) transmis à Solofo, Assia et Nathan.
-  - **Statut Actuel** : En attente du retour de l'équipe sur Slack avant fusion sur `develop` et déclenchement des pipelines de build EAS / TestFlight / Google Play.
+  - **Statut Actuel** : Validé et absorbé dans le cycle Build 56.
+
+---
+
+### 16. Livraison Build 56 : Généralisation Universelle, CRUD Bénéficiaires Realtime, Nom Marchand Business Wallet & Dynamisme To-Do List (27 Septembre 2026)
+
+- **Date** : 27 Septembre 2026
+- **Branche** : `front-back`
+- **Contexte des Retours Slack Solofo (Matinée du 27 Septembre)** :
+  1. **Validation & Alignement Web/Mobile (2:34 AM)** : Solofo félicite pour le Build 55 et questionne Assia sur la synchronisation stricte entre l'App Mobile et le Front Web.
+  2. **To-Do List Connectée & Règle Marchand (2:45 AM)** :
+     - Constat de Solofo : la To-Do list se comportait comme une maquette statique déconnectée :
+       - Elle proposait de "Créer ma boutique DZYStore" à un utilisateur déjà connecté en compte Business (*DizzitUp Togo*).
+       - Elle permettait de cocher/décocher manuellement des tâches système de manière factice.
+  3. **Business Wallet & Identité Marchand (9:21 AM)** :
+     - Pour le compte marchand *DizzitUp Togo*, la devise locale doit impérativement afficher **XOF** (Franc CFA) et non EUR/USD.
+     - Demande d'afficher le **nom de l'entreprise/marchand** directement sous la mention "Business wallet", avec une police normale (*regular, not bold*).
+  4. **Gestion des Contacts - Résolution des 4 Bugs Critiques (9:34 AM)** :
+     - *Ajout de contact* : Un nouveau bénéficiaire (Assia) enregistré n'apparaissait pas dans la liste après validation.
+     - *Drapeaux manquants* : Plusieurs pays affichaient la mention littérale `"null"` à la place de l'emoji drapeau.
+     - *Texte français résiduel* : Présence en dur de `"Voir tout"` au lieu de la traduction dynamique (*"View all"*).
+     - *Mise à jour de contact* : La modification d'un contact dont le nom était un numéro (+251...) en "Solofo Ethiopia" ne persistait pas.
+     - *Temps réel* : Absence de réactivité immédiate lors des créations/modifications de contacts.
+  5. **Relations de Contact Alignées sur le Web (11:07 AM)** :
+     - Constat d'une divergence : l'option "Collègue / Colleague" existait sur le mobile mais pas sur le Web.
+     - Demande d'harmonisation stricte avec le Web et la base de données Supabase.
+  6. **Règle Souveraine d'Ingénierie (Directive Mandatée par l'Utilisateur)** :
+     - **ZÉRO HARDCODING** : Interdiction absolue de créer des conditions spécifiques en dur pour un seul pays (ex: Togo, Madagascar). Tous les correctifs doivent être 100% universels et s'appliquer dynamiquement aux 195 pays et devises du monde.
+
+- **Modifications & Correctifs Appliqués (Build 56)** :
+  1. **Architecture & Service CRUD Bénéficiaires (`contactService.js` & `EditBeneficiaryScreen.js`)** :
+     - Implémentation complète de la méthode `contactService.updateBeneficiary(beneficiaryId, contactData)` supportant les UUID string Supabase.
+     - Correction de l'appel `contactService.addBeneficiary(userId, payload)` avec transmission obligatoire et systématique de l'ID utilisateur connecté.
+     - Levée des blocages de validation et persistance intégrale de tous les champs (prénom, nom, téléphone étranger, email, pays, banques, adresses blockchain EVM/Solana).
+  2. **Synchronisation Réactive & Supabase Realtime (`ContactsScreen.js` & `ContactsManageScreen.js`)** :
+     - Intégration de `useFocusEffect` pour rafraîchir instantanément la liste dès le retour arrière (`navigation.goBack()`).
+     - Mise en place d'un canal de souscription Supabase Realtime (`postgres_changes` sur la table `beneficiaries`) déclenchant la mise à jour immédiate à chaud sans nécessiter de rafraîchissement manuel.
+  3. **Résolution Universelle des Drapeaux (Éradication du "null")** :
+     - Implémentation de la fonction `getUniversalFlag` basée sur le standard unicode ISO-2 (`String.fromCodePoint`).
+     - Si `flag_emoji` est absent, vide ou égal à `"null"` dans la table `countries` de Supabase, le drapeau officiel du pays est calculé automatiquement à partir de son code ISO (ex: AF ➔ 🇦🇫, DZ ➔ 🇩🇿, ET ➔ 🇪🇹). Zéro affichage `"null"` pour tous les 249 territoires du monde.
+  4. **Alignement des Relations de Contact avec le Web** :
+     - Suppression de l'option non reconnue "Collègue" pour matcher le Web Front-End (`Famille`, `Ami`, `Autre`).
+     - Ajout d'une tentative de récupération dynamique via la table `contact_relationships` de Supabase si présente.
+  5. **Internationalisation & Nettoyage Linguistique** :
+     - Remplacement du texte en dur `"Voir tout"` dans `ContactsManageScreen.js` par la clé de traduction réactive `t('viewAll', 'View all')`.
+  6. **Business Wallet PRO : Nom de l'Entreprise & Résolution Universelle des Devises (`WalletCard.js` & `AppContext.js`)** :
+     - Ajout de l'affichage du nom de l'entreprise (`merchantSubtitleText`, police regular blanche, taille 12) sous le badge "BUSINESS WALLET PRO".
+     - Résolution universelle du pays et de la devise siège de l'entreprise : `AppContext.js` analyse dynamiquement `country_code`, `country`, `city_village` ou le nom de l'entité pour garantir la devise souveraine (ex: DizzitUp Togo ➔ TG ➔ `XOF`, EYOU Madagascar ➔ MG ➔ `MGA`, Bénin ➔ `XOF`, Sénégal ➔ `XOF`, Cameroun ➔ `XAF`, Kenya ➔ `KES`, etc.).
+  7. **To-Do List Réactive & Orientée Action (`TodoListScreen.js`)** :
+     - Filtrage automatique : si l'utilisateur possède déjà une boutique ou un rôle marchand (`isMerchant === true`), la tâche "Créer ma boutique DZYStore" est masquée.
+     - Remplacement des cases à cocher manuelles factices : les tâches redirigent directement vers leurs écrans d'action réels (Recharge de portefeuille ➔ `TopUpScreen`, Profil ➔ `AccountSettingsScreen`, Cadeaux ➔ `ExploreGiftCardsScreen`).
+     - Statut d'achèvement lié à l'état réel du compte (solde disponible, profil complété).
+  8. **Incrémentation EAS Build 56 & Notes In-App** :
+     - `app.json` : `buildNumber: "56"`, `versionCode: 56`, `description: "DizzitApp V1. Build 56 Beta Test Version"`.
+     - Badges et numéros de build synchronisés sur `LoginScreen.js`, `RegisterScreen.js`, `UnlockScreen.js`, `MoreSettingsScreen.js` et `AboutDizzitUpScreen.js`.
+
+- **Fichiers Modifiés** :
+  - `src/services/contactService.js` *(Ajout updateBeneficiary & validation userId dans addBeneficiary)*
+  - `src/screens/EditBeneficiaryScreen.js` *(getUniversalFlag anti-null, synchro relations web, handleSave unifié)*
+  - `src/screens/ContactsScreen.js` *(useFocusEffect & canal Supabase Realtime postgres_changes)*
+  - `src/screens/ContactsManageScreen.js` *(useFocusEffect, Supabase Realtime & remplacement Voir tout par i18n)*
+  - `src/components/WalletCard.js` *(Nom de la boutique sous Business wallet en police regular & styles)*
+  - `src/context/AppContext.js` *(Résolution universelle multi-paliers de la devise siège marchand)*
+  - `src/screens/TodoListScreen.js` *(Exclusion boutique existante & redirection vers les vraies actions système)*
+  - `src/screens/AboutDizzitUpScreen.js` *(Release Notes complètes Build 56 au 27 Septembre 2026)*
+  - `src/screens/MoreSettingsScreen.js` *(Badge Build 56 et fallback version)*
+  - `src/screens/LoginScreen.js` *(Fallback Build 56)*
+  - `src/screens/RegisterScreen.js` *(Fallback Build 56)*
+  - `src/screens/UnlockScreen.js` *(Fallback Build 56)*
+  - `app.json` *(buildNumber: "56", versionCode: 56, description Build 56)*
+  - `memoire.md` *(Inscription de la Règle Souveraine d'Ingénierie & section 16)*
+
+- **Matrice de Validation & Déploiement Git** :
+  - **Syntaxe Babel JSX** : 100% validé sur les 12 fichiers sources sans la moindre erreur.
+  - **Branche active** : `front-back`
+
 
 
 

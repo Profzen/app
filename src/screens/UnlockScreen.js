@@ -162,7 +162,7 @@ export default function UnlockScreen() {
 
           <View style={styles.versionFooter}>
             <Text style={styles.versionFooterText}>
-              {`v${Application.nativeApplicationVersion || Constants?.expoConfig?.version || '1.0.0'} • Build ${Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '55'}`}
+              {`v${Application.nativeApplicationVersion || Constants?.expoConfig?.version || '1.0.0'} • Build ${Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '56'}`}
             </Text>
           </View>
         </ScrollView>
