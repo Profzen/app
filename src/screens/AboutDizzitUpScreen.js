@@ -15,7 +15,7 @@ export default function AboutDizzitUpScreen() {
   const [toast, setToast] = useState(null);
 
   const appVersion = Constants?.expoConfig?.version || '1.0.37';
-  const appBuildNumber = Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '52';
+  const appBuildNumber = Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '55';
 
   const handleBack = () => {
     if (navigation.canGoBack()) navigation.goBack();
@@ -76,7 +76,7 @@ export default function AboutDizzitUpScreen() {
               </View>
               <View style={styles.dateBadge}>
                 <Ionicons name="calendar-outline" size={12} color="#6B7280" style={{ marginRight: 4 }} />
-                <Text style={styles.dateBadgeText}>September 25, 2026</Text>
+                <Text style={styles.dateBadgeText}>September 26, 2026</Text>
               </View>
             </View>
 
@@ -89,29 +89,29 @@ export default function AboutDizzitUpScreen() {
               <View style={styles.releaseItem}>
                 <Text style={styles.releaseBullet}>•</Text>
                 <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Push Notifications Engine: </Text>
-                  Automated background Expo Push Token registration & sync to Supabase (user_profiles).
+                  <Text style={styles.releaseBold}>In-App Rating Prompt (La Banque Postale UX): </Text>
+                  5-star store evaluation modal & social receipt sharing triggered after each executed transaction.
                 </Text>
               </View>
               <View style={styles.releaseItem}>
                 <Text style={styles.releaseBullet}>•</Text>
                 <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Retention Deep-Linking: </Text>
-                  Direct navigation from notifications (Utility bill reminders to Pay Bills, Weekly deals to Store, Exchange rates to Send Money).
+                  <Text style={styles.releaseBold}>On-Chain Escrow Innovation (DizzitUp World-First): </Text>
+                  Comprehensive modal highlighting decentralized escrow protection and secret delivery PIN at final physical checkout.
                 </Text>
               </View>
               <View style={styles.releaseItem}>
                 <Text style={styles.releaseBullet}>•</Text>
                 <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Official Capabilities Directory: </Text>
-                  Standardized overview for Worldwide users (Buy goods, Top-up, Cash-out) and African Merchants.
+                  <Text style={styles.releaseBold}>Quick Percentage Selectors (Nexo UX): </Text>
+                  Fast 25%, 50%, 75%, 100% amount chips for cash-out / withdrawals.
                 </Text>
               </View>
               <View style={styles.releaseItem}>
                 <Text style={styles.releaseBullet}>•</Text>
                 <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Official Video Teasers: </Text>
-                  Direct access to DizzitUp official YouTube channel & overview video.
+                  <Text style={styles.releaseBold}>Direct Build Display on First Screens: </Text>
+                  Build # and version badges displayed prominently on Login, Splash, and Unlock screens.
                 </Text>
               </View>
             </View>
@@ -127,36 +127,22 @@ export default function AboutDizzitUpScreen() {
               <View style={styles.releaseItem}>
                 <Text style={styles.releaseBullet}>•</Text>
                 <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Point of Sale (POS): </Text>
-                  Full 1-screen non-scrolling cashier calculator with QR receive mode default.
+                  <Text style={styles.releaseBold}>Cash-Out Multi-Country Consistency: </Text>
+                  Dynamically resolves destination country (e.g. Madagascar / MGA), net amount, and local rails instead of hardcoded Togo Mixx.
                 </Text>
               </View>
               <View style={styles.releaseItem}>
                 <Text style={styles.releaseBullet}>•</Text>
                 <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Universal Currency Priority: </Text>
-                  IP geolocation priority for personal wallet, store country priority for POS.
+                  <Text style={styles.releaseBold}>Native Build Bump (Build 55): </Text>
+                  Synchronized app.json and native configs to 55, restoring TestFlight auto-installation without manual delete.
                 </Text>
               </View>
               <View style={styles.releaseItem}>
                 <Text style={styles.releaseBullet}>•</Text>
                 <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Invite & Referral Links: </Text>
-                  Direct native OS share sheet with official referral link.
-                </Text>
-              </View>
-              <View style={styles.releaseItem}>
-                <Text style={styles.releaseBullet}>•</Text>
-                <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Beneficiary Deduplication: </Text>
-                  Sanitized list in Pay Bills preventing duplicate recipients.
-                </Text>
-              </View>
-              <View style={styles.releaseItem}>
-                <Text style={styles.releaseBullet}>•</Text>
-                <Text style={styles.releaseText}>
-                  <Text style={styles.releaseBold}>Header Notification Bell: </Text>
-                  Connected directly to Notifications Center screen.
+                  <Text style={styles.releaseBold}>Business Wallet Sovereign Priority: </Text>
+                  Guaranteed merchant country currency (EYOU Madagascar ➔ MGA 🇲🇬) isolating business wallets from IP roaming.
                 </Text>
               </View>
             </View>

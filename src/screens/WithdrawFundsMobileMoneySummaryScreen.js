@@ -8,8 +8,76 @@ import { useApp } from '../context/AppContext';
 export default function WithdrawFundsMobileMoneySummaryScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { t } = useApp();
-  const { amount, currency, selectedToken, selectedNetwork, selectedMethod } = route.params || {};
+  const { t, user, language } = useApp();
+  const { 
+    amount = '250000', 
+    currency, 
+    selectedToken = 'USDC', 
+    selectedNetwork = 'Polygon', 
+    selectedMethod = 'momo', 
+    destinationCountry 
+  } = route.params || {};
+
+  // Resolve Country, Currency and Provider dynamically
+  let countryName = 'Togo';
+  let flag = '🇹🇬';
+  let effectiveCurrency = currency || 'FCFA';
+  let rate = 600;
+  let providerName = selectedMethod === 'bank' ? t('withdrawFunds.bankTransfer', 'Virement bancaire') : 'Mixx by Yas (Togo)';
+
+  const countryParam = (destinationCountry || user?.merchantProfile?.country || user?.country || '').toUpperCase();
+  const currParam = (currency || '').toUpperCase();
+
+  if (currParam === 'MGA' || countryParam === 'MG' || countryParam === 'MADAGASCAR') {
+    countryName = 'Madagascar';
+    flag = '🇲🇬';
+    effectiveCurrency = 'MGA';
+    rate = 4500;
+    providerName = selectedMethod === 'bank' ? t('withdrawFunds.bankTransfer', 'Virement bancaire') : 'Airtel / Orange Money (Madagascar)';
+  } else if (currParam === 'EUR' || countryParam === 'FR' || countryParam === 'FRANCE') {
+    countryName = 'France';
+    flag = '🇫🇷';
+    effectiveCurrency = 'EUR';
+    rate = 0.92;
+    providerName = 'Virement SEPA (Euro)';
+  } else if (currParam === 'USD' || countryParam === 'US' || countryParam === 'USA') {
+    countryName = 'United States';
+    flag = '🇺🇸';
+    effectiveCurrency = 'USD';
+    rate = 1.0;
+    providerName = 'ACH / Wire Transfer';
+  } else if (currParam === 'GHS' || countryParam === 'GH' || countryParam === 'GHANA') {
+    countryName = 'Ghana';
+    flag = '🇬🇭';
+    effectiveCurrency = 'GHS';
+    rate = 15.5;
+    providerName = selectedMethod === 'bank' ? t('withdrawFunds.bankTransfer', 'Bank transfer') : 'MTN Mobile Money (Ghana)';
+  } else if (countryParam === 'BJ' || countryParam === 'BENIN') {
+    countryName = 'Bénin';
+    flag = '🇧🇯';
+    effectiveCurrency = 'FCFA';
+    rate = 600;
+    providerName = selectedMethod === 'bank' ? t('withdrawFunds.bankTransfer', 'Virement bancaire') : 'MTN / Moov Money (Bénin)';
+  } else if (countryParam === 'CI' || countryParam === "COTE D'IVOIRE") {
+    countryName = "Côte d'Ivoire";
+    flag = '🇨🇮';
+    effectiveCurrency = 'FCFA';
+    rate = 600;
+    providerName = selectedMethod === 'bank' ? t('withdrawFunds.bankTransfer', 'Virement bancaire') : 'Wave / Orange Money (CI)';
+  }
+
+  const numAmount = parseFloat(String(amount).replace(/[^\d.]/g, '')) || 250000;
+  const locale = language === 'en' ? 'en-US' : 'fr-FR';
+  const formattedAmount = numAmount.toLocaleString(locale);
+  const feePercent = 0.03;
+  const feeAmount = Math.round(numAmount * feePercent);
+  const netAmount = numAmount - feeAmount;
+  const formattedNetAmount = netAmount.toLocaleString(locale);
+  const formattedFeeAmount = feeAmount.toLocaleString(locale);
+  const token = selectedToken || 'USDC';
+  const debitTokenAmount = (numAmount / rate).toFixed(2);
+  const rateFormatted = rate.toLocaleString(locale);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -19,7 +87,11 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={24} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.pageTitle}>{t('withdrawFunds.titleToMobileMoney', 'Withdraw funds to Mobile Money')}</Text>
+          <Text style={styles.pageTitle}>
+            {selectedMethod === 'bank' 
+              ? t('withdrawFunds.titleToBank', 'Withdraw funds to Bank account')
+              : t('withdrawFunds.titleToMobileMoney', 'Withdraw funds to Mobile Money')}
+          </Text>
           <TouchableOpacity style={styles.iconBtn}>
             <Ionicons name="headset-outline" size={24} color="#1A2840" />
           </TouchableOpacity>
@@ -70,12 +142,12 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
                 </View>
                 <View>
                   <Text style={styles.summaryLabel}>{t('withdrawFunds.youWithdraw', 'You withdraw')}</Text>
-                  <Text style={styles.summaryValueBig}>250 000 FCFA</Text>
+                  <Text style={styles.summaryValueBig}>{formattedAmount} {effectiveCurrency}</Text>
                 </View>
               </View>
               <View style={styles.countryBadge}>
-                <Text style={styles.flagText}>🇹🇬</Text>
-                <Text style={styles.countryText}>Togo</Text>
+                <Text style={styles.flagText}>{flag}</Text>
+                <Text style={styles.countryText}>{countryName}</Text>
               </View>
             </View>
 
@@ -89,15 +161,17 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
                 </View>
                 <View>
                   <Text style={styles.summaryLabel}>{t('withdrawFunds.walletDebited', 'Your DZYwallet is debited by')}</Text>
-                  <Text style={styles.summaryValueBig}>251,40 USDC</Text>
-                  <Text style={styles.summaryRate}>{t('withdrawFunds.exchangeRate', { token: 'USDC', rate: '995,62', curr: 'FCFA', defaultValue: 'Rate: 1 USDC = 995,62 FCFA' })}</Text>
+                  <Text style={styles.summaryValueBig}>{debitTokenAmount} {token}</Text>
+                  <Text style={styles.summaryRate}>
+                    {t('withdrawFunds.exchangeRate', { token, rate: rateFormatted, curr: effectiveCurrency, defaultValue: `Rate: 1 ${token} = ${rateFormatted} ${effectiveCurrency}` })}
+                  </Text>
                 </View>
               </View>
               <View style={styles.tokenBadge}>
                 <View style={styles.usdcLogo}>
                   <Text style={{color: '#FFF', fontSize: 10, fontWeight: 'bold'}}>$</Text>
                 </View>
-                <Text style={styles.countryText}>USDC</Text>
+                <Text style={styles.countryText}>{token}</Text>
               </View>
             </View>
 
@@ -111,16 +185,17 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
                 </View>
                 <View>
                   <Text style={styles.summaryLabel}>{t('withdrawFunds.youReceive', 'You receive')}</Text>
-                  <Text style={styles.summaryValueBig}>247 000 FCFA</Text>
-                  <Text style={styles.summaryLabel}>{t('withdrawFunds.onWallet', { name: 'Mixx', defaultValue: 'on your Mixx wallet' })}</Text>
+                  <Text style={styles.summaryValueBig}>{formattedNetAmount} {effectiveCurrency}</Text>
+                  <Text style={styles.summaryLabel}>
+                    {t('withdrawFunds.onMethod', { name: providerName, defaultValue: `via ${providerName}` })}
+                  </Text>
                 </View>
               </View>
               <View style={styles.providerBadgeContainer}>
                 <View style={styles.providerBadge}>
-                  <Text style={styles.providerLogoText}>mixx</Text>
-                  <Text style={styles.providerSubLogo}>by yas</Text>
+                  <Ionicons name={selectedMethod === 'bank' ? "business" : "phone-portrait"} size={14} color="#1A2840" />
                 </View>
-                <Text style={styles.providerNameText}>Mixx (Togo)</Text>
+                <Text style={styles.providerNameText} numberOfLines={1}>{providerName}</Text>
               </View>
             </View>
 
@@ -132,21 +207,21 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
                 <Text style={styles.feeLabel}>{t('withdrawFunds.dizzitupFee', 'DizzitUp Fee')}</Text>
                 <Ionicons name="information-circle-outline" size={14} color="#94A3B8" style={{marginLeft: 4}} />
               </View>
-              <Text style={styles.feeValue}>7 500 FCFA (3,00%)</Text>
+              <Text style={styles.feeValue}>{formattedFeeAmount} {effectiveCurrency} (3,00%)</Text>
             </View>
 
             <View style={styles.feeRow}>
               <View style={styles.feeLabelRow}>
-                <Text style={styles.feeLabel}>{t('withdrawFunds.networkFee', 'Network Fee')} (Mixin Network)</Text>
+                <Text style={styles.feeLabel}>{t('withdrawFunds.networkFee', 'Network Fee')} ({selectedNetwork})</Text>
                 <Ionicons name="information-circle-outline" size={14} color="#94A3B8" style={{marginLeft: 4}} />
               </View>
-              <Text style={styles.feeValue}>0 FCFA (0%)</Text>
+              <Text style={styles.feeValue}>0 {effectiveCurrency} (0%)</Text>
             </View>
 
             {/* Total */}
             <View style={styles.totalBanner}>
               <Text style={styles.totalLabel}>{t('withdrawFunds.youReceiveTotal', 'You will receive in total')}</Text>
-              <Text style={styles.totalValue}>247 000 FCFA</Text>
+              <Text style={styles.totalValue}>{formattedNetAmount} {effectiveCurrency}</Text>
             </View>
 
           </View>
@@ -156,7 +231,7 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
             <Text style={styles.feeLabel}>{t('withdrawFunds.sellTransaction', 'Sell transaction')}</Text>
             <View style={styles.sellRow}>
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text style={styles.sellTitle}>Sell 251,40 USDC</Text>
+                <Text style={styles.sellTitle}>Sell {debitTokenAmount} {token}</Text>
                 <View style={styles.successBadge}>
                   <Text style={styles.successBadgeText}>{t('common.success', 'Success')}</Text>
                 </View>
@@ -179,7 +254,7 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
           </View>
 
           {/* Continue Button */}
-          <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('WithdrawFundsMobileMoneyProcessingScreen', { amount, currency, selectedToken, selectedNetwork, selectedMethod })}>
+          <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('WithdrawFundsMobileMoneyProcessingScreen', { amount, currency: effectiveCurrency, selectedToken: token, selectedNetwork, selectedMethod, destinationCountry })}>
             <Ionicons name="lock-closed" size={18} color="#1A2840" style={{marginRight: 8}} />
             <Text style={styles.btnContinueText}>{t('withdrawFunds.confirmWithdrawal', 'Confirm withdrawal')}</Text>
           </TouchableOpacity>

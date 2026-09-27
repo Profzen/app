@@ -1,10 +1,11 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import AppToast from '../components/AppToast';
+import RatingPromptModal from '../components/RatingPromptModal';
 import { useApp } from '../context/AppContext';
 
 export default function SendMoneySuccessScreen() {
@@ -14,6 +15,14 @@ export default function SendMoneySuccessScreen() {
 
   const { amount = '1', token = 'USDC', recipient = 'My Business', hash = '91d99789-98cc-44c0-8a14-da693a72e5f1' } = route.params || {};
   const [toast, setToast] = useState(null);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowRatingModal(true);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleCopyHash = async () => {
     try {
@@ -137,6 +146,7 @@ export default function SendMoneySuccessScreen() {
 
         </ScrollView>
 
+        <RatingPromptModal visible={showRatingModal} onClose={() => setShowRatingModal(false)} />
         {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
       </View>
     </SafeAreaView>

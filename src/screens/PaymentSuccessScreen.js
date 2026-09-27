@@ -1,11 +1,12 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Share, Platform, StatusBar } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import * as Clipboard from 'expo-clipboard';
 import AppToast from '../components/AppToast';
+import RatingPromptModal from '../components/RatingPromptModal';
 import { useApp } from '../context/AppContext';
 import { getFlagEmoji, getCountryFromPhone, getFullCountryName } from '../utils/countryCurrencyUtils';
 
@@ -13,6 +14,14 @@ export default function PaymentSuccessScreen({ route }) {
   const navigation = useNavigation();
   const { t, user, language } = useApp();
   const [toast, setToast] = useState(null);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowRatingModal(true);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   const tx = route?.params?.transaction || {};
   const txRef = tx.orderId || tx.id || tx.txHash || (tx.created_at ? 'ORD-' + new Date(tx.created_at).getTime() : 'ORD-' + Date.now());
@@ -269,6 +278,7 @@ export default function PaymentSuccessScreen({ route }) {
         </ScrollView>
 
         <BottomNavBar activeTab="Accueil" />
+        <RatingPromptModal visible={showRatingModal} onClose={() => setShowRatingModal(false)} />
         {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
       </View>
     </SafeAreaView>

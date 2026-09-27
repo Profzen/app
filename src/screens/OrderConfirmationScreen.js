@@ -38,6 +38,9 @@ export default function OrderConfirmationScreen({ route }) {
   const [showCyberSourceModal, setShowCyberSourceModal] = useState(false);
   const [cyberSourceHtml, setCyberSourceHtml] = useState(null);
 
+  // Escrow Innovation Modal State
+  const [showEscrowModal, setShowEscrowModal] = useState(false);
+
   if (!orderData || !orderData.items || orderData.items.length === 0) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -114,7 +117,11 @@ export default function OrderConfirmationScreen({ route }) {
     });
   };
 
-  const handleConfirmPurchase = async () => {
+  const handleConfirmPurchase = () => {
+    setShowEscrowModal(true);
+  };
+
+  const executeOrderSimulation = async () => {
     if (loading) return;
     setLoading(true);
 
@@ -561,6 +568,69 @@ export default function OrderConfirmationScreen({ route }) {
         </Modal>
       )}
 
+      {/* On-Chain Escrow Innovation Modal (Solofo Mandate) */}
+      <Modal visible={showEscrowModal} transparent animationType="fade" onRequestClose={() => setShowEscrowModal(false)}>
+        <View style={styles.escrowModalOverlay}>
+          <View style={styles.escrowModalCard}>
+            <View style={styles.escrowIconBadge}>
+              <Ionicons name="shield-checkmark" size={32} color="#D97706" />
+            </View>
+
+            <View style={styles.escrowInnovationTag}>
+              <Ionicons name="sparkles" size={13} color="#B45309" style={{ marginRight: 4 }} />
+              <Text style={styles.escrowInnovationTagText}>
+                {t('escrow.innovationTag', 'ON-CHAIN ESCROW • DIZZITUP INNOVATION')}
+              </Text>
+            </View>
+
+            <Text style={styles.escrowModalTitle}>
+              {t('escrow.modalTitle', 'Achats physiques bientôt disponibles !')}
+            </Text>
+
+            <Text style={styles.escrowModalSub}>
+              {t('escrow.modalSub', 'Protocole de séquestre décentralisé unique au monde')}
+            </Text>
+
+            <View style={styles.escrowPinBox}>
+              <Text style={styles.escrowPinLabel}>{t('escrow.yourPin', 'Votre code secret PIN de livraison')}</Text>
+              <Text style={styles.escrowPinNumber}>{escrowPin}</Text>
+            </View>
+
+            <Text style={styles.escrowModalDesc}>
+              {language === 'en'
+                ? 'Experience our exclusive On-Chain Escrow protocol — a world-first DizzitUp innovation.\n\nYour funds remain 100% safeguarded on-chain under smart contracts and are only released to the merchant after physical handover and inspection with your secret delivery PIN.\n\nLive on-chain settlements will be activated very soon!'
+                : 'Découvrez notre protocole exclusif de Séquestre On-Chain (Escrow Protection) — une innovation DizzitUp unique au monde.\n\nVos fonds restent protégés à 100% sur la blockchain sous smart contract et ne sont débloqués au commerçant qu\'après remise en main propre et vérification de votre colis grâce à votre code PIN secret.\n\nLe paiement réel sera activé très prochainement !'}
+            </Text>
+
+            <TouchableOpacity
+              style={styles.escrowModalPrimaryBtn}
+              onPress={() => {
+                setShowEscrowModal(false);
+                navigation.navigate('ShopsScreen');
+              }}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.escrowModalPrimaryBtnText}>
+                {t('escrow.gotIt', 'Compris, continuer')}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.escrowModalSecondaryBtn}
+              onPress={() => {
+                setShowEscrowModal(false);
+                executeOrderSimulation();
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.escrowModalSecondaryBtnText}>
+                {t('escrow.simulateOrder', 'Simuler le reçu de commande')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       {!!toast && (
         <View style={styles.toastWrap}>
           <AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} />
@@ -949,5 +1019,134 @@ const styles = StyleSheet.create({
     fontFamily: 'SpaceGrotesk_700Bold',
     fontSize: 15,
     color: '#1A2840',
+  },
+  /* Escrow Innovation Modal Styles */
+  escrowModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.72)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  escrowModalCard: {
+    width: '100%',
+    maxWidth: 360,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    paddingHorizontal: 22,
+    paddingTop: 24,
+    paddingBottom: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.18,
+    shadowRadius: 20,
+    elevation: 12,
+  },
+  escrowIconBadge: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FEF3C7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+    borderWidth: 1.5,
+    borderColor: '#FDE68A',
+  },
+  escrowInnovationTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFBEB',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    marginBottom: 10,
+  },
+  escrowInnovationTagText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 10,
+    color: '#B45309',
+    letterSpacing: 0.5,
+  },
+  escrowModalTitle: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 18,
+    color: '#0F172A',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  escrowModalSub: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: '#D97706',
+    textAlign: 'center',
+    marginBottom: 14,
+  },
+  escrowPinBox: {
+    width: '100%',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    borderStyle: 'dashed',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  escrowPinLabel: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 11,
+    color: '#64748B',
+    marginBottom: 4,
+  },
+  escrowPinNumber: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 26,
+    letterSpacing: 6,
+    color: '#0F172A',
+  },
+  escrowModalDesc: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12,
+    lineHeight: 18,
+    color: '#475569',
+    textAlign: 'center',
+    marginBottom: 18,
+  },
+  escrowModalPrimaryBtn: {
+    width: '100%',
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: '#FFB800',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+    shadowColor: '#FFB800',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  escrowModalPrimaryBtnText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 14,
+    color: '#1A2840',
+  },
+  escrowModalSecondaryBtn: {
+    width: '100%',
+    height: 42,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  escrowModalSecondaryBtnText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: '#64748B',
+    textDecorationLine: 'underline',
   },
 });

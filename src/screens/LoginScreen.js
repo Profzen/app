@@ -13,6 +13,8 @@ import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../services/supabaseClient';
 
+import Constants from 'expo-constants';
+import * as Application from 'expo-application';
 import { isSmallScreen, isShortScreen } from '../utils/responsive';
 
 export default function LoginScreen() {
@@ -23,6 +25,9 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '', type: 'info' });
+
+  const appVersion = Application.nativeApplicationVersion || Constants?.expoConfig?.version || '1.0.0';
+  const appBuildNumber = Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '55';
   const [errorMessage, setErrorMessage] = useState(null);
 
   const handleLogin = async () => {
@@ -74,7 +79,12 @@ export default function LoginScreen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>{t('auth.login', 'Connexion')}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={styles.headerTitle}>{t('auth.login', 'Connexion')}</Text>
+            <View style={styles.buildBadgeHeader}>
+              <Text style={styles.buildBadgeHeaderText}>Build {appBuildNumber}</Text>
+            </View>
+          </View>
           <LanguageSelector />
         </View>
 
@@ -197,6 +207,13 @@ export default function LoginScreen() {
           >
             <Text style={styles.signupButtonText}>{t('auth.signUp', "S'inscrire")}</Text>
           </TouchableOpacity>
+        </View>
+
+        {/* Version & Build info for testers */}
+        <View style={styles.versionFooter}>
+          <Text style={styles.versionFooterText}>
+            {`v${appVersion} • Build ${appBuildNumber}`}
+          </Text>
         </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -338,5 +355,31 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.fontFamily.semiBold,
     fontSize: theme.typography.sizes.sm,
     color: theme.colors.accent,
+  },
+  buildBadgeHeader: {
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    marginLeft: 8,
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+  },
+  buildBadgeHeaderText: {
+    fontFamily: theme.typography.fontFamily.semiBold || theme.typography.fontFamily.medium,
+    fontSize: 10,
+    color: '#1D4ED8',
+  },
+  versionFooter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+    marginBottom: 6,
+  },
+  versionFooterText: {
+    fontFamily: theme.typography.fontFamily.medium,
+    fontSize: 11,
+    color: '#94A3B8',
+    letterSpacing: 0.4,
   },
 });

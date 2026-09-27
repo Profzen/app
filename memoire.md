@@ -2844,7 +2844,8 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
 4. **Règle Universelle de Devise : Priorité au Pays de Résidence (`AppContext.js` & `WalletCard.js`)** :
    - Directive de Solofo : *"the currency to display at the left is their country of residence currency"*.
    - Hiérarchie souveraine appliquée dans `getEffectiveWalletCountry()` :
-     1. **Priorité 1** : Pays de résidence déclaré du compte (Profil marchand pour les Business, ex: Antananarivo / EYOU $ightarrow$ **MGA** avec drapeau 🇲🇬 ; Profil utilisateur pour les Particuliers).
+     1. **Priorité 1** : Pays de résidence déclaré du compte (Profil marchand pour les Business, ex: Antananarivo / EYOU $
+ightarrow$ **MGA** avec drapeau 🇲🇬 ; Profil utilisateur pour les Particuliers).
      2. **Priorité 2 (Repli)** : Géolocalisation IP physique uniquement si aucun pays n'est renseigné.
      3. **Priorité 3** : USD.
 
@@ -2883,7 +2884,7 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
      node -e "const babel = require('@babel/core'); babel.transformFileSync('src/screens/HomeScreen.js', { presets: ['babel-preset-expo'] }); console.log('OK');"
      ```
 3. **Mettre à jour automatiquement les Release Notes In-App (Règle d'or Solofo)** :
-   - **Engagement strict de l'assistant IA** : À chaque fois qu'on termine une tâche ou qu'on s'apprête à faire un nouveau build (ex: Build 47), l'IA doit mettre à jour **automatiquement** dans `AboutDizzitUpScreen.js`, `MoreSettingsScreen.js` et `app.json` :
+   - **Engagement strict de l'assistant IA** : À chaque fois qu'on termine une tâche ou qu'on s'apprête à faire un nouveau build (ex: Build 47)![alt text](image.png), l'IA doit mettre à jour **automatiquement** dans `AboutDizzitUpScreen.js`, `MoreSettingsScreen.js` et `app.json` :
      - La date de livraison (`Delivery date`).
      - Le numéro de version & build (`Version & Build number`).
      - La liste à puces des nouvelles fonctionnalités (`New features`).
@@ -3066,29 +3067,58 @@ Le message suivant a été envoyé à Solofo sur Slack pour débloquer l'accès 
 
 ---
 
-### 14. Déroulement Build 52, Retours Solofo & Cadrage Escrow Checkout (25 Septembre 2026)
+### 14. Cadrage du Tunnel d'Achat "Buy Goods" & Séquestre Escrow (Proposition Solofo - 25 Septembre 2026)
 
-- **Date** : 25 Septembre 2026 (Fin de journée)
+- **Date** : 25 Septembre 2026
 - **Branche** : `front-back`
-- **Synchronisation Remote & Actions d'Assia sur `origin/develop`** :
-  1. Assia a bien récupéré et fusionné notre travail de `front-back` (`c26e9ac`) dans `origin/develop` (commits `4a1fdd2` et `df9e4c8`).
-  2. Elle a intégré une modale de blocage précoce (`PhysicalGoodsWarningModal.js`, commit `2da2021`) sur la fiche produit (`ProductDetailsScreen.js`), branchée sur les boutons *« Ajouter au panier »* et *« Acheter maintenant »*.
-  3. Elle a ajusté le texte de mission (commit `df6d3c0`) en séparant le token DZY de la liste des stablecoins.
-- **Retour de Test de Solofo sur Build 52** :
-  1. **Devise validée** : Après désinstallation complète et réinstallation sur son téléphone en France, le Personal Wallet résout bien en **EUR (€)** et le terminal caisse POS résout bien en **MGA (🇲🇬)**.
-  2. **Problème identifié sur la Marketplace** : Au clic sur un produit ou sur l'ajout au panier, la modale d'Assia piégeait l'utilisateur dans une boucle *« Continue browsing »* sans jamais lui permettre d'accéder au panier ni au checkout.
-  3. **Message Vocal WhatsApp de Solofo (21h22)** :
-     - Éloge appuyé du parcours et du design de l'application (« C'est magnifique, super beau »).
-     - **Consigne formelle** : Ne surtout pas bloquer le parcours en amont ! L'utilisateur doit pouvoir explorer la fiche produit, voir les sélections de paiement, le réseau blockchain, la mention du séquestre et le code PIN de livraison.
-     - L'avertissement doit intervenir **uniquement au tout dernier clic du Checkout**, en valorisant le protocole de sécurisation par séquestre (**Escrow**) en cours de finalisation.
-- **Action Réalisée (Aziz ➔ Solofo)** :
-  - Envoi du message de proposition sur Slack avec le texte complet de la modale à afficher sur le bouton final *« Confirmer et Payer »* d'`OrderConfirmationScreen`.
-  - Attente de la validation de Solofo.
-- **Feuille de Route pour la Reprise Demain** :
-  1. Dès validation de Solofo, fusionner `origin/develop` dans `front-back`.
-  2. Retirer le blocage précoce de `ProductDetailsScreen.js` (permettre l'ajout au panier et le clic vers le checkout).
-  3. Câbler la modale explicative Escrow sur le bouton *« Confirmer et Payer »* de `OrderConfirmationScreen.js`.
-  4. Valider avec Babel, mettre à jour les release notes in-app, et pousser sur `front-back`.
+- **Contexte & Orientation de Solofo (Message Vocal)** :
+  1. **Félicitations pour le Build 52** : Appréciation très positive du travail réalisé sur l'interface et le parcours d'achat (fiche produit, sélecteur de devises/réseaux, gestion du séquestre escrow, code PIN secret de livraison).
+  2. **Directive sur les achats physiques (*Buy Goods*)** : **Ne pas bloquer ni masquer le tunnel en amont**. L'utilisateur doit pouvoir explorer librement tout le catalogue, ouvrir la fiche produit (`ProductDetailsScreen`), configurer son mode de livraison et son moyen de paiement (`OrderVerificationScreen`), et accéder au récapitulatif sécurisé avec le code PIN de livraison (`OrderConfirmationScreen`).
+  3. **Point d'arrêt ciblé au Checkout final** : Sur l'écran `OrderConfirmationScreen`, le bouton **« Confirmer et Payer »** n'exécute pas de prélèvement réel mais ouvre une modale élégante et informative.
+- **Spécification de la Modale Proposée (Option 1 retenue)** :
+  - **Titre** : *« Achats physiques bientôt disponibles ! »* / *« Physical Goods Coming Soon »*
+  - **Message** : Met en avant le protocole de séquestre décentralisé (*Escrow*) en cours de déploiement pour garantir une protection totale des fonds jusqu'à la remise et vérification en main propre du colis.
+  - **Action** : Bouton « Compris » pour revenir confortablement sans frustration.
+- **Statut** : Proposition validée par Solofo le 26 Septembre à 6h16 avec directive marketing intégrée.
+
+---
+
+### 15. Livraison Build 55 : Validation Escrow Marketing, Notation In-App & Cohérence Cash-Out (26 Septembre 2026)
+
+- **Date** : 26 Septembre 2026
+- **Branche** : `front-back`
+- **Contexte des Retours Slack Solofo (Matinée du 26 Septembre)** :
+  1. **Validation Escrow Marketing (6:16 AM)** : Solofo valide le déclenchement de la modale au dernier clic du checkout en demandant d'y incorporer expressément : *« On-chain escrow, DizzitUp innovation, unique au monde... En mieux écrit »*.
+  2. **Notation In-App & Partage Social post-transaction (7:22 AM)** : Demande explicite à Abdel-Aziz d'ajouter un composant de notation in-app 5 étoiles (style La Banque Postale) après chaque transaction exécutée, avec bouton de partage social du reçu.
+  3. **Incohérence Cash-Out EYOU Madagascar ➔ Mixx Togo (7:31 AM)** : Solofo a constaté que le résumé de retrait affichait en dur 250 000 FCFA Togo Mixx alors qu'il retirait des MGA pour EYOU Madagascar. Assia & Nathan révisent la table backend des corridors off-ramp, et côté mobile, les fallbacks statiques doivent être dynamisés.
+  4. **Benchmark UX Nexo Cash-out (8:00 AM)** : Proposer les boutons de montant rapide 25%, 50%, 75%, 100% sur l'écran de retrait.
+  5. **Affichage Version & Build dès les premiers écrans (9:49 AM)** : Solofo insiste pour que le numéro de build soit immédiatement visible sur les 2 premiers écrans (Splash / LoginScreen).
+  6. **Bug Build 54 vs 52 & Auto-install bloquée (9:55 AM)** : La version précédente n'avait pas incrémenté `app.json` (resté à 52), ce qui a empêché TestFlight de proposer la mise à jour automatique.
+
+- **Modifications & Correctifs Appliqués (Build 55)** :
+  1. **Configuration Native & Auto-install Rétablie** :
+     - `app.json` : `buildNumber: "55"`, `versionCode: 55`, `description: "DizzitApp V1. Build 55 Beta Test Version"`.
+  2. **Affichage Visible Version & Build sur les Premiers Écrans** :
+     - `LoginScreen.js` : Badge `Build 55` visible directement dans l'en-tête et pied de page `v1.0.0 • Build 55`.
+     - `RegisterScreen.js` : Footer `v1.0.0 • Build 55` sous les mentions légales.
+     - `UnlockScreen.js` : Footer `v1.0.0 • Build 55` pour identification immédiate lors des tests.
+  3. **Modale d'Innovation On-Chain Escrow au Checkout (`OrderConfirmationScreen.js`)** :
+     - Le tunnel d'achat physique reste 100% libre et ouvert.
+     - Au clic sur le bouton final *« Confirmer et Payer »*, ouverture de la modale valorisant l'innovation DizzitUp :
+       *« ON-CHAIN ESCROW • DIZZITUP INNOVATION »*
+       *« Découvrez notre protocole exclusif de Séquestre On-Chain (Escrow Protection) — une innovation DizzitUp unique au monde. Vos fonds restent protégés à 100% sur la blockchain sous smart contract et ne sont débloqués au commerçant qu'après remise en main propre et vérification de votre colis grâce à votre code PIN secret. »*
+     - Deux boutons d'action : *« Compris, continuer »* (retour boutique) et *« Simuler le reçu de commande »* (pour tests complets).
+  4. **Modale d'Évaluation In-App (5 Étoiles Store) & Partage Social (`RatingPromptModal.js`)** :
+     - Création du composant `src/components/RatingPromptModal.js` inspiré de l'UX iOS La Banque Postale.
+     - Déclenchement automatique fluide sur `PaymentSuccessScreen.js` et `SendMoneySuccessScreen.js`.
+     - Gestion des 5 étoiles interactives, bouton *« Not Now »* et redirection vers le store.
+  5. **Dynamisation Complète du Résumé Cash-Out (`WithdrawFundsMobileMoneySummaryScreen.js`)** :
+     - Résolution dynamique du pays (`destinationCountry` / Madagascar / Togo / Bénin / France / etc.), de la devise (`MGA`, `FCFA`, `EUR`, `USD`), du taux de change réel et du prestataire (Virement bancaire ou Mobile Money local adapté).
+     - Éradication définitive de tout affichage erroné "Mixx Togo" lors d'un retrait sur Madagascar ou un autre pays.
+  6. **Boutons Rapides de Pourcentage Nexo (`WithdrawFundsScreen.js`)** :
+     - Ajout des puces 25%, 50%, 75%, 100% calculant automatiquement le montant selon le solde de l'actif sélectionné.
+  7. **Mise à Jour In-App Release Notes (Règle d'or Solofo)** :
+     - `AboutDizzitUpScreen.js` et `MoreSettingsScreen.js` synchronisés sur Build 55 au 26 Septembre 2026.
 
 
 
