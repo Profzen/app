@@ -2802,6 +2802,7 @@
       "sync_success": "ቦርሳዎች በተሳካ ሁኔታ ተመሳስለዋል",
       "sync_error": "የማመሳሰል ስህተት",
       "sync_not_found": "ምንም ቦርሳ አልተገኘም",
+      "sync_not_found_info": "ምንም የ DizzitUp መለያ አልተገኘም። መመዝገብዎን መቀጠል ይችላሉ፤ የኪስ ቦርሳዎች አማራጭ ናቸው።",
       "sync_req_phone": "እባክዎ መጀመሪያ ስልክ ቁጥር ያስገቡ",
       "save_req_name": "ስም ያስፈልጋል",
       "save_req_contact": "ስልክ ወይም ኢሜይል ያስፈልጋል",
@@ -3408,7 +3409,12 @@
     "invalid_amount": "ልክ ያልሆነ መጠን",
     "invalid_address": "ልክ ያልሆነ አድራሻ",
     "invalid_address_message": "እባክዎ ትክክለኛ ተቀባይ ይምረጡ።",
-    "business_wallet": "የንግድ የኪስ ቦርሳ"
+    "business_wallet": "የንግድ የኪስ ቦርሳ",
+    "no_crypto_wallet_title": "ምንም የክሪፕቶ የኪስ ቦርሳ አልተገናኘም",
+    "no_crypto_wallet_desc": "{{name}} እስካሁን በ DizzitUp ላይ የክሪፕቶ የኪስ ቦርሳ አላገናኘም። እንዴት መቀጠል ይፈልጋሉ?",
+    "action_send_invite": "ግብዣ ላክ (SMS / WhatsApp)",
+    "action_enter_manual": "አድራሻ በእጅ ያስገቡ",
+    "action_send_essentials": "የሞባይል ካርድ ወይም ክፍያዎች ይላኩ"
   },
   "@": "@",
   "*": "*",

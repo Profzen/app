@@ -2604,6 +2604,7 @@
       "sync_success": "تمت المزامنة بنجاح",
       "sync_error": "خطأ في المزامنة",
       "sync_not_found": "لم يتم العثور على محفظة",
+      "sync_not_found_info": "لم يتم العثور على حساب DizzitUp. يمكنك متابعة الحفظ؛ المحافظ اختيارية.",
       "sync_req_phone": "الرجاء إدخال رقم هاتف",
       "save_req_name": "الاسم مطلوب",
       "save_req_contact": "الهاتف أو البريد مطلوب",
@@ -3441,7 +3442,12 @@
     "invalid_amount": "مبلغ غير صالح",
     "invalid_address": "عنوان غير صالح",
     "invalid_address_message": "يرجى اختيار مستلم صالح.",
-    "business_wallet": "محفظة الأعمال"
+    "business_wallet": "محفظة الأعمال",
+    "no_crypto_wallet_title": "لم يتم ربط محفظة عملات رقمية",
+    "no_crypto_wallet_desc": "لم يربط {{name}} محفظة عملات رقمية على DizzitUp بعد. كيف تود المتابعة؟",
+    "action_send_invite": "إرسال دعوة (رسالة قصيرة / واتساب)",
+    "action_enter_manual": "إدخال العنوان يدويًا",
+    "action_send_essentials": "إرسال رصيد هاتف أو دفع فواتير"
   },
   "@": "@",
   "*": "*",

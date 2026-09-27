@@ -1,7 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform, StatusBar, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform, StatusBar, ActivityIndicator, Modal, Share } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import AppSelect from '../components/AppSelect';
@@ -53,6 +53,7 @@ export default function SendMoneyScreen() {
   
   const [amount, setAmount] = useState('1');
   const [toast, setToast] = useState(null);
+  const [missingWalletItem, setMissingWalletItem] = useState(null);
 
   const handlePasteClipboard = async () => {
     try {
@@ -154,6 +155,13 @@ export default function SendMoneyScreen() {
   });
 
   const handleSelectRecipient = (item) => {
+    const hasAddress = !!(item.evm_address || item.solana_address || (item.address && (item.address.startsWith('0x') || item.address.length > 30)));
+    if (!hasAddress && item.id !== 'self' && item.name !== 'My Account') {
+      setIsSearchingRecipient(false);
+      setIsDropdownVisible(false);
+      setMissingWalletItem(item);
+      return;
+    }
     setSelectedRecipient(item);
     setIsSearchingRecipient(false);
     setIsDropdownVisible(false);
@@ -442,6 +450,89 @@ export default function SendMoneyScreen() {
 
         <BottomNavBar />
         {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
+
+        {/* 🌟 Modal when beneficiary has no crypto wallet linked */}
+        <Modal
+          visible={!!missingWalletItem}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setMissingWalletItem(null)}
+        >
+          <View style={modalStyles.overlay}>
+            <View style={modalStyles.card}>
+              <View style={modalStyles.iconCircle}>
+                <Ionicons name="wallet-outline" size={26} color="#FFC759" />
+              </View>
+
+              <Text style={modalStyles.title}>
+                {t('wallet.no_crypto_wallet_title', 'No Crypto Wallet Linked')}
+              </Text>
+              
+              <Text style={modalStyles.desc}>
+                {t('wallet.no_crypto_wallet_desc', '{{name}} has not linked a crypto wallet on DizzitUp yet. How would you like to proceed?', { name: missingWalletItem?.name || '' })}
+              </Text>
+
+              <View style={modalStyles.btnCol}>
+                {/* Option 1: Send SMS / WhatsApp Invite */}
+                <TouchableOpacity
+                  style={modalStyles.primaryBtn}
+                  onPress={async () => {
+                    const recipientName = missingWalletItem?.name || '';
+                    const inviteMsg = `Join me on DizzitUp to easily receive funds and manage your payments: https://dizzitup.com/invite`;
+                    try {
+                      await Share.share({ message: inviteMsg });
+                      setMissingWalletItem(null);
+                    } catch (e) {
+                      console.warn(e);
+                    }
+                  }}
+                >
+                  <Ionicons name="paper-plane" size={16} color="#20365B" style={{ marginRight: 6 }} />
+                  <Text style={modalStyles.primaryBtnText}>
+                    {t('wallet.action_send_invite', 'Send Invite (SMS / WhatsApp)')}
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Option 2: Enter Address Manually */}
+                <TouchableOpacity
+                  style={modalStyles.secondaryBtn}
+                  onPress={() => {
+                    setMissingWalletItem(null);
+                    setSearchQuery('');
+                    setIsSearchingRecipient(true);
+                  }}
+                >
+                  <Ionicons name="create-outline" size={16} color="#20365B" style={{ marginRight: 6 }} />
+                  <Text style={modalStyles.secondaryBtnText}>
+                    {t('wallet.action_enter_manual', 'Enter Address Manually')}
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Option 3: Send Airtime or Pay Bills Instead */}
+                <TouchableOpacity
+                  style={modalStyles.neutralBtn}
+                  onPress={() => {
+                    const item = missingWalletItem;
+                    setMissingWalletItem(null);
+                    navigation.navigate('PayBillsScreen', { beneficiary: item });
+                  }}
+                >
+                  <Ionicons name="flash-outline" size={16} color="#D97706" style={{ marginRight: 6 }} />
+                  <Text style={modalStyles.neutralBtnText}>
+                    {t('wallet.action_send_essentials', 'Send Airtime or Pay Bills Instead')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity
+                style={modalStyles.closeBtn}
+                onPress={() => setMissingWalletItem(null)}
+              >
+                <Text style={modalStyles.closeBtnText}>{t('common.cancel', 'Cancel')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </View>
     </SafeAreaView>
   );
@@ -513,4 +604,111 @@ const styles = StyleSheet.create({
   amountTokenSuffix: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#64748B' },
   sendCtaBtn: { backgroundColor: '#071D54', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', height: 50, borderRadius: 14, boxShadow: '0px 4px 8px #071D54' },
   sendCtaText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#FFFFFF' },
+});
+
+const modalStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(32, 54, 91, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 24,
+    width: '100%',
+    maxWidth: 380,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  iconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#FEF3C7',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  title: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 16,
+    color: '#0F172A',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  desc: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 13,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 18,
+    marginBottom: 20,
+  },
+  btnCol: {
+    width: '100%',
+    gap: 10,
+  },
+  primaryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFC759',
+    borderRadius: 14,
+    height: 48,
+    paddingHorizontal: 16,
+  },
+  primaryBtnText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 13,
+    color: '#20365B',
+  },
+  secondaryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    height: 48,
+    paddingHorizontal: 16,
+  },
+  secondaryBtnText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 13,
+    color: '#20365B',
+  },
+  neutralBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    height: 48,
+    paddingHorizontal: 16,
+  },
+  neutralBtnText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: '#0F172A',
+  },
+  closeBtn: {
+    marginTop: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+  },
+  closeBtnText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 13,
+    color: '#94A3B8',
+  },
 });

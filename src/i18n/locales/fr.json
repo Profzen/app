@@ -2869,6 +2869,7 @@
       "sync_success": "Wallets synchronisés avec succès",
       "sync_error": "Erreur de synchronisation",
       "sync_not_found": "Aucun wallet trouvé pour ce numéro",
+      "sync_not_found_info": "Aucun compte DizzitUp trouvé. Vous pouvez continuer l'enregistrement ; les portefeuilles sont facultatifs.",
       "sync_req_phone": "Veuillez saisir un numéro de téléphone d'abord",
       "save_req_name": "Le nom est obligatoire",
       "save_req_contact": "Le téléphone ou l'email est obligatoire",
@@ -3605,7 +3606,12 @@
     "invalid_amount": "Montant invalide",
     "invalid_address": "Adresse invalide",
     "invalid_address_message": "Veuillez sélectionner un destinataire valide.",
-    "business_wallet": "Portefeuille professionnel"
+    "business_wallet": "Portefeuille professionnel",
+    "no_crypto_wallet_title": "Portefeuille crypto non configuré",
+    "no_crypto_wallet_desc": "{{name}} n'a pas encore configuré de portefeuille crypto sur DizzitUp. Comment souhaitez-vous procéder ?",
+    "action_send_invite": "Envoyer une invitation (SMS / WhatsApp)",
+    "action_enter_manual": "Saisir une adresse manuellement",
+    "action_send_essentials": "Envoyer du crédit ou payer des factures"
   },
   "@": "@",
   "*": "*",

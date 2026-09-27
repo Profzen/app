@@ -189,7 +189,7 @@ export default function EditBeneficiaryScreen({ route }) {
         }));
         AppToast.showSuccess(t('beneficiary.edit.sync_success', "Wallets successfully synced"));
       } else {
-        AppToast.showError(t('beneficiary.edit.sync_not_found', "No wallet found for this number"));
+        AppToast.showInfo(t('beneficiary.edit.sync_not_found_info', "No DizzitUp account found yet. You can continue saving; wallets are optional."));
       }
     } catch (err) {
       console.error(err);
@@ -419,14 +419,14 @@ export default function EditBeneficiaryScreen({ route }) {
             />
 
             <DizzitInput
-              label={t('beneficiary.edit.evm_wallet', 'EVM Wallet (Polygon/BSC)')}
+              label={`${t('beneficiary.edit.evm_wallet', 'EVM Wallet (Polygon/BSC)')} (${t('common.optional', 'Optional')})`}
               placeholder={t('beneficiary.edit.evm_wallet_placeholder', '0x...')}
               value={formData.evm_address}
               onChangeText={(text) => handleInputChange('evm_address', text)}
             />
 
             <DizzitInput
-              label={t('beneficiary.edit.solana_wallet', 'Solana Wallet')}
+              label={`${t('beneficiary.edit.solana_wallet', 'Solana Wallet')} (${t('common.optional', 'Optional')})`}
               placeholder=""
               value={formData.solana_address}
               onChangeText={(text) => handleInputChange('solana_address', text)}

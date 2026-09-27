@@ -2786,6 +2786,7 @@
       "sync_success": "Carteiras sincronizadas com sucesso",
       "sync_error": "Erro de sincronização",
       "sync_not_found": "Nenhuma carteira encontrada",
+      "sync_not_found_info": "Nenhuma conta DizzitUp encontrada. Pode continuar a guardar; as carteiras são opcionais.",
       "sync_req_phone": "Por favor, insira um telefone",
       "save_req_name": "O nome é obrigatório",
       "save_req_contact": "O telefone ou email é obrigatório",
@@ -3390,7 +3391,12 @@
     "invalid_amount": "Valor inválido",
     "invalid_address": "Endereço inválido",
     "invalid_address_message": "Por favor, selecione um destinatário válido.",
-    "business_wallet": "Carteira Empresarial"
+    "business_wallet": "Carteira Empresarial",
+    "no_crypto_wallet_title": "Carteira cripto não vinculada",
+    "no_crypto_wallet_desc": "{{name}} ainda não vinculou uma carteira cripto no DizzitUp. Como gostaria de proceder?",
+    "action_send_invite": "Enviar convite (SMS / WhatsApp)",
+    "action_enter_manual": "Inserir endereço manualmente",
+    "action_send_essentials": "Enviar recarga ou pagar faturas"
   },
   "@": "@",
   "*": "*",

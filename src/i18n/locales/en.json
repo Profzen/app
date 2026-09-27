@@ -2853,6 +2853,7 @@
       "sync_success": "Wallets successfully synced",
       "sync_error": "Sync error",
       "sync_not_found": "No wallet found for this number",
+      "sync_not_found_info": "No DizzitUp account found yet. You can continue saving; wallets are optional.",
       "sync_req_phone": "Please enter a phone number first",
       "save_req_name": "Name is required",
       "save_req_contact": "Phone or email is required",
@@ -3557,7 +3558,12 @@
     "invalid_amount": "Invalid amount",
     "invalid_address": "Invalid address",
     "invalid_address_message": "Please select a valid recipient.",
-    "business_wallet": "Business Wallet"
+    "business_wallet": "Business Wallet",
+    "no_crypto_wallet_title": "No Crypto Wallet Linked",
+    "no_crypto_wallet_desc": "{{name}} has not linked a crypto wallet on DizzitUp yet. How would you like to proceed?",
+    "action_send_invite": "Send Invite (SMS / WhatsApp)",
+    "action_enter_manual": "Enter Address Manually",
+    "action_send_essentials": "Send Airtime or Pay Bills Instead"
   },
   "@": "@",
   "*": "*",
