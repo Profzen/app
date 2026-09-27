@@ -3216,7 +3216,26 @@ ightarrow$ **MGA** avec drapeau 🇲🇬 ; Profil utilisateur pour les Particuli
 
 - **Matrice de Validation & Déploiement Git** :
   - **Syntaxe Babel JSX** : 100% validé sur les 12 fichiers sources sans la moindre erreur.
-  - **Branche active** : `front-back`
+  - **Commit Git initial** : `008df64` (*"feat(release): delivery of Build 56 with universal sovereign currency, realtime contacts CRUD, merchant name under business wallet, dynamic action-oriented todo list, and zero-hardcoding architectural standard"*).
+  - **Push Remote** : Poussé avec succès sur `origin/front-back`.
+
+- **Cadrage du Processus d'Onboarding Beta Testeurs & URLs Officielles (Échanges Slack Solofo)** :
+  1. **iOS (iPhone / iPad — Apple TestFlight)** :
+     - *Pré-inscription e-mail requise ?* **NON**, grâce au **Lien Public TestFlight (Public Join Link)**. N'importe quel détenteur d'iPhone peut cliquer sur ce lien unique et installer DizzitApp via TestFlight sans avoir besoin de renseigner son e-mail à l'avance (capacité jusqu'à 10 000 testeurs externes).
+     - *URL à transmettre* : Le lien public TestFlight généré sur App Store Connect (*DizzitApp > TestFlight > External Testing > Public Link*).
+  2. **Android (Google Play — Closed/Internal Testing)** :
+     - *Pré-inscription e-mail requise ?* **OUI**, exigence stricte de Google Play pour les canaux fermés. Le compte Google/Gmail du testeur doit obligatoirement figurer dans la liste des testeurs de la Play Console (gérée par Assia via l'export Brevo). Faute de quoi, Google Play affiche une erreur "Application non disponible".
+     - *URLs à transmettre pour la 1ère installation* :
+       - **Lien d'Opt-in Officiel Google Play (Recommandé pour 1ère installation)** : `https://play.google.com/apps/testing/com.dizzitup.app` (permet au testeur de cliquer sur "Devenir testeur" en 1 clic puis ouvre directement la fiche Google Play).
+       - **Fiche Google Play Store directe** : `https://play.google.com/store/apps/details?id=com.dizzitup.app` (accessible dès que l'opt-in a été effectué).
+  3. **Mécanique des Mises à Jour Futures (Zéro Réinstallation)** :
+     - Pour les testeurs déjà installés sur iOS ou Android, **aucun lien n'est à renvoyer et aucune désinstallation n'est requise**.
+     - Dès que le Build 56 (ou supérieur) est injecté sur TestFlight et Google Play, le système d'exploitation notifie automatiquement le testeur qui n'a plus qu'à cliquer sur **"Mettre à jour" (Update)**, conservant toutes ses données de session et profils intacts.
+
+- **État Actuel & Prochaines Actions** :
+  - **Branche** : `front-back` (synchronisée sur GitHub).
+  - **Statut** : En attente du retour de Solofo et Assia sur le fil Slack suite à la clarification des URLs et aux livrables du Build 56.
+  - **Prochaine étape** : Fusion de `front-back` sur `develop` et déclenchement de la pipeline de compilation EAS Cloud (Android AAB + iOS IPA TestFlight) pour le Build 56.
 
 
 
