@@ -3120,6 +3120,27 @@ ightarrow$ **MGA** avec drapeau 🇲🇬 ; Profil utilisateur pour les Particuli
   7. **Mise à Jour In-App Release Notes (Règle d'or Solofo)** :
      - `AboutDizzitUpScreen.js` et `MoreSettingsScreen.js` synchronisés sur Build 55 au 26 Septembre 2026.
 
+- **Fichiers Modifiés & Créés** :
+  - `src/components/RatingPromptModal.js` *(Nouveau composant de notation in-app 5 étoiles & redirection store)*
+  - `src/screens/LoginScreen.js` *(Badge Build 55 header et pied de page v1.0.0 • Build 55)*
+  - `src/screens/RegisterScreen.js` *(Pied de page v1.0.0 • Build 55 sous les CGU)*
+  - `src/screens/UnlockScreen.js` *(Pied de page v1.0.0 • Build 55 sous le bouton de déconnexion)*
+  - `src/screens/OrderConfirmationScreen.js` *(Modale On-chain Escrow DizzitUp Innovation au clic Confirmer et Payer)*
+  - `src/screens/PaymentSuccessScreen.js` *(Déclenchement automatique de la modale de notation & partage reçu)*
+  - `src/screens/SendMoneySuccessScreen.js` *(Déclenchement automatique de la modale de notation & partage transaction)*
+  - `src/screens/WithdrawFundsScreen.js` *(Puces de pourcentage Nexo 25%, 50%, 75%, 100%)*
+  - `src/screens/WithdrawFundsMobileMoneySummaryScreen.js` *(Résolution dynamique montant, devise, pays et prestataire)*
+  - `src/screens/AboutDizzitUpScreen.js` *(Notes de version Build 55 au 26 Septembre 2026)*
+  - `src/screens/MoreSettingsScreen.js` *(Badge Build 55 sur la ligne About DizzitUp)*
+  - `app.json` *(buildNumber: "55", versionCode: 55, description Build 55)*
+
+- **Matrice de Validation & Déploiement Git** :
+  - **Transpilation Babel Expo** : 100% OK sur l'ensemble des 11 fichiers sans aucune erreur de syntaxe.
+  - **Commit Git** : `2253c7c` (*"feat(release): delivery of Build 55 with on-chain escrow innovation modal, in-app rating prompt, nexo quick percentage chips, dynamic cash-out summary, and prominent build badges on primary screens"*).
+  - **Push Remote** : Poussé avec succès sur `origin/front-back`.
+  - **Communication Slack** : Message récapitulatif complet en anglais (sans émojis) transmis à Solofo, Assia et Nathan.
+  - **Statut Actuel** : En attente du retour de l'équipe sur Slack avant fusion sur `develop` et déclenchement des pipelines de build EAS / TestFlight / Google Play.
+
 
 
 
