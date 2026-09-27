@@ -2553,7 +2553,11 @@
         "selectCountry": "يرجى اختيار دولة"
       },
       "wallet_synced_success": "تم العثور على مستخدم DizzitUp! تمت مزامنة المحافظ. ✨",
-      "wallet_synced_badge": "متزامن"
+      "wallet_synced_badge": "متزامن",
+      "invite_notice_title": "دعوة إلى DizzitUp",
+      "invite_notice_desc": "هذا جهة الاتصال ليست على DizzitUp بعد. سيتم إرسال دعوة عبر الرسائل القصيرة والبريد الإلكتروني. بمجرد الانضمام، سيتم ربط عناوين المحفظة تلقائيًا.",
+      "optional_notice_footer": "تفاصيل البنك والمحفظة أدناه اختيارية لشحن رصيد الهاتف وفواتير الكهرباء والمشتريات.",
+      "optional_badge": "اختياري"
     },
     "relations": {
       "parent": "والد/والدة",

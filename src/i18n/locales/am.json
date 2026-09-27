@@ -2751,7 +2751,11 @@
         "selectCountry": "እባክዎ ሀገር ይምረጡ"
       },
       "wallet_synced_success": "የ DizzitUp ተጠቃሚ ተገኝቷል! ቦርሳዎች በራስ-ሰር ተመሳስለዋል። ✨",
-      "wallet_synced_badge": "የተመሳሰለ"
+      "wallet_synced_badge": "የተመሳሰለ",
+      "invite_notice_title": "ወደ DizzitUp ግብዣ",
+      "invite_notice_desc": "ይህ አድራሻ እስካሁን በDizzitUp ላይ የለም። የኤስኤምኤስ እና የኢሜይል ግብዣ ይላክላቸዋል። ልክ ሲመዘገቡ የኪስ ቦርሳ አድራሻቸው ወዲያውኑ ይገናኛል።",
+      "optional_notice_footer": "ከዚህ በታች ያሉት የባንክ እና የኪስ ቦርሳ ዝርዝሮች ለሞባይል ካርድ፣ የፍጆታ ክፍያዎች እና እቃዎች አማራጭ ናቸው።",
+      "optional_badge": "አማራጭ"
     },
     "relations": {
       "parent": "ወላጅ",

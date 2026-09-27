@@ -2818,7 +2818,11 @@
       "emailOptional": "Email (Optionnel)",
       "selectCountry": "Sélectionner un pays",
       "wallet_synced_success": "Utilisateur DizzitUp trouvé ! Wallets synchronisés. ✨",
-      "wallet_synced_badge": "Synchronisé"
+      "wallet_synced_badge": "Synchronisé",
+      "invite_notice_title": "Invitation à DizzitUp",
+      "invite_notice_desc": "Ce contact n'est pas encore sur DizzitUp. Une invitation par SMS et email lui sera envoyée. Dès son inscription, ses adresses de portefeuille seront automatiquement associées.",
+      "optional_notice_footer": "Les coordonnées bancaires et portefeuilles ci-dessous sont facultatives pour les recharges mobiles, factures et achats.",
+      "optional_badge": "Facultatif"
     },
     "relations": {
       "parent": "Parent",

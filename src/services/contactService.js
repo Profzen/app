@@ -33,13 +33,11 @@ class ContactService {
 
       const firstName = contactData.first_name || '';
       const lastName = contactData.last_name || '';
-      const fullName = contactData.full_name || `${firstName} ${lastName}`.trim() || contactData.name || '';
 
       const insertPayload = {
         user_id: userId,
         first_name: firstName,
         last_name: lastName,
-        full_name: fullName,
         relationship: contactData.relationship || contactData.relation || 'friend',
         country_code: contactData.country_code || (contactData.country && contactData.country.length === 2 ? contactData.country.toUpperCase() : (contactData.country ? contactData.country.slice(0, 2).toUpperCase() : 'US')),
         city: contactData.city || '',
@@ -79,13 +77,6 @@ class ContactService {
       const updatePayload = {};
       if (contactData.first_name !== undefined) updatePayload.first_name = contactData.first_name;
       if (contactData.last_name !== undefined) updatePayload.last_name = contactData.last_name;
-      if (contactData.full_name !== undefined) {
-        updatePayload.full_name = contactData.full_name;
-      } else if (contactData.first_name !== undefined || contactData.last_name !== undefined) {
-        const fName = contactData.first_name !== undefined ? contactData.first_name : '';
-        const lName = contactData.last_name !== undefined ? contactData.last_name : '';
-        updatePayload.full_name = `${fName} ${lName}`.trim();
-      }
       if (contactData.relationship !== undefined || contactData.relation !== undefined) {
         updatePayload.relationship = contactData.relationship || contactData.relation;
       }

@@ -55,6 +55,12 @@ export default function EditBeneficiaryScreen({ route }) {
   const isEditing = route.params?.isEditing || false;
   const beneficiary = route.params?.beneficiary || {};
 
+  const [currentStep, setCurrentStep] = useState(1);
+  const [walletsSynced, setWalletsSynced] = useState(
+    Boolean(beneficiary.evm_address || beneficiary.solana_address)
+  );
+  const [userNotRegistered, setUserNotRegistered] = useState(false);
+
   const [formData, setFormData] = useState({
     first_name: beneficiary.first_name || '',
     last_name: beneficiary.last_name || '',
@@ -140,16 +146,11 @@ export default function EditBeneficiaryScreen({ route }) {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const lookupWalletByPhone = async () => {
-    if (!formData.phone) {
-      AppToast.showError(t('beneficiary.edit.sync_req_phone', "Please enter a phone number first"));
-      return;
-    }
-
+  const performLookup = async (phone) => {
     setIsSyncing(true);
     try {
       const token = session?.access_token;
-      const phoneToSend = formData.phone.startsWith('+') ? formData.phone : `+${formData.phone.replace(/^0+/, '')}`;
+      const phoneToSend = phone.startsWith('+') ? phone : `+${phone.replace(/^0+/, '')}`;
       const rawWalletApi = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'https://wallet.dizzitup.com/api';
       const walletBase = rawWalletApi.replace(/\/wallet\/?$/, '').replace(/\/api\/?$/, '') + '/api/wallet';
 
@@ -163,8 +164,8 @@ export default function EditBeneficiaryScreen({ route }) {
         if (accounts.length > 1) {
           setDuplicateAccounts(accounts);
           setShowDuplicateModal(true);
-          setIsSyncing(false);
-          return;
+          setUserNotRegistered(false);
+          return { found: true, duplicate: true };
         } else if (accounts.length === 1) {
           const account = accounts[0];
           setFormData(prev => ({
@@ -173,9 +174,9 @@ export default function EditBeneficiaryScreen({ route }) {
             evm_address: account.evm_address || prev.evm_address,
             solana_address: account.solana_address || prev.solana_address,
           }));
-          AppToast.showSuccess(t('beneficiary.edit.sync_success', "Wallets successfully synced"));
-          setIsSyncing(false);
-          return;
+          setWalletsSynced(true);
+          setUserNotRegistered(false);
+          return { found: true, duplicate: false };
         }
       }
 
@@ -187,15 +188,36 @@ export default function EditBeneficiaryScreen({ route }) {
           evm_address: rpcData.evm_address || prev.evm_address,
           solana_address: rpcData.solana_address || prev.solana_address,
         }));
-        AppToast.showSuccess(t('beneficiary.edit.sync_success', "Wallets successfully synced"));
+        setWalletsSynced(true);
+        setUserNotRegistered(false);
+        return { found: true, duplicate: false };
       } else {
-        AppToast.showInfo(t('beneficiary.edit.sync_not_found_info', "No DizzitUp account found yet. You can continue saving; wallets are optional."));
+        // User not registered on DizzitUp yet
+        setUserNotRegistered(true);
+        setWalletsSynced(false);
+        return { found: false, duplicate: false };
       }
     } catch (err) {
-      console.error(err);
-      AppToast.showError(t('beneficiary.edit.sync_error', "Sync error"));
+      console.error("Lookup error:", err);
+      setUserNotRegistered(true);
+      setWalletsSynced(false);
+      return { found: false, duplicate: false };
     } finally {
       setIsSyncing(false);
+    }
+  };
+
+  const lookupWalletByPhone = async () => {
+    if (!formData.phone) {
+      AppToast.showError(t('beneficiary.edit.sync_req_phone', "Please enter a phone number first"));
+      return;
+    }
+    const cleanPhone = formData.phone.trim();
+    const result = await performLookup(cleanPhone);
+    if (result.found && !result.duplicate) {
+      AppToast.showSuccess(t('beneficiary.form.wallet_synced_success', "DizzitUp User found! Wallets auto-synced. ✨"));
+    } else if (!result.found) {
+      AppToast.showInfo(t('beneficiary.edit.sync_not_found_info', "No DizzitUp account found yet. You can continue saving; wallets are optional."));
     }
   };
 
@@ -206,8 +228,49 @@ export default function EditBeneficiaryScreen({ route }) {
       evm_address: account.evm_address || prev.evm_address,
       solana_address: account.solana_address || prev.solana_address,
     }));
+    setWalletsSynced(true);
+    setUserNotRegistered(false);
     setShowDuplicateModal(false);
+    setCurrentStep(2);
     AppToast.showSuccess(t('beneficiary.edit.sync_success', "Wallets successfully synced"));
+  };
+
+  const handleProceedToStep2 = async () => {
+    if (!formData.first_name && !formData.last_name) {
+      AppToast.showError(t('beneficiary.edit.save_req_name', "Name is required"));
+      return;
+    }
+    
+    if (!formData.phone) {
+      AppToast.showError(t('beneficiary.form.phoneNumberRequired', "Phone number is required"));
+      return;
+    }
+
+    const selectedCountry = countries.find(c => c.name === formData.country || c.code === formData.country_code);
+    const countryCode = selectedCountry ? selectedCountry.code : (formData.country_code || (formData.country && formData.country.length === 2 ? formData.country.toUpperCase() : 'US'));
+    
+    const cleanPhone = formData.phone.trim();
+    
+    let phoneValid = isValidPhoneNumber(cleanPhone, countryCode);
+    if (!phoneValid && cleanPhone.startsWith('+')) {
+      phoneValid = isValidPhoneNumber(cleanPhone);
+    }
+    if (!phoneValid) {
+      AppToast.showError(t('beneficiary.form.errors.invalidPhone', "Invalid phone number"));
+      return;
+    }
+
+    if (formData.email && !/^\S+@\S+\.\S+$/.test(formData.email)) {
+      AppToast.showError(t('beneficiary.form.errors.invalidEmail', "Invalid email address"));
+      return;
+    }
+
+    // Automatically check user in background if not synced yet
+    if (!walletsSynced && !isEditing) {
+      await performLookup(cleanPhone);
+    }
+
+    setCurrentStep(2);
   };
 
   const handleSave = async () => {
@@ -224,7 +287,6 @@ export default function EditBeneficiaryScreen({ route }) {
     const selectedCountry = countries.find(c => c.name === formData.country || c.code === formData.country_code);
     const countryCode = selectedCountry ? selectedCountry.code : (formData.country_code || (formData.country && formData.country.length === 2 ? formData.country.toUpperCase() : 'US'));
     
-    // Clean up spaces before validation
     const cleanPhone = formData.phone.trim();
     
     let phoneValid = isValidPhoneNumber(cleanPhone, countryCode);
@@ -245,10 +307,12 @@ export default function EditBeneficiaryScreen({ route }) {
     try {
       const fName = formData.first_name ? formData.first_name.trim() : '';
       const lName = formData.last_name ? formData.last_name.trim() : '';
+
+      // 🛡️ CRITICAL: Never include `full_name` in insert/update payload!
+      // In Supabase PostgreSQL, `full_name` is a GENERATED ALWAYS column.
       const payload = {
         first_name: fName,
         last_name: lName,
-        full_name: `${fName} ${lName}`.trim(),
         relationship: formData.relationship || 'friend',
         phone: cleanPhone,
         email: formData.email ? formData.email.trim() : '',
@@ -294,154 +358,273 @@ export default function EditBeneficiaryScreen({ route }) {
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : null}>
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.backButton} onPress={() => {
+            if (currentStep === 2 && !isEditing) {
+              setCurrentStep(1);
+            } else {
+              navigation.goBack();
+            }
+          }}>
             <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{isEditing ? t('beneficiary.edit.edit_title_update', 'Edit') : t('beneficiary.edit.edit_title_new', 'New Beneficiary')}</Text>
+          <Text style={styles.headerTitle}>
+            {isEditing ? t('beneficiary.edit.edit_title_update', 'Edit') : t('beneficiary.edit.edit_title_new', 'New Beneficiary')}
+          </Text>
           <View style={{ width: 40 }} />
         </View>
 
+        {/* Multi-step indicator bar */}
+        <View style={styles.stepIndicatorContainer}>
+          <TouchableOpacity
+            style={[styles.stepTab, currentStep === 1 && styles.stepTabActive]}
+            onPress={() => setCurrentStep(1)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.stepCircle, currentStep === 1 && styles.stepCircleActive]}>
+              <Text style={[styles.stepCircleText, currentStep === 1 && styles.stepCircleTextActive]}>1</Text>
+            </View>
+            <Text style={[styles.stepTabText, currentStep === 1 && styles.stepTabTextActive]} numberOfLines={1}>
+              {t('beneficiary.edit.personal_info', 'Contact Info')}
+            </Text>
+          </TouchableOpacity>
+
+          <View style={[styles.stepConnector, currentStep === 2 && styles.stepConnectorActive]} />
+
+          <TouchableOpacity
+            style={[styles.stepTab, currentStep === 2 && styles.stepTabActive]}
+            onPress={() => {
+              if (isEditing) {
+                setCurrentStep(2);
+              } else {
+                handleProceedToStep2();
+              }
+            }}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.stepCircle, currentStep === 2 && styles.stepCircleActive]}>
+              <Text style={[styles.stepCircleText, currentStep === 2 && styles.stepCircleTextActive]}>2</Text>
+            </View>
+            <Text style={[styles.stepTabText, currentStep === 2 && styles.stepTabTextActive]} numberOfLines={1}>
+              {t('beneficiary.edit.banks_wallets', 'Wallets & Banks')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          {/* Personal Info */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('beneficiary.edit.personal_info', 'Personal Information')}</Text>
+          {currentStep === 1 ? (
+            <React.Fragment>
+              {/* Personal Info */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>{t('beneficiary.edit.personal_info', 'Personal Information')}</Text>
 
-            <Text style={styles.label}>{t('beneficiary.edit.avatar', 'Avatar')}</Text>
-            <View style={styles.avatarGrid}>
-              {AVATARS.map((av) => (
-                <TouchableOpacity
-                  key={av.id}
-                  style={[styles.avatarChoice, formData.avatar_url === av.id && styles.avatarChoiceSelected]}
-                  onPress={() => handleInputChange('avatar_url', av.id)}
-                >
-                  <Text style={styles.avatarEmoji}>{av.emoji}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+                <Text style={styles.label}>{t('beneficiary.edit.avatar', 'Avatar')}</Text>
+                <View style={styles.avatarGrid}>
+                  {AVATARS.map((av) => (
+                    <TouchableOpacity
+                      key={av.id}
+                      style={[styles.avatarChoice, formData.avatar_url === av.id && styles.avatarChoiceSelected]}
+                      onPress={() => handleInputChange('avatar_url', av.id)}
+                    >
+                      <Text style={styles.avatarEmoji}>{av.emoji}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
 
-            <DizzitInput
-              label={t('beneficiary.edit.first_name', 'First Name')}
-              placeholder={t('beneficiary.edit.first_name_placeholder', 'Ex: John')}
-              value={formData.first_name}
-              onChangeText={(text) => handleInputChange('first_name', text)}
-            />
-
-            <DizzitInput
-              label={t('beneficiary.edit.last_name', 'Last Name')}
-              placeholder={t('beneficiary.edit.last_name_placeholder', 'Ex: Doe')}
-              value={formData.last_name}
-              onChangeText={(text) => handleInputChange('last_name', text)}
-            />
-
-            <Text style={styles.label}>{t('beneficiary.edit.relation', 'Relationship')}</Text>
-            <View style={styles.relationGrid}>
-              {WEB_RELATIONSHIPS.map((rel) => {
-                const isSelected = formData.relationship === rel.key;
-                return (
-                  <TouchableOpacity
-                    key={rel.key}
-                    style={[styles.chip, isSelected && styles.chipSelected]}
-                    onPress={() => handleInputChange('relationship', rel.key)}
-                  >
-                    <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>
-                      {t(rel.labelKey, rel.default)}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </View>
-
-          {/* Contact Details */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('beneficiary.edit.contact_details', 'Contact Details')}</Text>
-
-            <View style={styles.row}>
-              <View style={{ flex: 1 }}>
                 <DizzitInput
-                  label={t('beneficiary.edit.phone', 'Phone') + ' *'}
-                  placeholder={t('beneficiary.edit.phone_placeholder', '+228...')}
-                  keyboardType="phone-pad"
-                  value={formData.phone}
-                  onChangeText={(text) => handleInputChange('phone', text)}
+                  label={t('beneficiary.edit.first_name', 'First Name') + ' *'}
+                  placeholder={t('beneficiary.edit.first_name_placeholder', 'Ex: John')}
+                  value={formData.first_name}
+                  onChangeText={(text) => handleInputChange('first_name', text)}
+                />
+
+                <DizzitInput
+                  label={t('beneficiary.edit.last_name', 'Last Name')}
+                  placeholder={t('beneficiary.edit.last_name_placeholder', 'Ex: Doe')}
+                  value={formData.last_name}
+                  onChangeText={(text) => handleInputChange('last_name', text)}
+                />
+
+                <Text style={styles.label}>{t('beneficiary.edit.relation', 'Relationship')}</Text>
+                <View style={styles.relationGrid}>
+                  {WEB_RELATIONSHIPS.map((rel) => {
+                    const isSelected = formData.relationship === rel.key;
+                    return (
+                      <TouchableOpacity
+                        key={rel.key}
+                        style={[styles.chip, isSelected && styles.chipSelected]}
+                        onPress={() => handleInputChange('relationship', rel.key)}
+                      >
+                        <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>
+                          {t(rel.labelKey, rel.default)}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+
+              {/* Contact Details */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>{t('beneficiary.edit.contact_details', 'Contact Details')}</Text>
+
+                <View style={styles.flexRow}>
+                  <View style={{ flex: 1, paddingRight: 8 }}>
+                    <Text style={styles.label}>{t('beneficiary.edit.country', 'Country')}</Text>
+                    <TouchableOpacity style={styles.pickerButton} onPress={() => setShowCountryPicker(true)}>
+                      <Text style={formData.country ? styles.pickerButtonText : styles.pickerButtonPlaceholder} numberOfLines={1}>
+                        {formData.country ? `${getCountryFlag(formData.country)} ${formData.country}` : 'Ex: Togo'}
+                      </Text>
+                      <Ionicons name="chevron-down" size={20} color="#64748B" />
+                    </TouchableOpacity>
+                  </View>
+                  <View style={{ flex: 1, paddingLeft: 8 }}>
+                    <Text style={styles.label}>{t('beneficiary.edit.city', 'City')}</Text>
+                    <TouchableOpacity style={styles.pickerButton} onPress={() => { setCitySearch(''); setShowCityPicker(true); }}>
+                      <Text style={formData.city ? styles.pickerButtonText : styles.pickerButtonPlaceholder} numberOfLines={1}>
+                        {formData.city || 'Ex: Lomé'}
+                      </Text>
+                      <Ionicons name="chevron-down" size={20} color="#64748B" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <View style={styles.row}>
+                  <View style={{ flex: 1 }}>
+                    <DizzitInput
+                      label={t('beneficiary.edit.phone', 'Phone') + ' *'}
+                      placeholder={t('beneficiary.edit.phone_placeholder', '+228...')}
+                      keyboardType="phone-pad"
+                      value={formData.phone}
+                      onChangeText={(text) => handleInputChange('phone', text)}
+                    />
+                  </View>
+                  <TouchableOpacity style={styles.syncButton} onPress={lookupWalletByPhone} disabled={isSyncing}>
+                    {isSyncing ? <ActivityIndicator color="#0052FF" /> : <Ionicons name="sync-outline" size={24} color="#0052FF" />}
+                  </TouchableOpacity>
+                </View>
+
+                <DizzitInput
+                  label={`${t('beneficiary.edit.email', 'Email')} (${t('common.optional', 'Optional')})`}
+                  placeholder={t('beneficiary.edit.email_placeholder', 'Ex: email@example.com')}
+                  keyboardType="email-address"
+                  value={formData.email}
+                  onChangeText={(text) => handleInputChange('email', text)}
                 />
               </View>
-              <TouchableOpacity style={styles.syncButton} onPress={lookupWalletByPhone} disabled={isSyncing}>
-                {isSyncing ? <ActivityIndicator color="#0052FF" /> : <Ionicons name="sync-outline" size={24} color="#0052FF" />}
-              </TouchableOpacity>
-            </View>
+            </React.Fragment>
+          ) : (
+            <React.Fragment>
+              {/* Step 2: Notice Card & Wallets */}
 
-            <DizzitInput
-              label={t('beneficiary.edit.email', 'Email')}
-              placeholder={t('beneficiary.edit.email_placeholder', 'Ex: email@example.com')}
-              keyboardType="email-address"
-              value={formData.email}
-              onChangeText={(text) => handleInputChange('email', text)}
-            />
+              {/* DizzitUp Invitation Card if user not registered in DB */}
+              {userNotRegistered && (
+                <View style={styles.inviteCard}>
+                  <View style={styles.inviteIconCircle}>
+                    <Ionicons name="paper-plane-outline" size={20} color="#20365B" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <View style={styles.inviteHeaderRow}>
+                      <Text style={styles.inviteTitle}>
+                        {t('beneficiary.form.invite_notice_title', 'Invitation to DizzitUp')}
+                      </Text>
+                      <View style={styles.optionalBadge}>
+                        <Text style={styles.optionalBadgeText}>
+                          {t('beneficiary.form.optional_badge', 'Optional')}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text style={styles.inviteDesc}>
+                      {t('beneficiary.form.invite_notice_desc', 'This contact is not yet on DizzitUp. An SMS & email invitation will be sent to them. Once they join, their wallet addresses will link automatically.')}
+                    </Text>
+                    <View style={styles.inviteFooterRow}>
+                      <Ionicons name="checkmark-circle" size={15} color="#10B981" />
+                      <Text style={styles.inviteFooterText}>
+                        {t('beneficiary.form.optional_notice_footer', 'Bank & wallet details below are optional for mobile recharge, electricity bills, and store goods.')}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              )}
 
-            <View style={styles.flexRow}>
-              <View style={{ flex: 1, paddingRight: 8 }}>
-                <Text style={styles.label}>{t('beneficiary.edit.country', 'Country')}</Text>
-                <TouchableOpacity style={styles.pickerButton} onPress={() => setShowCountryPicker(true)}>
-                  <Text style={formData.country ? styles.pickerButtonText : styles.pickerButtonPlaceholder}>
-                    {formData.country ? `${getCountryFlag(formData.country)} ${formData.country}` : 'Ex: Togo'}
+              {/* Success Badge if user was found & auto-synced */}
+              {walletsSynced && !userNotRegistered && (
+                <View style={styles.syncedCard}>
+                  <Ionicons name="sparkles" size={18} color="#10B981" style={{ marginRight: 8 }} />
+                  <Text style={styles.syncedCardText}>
+                    {t('beneficiary.form.wallet_synced_success', 'DizzitUp User found! Wallets auto-synced. ✨')}
                   </Text>
-                  <Ionicons name="chevron-down" size={20} color="#64748B" />
-                </TouchableOpacity>
+                </View>
+              )}
+
+              {/* Banks & Wallets */}
+              <View style={styles.section}>
+                <View style={styles.sectionHeaderRow}>
+                  <Text style={styles.sectionTitle}>{t('beneficiary.edit.banks_wallets', 'Banks & Wallets')}</Text>
+                  <Text style={styles.sectionOptionalTag}>({t('beneficiary.form.optional_badge', 'Optional')})</Text>
+                </View>
+
+                <DizzitInput
+                  label={`${t('beneficiary.edit.bank_name', 'Bank Name')} (${t('common.optional', 'Optional')})`}
+                  placeholder={t('beneficiary.edit.bank_name_placeholder', 'Ex: Ecobank')}
+                  value={formData.bank_name}
+                  onChangeText={(text) => handleInputChange('bank_name', text)}
+                />
+
+                <DizzitInput
+                  label={`${t('beneficiary.edit.bank_account', 'Account Number / IBAN')} (${t('common.optional', 'Optional')})`}
+                  placeholder=""
+                  value={formData.bank_account}
+                  onChangeText={(text) => handleInputChange('bank_account', text)}
+                />
+
+                <DizzitInput
+                  label={`${t('beneficiary.edit.evm_wallet', 'EVM Wallet (Polygon/BSC)')} (${t('common.optional', 'Optional')})`}
+                  placeholder={t('beneficiary.edit.evm_wallet_placeholder', '0x...')}
+                  value={formData.evm_address}
+                  onChangeText={(text) => handleInputChange('evm_address', text)}
+                />
+
+                <DizzitInput
+                  label={`${t('beneficiary.edit.solana_wallet', 'Solana Wallet')} (${t('common.optional', 'Optional')})`}
+                  placeholder=""
+                  value={formData.solana_address}
+                  onChangeText={(text) => handleInputChange('solana_address', text)}
+                />
               </View>
-              <View style={{ flex: 1, paddingLeft: 8 }}>
-                <Text style={styles.label}>{t('beneficiary.edit.city', 'City')}</Text>
-                <TouchableOpacity style={styles.pickerButton} onPress={() => { setCitySearch(''); setShowCityPicker(true); }}>
-                  <Text style={formData.city ? styles.pickerButtonText : styles.pickerButtonPlaceholder}>
-                    {formData.city || 'Ex: Lomé'}
-                  </Text>
-                  <Ionicons name="chevron-down" size={20} color="#64748B" />
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-
-          {/* Finances */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('beneficiary.edit.banks_wallets', 'Banks & Wallets')}</Text>
-
-            <DizzitInput
-              label={t('beneficiary.edit.bank_name', 'Bank Name')}
-              placeholder={t('beneficiary.edit.bank_name_placeholder', 'Ex: Ecobank')}
-              value={formData.bank_name}
-              onChangeText={(text) => handleInputChange('bank_name', text)}
-            />
-            <DizzitInput
-              label={t('beneficiary.edit.bank_account', 'Account Number / IBAN')}
-              placeholder=""
-              value={formData.bank_account}
-              onChangeText={(text) => handleInputChange('bank_account', text)}
-            />
-
-            <DizzitInput
-              label={`${t('beneficiary.edit.evm_wallet', 'EVM Wallet (Polygon/BSC)')} (${t('common.optional', 'Optional')})`}
-              placeholder={t('beneficiary.edit.evm_wallet_placeholder', '0x...')}
-              value={formData.evm_address}
-              onChangeText={(text) => handleInputChange('evm_address', text)}
-            />
-
-            <DizzitInput
-              label={`${t('beneficiary.edit.solana_wallet', 'Solana Wallet')} (${t('common.optional', 'Optional')})`}
-              placeholder=""
-              value={formData.solana_address}
-              onChangeText={(text) => handleInputChange('solana_address', text)}
-            />
-          </View>
+            </React.Fragment>
+          )}
 
           <View style={{ height: 40 }} />
         </ScrollView>
 
+        {/* Footer Navigation */}
         <View style={styles.footer}>
-          <DizzitButton
-            title={t('beneficiary.edit.btn_save', 'Save')}
-            onPress={handleSave}
-            loading={isSaving}
-          />
+          {currentStep === 1 ? (
+            <View style={styles.stepFooterSingle}>
+              <DizzitButton
+                title={isSyncing ? t('common.loading', 'Checking...') : `${t('beneficiary.buttons.continue', 'Continue')} →`}
+                onPress={handleProceedToStep2}
+                isLoading={isSyncing}
+              />
+            </View>
+          ) : (
+            <View style={styles.stepFooterRow}>
+              <TouchableOpacity
+                style={styles.backStepButton}
+                onPress={() => setCurrentStep(1)}
+              >
+                <Ionicons name="arrow-back" size={18} color="#20365B" />
+                <Text style={styles.backStepText}>{t('beneficiary.buttons.back', 'Back')}</Text>
+              </TouchableOpacity>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <DizzitButton
+                  title={t('beneficiary.edit.btn_save', 'Save')}
+                  onPress={handleSave}
+                  isLoading={isSaving}
+                />
+              </View>
+            </View>
+          )}
         </View>
 
         {/* Modals */}
@@ -460,17 +643,20 @@ export default function EditBeneficiaryScreen({ route }) {
                 data={countries}
                 keyExtractor={(item) => item.code}
                 renderItem={({ item }) => (
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.modalItem}
                     onPress={() => {
-                      handleInputChange('country', item.name);
-                      handleInputChange('country_code', item.code);
-                      handleInputChange('city', ''); // Reset city
+                      setFormData(prev => ({
+                        ...prev,
+                        country: item.name,
+                        country_code: item.code,
+                        city: ''
+                      }));
                       setShowCountryPicker(false);
                     }}
                   >
                     <Text style={styles.modalItemText}>{getUniversalFlag(item.flag_emoji, item.code)} {item.name}</Text>
-                    {(formData.country === item.name || formData.country_code === item.code) && <Ionicons name="checkmark" size={20} color="#0052FF" />}
+                    {formData.country === item.name && <Ionicons name="checkmark" size={20} color="#0052FF" />}
                   </TouchableOpacity>
                 )}
               />
@@ -491,20 +677,20 @@ export default function EditBeneficiaryScreen({ route }) {
               
               <TextInput
                 style={styles.citySearchInput}
-                placeholder={t('beneficiary.form.searchCity', "Search or add a city...")}
+                placeholder={t('common.search', 'Search...')}
+                placeholderTextColor="#94A3B8"
                 value={citySearch}
                 onChangeText={setCitySearch}
-                autoFocus
               />
 
               <FlatList
                 data={filteredCities}
                 keyExtractor={(item, index) => `${item}_${index}`}
                 renderItem={({ item }) => (
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.modalItem}
                     onPress={() => {
-                      handleInputChange('city', item);
+                      setFormData(prev => ({ ...prev, city: item }));
                       setShowCityPicker(false);
                     }}
                   >
@@ -513,40 +699,48 @@ export default function EditBeneficiaryScreen({ route }) {
                   </TouchableOpacity>
                 )}
                 ListEmptyComponent={() => (
-                  <TouchableOpacity 
-                    style={styles.modalItemCustom}
-                    onPress={() => {
-                      handleInputChange('city', citySearch);
-                      setShowCityPicker(false);
-                    }}
-                  >
-                    <Ionicons name="add-circle-outline" size={20} color="#0052FF" style={{marginRight: 8}} />
-                    <Text style={styles.modalItemTextCustom}>{t('beneficiary.form.addCity', 'Add')} "{citySearch}"</Text>
-                  </TouchableOpacity>
+                  <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+                    <Text style={{ color: '#94A3B8', fontFamily: 'Inter_500Medium' }}>
+                      {t('common.no_results', 'No cities found')}
+                    </Text>
+                  </View>
                 )}
               />
+
+              {/* Custom City option */}
+              {citySearch.trim() !== '' && !filteredCities.includes(citySearch.trim()) && (
+                <TouchableOpacity
+                  style={styles.modalItemCustom}
+                  onPress={() => {
+                    setFormData(prev => ({ ...prev, city: citySearch.trim() }));
+                    setShowCityPicker(false);
+                  }}
+                >
+                  <Ionicons name="add-circle-outline" size={20} color="#0052FF" style={{ marginRight: 8 }} />
+                  <Text style={styles.modalItemTextCustom}>
+                    {t('common.use_custom_city', 'Use')} "{citySearch.trim()}"
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </Modal>
 
-        {/* Duplicate Sync Modal */}
-        <Modal visible={showDuplicateModal} animationType="fade" transparent={true}>
+        {/* Duplicate / Multiple Accounts Modal */}
+        <Modal visible={showDuplicateModal} animationType="slide" transparent={true}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>{t('beneficiary.form.multipleWallets', 'Multiple Wallets Found')}</Text>
+                <Text style={styles.modalTitle}>{t('beneficiary.form.multipleAccountsFound', 'Select an account')}</Text>
                 <TouchableOpacity onPress={() => setShowDuplicateModal(false)}>
                   <Ionicons name="close" size={24} color="#1A2840" />
                 </TouchableOpacity>
               </View>
-              <Text style={{ fontSize: 14, color: '#64748B', marginBottom: 16 }}>
-                {t('beneficiary.form.chooseWallet', 'Multiple accounts match this number. Please choose which one to sync:')}
-              </Text>
               <FlatList
                 data={duplicateAccounts}
-                keyExtractor={(item, index) => item.evm_address || String(index)}
+                keyExtractor={(item, idx) => item.id || `account_${idx}`}
                 renderItem={({ item }) => (
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.modalItem}
                     onPress={() => handleSelectDuplicate(item)}
                   >
@@ -575,33 +769,105 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#F1F5F9'
   },
   backButton: { width: 40, height: 40, justifyContent: 'center' },
   headerTitle: { fontSize: 18, fontFamily: 'Inter_700Bold', color: '#1A2840' },
+
+  /* Step Indicator */
+  stepIndicatorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: '#F8FAFC',
+    borderBottomWidth: 1,
+    borderBottomColor: '#EDF2F7',
+  },
+  stepTab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    flex: 1,
+  },
+  stepTabActive: {
+    opacity: 1,
+  },
+  stepCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  stepCircleActive: {
+    backgroundColor: '#FFC759',
+  },
+  stepCircleText: {
+    fontSize: 12,
+    fontFamily: 'Inter_700Bold',
+    color: '#64748B',
+  },
+  stepCircleTextActive: {
+    color: '#20365B',
+  },
+  stepTabText: {
+    fontSize: 12,
+    fontFamily: 'Inter_600SemiBold',
+    color: '#94A3B8',
+    flexShrink: 1,
+  },
+  stepTabTextActive: {
+    color: '#20365B',
+    fontFamily: 'Inter_700Bold',
+  },
+  stepConnector: {
+    width: 24,
+    height: 2,
+    backgroundColor: '#E2E8F0',
+    marginHorizontal: 8,
+  },
+  stepConnectorActive: {
+    backgroundColor: '#FFC759',
+  },
+
   scrollContent: { padding: 20, paddingBottom: 60 },
   section: {
-    marginBottom: 30,
+    marginBottom: 20,
     backgroundColor: '#F8FAFC',
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
     borderColor: '#F1F5F9',
   },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
   sectionTitle: {
-    fontSize: 16,
-    fontFamily: 'Inter_600SemiBold',
+    fontSize: 15,
+    fontFamily: 'Inter_700Bold',
     color: '#0F172A',
-    marginBottom: 20,
+    marginBottom: 16,
+  },
+  sectionOptionalTag: {
+    fontSize: 11,
+    fontFamily: 'Inter_600SemiBold',
+    color: '#94A3B8',
+    textTransform: 'uppercase',
   },
   label: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: 'Inter_600SemiBold',
     color: '#1A2840',
-    marginBottom: 10,
-    marginTop: 10,
+    marginBottom: 8,
+    marginTop: 6,
   },
   avatarGrid: {
     flexDirection: 'row',
@@ -610,9 +876,9 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   avatarChoice: {
-    width: 45,
-    height: 45,
-    borderRadius: 25,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
@@ -625,16 +891,16 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   avatarEmoji: {
-    fontSize: 24,
+    fontSize: 22,
   },
   relationGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 15,
+    gap: 8,
+    marginBottom: 10,
   },
   chip: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
     backgroundColor: '#FFF',
@@ -648,9 +914,11 @@ const styles = StyleSheet.create({
   chipText: {
     color: '#64748B',
     fontFamily: 'Inter_500Medium',
+    fontSize: 12,
   },
   chipTextSelected: {
     color: '#FFF',
+    fontFamily: 'Inter_600SemiBold',
   },
   row: {
     flexDirection: 'row',
@@ -667,14 +935,131 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 10,
-    marginBottom: 15, // matches DizzitInput's margin
+    marginBottom: 15,
   },
+
+  /* Step 2: Cards */
+  inviteCard: {
+    flexDirection: 'row',
+    backgroundColor: '#F0F7FF',
+    borderColor: 'rgba(32, 54, 91, 0.12)',
+    borderWidth: 1.5,
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 20,
+    gap: 12,
+    shadowColor: '#20365B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  inviteIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: 'rgba(32, 54, 91, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  inviteHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  inviteTitle: {
+    fontSize: 12,
+    fontFamily: 'Inter_700Bold',
+    color: '#20365B',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  optionalBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 199, 89, 0.3)',
+  },
+  optionalBadgeText: {
+    fontSize: 9,
+    fontFamily: 'Inter_700Bold',
+    color: '#20365B',
+    textTransform: 'uppercase',
+  },
+  inviteDesc: {
+    fontSize: 12,
+    fontFamily: 'Inter_500Medium',
+    color: '#475569',
+    lineHeight: 18,
+    marginBottom: 8,
+  },
+  inviteFooterRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(32, 54, 91, 0.06)',
+  },
+  inviteFooterText: {
+    fontSize: 11,
+    fontFamily: 'Inter_600SemiBold',
+    color: '#059669',
+    flex: 1,
+    lineHeight: 15,
+  },
+
+  syncedCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ECFDF5',
+    borderColor: 'rgba(16, 185, 129, 0.25)',
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 20,
+  },
+  syncedCardText: {
+    fontSize: 12,
+    fontFamily: 'Inter_600SemiBold',
+    color: '#065F46',
+    flex: 1,
+  },
+
   footer: {
-    padding: 20,
+    padding: 16,
     backgroundColor: '#FFF',
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
   },
+  stepFooterSingle: {
+    width: '100%',
+  },
+  stepFooterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+  },
+  backStepButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 52,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    backgroundColor: '#F8FAFC',
+    gap: 6,
+  },
+  backStepText: {
+    fontSize: 14,
+    fontFamily: 'Inter_600SemiBold',
+    color: '#20365B',
+  },
+
   pickerButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -683,19 +1068,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
     borderRadius: 12,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     height: 56,
     marginBottom: 15,
   },
   pickerButtonText: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 14,
+    fontSize: 13,
     color: '#1A2840',
+    flex: 1,
   },
   pickerButtonPlaceholder: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 14,
+    fontSize: 13,
     color: '#94A3B8',
+    flex: 1,
   },
   modalOverlay: {
     flex: 1,
@@ -729,7 +1116,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F1F5F9',
   },
   modalItemText: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'Inter_500Medium',
     color: '#1A2840',
   },
@@ -753,7 +1140,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   modalItemTextCustom: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'Inter_600SemiBold',
     color: '#0052FF',
   }

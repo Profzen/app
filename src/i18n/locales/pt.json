@@ -2735,7 +2735,11 @@
         "selectCountry": "Selecione um país"
       },
       "wallet_synced_success": "Usuário DizzitUp encontrado! Carteiras sincronizadas. ✨",
-      "wallet_synced_badge": "Sincronizado"
+      "wallet_synced_badge": "Sincronizado",
+      "invite_notice_title": "Convite para DizzitUp",
+      "invite_notice_desc": "Este contacto ainda não está no DizzitUp. Um convite por SMS e e-mail será enviado. Após o registo, os endereços da carteira serão vinculados automaticamente.",
+      "optional_notice_footer": "Os dados bancários e de carteira abaixo são opcionais para recargas de celular, contas e compras.",
+      "optional_badge": "Opcional"
     },
     "relations": {
       "parent": "Pai/Mãe",

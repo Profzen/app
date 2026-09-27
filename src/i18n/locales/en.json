@@ -2802,7 +2802,11 @@
         "selectCountry": "Please select a country"
       },
       "wallet_synced_success": "DizzitUp User found! Wallets auto-synced. ✨",
-      "wallet_synced_badge": "Auto-Synced"
+      "wallet_synced_badge": "Auto-Synced",
+      "invite_notice_title": "Invitation to DizzitUp",
+      "invite_notice_desc": "This contact is not yet on DizzitUp. An SMS & email invitation will be sent to them. Once they join, their wallet addresses will link automatically.",
+      "optional_notice_footer": "Bank & wallet details below are optional for mobile recharge, electricity bills, and store goods.",
+      "optional_badge": "Optional"
     },
     "relations": {
       "parent": "Parent",
