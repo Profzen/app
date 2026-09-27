@@ -92,45 +92,9 @@ export function AppProvider({ children }) {
       return getEffectivePosCountry();
     }
 
-    // 1. Priority 1 for BUSINESS WALLET: Business / Store country (e.g. EYOU in Madagascar -> MGA, DizzitUp Togo -> XOF)
-    // A Business Wallet represents the merchant's business entity, which belongs to its registered store country,
-    // NEVER the temporary IP or roaming location of the smartphone!
-    if (isBusinessCard || user?.role === 'merchant') {
-      const bizCountry = user?.merchantProfile?.country_code || 
-                         user?.merchantProfile?.country || 
-                         user?.merchantProfile?.business_country || 
-                         user?.business_country || 
-                         user?.company_country;
-      if (bizCountry && typeof bizCountry === 'string' && bizCountry.trim().length >= 2) {
-        return bizCountry.trim().toUpperCase();
-      }
-      if (user?.merchantProfile?.city_village) {
-        const city = user.merchantProfile.city_village.toLowerCase();
-        if (city.includes('lomé') || city.includes('lome')) return 'TG';
-        if (city.includes('antananarivo') || city.includes('tana')) return 'MG';
-        if (city.includes('cotonou')) return 'BJ';
-        if (city.includes('dakar')) return 'SN';
-        if (city.includes('abidjan')) return 'CI';
-        if (city.includes('lagos') || city.includes('abuja')) return 'NG';
-        if (city.includes('nairobi')) return 'KE';
-        if (city.includes('accra')) return 'GH';
-        if (city.includes('douala') || city.includes('yaounde') || city.includes('yaoundé')) return 'CM';
-      }
-      if (user?.merchantProfile?.shop_name) {
-        const name = user.merchantProfile.shop_name.toLowerCase();
-        if (name.includes('togo')) return 'TG';
-        if (name.includes('madagascar')) return 'MG';
-        if (name.includes('benin') || name.includes('bénin')) return 'BJ';
-        if (name.includes('senegal') || name.includes('sénégal')) return 'SN';
-        if (name.includes('côte d\'ivoire') || name.includes('cote d\'ivoire') || name.includes('ivory coast')) return 'CI';
-        if (name.includes('nigeria')) return 'NG';
-        if (name.includes('ghana')) return 'GH';
-        if (name.includes('kenya')) return 'KE';
-        if (name.includes('cameroon') || name.includes('cameroun')) return 'CM';
-      }
-    }
-
-    // 2. Priority 1 for PERSONAL WALLET: Physical IP geolocation or manual country selection
+    // 1. Priority 1 for ALL WALLETS & MARKETPLACE: Physical IP geolocation or manual country selection
+    // Wallets and marketplace prices reflect the physical location of the user/device 
+    // so they know how much their balance is worth locally in their current currency (e.g. EUR in France, XOF in Togo).
     if (userSelectedCountry && typeof userSelectedCountry === 'string' && userSelectedCountry.length === 2) {
       return userSelectedCountry.toUpperCase();
     }
@@ -138,11 +102,12 @@ export function AppProvider({ children }) {
       return detectedCountry.toUpperCase();
     }
 
-    // 3. Fallback for Wallets if IP geolocation fails
+    // 2. Fallback for Wallets if IP geolocation is unavailable
     if (isBusinessCard === true) {
-      // Business Wallet Fallback: Merchant store country
+      // Business Wallet Fallback: Merchant store country (e.g. DizzitUp Togo -> TG -> XOF)
       const bizCountry = user?.merchantProfile?.country || 
                          user?.merchantProfile?.country_code || 
+                         user?.merchantProfile?.business_country || 
                          user?.business_country || 
                          user?.company_country;
       if (bizCountry && typeof bizCountry === 'string' && bizCountry.trim().length >= 2) {
@@ -150,7 +115,7 @@ export function AppProvider({ children }) {
       }
     }
 
-    // Personal Wallet Fallback (or if Business Wallet has no country): User profile residence
+    // Personal Wallet Fallback (or if Business Wallet has no store country): User profile residence
     const userSettingsCountry = user?.country_of_residence || 
                                 user?.residence_country || 
                                 user?.country || 
@@ -160,7 +125,7 @@ export function AppProvider({ children }) {
       return userSettingsCountry.trim().toUpperCase();
     }
 
-    // 4. Default fallback
+    // 3. Final default fallback
     return 'US';
   };
 
