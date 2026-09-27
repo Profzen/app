@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Animated, StyleSheet, Easing, Platform, Modal } from 'react-native';
+import Constants from 'expo-constants';
+import * as Application from 'expo-application';
 
 export default function AnimatedSplashScreen({ onAnimationComplete }) {
   const pulseAnim = useRef(new Animated.Value(0.8)).current;
@@ -47,6 +49,8 @@ export default function AnimatedSplashScreen({ onAnimationComplete }) {
     });
   }, []);
 
+  const appBuildNumber = Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '56';
+
   return (
     <Modal
       visible
@@ -69,6 +73,9 @@ export default function AnimatedSplashScreen({ onAnimationComplete }) {
           />
           <Animated.Text style={[styles.brandText, { opacity: textFadeAnim }]}>
             DizzitApp
+          </Animated.Text>
+          <Animated.Text style={[styles.buildBadgeText, { opacity: textFadeAnim }]}>
+            {`Build ${appBuildNumber}`}
           </Animated.Text>
         </View>
       </Animated.View>
@@ -97,5 +104,12 @@ const styles = StyleSheet.create({
     fontSize: 28,
     color: '#FFC759', // Gold
     letterSpacing: 2,
+  },
+  buildBadgeText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
+    color: '#94A3B8',
+    letterSpacing: 1.5,
+    marginTop: 8,
   },
 });

@@ -212,42 +212,42 @@ export default function ContactProfileScreen({ route }) {
 
             <View style={styles.rowDivider} />
 
-            {/* Row 5: Pays */}
+            {/* Row 5: Country */}
             <View style={styles.infoRow}>
               <View style={styles.infoIconBox}>
                 <Ionicons name="location-outline" size={18} color="#6B7280" />
               </View>
               <View style={styles.infoTextGroup}>
-                <Text style={styles.infoLabel}>Pays</Text>
-                <Text style={styles.infoValue}>{contact.location || 'Non renseigné'}</Text>
+                <Text style={styles.infoLabel}>{t('beneficiary.edit.country', 'Country')}</Text>
+                <Text style={styles.infoValue}>{contact.location || t('common.not_provided', 'Not provided')}</Text>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
             </View>
 
             <View style={styles.rowDivider} />
 
-            {/* Row 6: Groupe */}
+            {/* Row 6: Relationship / Group */}
             <View style={styles.infoRow}>
               <View style={styles.infoIconBox}>
                 <Ionicons name="people-outline" size={18} color="#6B7280" />
               </View>
               <View style={styles.infoTextGroup}>
-                <Text style={styles.infoLabel}>Groupe</Text>
-                <Text style={styles.infoValue}>{contact.relation || 'Non renseigné'}</Text>
+                <Text style={styles.infoLabel}>{t('beneficiary.edit.relation', 'Relationship')}</Text>
+                <Text style={styles.infoValue}>{contact.relation || t('common.not_provided', 'Not provided')}</Text>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
             </View>
 
             <View style={styles.rowDivider} />
 
-            {/* Row 7: Parrain */}
+            {/* Row 7: Sponsor */}
             <View style={styles.infoRow}>
               <View style={styles.infoIconBox}>
                 <Ionicons name="heart-outline" size={18} color="#6B7280" />
               </View>
               <View style={styles.infoTextGroup}>
-                <Text style={styles.infoLabel}>Parrain</Text>
-                <Text style={[styles.infoValue, { color: contact.isSponsor ? '#10B981' : '#6B7280' }]}>{contact.isSponsor ? 'Oui' : 'Non'}</Text>
+                <Text style={styles.infoLabel}>{t('contacts.col_sponsor', 'Sponsor')}</Text>
+                <Text style={[styles.infoValue, { color: contact.isSponsor ? '#10B981' : '#6B7280' }]}>{contact.isSponsor ? t('common.yes', 'Yes') : t('common.no', 'No')}</Text>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
             </View>

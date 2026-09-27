@@ -180,7 +180,7 @@ export default function DashboardScreen() {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t('wallet.my_assets', 'Mes fonds')}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('AssetListScreen')}>
-              <Text style={styles.voirTout}>{t('viewAll', 'Voir tout')} <Ionicons name="arrow-forward" size={14} /></Text>
+              <Text style={styles.voirTout}>{t('viewAll', 'View all')} <Ionicons name="arrow-forward" size={14} /></Text>
             </TouchableOpacity>
           </View>
 
@@ -255,7 +255,7 @@ export default function DashboardScreen() {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t('dashboard.recent_transactions', 'Transactions récentes')}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('TransactionHistoryScreen')}>
-              <Text style={styles.voirTout}>{t('viewAll', 'Voir tout')} <Ionicons name="arrow-forward" size={14} /></Text>
+              <Text style={styles.voirTout}>{t('viewAll', 'View all')} <Ionicons name="arrow-forward" size={14} /></Text>
             </TouchableOpacity>
           </View>
 

@@ -20,7 +20,15 @@ const AVATARS = [
   { id: 'avatar_6', emoji: '👴' },
 ];
 
-const DEFAULT_RELATIONSHIPS = ['Famille', 'Ami', 'Autre'];
+const WEB_RELATIONSHIPS = [
+  { key: 'parent', labelKey: 'beneficiary.relations.parent', default: 'Parent' },
+  { key: 'sibling', labelKey: 'beneficiary.relations.sibling', default: 'Sibling' },
+  { key: 'child', labelKey: 'beneficiary.relations.child', default: 'Child' },
+  { key: 'spouse_husband', labelKey: 'beneficiary.relations.spouse_husband', default: 'Spouse / Husband' },
+  { key: 'business_partner', labelKey: 'beneficiary.relations.business_partner', default: 'Business Partner' },
+  { key: 'relative', labelKey: 'beneficiary.relations.relative', default: 'Relative' },
+  { key: 'friend', labelKey: 'beneficiary.relations.friend', default: 'Friend' },
+];
 
 const getUniversalFlag = (emoji, code) => {
   if (emoji && typeof emoji === 'string' && emoji.trim() !== '' && emoji !== 'null' && emoji !== 'NULL') {
@@ -47,15 +55,14 @@ export default function EditBeneficiaryScreen({ route }) {
   const isEditing = route.params?.isEditing || false;
   const beneficiary = route.params?.beneficiary || {};
 
-  const [relationships, setRelationships] = useState(DEFAULT_RELATIONSHIPS);
-
   const [formData, setFormData] = useState({
     first_name: beneficiary.first_name || '',
     last_name: beneficiary.last_name || '',
-    relationship: beneficiary.relation || beneficiary.relationship || 'Famille',
-    phone: beneficiary.phone || '',
+    relationship: beneficiary.relationship || beneficiary.relation || 'friend',
+    phone: beneficiary.phone || beneficiary.phone_number || '',
     email: beneficiary.email || '',
-    country: beneficiary.location || beneficiary.country || beneficiary.country_name || '',
+    country: beneficiary.country_name || beneficiary.country || '',
+    country_code: beneficiary.country_code || '',
     city: beneficiary.city || '',
     bank_name: beneficiary.bank_name || '',
     bank_account: beneficiary.bank_account || '',
@@ -89,7 +96,15 @@ export default function EditBeneficiaryScreen({ route }) {
         .select('name, code, flag_emoji')
         .eq('is_active', true)
         .order('name');
-      if (!error && data) setCountries(data);
+      if (!error && data) {
+        setCountries(data);
+        if (!formData.country && formData.country_code) {
+          const match = data.find(c => c.code === formData.country_code);
+          if (match) {
+            setFormData(prev => ({ ...prev, country: match.name }));
+          }
+        }
+      }
     } catch (e) {
       console.log('Error fetching countries:', e);
     }
@@ -127,7 +142,7 @@ export default function EditBeneficiaryScreen({ route }) {
 
   const lookupWalletByPhone = async () => {
     if (!formData.phone) {
-      AppToast.showError(t('beneficiary_management.edit.sync_req_phone', "Veuillez saisir un numéro de téléphone d'abord"));
+      AppToast.showError(t('beneficiary.edit.sync_req_phone', "Please enter a phone number first"));
       return;
     }
 
@@ -158,7 +173,7 @@ export default function EditBeneficiaryScreen({ route }) {
             evm_address: account.evm_address || prev.evm_address,
             solana_address: account.solana_address || prev.solana_address,
           }));
-          AppToast.showSuccess(t('beneficiary_management.edit.sync_success', "Wallets synchronisés avec succès"));
+          AppToast.showSuccess(t('beneficiary.edit.sync_success', "Wallets successfully synced"));
           setIsSyncing(false);
           return;
         }
@@ -172,13 +187,13 @@ export default function EditBeneficiaryScreen({ route }) {
           evm_address: rpcData.evm_address || prev.evm_address,
           solana_address: rpcData.solana_address || prev.solana_address,
         }));
-        AppToast.showSuccess(t('beneficiary_management.edit.sync_success', "Wallets synchronisés avec succès"));
+        AppToast.showSuccess(t('beneficiary.edit.sync_success', "Wallets successfully synced"));
       } else {
-        AppToast.showError(t('beneficiary_management.edit.sync_not_found', "Aucun wallet trouvé pour ce numéro"));
+        AppToast.showError(t('beneficiary.edit.sync_not_found', "No wallet found for this number"));
       }
     } catch (err) {
       console.error(err);
-      AppToast.showError(t('beneficiary_management.edit.sync_error', "Erreur de synchronisation"));
+      AppToast.showError(t('beneficiary.edit.sync_error', "Sync error"));
     } finally {
       setIsSyncing(false);
     }
@@ -192,77 +207,81 @@ export default function EditBeneficiaryScreen({ route }) {
       solana_address: account.solana_address || prev.solana_address,
     }));
     setShowDuplicateModal(false);
-    AppToast.showSuccess(t('beneficiary_management.edit.sync_success', "Wallets synchronisés avec succès"));
+    AppToast.showSuccess(t('beneficiary.edit.sync_success', "Wallets successfully synced"));
   };
 
-    const handleSave = async () => {
+  const handleSave = async () => {
     if (!formData.first_name && !formData.last_name) {
-      AppToast.showError(t('beneficiary_management.edit.save_req_name', "Le nom est obligatoire"));
+      AppToast.showError(t('beneficiary.edit.save_req_name', "Name is required"));
       return;
     }
     
     if (!formData.phone) {
-      AppToast.showError(t('beneficiary_management.edit.save_req_phone', "Le numéro de téléphone est obligatoire"));
+      AppToast.showError(t('beneficiary.form.phoneNumberRequired', "Phone number is required"));
       return;
     }
 
-    const selectedCountry = countries.find(c => c.name === formData.country);
-    const countryCode = selectedCountry ? selectedCountry.code : (formData.country && formData.country.length === 2 ? formData.country.toUpperCase() : undefined);
+    const selectedCountry = countries.find(c => c.name === formData.country || c.code === formData.country_code);
+    const countryCode = selectedCountry ? selectedCountry.code : (formData.country_code || (formData.country && formData.country.length === 2 ? formData.country.toUpperCase() : 'US'));
     
     // Clean up spaces before validation
     const cleanPhone = formData.phone.trim();
     
-    if (!isValidPhoneNumber(cleanPhone, countryCode)) {
-      AppToast.showError(t('beneficiary_management.edit.invalid_phone', "Le numéro de téléphone n'est pas valide"));
+    let phoneValid = isValidPhoneNumber(cleanPhone, countryCode);
+    if (!phoneValid && cleanPhone.startsWith('+')) {
+      phoneValid = isValidPhoneNumber(cleanPhone);
+    }
+    if (!phoneValid) {
+      AppToast.showError(t('beneficiary.form.errors.invalidPhone', "Invalid phone number"));
       return;
     }
 
     if (formData.email && !/^\S+@\S+\.\S+$/.test(formData.email)) {
-      AppToast.showError(t('beneficiary_management.edit.invalid_email', "L'adresse email n'est pas valide"));
+      AppToast.showError(t('beneficiary.form.errors.invalidEmail', "Invalid email address"));
       return;
     }
 
     setIsSaving(true);
     try {
+      const fName = formData.first_name ? formData.first_name.trim() : '';
+      const lName = formData.last_name ? formData.last_name.trim() : '';
       const payload = {
-        first_name: formData.first_name,
-        last_name: formData.last_name,
-        relationship: formData.relationship,
-        relation: formData.relationship,
-        phone: formData.phone,
-        email: formData.email,
-        country: formData.country,
-        country_name: formData.country,
-        country_code: countryCode || (formData.country ? formData.country.slice(0, 2).toUpperCase() : 'US'),
-        city: formData.city,
-        bank_name: formData.bank_name,
-        bank_account: formData.bank_account,
-        evm_address: formData.evm_address,
-        solana_address: formData.solana_address,
-        avatar_url: formData.avatar_url,
+        first_name: fName,
+        last_name: lName,
+        full_name: `${fName} ${lName}`.trim(),
+        relationship: formData.relationship || 'friend',
+        phone: cleanPhone,
+        email: formData.email ? formData.email.trim() : '',
+        country_code: countryCode,
+        city: formData.city || '',
+        bank_name: formData.bank_name || '',
+        bank_account: formData.bank_account || '',
+        evm_address: formData.evm_address || '',
+        solana_address: formData.solana_address || '',
+        avatar_url: formData.avatar_url || '',
       };
 
       const userId = session?.user?.id;
       if (isEditing && beneficiary?.id) {
         const updateRes = await contactService.updateBeneficiary(beneficiary.id, payload);
         if (!updateRes.success) throw new Error(updateRes.error);
-        AppToast.showSuccess(t('beneficiary_management.edit.save_success_edit', "Bénéficiaire modifié"));
+        AppToast.showSuccess(t('beneficiary.edit.save_success_edit', "Beneficiary updated"));
       } else {
         const addRes = await contactService.addBeneficiary(userId, payload);
         if (!addRes.success) throw new Error(addRes.error);
-        AppToast.showSuccess(t('beneficiary_management.edit.save_success_add', "Bénéficiaire ajouté"));
+        AppToast.showSuccess(t('beneficiary.edit.save_success_add', "Beneficiary added"));
       }
       navigation.goBack();
     } catch (err) {
       console.error("Save error:", err);
-      AppToast.showError(err?.message || t('beneficiary_management.edit.save_error', "Erreur lors de l'enregistrement"));
+      AppToast.showError(err?.message || t('beneficiary.edit.save_error', "Error saving beneficiary"));
     } finally {
       setIsSaving(false);
     }
   };
 
   const getCountryFlag = (countryName) => {
-    const c = countries.find(x => x.name === countryName);
+    const c = countries.find(x => x.name === countryName || x.code === formData.country_code);
     if (!c) return '🌍';
     return getUniversalFlag(c.flag_emoji, c.code);
   };
@@ -278,16 +297,16 @@ export default function EditBeneficiaryScreen({ route }) {
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{isEditing ? t('beneficiary_management.edit.edit_title_update', 'Modifier') : t('beneficiary_management.edit.edit_title_new', 'Nouveau Bénéficiaire')}</Text>
+          <Text style={styles.headerTitle}>{isEditing ? t('beneficiary.edit.edit_title_update', 'Edit') : t('beneficiary.edit.edit_title_new', 'New Beneficiary')}</Text>
           <View style={{ width: 40 }} />
         </View>
 
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Personal Info */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('beneficiary_management.edit.personal_info', 'Informations Personnelles')}</Text>
+            <Text style={styles.sectionTitle}>{t('beneficiary.edit.personal_info', 'Personal Information')}</Text>
 
-            <Text style={styles.label}>{t('beneficiary_management.edit.avatar', 'Avatar')}</Text>
+            <Text style={styles.label}>{t('beneficiary.edit.avatar', 'Avatar')}</Text>
             <View style={styles.avatarGrid}>
               {AVATARS.map((av) => (
                 <TouchableOpacity
@@ -301,47 +320,47 @@ export default function EditBeneficiaryScreen({ route }) {
             </View>
 
             <DizzitInput
-              label={t('beneficiary_management.edit.first_name', 'Prénom')}
-              placeholder={t('beneficiary_management.edit.first_name_placeholder', 'Ex: John')}
+              label={t('beneficiary.edit.first_name', 'First Name')}
+              placeholder={t('beneficiary.edit.first_name_placeholder', 'Ex: John')}
               value={formData.first_name}
               onChangeText={(text) => handleInputChange('first_name', text)}
             />
 
             <DizzitInput
-              label={t('beneficiary_management.edit.last_name', 'Nom')}
-              placeholder={t('beneficiary_management.edit.last_name_placeholder', 'Ex: Doe')}
+              label={t('beneficiary.edit.last_name', 'Last Name')}
+              placeholder={t('beneficiary.edit.last_name_placeholder', 'Ex: Doe')}
               value={formData.last_name}
               onChangeText={(text) => handleInputChange('last_name', text)}
             />
 
-            <Text style={styles.label}>{t('beneficiary_management.edit.relation', 'Relation')}</Text>
+            <Text style={styles.label}>{t('beneficiary.edit.relation', 'Relationship')}</Text>
             <View style={styles.relationGrid}>
-              {relationships.map((rel) => (
-                <TouchableOpacity
-                  key={rel}
-                  style={[styles.chip, formData.relationship === rel && styles.chipSelected]}
-                  onPress={() => handleInputChange('relationship', rel)}
-                >
-                  <Text style={[styles.chipText, formData.relationship === rel && styles.chipTextSelected]}>
-                    {rel === 'Famille' ? t('beneficiary_management.edit.relation_family', 'Famille') :
-                      rel === 'Ami' ? t('beneficiary_management.edit.relation_friend', 'Ami') :
-                        rel === 'Collègue' ? t('beneficiary_management.edit.relation_colleague', 'Collègue') :
-                          t('beneficiary_management.edit.relation_other', rel || 'Autre')}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              {WEB_RELATIONSHIPS.map((rel) => {
+                const isSelected = formData.relationship === rel.key;
+                return (
+                  <TouchableOpacity
+                    key={rel.key}
+                    style={[styles.chip, isSelected && styles.chipSelected]}
+                    onPress={() => handleInputChange('relationship', rel.key)}
+                  >
+                    <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>
+                      {t(rel.labelKey, rel.default)}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
 
           {/* Contact Details */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('beneficiary_management.edit.contact_details', 'Coordonnées')}</Text>
+            <Text style={styles.sectionTitle}>{t('beneficiary.edit.contact_details', 'Contact Details')}</Text>
 
             <View style={styles.row}>
               <View style={{ flex: 1 }}>
                 <DizzitInput
-                  label={t('beneficiary_management.edit.phone', 'Téléphone') + ' *'}
-                  placeholder={t('beneficiary_management.edit.phone_placeholder', '+228...')}
+                  label={t('beneficiary.edit.phone', 'Phone') + ' *'}
+                  placeholder={t('beneficiary.edit.phone_placeholder', '+228...')}
                   keyboardType="phone-pad"
                   value={formData.phone}
                   onChangeText={(text) => handleInputChange('phone', text)}
@@ -353,8 +372,8 @@ export default function EditBeneficiaryScreen({ route }) {
             </View>
 
             <DizzitInput
-              label={t('beneficiary_management.edit.email', 'Email')}
-              placeholder={t('beneficiary_management.edit.email_placeholder', 'Ex: email@example.com')}
+              label={t('beneficiary.edit.email', 'Email')}
+              placeholder={t('beneficiary.edit.email_placeholder', 'Ex: email@example.com')}
               keyboardType="email-address"
               value={formData.email}
               onChangeText={(text) => handleInputChange('email', text)}
@@ -362,7 +381,7 @@ export default function EditBeneficiaryScreen({ route }) {
 
             <View style={styles.flexRow}>
               <View style={{ flex: 1, paddingRight: 8 }}>
-                <Text style={styles.label}>{t('beneficiary_management.edit.country', 'Pays')}</Text>
+                <Text style={styles.label}>{t('beneficiary.edit.country', 'Country')}</Text>
                 <TouchableOpacity style={styles.pickerButton} onPress={() => setShowCountryPicker(true)}>
                   <Text style={formData.country ? styles.pickerButtonText : styles.pickerButtonPlaceholder}>
                     {formData.country ? `${getCountryFlag(formData.country)} ${formData.country}` : 'Ex: Togo'}
@@ -371,7 +390,7 @@ export default function EditBeneficiaryScreen({ route }) {
                 </TouchableOpacity>
               </View>
               <View style={{ flex: 1, paddingLeft: 8 }}>
-                <Text style={styles.label}>{t('beneficiary_management.edit.city', 'Ville')}</Text>
+                <Text style={styles.label}>{t('beneficiary.edit.city', 'City')}</Text>
                 <TouchableOpacity style={styles.pickerButton} onPress={() => { setCitySearch(''); setShowCityPicker(true); }}>
                   <Text style={formData.city ? styles.pickerButtonText : styles.pickerButtonPlaceholder}>
                     {formData.city || 'Ex: Lomé'}
@@ -384,30 +403,30 @@ export default function EditBeneficiaryScreen({ route }) {
 
           {/* Finances */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('beneficiary_management.edit.banks_wallets', 'Banques & Wallets')}</Text>
+            <Text style={styles.sectionTitle}>{t('beneficiary.edit.banks_wallets', 'Banks & Wallets')}</Text>
 
             <DizzitInput
-              label={t('beneficiary_management.edit.bank_name', 'Nom de la Banque')}
-              placeholder="Ex: Ecobank"
+              label={t('beneficiary.edit.bank_name', 'Bank Name')}
+              placeholder={t('beneficiary.edit.bank_name_placeholder', 'Ex: Ecobank')}
               value={formData.bank_name}
               onChangeText={(text) => handleInputChange('bank_name', text)}
             />
             <DizzitInput
-              label={t('beneficiary_management.edit.bank_account', 'Numéro de Compte / IBAN')}
+              label={t('beneficiary.edit.bank_account', 'Account Number / IBAN')}
               placeholder=""
               value={formData.bank_account}
               onChangeText={(text) => handleInputChange('bank_account', text)}
             />
 
             <DizzitInput
-              label={t('beneficiary_management.edit.evm_wallet', 'EVM Wallet (Polygon/BSC)')}
-              placeholder="0x..."
+              label={t('beneficiary.edit.evm_wallet', 'EVM Wallet (Polygon/BSC)')}
+              placeholder={t('beneficiary.edit.evm_wallet_placeholder', '0x...')}
               value={formData.evm_address}
               onChangeText={(text) => handleInputChange('evm_address', text)}
             />
 
             <DizzitInput
-              label={t('beneficiary_management.edit.solana_wallet', 'Solana Wallet')}
+              label={t('beneficiary.edit.solana_wallet', 'Solana Wallet')}
               placeholder=""
               value={formData.solana_address}
               onChangeText={(text) => handleInputChange('solana_address', text)}
@@ -419,7 +438,7 @@ export default function EditBeneficiaryScreen({ route }) {
 
         <View style={styles.footer}>
           <DizzitButton
-            title={t('beneficiary_management.edit.btn_save', 'Enregistrer')}
+            title={t('beneficiary.edit.btn_save', 'Save')}
             onPress={handleSave}
             loading={isSaving}
           />
@@ -432,7 +451,7 @@ export default function EditBeneficiaryScreen({ route }) {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>{t('beneficiary_management.edit.country', 'Pays')}</Text>
+                <Text style={styles.modalTitle}>{t('beneficiary.edit.country', 'Country')}</Text>
                 <TouchableOpacity onPress={() => setShowCountryPicker(false)}>
                   <Ionicons name="close" size={24} color="#1A2840" />
                 </TouchableOpacity>
@@ -445,12 +464,13 @@ export default function EditBeneficiaryScreen({ route }) {
                     style={styles.modalItem}
                     onPress={() => {
                       handleInputChange('country', item.name);
+                      handleInputChange('country_code', item.code);
                       handleInputChange('city', ''); // Reset city
                       setShowCountryPicker(false);
                     }}
                   >
                     <Text style={styles.modalItemText}>{getUniversalFlag(item.flag_emoji, item.code)} {item.name}</Text>
-                    {formData.country === item.name && <Ionicons name="checkmark" size={20} color="#0052FF" />}
+                    {(formData.country === item.name || formData.country_code === item.code) && <Ionicons name="checkmark" size={20} color="#0052FF" />}
                   </TouchableOpacity>
                 )}
               />
@@ -463,7 +483,7 @@ export default function EditBeneficiaryScreen({ route }) {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>{t('beneficiary_management.edit.city', 'Ville')}</Text>
+                <Text style={styles.modalTitle}>{t('beneficiary.edit.city', 'City')}</Text>
                 <TouchableOpacity onPress={() => setShowCityPicker(false)}>
                   <Ionicons name="close" size={24} color="#1A2840" />
                 </TouchableOpacity>
@@ -471,7 +491,7 @@ export default function EditBeneficiaryScreen({ route }) {
               
               <TextInput
                 style={styles.citySearchInput}
-                placeholder="Rechercher ou ajouter une ville..."
+                placeholder={t('beneficiary.form.searchCity', "Search or add a city...")}
                 value={citySearch}
                 onChangeText={setCitySearch}
                 autoFocus
@@ -501,7 +521,7 @@ export default function EditBeneficiaryScreen({ route }) {
                     }}
                   >
                     <Ionicons name="add-circle-outline" size={20} color="#0052FF" style={{marginRight: 8}} />
-                    <Text style={styles.modalItemTextCustom}>Ajouter "{citySearch}"</Text>
+                    <Text style={styles.modalItemTextCustom}>{t('beneficiary.form.addCity', 'Add')} "{citySearch}"</Text>
                   </TouchableOpacity>
                 )}
               />
@@ -514,13 +534,13 @@ export default function EditBeneficiaryScreen({ route }) {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Multiples Wallets Trouvés</Text>
+                <Text style={styles.modalTitle}>{t('beneficiary.form.multipleWallets', 'Multiple Wallets Found')}</Text>
                 <TouchableOpacity onPress={() => setShowDuplicateModal(false)}>
                   <Ionicons name="close" size={24} color="#1A2840" />
                 </TouchableOpacity>
               </View>
               <Text style={{ fontSize: 14, color: '#64748B', marginBottom: 16 }}>
-                Plusieurs comptes correspondent à ce numéro. Veuillez choisir lequel synchroniser :
+                {t('beneficiary.form.chooseWallet', 'Multiple accounts match this number. Please choose which one to sync:')}
               </Text>
               <FlatList
                 data={duplicateAccounts}
@@ -531,7 +551,7 @@ export default function EditBeneficiaryScreen({ route }) {
                     onPress={() => handleSelectDuplicate(item)}
                   >
                     <View>
-                      <Text style={{ fontFamily: 'Inter_600SemiBold', color: '#1A2840' }}>{item.email || 'Utilisateur sans email'}</Text>
+                      <Text style={{ fontFamily: 'Inter_600SemiBold', color: '#1A2840' }}>{item.email || t('beneficiary.form.userWithoutEmail', 'User without email')}</Text>
                       <Text style={{ fontSize: 12, color: '#94A3B8', marginTop: 4 }}>EVM: {item.evm_address ? `${item.evm_address.substring(0,6)}...${item.evm_address.slice(-4)}` : 'N/A'}</Text>
                     </View>
                     <Ionicons name="chevron-forward" size={20} color="#CBD5E1" />

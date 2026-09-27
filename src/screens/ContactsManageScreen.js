@@ -12,25 +12,37 @@ import { supabase } from '../services/supabaseClient';
 import ContactActionSheet from '../components/ContactActionSheet';
 import { handleUserInviteShare, shareInviteLink, shareShopLink } from '../utils/shareHelper';
 const getFlagEmoji = (countryCode) => {
-  if (!countryCode) return '🌍';
-  const codePoints = countryCode
-    .toUpperCase()
-    .split('')
-    .map(char => 127397 + char.charCodeAt());
-  return String.fromCodePoint(...codePoints);
+  if (!countryCode || typeof countryCode !== 'string' || countryCode.toLowerCase() === 'null') return '🌍';
+  const clean = countryCode.trim().toUpperCase();
+  if (clean.length !== 2) return '🌍';
+  try {
+    const codePoints = clean.split('').map(char => 127397 + char.charCodeAt(0));
+    return String.fromCodePoint(...codePoints);
+  } catch (e) {
+    return '🌍';
+  }
+};
+
+const formatRelation = (rel, t) => {
+  if (!rel) return t('beneficiary.relations.friend', 'Friend');
+  const clean = String(rel).toLowerCase().trim();
+  const key = `beneficiary.relations.${clean}`;
+  const translated = t(key, null);
+  if (translated && translated !== key) return translated;
+  return clean.charAt(0).toUpperCase() + clean.slice(1).replace(/_/g, ' ');
 };
 
 export default function ContactsManageScreen() {
   const navigation = useNavigation();
-  const { session, t } = useApp();
+  const { session, user, t } = useApp();
   const [contactItems, setContactItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const quickActions = [
-    { id: '1', title: t('contacts.add', "Ajouter\nun bénéficiaire"), subtitle: t('contacts.add_desc', "Ajouter un nouveau\nbénéficiaire"), icon: "person-add-outline", color: "#8B5CF6" },
-    { id: '2', title: t('contacts.edit', "Modifier\nun bénéficiaire"), subtitle: t('contacts.edit_desc', "Mettre à jour les\ninformations"), icon: "pencil-outline", color: "#10B981" },
-    { id: '3', title: t('contacts.my_beneficiaries', "Mes\nbénéficiaires"), subtitle: t('contacts.quick_action_view_sub', "Voir et gérer tous\nmes contacts"), icon: "people-outline", color: "#3B82F6" },
-    { id: '4', title: t('contacts.quick_action_5.title', "Inviter\nmes amis"), subtitle: t('contacts.quick_action_5.subtitle', "Invitez vos amis et\ngagnez $5 en DZY"), icon: "paper-plane-outline", color: "#F59E0B", subtitleColor: "#64748B", highlightColor: "#F59E0B", highlightText: "$5 en DZY" },
+    { id: '1', title: t('contacts.add', "Add\nbeneficiary"), subtitle: t('contacts.add_desc', "Add a new\nbeneficiary"), icon: "person-add-outline", color: "#8B5CF6" },
+    { id: '2', title: t('contacts.edit', "Edit\nbeneficiary"), subtitle: t('contacts.edit_desc', "Update\ninformation"), icon: "pencil-outline", color: "#10B981" },
+    { id: '3', title: t('contacts.my_beneficiaries', "My\nbeneficiaries"), subtitle: t('contacts.quick_action_view_sub', "View and manage\nall contacts"), icon: "people-outline", color: "#3B82F6" },
+    { id: '4', title: t('contacts.quick_action_5.title', "Invite\nfriends"), subtitle: t('contacts.quick_action_5.subtitle', "Invite friends and\nearn $5 in DZY"), icon: "paper-plane-outline", color: "#F59E0B", subtitleColor: "#64748B", highlightColor: "#F59E0B", highlightText: "$5 in DZY" },
   ];
 
   const fetchBeneficiaries = async () => {
@@ -39,26 +51,32 @@ export default function ContactsManageScreen() {
       setLoading(true);
       const res = await contactService.getBeneficiaries(session.user.id);
       const list = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
-      const mapped = list.map(b => ({
-        ...b,
-        id: b.id,
-        name: b.full_name || `${b.first_name || ''} ${b.last_name || ''}`.trim() || b.phone || 'Beneficiary',
-        first_name: b.first_name,
-        last_name: b.last_name,
-        relation: b.relationship || t('contacts.relation.friend', 'Ami'),
-        location: `${b.city || ''}, ${b.country_code || ''}`.trim().replace(/^,|,$/g, ''),
-        country: b.country || b.country_name || (b.country_code ? (() => { try { return new Intl.DisplayNames(['en'], {type: 'region'}).of(b.country_code) } catch(e) { return b.country_code } })() : ''),
-        country_code: b.country_code,
-        city: b.city,
-        phone: b.phone || b.phone_number,
-        email: b.email,
-        address: b.evm_address || b.solana_address || b.phone || b.email,
-        flag: getFlagEmoji(b.country_code),
-        isBeneficiary: true,
-        isSponsor: false,
-        image: b.avatar_url || null,
-        raw_data: b
-      }));
+      const mapped = list.map(b => {
+        const fullCountry = (b.country_code && b.country_code.length === 2 && b.country_code.toLowerCase() !== 'null')
+          ? (() => { try { return new Intl.DisplayNames(['en'], { type: 'region' }).of(b.country_code.toUpperCase()) } catch (e) { return b.country_code } })()
+          : (b.country || b.country_name || '');
+        return {
+          ...b,
+          id: b.id,
+          name: b.full_name || `${b.first_name || ''} ${b.last_name || ''}`.trim() || b.phone || 'Beneficiary',
+          first_name: b.first_name,
+          last_name: b.last_name,
+          relationship: b.relationship || 'friend',
+          relation: formatRelation(b.relationship, t),
+          location: `${b.city ? b.city + ', ' : ''}${b.country_code || fullCountry}`.trim().replace(/^,|,$/g, ''),
+          country: fullCountry,
+          country_code: b.country_code,
+          city: b.city,
+          phone: b.phone || b.phone_number,
+          email: b.email,
+          address: b.evm_address || b.solana_address || b.phone || b.email,
+          flag: getFlagEmoji(b.country_code),
+          isBeneficiary: true,
+          isSponsor: false,
+          image: b.avatar_url || null,
+          raw_data: b
+        };
+      });
       setContactItems(mapped);
     } catch (err) {
       console.error(err);
@@ -107,17 +125,27 @@ export default function ContactsManageScreen() {
   }, [contactItems]);
 
   const quickAction = (id) => {
-    if (id === '1') navigation.navigate('EditBeneficiaryScreen'); else if (id === '2') setToast({ title: 'Action requise', message: 'Veuillez sélectionner un bénéficiaire dans la liste pour le modifier.' });
-    else if (id === '3') setToast({ title: 'Liste actualisée', message: 'Tous vos bénéficiaires sont affichés.' });
-    else handleUserInviteShare(user);
+    if (id === '1') {
+      navigation.navigate('EditBeneficiaryScreen');
+    } else if (id === '2') {
+      setToast({ title: t('contacts.action_required', 'Action required'), message: t('contacts.select_to_edit', 'Please select a beneficiary from the list below to edit.') });
+    } else if (id === '3') {
+      fetchBeneficiaries();
+    } else {
+      handleUserInviteShare(user || session?.user);
+    }
   };
   const removeContact = async (id) => {
     try {
-      await contactService.deleteBeneficiary(id);
+      const res = await contactService.deleteBeneficiary(id);
+      if (res && res.success === false) {
+        setToast({ title: t('common.error', 'Error'), message: res.error || t('contacts.delete_error', 'Unable to delete contact.') });
+        return;
+      }
       setContactItems(items => items.filter(item => item.id !== id));
-      setToast({ title: t('contacts.deleted', 'Contact supprimé'), message: t('contacts.deleted_desc', 'Contact supprimé avec succès.') });
+      setToast({ title: t('contacts.deleted', 'Contact deleted'), message: t('contacts.deleted_desc', 'Contact deleted successfully.') });
     } catch (err) {
-      setToast({ title: 'Erreur', message: t('contacts.delete_error', 'Impossible de supprimer ce contact.') });
+      setToast({ title: t('common.error', 'Error'), message: err?.message || t('contacts.delete_error', 'Unable to delete contact.') });
     }
     setSelectedContact(null);
   };
@@ -277,7 +305,7 @@ export default function ContactsManageScreen() {
           }}
           onFavorite={(contact) => {
             setSelectedContact(null);
-            setToast({ title: 'Ajouté aux favoris', message: `${contact.name} est maintenant dans vos favoris.` });
+            setToast({ title: t('contacts.action_add_favorite', 'Added to favorites'), message: `${contact.name} ${t('contacts.added_favorites_desc', 'is now in your favorites.')}` });
           }}
         />
 
@@ -297,7 +325,7 @@ export default function ContactsManageScreen() {
               <TouchableOpacity 
                 style={styles.inviteBtn} 
                 onPress={() => {
-                  handleUserInviteShare(user);
+                  handleUserInviteShare(user || session?.user);
                 }}
               >
                 <Text style={styles.inviteBtnText}>{t('home.btnInviteNow', "Inviter maintenant")}</Text>
@@ -336,14 +364,14 @@ function ContactRow({ contact, onPress, onNavigate }) {
       <View style={styles.statusCol}>
         <Ionicons name="person-outline" size={18} color={contact.isBeneficiary ? '#10B981' : '#94A3B8'} />
         <Text style={[styles.statusText, { color: contact.isBeneficiary ? '#10B981' : '#94A3B8' }]}>
-          {contact.isBeneficiary ? t('beneficiary_management.profile.yes', 'Oui') : t('beneficiary_management.profile.no', 'Non')}
+          {contact.isBeneficiary ? t('common.yes', 'Yes') : t('common.no', 'No')}
         </Text>
       </View>
 
       <View style={styles.statusCol}>
         <Ionicons name="heart-outline" size={18} color={contact.isSponsor ? '#10B981' : '#94A3B8'} />
         <Text style={[styles.statusText, { color: contact.isSponsor ? '#10B981' : '#94A3B8' }]}>
-          {contact.isSponsor ? t('beneficiary_management.profile.yes', 'Oui') : t('beneficiary_management.profile.no', 'Non')}
+          {contact.isSponsor ? t('common.yes', 'Yes') : t('common.no', 'No')}
         </Text>
       </View>
 

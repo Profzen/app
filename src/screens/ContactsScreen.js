@@ -26,12 +26,24 @@ const quickActions = [
 ];
 
 const getFlagEmoji = (countryCode) => {
-  if (!countryCode) return '🌍';
-  const codePoints = countryCode
-    .toUpperCase()
-    .split('')
-    .map(char => 127397 + char.charCodeAt());
-  return String.fromCodePoint(...codePoints);
+  if (!countryCode || typeof countryCode !== 'string' || countryCode.toLowerCase() === 'null') return '🌍';
+  const clean = countryCode.trim().toUpperCase();
+  if (clean.length !== 2) return '🌍';
+  try {
+    const codePoints = clean.split('').map(char => 127397 + char.charCodeAt(0));
+    return String.fromCodePoint(...codePoints);
+  } catch (e) {
+    return '🌍';
+  }
+};
+
+const formatRelation = (rel, t) => {
+  if (!rel) return t('beneficiary.relations.friend', 'Friend');
+  const clean = String(rel).toLowerCase().trim();
+  const key = `beneficiary.relations.${clean}`;
+  const translated = t(key, null);
+  if (translated && translated !== key) return translated;
+  return clean.charAt(0).toUpperCase() + clean.slice(1).replace(/_/g, ' ');
 };
 
 export default function ContactsScreen() {
@@ -73,11 +85,12 @@ export default function ContactsScreen() {
         return {
           ...b,
           id: b.id,
-          name: b.full_name || `${b.first_name} ${b.last_name || ''}`.trim(),
+          name: b.full_name || `${b.first_name || ''} ${b.last_name || ''}`.trim() || b.phone || 'Beneficiary',
           first_name: b.first_name,
           last_name: b.last_name,
-          relation: b.relationship || t('contacts.relation.friend', 'Ami'),
-          location: `${b.city ? b.city + ', ' : ''}${fullCountry}`,
+          relationship: b.relationship || 'friend',
+          relation: formatRelation(b.relationship, t),
+          location: `${b.city ? b.city + ', ' : ''}${fullCountry || b.country_code || ''}`.trim().replace(/^,|,$/g, ''),
           country: fullCountry,
           country_code: b.country_code,
           city: b.city,
@@ -484,14 +497,14 @@ function ContactRow({ contact, onPress }) {
       <View style={styles.statusCol}>
         <Ionicons name="person-outline" size={18} color={contact.isBeneficiary ? '#10B981' : '#94A3B8'} />
         <Text style={[styles.statusText, { color: contact.isBeneficiary ? '#10B981' : '#94A3B8' }]}>
-          {contact.isBeneficiary ? t('beneficiary_management.profile.yes', 'Oui') : t('beneficiary_management.profile.no', 'Non')}
+          {contact.isBeneficiary ? t('common.yes', 'Yes') : t('common.no', 'No')}
         </Text>
       </View>
 
       <View style={styles.statusCol}>
         <Ionicons name="person-add-outline" size={18} color={contact.isSponsor ? '#10B981' : '#94A3B8'} />
         <Text style={[styles.statusText, { color: contact.isSponsor ? '#10B981' : '#94A3B8' }]}>
-          {contact.isSponsor ? t('beneficiary_management.profile.yes', 'Oui') : t('beneficiary_management.profile.no', 'Non')}
+          {contact.isSponsor ? t('common.yes', 'Yes') : t('common.no', 'No')}
         </Text>
       </View>
 

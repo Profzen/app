@@ -451,7 +451,7 @@ export default function ShopDetailsScreen({ route }) {
           <View style={styles.sectionHeaderRow}>
             <Text style={styles.sectionTitle}>{t('shop.sections.popular_products', 'Produits populaires')}</Text>
             <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => navigation.navigate('ShopProductsScreen', { shop: shop })}>
-              <Text style={styles.showAllText}>{t('common.viewAll', 'Voir tout')}</Text>
+              <Text style={styles.showAllText}>{t('common.viewAll', 'View all')}</Text>
               <Ionicons name="arrow-forward" size={14} color="#3B82F6" style={{ marginLeft: 4 }} />
             </TouchableOpacity>
           </View>
