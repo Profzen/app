@@ -1,82 +1,135 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
+import { currencyRateService, EMERGENCY_RATES } from '../services/currencyRateService';
+import { COUNTRY_METADATA } from '../services/paymentCorridorService';
 
 export default function WithdrawFundsMobileMoneySummaryScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { t, user, language } = useApp();
-  const { 
-    amount = '250000', 
-    currency, 
-    selectedToken = 'USDC', 
-    selectedNetwork = 'Polygon', 
-    selectedMethod = 'momo', 
-    destinationCountry 
+  const { t, user, language, getEffectiveWalletCountry } = useApp();
+  const isBusinessCard = user?.role === 'merchant';
+  const {
+    amount = '0',
+    currency,
+    selectedToken = 'USDC',
+    selectedMethod = 'momo',
+    destinationCountry,
   } = route.params || {};
 
-  // Resolve Country, Currency and Provider dynamically
-  let countryName = 'Togo';
-  let flag = '🇹🇬';
-  let effectiveCurrency = currency || 'FCFA';
-  let rate = 600;
-  let providerName = selectedMethod === 'bank' ? t('withdrawFunds.bankTransfer', 'Virement bancaire') : 'Mixx by Yas (Togo)';
+  // ─── Live rates from currencyRateService (Supabase → live API → emergency fallback) ───
+  const [rates, setRates] = useState(currencyRateService.getRates() || EMERGENCY_RATES);
+  useEffect(() => {
+    const unsub = currencyRateService.subscribe((r) => setRates(r));
+    return unsub;
+  }, []);
 
-  const countryParam = (destinationCountry || user?.merchantProfile?.country || user?.country || '').toUpperCase();
-  const currParam = (currency || '').toUpperCase();
+  const [quote, setQuote] = useState(null);
+  const [quoteLoading, setQuoteLoading] = useState(true);
+  const [quoteError, setQuoteError] = useState('');
 
-  if (currParam === 'MGA' || countryParam === 'MG' || countryParam === 'MADAGASCAR') {
-    countryName = 'Madagascar';
-    flag = '🇲🇬';
-    effectiveCurrency = 'MGA';
-    rate = 4500;
-    providerName = selectedMethod === 'bank' ? t('withdrawFunds.bankTransfer', 'Virement bancaire') : 'Airtel / Orange Money (Madagascar)';
-  } else if (currParam === 'EUR' || countryParam === 'FR' || countryParam === 'FRANCE') {
-    countryName = 'France';
-    flag = '🇫🇷';
-    effectiveCurrency = 'EUR';
-    rate = 0.92;
-    providerName = 'Virement SEPA (Euro)';
-  } else if (currParam === 'USD' || countryParam === 'US' || countryParam === 'USA') {
-    countryName = 'United States';
-    flag = '🇺🇸';
-    effectiveCurrency = 'USD';
-    rate = 1.0;
-    providerName = 'ACH / Wire Transfer';
-  } else if (currParam === 'GHS' || countryParam === 'GH' || countryParam === 'GHANA') {
-    countryName = 'Ghana';
-    flag = '🇬🇭';
-    effectiveCurrency = 'GHS';
-    rate = 15.5;
-    providerName = selectedMethod === 'bank' ? t('withdrawFunds.bankTransfer', 'Bank transfer') : 'MTN Mobile Money (Ghana)';
-  } else if (countryParam === 'BJ' || countryParam === 'BENIN') {
-    countryName = 'Bénin';
-    flag = '🇧🇯';
-    effectiveCurrency = 'FCFA';
-    rate = 600;
-    providerName = selectedMethod === 'bank' ? t('withdrawFunds.bankTransfer', 'Virement bancaire') : 'MTN / Moov Money (Bénin)';
-  } else if (countryParam === 'CI' || countryParam === "COTE D'IVOIRE") {
-    countryName = "Côte d'Ivoire";
-    flag = '🇨🇮';
-    effectiveCurrency = 'FCFA';
-    rate = 600;
-    providerName = selectedMethod === 'bank' ? t('withdrawFunds.bankTransfer', 'Virement bancaire') : 'Wave / Orange Money (CI)';
-  }
+  // ─── Resolve country + currency dynamically from paymentCorridorService metadata ───
+  const fallbackCountry = getEffectiveWalletCountry ? getEffectiveWalletCountry(isBusinessCard) : (user?.country || 'TG');
+  const countryParam = (destinationCountry || fallbackCountry).toUpperCase().trim();
+  const meta = COUNTRY_METADATA[countryParam] || COUNTRY_METADATA['TG'];
+  const countryName = t(`country.${countryParam}`, meta.name || 'Togo');
+  const flag = meta.flag || '🌍';
 
-  const numAmount = parseFloat(String(amount).replace(/[^\d.]/g, '')) || 250000;
-  const locale = language === 'en' ? 'en-US' : 'fr-FR';
+  // Prefer the currency from route params (already normalised by WithdrawFundsScreen),
+  // fall back to paymentCorridorService metadata.
+  const rawCurrency = (currency || meta.currency || 'XOF').toUpperCase();
+  const effectiveCurrency = ['XOF', 'XAF'].includes(rawCurrency) ? 'FCFA' : rawCurrency;
+
+  // ─── Off-ramp provider name from paymentCorridorService metadata ───
+  const momoOperators = meta.momoNetworks || [];
+  const providerName = selectedMethod === 'bank'
+    ? t('withdrawFunds.bankTransfer', 'Virement bancaire')
+    : momoOperators.length > 0
+      ? momoOperators.join(' / ') + ` (${countryName})`
+      : t('withdrawFunds.bankTransfer', 'Virement bancaire');
+
+  // ─── Live rate: 1 USD → local fiat ───
+  const normalizedCurrency = currencyRateService.normalizeCurrency(effectiveCurrency);
+  const localRate = useMemo(() =>
+    rates[normalizedCurrency] || EMERGENCY_RATES[normalizedCurrency] || 1,
+    [rates, normalizedCurrency]
+  );
+
+  // ─── Token → USD rate ───
+  const tokenToUsd = useMemo(() => {
+    if (selectedToken === 'DZY') return 0.10;
+    if (selectedToken === 'EURC') return 1 / (rates['EUR'] || 0.92);
+    return 1; // USDC, USDT = 1:1 USD
+  }, [selectedToken, rates]);
+
+  // ─── Amounts ───
+  const numAmount = parseFloat(String(amount).replace(/[\s,]/g, '')) || 0;
+  const locale = language;
   const formattedAmount = numAmount.toLocaleString(locale);
-  const feePercent = 0.03;
-  const feeAmount = Math.round(numAmount * feePercent);
-  const netAmount = numAmount - feeAmount;
-  const formattedNetAmount = netAmount.toLocaleString(locale);
-  const formattedFeeAmount = feeAmount.toLocaleString(locale);
+  const feePercent = 0.03; // fallback 3% DizzitUp fee
   const token = selectedToken || 'USDC';
-  const debitTokenAmount = (numAmount / rate).toFixed(2);
-  const rateFormatted = rate.toLocaleString(locale);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchQuote = async () => {
+      try {
+        setQuoteLoading(true);
+        const sessionToken = user?.token || ''; // or AppContext session
+        let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
+        if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) {
+          DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
+        }
+        
+        const response = await fetch(`${DIZZY_URL}/momo/wallet/cashout/quote`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionToken}` },
+          body: JSON.stringify({
+            amount: numAmount,
+            currency: selectedToken,
+            country: countryParam,
+            payoutMethod: selectedMethod,
+          })
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+           throw new Error(data.message || data.error || 'Failed to fetch quote');
+        }
+        if (isMounted) {
+          setQuote(data);
+          setQuoteError('');
+        }
+      } catch (err) {
+        if (isMounted) {
+          setQuoteError(err.message);
+        }
+      } finally {
+        if (isMounted) {
+          setQuoteLoading(false);
+        }
+      }
+    };
+    fetchQuote();
+    return () => { isMounted = false; };
+  }, [numAmount, selectedToken, countryParam, selectedMethod, user]);
+
+  // Use Quote values if available
+  const netAmount = quote ? quote.finalFiatAmountReceived : numAmount * (1 - feePercent);
+  const formattedNetAmount = netAmount.toLocaleString(locale);
+  const dizzitupFeeAmount = quote ? quote.dizzitupFee : (numAmount * feePercent);
+  const formattedDizzitupFee = dizzitupFeeAmount.toLocaleString(locale);
+  const providerFeeAmount = quote ? quote.providerFee : 0;
+  const formattedProviderFee = providerFeeAmount.toLocaleString(locale);
+  const swapFeeAmount = quote ? quote.swapFee : 0;
+  const formattedSwapFee = swapFeeAmount.toLocaleString(locale);
+  
+  const amountInUsd = numAmount / localRate;
+  const fallbackDebitTokenAmount = (amountInUsd / tokenToUsd).toFixed(4);
+  const actualDebitTokenAmount = quote ? quote.totalTokenDebit.toFixed(4) : fallbackDebitTokenAmount;
+  const rateFormatted = Math.round(tokenToUsd * localRate).toLocaleString(locale);
+
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -161,7 +214,7 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
                 </View>
                 <View>
                   <Text style={styles.summaryLabel}>{t('withdrawFunds.walletDebited', 'Your DZYwallet is debited by')}</Text>
-                  <Text style={styles.summaryValueBig}>{debitTokenAmount} {token}</Text>
+                  <Text style={styles.summaryValueBig}>{actualDebitTokenAmount} {token}</Text>
                   <Text style={styles.summaryRate}>
                     {t('withdrawFunds.exchangeRate', { token, rate: rateFormatted, curr: effectiveCurrency, defaultValue: `Rate: 1 ${token} = ${rateFormatted} ${effectiveCurrency}` })}
                   </Text>
@@ -201,22 +254,36 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
 
             <View style={styles.divider} />
 
-            {/* Fees */}
+            {/* Fees — from Backend Quote */}
             <View style={styles.feeRow}>
               <View style={styles.feeLabelRow}>
                 <Text style={styles.feeLabel}>{t('withdrawFunds.dizzitupFee', 'DizzitUp Fee')}</Text>
                 <Ionicons name="information-circle-outline" size={14} color="#94A3B8" style={{marginLeft: 4}} />
               </View>
-              <Text style={styles.feeValue}>{formattedFeeAmount} {effectiveCurrency} (3,00%)</Text>
+              <Text style={styles.feeValue}>{formattedDizzitupFee} {effectiveCurrency} (3%)</Text>
             </View>
 
             <View style={styles.feeRow}>
               <View style={styles.feeLabelRow}>
-                <Text style={styles.feeLabel}>{t('withdrawFunds.networkFee', 'Network Fee')} ({selectedNetwork})</Text>
+                <Text style={styles.feeLabel}>{t('withdrawFunds.processingFee', 'Processing Fee')}</Text>
                 <Ionicons name="information-circle-outline" size={14} color="#94A3B8" style={{marginLeft: 4}} />
               </View>
-              <Text style={styles.feeValue}>0 {effectiveCurrency} (0%)</Text>
+              {quoteLoading ? (
+                <Text style={styles.feeValue}>{t('common.loading', 'Loading...')}</Text>
+              ) : (
+                <Text style={styles.feeValue}>{formattedProviderFee} {effectiveCurrency}</Text>
+              )}
             </View>
+
+            {quote && quote.swapRequired && (
+              <View style={styles.feeRow}>
+                <View style={styles.feeLabelRow}>
+                  <Text style={styles.feeLabel}>{t('withdrawFunds.swapFee', 'Swap / Bridge Fee')}</Text>
+                  <Ionicons name="information-circle-outline" size={14} color="#94A3B8" style={{marginLeft: 4}} />
+                </View>
+                <Text style={styles.feeValue}>{formattedSwapFee} {effectiveCurrency}</Text>
+              </View>
+            )}
 
             {/* Total */}
             <View style={styles.totalBanner}>
@@ -224,23 +291,6 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
               <Text style={styles.totalValue}>{formattedNetAmount} {effectiveCurrency}</Text>
             </View>
 
-          </View>
-
-          {/* Sell Transaction Card */}
-          <View style={styles.sellCard}>
-            <Text style={styles.feeLabel}>{t('withdrawFunds.sellTransaction', 'Sell transaction')}</Text>
-            <View style={styles.sellRow}>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text style={styles.sellTitle}>Sell {debitTokenAmount} {token}</Text>
-                <View style={styles.successBadge}>
-                  <Text style={styles.successBadgeText}>{t('common.success', 'Success')}</Text>
-                </View>
-              </View>
-              <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text style={styles.linkText}>{t('withdrawFunds.viewOnBlockchain', 'View on blockchain')}</Text>
-                <Ionicons name="open-outline" size={14} color="#3B82F6" style={{marginLeft: 4}} />
-              </TouchableOpacity>
-            </View>
           </View>
 
           {/* Info Banner */}
@@ -253,10 +303,36 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
             </Text>
           </View>
 
-          {/* Continue Button */}
-          <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate('WithdrawFundsMobileMoneyProcessingScreen', { amount, currency: effectiveCurrency, selectedToken: token, selectedNetwork, selectedMethod, destinationCountry })}>
+          {/* Confirm Button */}
+          {quoteError ? (
+            <View style={[styles.infoBanner, { backgroundColor: '#FEE2E2', borderColor: '#FCA5A5', borderWidth: 1, marginBottom: 16 }]}>
+              <View style={[styles.infoIconCircle, { backgroundColor: '#EF4444' }]}>
+                <Ionicons name="alert-circle" size={16} color="#FFFFFF" />
+              </View>
+              <Text style={[styles.infoBannerText, { color: '#7F1D1D' }]}>
+                {quoteError}
+              </Text>
+            </View>
+          ) : null}
+
+          <TouchableOpacity
+            style={[styles.btnContinue, (quoteLoading || quoteError) && { opacity: 0.5 }]}
+            disabled={quoteLoading || !!quoteError}
+            onPress={() => navigation.navigate('WithdrawFundsMobileMoneyProcessingScreen', {
+              amount,
+              currency: effectiveCurrency,
+              selectedToken: token,
+              selectedMethod,
+              destinationCountry: countryParam,
+              quoteId: quote?.quoteId,
+              quote: quote,
+              // selectedNetwork intentionally omitted — backend handles routing via quote
+            })}
+          >
             <Ionicons name="lock-closed" size={18} color="#1A2840" style={{marginRight: 8}} />
-            <Text style={styles.btnContinueText}>{t('withdrawFunds.confirmWithdrawal', 'Confirm withdrawal')}</Text>
+            <Text style={styles.btnContinueText}>
+              {quoteLoading ? t('common.loading', 'Loading...') : t('withdrawFunds.confirmWithdrawal', 'Confirm withdrawal')}
+            </Text>
           </TouchableOpacity>
 
         </ScrollView>

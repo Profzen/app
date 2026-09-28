@@ -82,9 +82,9 @@ export function AppProvider({ children }) {
     'DZ';
 
   /**
-   * Rule 1 (Wallet): IP geolocation first, residence/account country fallback.
-   * For the user/merchant wallet (Home & Dashboard), the currency follows the user's
-   * current detected location. Account/residence country is only a fallback if geolocation fails.
+   * Rule 1 (Wallet): 
+   *   - PERSONAL wallet → IP geolocation first, then account country fallback.
+   *   - BUSINESS wallet → merchant HQ country ALWAYS (never geolocation), same as POS.
    */
   const getEffectiveWalletCountry = (isBusinessCard = false) => {
     // Forward to POS logic if explicitly requested
@@ -92,9 +92,23 @@ export function AppProvider({ children }) {
       return getEffectivePosCountry();
     }
 
-    // 1. Priority 1 for ALL WALLETS & MARKETPLACE: Physical IP geolocation or manual country selection
-    // Wallets and marketplace prices reflect the physical location of the user/device 
-    // so they know how much their balance is worth locally in their current currency (e.g. EUR in France, XOF in Togo).
+    // BUSINESS WALLET: Always use the merchant's registered HQ country — never geolocation.
+    // The business owner needs to see their store currency (e.g. XOF for a Togolese merchant),
+    // regardless of where they physically are.
+    if (isBusinessCard === true) {
+      const bizCountry = user?.merchantProfile?.country ||
+                         user?.merchantProfile?.country_code ||
+                         user?.merchantProfile?.business_country ||
+                         user?.business_country ||
+                         user?.company_country;
+      if (bizCountry && typeof bizCountry === 'string' && bizCountry.trim().length >= 2) {
+        return bizCountry.trim().toUpperCase();
+      }
+    }
+
+    // PERSONAL WALLET: Physical IP geolocation or manual country selection takes priority.
+    // Wallets and marketplace prices reflect the physical location of the user/device
+    // so they know how much their balance is worth locally (e.g. EUR in France, XOF in Togo).
     if (userSelectedCountry && typeof userSelectedCountry === 'string' && userSelectedCountry.length === 2) {
       return userSelectedCountry.toUpperCase();
     }
@@ -102,30 +116,17 @@ export function AppProvider({ children }) {
       return detectedCountry.toUpperCase();
     }
 
-    // 2. Fallback for Wallets if IP geolocation is unavailable
-    if (isBusinessCard === true) {
-      // Business Wallet Fallback: Merchant store country (e.g. DizzitUp Togo -> TG -> XOF)
-      const bizCountry = user?.merchantProfile?.country || 
-                         user?.merchantProfile?.country_code || 
-                         user?.merchantProfile?.business_country || 
-                         user?.business_country || 
-                         user?.company_country;
-      if (bizCountry && typeof bizCountry === 'string' && bizCountry.trim().length >= 2) {
-        return bizCountry.trim().toUpperCase();
-      }
-    }
-
-    // Personal Wallet Fallback (or if Business Wallet has no store country): User profile residence
-    const userSettingsCountry = user?.country_of_residence || 
-                                user?.residence_country || 
-                                user?.country || 
+    // Final fallback: user profile residence country
+    const userSettingsCountry = user?.country_of_residence ||
+                                user?.residence_country ||
+                                user?.country ||
                                 user?.country_code ||
                                 user?.profile?.country;
     if (userSettingsCountry && typeof userSettingsCountry === 'string' && userSettingsCountry.trim().length >= 2) {
       return userSettingsCountry.trim().toUpperCase();
     }
 
-    // 3. Final default fallback
+    // Absolute default
     return 'US';
   };
 

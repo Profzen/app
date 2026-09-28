@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AppToast from '../components/AppToast';
@@ -8,8 +8,36 @@ import { useApp } from '../context/AppContext';
 
 export default function WithdrawFundsMobileMoneySuccessScreen() {
   const navigation = useNavigation();
-  const { t } = useApp();
+  const route = useRoute();
+  const { t, language, user } = useApp();
   const [toast, setToast] = useState(null);
+
+  const { 
+    amount = '0', 
+    selectedToken = 'USDC', 
+    selectedMethod = 'momo', 
+    providerName = 'Mobile Money', 
+    countryName = 'Togo', 
+    quote = {}, 
+    orderId = 'N/A', 
+    txHash = 'Pending', 
+    timestamp = new Date().toISOString()
+  } = route.params || {};
+
+  const { COUNTRY_METADATA } = require('../services/paymentCorridorService');
+  const countryParam = (user?.country || 'TG').toUpperCase().trim();
+  const meta = COUNTRY_METADATA[countryParam] || COUNTRY_METADATA['TG'];
+  const effectiveCurrency = ['XOF', 'XAF'].includes(meta.currency || 'XOF') ? 'FCFA' : (meta.currency || 'XOF');
+  
+  const formattedAmount = parseFloat(amount).toLocaleString(language);
+  const finalFiatAmount = quote.finalFiatAmountReceived ? quote.finalFiatAmountReceived.toLocaleString(language) : formattedAmount;
+  const tokenAmount = quote.totalTokenDebit ? quote.totalTokenDebit.toFixed(2) : '0.00';
+  const recipientContact = user?.phone || 'N/A';
+  
+  const displayDate = new Date(timestamp).toLocaleDateString(language, {
+    day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+  });
+
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -87,8 +115,8 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
               <View style={styles.amountsHeader}>
                 <View style={styles.amountCol}>
                   <Text style={styles.amountLabel}>{t('withdrawFunds.youWithdraw', 'You withdraw')}</Text>
-                  <Text style={styles.amountValue}>250 000 FCFA</Text>
-                  <Text style={styles.amountSub}>≈ 250,00 USDC</Text>
+                  <Text style={styles.amountValue}>{formattedAmount} {effectiveCurrency}</Text>
+                  <Text style={styles.amountSub}>≈ {tokenAmount} {selectedToken}</Text>
                 </View>
 
                 <View style={styles.amountArrowContainer}>
@@ -97,8 +125,8 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
 
                 <View style={styles.amountColRight}>
                   <Text style={styles.amountLabel}>{t('withdrawFunds.youReceive', 'You receive')}</Text>
-                  <Text style={styles.amountValueGreen}>247 000 FCFA</Text>
-                  <Text style={styles.amountSub}>via Mixx by Yas (Togo)</Text>
+                  <Text style={styles.amountValueGreen}>{finalFiatAmount} {effectiveCurrency}</Text>
+                  <Text style={styles.amountSub}>via {providerName}</Text>
                 </View>
               </View>
 
@@ -113,8 +141,8 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
                   <Text style={styles.detailLabel}>{t('withdrawFunds.withdrawalMethod', 'Withdrawal method')}</Text>
                 </View>
                 <View style={styles.detailRight}>
-                  <Text style={styles.detailValueRegular}>Mixx by Yas (Togo)</Text>
-                  <Text style={styles.mixxLogoText}> mixx</Text>
+                  <Text style={styles.detailValueRegular}>{providerName}</Text>
+                  {selectedMethod === 'momo' && <Text style={styles.mixxLogoText}> momo</Text>}
                 </View>
               </View>
 
@@ -125,7 +153,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
                   </View>
                   <Text style={styles.detailLabel}>{t('withdrawFunds.walletWasDebited', 'Your DZYwallet was debited by')}</Text>
                 </View>
-                <Text style={styles.detailValueRegular}>251,40 USDC</Text>
+                <Text style={styles.detailValueRegular}>{tokenAmount} {selectedToken}</Text>
               </View>
 
               <View style={styles.detailRow}>
@@ -151,7 +179,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
                   <Text style={styles.detailLabel}>{t('withdrawFunds.sellTransaction', 'Sell transaction')}</Text>
                 </View>
                 <View style={styles.detailRight}>
-                  <Text style={styles.detailValueRegular}>Sell 251,40 USDC</Text>
+                  <Text style={styles.detailValueRegular}>Sell {tokenAmount} {selectedToken}</Text>
                   <View style={styles.successBadge}>
                     <Text style={styles.successBadgeText}>{t('common.success', 'Success')}</Text>
                   </View>
@@ -166,7 +194,9 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
                   <Text style={styles.detailLabel}>{t('withdrawFunds.viewOnBlockchain', 'View on blockchain')}</Text>
                 </View>
                 <View style={styles.detailRight}>
-                  <Text style={styles.detailValueBlue}>0xA1b2...4fE6d7</Text>
+                  <Text style={styles.detailValueBlue}>
+                    {txHash.length > 20 ? `${txHash.slice(0, 6)}...${txHash.slice(-6)}` : txHash}
+                  </Text>
                   <Ionicons name="copy-outline" size={14} color="#64748B" style={{marginLeft: 6}} />
                 </View>
               </View>
@@ -178,7 +208,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
                   </View>
                   <Text style={styles.detailLabel}>{t('orderVerification.dateTime', 'Date and time')}</Text>
                 </View>
-                <Text style={styles.detailValueRegular}>30 juin 2025 à 14:32</Text>
+                <Text style={styles.detailValueRegular}>{displayDate}</Text>
               </View>
 
               <View style={styles.detailRow}>
@@ -189,7 +219,9 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
                   <Text style={styles.detailLabel}>{t('withdrawFunds.withdrawalId', 'Withdrawal ID')}</Text>
                 </View>
                 <View style={styles.detailRight}>
-                  <Text style={styles.detailValueRegular}>DZTR-250630-143245</Text>
+                  <Text style={styles.detailValueRegular}>
+                    {orderId.length > 20 ? `${orderId.slice(0, 8)}...${orderId.slice(-6)}` : orderId}
+                  </Text>
                   <Ionicons name="copy-outline" size={14} color="#64748B" style={{marginLeft: 6}} />
                 </View>
               </View>
@@ -201,7 +233,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
                   </View>
                   <Text style={styles.detailLabel}>{t('orderVerification.recipient', 'Recipient')}</Text>
                 </View>
-                <Text style={styles.detailValueRegular}>+228 90 12 34 56</Text>
+                <Text style={styles.detailValueRegular}>{recipientContact}</Text>
               </View>
 
             </View>
@@ -213,7 +245,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
               <Ionicons name="shield-checkmark-outline" size={20} color="#10B981" />
             </View>
             <Text style={styles.successBannerText}>
-              {t('withdrawFunds.fundsAvailableNotice', 'You will receive a notification as soon as the funds\nare available on your Mixx account.')}
+              {t('withdrawFunds.fundsAvailableNotice', 'You will receive a notification as soon as the funds\nare available on your account.')}
             </Text>
           </View>
 
@@ -224,14 +256,14 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
               navigation.navigate('ShareSuccessPlatformScreen', {
                 transactionData: {
                   type: 'withdraw',
-                  amount: '250 000 FCFA',
-                  token: 'USDC',
-                  actionType: 'retiré',
-                  recipientName: 'Mixx by Yas (+228 90 12 34 56)',
-                  recipientCountry: 'Togo',
-                  recipientFlag: '🇹🇬',
-                  date: '30 juin 2025 • 14:32',
-                  txHash: 'DZTR-250630-143245',
+                  amount: `${formattedAmount} ${effectiveCurrency}`,
+                  token: selectedToken,
+                  actionType: t('withdrawFunds.withdrawn', 'retiré'),
+                  recipientName: `${providerName} (${recipientContact})`,
+                  recipientCountry: countryName,
+                  recipientFlag: meta.flag || '🌍',
+                  date: displayDate,
+                  txHash: orderId,
                 },
               });
             }}

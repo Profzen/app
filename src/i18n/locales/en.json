@@ -4890,6 +4890,8 @@
     "delay24To48h": "24h to 48h",
     "dizzitupFee": "DizzitUp Fee",
     "networkFee": "Network Fee",
+    "processingFee": "Processing Fee",
+    "onMethod": "via {{name}}",
     "variable": "Variable",
     "mobileMoney": "Mobile Money",
     "instantReception": "Instant reception",
@@ -5223,7 +5225,13 @@
     "select_token_desc": "Select from your available tokens:",
     "detected_network": "Detected blockchain network",
     "recommended_network": "(Recommended)",
-    "safety_notice": "Guaranteed secure conversion at the best exchange rate to your local currency."
+    "safety_notice": "Guaranteed secure conversion at the best exchange rate to your local currency.",
+    "max_available": "Max available",
+    "sell_max_tap": "Tap to use",
+    "hq_country_label": "HQ country",
+    "unavailable_country": "Cash-out is not available in {{country}} yet.",
+    "unavailable_subtitle": "We’ll enable it when a supported off-ramp corridor becomes available.",
+    "coming_soon": "Coming soon"
   },
   "rewards": {
     "title": "DZY Rewards",

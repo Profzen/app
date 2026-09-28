@@ -103,6 +103,18 @@ export default function WalletCard({ balances, badgeTitle }) {
                   {user?.merchantProfile?.shop_name || user?.merchantProfile?.business_name}
                 </Text>
               ) : null}
+              {/* Business HQ country + flag — always shows merchant registered country, never geoloc */}
+              {isBusinessCard && primaryCountry?.code ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3 }}>
+                  <Image
+                    source={{ uri: `https://flagcdn.com/w20/${primaryCountry.code}.png` }}
+                    style={{ width: 14, height: 10, borderRadius: 2, marginRight: 5 }}
+                  />
+                  <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 10, color: 'rgba(255,255,255,0.55)', letterSpacing: 0.2 }}>
+                    {primaryCountry.currency}
+                  </Text>
+                </View>
+              ) : null}
               <Text style={styles.titleText}>10 DZY = $1.00 USD</Text>
             </View>
           </View>

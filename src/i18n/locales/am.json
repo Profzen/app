@@ -4588,6 +4588,8 @@
     "delay24To48h": "ከ 24 እስከ 48 ሰዓታት",
     "dizzitupFee": "የ DizzitUp ክፍያ",
     "networkFee": "የኔትወርክ ክፍያ",
+    "processingFee": "የመክፈያ ክፍያ",
+    "onMethod": "በኩል {{name}}",
     "variable": "ተለዋዋጭ",
     "mobileMoney": "ሞባይል ገንዘብ",
     "instantReception": "ፈጣን መቀበያ",
@@ -5027,7 +5029,13 @@
     "select_token_desc": "ከተገኙት ቶከኖች ይምረጡ:",
     "detected_network": "የተገኘው የብሎክቼይን አውታረ መረብ",
     "recommended_network": "(የሚመከር)",
-    "safety_notice": "ወደ አካባቢዎ ምንዛሬ በተሻለ የምንዛሬ ተመን አስተማማኝ ልውውጥ ዋስትና።"
+    "safety_notice": "ወደ አካባቢዎ ምንዛሬ በተሻለ የምንዛሬ ተመን አስተማማኝ ልውውጥ ዋስትና።",
+    "max_available": "ከፍተኛ ያለው",
+    "sell_max_tap": "ለመጠቀም ይጫኑ",
+    "hq_country_label": "የዋና መ/ቤት አገር",
+    "unavailable_country": "በ {{country}} ውስጥ ገንዘብ ማውጣት እስካሁን አልተገኘም።",
+    "unavailable_subtitle": "የሚደገፍ የመውጫ መንገድ ሲገኝ እናነቃዋለን።",
+    "coming_soon": "በቅርብ ቀን"
   },
   "rewards": {
     "title": "የ DZY ሽልማቶች",

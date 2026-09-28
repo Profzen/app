@@ -110,7 +110,8 @@ export const getCountryCurrencyInfo = (countryStr) => {
   return {
     code: code.toLowerCase(),
     currency,
-    label
+    label,
+    countryName
   };
 };
 

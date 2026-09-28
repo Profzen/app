@@ -1,52 +1,127 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Platform, StatusBar, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
 import { useApp } from '../context/AppContext';
 import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
+import { currencyRateService, EMERGENCY_RATES } from '../services/currencyRateService';
 
 export default function WithdrawFundsScreen() {
   const navigation = useNavigation();
-  const { user, t } = useApp();
+  const { user, t, getEffectiveWalletCountry } = useApp();
 
-  // 1. Auto-detect user's local fiat currency based on country
-  const userCountryInfo = useMemo(() => {
-    return getCountryCurrencyInfo(user?.country || 'Togo');
-  }, [user?.country]);
-
+  // 1. Resolve fiat currency: for merchants use HQ country, for users use their account country
+  const isBusinessCard = user?.role === 'merchant';
+  const effectiveCountryKey = getEffectiveWalletCountry ? getEffectiveWalletCountry(isBusinessCard) : (user?.country || 'TG');
+  const userCountryInfo = useMemo(() => getCountryCurrencyInfo(effectiveCountryKey), [effectiveCountryKey]);
   const localCurrency = ['XOF', 'XAF'].includes(userCountryInfo.currency) ? 'FCFA' : userCountryInfo.currency;
 
-  const [amount, setAmount] = useState('250 000');
-  const [selectedToken, setSelectedToken] = useState('USDC');
+  // 2. Live exchange rates from currencyRateService (Supabase → live API → emergency fallback)
+  const [rates, setRates] = useState(currencyRateService.getRates() || EMERGENCY_RATES);
+  useEffect(() => {
+    const unsubscribe = currencyRateService.subscribe((newRates) => setRates(newRates));
+    return unsubscribe;
+  }, []);
 
-  // 2. Token selection with live balances
-  const tokens = useMemo(() => [
-    { id: 'USDC', name: 'USDC', balance: user?.allBalances?.USDC ? parseFloat(user.allBalances.USDC).toFixed(2) : '1 250,00', network: 'Polygon' },
-    { id: 'USDT', name: 'USDT', balance: user?.allBalances?.USDT ? parseFloat(user.allBalances.USDT).toFixed(2) : '930,00', network: 'Polygon' },
-    { id: 'EURC', name: 'EURC', balance: user?.allBalances?.EURC ? parseFloat(user.allBalances.EURC).toFixed(2) : '420,00', network: 'Base' },
-    { id: 'DZY', name: 'DZY', balance: user?.balanceDZY ? parseFloat(user.balanceDZY).toFixed(2) : '12 500', network: 'Polygon' },
+  const [amount, setAmount] = useState('');
+  const [selectedToken, setSelectedToken] = useState(null);
+
+  // 3. Only tokens with positive balance — USDC, USDT, EURC, DZY
+  const allTokens = useMemo(() => [
+    { id: 'USDC', name: 'USDC', rawBalance: user?.allBalances?.USDC ? parseFloat(user.allBalances.USDC) : 0 },
+    { id: 'USDT', name: 'USDT', rawBalance: user?.allBalances?.USDT ? parseFloat(user.allBalances.USDT) : 0 },
+    { id: 'EURC', name: 'EURC', rawBalance: user?.allBalances?.EURC ? parseFloat(user.allBalances.EURC) : 0 },
+    { id: 'DZY',  name: 'DZY',  rawBalance: user?.balanceDZY ? parseFloat(user.balanceDZY) : 0 },
   ], [user?.allBalances, user?.balanceDZY]);
 
-  // 3. Auto-detected blockchain network based on selected token
-  const selectedNetwork = useMemo(() => {
-    const found = tokens.find(t => t.id === selectedToken);
-    return found?.network || 'Polygon';
-  }, [selectedToken, tokens]);
+  const tokens = useMemo(() =>
+    allTokens
+      .filter(tk => tk.rawBalance > 0)
+      .map(tk => ({ ...tk, balance: tk.rawBalance.toFixed(2) })),
+    [allTokens]
+  );
 
-  // Rough equivalence estimation for UI feedback
-  const parsedAmount = parseFloat((amount || '').replace(/\s/g, '')) || 0;
-  const estimatedCrypto = useMemo(() => {
-    if (localCurrency === 'FCFA') return (parsedAmount / 600).toFixed(2);
-    if (localCurrency === 'EUR') return (parsedAmount * 1.08).toFixed(2);
-    if (localCurrency === 'GHS') return (parsedAmount / 15).toFixed(2);
-    if (localCurrency === 'NGN') return (parsedAmount / 1500).toFixed(2);
-    return parsedAmount.toFixed(2);
-  }, [parsedAmount, localCurrency]);
+  // Auto-select first available token when list resolves
+  useEffect(() => {
+    if (tokens.length > 0 && (!selectedToken || !tokens.find(tk => tk.id === selectedToken))) {
+      setSelectedToken(tokens[0].id);
+    }
+  }, [tokens]);
+
+  // 4. Validate token availability dynamically against backend execution routes
+  const [tokenStatus, setTokenStatus] = useState('LOADING');
+  const [tokenStatusMsg, setTokenStatusMsg] = useState('');
+  
+  useEffect(() => {
+    if (!selectedToken) return;
+    let isMounted = true;
+    const checkAvailability = async () => {
+      try {
+        setTokenStatus('LOADING');
+        const sessionToken = user?.token || '';
+        let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
+        if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) {
+          DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
+        }
+        
+        const response = await fetch(`${DIZZY_URL}/momo/wallet/cashout/quote`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionToken}` },
+          body: JSON.stringify({
+            amount: 1000, // Dummy amount just to check route eligibility
+            currency: selectedToken,
+            country: effectiveCountryKey,
+            payoutMethod: 'momo'
+          })
+        });
+        const data = await response.json();
+        if (isMounted) {
+          if (data && data.status === 'UNAVAILABLE') {
+            setTokenStatus('UNAVAILABLE');
+            setTokenStatusMsg(data.message);
+          } else {
+            setTokenStatus('AVAILABLE');
+          }
+        }
+      } catch (err) {
+        if (isMounted) setTokenStatus('AVAILABLE'); // fallback
+      }
+    };
+    checkAvailability();
+    return () => { isMounted = false; };
+  }, [selectedToken, effectiveCountryKey, user]);
+
+  // 5. Live fiat→USD rate from currencyRateService
+  const normalizedCurrency = currencyRateService.normalizeCurrency(localCurrency);
+  const localRate = rates[normalizedCurrency] || EMERGENCY_RATES[normalizedCurrency];
+  const hasValidRate = !!localRate;
+
+  // Parsed fiat amount
+  const parsedAmount = parseFloat((amount || '').replace(/[\s,]/g, '')) || 0;
+
+  // Equivalent in USD, then in selected token (USDC/USDT 1:1 USD, EURC≈EUR, DZY 10:1)
+  const selectedTokenObj = useMemo(() => tokens.find(tk => tk.id === selectedToken), [tokens, selectedToken]);
+  const tokenToUsd = useMemo(() => {
+    if (!selectedToken) return 1;
+    if (selectedToken === 'DZY') return 0.10;
+    if (selectedToken === 'EURC') return 1 / (rates['EUR'] || 0.92);
+    return 1;
+  }, [selectedToken, rates]);
+
+  // How many tokens needed to cover the fiat amount
+  const amountInUsd = hasValidRate ? parsedAmount / localRate : 0;
+  const tokensNeeded = amountInUsd / tokenToUsd;
+
+  // Max tokens user can sell (after 3% DizzitUp fee deducted from fiat side)
+  // Wait, if they want to sell 100%, the total cost (fiat + 3%) must = token balance in fiat
+  // So max fiat = token balance * tokenToUsd * localRate / 1.03
+  const availableTokens = selectedTokenObj ? parseFloat(selectedTokenObj.balance) : 0;
+  const maxFiatFromTokens = hasValidRate ? availableTokens * tokenToUsd * localRate * (1 / 1.03) : 0;
+  const isInsufficient = parsedAmount > 0 && parsedAmount > maxFiatFromTokens;
 
   const renderTokenIcon = (id) => <CryptoIcon symbol={id} size={38} />;
-  const renderNetworkIcon = (id) => <CryptoIcon symbol={id} size={28} />;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -88,12 +163,41 @@ export default function WithdrawFundsScreen() {
           {/* Main Card */}
           <View style={styles.mainCard}>
             
+            {tokenStatus === 'UNAVAILABLE' && (
+              <View style={styles.unavailableBanner}>
+                <View style={styles.unavailableHeader}>
+                  <View style={styles.unavailableIconWrapper}>
+                    <Ionicons name="alert-circle" size={22} color="#E11D48" />
+                  </View>
+                  <View style={styles.unavailableBadge}>
+                    <Text style={styles.unavailableBadgeText}>{t('withdraw.coming_soon', 'Coming soon')}</Text>
+                  </View>
+                </View>
+                <Text style={styles.unavailableTitle}>
+                  {t('withdraw.unavailable_country', { country: t(`country.${effectiveCountryKey}`, userCountryInfo.countryName || effectiveCountryKey), defaultValue: `Cash-out is temporarily unavailable in ${t(`country.${effectiveCountryKey}`, userCountryInfo.countryName || effectiveCountryKey)}.` })}
+                </Text>
+                <Text style={styles.unavailableSubtitle}>
+                  {t('withdraw.unavailable_subtitle', 'This payout route is being enabled and will become available once the off-ramp connection is ready.')}
+                </Text>
+              </View>
+            )}
+
+            {!hasValidRate && tokenStatus !== 'UNAVAILABLE' && (
+              <View style={[styles.infoBanner, { backgroundColor: '#FEE2E2', borderColor: '#FCA5A5', borderWidth: 1, marginBottom: 16 }]}>
+                <View style={[styles.infoIconCircle, { backgroundColor: '#EF4444' }]}>
+                  <Ionicons name="alert-circle" size={16} color="#FFFFFF" />
+                </View>
+                <Text style={[styles.infoBannerText, { color: '#7F1D1D' }]}>
+                  {t('withdraw.exchange_rate_unavailable', 'Le taux de change actuel n\'est pas disponible. Veuillez réessayer plus tard.')}
+                </Text>
+              </View>
+            )}
             {/* Montant à retirer en monnaie locale */}
             <View style={styles.sectionHeaderBetween}>
               <Text style={styles.sectionTitle}>{t('withdraw.amount_to_withdraw', 'Montant à retirer')}</Text>
               <View style={styles.detectedCountryBadge}>
                 <Image source={{ uri: `https://flagcdn.com/w40/${userCountryInfo.code}.png` }} style={styles.countryFlag} />
-                <Text style={styles.detectedCountryText}>{userCountryInfo.label || 'Afrique'}</Text>
+                <Text style={styles.detectedCountryText}>{t(`country.${effectiveCountryKey}`, userCountryInfo.countryName || 'Afrique')} ({localCurrency})</Text>
               </View>
             </View>
 
@@ -110,19 +214,18 @@ export default function WithdrawFundsScreen() {
                 <Text style={styles.fixedCurrencyText}>{localCurrency}</Text>
               </View>
             </View>
-            <Text style={styles.equivText}>≈ {estimatedCrypto} {selectedToken}</Text>
+            <Text style={styles.equivText}>≈ {tokensNeeded > 0 ? tokensNeeded.toFixed(4) : '—'} {selectedToken || '—'}</Text>
 
-            {/* Quick Percentage Chips (Nexo UX benchmark requested by Solofo) */}
+            {/* Quick Percentage Chips — calculated using live rates from currencyRateService */}
             <View style={styles.percentRow}>
               {[25, 50, 75, 100].map((pct) => (
                 <TouchableOpacity
                   key={pct}
                   style={styles.percentChip}
                   onPress={() => {
-                    const selectedTokenObj = tokens.find(t => t.id === selectedToken) || tokens[0];
-                    const numBal = parseFloat(String(selectedTokenObj.balance).replace(/[^\d.]/g, '')) || 500;
-                    const calculatedLocal = Math.round(numBal * (pct / 100) * (localCurrency === 'MGA' ? 4500 : (localCurrency === 'EUR' ? 0.92 : 600)));
-                    setAmount(calculatedLocal.toLocaleString('fr-FR'));
+                    if (!selectedTokenObj || !hasValidRate || tokenStatus === 'UNAVAILABLE') return;
+                    const fiatValue = Math.floor(maxFiatFromTokens * (pct / 100));
+                    setAmount(fiatValue.toLocaleString('fr-FR').replace(/,/g, ' '));
                   }}
                   activeOpacity={0.7}
                 >
@@ -130,6 +233,30 @@ export default function WithdrawFundsScreen() {
                 </TouchableOpacity>
               ))}
             </View>
+
+            {/* Insufficient balance: offer max cash-out instead of top-up */}
+            {isInsufficient && selectedTokenObj && (
+              <TouchableOpacity
+                style={styles.maxSellBanner}
+                onPress={() => {
+                  const fiatValue = Math.round(maxFiatFromTokens);
+                  setAmount(fiatValue.toLocaleString('fr-FR').replace(/,/g, ' '));
+                }}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="alert-circle-outline" size={15} color="#D97706" style={{ marginRight: 6 }} />
+                <Text style={styles.maxSellText}>
+                  {t('withdraw.max_available', 'Max available')}{': '}
+                  <Text style={{ fontFamily: 'Inter_700Bold' }}>
+                    {Math.round(maxFiatFromTokens).toLocaleString('fr-FR')} {localCurrency}
+                  </Text>
+                  {'  '}·{'  '}
+                  <Text style={{ color: '#D97706', fontFamily: 'Inter_600SemiBold' }}>
+                    {t('withdraw.sell_max_tap', 'Tap to use')}
+                  </Text>
+                </Text>
+              </TouchableOpacity>
+            )}
 
             <View style={styles.divider} />
 
@@ -160,24 +287,7 @@ export default function WithdrawFundsScreen() {
               ))}
             </View>
 
-            {/* Réseau détecté automatiquement */}
-            <View style={styles.detectedNetworkCard}>
-              <View style={styles.detectedNetworkLeft}>
-                <View style={styles.networkIconCircle}>
-                  {renderNetworkIcon(selectedNetwork)}
-                </View>
-                <View>
-                  <Text style={styles.networkTitle}>{t('withdraw.detected_network', 'Réseau blockchain détecté')}</Text>
-                  <Text style={styles.networkName}>{selectedNetwork} {t('withdraw.recommended_network', '(Recommandé)')}</Text>
-                </View>
-              </View>
-              <View style={styles.autoBadge}>
-                <Ionicons name="flash" size={12} color="#16A34A" style={{ marginRight: 3 }} />
-                <Text style={styles.autoBadgeText}>{t('common.auto', 'Auto')}</Text>
-              </View>
-            </View>
-
-            {/* Info Banner */}
+            {/* Info Banner — blockchain routing is hidden from user, handled by backend */}
             <View style={styles.infoBanner}>
               <View style={styles.infoIconCircle}>
                 <Ionicons name="shield-checkmark" size={16} color="#FFFFFF" />
@@ -190,9 +300,15 @@ export default function WithdrawFundsScreen() {
           </View>
 
           {/* Continue Button */}
-          <TouchableOpacity 
-            style={styles.btnContinue} 
-            onPress={() => navigation.navigate('WithdrawFundsMethodScreen', { amount, currency: localCurrency, selectedToken, selectedNetwork })}
+          <TouchableOpacity
+            style={[styles.btnContinue, (!selectedToken || parsedAmount <= 0 || isInsufficient || !hasValidRate || tokenStatus !== 'AVAILABLE') && { opacity: 0.5 }]}
+            disabled={!selectedToken || parsedAmount <= 0 || isInsufficient || !hasValidRate || tokenStatus !== 'AVAILABLE'}
+            onPress={() => navigation.navigate('WithdrawFundsMethodScreen', {
+              amount,
+              currency: localCurrency,
+              selectedToken,
+              // selectedNetwork intentionally not passed — backend handles routing
+            })}
           >
             <Text style={styles.btnContinueText}>{t('btnContinue', 'Continuer')}</Text>
             <Ionicons name="arrow-forward" size={18} color="#1A2840" style={{ marginLeft: 8 }} />
@@ -565,6 +681,61 @@ const styles = StyleSheet.create({
     color: '#64748B',
     lineHeight: 18,
   },
+  unavailableBanner: {
+    backgroundColor: '#FFF1F2',
+    borderWidth: 1,
+    borderColor: '#FECDD3',
+    borderRadius: 16, 
+    padding: 16, 
+    marginBottom: 20,
+    shadowColor: '#E11D48',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    elevation: 1,
+  },
+  unavailableHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  unavailableIconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFE4E6',
+    borderWidth: 1,
+    borderColor: '#FECDD3',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  unavailableBadge: {
+    backgroundColor: '#E11D48',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  unavailableBadgeText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 10,
+    color: '#FFF',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  unavailableTitle: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 14, 
+    color: '#9F1239', 
+    marginBottom: 6,
+    lineHeight: 20,
+  },
+  unavailableSubtitle: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 13,
+    color: '#BE123C', 
+    lineHeight: 18,
+  },
   btnContinue: {
     flexDirection: 'row',
     backgroundColor: '#FFB800',
@@ -577,5 +748,23 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold',
     fontSize: 16,
     color: '#1A2840',
+  },
+  maxSellBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#FCD34D',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginTop: 10,
+  },
+  maxSellText: {
+    flex: 1,
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12,
+    color: '#92400E',
+    lineHeight: 18,
   },
 });

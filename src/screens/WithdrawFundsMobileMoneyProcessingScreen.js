@@ -9,8 +9,15 @@ import { useApp } from '../context/AppContext';
 export default function WithdrawFundsMobileMoneyProcessingScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { amount, currency, selectedToken, selectedNetwork, selectedMethod } = route.params || {};
-  const { user, session, t } = useApp();
+  const { amount, currency, selectedToken, selectedNetwork, selectedMethod, quote, destinationCountry } = route.params || {};
+  const { user, session, t, language } = useApp();
+  const { COUNTRY_METADATA } = require('../services/paymentCorridorService');
+  
+  const countryParam = (destinationCountry || user?.country || 'TG').toUpperCase().trim();
+  const meta = COUNTRY_METADATA[countryParam] || COUNTRY_METADATA['TG'];
+  const countryName = t(`country.${countryParam}`, meta.name || 'Togo');
+  const providerName = selectedMethod === 'bank' ? t('withdrawFunds.bankTransfer', 'Virement bancaire') : ((meta.momoNetworks || [])[0] || 'Mobile Money') + ` (${countryName})`;
+
 
   useEffect(() => {
     let isMounted = true;
@@ -42,7 +49,7 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
             body: JSON.stringify({
               amount: parseFloat(amount?.toString().replace(/\s/g, '') || '0'),
               currency: selectedToken || 'USDC',
-              country: user?.country || 'TG', 
+              country: countryParam, 
               walletAddress,
               payoutMethod: 'momo',
               payoutDetails: { phoneNumber: phone, network: "momo" }
@@ -69,7 +76,17 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
         }
         
         if (isMounted) {
-          navigation.navigate('WithdrawFundsMobileMoneySuccessScreen');
+          navigation.navigate('WithdrawFundsMobileMoneySuccessScreen', {
+            amount,
+            selectedToken,
+            selectedMethod,
+            providerName,
+            countryName,
+            quote,
+            orderId: data.orderId || data.id,
+            txHash: data.txHash || data.id || 'Pending...',
+            timestamp: data.timestamp || new Date().toISOString(),
+          });
         }
       } catch (err) {
         console.error("Cashout API error:", err);
@@ -190,8 +207,8 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
                     <Ionicons name="business-outline" size={22} color="#F59E0B" />
                   </View>
                   <View>
-                    <Text style={styles.nodeTitle}>Mixx by Yas (Togo)</Text>
-                    <Text style={styles.nodeSubtitle}>{t('withdrawFunds.sendToMomo', 'Send to Mobile Money')}</Text>
+                    <Text style={styles.nodeTitle}>{providerName}</Text>
+                    <Text style={styles.nodeSubtitle}>{selectedMethod === 'bank' ? t('withdrawFunds.sendToBank', 'Send to Bank Account') : t('withdrawFunds.sendToMomo', 'Send to Mobile Money')}</Text>
                   </View>
                 </View>
                 <View style={styles.spinnerCircleLight} />

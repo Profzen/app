@@ -4662,6 +4662,8 @@
     "delay24To48h": "24h a 48h",
     "dizzitupFee": "Taxa DizzitUp",
     "networkFee": "Taxa de rede",
+    "processingFee": "Taxa de processamento",
+    "onMethod": "via {{name}}",
     "variable": "Variáveis",
     "mobileMoney": "Mobile Money",
     "instantReception": "Recebimento instantâneo",
@@ -5009,7 +5011,13 @@
     "select_token_desc": "Selecione entre os seus tokens disponíveis:",
     "detected_network": "Rede blockchain detectada",
     "recommended_network": "(Recomendado)",
-    "safety_notice": "Conversão segura garantida ao melhor câmbio para a sua moeda local."
+    "safety_notice": "Conversão segura garantida ao melhor câmbio para a sua moeda local.",
+    "max_available": "Máximo disponível",
+    "sell_max_tap": "Toque para usar",
+    "hq_country_label": "País sede",
+    "unavailable_country": "O levantamento ainda não está disponível em {{country}}.",
+    "unavailable_subtitle": "Iremos ativá-lo assim que um corredor de levantamento suportado estiver disponível.",
+    "coming_soon": "Em breve"
   },
   "rewards": {
     "title": "Recompensas DZY",

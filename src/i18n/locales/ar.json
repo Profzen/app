@@ -4688,6 +4688,8 @@
     "delay24To48h": "24 إلى 48 ساعة",
     "dizzitupFee": "رسوم DizzitUp",
     "networkFee": "رسوم الشبكة",
+    "processingFee": "رسوم المعالجة",
+    "onMethod": "عبر {{name}}",
     "variable": "متغيرة",
     "mobileMoney": "موبايل موني",
     "instantReception": "استلام فوري",
@@ -5035,7 +5037,13 @@
     "select_token_desc": "اختر من رموزك المتاحة:",
     "detected_network": "تم اكتشاف شبكة البلوكتشين",
     "recommended_network": "(مستحسن)",
-    "safety_notice": "تحويل آمن مضمون بأفضل سعر صرف إلى عملتك المحلية."
+    "safety_notice": "تحويل آمن مضمون بأفضل سعر صرف إلى عملتك المحلية.",
+    "max_available": "أقصى مبلغ متاح",
+    "sell_max_tap": "اضغط للاستخدام",
+    "hq_country_label": "بلد المقر",
+    "unavailable_country": "السحب غير متوفر في {{country}} حتى الآن.",
+    "unavailable_subtitle": "سنقوم بتمكينه عندما يصبح ممر السحب المدعوم متاحًا.",
+    "coming_soon": "قريباً"
   },
   "rewards": {
     "title": "مكافآت DZY",

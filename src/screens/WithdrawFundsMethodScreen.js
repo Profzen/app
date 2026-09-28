@@ -10,22 +10,26 @@ import PaymentRegionModal from '../components/PaymentRegionModal';
 export default function WithdrawFundsMethodScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { user, t, language, userCountry, setUserCountry } = useApp();
+  const { user, t, language, getEffectiveWalletCountry } = useApp();
   const { amount, currency, selectedToken, selectedNetwork } = route.params || {};
   const [selectedMethod, setSelectedMethod] = useState('bank'); // 'bank' or 'mobile'
 
+  const isBusinessCard = user?.role === 'merchant';
   const [destinationCountry, setDestinationCountry] = useState(() => {
-    const raw = (userCountry || user?.country_code || user?.country || 'DZ').toUpperCase().trim();
-    return raw.length === 2 ? raw : (raw === 'FRANCE' ? 'FR' : raw === 'MAROC' ? 'MA' : 'DZ');
+    const raw = getEffectiveWalletCountry ? getEffectiveWalletCountry(isBusinessCard) : (user?.country || 'TG');
+    return raw.length === 2 ? raw : 'TG';
   });
   const [regionModalVisible, setRegionModalVisible] = useState(false);
 
-  // Sync with userCountry when geolocation resolves asynchronously
+  // Sync when country changes asynchronously
   useEffect(() => {
-    if (userCountry && typeof userCountry === 'string' && userCountry.length === 2) {
-      setDestinationCountry(userCountry.toUpperCase());
+    if (getEffectiveWalletCountry) {
+      const raw = getEffectiveWalletCountry(isBusinessCard);
+      if (raw && raw.length === 2) {
+        setDestinationCountry(raw);
+      }
     }
-  }, [userCountry]);
+  }, [getEffectiveWalletCountry, isBusinessCard]);
 
   // Compute rail eligibility for 'offramp' flow
   const railEligibility = useMemo(() => {
@@ -94,15 +98,25 @@ export default function WithdrawFundsMethodScreen() {
               {t('paymentRails.withdrawRegionLabel', 'Pays de réception des fonds :')}
             </Text>
             <TouchableOpacity
-              style={styles.countryPill}
-              onPress={() => setRegionModalVisible(true)}
-              activeOpacity={0.8}
+              style={[styles.countryPill, isBusinessCard && { opacity: 0.8 } ]}
+              onPress={() => {
+                if (!isBusinessCard) {
+                  setRegionModalVisible(true);
+                }
+              }}
+              activeOpacity={isBusinessCard ? 1 : 0.8}
             >
               <Text style={styles.countryPillFlag}>{railEligibility.countryFlag}</Text>
               <Text style={styles.countryPillText}>{railEligibility.countryName || destinationCountry}</Text>
-              <Ionicons name="chevron-down" size={12} color="#1D4ED8" style={{ marginLeft: 4 }} />
+              {!isBusinessCard && <Ionicons name="chevron-down" size={14} color="#1D4ED8" style={{ marginLeft: 4 }} />}
             </TouchableOpacity>
           </View>
+
+          {isBusinessCard && (
+            <Text style={{ fontSize: 13, color: '#64748B', marginBottom: 24, textAlign: 'center', marginHorizontal: 20, lineHeight: 18 }}>
+              {t('withdrawFunds.merchantHQCountry', 'Cash-out is strictly limited to your business registration country.')}
+            </Text>
+          )}
 
           {/* Methods Cards */}
           
@@ -256,23 +270,19 @@ export default function WithdrawFundsMethodScreen() {
             </TouchableOpacity>
           ) : (
             /* Card 2 Disabled: Mobile Money for Unsupported Country */
-            <TouchableOpacity 
-              style={[styles.methodCard, styles.methodCardDisabled]}
-              onPress={() => setRegionModalVisible(true)}
-              activeOpacity={0.8}
-            >
+            <View style={[styles.methodCard, styles.methodCardDisabled]}>
               <View style={styles.cardTop}>
                 <View style={styles.cardTopLeft}>
                   <View style={[styles.cardIconCircle, {backgroundColor: '#F1F5F9'}]}>
-                    <Ionicons name="phone-portrait-outline" size={28} color="#94A3B8" />
+                    <Ionicons name="phone-portrait-outline" size={24} color="#94A3B8" />
                   </View>
                   <View style={styles.cardHeaderInfo}>
-                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                      <Text style={[styles.cardTitle, {color: '#94A3B8'}]}>{t('withdrawFunds.mobileMoney', 'Mobile Money')}</Text>
-                      <View style={[styles.badgeComingSoon, { backgroundColor: '#F1F5F9', borderColor: '#E2E8F0' }]}>
-                        <Ionicons name="lock-closed" size={10} color="#64748B" style={{ marginRight: 2 }} />
+                    <View style={{flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap'}}>
+                      <Text style={[styles.cardTitle, {color: '#94A3B8', marginBottom: 4}]}>{t('withdrawFunds.mobileMoney', 'Mobile Money')}</Text>
+                      <View style={[styles.badgeComingSoon, { backgroundColor: '#F8FAFC', borderColor: '#E2E8F0', borderWidth: 1, flexDirection: 'row', alignItems: 'center' }]}>
+                        <Ionicons name="lock-closed" size={10} color="#64748B" style={{ marginRight: 4 }} />
                         <Text style={[styles.badgeComingSoonText, { color: '#64748B' }]}>
-                          {t('paymentRails.unavailableInCountry', `Indisponible en/au ${railEligibility.countryName}`, {
+                          {t('paymentRails.unavailableInCountry', `Unavailable in ${railEligibility.countryName}`, {
                             country: railEligibility.countryName,
                           })}
                         </Text>
@@ -282,22 +292,14 @@ export default function WithdrawFundsMethodScreen() {
                     <Text style={styles.disabledCardSubtext}>
                       {t(
                         'paymentRails.momoWithdrawUnavailable',
-                        `Le retrait Mobile Money n'est pas disponible pour ${railEligibility.countryName}. Il est actif dans 18 pays d'Afrique (Bénin, Sénégal, Côte d'Ivoire, Kenya...).`,
+                        `Mobile Money withdrawal is not available in ${railEligibility.countryName}.`,
                         { country: railEligibility.countryName }
                       )}
                     </Text>
                   </View>
                 </View>
-                <TouchableOpacity
-                  style={styles.btnChangeCountrySmall}
-                  onPress={() => setRegionModalVisible(true)}
-                >
-                  <Text style={styles.btnChangeCountrySmallText}>
-                    {t('paymentRails.switchCountry', 'Changer')}
-                  </Text>
-                </TouchableOpacity>
               </View>
-            </TouchableOpacity>
+            </View>
           )}
 
           {/* Card 3: Carte bancaire (Disabled) */}
