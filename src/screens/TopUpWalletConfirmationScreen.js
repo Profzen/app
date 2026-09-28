@@ -7,11 +7,14 @@ import BottomNavBar from '../components/BottomNavBar';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
+import { formatTxDate } from '../utils/formatTxDate';
 
 export default function TopUpWalletConfirmationScreen() {
   const navigation = useNavigation();
-  const { t } = useApp();
+  const { t, user } = useApp();
   const [toast, setToast] = useState(null);
+  // Real timestamp captured when the screen loads
+  const nowDate = formatTxDate();
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -143,7 +146,7 @@ export default function TopUpWalletConfirmationScreen() {
                 </View>
                 <Text style={styles.detailLabel}>{t('paymentSuccess.dateTime', 'Date and time')}</Text>
               </View>
-              <Text style={styles.detailValueBold}>30 Mai 2025 à 09:41</Text>
+              <Text style={styles.detailValueBold}>{nowDate}</Text>
             </View>
 
             <View style={styles.divider} />
@@ -215,10 +218,10 @@ export default function TopUpWalletConfirmationScreen() {
                   type: 'topup',
                   amount: '10',
                   token: 'USDC',
-                  actionType: 'rechargé',
-                  senderName: 'David Mensah',
+                  actionKey: 'actionTopup',
+                  senderName: user?.name || '',
                   recipientName: 'Mon DZYWallet',
-                  date: '30 Mai 2025 • 09:41',
+                  date: nowDate,
                   txHash: '0x7a3f...e9b2c4d',
                 },
               });

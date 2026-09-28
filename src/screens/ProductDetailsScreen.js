@@ -137,6 +137,12 @@ export default function ProductDetailsScreen({ route }) {
 
   const handleWarningContinue = () => {
     setWarningModalVisible(false);
+    // Execute the action that was originally requested before the warning
+    if (pendingAction === 'buy') {
+      executeBuyNow();
+    } else if (pendingAction === 'cart') {
+      executeAddToCart();
+    }
     setPendingAction(null);
   };
 

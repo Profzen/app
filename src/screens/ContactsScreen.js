@@ -118,11 +118,13 @@ export default function ContactsScreen() {
   );
 
   useEffect(() => {
-    fetchBeneficiaries();
-
     if (!session?.user?.id) return;
+
+    // Use a unique channel name each mount to avoid Supabase returning
+    // an already-subscribed channel instance (which throws on .on() calls).
+    const channelName = `beneficiaries-${session.user.id}-${Date.now()}`;
     const channel = supabase
-      .channel('public:beneficiaries:' + session.user.id)
+      .channel(channelName)
       .on(
         'postgres_changes',
         {

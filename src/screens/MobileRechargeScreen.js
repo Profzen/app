@@ -314,6 +314,8 @@ export default function MobileRechargeScreen() {
             ? `${finalAmount} ${senderCurrency} (≈ ${deliveredAmount.toLocaleString('fr-FR')} ${destCurrency}) Airtime`
             : `${finalAmount} ${senderCurrency} Airtime`,
         },
+        pivotScreen: route.params?.pivotScreen,
+        pivotParams: route.params?.pivotParams,
       });
     }
   };
@@ -323,7 +325,15 @@ export default function MobileRechargeScreen() {
       <View style={styles.container}>
         {/* Header Top Bar */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.backButton} onPress={() => {
+            const pivotScreen = route.params?.pivotScreen;
+            const pivotParams = route.params?.pivotParams;
+            if (pivotScreen) {
+              navigation.navigate(pivotScreen, pivotParams);
+            } else {
+              navigation.goBack();
+            }
+          }}>
             <Ionicons name="chevron-back" size={28} color="#1A2840" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{t('mobileRecharge.title', 'Airtime Top-up')}</Text>

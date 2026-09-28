@@ -1,11 +1,11 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Platform, StatusBar, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
 import { useApp } from '../context/AppContext';
-import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
 import { currencyRateService, EMERGENCY_RATES } from '../services/currencyRateService';
 
 export default function WithdrawFundsScreen() {
@@ -14,7 +14,8 @@ export default function WithdrawFundsScreen() {
 
   // 1. Resolve fiat currency: for merchants use HQ country, for users use their account country
   const isBusinessCard = user?.role === 'merchant';
-  const effectiveCountryKey = getEffectiveWalletCountry ? getEffectiveWalletCountry(isBusinessCard) : (user?.country || 'TG');
+  const rawCountryKey = getEffectiveWalletCountry ? getEffectiveWalletCountry(isBusinessCard) : (user?.country || 'TG');
+  const effectiveCountryKey = getCountryCurrencyInfo(rawCountryKey).code || 'TG';
   const userCountryInfo = useMemo(() => getCountryCurrencyInfo(effectiveCountryKey), [effectiveCountryKey]);
   const localCurrency = ['XOF', 'XAF'].includes(userCountryInfo.currency) ? 'FCFA' : userCountryInfo.currency;
 
@@ -140,23 +141,27 @@ export default function WithdrawFundsScreen() {
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          {/* Stepper (1 to 5) */}
-          <View style={styles.stepperContainer}>
-            <View style={[styles.stepCircle, styles.stepCircleActive]}>
-              <Text style={styles.stepNumberActive}>1</Text>
-            </View>
-            <View style={styles.stepLine} />
-            <View style={styles.stepCircle}><Text style={styles.stepNumber}>2</Text></View>
-            <View style={styles.stepLine} />
-            <View style={styles.stepCircle}><Text style={styles.stepNumber}>3</Text></View>
-            <View style={styles.stepLine} />
-            <View style={styles.stepCircle}><Text style={styles.stepNumber}>4</Text></View>
-            <View style={styles.stepLine} />
-            <View style={styles.stepCircle}><Text style={styles.stepNumber}>5</Text></View>
-          </View>
+          {tokenStatus !== 'UNAVAILABLE' && (
+            <>
+              {/* Stepper (1 to 5) */}
+              <View style={styles.stepperContainer}>
+                <View style={[styles.stepCircle, styles.stepCircleActive]}>
+                  <Text style={styles.stepNumberActive}>1</Text>
+                </View>
+                <View style={styles.stepLine} />
+                <View style={styles.stepCircle}><Text style={styles.stepNumber}>2</Text></View>
+                <View style={styles.stepLine} />
+                <View style={styles.stepCircle}><Text style={styles.stepNumber}>3</Text></View>
+                <View style={styles.stepLine} />
+                <View style={styles.stepCircle}><Text style={styles.stepNumber}>4</Text></View>
+                <View style={styles.stepLine} />
+                <View style={styles.stepCircle}><Text style={styles.stepNumber}>5</Text></View>
+              </View>
 
-          {/* Titles */}
-          <Text style={styles.stepOverTitle}>{t('withdraw.step_1_of_5', 'Étape 1/5')}</Text>
+              {/* Titles */}
+              <Text style={styles.stepOverTitle}>{t('withdraw.step_1_of_5', 'Étape 1/5')}</Text>
+            </>
+          )}
           <Text style={styles.mainTitle}>{t('withdraw.choose_details_title', 'Choisissez les détails de votre retrait')}</Text>
           <Text style={styles.mainSubtitle}>{t('withdraw.choose_details_desc', 'La devise de votre pays est fixée automatiquement. Choisissez le jeton à débiter.')}</Text>
 

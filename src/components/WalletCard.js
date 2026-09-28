@@ -110,8 +110,8 @@ export default function WalletCard({ balances, badgeTitle }) {
                     source={{ uri: `https://flagcdn.com/w20/${primaryCountry.code}.png` }}
                     style={{ width: 14, height: 10, borderRadius: 2, marginRight: 5 }}
                   />
-                  <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 10, color: 'rgba(255,255,255,0.55)', letterSpacing: 0.2 }}>
-                    {primaryCountry.currency}
+                  <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 10, color: 'rgba(255,255,255,0.7)', letterSpacing: 0.2 }}>
+                    {primaryCountry.countryName}
                   </Text>
                 </View>
               ) : null}

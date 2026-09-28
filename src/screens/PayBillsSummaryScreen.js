@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,9 @@ import * as WebBrowser from 'expo-web-browser';
 import { WebView } from 'react-native-webview';
 import { useApp } from '../context/AppContext';
 import AppToast from '../components/AppToast';
+import CryptoIcon from '../components/CryptoIcon';
+import WalletIcon from '../components/WalletIcon';
+import { currencyRateService } from '../services/currencyRateService';
 import { getIsoCountryCode, resolveBeneficiaryCountry, getCountryFromPhone } from '../utils/countryCurrencyUtils';
 import { ALL_COUNTRIES } from '../utils/countriesData';
 
@@ -49,10 +52,61 @@ export default function PayBillsSummaryScreen() {
     accountNumber,
   } = route.params || {};
 
-  const [selectedMethod, setSelectedMethod] = useState('card'); // Default to 'card' (Ecobank) | 'wallet' | 'momo'
+  const [selectedMethod, setSelectedMethod] = useState('card'); // Default to 'card' (Ecobank) | 'wallet' | 'crypto' | 'momo'
   const [loading, setLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState(null);
   const [cyberSourceData, setCyberSourceData] = useState(null);
   const [showCyberSourceModal, setShowCyberSourceModal] = useState(false);
+
+  // DZY Wallet Tokens & Live Balances (Mirroring web OrderSummary)
+  const [selectedDzyToken, setSelectedDzyToken] = useState('usdt');
+  const [walletBalances, setWalletBalances] = useState([]);
+  const [walletLoading, setWalletLoading] = useState(false);
+
+  const dzyTokens = [
+    { id: 'usdt', name: 'USDT', symbol: 'USDT', description: 'Tether USD Stablecoin' },
+    { id: 'usdc', name: 'USDC', symbol: 'USDC', description: 'USD Coin Stablecoin' },
+    { id: 'eurc', name: 'EURC', symbol: 'EURC', description: 'Euro Coin Stablecoin' },
+    { id: 'dzy',  name: 'DZY',  symbol: 'DZY',  description: 'DizzitUp Reward Tokens' },
+  ];
+
+  // Popular External Web3 Wallets (MetaMask, Coinbase, Trust, Binance)
+  const [selectedExternalWallet, setSelectedExternalWallet] = useState('metamask');
+  const popularWallets = [
+    { id: 'metamask', name: 'MetaMask', symbol: 'ETH', desc: 'App & Browser Extension', tag: 'Popular', color: '#F6851B', bg: '#FFF7ED' },
+    { id: 'binance', name: 'Binance Web3', symbol: 'BNB', desc: 'Binance App & DeFi', tag: 'Fast', color: '#F3BA2F', bg: '#FEF9C3' },
+    { id: 'coinbase', name: 'Coinbase Wallet', symbol: 'BASE', desc: 'Self-custody Web3', tag: 'Easy', color: '#0052FF', bg: '#EFF6FF' },
+    { id: 'trust', name: 'Trust Wallet', symbol: 'POL', desc: 'Multi-chain Mobile', tag: 'Multi-chain', color: '#0500FF', bg: '#EEF2FF' },
+  ];
+
+  // Fetch DZYwallet balances when wallet method is selected
+  useEffect(() => {
+    if (selectedMethod !== 'wallet' || !session?.access_token) return;
+    let cancelled = false;
+    const fetchWalletBalances = async () => {
+      setWalletLoading(true);
+      try {
+        let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
+        if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) {
+          DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
+        }
+        const res = await fetch(`${DIZZY_URL}/wallet/balance`, {
+          headers: { 'Authorization': `Bearer ${session.access_token}` },
+        });
+        const data = await res.json();
+        if (!cancelled && data) {
+          const list = Array.isArray(data) ? data : data.balances || [];
+          setWalletBalances(list);
+        }
+      } catch (err) {
+        console.warn('[PayBillsSummary] Error fetching wallet balances:', err);
+      } finally {
+        if (!cancelled) setWalletLoading(false);
+      }
+    };
+    fetchWalletBalances();
+    return () => { cancelled = true; };
+  }, [selectedMethod, session?.access_token]);
 
 
 
@@ -66,6 +120,55 @@ export default function PayBillsSummaryScreen() {
     ? (parseFloat(plan.feeAmount || 0)).toFixed(2)
     : Math.max(0, parseFloat(totalCost) - parseFloat(deliveredVal)).toFixed(2);
   const displayFee = parseFloat(feeAmount) > 0 ? `${feeAmount} ${currency}` : '0.00';
+
+  // DZY Wallet Cost & Balance Check
+  const numTotalCost = parseFloat(totalCost || 0);
+  const requiredDzyAmount = selectedDzyToken === 'dzy' ? numTotalCost * 10 : numTotalCost;
+  const currentCoinBalance = walletBalances.find(
+    (b) => (b.token || b.symbol)?.toLowerCase() === selectedDzyToken
+  )?.balance || 0;
+  const parsedCoinBalance = parseFloat(currentCoinBalance || 0);
+  const hasInsufficientBalance = selectedMethod === 'wallet' && !walletLoading && parsedCoinBalance < requiredDzyAmount;
+
+  // Ecobank FX & Multi-Currency Breakdown
+  // Official BCEAO/BEAC fixed parity (1 EUR = 655.957 FCFA) with live currencyRateService support
+  const liveEurToXof = currencyRateService.convert(1, 'EUR', 'XOF');
+  const EUR_TO_XOF = (liveEurToXof && liveEurToXof > 500) ? liveEurToXof : 655.957;
+  const upperCur = (currency || 'USD').toUpperCase();
+  let estimatedEurAmount = 0;
+  let estimatedFcfaAmount = 0;
+
+  if (upperCur === 'EUR') {
+    estimatedEurAmount = numTotalCost;
+    estimatedFcfaAmount = Math.round(numTotalCost * EUR_TO_XOF);
+  } else if (upperCur === 'XOF' || upperCur === 'FCFA') {
+    estimatedFcfaAmount = Math.round(numTotalCost);
+    estimatedEurAmount = parseFloat((numTotalCost / EUR_TO_XOF).toFixed(2));
+  } else {
+    // Multi-currency conversion via currencyRateService (handles DZD, NGN, KES, USD, etc.)
+    const convertedToEur = currencyRateService.convert(numTotalCost, upperCur, 'EUR');
+    if (convertedToEur && convertedToEur > 0) {
+      estimatedEurAmount = parseFloat(convertedToEur.toFixed(2));
+      estimatedFcfaAmount = Math.round(estimatedEurAmount * EUR_TO_XOF);
+    } else {
+      estimatedEurAmount = parseFloat((numTotalCost / 1.08).toFixed(2));
+      estimatedFcfaAmount = Math.round(estimatedEurAmount * EUR_TO_XOF);
+    }
+  }
+
+  const formattedFcfa = estimatedFcfaAmount.toLocaleString('fr-FR');
+  const formattedEur = estimatedEurAmount.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const formattedDelivered = typeof deliveredVal === 'number'
+    ? deliveredVal.toLocaleString('fr-FR')
+    : deliveredVal;
+
+  // Minimum Order Check ($1.00 USD required by Reloadly processing gateway)
+  const usdEquivalent = upperCur === 'USD'
+    ? numTotalCost
+    : (currencyRateService.convert(numTotalCost, upperCur, 'USD') || (numTotalCost / 1.08));
+  const isBelowMinimumAmount = numTotalCost > 0 && usdEquivalent < 0.99;
+  const minAmountInCurrency = currencyRateService.convert(1, 'USD', upperCur) || 1;
+  const formattedMinAmount = minAmountInCurrency ? minAmountInCurrency.toFixed(2) : '1.00';
 
   // Format recipient display
   const recipientName = `${beneficiary.first_name || ''} ${beneficiary.last_name || ''}`.trim() || beneficiary.name || t('paybillsSummary.beneficiary', 'Beneficiary');
@@ -183,6 +286,7 @@ export default function PayBillsSummaryScreen() {
             <div class="spinner"></div>
             <div class="title">Ecobank Secure Payment</div>
             <div class="subtitle">Connecting securely to CyberSource...</div>
+            ${formFields?.amount ? `<div style="margin-top: 12px; font-size: 13px; color: #FFC759; font-weight: 700;">Billed in FCFA (XOF): ${formFields.amount} XOF</div>` : ''}
             <div class="badge">🔒 256-BIT SSL ENCRYPTED</div>
           </div>
           <form id="csForm" action="${url}" method="post">
@@ -204,6 +308,8 @@ export default function PayBillsSummaryScreen() {
       setShowCyberSourceModal(false);
       AppToast.showSuccess(t('paybillsSummary.paymentSuccess', 'Payment completed successfully!'));
       navigation.navigate('PaymentSuccessScreen', {
+        pivotScreen: route.params?.pivotScreen,
+        pivotParams: route.params?.pivotParams,
         transaction: {
           title: getServiceTitle(),
           amount: totalCost,
@@ -212,6 +318,8 @@ export default function PayBillsSummaryScreen() {
           phone: recipientPhone,
           date: new Date().toISOString(),
           orderId: cyberSourceData?.orderId,
+          pivotScreen: route.params?.pivotScreen,
+          pivotParams: route.params?.pivotParams,
         }
       });
     } else if (navUrl.includes('/payments/failure') || navUrl.includes('decision=DECLINE') || navUrl.includes('decision=CANCEL')) {
@@ -221,6 +329,16 @@ export default function PayBillsSummaryScreen() {
   };
 
   const handleConfirmAndPay = async () => {
+    setPaymentError(null);
+    if (isBelowMinimumAmount) {
+      const msg = t('paybillsSummary.minAmountNotice', 'Minimum transaction amount is $1.00 USD (approx. {{minAmount}} {{currency}}).', {
+        minAmount: formattedMinAmount,
+        currency: upperCur,
+      });
+      setPaymentError(msg);
+      AppToast.showError(msg);
+      return;
+    }
     setLoading(true);
     try {
       if (selectedMethod === 'wallet') {
@@ -233,11 +351,21 @@ export default function PayBillsSummaryScreen() {
           throw new Error(t('paybillsSummary.walletAuthError', 'You must be logged in to use DizzitUp Wallet.'));
         }
 
+        if (hasInsufficientBalance) {
+          throw new Error(
+            t('paybillsSummary.insufficientBalanceDesc', 'Insufficient {{coin}} balance. Required: {{needed}}, Available: {{bal}}', {
+              coin: selectedDzyToken.toUpperCase(),
+              needed: requiredDzyAmount.toFixed(2),
+              bal: parsedCoinBalance.toFixed(2),
+            })
+          );
+        }
+
         const payload = {
-          toAddress: process.env.EXPO_PUBLIC_TREASURY_ADDRESS || '0xTreasuryAddress', // TODO: Fetch dynamic treasury/merchant address if needed
-          amount: parseFloat(totalCost),
-          token: currency === 'DZY' ? 'DZY' : 'USDC', // Defaulting to USDC if not DZY
-          chain: 'Polygon',
+          toAddress: process.env.EXPO_PUBLIC_TREASURY_ADDRESS || '0xTreasuryAddress',
+          amount: requiredDzyAmount,
+          token: selectedDzyToken.toUpperCase(),
+          chain: 'polygon', // FIXED: Lowercase 'polygon' prevents contract lookup failure
           metadata: { 
             serviceType,
             recipientName,
@@ -262,14 +390,18 @@ export default function PayBillsSummaryScreen() {
 
         AppToast.showSuccess(t('paybillsSummary.orderCreatedSuccess', 'Payment completed successfully!'));
         navigation.navigate('PaymentSuccessScreen', {
+          pivotScreen: route.params?.pivotScreen,
+          pivotParams: route.params?.pivotParams,
           transaction: {
             title: getServiceTitle(),
-            amount: totalCost,
-            currency: currency,
+            amount: `${requiredDzyAmount.toFixed(2)} ${selectedDzyToken.toUpperCase()}`,
+            currency: selectedDzyToken.toUpperCase(),
             recipient: recipientName,
             phone: recipientPhone,
             date: new Date().toISOString(),
-            orderId: data.txHash || data.transaction?.id || `PB-${Date.now()}`
+            orderId: data.txHash || data.transaction?.id || `PB-${Date.now()}`,
+            pivotScreen: route.params?.pivotScreen,
+            pivotParams: route.params?.pivotParams,
           }
         });
         setLoading(false);
@@ -469,6 +601,8 @@ export default function PayBillsSummaryScreen() {
         } else {
           AppToast.showSuccess(t('paybillsSummary.momoInitiated', 'Mobile Money payment prompt sent to your phone.'));
           navigation.navigate('PaymentSuccessScreen', {
+            pivotScreen: route.params?.pivotScreen,
+            pivotParams: route.params?.pivotParams,
             transaction: {
               title: getServiceTitle(),
               amount: totalCost,
@@ -476,13 +610,107 @@ export default function PayBillsSummaryScreen() {
               recipient: recipientName,
               phone: recipientPhone,
               date: new Date().toISOString(),
+              pivotScreen: route.params?.pivotScreen,
+              pivotParams: route.params?.pivotParams,
             }
           });
         }
+      } else if (selectedMethod === 'crypto') {
+        // External Web3 Wallet payment (MetaMask, Coinbase, Binance, Trust via NOWPayments crypto invoice)
+        const baseUrl = getPayBillsApiUrl();
+        const isAuthUser = Boolean(user?.id);
+        const actionRoute = isAuthUser ? 'pay' : 'payAsGuest';
+        const endpoint = (serviceType === 'utilities' || serviceType === 'utility')
+          ? `${baseUrl}/payments/utility/${actionRoute}`
+          : (serviceType === 'gift_cards' || serviceType === 'gift_card')
+            ? `${baseUrl}/payments/giftCard/${actionRoute}`
+            : `${baseUrl}/payments/airtime/${actionRoute}`;
+
+        const fName = user?.first_name || (recipientName ? recipientName.split(' ')[0] : 'Customer');
+        const lName = user?.last_name || (recipientName ? recipientName.split(' ').slice(1).join(' ') : 'DizzitUp');
+        const userEmail = user?.email || beneficiary.email || 'customer@dizzitup.com';
+        const { countryCode: countryIso } = resolveBeneficiaryCountry(beneficiary, {
+          phone: recipientPhone || beneficiary.phone,
+          user,
+          fallback: 'TG',
+        });
+
+        const payload = {
+          ...(isAuthUser ? { userID: user.id } : {}),
+          amount: parseFloat(totalCost),
+          currency: currency,
+          operatorId: provider.id || plan.operatorId,
+          recipientPhone: recipientPhone,
+          recipientcountryCode: countryIso,
+          paymentMethod: 'CRYPTO',
+          preferredWallet: selectedExternalWallet,
+          firstName: fName,
+          surname: lName,
+          email: userEmail,
+          senderPhoneNumber: user?.phone || recipientPhone || '',
+          productType: serviceType,
+          senderCity: beneficiary.city || 'Lome',
+          benPhoneNumber: recipientPhone,
+          benFirstname: beneficiary.first_name || fName,
+          benSurname: beneficiary.last_name || lName,
+          benEmail: beneficiary.email || userEmail,
+          benCity: beneficiary.city || 'Lome',
+          benCountry: countryIso,
+        };
+
+        let res;
+        try {
+          res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+        } catch (netErr) {
+          if (baseUrl !== 'https://api.dizzitup.com') {
+            const fallbackEndpoint = endpoint.replace(baseUrl, 'https://api.dizzitup.com');
+            res = await fetch(fallbackEndpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            });
+          } else {
+            throw netErr;
+          }
+        }
+
+        let data = await res.json();
+
+        // If authenticated user was not found on this backend instance, retry once via payAsGuest
+        if (!res.ok && (data.errorCode === 'USER_NOT_FOUND' || res.status === 404) && isAuthUser) {
+          const guestEndpoint = endpoint.replace('/pay', '/payAsGuest');
+          const guestPayload = { ...payload };
+          delete guestPayload.userID;
+          const retryRes = await fetch(guestEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(guestPayload),
+          });
+          if (retryRes.ok) {
+            res = retryRes;
+            data = await retryRes.json();
+          }
+        }
+
+        if (!res.ok) {
+          throw new Error(data.error || data.message || 'Crypto invoice initiation failed');
+        }
+
+        if (data.url) {
+          await WebBrowser.openBrowserAsync(data.url);
+          AppToast.showSuccess(t('paybillsSummary.cryptoOpened', 'Crypto invoice opened. Complete payment in your wallet.'));
+        } else {
+          throw new Error(data.error || 'Payment gateway returned invalid response');
+        }
       }
     } catch (err) {
-      console.error('Payment execution error:', err);
-      const errMsg = err.message || t('paybillsSummary.orderFailed', 'Failed to process order. Please try again.');
+      console.warn('Payment execution warning:', err?.message || err);
+      const errMsg = err?.message || t('paybillsSummary.orderFailed', 'Failed to process order. Please try again.');
+      setPaymentError(errMsg);
       AppToast.showError(errMsg);
     } finally {
       setLoading(false);
@@ -494,7 +722,19 @@ export default function PayBillsSummaryScreen() {
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.7}>
+          <TouchableOpacity 
+            style={styles.backButton} 
+            onPress={() => {
+              const pivotScreen = route.params?.pivotScreen;
+              const pivotParams = route.params?.pivotParams;
+              if (pivotScreen) {
+                navigation.navigate(pivotScreen, pivotParams);
+              } else {
+                navigation.goBack();
+              }
+            }} 
+            activeOpacity={0.7}
+          >
             <Ionicons name="arrow-back" size={22} color="#1A2840" />
           </TouchableOpacity>
           <Text style={styles.headerTitle} numberOfLines={1}>
@@ -589,16 +829,286 @@ export default function PayBillsSummaryScreen() {
               <View style={styles.methodRadioOuter}>
                 {selectedMethod === 'wallet' && <View style={styles.methodRadioInner} />}
               </View>
-              <View style={styles.methodIconBadge}>
-                <Ionicons name="flash" size={18} color="#20365B" />
+              <View style={[styles.methodIconBadge, { backgroundColor: '#FFF8E7' }]}>
+                <Ionicons name="wallet" size={18} color="#D97706" />
               </View>
               <View style={styles.methodInfo}>
-                <Text style={styles.methodTitle}>{t('paybillsSummary.dizzyWallet', 'DizzitUp Wallet')}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text style={styles.methodTitle}>{t('paybillsSummary.dizzyWallet', 'DZYwallet (Stablecoins & DZY)')}</Text>
+                  <View style={styles.stablecoinTag}>
+                    <Text style={styles.stablecoinTagText}>Instant</Text>
+                  </View>
+                </View>
                 <Text style={styles.methodSubtitle} numberOfLines={1}>
-                  {t('paybillsSummary.dizzyWalletSub', 'Pay instantly with your crypto balance')}
+                  {t('paybillsSummary.dizzyWalletSub', 'Pay directly with your USDT, USDC, EURC or DZY')}
                 </Text>
               </View>
             </TouchableOpacity>
+
+            {/* Sub-tokens selection when DZYwallet is selected */}
+            {selectedMethod === 'wallet' && (
+              <View style={styles.subTokensContainer}>
+                <View style={styles.subTokensHeader}>
+                  <Text style={styles.subTokensHeaderTitle}>{t('paybillsSummary.payWith', 'PAY WITH')}</Text>
+                  {walletLoading && <ActivityIndicator size="small" color="#FFC759" />}
+                </View>
+
+                {dzyTokens.map((tItem) => {
+                  const balItem = walletBalances.find(
+                    (b) => (b.token || b.symbol)?.toLowerCase() === tItem.id
+                  );
+                  const bal = parseFloat(balItem?.balance || 0);
+                  const needed = tItem.id === 'dzy' ? numTotalCost * 10 : numTotalCost;
+                  const isInsufficient = bal < needed;
+                  const isSelected = selectedDzyToken === tItem.id;
+
+                  return (
+                    <TouchableOpacity
+                      key={tItem.id}
+                      style={[styles.subTokenRow, isSelected && styles.subTokenRowActive]}
+                      onPress={() => setSelectedDzyToken(tItem.id)}
+                      activeOpacity={0.75}
+                    >
+                      <View style={styles.subTokenLeft}>
+                        <View style={styles.subTokenIconWrapper}>
+                          <CryptoIcon symbol={tItem.symbol} size={22} />
+                        </View>
+                        <View>
+                          <Text style={styles.subTokenName}>{tItem.name}</Text>
+                          <Text style={styles.subTokenDesc}>{tItem.description}</Text>
+                        </View>
+                      </View>
+                      
+                      <View style={styles.subTokenRight}>
+                        <Text style={[styles.subTokenBalance, isInsufficient ? styles.balanceInsufficient : styles.balanceSufficient]}>
+                          {bal.toLocaleString(undefined, { maximumFractionDigits: 4 })} {tItem.name}
+                        </Text>
+                        {isSelected && (
+                          <View style={styles.subTokenSelectedDot}>
+                            <Ionicons name="checkmark" size={10} color="#20365B" />
+                          </View>
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+
+                {/* Insufficient Balance Box + Top Up Button */}
+                {hasInsufficientBalance && (
+                  <View style={styles.insufficientBox}>
+                    <View style={styles.insufficientTextRow}>
+                      <Ionicons name="alert-circle" size={16} color="#DC2626" style={{ marginRight: 6 }} />
+                      <Text style={styles.insufficientTitle}>
+                        {t('paybillsSummary.insufficientBalance', 'Insufficient {{coin}} balance.', { coin: selectedDzyToken.toUpperCase() })}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.topUpCtaBtn}
+                      onPress={() => navigation.navigate('TopUpWalletScreen')}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="add-circle" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
+                      <Text style={styles.topUpCtaText}>{t('paybillsSummary.topUpWallet', 'Top-Up DZYwallet')}</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* External Web3 Wallets Option */}
+            <TouchableOpacity
+              style={[styles.methodCard, selectedMethod === 'crypto' && styles.methodCardActive]}
+              onPress={() => setSelectedMethod('crypto')}
+              activeOpacity={0.7}
+            >
+              <View style={styles.methodRadioOuter}>
+                {selectedMethod === 'crypto' && <View style={styles.methodRadioInner} />}
+              </View>
+              <View style={[styles.methodIconBadge, { backgroundColor: '#EEF2FF' }]}>
+                <Ionicons name="wallet-outline" size={18} color="#4F46E5" />
+              </View>
+              <View style={styles.methodInfo}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text style={styles.methodTitle}>{t('paybillsSummary.externalWallets', 'External Web3 Wallet')}</Text>
+                  <View style={styles.web3Tag}>
+                    <Text style={styles.web3TagText}>Popular</Text>
+                  </View>
+                </View>
+                <Text style={styles.methodSubtitle} numberOfLines={1}>
+                  {t('paybillsSummary.externalWalletsSub', 'MetaMask, Coinbase, Trust Wallet, Binance')}
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            {/* External Wallets Sub-Selector when 'crypto' is selected */}
+            {selectedMethod === 'crypto' && (
+              <View style={styles.walletsContainer}>
+                <View style={styles.subTokensHeader}>
+                  <Text style={styles.subTokensHeaderTitle}>
+                    {t('paybillsSummary.selectWallet', 'POPULAR WALLETS')}
+                  </Text>
+                </View>
+
+                <View style={styles.walletsGrid}>
+                  {popularWallets.map((w) => {
+                    const isSelected = selectedExternalWallet === w.id;
+                    return (
+                      <TouchableOpacity
+                        key={w.id}
+                        style={[styles.walletItemCard, isSelected && styles.walletItemCardActive]}
+                        onPress={() => setSelectedExternalWallet(w.id)}
+                        activeOpacity={0.75}
+                      >
+                        <View style={[styles.walletIconWrap, { backgroundColor: w.bg }]}>
+                          <WalletIcon walletId={w.id} size={24} />
+                        </View>
+                        <View style={styles.walletItemInfo}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                            <Text style={styles.walletItemName}>{w.name}</Text>
+                            {isSelected && (
+                              <Ionicons name="checkmark-circle" size={14} color="#FFC759" />
+                            )}
+                          </View>
+                          <Text style={styles.walletItemDesc}>{w.desc}</Text>
+                        </View>
+                        <View style={[styles.walletTagBadge, { backgroundColor: w.bg }]}>
+                          <Text style={[styles.walletTagText, { color: w.color }]}>{w.tag}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+
+                {/* Instant crypto invoice info notice */}
+                <View style={styles.cryptoInfoNotice}>
+                  <Ionicons name="information-circle" size={16} color="#4F46E5" style={{ marginRight: 6 }} />
+                  <Text style={styles.cryptoInfoNoticeText}>
+                    {t('paybillsSummary.cryptoInvoiceNotice', 'Instant invoice with QR code and address for USDT, USDC, BTC, and ETH. Compatible with any Web3 wallet.')}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {/* Credit Card Option */}
+            <TouchableOpacity
+              style={[styles.methodCard, selectedMethod === 'card' && styles.methodCardActive]}
+              onPress={() => setSelectedMethod('card')}
+              activeOpacity={0.7}
+            >
+              <View style={styles.methodRadioOuter}>
+                {selectedMethod === 'card' && <View style={styles.methodRadioInner} />}
+              </View>
+              <View style={[styles.methodIconBadge, { backgroundColor: '#EFF6FF' }]}>
+                <Ionicons name="card" size={18} color="#20365B" />
+              </View>
+              <View style={styles.methodInfo}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text style={styles.methodTitle}>{t('paybillsSummary.cardPayment', 'Credit / Debit Card')}</Text>
+                  <View style={styles.ecobankTag}>
+                    <Text style={styles.ecobankTagText}>Ecobank</Text>
+                  </View>
+                </View>
+                <Text style={styles.methodSubtitle} numberOfLines={1}>
+                  {t('paybillsSummary.cardPaymentSub', 'Visa, Mastercard via CyberSource')}
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            {/* Ecobank Intermediary FX Section when Card is selected */}
+            {selectedMethod === 'card' && (
+              <View style={styles.ecobankFxContainer}>
+                {/* Header */}
+                <View style={styles.ecobankFxHeader}>
+                  <View style={styles.ecobankFxHeaderTitleRow}>
+                    <View style={styles.ecobankIconCircle}>
+                      <Ionicons name="card" size={13} color="#1E3A8A" />
+                    </View>
+                    <Text style={styles.ecobankFxHeaderTitle}>
+                      {t('paybillsSummary.ecobankFxTitle', 'Ecobank Payment Breakdown')}
+                    </Text>
+                  </View>
+                  <View style={styles.cybersourceBadge}>
+                    <Ionicons name="shield-checkmark" size={10} color="#10B981" />
+                    <Text style={styles.cybersourceBadgeText}>CyberSource</Text>
+                  </View>
+                </View>
+
+                <Text style={styles.ecobankFxMessage}>
+                  {t(
+                    'paybillsSummary.ecobankFxMessage',
+                    'You will pay this service with your Visa or Mastercard card on Ecobank secure payment gateway:'
+                  )}
+                </Text>
+
+                {/* Main Card with Amounts & Currency Peg */}
+                <View style={styles.ecobankFxBox}>
+                  {/* Row 1: FCFA Billed Amount */}
+                  <View style={styles.ecobankFxRow}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.ecobankFxPrimaryAmount}>{formattedFcfa} FCFA</Text>
+                      <Text style={styles.ecobankFxRowSub}>{t('paybillsSummary.ecobankBilled', 'Billed amount by Ecobank (XOF)')}</Text>
+                    </View>
+                    <View style={styles.ecobankOfficialTag}>
+                      <Text style={styles.ecobankOfficialTagText}>{t('paybillsSummary.billedCurrency', 'Billed Currency')}</Text>
+                    </View>
+                  </View>
+
+                  {/* Fixed Exchange Rate Peg Chip */}
+                  <View style={styles.ecobankFxPegBanner}>
+                    <Ionicons name="swap-horizontal" size={13} color="#64748B" />
+                    <Text style={styles.ecobankFxPegText}>
+                      1 EUR ≈ 655.957 FCFA ({t('paybillsSummary.rateNote', 'Fixed Peg Rate')})
+                    </Text>
+                  </View>
+
+                  {/* Row 2: EUR Card Equivalent */}
+                  <View style={styles.ecobankFxRow}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.ecobankFxSecondaryAmount}>
+                        {formattedEur} EUR {upperCur !== 'EUR' && (
+                          <Text style={styles.ecobankFxSecondarySubAmount}>
+                            (≈ {totalCost} {currency})
+                          </Text>
+                        )}
+                      </Text>
+                      <Text style={styles.ecobankFxRowSub}>{t('paybillsSummary.cardEquivalent', 'Card charge equivalent')}</Text>
+                    </View>
+                  </View>
+
+                  {/* Row 3: Recipient Delivered Amount (if different currency) */}
+                  {isDifferentCurrency && (
+                    <>
+                      <View style={styles.ecobankFxDivider} />
+                      <View style={styles.ecobankFxRow}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.ecobankFxDeliveredAmount}>
+                            {formattedDelivered} {deliveredCurrency}
+                          </Text>
+                          <Text style={styles.ecobankFxRowSub}>{t('paybillsSummary.recipientReceives', 'Delivered to recipient account')}</Text>
+                        </View>
+                        <Ionicons name="checkmark-done-circle" size={18} color="#10B981" />
+                      </View>
+                    </>
+                  )}
+                </View>
+
+                {/* Trust & Guarantee Micro-Pills */}
+                <View style={styles.ecobankFxPillRow}>
+                  <View style={styles.allFeesPill}>
+                    <Ionicons name="checkmark-circle" size={13} color="#059669" style={{ marginRight: 4 }} />
+                    <Text style={styles.allFeesPillText}>
+                      {t('paybillsSummary.allFeesTaxesIncluded', 'All fees & Taxes included')}
+                    </Text>
+                  </View>
+                  <View style={styles.noHiddenFeesPill}>
+                    <Ionicons name="shield-checkmark" size={12} color="#64748B" style={{ marginRight: 4 }} />
+                    <Text style={styles.noHiddenFeesText}>
+                      {t('paybillsSummary.noHiddenFees', 'No hidden conversion charges')}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
 
             {/* Mobile Money Option */}
             <TouchableOpacity
@@ -627,32 +1137,23 @@ export default function PayBillsSummaryScreen() {
                 </Text>
               </View>
             </TouchableOpacity>
-
-            {/* Credit Card Option */}
-            <TouchableOpacity
-              style={[styles.methodCard, selectedMethod === 'card' && styles.methodCardActive]}
-              onPress={() => setSelectedMethod('card')}
-              activeOpacity={0.7}
-            >
-              <View style={styles.methodRadioOuter}>
-                {selectedMethod === 'card' && <View style={styles.methodRadioInner} />}
-              </View>
-              <View style={[styles.methodIconBadge, { backgroundColor: '#EFF6FF' }]}>
-                <Ionicons name="card" size={18} color="#20365B" />
-              </View>
-              <View style={styles.methodInfo}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={styles.methodTitle}>{t('paybillsSummary.cardPayment', 'Credit / Debit Card')}</Text>
-                  <View style={styles.ecobankTag}>
-                    <Text style={styles.ecobankTagText}>Ecobank</Text>
-                  </View>
-                </View>
-                <Text style={styles.methodSubtitle} numberOfLines={1}>
-                  {t('paybillsSummary.cardPaymentSub', 'Visa, Mastercard via CyberSource')}
-                </Text>
-              </View>
-            </TouchableOpacity>
           </View>
+
+          {/* Informative UI Error Banner (for server/runtime errors) */}
+          {paymentError && (
+            <View style={styles.errorAlertCard}>
+              <View style={styles.errorAlertHeader}>
+                <Ionicons name="alert-circle" size={18} color="#DC2626" />
+                <Text style={styles.errorAlertTitle}>
+                  {t('paybillsSummary.errorNotice', 'Unable to Proceed')}
+                </Text>
+                <TouchableOpacity onPress={() => setPaymentError(null)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                  <Ionicons name="close" size={16} color="#94A3B8" />
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.errorAlertDesc}>{paymentError}</Text>
+            </View>
+          )}
 
           {/* Security Guarantee Badge */}
           <View style={styles.securityBadge}>
@@ -665,20 +1166,52 @@ export default function PayBillsSummaryScreen() {
 
         {/* Sticky Bottom Action */}
         <SafeAreaView edges={['bottom']} style={styles.bottomBar}>
+          {isBelowMinimumAmount && (
+            <View style={styles.minAmountStickyNote}>
+              <Ionicons name="alert-circle" size={13} color="#B45309" style={{ marginRight: 5 }} />
+              <Text style={styles.minAmountStickyText} numberOfLines={1}>
+                {t('paybillsSummary.minOrderShort', 'Min. order: $1.00 USD (~{{min}} {{cur}})', { min: formattedMinAmount, cur: upperCur })}
+              </Text>
+            </View>
+          )}
+
           <TouchableOpacity
-            style={[styles.payButton, loading && styles.payButtonDisabled]}
+            style={[
+              styles.payButton, 
+              (loading || isBelowMinimumAmount || (selectedMethod === 'wallet' && (walletLoading || hasInsufficientBalance))) && styles.payButtonDisabled
+            ]}
             onPress={handleConfirmAndPay}
-            disabled={loading}
+            disabled={loading || isBelowMinimumAmount || (selectedMethod === 'wallet' && (walletLoading || hasInsufficientBalance))}
             activeOpacity={0.8}
           >
             {loading ? (
               <ActivityIndicator color="#20365B" size="small" />
+            ) : isBelowMinimumAmount ? (
+              <View style={styles.payButtonContent}>
+                <Ionicons name="lock-closed" size={14} color="#64748B" style={{ marginRight: 6 }} />
+                <Text style={[styles.payButtonText, { color: '#64748B', fontSize: 13 }]}>
+                  {t('paybillsSummary.belowMinBtn', 'Below $1.00 min.')}
+                </Text>
+              </View>
+            ) : hasInsufficientBalance ? (
+              <View style={styles.payButtonContent}>
+                <Ionicons name="alert-circle-outline" size={15} color="#6B7280" style={{ marginRight: 6 }} />
+                <Text style={[styles.payButtonText, { color: '#6B7280', fontSize: 13 }]}>
+                  {t('paybillsSummary.insufficientBalanceShort', 'Insufficient {{coin}}', { coin: selectedDzyToken.toUpperCase() })}
+                </Text>
+              </View>
             ) : (
               <View style={styles.payButtonContent}>
                 <Text style={styles.payButtonText}>
-                  {t('paybillsSummary.confirmAndPay', 'Confirm & Pay')} • {totalCost} {currency}
+                  {selectedMethod === 'wallet'
+                    ? `${t('paybillsSummary.confirmAndPay', 'Confirm')} • ${requiredDzyAmount.toFixed(2)} ${selectedDzyToken.toUpperCase()}`
+                    : selectedMethod === 'crypto'
+                      ? `${t('paybillsSummary.payWithCrypto', 'Pay')} • ${totalCost} ${currency}`
+                      : selectedMethod === 'card'
+                        ? `${t('paybillsSummary.payWithCard', 'Pay')} • ${formattedFcfa} FCFA`
+                        : `${t('paybillsSummary.payWithMomo', 'Pay')} • ${totalCost} ${currency}`}
                 </Text>
-                <Ionicons name="arrow-forward" size={18} color="#20365B" style={{ marginLeft: 6 }} />
+                <Ionicons name="arrow-forward" size={16} color="#20365B" style={{ marginLeft: 6 }} />
               </View>
             )}
           </TouchableOpacity>
@@ -714,6 +1247,18 @@ export default function PayBillsSummaryScreen() {
                 </View>
               </View>
               <View style={{ width: 36 }} />
+            </View>
+
+            {/* Intermediary FX Recap Strip in Modal */}
+            <View style={styles.modalFxStrip}>
+              <Ionicons name="card-outline" size={14} color="#FFC759" style={{ marginRight: 6 }} />
+              <Text style={styles.modalFxStripText}>
+                {t('paybillsSummary.ecobankModalNote', 'Billed in FCFA by Ecobank:')}{' '}
+                <Text style={{ fontWeight: '800', color: '#FFFFFF' }}>
+                  {cyberSourceData?.formFields?.amount ? `${cyberSourceData.formFields.amount} XOF` : `${formattedFcfa} FCFA`}
+                </Text>{' '}
+                ({formattedEur} EUR equivalent) • {t('paybillsSummary.allFeesTaxesIncluded', 'All fees & Taxes included')}
+              </Text>
             </View>
 
             {cyberSourceData && (
@@ -998,30 +1543,56 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#F0F0F0',
     paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: Platform.OS === 'ios' ? 8 : 12,
+    paddingTop: 8,
+    paddingBottom: Platform.OS === 'ios' ? 8 : 10,
+    alignItems: 'center',
+  },
+  minAmountStickyNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    marginBottom: 6,
+    maxWidth: 290,
+  },
+  minAmountStickyText: {
+    fontSize: 10.5,
+    fontFamily: 'Inter_600SemiBold',
+    color: '#92400E',
   },
   payButton: {
     backgroundColor: '#FFC759',
-    height: 52,
-    borderRadius: 16,
+    height: 44,
+    width: '78%',
+    maxWidth: 280,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#FFC759',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 2,
+    alignSelf: 'center',
   },
   payButtonDisabled: {
-    opacity: 0.6,
+    backgroundColor: '#E2E8F0',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   payButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
   },
   payButtonText: {
-    fontSize: isSmallDevice ? 14 : 15,
+    fontSize: isSmallDevice ? 13 : 13.5,
     fontWeight: '800',
     color: '#20365B',
   },
@@ -1037,6 +1608,136 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     color: '#20365B',
+  },
+  stablecoinTag: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  stablecoinTagText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#D97706',
+  },
+  subTokensContainer: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 12,
+    marginBottom: 12,
+    marginLeft: 4,
+  },
+  subTokensHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+    paddingHorizontal: 2,
+  },
+  subTokensHeaderTitle: {
+    fontSize: 10,
+    fontFamily: 'Inter_700Bold',
+    color: '#64748B',
+    letterSpacing: 0.5,
+  },
+  subTokenRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginBottom: 6,
+  },
+  subTokenRowActive: {
+    borderColor: '#FFC759',
+    backgroundColor: '#FFFDF5',
+  },
+  subTokenLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  subTokenIconWrapper: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  subTokenName: {
+    fontSize: 12,
+    fontFamily: 'Inter_700Bold',
+    color: '#20365B',
+  },
+  subTokenDesc: {
+    fontSize: 9,
+    fontFamily: 'Inter_400Regular',
+    color: '#94A3B8',
+  },
+  subTokenRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  subTokenBalance: {
+    fontSize: 11,
+    fontFamily: 'Inter_700Bold',
+  },
+  balanceSufficient: {
+    color: '#10B981',
+  },
+  balanceInsufficient: {
+    color: '#EF4444',
+  },
+  subTokenSelectedDot: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#FFC759',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  insufficientBox: {
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 6,
+    gap: 8,
+  },
+  insufficientTextRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  insufficientTitle: {
+    fontSize: 11,
+    fontFamily: 'Inter_700Bold',
+    color: '#DC2626',
+    flex: 1,
+  },
+  topUpCtaBtn: {
+    backgroundColor: '#20365B',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 36,
+    borderRadius: 8,
+  },
+  topUpCtaText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontFamily: 'Inter_700Bold',
   },
   modalSafeArea: {
     flex: 1,
@@ -1095,6 +1796,317 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginTop: 14,
+    textAlign: 'center',
+  },
+  web3Tag: {
+    backgroundColor: '#EEF2FF',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#C7D2FE',
+  },
+  web3TagText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#4F46E5',
+  },
+  walletsContainer: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 12,
+    marginBottom: 12,
+    marginLeft: 4,
+  },
+  walletsGrid: {
+    gap: 8,
+  },
+  walletItemCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    padding: 10,
+  },
+  walletItemCardActive: {
+    borderColor: '#FFC759',
+    backgroundColor: '#FFFDF5',
+  },
+  walletIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  walletItemInfo: {
+    flex: 1,
+  },
+  walletItemName: {
+    fontSize: 13,
+    fontFamily: 'Inter_700Bold',
+    color: '#20365B',
+  },
+  walletItemDesc: {
+    fontSize: 10,
+    fontFamily: 'Inter_400Regular',
+    color: '#94A3B8',
+    marginTop: 1,
+  },
+  walletTagBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  walletTagText: {
+    fontSize: 9,
+    fontFamily: 'Inter_700Bold',
+  },
+  cryptoInfoNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EEF2FF',
+    borderWidth: 1,
+    borderColor: '#C7D2FE',
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 8,
+  },
+  cryptoInfoNoticeText: {
+    flex: 1,
+    fontSize: 11,
+    fontFamily: 'Inter_500Medium',
+    color: '#3730A3',
+    lineHeight: 15,
+  },
+  errorAlertCard: {
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 10,
+    marginBottom: 8,
+  },
+  warningAlertCard: {
+    backgroundColor: '#FFFBEB',
+    borderColor: '#FDE68A',
+  },
+  errorAlertHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+    gap: 8,
+  },
+  errorAlertTitle: {
+    fontSize: isSmallDevice ? 12 : 13,
+    fontFamily: 'Inter_700Bold',
+    color: '#DC2626',
+    flex: 1,
+  },
+  errorAlertDesc: {
+    fontSize: isSmallDevice ? 11 : 12,
+    fontFamily: 'Inter_400Regular',
+    color: '#7F1D1D',
+    lineHeight: 16,
+  },
+  ecobankFxContainer: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 16,
+    padding: isSmallDevice ? 12 : 14,
+    marginBottom: 12,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 1,
+  },
+  ecobankFxHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  ecobankFxHeaderTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    minWidth: 180,
+  },
+  ecobankIconCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#EFF6FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 6,
+  },
+  ecobankFxHeaderTitle: {
+    fontSize: isSmallDevice ? 11 : 12,
+    fontFamily: 'Inter_800ExtraBold',
+    color: '#1E293B',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  cybersourceBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1E293B',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    gap: 4,
+  },
+  cybersourceBadgeText: {
+    fontSize: 9,
+    fontFamily: 'Inter_700Bold',
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
+  },
+  ecobankFxMessage: {
+    fontSize: isSmallDevice ? 11 : 12,
+    fontFamily: 'Inter_400Regular',
+    color: '#64748B',
+    lineHeight: 17,
+    marginBottom: 12,
+  },
+  ecobankFxBox: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: isSmallDevice ? 10 : 12,
+    marginBottom: 10,
+  },
+  ecobankFxRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 4,
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  ecobankFxPrimaryAmount: {
+    fontSize: isSmallDevice ? 18 : 22,
+    fontFamily: 'Inter_900Black',
+    color: '#0F172A',
+  },
+  ecobankFxSecondaryAmount: {
+    fontSize: isSmallDevice ? 14 : 16,
+    fontFamily: 'Inter_700Bold',
+    color: '#1E293B',
+  },
+  ecobankFxSecondarySubAmount: {
+    fontSize: isSmallDevice ? 12 : 13,
+    fontFamily: 'Inter_500Medium',
+    color: '#64748B',
+  },
+  ecobankFxDeliveredAmount: {
+    fontSize: isSmallDevice ? 14 : 16,
+    fontFamily: 'Inter_700Bold',
+    color: '#059669',
+  },
+  ecobankFxRowSub: {
+    fontSize: 10,
+    fontFamily: 'Inter_400Regular',
+    color: '#64748B',
+    marginTop: 1,
+  },
+  ecobankOfficialTag: {
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+  },
+  ecobankOfficialTagText: {
+    fontSize: 9,
+    fontFamily: 'Inter_700Bold',
+    color: '#1D4ED8',
+  },
+  ecobankFxPegBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginVertical: 8,
+    gap: 6,
+  },
+  ecobankFxPegText: {
+    fontSize: 10,
+    fontFamily: 'Inter_600SemiBold',
+    color: '#475569',
+  },
+  ecobankFxDivider: {
+    height: 1,
+    backgroundColor: '#F1F5F9',
+    marginVertical: 6,
+  },
+  ecobankFxPillRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    alignItems: 'center',
+  },
+  allFeesPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  allFeesPillText: {
+    fontSize: 10,
+    fontFamily: 'Inter_700Bold',
+    color: '#059669',
+  },
+  noHiddenFeesPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  noHiddenFeesText: {
+    fontSize: 10,
+    fontFamily: 'Inter_500Medium',
+    color: '#475569',
+  },
+  modalFxStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  modalFxStripText: {
+    fontSize: 11,
+    color: '#E2E8F0',
+    fontFamily: 'Inter_500Medium',
     textAlign: 'center',
   },
 });

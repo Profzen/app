@@ -9,11 +9,11 @@ import AppConfirmModal from '../components/AppConfirmModal';
 import Avatar from '../components/Avatar';
 
 import * as Clipboard from 'expo-clipboard';
-
+import { handleUserInviteShare } from '../utils/shareHelper';
 import { useApp } from '../context/AppContext';
 
 export default function ContactProfileScreen({ route }) {
-  const { t } = useApp();
+  const { t, user } = useApp();
   const navigation = useNavigation();
   const contact = route?.params?.contact;
   const [optionsModalVisible, setOptionsModalVisible] = useState(false);
@@ -34,11 +34,11 @@ export default function ContactProfileScreen({ route }) {
   const handleCopy = async (text, type) => {
     if (!text) return;
     await Clipboard.setStringAsync(text);
-    AppToast.showSuccess(`${type} copié!`);
+    AppToast.showSuccess(t('common.copied', 'Copied!'));
   };
 
   const handleLink = (url) => {
-    Linking.openURL(url).catch(() => AppToast.showError("Impossible d'ouvrir le lien"));
+    Linking.openURL(url).catch(() => AppToast.showError(t('common.link_open_error', 'Cannot open link')));
   };
 
   return (
@@ -82,26 +82,26 @@ export default function ContactProfileScreen({ route }) {
           {/* 2 Tabs Bar */}
           <View style={styles.tabsRowContainer}>
             <TouchableOpacity style={[styles.tabButton, styles.tabButtonActive]}>
-              <Text style={styles.tabTextActive}>Informations</Text>
+              <Text style={styles.tabTextActive}>{t('contacts.tab.info', 'Information')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.tabButton} onPress={() => navigation.navigate('ContactHistoryScreen', { contact: contact })}>
-              <Text style={styles.tabTextInactive}>Historique</Text>
+              <Text style={styles.tabTextInactive}>{t('contacts.tab.history', 'History')}</Text>
             </TouchableOpacity>
           </View>
 
-          {/* 4 Quick Action Cards Grid (Exact Mockup Icons) */}
+          {/* 4 Quick Action Cards Grid — Pivot: each sub-screen returns here on Back */}
           <View style={styles.quickActionsGrid}>
             
-            {/* Card 1: envoyer des Stablecoins (Green Diagonal Arrow ↗) */}
-            <TouchableOpacity style={styles.quickCard} onPress={() => navigation.navigate('SendMoneyScreen', { contact })}>
+            {/* Card 1: Send */}
+            <TouchableOpacity style={styles.quickCard} onPress={() => navigation.navigate('SendMoneyScreen', { contact, pivotScreen: 'ContactProfileScreen', pivotParams: { contact } })}>
               <View style={styles.quickCardIconBox}>
                 <Ionicons name="trending-up" size={26} color="#10B981" />
               </View>
-              <Text style={styles.quickCardText}>{t('home.actions.send_request', "Envoyer\nde l'argent")}</Text>
+              <Text style={styles.quickCardText}>{t('contacts.action_send', 'Send')}</Text>
             </TouchableOpacity>
 
-            {/* Card 2: Demander de l'argent (3 Stacked Golden Coins 🪙) */}
-            <TouchableOpacity style={styles.quickCard} onPress={() => navigation.navigate('ReceiveFundsV2Screen', { contact })}>
+            {/* Card 2: Request money */}
+            <TouchableOpacity style={styles.quickCard} onPress={() => navigation.navigate('ReceiveFundsV2Screen', { contact, pivotScreen: 'ContactProfileScreen', pivotParams: { contact } })}>
               <View style={styles.quickCardIconBox}>
                 <View style={styles.goldenCoinsStack}>
                   <View style={[styles.miniCoin, { top: 0, left: 4 }]} />
@@ -109,23 +109,31 @@ export default function ContactProfileScreen({ route }) {
                   <View style={[styles.miniCoin, { top: 5, left: 8 }]} />
                 </View>
               </View>
-              <Text style={styles.quickCardText}>{t('contacts.quick_action_request_money', "Demander\nde l'argent")}</Text>
+              <Text style={styles.quickCardText}>{t('contacts.quick_action_request_money', 'Request\nmoney')}</Text>
             </TouchableOpacity>
 
-            {/* Card 3: Payer & Envoyer essentiels (Solid Blue Shopping Bag 🛍️) */}
-            <TouchableOpacity style={styles.quickCard} onPress={() => navigation.navigate('ShopsScreen')}>
+            {/* Card 3: Pay / Services */}
+            <TouchableOpacity 
+              style={styles.quickCard} 
+              onPress={() => navigation.navigate('ChooseServiceScreen', { beneficiary: contact, pivotScreen: 'ContactProfileScreen', pivotParams: { contact } })}
+              activeOpacity={0.75}
+            >
               <View style={styles.quickCardIconBox}>
                 <Ionicons name="bag-handle" size={26} color="#0052FF" />
               </View>
-              <Text style={styles.quickCardText}>{t('contacts.quick_action_1.title', "Payer &\nEnvoyer essentiels")}</Text>
+              <Text style={styles.quickCardText}>{t('contacts.action_pay', 'Pay')}</Text>
             </TouchableOpacity>
 
-            {/* Card 4: Inviter (Purple Person Plus 👤+) */}
-            <TouchableOpacity style={styles.quickCard} onPress={() => navigation.navigate('RewardsScreen')}>
+            {/* Card 4: Invite */}
+            <TouchableOpacity 
+              style={styles.quickCard} 
+              onPress={() => handleUserInviteShare(user)}
+              activeOpacity={0.75}
+            >
               <View style={styles.quickCardIconBox}>
                 <Ionicons name="person-add-outline" size={26} color="#8B5CF6" />
               </View>
-              <Text style={styles.quickCardText}>{t('contacts.quick_action_5.title', 'Inviter')}</Text>
+              <Text style={styles.quickCardText}>{t('contacts.action_invite', 'Invite')}</Text>
             </TouchableOpacity>
 
           </View>
@@ -133,14 +141,14 @@ export default function ContactProfileScreen({ route }) {
           {/* Contact Details Information List */}
           <View style={styles.infoListCard}>
             
-            {/* Row 1: Téléphone */}
+            {/* Row 1: Phone */}
             <View style={styles.infoRow}>
               <View style={styles.infoIconBox}>
                 <Ionicons name="call-outline" size={18} color="#6B7280" />
               </View>
               <View style={styles.infoTextGroup}>
-                <Text style={styles.infoLabel}>Téléphone</Text>
-                <Text style={styles.infoValue}>{(contact.phone || contact.raw_data?.phone) || 'Non renseigné'}</Text>
+                <Text style={styles.infoLabel}>{t('contacts.label_phone', 'Phone')}</Text>
+                <Text style={styles.infoValue}>{(contact.phone || contact.raw_data?.phone) || t('common.not_provided', 'Not provided')}</Text>
               </View>
               <View style={styles.infoActionIcons}>
                 <TouchableOpacity style={styles.actionCircleBtn} onPress={() => handleLink(`tel:${(contact.phone || contact.raw_data?.phone)}`)}>
@@ -160,8 +168,8 @@ export default function ContactProfileScreen({ route }) {
                 <Ionicons name="mail-outline" size={18} color="#6B7280" />
               </View>
               <View style={styles.infoTextGroup}>
-                <Text style={styles.infoLabel}>Email</Text>
-                <Text style={styles.infoValue}>{(contact.email || contact.raw_data?.email) || 'Non renseigné'}</Text>
+                <Text style={styles.infoLabel}>{t('contacts.label_email', 'Email')}</Text>
+                <Text style={styles.infoValue}>{(contact.email || contact.raw_data?.email) || t('common.not_provided', 'Not provided')}</Text>
               </View>
               <TouchableOpacity style={styles.actionCircleBtn} onPress={() => handleLink(`mailto:${(contact.email || contact.raw_data?.email)}`)}>
                 <Ionicons name="mail-outline" size={16} color="#1A2840" />
@@ -176,8 +184,8 @@ export default function ContactProfileScreen({ route }) {
                 <Ionicons name="wallet-outline" size={18} color="#6B7280" />
               </View>
               <View style={styles.infoTextGroup}>
-                <Text style={styles.infoLabel}>EVM wallet</Text>
-                <Text style={styles.infoValue}>{(contact.evm_address || contact.raw_data?.evm_address) ? `${(contact.evm_address || contact.raw_data?.evm_address).substring(0, 6)}...${(contact.evm_address || contact.raw_data?.evm_address).substring((contact.evm_address || contact.raw_data?.evm_address).length - 4)}` : 'Non renseigné'}</Text>
+                <Text style={styles.infoLabel}>{t('contacts.label_evm_wallet', 'EVM Wallet')}</Text>
+                <Text style={styles.infoValue}>{(contact.evm_address || contact.raw_data?.evm_address) ? `${(contact.evm_address || contact.raw_data?.evm_address).substring(0, 6)}...${(contact.evm_address || contact.raw_data?.evm_address).substring((contact.evm_address || contact.raw_data?.evm_address).length - 4)}` : t('common.not_provided', 'Not provided')}</Text>
               </View>
               <View style={styles.infoActionIcons}>
                 <TouchableOpacity style={styles.actionCircleBtn} onPress={() => handleLink(`https://polygonscan.com/address/${(contact.evm_address || contact.raw_data?.evm_address)}`)}>
@@ -197,8 +205,8 @@ export default function ContactProfileScreen({ route }) {
                 <Ionicons name="layers-outline" size={18} color="#6B7280" />
               </View>
               <View style={styles.infoTextGroup}>
-                <Text style={styles.infoLabel}>Solana wallet</Text>
-                <Text style={styles.infoValue}>{(contact.solana_address || contact.raw_data?.solana_address) ? `${(contact.solana_address || contact.raw_data?.solana_address).substring(0, 4)}...${(contact.solana_address || contact.raw_data?.solana_address).substring((contact.solana_address || contact.raw_data?.solana_address).length - 4)}` : 'Non renseigné'}</Text>
+                <Text style={styles.infoLabel}>{t('contacts.label_solana_wallet', 'Solana Wallet')}</Text>
+                <Text style={styles.infoValue}>{(contact.solana_address || contact.raw_data?.solana_address) ? `${(contact.solana_address || contact.raw_data?.solana_address).substring(0, 4)}...${(contact.solana_address || contact.raw_data?.solana_address).substring((contact.solana_address || contact.raw_data?.solana_address).length - 4)}` : t('common.not_provided', 'Not provided')}</Text>
               </View>
               <View style={styles.infoActionIcons}>
                 <TouchableOpacity style={styles.actionCircleBtn} onPress={() => handleLink(`https://solscan.io/account/${(contact.solana_address || contact.raw_data?.solana_address)}`)}>
@@ -261,11 +269,11 @@ export default function ContactProfileScreen({ route }) {
             </View>
             <View style={styles.verifiedBannerContent}>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-                <Text style={styles.verifiedBannerTitle}>{t('beneficiary_management.profile.verified_contact', 'Contact vérifié')}</Text>
+                <Text style={styles.verifiedBannerTitle}>{t('beneficiary_management.profile.verified_contact', 'Verified contact')}</Text>
                 <Ionicons name="checkmark-circle" size={14} color="#D97706" style={{ marginLeft: 4 }} />
               </View>
               <Text style={styles.verifiedBannerSubtext}>
-                {t('beneficiary_management.profile.verified_desc', "Ce contact est vérifié et peut recevoir de l'argent sur DizzitUp.")}
+                {t('beneficiary_management.profile.verified_desc', 'This contact is verified and can receive money on DizzitUp.')}
               </Text>
             </View>
             <View style={styles.verifiedCheckBadge}>
@@ -276,11 +284,11 @@ export default function ContactProfileScreen({ route }) {
           {/* Sticky Action CTA Button */}
           <TouchableOpacity 
             style={styles.btnSendMoney} 
-            onPress={() => navigation.navigate('SendMoneyScreen', { contact })}
+            onPress={() => navigation.navigate('SendMoneyScreen', { contact, pivotScreen: 'ContactProfileScreen', pivotParams: { contact } })}
             activeOpacity={0.8}
           >
             <Ionicons name="swap-horizontal" size={18} color="#1A2840" style={{ marginRight: 8 }} />
-            <Text style={styles.btnSendMoneyText}>{t('wallet.actions.send', "envoyer des Stablecoins")}</Text>
+            <Text style={styles.btnSendMoneyText}>{t('wallet.actions.send', 'Send')}</Text>
           </TouchableOpacity>
 
           <View style={{ height: 20 }} />

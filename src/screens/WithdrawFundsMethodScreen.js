@@ -132,7 +132,7 @@ export default function WithdrawFundsMethodScreen() {
                   <Ionicons name="business" size={28} color={selectedMethod === 'bank' ? '#10B981' : '#64748B'} />
                 </View>
                 <View style={styles.cardHeaderInfo}>
-                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <View style={{flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap'}}>
                     <Text style={styles.cardTitle}>{t('withdrawFunds.bankTransfer', 'Bank transfer')}</Text>
                     <View style={styles.badgeRecommended}>
                       <Text style={styles.badgeRecommendedText}>{t('withdrawFunds.recommended', 'Recommended')}</Text>
@@ -165,7 +165,7 @@ export default function WithdrawFundsMethodScreen() {
                 <View style={[styles.statIconCircle, {backgroundColor: selectedMethod === 'bank' ? '#10B981' : '#64748B'}]}>
                   <Ionicons name="time-outline" size={12} color="#FFF" />
                 </View>
-                <View>
+                <View style={{flexShrink: 1}}>
                   <Text style={styles.statLabel}>{t('withdrawFunds.delay', 'Delay')}</Text>
                   <Text style={styles.statValue}>{t('withdrawFunds.delay24To72h', '24h to 72h')}</Text>
                 </View>
@@ -174,7 +174,7 @@ export default function WithdrawFundsMethodScreen() {
                 <View style={[styles.statIconCircle, {backgroundColor: selectedMethod === 'bank' ? '#10B981' : '#64748B'}]}>
                   <Text style={{color: '#FFF', fontSize: 10, fontWeight: 'bold'}}>%</Text>
                 </View>
-                <View>
+                <View style={{flexShrink: 1}}>
                   <Text style={styles.statLabel}>{t('withdrawFunds.dizzitupFee', 'DizzitUp Fee')}</Text>
                   <Text style={styles.statValue}>1,5%</Text>
                 </View>
@@ -183,7 +183,7 @@ export default function WithdrawFundsMethodScreen() {
                 <View style={[styles.statIconCircle, {backgroundColor: selectedMethod === 'bank' ? '#10B981' : '#64748B'}]}>
                   <Ionicons name="git-network-outline" size={12} color="#FFF" />
                 </View>
-                <View>
+                <View style={{flexShrink: 1}}>
                   <Text style={styles.statLabel}>{t('withdrawFunds.networkFee', 'Network Fee')}</Text>
                   <Text style={styles.statValue}>{t('withdrawFunds.variable', 'Variable')}</Text>
                 </View>
@@ -204,7 +204,7 @@ export default function WithdrawFundsMethodScreen() {
                     <Ionicons name="phone-portrait-outline" size={28} color={selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'} />
                   </View>
                   <View style={styles.cardHeaderInfo}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
                       <Text style={styles.cardTitle}>{t('withdrawFunds.mobileMoney', 'Mobile Money')}</Text>
                       <View style={[styles.badgeRecommended, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
                         <Text style={[styles.badgeRecommendedText, { color: '#065F46' }]}>
@@ -243,7 +243,7 @@ export default function WithdrawFundsMethodScreen() {
                   <View style={[styles.statIconCircle, {backgroundColor: selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'}]}>
                     <Ionicons name="time-outline" size={12} color="#FFF" />
                   </View>
-                  <View>
+                  <View style={{flexShrink: 1}}>
                     <Text style={styles.statLabel}>{t('withdrawFunds.delay', 'Delay')}</Text>
                     <Text style={styles.statValue}>{t('withdrawFunds.delayInstant', 'Instant')}</Text>
                   </View>
@@ -252,7 +252,7 @@ export default function WithdrawFundsMethodScreen() {
                   <View style={[styles.statIconCircle, {backgroundColor: selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'}]}>
                     <Text style={{color: '#FFF', fontSize: 10, fontWeight: 'bold'}}>%</Text>
                   </View>
-                  <View>
+                  <View style={{flexShrink: 1}}>
                     <Text style={styles.statLabel}>{t('withdrawFunds.dizzitupFee', 'DizzitUp Fee')}</Text>
                     <Text style={styles.statValue}>1,5%</Text>
                   </View>
@@ -261,9 +261,9 @@ export default function WithdrawFundsMethodScreen() {
                   <View style={[styles.statIconCircle, {backgroundColor: selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'}]}>
                     <Ionicons name="git-network-outline" size={12} color="#FFF" />
                   </View>
-                  <View>
+                  <View style={{flexShrink: 1}}>
                     <Text style={styles.statLabel}>{t('withdrawFunds.networkFee', 'Network Fee')}</Text>
-                    <Text style={styles.statValue}>Polygon Network</Text>
+                    <Text style={styles.statValue}>Polygon</Text>
                   </View>
                 </View>
               </View>

@@ -1,10 +1,11 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useEffect } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
+import { getOperatorLogo } from '../utils/operatorLogos';
 
 export default function WithdrawFundsMobileMoneyProcessingScreen() {
   const navigation = useNavigation();
@@ -166,7 +167,7 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
                   <View style={styles.nodeIconBox}>
                     <Ionicons name="wallet-outline" size={22} color="#F59E0B" />
                   </View>
-                  <View>
+                  <View style={{ flex: 1 }}>
                     <Text style={styles.nodeTitle}>DZY Wallet</Text>
                     <Text style={styles.nodeSubtitle}>{t('withdrawFunds.balanceCheck', 'Balance check')}</Text>
                   </View>
@@ -187,7 +188,7 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
                   <View style={styles.nodeIconBox}>
                     <Ionicons name="hourglass-outline" size={22} color="#F59E0B" />
                   </View>
-                  <View>
+                  <View style={{ flex: 1 }}>
                     <Text style={styles.nodeTitle}>{t('withdrawFunds.inProgress', 'In progress')}</Text>
                     <Text style={styles.nodeSubtitle}>Polygon blockchain network</Text>
                   </View>
@@ -203,10 +204,17 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
               {/* Stage 3: Mixx by Yas (Togo) (Pending) */}
               <View style={styles.nodeCard}>
                 <View style={styles.nodeLeft}>
-                  <View style={styles.nodeIconBox}>
-                    <Ionicons name="business-outline" size={22} color="#F59E0B" />
-                  </View>
-                  <View>
+                  {(() => {
+                    const opLogo = getOperatorLogo(providerName);
+                    return opLogo ? (
+                      <Image source={opLogo} style={styles.operatorLogoNode} resizeMode="contain" />
+                    ) : (
+                      <View style={styles.nodeIconBox}>
+                        <Ionicons name="business-outline" size={22} color="#F59E0B" />
+                      </View>
+                    );
+                  })()}
+                  <View style={{ flex: 1 }}>
                     <Text style={styles.nodeTitle}>{providerName}</Text>
                     <Text style={styles.nodeSubtitle}>{selectedMethod === 'bank' ? t('withdrawFunds.sendToBank', 'Send to Bank Account') : t('withdrawFunds.sendToMomo', 'Send to Mobile Money')}</Text>
                   </View>
@@ -296,6 +304,7 @@ const styles = StyleSheet.create({
   nodeCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FFFFFF', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#F1F5F9', boxShadow: '0px 2px 6px #000' },
   nodeLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   nodeIconBox: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#FFFDF0', borderWidth: 1, borderColor: '#FEF3C7', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  operatorLogoNode: { width: 72, height: 34, resizeMode: 'contain', marginRight: 12 },
   nodeTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#1A2840', marginBottom: 2 },
   nodeSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280' },
   checkCircleDone: { width: 24, height: 24, borderRadius: 12, backgroundColor: '#FFC759', justifyContent: 'center', alignItems: 'center' },

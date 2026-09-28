@@ -7,11 +7,14 @@ import CryptoIcon from '../components/CryptoIcon';
 import { useApp } from '../context/AppContext';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
+import { formatTxDate } from '../utils/formatTxDate';
 
 export default function CashierSuccessScreen() {
   const navigation = useNavigation();
-  const { t } = useApp();
+  const { t, user } = useApp();
   const [toast, setToast] = useState(null);
+  // Real timestamp captured when the screen loads
+  const nowDate = formatTxDate();
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -92,7 +95,7 @@ export default function CashierSuccessScreen() {
                 </View>
                 <Text style={styles.detailLabelText}>{t('pos.date_time', 'Date et heure')}</Text>
               </View>
-              <Text style={styles.detailValueText}>30 Mai 2025 à 09:42</Text>
+              <Text style={styles.detailValueText}>{nowDate}</Text>
             </View>
 
             <View style={styles.rowDivider} />
@@ -177,9 +180,10 @@ export default function CashierSuccessScreen() {
                   type: 'cashier',
                   amount: '2 000 FCFA',
                   token: 'USDT',
-                  actionType: 'reçu',
+                  actionKey: 'actionReceived',
+                  senderName: user?.name || '',
                   recipientName: 'Caisse (TPE)',
-                  date: '30 Mai 2025 • 09:42',
+                  date: nowDate,
                   txHash: '0x7a3f...e9b2c4d',
                 },
               });

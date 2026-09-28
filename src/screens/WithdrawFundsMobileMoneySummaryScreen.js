@@ -1,11 +1,12 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 import { currencyRateService, EMERGENCY_RATES } from '../services/currencyRateService';
 import { COUNTRY_METADATA } from '../services/paymentCorridorService';
+import { getOperatorLogo } from '../utils/operatorLogos';
 
 export default function WithdrawFundsMobileMoneySummaryScreen() {
   const navigation = useNavigation();
@@ -193,7 +194,7 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
                 <View style={[styles.iconCircle, {backgroundColor: '#FEF3C7'}]}>
                   <Ionicons name="arrow-up" size={16} color="#D97706" />
                 </View>
-                <View>
+                <View style={{ flex: 1 }}>
                   <Text style={styles.summaryLabel}>{t('withdrawFunds.youWithdraw', 'You withdraw')}</Text>
                   <Text style={styles.summaryValueBig}>{formattedAmount} {effectiveCurrency}</Text>
                 </View>
@@ -212,7 +213,7 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
                 <View style={[styles.iconCircle, {backgroundColor: '#EFF6FF'}]}>
                   <Ionicons name="wallet" size={16} color="#1E3A8A" />
                 </View>
-                <View>
+                <View style={{ flex: 1 }}>
                   <Text style={styles.summaryLabel}>{t('withdrawFunds.walletDebited', 'Your DZYwallet is debited by')}</Text>
                   <Text style={styles.summaryValueBig}>{actualDebitTokenAmount} {token}</Text>
                   <Text style={styles.summaryRate}>
@@ -236,7 +237,7 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
                 <View style={[styles.iconCircle, {backgroundColor: '#DCFCE7'}]}>
                   <Ionicons name="arrow-down" size={16} color="#059669" />
                 </View>
-                <View>
+                <View style={{ flex: 1 }}>
                   <Text style={styles.summaryLabel}>{t('withdrawFunds.youReceive', 'You receive')}</Text>
                   <Text style={styles.summaryValueBig}>{formattedNetAmount} {effectiveCurrency}</Text>
                   <Text style={styles.summaryLabel}>
@@ -245,10 +246,19 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
                 </View>
               </View>
               <View style={styles.providerBadgeContainer}>
-                <View style={styles.providerBadge}>
-                  <Ionicons name={selectedMethod === 'bank' ? "business" : "phone-portrait"} size={14} color="#1A2840" />
-                </View>
-                <Text style={styles.providerNameText} numberOfLines={1}>{providerName}</Text>
+                {(() => {
+                  const opLogo = getOperatorLogo(providerName);
+                  return opLogo ? (
+                    <Image source={opLogo} style={styles.operatorLogoSmall} resizeMode="contain" />
+                  ) : (
+                    <>
+                      <View style={styles.providerBadge}>
+                        <Ionicons name={selectedMethod === 'bank' ? "business" : "phone-portrait"} size={14} color="#1A2840" />
+                      </View>
+                      <Text style={styles.providerNameText} numberOfLines={1}>{providerName}</Text>
+                    </>
+                  );
+                })()}
               </View>
             </View>
 
@@ -518,6 +528,7 @@ const styles = StyleSheet.create({
   },
   providerBadgeContainer: {
     alignItems: 'center',
+    maxWidth: 110,
   },
   providerBadge: {
     backgroundColor: '#FFFFFF',
@@ -545,6 +556,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_500Medium',
     fontSize: 10,
     color: '#64748B',
+  },
+  operatorLogoSmall: {
+    width: 80,
+    height: 30,
+    resizeMode: 'contain',
   },
   divider: {
     height: 1,

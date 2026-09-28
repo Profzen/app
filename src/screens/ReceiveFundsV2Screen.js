@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Animated, Share, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -14,6 +14,7 @@ import { useApp } from '../context/AppContext';
 
 export default function ReceiveFundsV2Screen() {
   const navigation = useNavigation();
+  const route = useRoute();
   const { session, t } = useApp();
   const [addresses, setAddresses] = useState({ evm: '', solana: '' });
 
@@ -72,7 +73,15 @@ export default function ReceiveFundsV2Screen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.iconBtn} onPress={() => {
+            const pivotScreen = route.params?.pivotScreen;
+            const pivotParams = route.params?.pivotParams;
+            if (pivotScreen) {
+              navigation.navigate(pivotScreen, pivotParams);
+            } else {
+              navigation.goBack();
+            }
+          }}>
             <Ionicons name="chevron-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           
