@@ -3603,13 +3603,18 @@ If everything looks good on your end, we can merge into develop and trigger the 
 
 ---
 
-### 🎯 7. Feuille de Route Immédiate pour la Prochaine Session (Reprise Directe)
+### 🎯 7. Décision Stratégique & Feuille de Route pour le Lancement (1er Octobre au Matin)
 
-Dès réouverture de session ou réception du retour de Solofo/Assia sur Slack :
-1. **Étape 1 — Vérifier les réponses Slack** :
-   - Si retours ou ajustements mineurs demandés : les appliquer directement sur `front-back`.
-   - Si feu vert reçu : passer immédiatement à l'Étape 2.
-2. **Étape 2 — Fusion vers `develop`** :
+- **Décision validée** : Plutôt que de déclencher un build partiel ce soir (qui ferait échouer iOS TestFlight en raison de l'épuisement du quota mensuel EAS en cours), le déclenchement des builds est **calé pour demain matin 1er octobre**.
+- **Avantage clé** : Le quota mensuel gratuit d'Expo se réinitialisant cette nuit au 1er octobre, les builds **Android APK** et **iOS TestFlight** seront compilés et livrés **simultanément et en parfaite synchronisation**.
+- **Message succinct transmis à Solofo sur Slack** :
+  ```text
+  Hi @Solofo, Build 59 is fully implemented, verified and ready on front-back. Since the monthly Expo iOS quota resets tonight (Oct 1st), we’re merging and triggering the build first thing tomorrow morning so both Android and iOS TestFlight builds land together simultaneously.
+  ```
+
+#### 🚀 Procédure de Déclenchement (Demain Matin 1er Octobre) :
+1. **Consulter d'éventuels retours d'Assia/Solofo sur Slack** (si ajustements mineurs, les commiter sur `front-back`).
+2. **Fusionner `front-back` vers `develop`** :
    ```bash
    git checkout develop
    git pull origin develop
@@ -3617,9 +3622,10 @@ Dès réouverture de session ou réception du retour de Solofo/Assia sur Slack :
    git push origin develop
    git push personal develop
    ```
-3. **Étape 3 — Lancement du Build 59** :
-   - Build Android APK via GitHub Actions ou EAS.
-   - Soumission iOS TestFlight (`npx eas-cli build --platform ios --profile production --auto-submit`).
+3. **Suivre et valider la génération des deux builds** :
+   - Build Android via le workflow GitHub Actions (`build-apk.yml` / `build-android.yml`).
+   - Build iOS via EAS Build Cloud et soumission TestFlight (`npx eas-cli build --platform ios --profile production --auto-submit`).
+
 
 
 
