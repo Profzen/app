@@ -46,6 +46,25 @@ export default function TransactionHistoryScreen() {
     await generateAndShareStatement(filteredTransactions, user, t);
   };
 
+  const getExplorerUrl = (tx) => {
+    if (tx.onChain?.explorerLink) return tx.onChain.explorerLink;
+    const hash = tx.txHash || tx.hash || (typeof tx.id === 'string' && tx.id.startsWith('0x') ? tx.id : null);
+    if (!hash) return null;
+    const chain = (tx.chain || 'polygon').toLowerCase();
+    if (chain.includes('polygon') || chain.includes('matic') || chain.includes('pol')) {
+      return `https://polygonscan.com/tx/${hash}`;
+    } else if (chain.includes('base')) {
+      return `https://basescan.org/tx/${hash}`;
+    } else if (chain.includes('solana') || chain.includes('sol')) {
+      return `https://solscan.io/tx/${hash}`;
+    } else if (chain.includes('eth')) {
+      return `https://etherscan.io/tx/${hash}`;
+    } else if (chain.includes('bnb') || chain.includes('bsc')) {
+      return `https://bscscan.com/tx/${hash}`;
+    }
+    return `https://polygonscan.com/tx/${hash}`;
+  };
+
   const getTypeIcon = (type, meta = {}) => {
     const isBill = meta?.payment_context === 'bill_payment' || meta?.type === 'invoice_payment' || meta?.type === 'invoice';
     if (isBill) return <Ionicons name="cart" size={20} color="#10B981" />; // Emerald
@@ -236,12 +255,16 @@ export default function TransactionHistoryScreen() {
                           </View>
                         </View>
 
-                        {tx.onChain?.explorerLink && (
-                          <TouchableOpacity style={styles.explorerBtn} onPress={() => Linking.openURL(tx.onChain.explorerLink)}>
-                            <Text style={styles.explorerBtnText}>{t('common.wallet.view_onchain', 'Explorer')}</Text>
-                            <Ionicons name="open-outline" size={14} color="#20365B" />
-                          </TouchableOpacity>
-                        )}
+                        {(() => {
+                          const explorerUrl = getExplorerUrl(tx);
+                          if (!explorerUrl) return null;
+                          return (
+                            <TouchableOpacity style={styles.explorerBtn} onPress={() => Linking.openURL(explorerUrl)}>
+                              <Text style={styles.explorerBtnText}>{t('common.wallet.view_onchain', 'Polygonscan')}</Text>
+                              <Ionicons name="open-outline" size={14} color="#20365B" style={{ marginLeft: 4 }} />
+                            </TouchableOpacity>
+                          );
+                        })()}
                       </View>
                     );
                   })}

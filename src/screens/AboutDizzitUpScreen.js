@@ -18,7 +18,7 @@ export default function AboutDizzitUpScreen() {
   const [releaseNotes, setReleaseNotes] = useState({ features: [], fixes: [], releaseDate: null, isLoading: true });
 
   const appVersion = Application.nativeApplicationVersion || Constants?.expoConfig?.version || '1.0.0';
-  const appBuildNumber = Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '56';
+  const appBuildNumber = Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '59';
 
   const currentYear = new Date().getFullYear();
   const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -50,13 +50,21 @@ export default function AboutDizzitUpScreen() {
           data = fallback.data;
         }
         
+const sanitizeReleaseNote = (note) => {
+  if (typeof note !== 'string') return note;
+  return note
+    .replace(/\bCrossmint\b/gi, 'Wallet Provider')
+    .replace(/\bReloadly\b/gi, 'Telecom Partner')
+    .replace(/\bMedusa\b/gi, 'Marketplace Engine');
+};
+
         const formattedDate = data?.updated_at 
           ? new Date(data.updated_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
           : currentDate;
 
         setReleaseNotes({
-          features: data?.new_features || [],
-          fixes: data?.fixes || [],
+          features: (data?.new_features || []).map(sanitizeReleaseNote),
+          fixes: (data?.fixes || []).map(sanitizeReleaseNote),
           releaseDate: formattedDate,
           isLoading: false
         });

@@ -36,7 +36,9 @@ export default function ContactActionSheet({ contact, visible, onClose, onNaviga
               bgColor="#F5F3FF" 
               onPress={() => {
                 onClose();
-                handleUserInviteShare(user);
+                setTimeout(() => {
+                  handleUserInviteShare(user, contact);
+                }, 350);
               }} 
             />
           </View>

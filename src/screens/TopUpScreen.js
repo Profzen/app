@@ -112,7 +112,7 @@ export default function TopUpScreen() {
           {/* Destination Country Indicator & Switcher */}
           <View style={styles.topupCountryRow}>
             <Text style={styles.topupCountryLabel}>
-              {t('paymentRails.topupRegionLabel', 'Région de paiement :')}
+              {t('paymentRails.paymentRegion', 'Payment region:')}
             </Text>
             <TouchableOpacity
               style={styles.topupCountryPill}

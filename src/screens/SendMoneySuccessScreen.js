@@ -1,7 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import AppToast from '../components/AppToast';
@@ -86,6 +86,23 @@ export default function SendMoneySuccessScreen() {
               </TouchableOpacity>
             </View>
 
+            {/* View on Polygonscan Button */}
+            {hash && (
+              <TouchableOpacity
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 4, marginBottom: 12 }}
+                onPress={() => {
+                  const cleanHash = hash.trim();
+                  const url = cleanHash.startsWith('0x') ? `https://polygonscan.com/tx/${cleanHash}` : `https://polygonscan.com/tx/0x${cleanHash}`;
+                  Linking.openURL(url).catch(() => {});
+                }}
+              >
+                <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#3B82F6', marginRight: 4 }}>
+                  {t('common.wallet.view_onchain', 'View on Polygonscan')}
+                </Text>
+                <Ionicons name="open-outline" size={14} color="#3B82F6" />
+              </TouchableOpacity>
+            )}
+
             {/* Partager mon succès CTA Card */}
             <TouchableOpacity 
               style={styles.shareCtaCard}
@@ -133,7 +150,13 @@ export default function SendMoneySuccessScreen() {
             {/* Main Action Button */}
             <TouchableOpacity 
               style={styles.doneButton} 
-              onPress={() => navigation.navigate('HomeScreen')}
+              onPress={() => {
+                if (route.params?.pivotScreen) {
+                  navigation.navigate(route.params.pivotScreen, route.params.pivotParams);
+                } else {
+                  navigation.navigate('HomeScreen');
+                }
+              }}
               activeOpacity={0.88}
             >
               <Text style={styles.doneButtonText}>{t('common.done', 'Done')}</Text>

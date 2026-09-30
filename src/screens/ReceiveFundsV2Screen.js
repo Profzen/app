@@ -1,7 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Animated, Share, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Animated, Share, Platform, StatusBar, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Clipboard from 'expo-clipboard';
@@ -17,6 +17,8 @@ export default function ReceiveFundsV2Screen() {
   const route = useRoute();
   const { session, t } = useApp();
   const [addresses, setAddresses] = useState({ evm: '', solana: '' });
+  const [requestedAmount, setRequestedAmount] = useState(route.params?.amount ? String(route.params.amount) : '');
+  const [requestedToken, setRequestedToken] = useState('USDC');
 
   useEffect(() => {
     const fetchAddress = async () => {
@@ -45,9 +47,26 @@ export default function ReceiveFundsV2Screen() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedChain, setSelectedChain] = useState('Polygon');
   const address = selectedChain === 'Solana' ? (addresses.solana || 'Chargement...') : (addresses.evm || 'Chargement...');
-  const qr = address && address !== 'Chargement...' ? QRCode.create(address, { errorCorrectionLevel: 'M' }) : null;
+  
+  const qrString = address && address !== 'Chargement...'
+    ? (requestedAmount ? `dizzitup:${address}?amount=${requestedAmount}&token=${requestedToken}&chain=${selectedChain}` : address)
+    : null;
+  const qr = qrString ? QRCode.create(qrString, { errorCorrectionLevel: 'M' }) : null;
+  
   const copyAddress = () => { setShowToast(true); setCopied(true); Clipboard.setStringAsync(address).catch(() => {}); setTimeout(() => setCopied(false), 2500); };
-  const shareAddress = async () => { try { await Share.share({ message: `Adresse DizzitUp ${selectedChain} : ${address}` }); } catch { await Clipboard.setStringAsync(address); setShowToast(true); setCopied(true); setTimeout(() => setCopied(false), 2500); } };
+  const shareAddress = async () => {
+    try {
+      const shareMsg = requestedAmount
+        ? `${t('receiveFunds.payment_request', 'Demande de paiement')} : ${requestedAmount} ${requestedToken} sur ${selectedChain}\nAdresse : ${address}`
+        : `Adresse DizzitUp ${selectedChain} : ${address}`;
+      await Share.share({ message: shareMsg });
+    } catch {
+      await Clipboard.setStringAsync(address);
+      setShowToast(true);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
+  };
   const chooseChain = (chain) => { setSelectedChain(chain); setDropdownOpen(false); };
   const RealQrCode = () => {
     if (!qr) return null;
@@ -155,6 +174,74 @@ export default function ReceiveFundsV2Screen() {
               )}
             </View>
 
+            {/* Amount Request Section (Solofo Request/Receive) */}
+            <View style={{ backgroundColor: '#FFFFFF', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#E2E8F0', marginBottom: 16 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 12, color: '#1A2840' }}>
+                  {t('receiveFunds.amount_to_request', 'MONTANT DEMANDÉ (OPTIONNEL)')}
+                </Text>
+                {requestedAmount ? (
+                  <TouchableOpacity onPress={() => setRequestedAmount('')}>
+                    <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#EF4444' }}>{t('common.clear', 'Effacer')}</Text>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+
+              <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#CBD5E1', borderRadius: 12, paddingHorizontal: 12, height: 46 }}>
+                <TextInput
+                  style={{ flex: 1, fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#0F172A', outlineStyle: 'none' }}
+                  placeholder="0.00"
+                  placeholderTextColor="#94A3B8"
+                  keyboardType="numeric"
+                  value={requestedAmount}
+                  onChangeText={setRequestedAmount}
+                />
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  {['USDC', 'USDT', 'EURC', 'DZY'].map((sym) => (
+                    <TouchableOpacity
+                      key={sym}
+                      style={{
+                        paddingHorizontal: 8,
+                        paddingVertical: 4,
+                        borderRadius: 6,
+                        backgroundColor: requestedToken === sym ? '#FFC759' : 'transparent',
+                        marginLeft: 4,
+                      }}
+                      onPress={() => setRequestedToken(sym)}
+                    >
+                      <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 11, color: requestedToken === sym ? '#1A2840' : '#64748B' }}>
+                        {sym}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Quick Amount Presets */}
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
+                {['10', '25', '50', '100'].map((preset) => (
+                  <TouchableOpacity
+                    key={preset}
+                    style={{
+                      flex: 1,
+                      marginHorizontal: 3,
+                      paddingVertical: 5,
+                      backgroundColor: requestedAmount === preset ? '#EFF6FF' : '#F1F5F9',
+                      borderWidth: requestedAmount === preset ? 1 : 0,
+                      borderColor: '#3B82F6',
+                      borderRadius: 8,
+                      alignItems: 'center',
+                    }}
+                    onPress={() => setRequestedAmount(preset)}
+                  >
+                    <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 11, color: requestedAmount === preset ? '#1D4ED8' : '#475569' }}>
+                      {preset} {requestedToken}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
           {/* Tabs */}
           <View style={styles.tabsContainer}>
             <TouchableOpacity 
@@ -206,6 +293,16 @@ export default function ReceiveFundsV2Screen() {
                   </Pressable>
                 </View>
 
+                {/* Amount Requested Badge inside Card */}
+                {requestedAmount ? (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEF3C7', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, alignSelf: 'flex-start', marginTop: 10 }}>
+                    <Ionicons name="cash-outline" size={14} color="#B45309" style={{ marginRight: 4 }} />
+                    <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 12, color: '#92400E' }}>
+                      {t('receiveFunds.requested_label', 'Demandé')} : {requestedAmount} {requestedToken}
+                    </Text>
+                  </View>
+                ) : null}
+
               </LinearGradient>
 
               {/* Action Buttons */}
@@ -249,6 +346,15 @@ export default function ReceiveFundsV2Screen() {
                   <View style={styles.qrCodeBox}>
                     <RealQrCode />
                   </View>
+
+                  {requestedAmount ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEF3C7', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8, marginTop: 8, marginBottom: 10 }}>
+                      <Ionicons name="cash-outline" size={14} color="#B45309" style={{ marginRight: 4 }} />
+                      <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 13, color: '#92400E' }}>
+                        {t('receiveFunds.requested_label', 'Demandé')} : {requestedAmount} {requestedToken}
+                      </Text>
+                    </View>
+                  ) : null}
                   
                   <View style={styles.qrInnerTabs}>
                     <TouchableOpacity style={styles.qrInnerTab} onPress={() => setActiveTab('adresse')}>

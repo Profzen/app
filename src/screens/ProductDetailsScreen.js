@@ -126,18 +126,15 @@ export default function ProductDetailsScreen({ route }) {
   };
 
   const handleAddToCart = () => {
-    setPendingAction('cart');
-    setWarningModalVisible(true);
+    executeAddToCart();
   };
 
   const handleBuyNow = () => {
-    setPendingAction('buy');
-    setWarningModalVisible(true);
+    executeBuyNow();
   };
 
   const handleWarningContinue = () => {
     setWarningModalVisible(false);
-    // Execute the action that was originally requested before the warning
     if (pendingAction === 'buy') {
       executeBuyNow();
     } else if (pendingAction === 'cart') {

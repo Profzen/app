@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Image, Modal, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
@@ -34,9 +34,12 @@ const formatRelation = (rel, t) => {
 
 export default function ContactsManageScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
   const { session, user, t } = useApp();
   const [contactItems, setContactItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'nearby', 'favorites', 'africa', 'world'
 
   const quickActions = [
     { id: '1', title: t('contacts.add', "Add\nbeneficiary"), subtitle: t('contacts.add_desc', "Add a new\nbeneficiary"), icon: "person-add-outline", color: "#8B5CF6" },
@@ -120,6 +123,47 @@ export default function ContactsManageScreen() {
   const [bannerVisible, setBannerVisible] = useState(true);
   const [toast, setToast] = useState(null);
 
+  useEffect(() => {
+    if (route.params?.returnContact) {
+      setSelectedContact(route.params.returnContact);
+      navigation.setParams({ returnContact: undefined, selectedContactId: undefined });
+    } else if (route.params?.selectedContactId && contactItems.length > 0) {
+      const found = contactItems.find(c => String(c.id) === String(route.params.selectedContactId));
+      if (found) {
+        setSelectedContact(found);
+        navigation.setParams({ selectedContactId: undefined });
+      }
+    }
+  }, [route.params, contactItems]);
+
+  const filteredContacts = useMemo(() => {
+    return contactItems.filter(contact => {
+      const q = searchQuery.trim().toLowerCase();
+      if (q) {
+        const name = (contact.name || '').toLowerCase();
+        const firstName = (contact.first_name || '').toLowerCase();
+        const lastName = (contact.last_name || '').toLowerCase();
+        const phone = (contact.phone || '').toLowerCase();
+        const email = (contact.email || '').toLowerCase();
+        const loc = (contact.location || '').toLowerCase();
+        const country = (contact.country || '').toLowerCase();
+        const city = (contact.city || '').toLowerCase();
+        
+        const matchesQuery = name.includes(q) || firstName.includes(q) || lastName.includes(q) || phone.includes(q) || email.includes(q) || loc.includes(q) || country.includes(q) || city.includes(q);
+        if (!matchesQuery) return false;
+      }
+
+      if (activeFilter === 'nearby') {
+        return contact.isBeneficiary;
+      } else if (activeFilter === 'favorites') {
+        return contact.isSponsor;
+      } else if (activeFilter === 'africa') {
+        return ['TG', 'NG', 'KE', 'SN', 'ML', 'BF', 'GH', 'CI', 'BJ', 'CM', 'MG'].some(code => (contact.country_code || '').toUpperCase() === code);
+      }
+      return true;
+    });
+  }, [contactItems, searchQuery, activeFilter]);
+
   const contactsWithoutPhone = useMemo(() => {
     return contactItems.filter(c => !c.phone || c.phone.trim() === '');
   }, [contactItems]);
@@ -185,9 +229,17 @@ export default function ContactsManageScreen() {
                 style={styles.searchInput}
                 placeholder={t('common.wallet.search_beneficiary', 'Rechercher un contact')}
                 placeholderTextColor="#64748B"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                autoCorrect={false}
               />
               <Text style={styles.searchSubText}>{t('contacts.search_hint', 'Nom, téléphone, email, ville ou pays')}</Text>
             </View>
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} style={{ paddingHorizontal: 8 }}>
+                <Ionicons name="close-circle" size={18} color="#94A3B8" />
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* To-Do: Missing Phone Numbers Banner */}
@@ -206,7 +258,7 @@ export default function ContactsManageScreen() {
                 <TouchableOpacity 
                   key={contact.id} 
                   style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', padding: 8, borderRadius: 8, marginBottom: 8, borderWidth: 1, borderColor: '#FEF3C7' }}
-                  onPress={() => navigation.navigate('EditBeneficiaryScreen', { isEditing: true, beneficiary: contact })}
+                  onPress={() => navigation.navigate('EditBeneficiaryScreen', { isEditing: true, beneficiary: contact, pivotScreen: 'ContactsManageScreen', pivotParams: { returnContact: contact, selectedContactId: contact.id } })}
                 >
                   <Avatar image={contact.image} name={contact.name} size={32} />
                   <Text style={{ flex: 1, marginLeft: 8, fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840' }}>{contact.name}</Text>
@@ -252,21 +304,33 @@ export default function ContactsManageScreen() {
 
           {/* Filters */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>
-            <TouchableOpacity style={styles.filterChipActive}>
-              <Ionicons name="location-outline" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
-              <Text style={styles.filterChipTextActive}>{t('contacts.filter_nearby', 'À proximité')}</Text>
+            <TouchableOpacity 
+              style={activeFilter === 'nearby' ? styles.filterChipActive : styles.filterChip}
+              onPress={() => setActiveFilter(activeFilter === 'nearby' ? 'all' : 'nearby')}
+            >
+              <Ionicons name="location-outline" size={16} color={activeFilter === 'nearby' ? '#FFFFFF' : '#64748B'} style={{ marginRight: 6 }} />
+              <Text style={activeFilter === 'nearby' ? styles.filterChipTextActive : styles.filterChipText}>{t('contacts.filter_nearby', 'À proximité')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.filterChip}>
-              <Ionicons name="globe-outline" size={16} color="#64748B" style={{ marginRight: 6 }} />
-              <Text style={styles.filterChipText}>{t('contacts.filter_favorites', 'De mes pays préférés')}</Text>
+            <TouchableOpacity 
+              style={activeFilter === 'favorites' ? styles.filterChipActive : styles.filterChip}
+              onPress={() => setActiveFilter(activeFilter === 'favorites' ? 'all' : 'favorites')}
+            >
+              <Ionicons name="globe-outline" size={16} color={activeFilter === 'favorites' ? '#FFFFFF' : '#64748B'} style={{ marginRight: 6 }} />
+              <Text style={activeFilter === 'favorites' ? styles.filterChipTextActive : styles.filterChipText}>{t('contacts.filter_favorites', 'De mes pays préférés')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.filterChip}>
-              <Ionicons name="earth-outline" size={16} color="#64748B" style={{ marginRight: 6 }} />
-              <Text style={styles.filterChipText}>{t('contacts.filter_africa', 'De toute l\'Afrique')}</Text>
+            <TouchableOpacity 
+              style={activeFilter === 'africa' ? styles.filterChipActive : styles.filterChip}
+              onPress={() => setActiveFilter(activeFilter === 'africa' ? 'all' : 'africa')}
+            >
+              <Ionicons name="earth-outline" size={16} color={activeFilter === 'africa' ? '#FFFFFF' : '#64748B'} style={{ marginRight: 6 }} />
+              <Text style={activeFilter === 'africa' ? styles.filterChipTextActive : styles.filterChipText}>{t('contacts.filter_africa', 'De toute l\'Afrique')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.filterChip}>
-              <Ionicons name="globe-outline" size={16} color="#64748B" style={{ marginRight: 6 }} />
-              <Text style={styles.filterChipText}>{t('contacts.filter_world', 'Du reste du monde')}</Text>
+            <TouchableOpacity 
+              style={activeFilter === 'all' ? styles.filterChipActive : styles.filterChip}
+              onPress={() => setActiveFilter('all')}
+            >
+              <Ionicons name="apps-outline" size={16} color={activeFilter === 'all' ? '#FFFFFF' : '#64748B'} style={{ marginRight: 6 }} />
+              <Text style={activeFilter === 'all' ? styles.filterChipTextActive : styles.filterChipText}>{t('common.all', 'Tous')}</Text>
             </TouchableOpacity>
           </ScrollView>
 
@@ -280,13 +344,22 @@ export default function ContactsManageScreen() {
 
           {/* Contacts List */}
           <View style={styles.contactsList}>
-            {contactItems.map((contact) => (
-              <ContactRow 
-                key={contact.id} 
-                contact={contact} 
-                onPress={() => setSelectedContact(contact)}
-              />
-            ))}
+            {filteredContacts.length === 0 ? (
+              <View style={{ alignItems: 'center', paddingVertical: 32 }}>
+                <Ionicons name="search-outline" size={36} color="#94A3B8" style={{ marginBottom: 8 }} />
+                <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#64748B' }}>
+                  {searchQuery ? t('contacts.no_match', 'Aucun contact correspondant trouvé') : t('contacts.no_beneficiaries', 'Aucun bénéficiaire pour le moment')}
+                </Text>
+              </View>
+            ) : (
+              filteredContacts.map((contact) => (
+                <ContactRow 
+                  key={contact.id} 
+                  contact={contact} 
+                  onPress={() => setSelectedContact(contact)}
+                />
+              ))
+            )}
           </View>
 
         </ScrollView>
@@ -296,8 +369,15 @@ export default function ContactsManageScreen() {
           visible={!!selectedContact}
           onClose={() => setSelectedContact(null)}
           onNavigate={(route, extraParams = {}) => {
+            const currentContact = selectedContact;
             setSelectedContact(null);
-            navigation.navigate(route, { beneficiary: selectedContact, contact: selectedContact, ...extraParams });
+            navigation.navigate(route, { 
+              beneficiary: currentContact, 
+              contact: currentContact,
+              pivotScreen: 'ContactsManageScreen',
+              pivotParams: { returnContact: currentContact, selectedContactId: currentContact?.id },
+              ...extraParams 
+            });
           }}
           onDelete={(id) => {
             setSelectedContact(null);

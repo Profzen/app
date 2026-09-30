@@ -44,16 +44,20 @@ export default function SendMoneyScreen() {
   const [token, setToken] = useState('USDC');
   
   // Recipient selection states
-  const initialRecipientName = route.params?.recipient || route.params?.contact?.name || '';
+  const initialRecipient = route.params?.beneficiary || route.params?.contact || null;
+  const initialRecipientName = initialRecipient?.name || route.params?.recipient || '';
   
-  const [selectedRecipient, setSelectedRecipient] = useState(null);
-  const [isSearchingRecipient, setIsSearchingRecipient] = useState(false);
+  const [selectedRecipient, setSelectedRecipient] = useState(initialRecipient);
+  const [isSearchingRecipient, setIsSearchingRecipient] = useState(!initialRecipient);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
   const [amount, setAmount] = useState('1');
   const [toast, setToast] = useState(null);
   const [missingWalletItem, setMissingWalletItem] = useState(null);
+
+  // Dynamic user available balance for selected token
+  const availableBalance = user?.allBalances?.[token] ?? user?.balances?.[token] ?? user?.personalBalances?.[token] ?? 1.0;
 
   const handlePasteClipboard = async () => {
     try {
@@ -174,7 +178,7 @@ export default function SendMoneyScreen() {
       return;
     }
     
-    let toAddress = selectedRecipient ? (selectedRecipient.evm_address || selectedRecipient.solana_address || selectedRecipient.address) : searchQuery;
+    let toAddress = selectedRecipient ? (selectedRecipient.evm_address || selectedRecipient.raw_data?.evm_address || selectedRecipient.solana_address || selectedRecipient.raw_data?.solana_address || selectedRecipient.address) : searchQuery;
     if (toAddress === 'My Account') {
       toAddress = user?.walletAddress;
       if (!toAddress) {
@@ -210,15 +214,18 @@ export default function SendMoneyScreen() {
       });
       const data = await res.json();
       
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || t('sendMoney.send_failed', 'Transaction failed'));
+      const isSuccessful = res.ok && (data.success === true || data.status === 'success' || !!data.txHash || !!data.transaction || data.success === undefined);
+      if (!isSuccessful) {
+        throw new Error(data.error || data.message || t('sendMoney.send_failed', 'Transaction failed'));
       }
 
       navigation.navigate('SendMoneySuccessScreen', {
         amount,
         token,
         recipient: selectedRecipient ? selectedRecipient.name : searchQuery,
-        hash: data.txHash || data.transaction?.id || 'Transaction validée',
+        hash: data.txHash || data.transaction?.hash || data.transaction?.id || data.hash || 'Transaction validée',
+        pivotScreen: route.params?.pivotScreen,
+        pivotParams: route.params?.pivotParams,
       });
     } catch (e) {
       setToast({ title: t('common.error', 'Error'), message: e.message });
@@ -423,7 +430,7 @@ export default function SendMoneyScreen() {
             <View style={styles.amountHeaderRow}>
               <Text style={styles.fieldLabelNoMargin}>{t('common.wallet.amount', 'Amount')}</Text>
               <View style={styles.availableBadge}>
-                <Text style={styles.availableBadgeText}>{t('common.wallet.available', 'Available')}: 1.0000 {token}</Text>
+                <Text style={styles.availableBadgeText}>{t('common.wallet.available', 'Available')}: {Number(availableBalance).toFixed(4)} {token}</Text>
               </View>
             </View>
 
@@ -438,6 +445,48 @@ export default function SendMoneyScreen() {
               />
               <Text style={styles.amountTokenSuffix}>{token}</Text>
             </View>
+
+            {/* Quick Percentage Chips */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+              {[0.25, 0.5, 0.75, 1.0].map((pct) => (
+                <TouchableOpacity
+                  key={pct}
+                  style={{
+                    flex: 1,
+                    marginHorizontal: 3,
+                    paddingVertical: 6,
+                    backgroundColor: '#F1F5F9',
+                    borderRadius: 8,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  onPress={() => {
+                    const calc = (availableBalance * pct).toFixed(4);
+                    setAmount(calc > 0 ? String(parseFloat(calc)) : '0');
+                  }}
+                >
+                  <Text style={{ fontFamily: 'Inter_700Bold', fontSize: 11, color: '#334155' }}>
+                    {pct === 1.0 ? 'MAX' : `${pct * 100}%`}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Insufficient Balance Friendly Prompt */}
+            {parseFloat(amount || '0') > availableBalance && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFBEB', borderWidth: 1, borderColor: '#FDE68A', borderRadius: 10, padding: 8, marginBottom: 12 }}>
+                <Ionicons name="warning-outline" size={16} color="#D97706" style={{ marginRight: 6 }} />
+                <Text style={{ flex: 1, fontFamily: 'Inter_500Medium', fontSize: 11, color: '#92400E' }}>
+                  {t('sendMoney.insufficient_balance', 'Solde insuffisant.')}{' '}
+                  <Text 
+                    style={{ fontFamily: 'Inter_700Bold', color: '#B45309', textDecorationLine: 'underline' }}
+                    onPress={() => navigation.navigate('TopUpScreen', { token, returnScreen: 'SendMoneyScreen' })}
+                  >
+                    {t('home.topUp', 'Recharger')}
+                  </Text>
+                </Text>
+              </View>
+            )}
 
             {/* Main CTA Button */}
             <TouchableOpacity style={styles.sendCtaBtn} onPress={handleSend} activeOpacity={0.88} disabled={isSending}>

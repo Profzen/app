@@ -10,7 +10,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dizzitup.app",
-      "buildNumber": "56",
+      "buildNumber": "59",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -23,7 +23,7 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "versionCode": 56
+      "versionCode": 59
     },
     "web": {
       "favicon": "./assets/brand/finalLogo.png"
@@ -62,6 +62,6 @@
       }
     },
     "owner": "dizzitup",
-    "description": "DizzitApp V1. Build 56 Beta Test Version"
+    "description": "DizzitApp V1. Build 59 Beta Test Version"
   }
 }

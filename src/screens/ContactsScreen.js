@@ -155,22 +155,41 @@ export default function ContactsScreen() {
     setSelectedContact(null);
   };
 
+  useEffect(() => {
+    if (route.params?.returnContact) {
+      setSelectedContact(route.params.returnContact);
+      navigation.setParams({ returnContact: undefined, selectedContactId: undefined });
+    } else if (route.params?.selectedContactId && contactItems.length > 0) {
+      const found = contactItems.find(c => String(c.id) === String(route.params.selectedContactId));
+      if (found) {
+        setSelectedContact(found);
+        navigation.setParams({ selectedContactId: undefined });
+      }
+    }
+  }, [route.params, contactItems]);
+
   const filteredContacts = useMemo(() => {
     return contactItems.filter(contact => {
-      const name = (contact.name || '').toLowerCase();
-      const loc = (contact.location || '').toLowerCase();
-      const country = (contact.country || '').toLowerCase();
       const q = searchQuery.trim().toLowerCase();
-      const matchesSearch = !q || name.includes(q) || loc.includes(q) || country.includes(q);
-
-      if (!matchesSearch) return false;
+      if (q) {
+        const name = (contact.name || '').toLowerCase();
+        const firstName = (contact.first_name || '').toLowerCase();
+        const lastName = (contact.last_name || '').toLowerCase();
+        const phone = (contact.phone || '').toLowerCase();
+        const email = (contact.email || '').toLowerCase();
+        const loc = (contact.location || '').toLowerCase();
+        const country = (contact.country || '').toLowerCase();
+        const city = (contact.city || '').toLowerCase();
+        const matchesSearch = name.includes(q) || firstName.includes(q) || lastName.includes(q) || phone.includes(q) || email.includes(q) || loc.includes(q) || country.includes(q) || city.includes(q);
+        if (!matchesSearch) return false;
+      }
 
       if (activeFilter === 'nearby') {
         return contact.isBeneficiary;
       } else if (activeFilter === 'favorites') {
         return contact.isSponsor;
       } else if (activeFilter === 'africa') {
-        return ['TG', 'NG', 'KE', 'SN', 'ML', 'BF', 'GH', 'CI', 'BJ', 'CM'].some(code => (contact.country_code || '').toUpperCase() === code);
+        return ['TG', 'NG', 'KE', 'SN', 'ML', 'BF', 'GH', 'CI', 'BJ', 'CM', 'MG'].some(code => (contact.country_code || '').toUpperCase() === code);
       }
       return true;
     });
@@ -405,8 +424,15 @@ export default function ContactsScreen() {
           visible={!!selectedContact}
           onClose={() => setSelectedContact(null)}
           onNavigate={(routeStr, extraParams = {}) => {
+            const currentContact = selectedContact;
             setSelectedContact(null);
-            navigation.navigate(routeStr, { beneficiary: selectedContact, contact: selectedContact, ...extraParams });
+            navigation.navigate(routeStr, { 
+              beneficiary: currentContact, 
+              contact: currentContact, 
+              pivotScreen: 'ContactsScreen',
+              pivotParams: { returnContact: currentContact, selectedContactId: currentContact?.id },
+              ...extraParams 
+            });
           }}
           onDelete={(id) => {
             setSelectedContact(null);
