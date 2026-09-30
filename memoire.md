@@ -3233,17 +3233,147 @@ ightarrow$ **MGA** avec drapeau 🇲🇬 ; Profil utilisateur pour les Particuli
      - Dès que le Build 56 (ou supérieur) est injecté sur TestFlight et Google Play, le système d'exploitation notifie automatiquement le testeur qui n'a plus qu'à cliquer sur **"Mettre à jour" (Update)**, conservant toutes ses données de session et profils intacts.
 
 - **État Actuel & Prochaines Actions** :
-  - **Branche** : `front-back` (synchronisée sur GitHub).
-  - **Statut** : En attente du retour de Solofo et Assia sur le fil Slack suite à la clarification des URLs et aux livrables du Build 56.
-  - **Prochaine étape** : Fusion de `front-back` sur `develop` et déclenchement de la pipeline de compilation EAS Cloud (Android AAB + iOS IPA TestFlight) pour le Build 56.
+  - **Branche** : `front-back` (synchronisée avec les derniers commits de `develop`).
+  - **Statut** : Build 57 réceptionné par Solofo. Préparation intégrale du plan technique pour la session de nuit (Build 58).
+  - **Consigne Absolue** : **ZÉRO PUSH DISTANT** avant validation finale.
 
+---
 
+## 🚀 17. Synchronisation Build 57 & Feuille de Route Complète pour la Session de Nuit (Build 58)
 
+- **Date** : 28 Septembre 2026
+- **Branche Active** : `front-back`
+- **Règle Opérationnelle** : **Préparation locale et cadrage complet — Aucun push distant sans le GO explicite de l'utilisateur.**
 
+---
 
+### 1. Contexte & Historique des Échanges Slack (Build 57)
 
+1. **Synchronisation Git & Merge `origin/develop`** :
+   - Fusion réussie en fast-forward de `origin/develop` vers `front-back` (commit `75ad0eb`).
+   - Récupération des implémentations backend/frontend menées par Assia :
+     - Bypass temporaire des quotes de Cashout pour 25 pays en test interne (`feat(cashout)`).
+     - Clés i18n complètes pour toutes les langues (`en`, `fr`, `pt`, `am`, `ar`).
+     - Alignement du schéma de table `beneficiaries` avec Supabase (retrait de la colonne générée `full_name`, payload strict).
+     - Gestion des adresses cryptos absentes dans `SendMoneyScreen` avec flux d'invitation.
+     - Gestion dynamique des notes de version depuis la table Supabase `public.app_releases`.
+     - Quotas EAS Cloud iOS : compte Free ayant atteint son quota pour septembre (reset au 1er octobre).
 
+2. **Désaccord / Clarification sur la Devise du Business Wallet** :
+   - Assia avait restauré la géolocalisation IP par défaut (EUR si l'utilisateur est en France).
+   - **Solofo a tranché fermement (7:08 AM & 7:26 PM)** : pour le Business Wallet d'un marchand, la devise affichée doit **TOUJOURS être le FIAT souverain du pays du siège de l'entreprise (HQ Country)**, indépendamment de la géolocalisation physique de l'utilisateur.
 
+3. **Livraison & Test du Build 57 par Solofo** :
+   - Solofo a confirmé la réception du Build 57 sur mobile : *"@KOUMAI Abdel-Aziz i got the 57"*.
+   - Il a soumis 4 retours et ajustements majeurs nécessitant une exécution précise.
 
+---
 
+### 2. Plan d'Action Intégral Détaillé (Session de Nuit)
 
+#### 🎯 Point 1 : En-tête du Business Wallet — Nom de l'Entreprise - Drapeau - Nom du Pays
+- **Constat de Solofo** :
+  - Dans le Build 57, sous le badge "Business Wallet PRO", le système affichait le nom du shop (`EYOU`) suivi en dessous du drapeau et du code devise (`🇲🇬 MGA`).
+  - Solofo a précisé textuellement : *"i mean writing Company/Shop name - Flag - Country name not the currency"*.
+- **Comportement Attendu** :
+  - Afficher sur une seule ligne élégante : **`Nom de l'entreprise - [Drapeau] Nom du Pays`** (et **PAS** le code de la devise).
+  - Exemple : **`EYOU - 🇲🇬 Madagascar`** (ou `DizzitUp Togo - 🇹🇬 Togo`).
+  - La devise locale reste affichée dans la boîte de conversion sous le solde (`8,449.47 MGA`), évitant ainsi toute redondance inutile.
+- **Fichier Concerné** : `src/components/WalletCard.js`
+- **Statut** : **Déjà implémenté et validé localement** dans `WalletCard.js` (gestion universelle via `primaryCountry.countryName` et `flagcdn.com`, avec styles dédiés `merchantSubtitleText`, `merchantSeparatorText` et `merchantCountryNameText`).
+
+---
+
+#### 🎯 Point 2 : Flux d'Achat & Check-out de Biens Physiques (Dégrippage du loop "Continue browsing")
+- **Constat de Solofo (1:41 PM)** :
+  - *"Build 57 - Buy goods - Still looping after 'Continue browsing'"*
+  - *"The flow doesn't go to Add cart / Check-out / Escrow info / Payment method choice / 'Sorry buying physical goods isn't available yet'"*
+  - Actuellement, sur la fiche produit (`ProductDetailsScreen.js`), cliquer sur *"Add to cart"* ou *"Buy now"* ouvre immédiatement la modale `PhysicalGoodsWarningModal`. Cliquer sur *"Continue browsing"* ne fait que refermer la modale sans ajouter au panier ni naviguer, enfermant l'utilisateur dans une boucle stérile.
+- **Comportement Attendu par Solofo** :
+  1. L'utilisateur doit pouvoir ajouter un article au panier (`handleAddToCart`) avec notification toast normale.
+  2. L'utilisateur doit pouvoir cliquer sur *"Buy now"* ou ouvrir son panier pour arriver sur le récapitulatif complet de commande (`OrderVerificationScreen.js`).
+  3. Dans cet écran de Checkout, l'utilisateur doit voir l'ensemble du parcours standard :
+     - Récapitulatif des articles et montants.
+     - Informations de séquestre / protection acheteur (**Escrow info**).
+     - Choix du moyen de paiement (**Payment methods** : Cartes bancaires, Mobile Money, Stablecoins USDC/USDT/EURC, Token DZY).
+  4. **C'est uniquement au moment de cliquer sur le bouton de paiement final** pour des biens physiques que l'application doit afficher la modale ou bannière d'information :
+     *"Sorry, buying and paying for physical goods is currently unavailable. You may continue browsing the shop, but orders cannot be accepted at this time."*
+- **Fichiers à Modifier** :
+  - `src/screens/ProductDetailsScreen.js` :
+    - Rétablir le comportement nominal de `handleAddToCart` (`executeAddToCart()`) et `handleBuyNow` (`executeBuyNow()`).
+    - Ne plus intercepter l'ajout au panier par le modal bloquant.
+  - `src/screens/OrderVerificationScreen.js` :
+    - Insérer la vérification de biens physiques au clic sur le bouton de confirmation de commande/paiement final.
+    - Déclencher `PhysicalGoodsWarningModal` ou un message clair à cette dernière étape sans bloquer l'exploration préalable du panier et du checkout.
+
+---
+
+#### 🎯 Point 3 : Fiche Contact / Bénéficiaire comme Écran PIVOT & Réparation du Bouton "Inviter"
+- **Constat de Solofo** :
+  - *"Use this screen as Pivot. Meaning after each 'Back' action, bring the User to this selected User screen"* (capture `IMG_2105` montrant la fiche action du contact Thomas ADI).
+  - *"Invite : Doesn't go anywhere"*.
+- **Comportement Attendu par Solofo** :
+  1. **Logique d'Écran Pivot** :
+     - La fiche détaillée du contact (`ContactActionSheet` ou fiche contact) doit servir de hub central.
+     - Lorsque l'utilisateur clique sur une action (*Send*, *Request*, *Pay*, *Modifier le contact*), puis clique sur la flèche retour (**Back** / `<`), l'application ne doit pas le renvoyer à la liste globale des contacts, mais **le ramener directement sur cette fiche contact ouverte**.
+     - Implémentation technique : passer un paramètre de retour `{ returnContact: contact }` ou ne pas réinitialiser `selectedContact` lors de la navigation, afin que `useFocusEffect` ou le cycle de vie réactive la vue contact au retour.
+  2. **Réparation du Bouton "Invite" (Inviter)** :
+     - Cause du bug : Sur iOS, fermer la modale (`onClose()`) au même instant que l'appel à `Share.share` entraîne la fermeture immédiate et silencieuse du contrôleur de partage natif (`UIActivityViewController`).
+     - Correctif technique :
+       - Différer l'ouverture du partage (`setTimeout` ou déclenchement après animation de fermeture).
+       - Enrichir le message d'invitation pour qu'il soit personnalisé avec le prénom/nom du contact et le lien parrain de l'utilisateur (`https://dizzitup.com/invite?ref=DZY-...`).
+       - Si le contact dispose d'un numéro de téléphone, proposer également le partage direct via SMS / WhatsApp en fallback intelligent.
+- **Fichiers à Modifier** :
+  - `src/components/ContactActionSheet.js`
+  - `src/screens/ContactsScreen.js` & `src/screens/ContactsManageScreen.js`
+  - `src/utils/shareHelper.js`
+
+---
+
+#### 🎯 Point 4 : Écran Send Money (`SendMoneyScreen.js`) — Textes Français & Règle des Tokens Provisionnés
+- **Constat de Solofo (8 minutes ago)** :
+  - *"Send : Some french words are still there"* (capture `IMG_2104` montrant *"Destinataire défini : Jeremie Bahun-Wilson"* en français alors que l'app est en anglais).
+  - *"Apply the rule of provisioned tokens here. Avoid mentioning chain first etc ..."*
+- **Comportement Attendu par Solofo** :
+  1. **Éradication des Textes Français en Dur** :
+     - Remplacer *"Destinataire défini :"* par `t('sendMoney.recipient_defined', 'Recipient set:')`.
+     - Remplacer *"Aucun"* par `t('common.none', 'None')`.
+     - Traduire l'ensemble des libellés et messages toasts de cet écran via `t()`.
+  2. **Règle des Tokens Provisionnés & Blockchain en Second Plan** :
+     - **Inversion d'ergonomie** : Le choix du **JETON (TOKEN)** doit être la première étape naturelle pour l'utilisateur, et non le choix de la blockchain.
+     - **Tokens Provisionnés Uniquement** : Ne lister que les jetons supportés disposant de soldes positifs ou provisionnés (`USDC`, `USDT`, `EURC`, `DZY`) avec affichage clair du solde disponible.
+     - **Masquage / Abstraction de la Blockchain** : À l'instar de ce qui a été fait sur le flux Cash-out, la blockchain doit être auto-sélectionnée (ex: Polygon par défaut) ou reléguée en information discrète/technique d'arrière-plan. L'utilisateur moyen n'a pas à être confronté à un choix complexe de chaîne en amont.
+- **Fichiers à Modifier** :
+  - `src/screens/SendMoneyScreen.js`
+  - `src/i18n/locales/en.json`, `fr.json`, `pt.json`, etc.
+
+---
+
+#### 🎯 Point 5 : Préparation EAS Build 58 & Synchronisation Version
+- **Fichiers de Versioning** :
+  - `app.json` : incrémenter vers `buildNumber: "58"` (iOS) et `versionCode: 58` (Android).
+  - `AboutDizzitUpScreen.js` & `MoreSettingsScreen.js` : mise à jour des constantes de fallback.
+- **Notes de Release Supabase** :
+  - Préparer le récapitulatif détaillé en anglais/français dans le message de commit destiné à Assia pour insertion dans la table `public.app_releases`.
+
+---
+
+### 3. Matrice des Fichiers Clés de la Session de Nuit
+
+| Composant / Écran | Fichier Source | Action Principale |
+| :--- | :--- | :--- |
+| **Business Wallet** | `src/components/WalletCard.js` | ✅ `Shop name - Flag - Country name` (Prêt) |
+| **Détails Produit** | `src/screens/ProductDetailsScreen.js` | ⏳ Suppression du blocage prématuré "Continue browsing" |
+| **Vérification Commande** | `src/screens/OrderVerificationScreen.js` | ⏳ Déplacement de l'alerte biens physiques au clic de paiement final |
+| **Fiche Action Contact** | `src/components/ContactActionSheet.js` | ⏳ Écran Pivot au retour arrière + Réparation bouton Invite (iOS Share) |
+| **Gestion Contacts** | `src/screens/ContactsScreen.js` | ⏳ Maintien de l'état `selectedContact` après retour de Send/Edit/Pay |
+| **Envoi de Fonds** | `src/screens/SendMoneyScreen.js` | ⏳ Textes i18n, Token en 1ère priorité, abstraction de la chaîne |
+| **Config & Build** | `app.json` | ⏳ Incrémentation EAS Build 58 |
+
+---
+
+### 4. Directives Strictes d'Exécution
+
+- **ZÉRO PUSH DISTANT** : Aucune commande `git push` ne doit être exécutée. Toutes les modifications seront effectuées, vérifiées et compilées localement dans l'arborescence de travail.
+- **ZÉRO HARDCODING** : Chaque composant et utilitaire manipulé doit rester 100% dynamique, multilingue et multi-pays, conformément aux sections 3 et 16 de ce mémoire.
+- **VALIDATION SYNTAXIQUE** : Vérification systématique de l'intégrité Babel/JSX après chaque fichier modifié.
