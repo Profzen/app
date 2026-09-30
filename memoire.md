@@ -3377,3 +3377,111 @@ ightarrow$ **MGA** avec drapeau 🇲🇬 ; Profil utilisateur pour les Particuli
 - **ZÉRO PUSH DISTANT** : Aucune commande `git push` ne doit être exécutée. Toutes les modifications seront effectuées, vérifiées et compilées localement dans l'arborescence de travail.
 - **ZÉRO HARDCODING** : Chaque composant et utilitaire manipulé doit rester 100% dynamique, multilingue et multi-pays, conformément aux sections 3 et 16 de ce mémoire.
 - **VALIDATION SYNTAXIQUE** : Vérification systématique de l'intégrité Babel/JSX après chaque fichier modifié.
+
+---
+
+## 🧭 18. Synthèse Exhaustive des Retours (Vocaux Solofo, Slack Waves 1-4, Backend Nathan) & Feuille de Route Session Soirée (Build 59)
+
+- **Date de Cadrage** : 30 Septembre 2026
+- **Branche Active** : `front-back` (synchronisée et fusionnée avec `origin/develop`)
+- **Statut Opérationnel** : Base consolidée, commits d'Assia intégrés, plan d'action rédigé et prêt pour exécution immédiate en soirée.
+
+---
+
+### 🎙️ 1. Débriefing Intégral des 2 Vocaux de Solofo (UX Send, Cash-out & Pédagogie 1-2-3)
+
+1. **Rendre l'Application Hyper Didactique** :
+   - Les utilisateurs en Afrique et en Europe ne sont pas naturellement familiers avec les stablecoins et le concept de transférer des actifs numériques plutôt que de la monnaie fiat classique.
+   - L'UX doit guider pas à pas sans jargon bloquant, tout en étant appuyée par des vidéos How-To courtes (pour Josué) et reproduite fidèlement dans l'application.
+
+2. **Flux Send "Headless" & Boucle d'Approvisionnement Intégrée** :
+   - **Vérification préalable des soldes** : Dès l'accès à l'envoi, l'application vérifie les soldes réels de l'utilisateur.
+   - **Absence de fonds / Solde insuffisant** : Afficher un message didactique et bienveillant (*« Vous n'avez pas de stablecoins, approvisionnez votre compte facilement par Carte Bancaire ou Mobile Money »*).
+   - **Navigation Headless fluide** : Proposer le On-Ramp / Top-up directement **au sein même du flux d'envoi**, sans perdre le destinataire sélectionné ni le contexte, pour revenir immédiatement à l'envoi une fois le rechargement validé.
+   - **Saisie Rapide & intuitive** : Sélection facile du montant avec boutons de pourcentages rapides (25%, 50%, 75%, 100%).
+
+3. **Réseau Polygon & Gas Fees 100% Gratuits pour l'Utilisateur** :
+   - Réseau d'exécution par défaut : **Polygon**.
+   - Affichage clair : **« Gratuit »** (DizzitUp prend intégralement en charge les frais de gas Polygon via son wallet corporate Crossmint préfinancé en POL).
+   - La sélection manuelle de la blockchain est masquée / reléguée en second plan discret pour ne pas perturber l'utilisateur.
+
+---
+
+### 💬 2. Analyse Chronologique des 4 Vagues de Captures Slack
+
+#### Vague 1 : Dégrippage Buy Goods, "Buy Me" & Pivot Contact
+* **Buy Goods - Dégrippage du loop "Continue browsing" (Mardi 13h41)** :
+  * *Constat* : Sur la fiche produit (`ProductDetailsScreen.js`), cliquer sur *"Add to cart"* ou *"Buy now"* ouvrait immédiatement le modal bloquant `PhysicalGoodsWarningModal` qui enfermait l'utilisateur dans une boucle sans pouvoir ajouter au panier ni voir le checkout.
+  * *Directive Solofo* : Laisser l'utilisateur explorer librement (Ajout panier ➔ Panier ➔ Checkout `OrderVerificationScreen` ➔ Infos Escrow ➔ Choix du mode de paiement). L'alerte d'indisponibilité temporaire des biens physiques ne doit apparaître **qu'au clic final sur "Confirmer et Payer"**.
+* **Lien Partagé "Buy me" (Mardi 14h00)** :
+  * Test de partage de lien produit (`https://dizzitup.com/product/...`) avec destinataire prérempli.
+* **Fiche Contact comme Écran PIVOT (Mardi 15h36 - IMG_2105)** :
+  * La fiche du contact sélectionné (`ContactActionSheet` / profil) doit être le **hub central**. Toute action retour (`<` / Back) après un Send, Request, Pay ou Edit doit impérativement ramener l'utilisateur sur cette fiche ouverte et non sur la liste générale.
+
+#### Vague 2 : Send Funds, Request/Receive & PayBills Wallets Web3
+* **Send Funds (Lundi 15h37 - IMG_2104)** :
+  * Éradiquer les résidus français en dur (*« Destinataire défini : »*, *« Aucun »*).
+  * Appliquer la règle des tokens provisionnés : Token en 1ère priorité, blockchain en arrière-plan.
+  * Réparer le bouton *"Invite"* qui ne réagissait pas.
+* **Request / Receive Money (Lundi 16h19 - IMG_2106)** :
+  * Saisie du montant d'abord (*Request money first*). L'expéditeur paiera avec ce qu'il a.
+  * Masquer la sélection de blockchain (utiliser EVM/Polygon par défaut).
+  * Montant exprimable en Stablecoins, DZY ou FIAT local.
+* **PayBills / Top-up Mobile (Lundi 18h38)** :
+  * Support des Web3 Wallets populaires (MetaMask, Binance Wallet, Coinbase Wallet, TrustWallet).
+  * DZYwallet : Supprimer le message d'erreur bloquant *"USDC isn't supported on Polygon"*, vérifier simplement si le solde DZYwallet est suffisant pour le montant (ex: 17,43 €).
+  * Carte Ecobank : Clarifier la conversion FX intermédiaire avant la passerelle (FCFA ≈ EUR ≈ ETB TTC).
+
+#### Vague 3 : Livraison Build 58, To-Do Assia & Cadrage Backend Nathan
+* **Build 58 (Mardi 7h40)** : Validé par Solofo (*« Build 58 landed at 2:40AM CET ! Wouah Thank you again, you rock ! »*).
+* **Notes d'Assia (Mardi 9h32)** :
+  * Travaux en cours : Remplacer les soldes mockés de `SendMoney` par les vrais soldes `balances`, aligner les 5 langues, retour sur contact pivot après envoi réussi, flow "montant d'abord" pour Request/Receive, boucle Top-up.
+* **Validation Backend Nathan (Mardi 13h00)** :
+  * Le *Settlement Orchestrator & Decision Engine* est finalisé sur les branches backend (`buy-goods-backend: settlement-disbursement-orchestrator` et `dizzy-wallet: settlement-disbursement-orchestrator`).
+  * L'application mobile n'a pas à dupliquer la logique de conversion/routage : elle gère l'UX, la vérification du solde et l'autorisation, puis délègue l'exécution au moteur backend de Nathan.
+
+#### Vague 4 : Grisage Social Logins & Fuite de Langue Top-Up
+* **Griser / Désactiver les Social Logins (Mardi 15h53 & 16h20 - IMG_2134)** :
+  * *Retour terrain* : Aina (testeur CRM à Hong-Kong, neveu de Solofo) a testé l'inscription Google/Apple/Facebook et a rencontré un échec.
+  * *Directive Solofo* : Griser / désactiver visiblement les boutons de réseaux sociaux (*« Grey / Disable Soc Media Sign-in/Sign-up »*) avec message explicatif indiquant que seule l'authentification par Email / Téléphone est active pour l'instant.
+* **Fuite de Langue Française Top-Up (Mardi 19h30 - IMG_2140)** :
+  * *Constat Solofo* : Dans `TopUpScreen` / `TopUpWalletScreen`, le libellé affiche en dur *"Région de paiement :"* alors que l'application est en anglais.
+  * *Cause technique identifiée* : La clé appelée `t('paymentRails.topupRegionLabel', 'Région de paiement :')` ne correspond pas à la clé du fichier `en.json` qui est `paymentRails.paymentRegion` (*"Payment region:"*).
+
+---
+
+### 📊 3. Bilan : Ce qui est Déjà Fait vs Ce qui Reste à Faire
+
+#### ✅ Ce qui est déjà récupéré et intégré sur `front-back` :
+1. **Intégration d'`origin/develop`** :
+   - Logos des Web3 wallets intégrés (`MetaMask.svg`, `Binance.svg`, `Trust_Wallet.svg`, `coinbase.svg` et `WalletIcon.js`).
+   - Logos opérateurs télécom valides PNG pour Android AAPT2.
+   - Support des Web3 wallets dans `PayBillsSummaryScreen.js`.
+   - `enableMinifyInReleaseBuilds: false` dans `app.json`.
+2. **Business Wallet Header (`WalletCard.js`)** :
+   - Affichage propre et validé : `Nom Entreprise - [Drapeau] Nom du Pays` sans répétition de la devise.
+
+#### ⏳ Ce qui reste à exécuter en Session de Soirée :
+
+1. **Grisage / Désactivation des Social Logins (`SocialLogins.js`, `RegisterScreen.js`, `LoginScreen.js`)** :
+   - Mettre une opacité désactivée propre (0.45) sur les boutons Google, Apple, Facebook, X.
+   - Au clic, afficher un toast/alerte informatif : *"Social login is temporarily disabled during beta. Please sign in or register with your email or phone."*.
+2. **Correction de la fuite de langue Top-Up (`TopUpScreen.js`, `PaymentRegionModal.js`)** :
+   - Remplacer l'appel par `t('paymentRails.paymentRegion', 'Payment region:')` et sécuriser les clés dans les 5 langues (`en`, `fr`, `pt`, `am`, `ar`).
+3. **Dégrippage Buy Goods (`ProductDetailsScreen.js` & `OrderVerificationScreen.js`)** :
+   - Rétablir l'ajout direct au panier (`executeAddToCart`) et l'achat immédiat (`executeBuyNow`) sans pop-up prématurée.
+   - Déplacer l'avertissement biens physiques uniquement au moment du clic final *"Confirmer et Payer"* dans `OrderVerificationScreen.js`.
+4. **Fiche Contact Pivot & Bouton Invite (`ContactActionSheet.js`, `ContactsScreen.js`)** :
+   - Maintenir l'état du contact ouvert lors du retour arrière (`goBack`).
+   - Différer l'appel `Share.share` pour que la feuille native de partage iOS ne soit pas tuée à la fermeture de la modale.
+5. **Send Money Didactique & Vrais Soldes (`SendMoneyScreen.js`)** :
+   - Supprimer tout texte FR résiduel via `t()`.
+   - Brancher sur les soldes réels DZYwallet issus de `AppContext`.
+   - Tokens provisionnés en 1er (USDC, USDT, EURC, DZY), réseau Polygon par défaut en discret.
+   - Intégrer les puces 25%, 50%, 75%, 100% et la redirection fluide vers Top-Up si solde insuffisant.
+   - Retourner sur le contact pivot après succès.
+6. **Versioning EAS Build 59 & Release Notes (Mandat Solofo)** :
+   - Incrémenter `app.json` vers `buildNumber: "59"` et `versionCode: 59`.
+   - Mettre à jour `AboutDizzitUpScreen.js`, `MoreSettingsScreen.js`, `LoginScreen.js`, `RegisterScreen.js`, `UnlockScreen.js`.
+7. **Validation syntaxique Babel JSX, Commit, Push sur `front-back` & Message Slack final**.
+
