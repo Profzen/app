@@ -3603,18 +3603,72 @@ If everything looks good on your end, we can merge into develop and trigger the 
 
 ---
 
-### 🎯 7. Décision Stratégique & Feuille de Route pour le Lancement (1er Octobre au Matin)
+### 🎯 7. Décision Stratégique & Événements Récents (30 septembre 2026 au Soir)
 
-- **Décision validée** : Plutôt que de déclencher un build partiel ce soir (qui ferait échouer iOS TestFlight en raison de l'épuisement du quota mensuel EAS en cours), le déclenchement des builds est **calé pour demain matin 1er octobre**.
-- **Avantage clé** : Le quota mensuel gratuit d'Expo se réinitialisant cette nuit au 1er octobre, les builds **Android APK** et **iOS TestFlight** seront compilés et livrés **simultanément et en parfaite synchronisation**.
-- **Message succinct transmis à Solofo sur Slack** :
-  ```text
-  Hi @Solofo, Build 59 is fully implemented, verified and ready on front-back. Since the monthly Expo iOS quota resets tonight (Oct 1st), we’re merging and triggering the build first thing tomorrow morning so both Android and iOS TestFlight builds land together simultaneously.
-  ```
+#### 💳 A. Déblocage du Quota Expo ($19 payés par Solofo)
+- **Message Solofo (20h29)** : *« J'ai payé 19$ pour Expo donc allez y »*.
+- **Impact** : La contrainte de quota mensuel EAS iOS est désormais officiellement levée côté compte `@dizzitup`.
+- **Décision de lancement** : Bien que le quota soit débloqué, Aziz a décidé d'attendre la reprise de demain matin pour déclencher la fusion vers `develop` et lancer les builds, laissant le temps de recevoir le retour d'Assia.
 
-#### 🚀 Procédure de Déclenchement (Demain Matin 1er Octobre) :
-1. **Consulter d'éventuels retours d'Assia/Solofo sur Slack** (si ajustements mineurs, les commiter sur `front-back`).
-2. **Fusionner `front-back` vers `develop`** :
+---
+
+## 🎮 SECTION 20 : Nouvelles Directives Produit & Points en Suspens (30 septembre 2026 - 20h30)
+
+### 💡 1. Vision Produit Solofo : Gaming, Roblox, Mobile Money & « Buy me »
+Solofo a partagé une vision d'acquisition stratégique majeure via message texte et note vocale WhatsApp :
+1. **Créneau Gaming & Étudiants en Afrique** :
+   - Les jeunes jouent massivement à des jeux comme **Roblox**, mais n'ont pas de carte bancaire pour acheter des Robux ou des cartes cadeaux.
+   - DizzitUp propose ces gift cards payables par **Carte, Mobile Money (MoMo) ou Stablecoins**. Être les premiers à proposer l'achat de codes Roblox par Mobile Money en Afrique constitue un boulevard marketing énorme.
+2. **Généralisation du bouton « Buy me »** :
+   - *Directive Solofo (20h28)* : *« Il faut generaliser sur tous les produits et services le Buy me »*.
+   - Le jeune gamer clique sur « Buy me », génère un lien WhatsApp et l'envoie à son tonton/proche en diaspora (Paris, Londres) ou localement (Lomé). Le proche paie (Carte, Crypto ou MoMo) et le code numérique est délivré.
+3. **Moteur de Recherche Global (Search de haut niveau) — Consigne stricte** :
+   - *Directive Solofo (20h30)* : *« Pour le Search, il faut utiliser celui du back-end en non-connecté. Assia l'a deja pour la version Web. Il faut discuter avec elle avant de developper quoique ce soit »*.
+   - **Règle absolue** : **Ne rien coder pour le Search dans l'app mobile de manière isolée**. Il faut obligatoirement se brancher sur l'API backend du mode non-connecté qu'Assia exploite déjà sur la version Web.
+
+---
+
+### 📬 2. Communications Transmises dans l'Équipe
+
+#### A. Message transmis à Assia (DM Slack)
+> *« Salut Assia,*
+> *Désolé pour le retard ! J'étais persuadé de t'avoir répondu, mais mon message était resté bloqué en brouillon dans la zone de saisie sans être envoyé... Toutes mes excuses pour ça.*
+> 
+> *1. Concernant tes retours et ta question :*
+> *• Build dynamique : C'est bien noté pour Application.nativeBuildVersion via expo-application, super initiative pour afficher directement le vrai binaire installé.*
+> *• Parrainage & Deep-linking : Top, la logique d'invitation, le trigger Supabase et l'onglet dans le dashboard sont bien clairs.*
+> *• Pour ta question sur le quota Expo / Solofo : Solofo vient de payer les 19$ pour débloquer Expo, donc la limite EAS est levée.*
+> 
+> *2. Questions en cours :*
+> *• Solofo a demandé où en était la réparation des connexions sociales (Google / Apple). Est-ce que le fix est déjà opérationnel de ton côté sur Supabase / backend, ou est-ce qu'on les maintient temporairement désactivées pour le prochain build ?*
+> *• Pour le Search global : Solofo nous a demandé d'utiliser l'endpoint du back-end en mode non-connecté que tu as déjà branché sur le Web. Peux-tu nous partager la structure ou l'URL de cet endpoint pour qu'on s'y synchronise ? »*
+
+#### B. Message transmis à Solofo (WhatsApp)
+> *« C'est une excellente idée Solofo ! Le créneau des gamers/étudiants en Afrique qui veulent des cartes Roblox ou gaming via Mobile Money ou via un "Buy me" envoyé à un proche en diaspora (Europe/US), c'est un énorme levier d'acquisition.*
+> *J'ai bien noté les 2 briques techniques :*
+> *1. Le bouton "Buy me" sur les Gift Cards et les services.*
+> *2. Le search global multi-pays issu du backend non-connecté.*
+> *Reçu 5/5 pour le Search, je me cale directement avec Assia pour récupérer l'endpoint backend du Web avant de toucher au code. »*
+
+---
+
+### ⏳ 3. Questions Restant en Suspens (En Attente de Retour Assia)
+
+| Sujet | Statut Actuel | Ce qui est attendu d'Assia |
+| :--- | :--- | :--- |
+| **Social Logins (Google / Apple)** | Désactivés visuellement (opacité 0.45 + Toast informatif) dans `SocialLogins.js` sur `front-back`. | Confirmation si le backend Supabase OAuth est opérationnel ou s'il faut laisser désactivé. |
+| **Search Global Backend** | Rien développé pour l'instant (consigne Solofo respectée). | Transmission par Assia de l'endpoint API de recherche non-connecté utilisé sur le Web. |
+| **Généralisation « Buy me »** | Déjà opérationnel sur les produits marchands (`ProductDetailsScreen.js`). Prêt à être étendu aux Gift Cards et services. | Validation des routes deeplink / web pour les gift cards. |
+
+---
+
+### 🚀 4. Procédure de Reprise Immédiate pour la Prochaine Session
+
+Dès réouverture de la session (demain matin 1er octobre) :
+1. **Étape 1 — Lire les réponses d'Assia sur Slack** :
+   - Si les Social Logins sont prêts $\rightarrow$ réactiver les boutons dans `SocialLogins.js` (supprimer l'opacité 0.45 et reconnecter les onPress).
+   - Récupérer les détails de l'endpoint Search non-connecté.
+2. **Étape 2 — Fusion & Déclenchement du Build** :
    ```bash
    git checkout develop
    git pull origin develop
@@ -3622,9 +3676,10 @@ If everything looks good on your end, we can merge into develop and trigger the 
    git push origin develop
    git push personal develop
    ```
-3. **Suivre et valider la génération des deux builds** :
-   - Build Android via le workflow GitHub Actions (`build-apk.yml` / `build-android.yml`).
-   - Build iOS via EAS Build Cloud et soumission TestFlight (`npx eas-cli build --platform ios --profile production --auto-submit`).
+3. **Étape 3 — Suivi des Builds** :
+   - Android APK via GitHub Actions (`build-apk.yml`).
+   - iOS TestFlight via EAS Cloud (`npx eas-cli build --platform ios --profile production --auto-submit`).
+
 
 
 
