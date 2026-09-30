@@ -63,3 +63,6 @@ add_keys.mjs
 add_security_keys.mjs
 inject_merchant_keys.mjs
 scratch/
+
+# Journal de bord personnel Aziz
+memoire.md*
