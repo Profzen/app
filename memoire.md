@@ -3564,9 +3564,62 @@ Conformément à la règle d'or d'alignement, le numéro de version **59** et le
 
 ---
 
-### ✅ 4. Validation Technique & Assurance Qualité
-- **Vérification Babel JSX** : 16 fichiers analysés et compilés avec succès via le transformateur Babel React Native (`100% Babel compilation success`, code de sortie `0`).
-- **Absence de régressions** : Les imports, navigations pivots, contextes `AppContext` / `WalletContext` et feuilles de style sont strictement préservés.
-- **Branche locale** : Travaux consolidés sur `front-back`. Prêt pour commit local et soumission EAS selon validation de l'utilisateur.
+### ✅ 4. Validation Technique & Blindage Final (30 septembre 2026)
+- **Vérification Babel JSX** : 100% de réussite sur l'ensemble des fichiers modifiés avec `@babel/core` et `babel-preset-expo` (0 erreur, 0 warning).
+- **Blindage du chargement des contacts (`session?.user?.id || user?.id`)** :
+  - *Constat* : Si la session Supabase était en cours d'hydratation ou que l'utilisateur provenait du cache `AsyncStorage`, `session?.user?.id` pouvait temporairement valoir `undefined`, laissant la liste des bénéficiaires vide.
+  - *Correctif appliqué* : Double fallback `const currentUserId = session?.user?.id || user?.id;` dans [`ContactsScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactsScreen.js) et [`ContactsManageScreen.js`](file:///g:/zen/projets/DizzitApp/app/src/screens/ContactsManageScreen.js) pour les requêtes initiales et les canaux d'écoute temps réel Supabase.
+
+---
+
+### 🌐 5. État Git & Synchronisation des Dépôts Distants
+Les deux commits préparés ont été **poussés avec succès** sur les deux dépôts distants sur la branche officielle `front-back` :
+
+- **Commit 1 (`3620b63`)** : `feat(release): Build 59 delivery and global stabilization` (18 fichiers modifiés, 532 insertions, 154 suppressions).
+- **Commit 2 (`8be4e7b`)** : `fix(contacts): ensure resilient contact fetching using session.user.id or user.id fallback` (2 fichiers modifiés, 22 insertions, 15 suppressions).
+- **Dépôts synchronisés** :
+  - `origin/front-back` (`https://github.com/Dizzitup/dizzitapp-v2.git`) $\rightarrow$ commit `8be4e7b` ✅
+  - `personal/front-back` (`https://github.com/Profzen/app.git`) $\rightarrow$ commit `8be4e7b` ✅
+
+---
+
+### 💬 6. Communication Slack Transmise à Solofo & Assia
+Message de synthèse transmis sur le canal Slack de l'équipe :
+
+```text
+Hello @Solofo @Assia,
+
+Here are the fixes implemented following the latest feedback:
+
+1. Contacts & Pivot Screen: Fixed live contact search (Assia’s contact now properly appears), back button (<) and "Done" button now systematically return to the open contact profile, and resolved the "Invite" share sheet issue.
+2. Send & Request Funds: Added immediate redirection to the success screen after sending funds with a direct View on Polygonscan link, and revamped the Request screen to set the requested amount and token upfront (encoded in the QR code).
+3. Release Notes: Strictly anonymized all third-party partner names (replaced with generic terms).
+4. Auth & UI: Visually disabled social login buttons with an informative note to use Email / Phone during beta, and fixed the French label leak on the Top-Up screen.
+
+Everything has been pushed to the front-back branch.
+
+If everything looks good on your end, we can merge into develop and trigger the next build.
+```
+
+---
+
+### 🎯 7. Feuille de Route Immédiate pour la Prochaine Session (Reprise Directe)
+
+Dès réouverture de session ou réception du retour de Solofo/Assia sur Slack :
+1. **Étape 1 — Vérifier les réponses Slack** :
+   - Si retours ou ajustements mineurs demandés : les appliquer directement sur `front-back`.
+   - Si feu vert reçu : passer immédiatement à l'Étape 2.
+2. **Étape 2 — Fusion vers `develop`** :
+   ```bash
+   git checkout develop
+   git pull origin develop
+   git merge front-back
+   git push origin develop
+   git push personal develop
+   ```
+3. **Étape 3 — Lancement du Build 59** :
+   - Build Android APK via GitHub Actions ou EAS.
+   - Soumission iOS TestFlight (`npx eas-cli build --platform ios --profile production --auto-submit`).
+
 
 
