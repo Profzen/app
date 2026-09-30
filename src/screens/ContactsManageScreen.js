@@ -49,10 +49,14 @@ export default function ContactsManageScreen() {
   ];
 
   const fetchBeneficiaries = async () => {
-    if (!session?.user?.id) return;
+    const currentUserId = session?.user?.id || user?.id;
+    if (!currentUserId) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
-      const res = await contactService.getBeneficiaries(session.user.id);
+      const res = await contactService.getBeneficiaries(currentUserId);
       const list = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
       const mapped = list.map(b => {
         const fullCountry = (b.country_code && b.country_code.length === 2 && b.country_code.toLowerCase() !== 'null')
@@ -91,22 +95,23 @@ export default function ContactsManageScreen() {
   useFocusEffect(
     useCallback(() => {
       fetchBeneficiaries();
-    }, [session?.user?.id])
+    }, [session?.user?.id, user?.id])
   );
 
   useEffect(() => {
     fetchBeneficiaries();
 
-    if (!session?.user?.id) return;
+    const currentUserId = session?.user?.id || user?.id;
+    if (!currentUserId) return;
     const channel = supabase
-      .channel('public:manage_beneficiaries:' + session.user.id)
+      .channel('public:manage_beneficiaries:' + currentUserId)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'beneficiaries',
-          filter: `user_id=eq.${session.user.id}`,
+          filter: `user_id=eq.${currentUserId}`,
         },
         () => {
           fetchBeneficiaries();
@@ -117,7 +122,7 @@ export default function ContactsManageScreen() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [session?.user?.id]);
+  }, [session?.user?.id, user?.id]);
 
   const [selectedContact, setSelectedContact] = useState(null);
   const [bannerVisible, setBannerVisible] = useState(true);
