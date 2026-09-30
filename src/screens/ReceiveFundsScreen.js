@@ -1,16 +1,16 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ImageBackground, Share, Platform, StatusBar } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Share, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import BottomNavBar from '../components/BottomNavBar';
-import AppSelect from '../components/AppSelect';
 import CryptoIcon from '../components/CryptoIcon';
 import { useApp } from '../context/AppContext';
 
 export default function ReceiveFundsScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
   const { t, user } = useApp();
   const [activeTab, setActiveTab] = useState('adresse');
   const [selectedChain, setSelectedChain] = useState('POL');
@@ -19,13 +19,21 @@ export default function ReceiveFundsScreen() {
   const copyAddress = async () => { await Clipboard.setStringAsync(address); setCopied(true); };
   const shareAddress = () => Share.share({message: `DizzitUp ${selectedChain}: ${address}`});
 
+  const handleBack = () => {
+    if (route.params?.pivotScreen) {
+      navigation.navigate(route.params.pivotScreen, route.params.pivotParams);
+    } else {
+      navigation.goBack();
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.iconBtn} onPress={handleBack}>
             <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <View style={styles.headerRight}>
@@ -43,10 +51,10 @@ export default function ReceiveFundsScreen() {
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
-          {/* Title Area */}
+          {/* Title Area - Compact */}
           <View style={styles.titleArea}>
             <View style={styles.titleIconBox}>
-              <Ionicons name="sync" size={24} color="#1A2840" />
+              <Ionicons name="sync" size={20} color="#1A2840" />
             </View>
             <View style={styles.titleTexts}>
               <Text style={styles.pageTitle}>{t('receiveFunds.title', 'Receive funds')}</Text>
@@ -57,25 +65,40 @@ export default function ReceiveFundsScreen() {
             </View>
           </View>
 
-          {/* Blockchain Selector */}
-          <View style={styles.blockchainSection}>
-            <Text style={styles.sectionLabel}>{t('receiveFunds.chooseBlockchain', 'CHOOSE BLOCKCHAIN')}</Text>
-            <AppSelect
-              value={selectedChain}
-              options={[
-                { value: 'Polygon', label: 'Polygon', isCrypto: true, cryptoSymbol: 'Polygon' },
-                { value: 'Ethereum', label: 'Ethereum', isCrypto: true, cryptoSymbol: 'Ethereum' },
-                { value: 'Base', label: 'Base', isCrypto: true, cryptoSymbol: 'Base' },
-                { value: 'Solana', label: 'Solana', isCrypto: true, cryptoSymbol: 'Solana' },
-                { value: 'BNB Chain', label: 'BNB Chain', isCrypto: true, cryptoSymbol: 'BNB Chain' },
-              ]}
-              onChange={setSelectedChain}
-              title={t('receiveFunds.chooseBlockchainTitle', 'Choose blockchain')}
-              renderLeading={(option) => <CryptoIcon symbol={option.value} size={28} style={{marginRight: 10}} />}
-            />
+          {/* Compact Network Selection — Polygon default, compact pills */}
+          <View style={styles.networkPickerWrap}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.networkScroll}>
+              {[
+                { id: 'POL', name: 'Polygon', icon: 'Polygon', isDefault: true, type: 'EVM' },
+                { id: 'BASE', name: 'Base', icon: 'Base', isDefault: false, type: 'EVM' },
+                { id: 'ETH', name: 'Ethereum', icon: 'Ethereum', isDefault: false, type: 'EVM' },
+                { id: 'BNB', name: 'BNB Chain', icon: 'BNB Chain', isDefault: false, type: 'EVM' },
+                { id: 'SOL', name: 'Solana', icon: 'Solana', isDefault: false, type: 'SOL' },
+              ].map((net) => {
+                const isSelected = selectedChain === net.id;
+                return (
+                  <TouchableOpacity
+                    key={net.id}
+                    style={[styles.networkChip, isSelected && styles.networkChipActive]}
+                    onPress={() => setSelectedChain(net.id)}
+                    activeOpacity={0.75}
+                  >
+                    <CryptoIcon symbol={net.icon} size={15} style={{ marginRight: 6 }} />
+                    <Text style={[styles.networkChipText, isSelected && styles.networkChipTextActive]}>
+                      {net.name}
+                    </Text>
+                    {net.isDefault && (
+                      <View style={[styles.defaultTagSmall, isSelected && styles.defaultTagSmallActive]}>
+                        <Text style={styles.defaultTagSmallText}>DEFAULT</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
           </View>
 
-          {/* Tabs */}
+          {/* Tabs - Compact */}
           <View style={styles.tabsContainer}>
             <TouchableOpacity 
               style={[styles.tab, activeTab === 'adresse' && styles.tabActive]}
@@ -98,75 +121,75 @@ export default function ReceiveFundsScreen() {
           {/* Content based on Active Tab */}
           {activeTab === 'adresse' ? (
             <>
-              {/* Address Card */}
+              {/* Address Card - Compact */}
               <View style={styles.addressCard}>
-            {/* Top of Card */}
-            <View style={styles.cardTop}>
-              <View style={styles.evmTag}>
-                <Text style={styles.evmText}>{t('receiveFunds.evmNetwork', 'EVM NETWORK')}</Text>
-              </View>
-              <View style={styles.polygonIconBgSmall}>
-                <Ionicons name="infinite" size={14} color="#FFFFFF" />
-              </View>
-            </View>
-            
-            <View style={styles.cardAccessRow}>
-              <View style={styles.accessDot} />
-              <Text style={styles.accessText}>{t('receiveFunds.secureAccess', 'SECURE ACCESS')}</Text>
-            </View>
+                {/* Top of Card */}
+                <View style={styles.cardTop}>
+                  <View style={styles.evmTag}>
+                    <Text style={styles.evmText}>{selectedChain === 'SOL' ? 'SOLANA NETWORK' : `${selectedChain} EVM NETWORK`}</Text>
+                  </View>
+                  <View style={styles.polygonIconBgSmall}>
+                    <CryptoIcon symbol={selectedChain === 'POL' ? 'Polygon' : selectedChain === 'SOL' ? 'Solana' : selectedChain === 'BASE' ? 'Base' : 'Ethereum'} size={18} />
+                  </View>
+                </View>
+                
+                <View style={styles.cardAccessRow}>
+                  <View style={styles.accessDot} />
+                  <Text style={styles.accessText}>{t('receiveFunds.secureAccess', 'SECURE ACCESS')}</Text>
+                </View>
 
-            <Text style={styles.addressText}>
-              {address ? `${address.slice(0, 32)}\n${address.slice(32)}` : ''}
-            </Text>
+                <Text style={styles.addressText} selectTextOnFocus={true}>
+                  {address ? `${address.slice(0, 22)}\n${address.slice(22)}` : ''}
+                </Text>
 
-            {/* Bottom of Card */}
-            <View style={styles.cardFooter}>
-              <View style={styles.cardFooterLeft}>
-                <Ionicons name="sync-outline" size={14} color="#94A3B8" style={{marginRight: 6}} />
-                <Text style={styles.cardFooterText}>{t('receiveFunds.nodeVersion', 'DIZZITUP NODE V2.4')}</Text>
+                {/* Bottom of Card */}
+                <View style={styles.cardFooter}>
+                  <View style={styles.cardFooterLeft}>
+                    <Ionicons name="sync-outline" size={13} color="#94A3B8" style={{marginRight: 4}} />
+                    <Text style={styles.cardFooterText}>{t('receiveFunds.nodeVersion', 'DIZZITUP NODE V2.4')}</Text>
+                  </View>
+                  <View style={styles.cardFooterRight}>
+                    <Ionicons name="shield-checkmark" size={13} color="#10B981" style={{marginRight: 4}} />
+                    <Text style={styles.verifiedText}>{t('receiveFunds.verified', 'VERIFIED')}</Text>
+                  </View>
+                </View>
               </View>
-              <View style={styles.cardFooterRight}>
-                <Ionicons name="shield-checkmark" size={14} color="#10B981" style={{marginRight: 4}} />
-                <Text style={styles.verifiedText}>{t('receiveFunds.verified', 'VERIFIED')}</Text>
-              </View>
-            </View>
-          </View>
 
-          {/* Action Buttons */}
-          <View style={styles.actionBtnsRow}>
-            <TouchableOpacity style={styles.btnCopy} onPress={copyAddress}>
-              <Ionicons name="copy-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
-              <Text style={styles.btnCopyText}>{copied ? t('receiveFunds.copied', 'COPIED') : t('receiveFunds.copy', 'COPY')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.btnShare} onPress={shareAddress}>
-              <Ionicons name="share-outline" size={20} color="#FFFFFF" style={{marginRight: 8}} />
-              <Text style={styles.btnShareText}>{t('receiveFunds.share', 'SHARE')}</Text>
-            </TouchableOpacity>
-          </View>
-          </>
+              {/* Action Buttons - Compact */}
+              <View style={styles.actionBtnsRow}>
+                <TouchableOpacity style={styles.btnCopy} onPress={copyAddress}>
+                  <Ionicons name="copy-outline" size={18} color="#1A2840" style={{marginRight: 6}} />
+                  <Text style={styles.btnCopyText}>{copied ? t('receiveFunds.copied', 'COPIED') : t('receiveFunds.copy', 'COPY')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.btnShare} onPress={shareAddress}>
+                  <Ionicons name="share-outline" size={18} color="#FFFFFF" style={{marginRight: 6}} />
+                  <Text style={styles.btnShareText}>{t('receiveFunds.share', 'SHARE')}</Text>
+                </TouchableOpacity>
+              </View>
+            </>
           ) : (
-          <>
-            {/* QR Scanner Card */}
-            <View style={styles.qrCard}>
-              <View style={styles.qrHeader}>
-                <Ionicons name="scan-outline" size={24} color="#1A2840" style={{marginRight: 8}} />
-                <Text style={styles.qrTitle}>{t('receiveFunds.scanToPay', 'Scan to pay')}</Text>
-              </View>
-              <Text style={styles.qrSubtitle}>{t('receiveFunds.dedicatedAddress', 'This is your dedicated address for')} {selectedChain}</Text>
-              
-              <View style={styles.qrCodeWrapper}>
-                <Ionicons name="qr-code" size={180} color="#1A2840" />
-              </View>
+            <>
+              {/* QR Scanner Card - Compact */}
+              <View style={styles.qrCard}>
+                <View style={styles.qrHeader}>
+                  <Ionicons name="scan-outline" size={20} color="#1A2840" style={{marginRight: 6}} />
+                  <Text style={styles.qrTitle}>{t('receiveFunds.scanToPay', 'Scan to pay')}</Text>
+                </View>
+                <Text style={styles.qrSubtitle}>{t('receiveFunds.dedicatedAddress', 'Dedicated address for')} {selectedChain}</Text>
+                
+                <View style={styles.qrCodeWrapper}>
+                  <Ionicons name="qr-code" size={140} color="#1A2840" />
+                </View>
 
-              <View style={styles.qrFooter}>
-                <Ionicons name="shield-checkmark" size={16} color="#3B82F6" style={{marginRight: 6}} />
-                <Text style={styles.qrFooterText}>{t('receiveFunds.secureTransaction', '100% secure transaction')}</Text>
+                <View style={styles.qrFooter}>
+                  <Ionicons name="shield-checkmark" size={14} color="#3B82F6" style={{marginRight: 5}} />
+                  <Text style={styles.qrFooterText}>{t('receiveFunds.secureTransaction', '100% secure transaction')}</Text>
+                </View>
               </View>
-            </View>
-          </>
+            </>
           )}
 
-          {/* Bottom Security Banner */}
+          {/* Bottom Security Banner - Subtle */}
           <View style={styles.bottomBanner}>
             <View style={styles.accessDot} />
             <Text style={styles.bottomBannerText}>{t('receiveFunds.secureTransactionNode', 'SECURE TRANSACTION NODE')}</Text>
@@ -186,6 +209,52 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAFAFA',
     paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 14,
   },
+  networkPickerWrap: {
+    marginBottom: 12,
+  },
+  networkScroll: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingVertical: 2,
+  },
+  networkChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 18,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+  },
+  networkChipActive: {
+    backgroundColor: '#F0FDF4',
+    borderColor: '#15803D',
+  },
+  networkChipText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: '#64748B',
+  },
+  networkChipTextActive: {
+    color: '#15803D',
+    fontFamily: 'Inter_700Bold',
+  },
+  defaultTagSmall: {
+    backgroundColor: '#E2E8F0',
+    borderRadius: 4,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    marginLeft: 5,
+  },
+  defaultTagSmallActive: {
+    backgroundColor: '#15803D',
+  },
+  defaultTagSmallText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 8,
+    color: '#FFFFFF',
+  },
   container: {
     flex: 1,
   },
@@ -194,12 +263,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingBottom: 8,
   },
   iconBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E2E8F0',
@@ -211,17 +280,17 @@ const styles = StyleSheet.create({
   },
   notifDot: {
     position: 'absolute',
-    top: 6,
-    right: 8,
+    top: 5,
+    right: 7,
     backgroundColor: '#FFB800',
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
     justifyContent: 'center',
     alignItems: 'center',
   },
   notifText: {
-    fontSize: 8,
+    fontSize: 7,
     fontFamily: 'Inter_700Bold',
     color: '#1A2840',
   },
@@ -229,32 +298,32 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 40,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 16,
   },
   titleArea: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 10,
   },
   titleIconBox: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     backgroundColor: '#FFB800',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: 12,
   },
   titleTexts: {
     flex: 1,
   },
   pageTitle: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 24,
+    fontSize: 20,
     color: '#1A2840',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   secureTag: {
     flexDirection: 'row',
@@ -265,146 +334,103 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
     backgroundColor: '#10B981',
-    marginRight: 6,
+    marginRight: 5,
   },
   secureText: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 12,
+    fontSize: 11,
     color: '#10B981',
-  },
-  blockchainSection: {
-    marginBottom: 24,
-  },
-  sectionLabel: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
-    color: '#94A3B8',
-    marginBottom: 12,
-  },
-  dropdown: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    borderRadius: 16,
-    padding: 16,
-    boxShadow: '0px 2px 4px #000',
-  },
-  dropdownLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  polygonIconBg: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#8247E5', // Polygon purple
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  dropdownText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 16,
-    color: '#1A2840',
   },
   tabsContainer: {
     flexDirection: 'row',
     backgroundColor: '#F8F9FE',
-    borderRadius: 16,
-    padding: 4,
-    marginBottom: 24,
+    borderRadius: 12,
+    padding: 3,
+    marginBottom: 12,
   },
   tab: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: 8,
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: 10,
   },
   tabActive: {
     backgroundColor: '#FFFFFF',
     boxShadow: '0px 2px 4px #000',
-    borderBottomWidth: 3,
-    borderBottomColor: 'transparent', // Will use absolute indicator
   },
   tabIndicator: {
     position: 'absolute',
-    bottom: -4,
-    left: '20%',
-    right: '20%',
-    height: 3,
+    bottom: -3,
+    left: '25%',
+    right: '25%',
+    height: 2.5,
     backgroundColor: '#1A2840',
     borderRadius: 1.5,
   },
   tabText: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
+    fontSize: 12,
     color: '#94A3B8',
   },
   tabTextActive: {
     color: '#1A2840',
   },
   addressCard: {
-    backgroundColor: '#0F1E40', // Dark blue
-    borderRadius: 24,
-    padding: 24,
-    marginBottom: 24,
-    boxShadow: '0px 8px 12px #000',
-    // Add subtle background waves simulation if needed via an image or standard color. Using solid color for now as per simple styling.
+    backgroundColor: '#0F1E40',
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 12,
+    boxShadow: '0px 6px 10px #000',
   },
   cardTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 10,
   },
   evmTag: {
     backgroundColor: 'rgba(255,255,255,0.1)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 16,
   },
   evmText: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
+    fontSize: 11,
     color: '#FFFFFF',
   },
   polygonIconBgSmall: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(130, 71, 229, 0.5)', // Translucent polygon purple
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#8247E5',
   },
   cardAccessRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 10,
   },
   accessDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
     backgroundColor: '#FFB800',
-    marginRight: 8,
+    marginRight: 6,
   },
   accessText: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 12,
+    fontSize: 11,
     color: '#FFB800',
   },
   addressText: {
-    fontFamily: 'SpaceGrotesk_600SemiBold', // Or monospace
-    fontSize: 20,
+    fontFamily: 'SpaceGrotesk_600SemiBold',
+    fontSize: 14,
     color: '#FFFFFF',
-    lineHeight: 32,
+    lineHeight: 22,
     letterSpacing: 0.5,
-    marginBottom: 32,
+    marginBottom: 12,
   },
   cardFooter: {
     flexDirection: 'row',
@@ -412,7 +438,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.1)',
-    paddingTop: 16,
+    paddingTop: 10,
   },
   cardFooterLeft: {
     flexDirection: 'row',
@@ -420,7 +446,7 @@ const styles = StyleSheet.create({
   },
   cardFooterText: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 11,
+    fontSize: 10,
     color: '#94A3B8',
   },
   cardFooterRight: {
@@ -429,13 +455,13 @@ const styles = StyleSheet.create({
   },
   verifiedText: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 12,
+    fontSize: 11,
     color: '#10B981',
   },
   actionBtnsRow: {
     flexDirection: 'row',
-    gap: 16,
-    marginBottom: 24,
+    gap: 10,
+    marginBottom: 12,
   },
   btnCopy: {
     flex: 1,
@@ -444,14 +470,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#F1F5F9',
-    paddingVertical: 16,
-    borderRadius: 16,
-    boxShadow: '0px 2px 4px #000',
+    borderColor: '#E2E8F0',
+    paddingVertical: 12,
+    borderRadius: 14,
   },
   btnCopyText: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 14,
+    fontSize: 13,
     color: '#1A2840',
   },
   btnShare: {
@@ -460,13 +485,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#0F1E40',
-    paddingVertical: 16,
-    borderRadius: 16,
-    boxShadow: '0px 4px 8px #000',
+    paddingVertical: 12,
+    borderRadius: 14,
   },
   btnShareText: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 14,
+    fontSize: 13,
     color: '#FFFFFF',
   },
   bottomBanner: {
@@ -474,47 +498,47 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#F8F9FE',
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
   },
   bottomBannerText: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
+    fontSize: 11,
     color: '#64748B',
   },
   qrCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 24,
+    borderRadius: 20,
+    padding: 16,
     alignItems: 'center',
-    marginBottom: 32,
-    boxShadow: '0px 4px 12px #000',
+    marginBottom: 12,
+    boxShadow: '0px 3px 8px #000',
   },
   qrHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   qrTitle: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 18,
+    fontSize: 16,
     color: '#1A2840',
   },
   qrSubtitle: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 13,
+    fontSize: 12,
     color: '#64748B',
-    marginBottom: 32,
+    marginBottom: 12,
     textAlign: 'center',
   },
   qrCodeWrapper: {
-    width: 220,
-    height: 220,
+    width: 150,
+    height: 150,
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 12,
   },
   qrFooter: {
     flexDirection: 'row',
@@ -522,7 +546,7 @@ const styles = StyleSheet.create({
   },
   qrFooterText: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 13,
-    color: '#3B82F6', // Blue color for secure transaction text
+    fontSize: 11,
+    color: '#3B82F6',
   },
 });

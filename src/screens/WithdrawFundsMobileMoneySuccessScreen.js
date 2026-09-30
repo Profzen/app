@@ -1,10 +1,12 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar, Clipboard } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
+import { getOperatorLogo } from '../utils/operatorLogos';
 
 export default function WithdrawFundsMobileMoneySuccessScreen() {
   const navigation = useNavigation();
@@ -12,15 +14,16 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
   const { t, language, user } = useApp();
   const [toast, setToast] = useState(null);
 
-  const { 
-    amount = '0', 
-    selectedToken = 'USDC', 
-    selectedMethod = 'momo', 
-    providerName = 'Mobile Money', 
-    countryName = 'Togo', 
-    quote = {}, 
-    orderId = 'N/A', 
-    txHash = 'Pending', 
+  const {
+    amount = '0',
+    selectedToken = 'USDC',
+    selectedMethod = 'momo',
+    providerName = 'Mobile Money',
+    countryName = 'Togo',
+    quote = {},
+    orderId = 'N/A',
+    txHash = 'Pending',
+    selectedNetwork = 'Polygon',
     timestamp = new Date().toISOString()
   } = route.params || {};
 
@@ -28,59 +31,52 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
   const countryParam = (user?.country || 'TG').toUpperCase().trim();
   const meta = COUNTRY_METADATA[countryParam] || COUNTRY_METADATA['TG'];
   const effectiveCurrency = ['XOF', 'XAF'].includes(meta.currency || 'XOF') ? 'FCFA' : (meta.currency || 'XOF');
-  
+
   const formattedAmount = parseFloat(amount).toLocaleString(language);
-  const finalFiatAmount = quote.finalFiatAmountReceived ? quote.finalFiatAmountReceived.toLocaleString(language) : formattedAmount;
+  const finalFiatAmount = quote.finalFiatAmountReceived
+    ? quote.finalFiatAmountReceived.toLocaleString(language)
+    : formattedAmount;
   const tokenAmount = quote.totalTokenDebit ? quote.totalTokenDebit.toFixed(2) : '0.00';
   const recipientContact = user?.phone || 'N/A';
-  
+
   const displayDate = new Date(timestamp).toLocaleDateString(language, {
     day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
   });
 
+  const operatorLogo = getOperatorLogo(providerName);
+
+  const copyToClipboard = (text, label) => {
+    Clipboard.setString(text);
+    setToast({ title: t('copied_title', '{{label}} copied!', { label }), message: text.length > 20 ? `${text.slice(0, 10)}...` : text });
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        
+
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={24} color="#1A2840" />
+            <Ionicons name="chevron-back" size={22} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.pageTitle}>{t('withdrawFunds.titleToMobileMoney', 'Withdraw funds to Mobile Money')}</Text>
+          <Text style={styles.pageTitle} numberOfLines={1}>{t('withdrawFunds.titleToMobileMoney', 'Withdraw to Mobile Money')}</Text>
           <TouchableOpacity style={styles.iconBtn}>
-            <Ionicons name="headset-outline" size={24} color="#1A2840" />
+            <Ionicons name="headset-outline" size={22} color="#1A2840" />
           </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          
-          {/* Simple Stepper (1 to 5) - All Active */}
-          <View style={styles.stepperContainer}>
-            <View style={[styles.stepCircle, styles.stepCircleActive]}>
-              <Text style={styles.stepNumberActive}>1</Text>
-            </View>
-            <View style={[styles.stepLine, styles.stepLineActive]} />
-            
-            <View style={[styles.stepCircle, styles.stepCircleActive]}>
-              <Text style={styles.stepNumberActive}>2</Text>
-            </View>
-            <View style={[styles.stepLine, styles.stepLineActive]} />
-            
-            <View style={[styles.stepCircle, styles.stepCircleActive]}>
-              <Text style={styles.stepNumberActive}>3</Text>
-            </View>
-            <View style={[styles.stepLine, styles.stepLineActive]} />
-            
-            <View style={[styles.stepCircle, styles.stepCircleActive]}>
-              <Text style={styles.stepNumberActive}>4</Text>
-            </View>
-            <View style={[styles.stepLine, styles.stepLineActive]} />
 
-            <View style={[styles.stepCircle, styles.stepCircleActive]}>
-              <Text style={styles.stepNumberActive}>5</Text>
-            </View>
+          {/* Stepper — all active (step 5/5) */}
+          <View style={styles.stepperContainer}>
+            {[1,2,3,4,5].map((n, i) => (
+              <React.Fragment key={n}>
+                <View style={styles.stepCircleActive}>
+                  <Text style={styles.stepNumberActive}>{n}</Text>
+                </View>
+                {i < 4 && <View style={styles.stepLineActive} />}
+              </React.Fragment>
+            ))}
           </View>
 
           {/* Titles */}
@@ -88,93 +84,100 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
           <Text style={styles.mainTitle}>{t('withdrawFunds.successTitle', 'Withdrawal successful!')}</Text>
           <Text style={styles.mainSubtitle}>{t('withdrawFunds.successSubtitle', 'Your withdrawal has been completed successfully.')}</Text>
 
-          {/* Huge Main Card with light green top background */}
+          {/* Main Success Card */}
           <View style={styles.successCardContainer}>
             <View style={styles.successCardTopBg} />
-            
+
             {/* Confetti & Checkmark */}
             <View style={styles.successIconContainer}>
-              <View style={[styles.confetti, {backgroundColor: '#10B981', top: 20, left: 40, width: 8, height: 8, transform: [{rotate: '15deg'}]}]} />
-              <View style={[styles.confetti, {backgroundColor: '#FFB800', top: 15, left: 90, width: 6, height: 10, transform: [{rotate: '-20deg'}]}]} />
-              <View style={[styles.confetti, {backgroundColor: '#10B981', bottom: 20, left: 30, width: 6, height: 6, transform: [{rotate: '45deg'}]}]} />
-              <View style={[styles.confetti, {backgroundColor: '#FFB800', top: 40, right: 90, width: 8, height: 8, transform: [{rotate: '10deg'}]}]} />
-              <View style={[styles.confetti, {backgroundColor: '#10B981', top: 20, right: 40, width: 6, height: 10, transform: [{rotate: '-30deg'}]}]} />
-              <View style={[styles.confetti, {backgroundColor: '#FFB800', bottom: 30, right: 30, width: 6, height: 6, transform: [{rotate: '25deg'}]}]} />
-              <View style={[styles.confetti, {backgroundColor: '#10B981', bottom: 10, right: 70, width: 6, height: 6, transform: [{rotate: '60deg'}]}]} />
-              
+              <View style={[styles.confetti, {backgroundColor: '#10B981', top: 18, left: 36, width: 7, height: 7, transform: [{rotate: '15deg'}]}]} />
+              <View style={[styles.confetti, {backgroundColor: '#FFB800', top: 12, left: 80, width: 5, height: 9, transform: [{rotate: '-20deg'}]}]} />
+              <View style={[styles.confetti, {backgroundColor: '#10B981', bottom: 18, left: 26, width: 5, height: 5, transform: [{rotate: '45deg'}]}]} />
+              <View style={[styles.confetti, {backgroundColor: '#FFB800', top: 36, right: 80, width: 7, height: 7, transform: [{rotate: '10deg'}]}]} />
+              <View style={[styles.confetti, {backgroundColor: '#10B981', top: 18, right: 36, width: 5, height: 9, transform: [{rotate: '-30deg'}]}]} />
+              <View style={[styles.confetti, {backgroundColor: '#FFB800', bottom: 26, right: 26, width: 5, height: 5, transform: [{rotate: '25deg'}]}]} />
+              <View style={[styles.confetti, {backgroundColor: '#10B981', bottom: 8, right: 62, width: 5, height: 5, transform: [{rotate: '60deg'}]}]} />
               <View style={styles.checkCircleLarge}>
-                <Ionicons name="checkmark" size={48} color="#FFFFFF" />
+                <Ionicons name="checkmark" size={44} color="#FFFFFF" />
               </View>
               <View style={styles.checkCircleShadow} />
             </View>
 
             {/* Inner White Card */}
             <View style={styles.innerWhiteCard}>
-              
+
               {/* Amounts Header */}
               <View style={styles.amountsHeader}>
                 <View style={styles.amountCol}>
                   <Text style={styles.amountLabel}>{t('withdrawFunds.youWithdraw', 'You withdraw')}</Text>
-                  <Text style={styles.amountValue}>{formattedAmount} {effectiveCurrency}</Text>
+                  <Text style={styles.amountValue} numberOfLines={1} adjustsFontSizeToFit>{formattedAmount} {effectiveCurrency}</Text>
                   <Text style={styles.amountSub}>≈ {tokenAmount} {selectedToken}</Text>
                 </View>
 
                 <View style={styles.amountArrowContainer}>
-                  <Ionicons name="arrow-forward" size={16} color="#10B981" />
+                  <Ionicons name="arrow-forward" size={14} color="#10B981" />
                 </View>
 
                 <View style={styles.amountColRight}>
                   <Text style={styles.amountLabel}>{t('withdrawFunds.youReceive', 'You receive')}</Text>
-                  <Text style={styles.amountValueGreen}>{finalFiatAmount} {effectiveCurrency}</Text>
+                  <Text style={styles.amountValueGreen} numberOfLines={1} adjustsFontSizeToFit>{finalFiatAmount} {effectiveCurrency}</Text>
                   <Text style={styles.amountSub}>via {providerName}</Text>
                 </View>
               </View>
 
               <View style={styles.innerDivider} />
 
-              {/* Details List */}
+              {/* Withdrawal Method Row — with real operator logo */}
               <View style={styles.detailRow}>
                 <View style={styles.detailLeft}>
                   <View style={[styles.detailIconCircle, {backgroundColor: '#ECFDF5'}]}>
-                    <Ionicons name="business" size={14} color="#10B981" />
+                    <Ionicons name="business" size={13} color="#10B981" />
                   </View>
                   <Text style={styles.detailLabel}>{t('withdrawFunds.withdrawalMethod', 'Withdrawal method')}</Text>
                 </View>
                 <View style={styles.detailRight}>
-                  <Text style={styles.detailValueRegular}>{providerName}</Text>
-                  {selectedMethod === 'momo' && <Text style={styles.mixxLogoText}> momo</Text>}
+                  {operatorLogo ? (
+                    <Image source={operatorLogo} style={styles.operatorLogo} resizeMode="contain" />
+                  ) : (
+                    <Text style={styles.detailValueRegular}>{providerName}</Text>
+                  )}
                 </View>
               </View>
 
+              {/* Wallet debited */}
               <View style={styles.detailRow}>
                 <View style={styles.detailLeft}>
                   <View style={[styles.detailIconCircle, {backgroundColor: '#EFF6FF'}]}>
                     <Text style={{color: '#3B82F6', fontSize: 10, fontWeight: 'bold'}}>$</Text>
                   </View>
-                  <Text style={styles.detailLabel}>{t('withdrawFunds.walletWasDebited', 'Your DZYwallet was debited by')}</Text>
+                  <Text style={styles.detailLabel}>{t('withdrawFunds.walletWasDebited', 'Wallet debited by')}</Text>
                 </View>
-                <Text style={styles.detailValueRegular}>{tokenAmount} {selectedToken}</Text>
+                <View style={styles.detailRight}>
+                  <Text style={styles.detailValueRegular}>{tokenAmount} {selectedToken}</Text>
+                </View>
               </View>
 
+              {/* Network */}
               <View style={styles.detailRow}>
                 <View style={styles.detailLeft}>
                   <View style={[styles.detailIconCircle, {backgroundColor: '#ECFDF5'}]}>
-                    <Ionicons name="git-network-outline" size={14} color="#10B981" />
+                    <Ionicons name="git-network-outline" size={13} color="#10B981" />
                   </View>
                   <Text style={styles.detailLabel}>{t('common.network', 'Network')}</Text>
                 </View>
                 <View style={styles.detailRight}>
-                  <Text style={styles.detailValueRegular}>Polygon </Text>
+                  <Text style={styles.detailValueRegular}>Polygon</Text>
                   <View style={styles.polygonSmallLogo}>
-                    <Text style={{color: '#FFF', fontSize: 8, fontWeight: 'bold'}}>∞</Text>
+                    <Text style={{color: '#FFF', fontSize: 7, fontWeight: 'bold'}}>∞</Text>
                   </View>
                 </View>
               </View>
 
+              {/* Sell transaction */}
               <View style={styles.detailRow}>
                 <View style={styles.detailLeft}>
                   <View style={[styles.detailIconCircle, {backgroundColor: '#F5F3FF'}]}>
-                    <Ionicons name="document-text-outline" size={14} color="#8B5CF6" />
+                    <Ionicons name="document-text-outline" size={13} color="#8B5CF6" />
                   </View>
                   <Text style={styles.detailLabel}>{t('withdrawFunds.sellTransaction', 'Sell transaction')}</Text>
                 </View>
@@ -186,82 +189,93 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
                 </View>
               </View>
 
-              <View style={styles.detailRow}>
+              {/* Blockchain hash */}
+              <TouchableOpacity style={styles.detailRow} onPress={() => copyToClipboard(txHash, 'TX Hash')} activeOpacity={0.7}>
                 <View style={styles.detailLeft}>
                   <View style={[styles.detailIconCircle, {backgroundColor: '#F5F3FF'}]}>
-                    <Ionicons name="open-outline" size={14} color="#8B5CF6" />
+                    <Ionicons name="open-outline" size={13} color="#8B5CF6" />
                   </View>
                   <Text style={styles.detailLabel}>{t('withdrawFunds.viewOnBlockchain', 'View on blockchain')}</Text>
                 </View>
                 <View style={styles.detailRight}>
-                  <Text style={styles.detailValueBlue}>
-                    {txHash.length > 20 ? `${txHash.slice(0, 6)}...${txHash.slice(-6)}` : txHash}
+                  <Text style={styles.detailValueBlue} numberOfLines={1}>
+                    {txHash.length > 16 ? `${txHash.slice(0, 6)}...${txHash.slice(-5)}` : txHash}
                   </Text>
-                  <Ionicons name="copy-outline" size={14} color="#64748B" style={{marginLeft: 6}} />
+                  <Ionicons name="copy-outline" size={13} color="#64748B" style={{marginLeft: 5}} />
                 </View>
-              </View>
+              </TouchableOpacity>
 
+              {/* Date */}
               <View style={styles.detailRow}>
                 <View style={styles.detailLeft}>
                   <View style={[styles.detailIconCircle, {backgroundColor: '#EFF6FF'}]}>
-                    <Ionicons name="calendar-outline" size={14} color="#3B82F6" />
+                    <Ionicons name="calendar-outline" size={13} color="#3B82F6" />
                   </View>
                   <Text style={styles.detailLabel}>{t('orderVerification.dateTime', 'Date and time')}</Text>
                 </View>
-                <Text style={styles.detailValueRegular}>{displayDate}</Text>
+                <View style={styles.detailRight}>
+                  <Text style={styles.detailValueRegular} numberOfLines={1}>{displayDate}</Text>
+                </View>
               </View>
 
-              <View style={styles.detailRow}>
+              {/* Order ID */}
+              <TouchableOpacity style={styles.detailRow} onPress={() => copyToClipboard(orderId, 'Order ID')} activeOpacity={0.7}>
                 <View style={styles.detailLeft}>
                   <View style={[styles.detailIconCircle, {backgroundColor: '#FFFBEB'}]}>
-                    <Ionicons name="id-card-outline" size={14} color="#F59E0B" />
+                    <Ionicons name="id-card-outline" size={13} color="#F59E0B" />
                   </View>
                   <Text style={styles.detailLabel}>{t('withdrawFunds.withdrawalId', 'Withdrawal ID')}</Text>
                 </View>
                 <View style={styles.detailRight}>
-                  <Text style={styles.detailValueRegular}>
-                    {orderId.length > 20 ? `${orderId.slice(0, 8)}...${orderId.slice(-6)}` : orderId}
+                  <Text style={styles.detailValueRegular} numberOfLines={1}>
+                    {orderId.length > 16 ? `${orderId.slice(0, 8)}...${orderId.slice(-5)}` : orderId}
                   </Text>
-                  <Ionicons name="copy-outline" size={14} color="#64748B" style={{marginLeft: 6}} />
+                  <Ionicons name="copy-outline" size={13} color="#64748B" style={{marginLeft: 5}} />
                 </View>
-              </View>
+              </TouchableOpacity>
 
+              {/* Recipient */}
               <View style={styles.detailRow}>
                 <View style={styles.detailLeft}>
                   <View style={[styles.detailIconCircle, {backgroundColor: '#ECFDF5'}]}>
-                    <Ionicons name="person-outline" size={14} color="#10B981" />
+                    <Ionicons name="person-outline" size={13} color="#10B981" />
                   </View>
                   <Text style={styles.detailLabel}>{t('orderVerification.recipient', 'Recipient')}</Text>
                 </View>
-                <Text style={styles.detailValueRegular}>{recipientContact}</Text>
+                <View style={styles.detailRight}>
+                  <Text style={styles.detailValueRegular}>{recipientContact}</Text>
+                </View>
               </View>
 
             </View>
           </View>
 
-          {/* Success Banner Bottom */}
+          {/* Success Banner */}
           <View style={styles.successBannerBottom}>
-            <View style={styles.successBannerIconCircle}>
-              <Ionicons name="shield-checkmark-outline" size={20} color="#10B981" />
-            </View>
+            <Ionicons name="shield-checkmark-outline" size={20} color="#10B981" style={{marginRight: 10}} />
             <Text style={styles.successBannerText}>
-              {t('withdrawFunds.fundsAvailableNotice', 'You will receive a notification as soon as the funds\nare available on your account.')}
+              {t('withdrawFunds.fundsAvailableNotice', 'You will receive a notification as soon as the funds are available on your account.')}
             </Text>
           </View>
 
-          {/* Partager mon succès CTA Card */}
-          <TouchableOpacity 
-            style={styles.shareCtaCard}
+          {/* Share CTA Card */}
+          <TouchableOpacity
+            style={styles.shareCtaCardWrapper}
             onPress={() => {
               navigation.navigate('ShareSuccessPlatformScreen', {
                 transactionData: {
                   type: 'withdraw',
                   amount: `${formattedAmount} ${effectiveCurrency}`,
                   token: selectedToken,
-                  actionType: t('withdrawFunds.withdrawn', 'retiré'),
+                  actionKey: 'actionWithdrawn',
                   recipientName: `${providerName} (${recipientContact})`,
                   recipientCountry: countryName,
                   recipientFlag: meta.flag || '🌍',
+                  senderName: `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.username || 'Utilisateur',
+                  senderCountry: countryName,
+                  senderFlag: meta.flag || '🌍',
+                  senderAvatar: user?.avatar?.uri || null,
+                  network: selectedNetwork,
                   date: displayDate,
                   txHash: orderId,
                 },
@@ -269,42 +283,47 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
             }}
             activeOpacity={0.88}
           >
-            <View style={styles.shareIconWrapper}>
-              {/* Yellow spark top left */}
-              <View style={styles.sparkRaysWrap}>
-                <View style={[styles.sparkRay, { transform: [{ rotate: '-30deg' }] }]} />
-                <View style={[styles.sparkRay, { transform: [{ rotate: '0deg' }] }]} />
-                <View style={[styles.sparkRay, { transform: [{ rotate: '30deg' }] }]} />
-              </View>
-              
+            <LinearGradient
+              colors={['#20365B', '#111D33']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.shareCtaCard}
+            >
               <View style={styles.shareWhiteSquare}>
-                <Ionicons name="share-social-outline" size={24} color="#071D54" />
+                <Ionicons name="share-social-outline" size={22} color="#FFC759" />
               </View>
-            </View>
 
-            <View style={styles.shareTextWrap}>
-              <Text style={styles.shareCtaSub1}>
-                <Text style={styles.goldText}>{t('shareSuccess.rewardTitle', 'Earn 1 DZY by tagging @DizzitUp')}</Text>
-              </Text>
-              <Text style={styles.shareCtaTitle}>{t('shareSuccess.title', 'Share my success')}</Text>
-              <Text style={styles.shareCtaSub2}>
-                {t('shareSuccess.rewardSub', 'Publish a customized DizzitUp card of this transaction')}
-              </Text>
-            </View>
+              <View style={styles.shareTextWrap}>
+                <Text style={styles.shareCtaTitle}>{t('shareSuccess.title', 'Share my success')}</Text>
+                <View style={styles.rewardBadge}>
+                  <Ionicons name="gift-outline" size={11} color="#071D54" style={{marginRight: 3}} />
+                  <Text style={styles.rewardBadgeText}>{t('shareSuccess.rewardTitle', 'Earn 1 DZY by tagging @DizzitUp')}</Text>
+                </View>
+                <Text style={styles.shareCtaSub2}>
+                  {t('shareSuccess.rewardSub', 'Publish a customized DizzitUp card of this transaction')}
+                </Text>
+              </View>
 
-            <Ionicons name="chevron-forward" size={20} color="#FFC759" />
+              <Ionicons name="chevron-forward" size={18} color="#FFC759" />
+            </LinearGradient>
           </TouchableOpacity>
 
           {/* Action Buttons */}
           <View style={styles.actionButtonsContainer}>
-            <TouchableOpacity style={styles.btnOutline} onPress={() => navigation.navigate('TransactionHistoryScreen')}>
-              <Ionicons name="time-outline" size={18} color="#1A2840" style={{marginRight: 6}} />
+            <TouchableOpacity
+              style={styles.btnOutline}
+              onPress={() => navigation.navigate('TransactionHistoryScreen')}
+              activeOpacity={0.8}
+            >
               <Text style={styles.btnOutlineText}>{t('withdrawFunds.viewHistory', 'View history')}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.btnPrimary} onPress={() => navigation.navigate('WithdrawFundsScreen')}>
-              <Ionicons name="refresh-outline" size={18} color="#1A2840" style={{marginRight: 6}} />
-              <Text style={styles.btnPrimaryText}>{t('withdrawFunds.withdrawAnother', 'Make another withdrawal')}</Text>
+            <TouchableOpacity
+              style={styles.btnPrimary}
+              onPress={() => navigation.navigate('WithdrawFundsScreen')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.btnPrimaryText}>{t('withdrawFunds.withdrawAnother', 'New withdrawal')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -322,117 +341,109 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAFAFA',
     paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 14,
   },
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingBottom: 10,
   },
   iconBtn: {
-    width: 44,
-    height: 44,
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 22,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: '#F1F5F9',
   },
   pageTitle: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 14,
+    fontSize: 13,
     color: '#1A2840',
-  },
-  scrollView: {
     flex: 1,
+    textAlign: 'center',
+    marginHorizontal: 8,
   },
+  scrollView: { flex: 1 },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 40,
+    paddingTop: 14,
+    paddingBottom: 100,
   },
+
+  /* Stepper */
   stepperContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
     paddingHorizontal: 20,
   },
-  stepCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#F1F5F9',
+  stepCircleActive: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#FFB800',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  stepCircleActive: {
-    backgroundColor: '#FFB800',
-  },
-  stepNumber: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 13,
-    color: '#64748B',
-  },
   stepNumberActive: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 13,
+    fontSize: 12,
     color: '#1A2840',
   },
-  stepLine: {
+  stepLineActive: {
     flex: 1,
     height: 2,
-    backgroundColor: '#F1F5F9',
-    marginHorizontal: 8,
-  },
-  stepLineActive: {
     backgroundColor: '#FFB800',
+    marginHorizontal: 6,
   },
+
+  /* Titles */
   stepOverTitleSuccess: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 13,
-    color: '#10B981', // Green for success
+    fontSize: 12,
+    color: '#10B981',
     marginBottom: 4,
   },
   mainTitle: {
     fontFamily: 'Inter_700Bold',
     fontSize: 20,
     color: '#1A2840',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   mainSubtitle: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 14,
+    fontSize: 13,
     color: '#64748B',
-    marginBottom: 24,
+    marginBottom: 20,
   },
+
+  /* Success Card */
   successCardContainer: {
     position: 'relative',
-    borderRadius: 24,
+    borderRadius: 22,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#F1F5F9',
-    backgroundColor: '#FAFAFA', // base bg
-    marginBottom: 16,
+    backgroundColor: '#FAFAFA',
+    marginBottom: 14,
   },
   successCardTopBg: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 180,
-    backgroundColor: '#F0FDF4', // light green
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    top: 0, left: 0, right: 0,
+    height: 170,
+    backgroundColor: '#F0FDF4',
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
   },
   successIconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    height: 140,
+    height: 130,
     position: 'relative',
   },
   confetti: {
@@ -440,9 +451,9 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   checkCircleLarge: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 76,
+    height: 76,
+    borderRadius: 38,
     backgroundColor: '#10B981',
     justifyContent: 'center',
     alignItems: 'center',
@@ -450,76 +461,80 @@ const styles = StyleSheet.create({
   },
   checkCircleShadow: {
     position: 'absolute',
-    width: 60,
-    height: 16,
-    borderRadius: 30,
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-    bottom: 15,
+    width: 56,
+    height: 14,
+    borderRadius: 28,
+    backgroundColor: 'rgba(16, 185, 129, 0.18)',
+    bottom: 12,
     zIndex: 1,
   },
+
+  /* Inner White Card */
   innerWhiteCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    padding: 16,
-    boxShadow: '0px 4px 12px #000',
+    borderRadius: 18,
+    marginHorizontal: 12,
+    marginBottom: 12,
+    padding: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
   },
   amountsHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 14,
   },
-  amountCol: {
-    flex: 1,
-    alignItems: 'flex-start',
-  },
-  amountColRight: {
-    flex: 1,
-    alignItems: 'flex-end',
-  },
+  amountCol: { flex: 1, alignItems: 'flex-start' },
+  amountColRight: { flex: 1, alignItems: 'flex-end' },
   amountLabel: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 11,
+    fontSize: 10,
     color: '#64748B',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   amountValue: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 16,
+    fontSize: 15,
     color: '#1A2840',
+    maxWidth: '100%',
   },
   amountValueGreen: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 16,
+    fontSize: 15,
     color: '#10B981',
+    maxWidth: '100%',
   },
   amountSub: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 11,
+    fontSize: 10,
     color: '#94A3B8',
     marginTop: 2,
   },
   amountArrowContainer: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     backgroundColor: '#ECFDF5',
     justifyContent: 'center',
     alignItems: 'center',
-    marginHorizontal: 8,
+    marginHorizontal: 6,
   },
   innerDivider: {
     height: 1,
     backgroundColor: '#F1F5F9',
-    marginBottom: 16,
+    marginBottom: 12,
   },
+
+  /* Detail Rows */
   detailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 8,
   },
   detailLeft: {
     flexDirection: 'row',
@@ -527,151 +542,148 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   detailIconCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 10,
+    marginRight: 8,
   },
   detailLabel: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 13,
+    fontSize: 12,
     color: '#475569',
+    flexShrink: 1,
   },
   detailRight: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end',
+    maxWidth: '45%',
+    marginLeft: 8,
   },
   detailValueRegular: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 13,
+    fontSize: 12,
     color: '#1A2840',
+    textAlign: 'right',
+    flexShrink: 1,
   },
   detailValueBlue: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 13,
+    fontSize: 12,
     color: '#3B82F6',
+    flexShrink: 1,
   },
-  mixxLogoText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 13,
-    color: '#8B5CF6',
+  operatorLogo: {
+    width: 72,
+    height: 28,
   },
   polygonSmallLogo: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: 13,
+    height: 13,
+    borderRadius: 6.5,
     backgroundColor: '#8247E5',
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 6,
+    marginLeft: 5,
   },
   successBadge: {
     backgroundColor: '#DCFCE7',
-    paddingHorizontal: 6,
+    paddingHorizontal: 5,
     paddingVertical: 2,
-    borderRadius: 6,
-    marginLeft: 8,
+    borderRadius: 5,
+    marginLeft: 6,
   },
   successBadgeText: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 9,
     color: '#059669',
   },
+
+  /* Banner */
   successBannerBottom: {
     flexDirection: 'row',
     backgroundColor: '#F0FDF4',
     borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  successBannerIconCircle: {
-    marginRight: 12,
+    padding: 14,
+    alignItems: 'flex-start',
+    marginBottom: 14,
   },
   successBannerText: {
     flex: 1,
     fontFamily: 'Inter_400Regular',
     fontSize: 12,
     color: '#1A2840',
-    lineHeight: 18,
+    lineHeight: 17,
   },
 
   toastWrap: { position: 'absolute', left: 14, right: 14, top: 60, zIndex: 50 },
 
-  /* Partager mon succès CTA Card Styles */
+  /* Share CTA */
+  shareCtaCardWrapper: {
+    marginBottom: 14,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#111D33',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.28,
+    shadowRadius: 14,
+    elevation: 6,
+  },
   shareCtaCard: {
-    backgroundColor: '#071D54',
-    borderRadius: 18,
     padding: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-    boxShadow: '0px 4px 8px rgba(7,29,84,0.2)',
-    elevation: 4,
-  },
-  shareIconWrapper: {
-    position: 'relative',
-    marginRight: 12,
-  },
-  sparkRaysWrap: {
-    position: 'absolute',
-    top: -6,
-    right: -4,
-    flexDirection: 'row',
-    gap: 2,
-    zIndex: 2,
-  },
-  sparkRay: {
-    width: 2,
-    height: 6,
-    backgroundColor: '#FFC759',
-    borderRadius: 1,
+    gap: 12,
   },
   shareWhiteSquare: {
-    width: 50,
-    height: 50,
-    borderRadius: 14,
-    backgroundColor: '#FFFFFF',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 199, 89, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
+    flexShrink: 0,
   },
   shareTextWrap: {
     flex: 1,
-    paddingRight: 4,
   },
   shareCtaTitle: {
-    fontFamily: 'SpaceGrotesk_700Bold',
+    fontFamily: 'Inter_700Bold',
     fontSize: 15,
     color: '#FFFFFF',
-    marginBottom: 2,
+    marginBottom: 4,
   },
-  shareCtaSub1: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 11.5,
-    color: '#FFFFFF',
-    marginBottom: 2,
+  rewardBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFC759',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 6,
+    marginBottom: 5,
   },
-  goldText: {
-    color: '#FFC759',
+  rewardBadgeText: {
     fontFamily: 'Inter_700Bold',
+    fontSize: 9,
+    color: '#071D54',
   },
   shareCtaSub2: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 10.5,
+    fontSize: 10,
     color: '#94A3B8',
     lineHeight: 14,
   },
 
+  /* Action Buttons */
   actionButtonsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     gap: 10,
   },
   btnOutline: {
     flex: 1,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
@@ -679,24 +691,27 @@ const styles = StyleSheet.create({
     borderColor: '#FFC759',
     borderRadius: 14,
     paddingVertical: 14,
+    paddingHorizontal: 8,
   },
   btnOutlineText: {
     fontFamily: 'Inter_700Bold',
     fontSize: 13,
     color: '#1A2840',
+    textAlign: 'center',
   },
   btnPrimary: {
-    flex: 1.2,
-    flexDirection: 'row',
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFC759',
     borderRadius: 14,
     paddingVertical: 14,
+    paddingHorizontal: 8,
   },
   btnPrimaryText: {
     fontFamily: 'Inter_700Bold',
     fontSize: 13,
     color: '#1A2840',
+    textAlign: 'center',
   },
 });

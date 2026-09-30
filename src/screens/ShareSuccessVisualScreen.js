@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Image, Platform, StatusBar, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar, Modal } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
+import { getOperatorLogo } from '../utils/operatorLogos';
 
 export default function ShareSuccessVisualScreen() {
   const navigation = useNavigation();
@@ -16,7 +18,10 @@ export default function ShareSuccessVisualScreen() {
   const {
     amount = '100',
     token = 'USDC',
-    actionType = 'envoyé', // 'envoyé', 'rechargé', 'retiré', 'reçu'
+    // actionKey: translation key like 'actionWithdrawn', 'actionSent', 'actionTopup'
+    // Fallback: actionType (legacy raw string)
+    actionKey = null,
+    actionType = null,
     senderName = 'John Mensah',
     senderCountry = 'Ghana',
     senderFlag = '🇬🇭',
@@ -26,19 +31,29 @@ export default function ShareSuccessVisualScreen() {
     network = 'Polygon',
     date = '30 Mai 2025 - 09:41',
     txHash = '0x7a3f...e9b2c4d',
+    senderAvatar = null,
   } = transactionData;
+
+  // Resolve action label: prefer key-based i18n, fall back to raw string
+  const resolvedAction = actionKey
+    ? t(`shareSuccess.${actionKey}`, actionType || 'transferred')
+    : (actionType || t('shareSuccess.actionSent', 'sent funds'));
 
   const [toast, setToast] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [customStyleIndex, setCustomStyleIndex] = useState(0);
 
-  const cardBackgrounds = ['#071D54', '#0F172A', '#1E1B4B'];
+  const cardBackgrounds = [
+    ['#20365B', '#111D33'], // DizzitUp Navy
+    ['#0F172A', '#020617'], // Deep Slate
+    ['#1E1B4B', '#09090B'], // Deep Indigo
+  ];
 
   const toggleModifyVisual = () => {
     setCustomStyleIndex((prev) => (prev + 1) % cardBackgrounds.length);
-    setToast({ 
-      title: t('shareSuccess.toastModifiedTitle', 'Visuel modifié'), 
-      message: t('shareSuccess.toastModifiedMsg', 'Nouveau style de carte appliqué !') 
+    setToast({
+      title: t('shareSuccess.toastModifiedTitle', 'Visual modified'),
+      message: t('shareSuccess.toastModifiedMsg', 'New card style applied!')
     });
   };
 
@@ -50,213 +65,264 @@ export default function ShareSuccessVisualScreen() {
     });
   };
 
+  const shortTxHash = txHash && txHash.length > 18
+    ? `${txHash.slice(0, 7)}...${txHash.slice(-5)}`
+    : txHash;
+
+  // Resolve operator logo for recipient (e.g. Mixx by Yas, Moov, MTN, Orange, etc.)
+  const opLogo = getOperatorLogo(recipientName) 
+    || getOperatorLogo(transactionData?.operatorName) 
+    || getOperatorLogo(transactionData?.providerName) 
+    || getOperatorLogo(transactionData?.recipient);
+
+  // Format date compactly across 2 lines so it never truncates in the 3-column metadata row
+  const formatShortDate = (raw) => {
+    if (!raw) return '';
+    const d = new Date(raw);
+    if (!isNaN(d.getTime()) && raw.length > 10 && (raw.includes('T') || raw.includes('-') || raw.includes('/'))) {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const day = d.getDate();
+      const mon = months[d.getMonth()];
+      const year = d.getFullYear();
+      const h = String(d.getHours()).padStart(2, '0');
+      const m = String(d.getMinutes()).padStart(2, '0');
+      return `${day} ${mon} ${year}\n${h}:${m}`;
+    }
+    return String(raw)
+      .replace(/September/i, 'Sep')
+      .replace(/October/i, 'Oct')
+      .replace(/November/i, 'Nov')
+      .replace(/December/i, 'Dec')
+      .replace(/January/i, 'Jan')
+      .replace(/February/i, 'Feb')
+      .replace(/March/i, 'Mar')
+      .replace(/April/i, 'Apr')
+      .replace(/August/i, 'Aug')
+      .replace(/\s+at\s+/i, '\n')
+      .replace(/\s+à\s+/i, '\n')
+      .replace(/\s*-\s*/, '\n');
+  };
+
+  // Shared card content renderer to avoid duplication
+  const renderCardContent = () => (
+    <>
+      {/* Top Brand Header */}
+      <View style={styles.visualHeaderRow}>
+        <View style={styles.brandRow}>
+          <Image
+            source={require('../../assets/brand/dizzitup_logo_cercle.png')}
+            style={styles.logoCircleImage}
+          />
+          <Text style={styles.brandNameText}>Dizzit<Text style={{ color: '#FFC759' }}>Up</Text></Text>
+        </View>
+        <Text style={styles.hashtagText}>
+          #NoBorder<Text style={{ color: '#FFC759' }}>NoMiddleman</Text>
+        </Text>
+      </View>
+
+      {/* Status Pill */}
+      <View style={styles.statusPillWrap}>
+        <View style={styles.statusPill}>
+          <Text style={styles.statusPillText}>{t('shareSuccess.txSuccess', 'Successful transaction!')}</Text>
+          <View style={styles.checkBadgeGreen}>
+            <Ionicons name="checkmark" size={11} color="#FFFFFF" />
+          </View>
+        </View>
+      </View>
+
+      {/* Headline */}
+      <Text style={styles.headlineText}>
+        <Text style={styles.goldText}>{resolvedAction}</Text>
+      </Text>
+
+      {/* Amount */}
+      <Text style={styles.amountLargeText}>
+        {amount} <Text style={{ color: '#FFC759' }}>{token}</Text>
+      </Text>
+      <Text style={styles.amountSubText}>
+        via <Text style={{ color: '#FFC759', fontFamily: 'Inter_700Bold' }}>DZYWallet</Text>
+      </Text>
+
+      {/* Inset Box */}
+      <View style={styles.insetBox}>
+        {/* Sender & Recipient */}
+        <View style={styles.usersRow}>
+          <View style={styles.userCol}>
+            <Text style={styles.userLabel}>{t('shareSuccess.from', 'From')}</Text>
+            <View style={[styles.userAvatarWrap, styles.userAvatarShielded]}>
+              {senderAvatar ? (
+                <Image source={{ uri: senderAvatar }} style={styles.avatarImg} />
+              ) : (
+                <Text style={styles.avatarInitialsText}>
+                  {senderName?.slice(0, 2).toUpperCase() || 'DZ'}
+                </Text>
+              )}
+            </View>
+            <Text style={styles.userName} numberOfLines={1}>{senderName}</Text>
+            <Text style={styles.userCountry}>{senderCountry} {senderFlag}</Text>
+          </View>
+
+          <View style={styles.transferArrowCircle}>
+            <Ionicons name="arrow-forward" size={14} color="#FFFFFF" />
+          </View>
+
+          <View style={styles.userCol}>
+            <Text style={styles.userLabel}>{t('shareSuccess.to', 'To')}</Text>
+            <View style={[styles.userAvatarWrap, styles.userAvatarShielded, opLogo && { backgroundColor: '#FFFFFF', padding: 2 }]}>
+              {opLogo ? (
+                <Image source={opLogo} style={[styles.avatarImg, { borderRadius: 16 }]} resizeMode="contain" />
+              ) : transactionData?.recipientAvatar ? (
+                <Image source={{ uri: transactionData.recipientAvatar }} style={styles.avatarImg} />
+              ) : (
+                <Text style={styles.avatarInitialsText}>
+                  {recipientName?.slice(0, 2).toUpperCase() || '?'}
+                </Text>
+              )}
+            </View>
+            <Text style={styles.userName} numberOfLines={1}>{recipientName}</Text>
+            <Text style={styles.userCountry}>{recipientCountry} {recipientFlag}</Text>
+          </View>
+        </View>
+
+        <View style={styles.boxDivider} />
+
+        {/* Metadata Grid */}
+        <View style={styles.metaRow}>
+          <View style={styles.metaCol}>
+            <View style={styles.metaIconRow}>
+              <View style={styles.purplePolyBadge}>
+                <Text style={{ color: '#FFF', fontSize: 9, fontWeight: 'bold' }}>∞</Text>
+              </View>
+              <Text style={styles.metaLabel}>{t('shareSuccess.network', 'Network')}</Text>
+            </View>
+            <Text style={styles.metaValue} numberOfLines={1}>{network}</Text>
+          </View>
+
+          <View style={styles.metaCol}>
+            <View style={styles.metaIconRow}>
+              <Ionicons name="calendar-outline" size={12} color="#94A3B8" style={{ marginRight: 3 }} />
+              <Text style={styles.metaLabel}>{t('shareSuccess.date', 'Date')}</Text>
+            </View>
+            <Text style={styles.metaValue} numberOfLines={2}>
+              {formatShortDate(date)}
+            </Text>
+          </View>
+
+          <View style={[styles.metaCol, { flex: 1.2 }]}>
+            <View style={styles.metaIconRow}>
+              <Ionicons name="pricetag-outline" size={12} color="#94A3B8" style={{ marginRight: 3 }} />
+              <Text style={styles.metaLabel} numberOfLines={1}>{t('shareSuccess.txId', 'TX ID')}</Text>
+            </View>
+            <View style={styles.hashCopyRow}>
+              <Text style={[styles.metaValue, { flex: 1, flexShrink: 1 }]} numberOfLines={1} ellipsizeMode="tail">{shortTxHash}</Text>
+              <Ionicons name="copy-outline" size={11} color="#94A3B8" style={{ marginLeft: 4, flexShrink: 0 }} />
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {/* Card Footer */}
+      <View style={styles.cardFooter}>
+        <View style={styles.footerLeft}>
+          <Text style={styles.footerSecurityText}>{t('shareSuccess.securedBlockchain', 'Secured on blockchains,')}</Text>
+          <Text style={styles.footerHighlightText}>{t('shareSuccess.noBorder', 'Without borders or middlemen')}</Text>
+          <View style={styles.footerDivider} />
+          <Text style={styles.wannaText}>{t('shareSuccess.wannaDoSame', 'Wanna do the same?')}</Text>
+          <Text style={styles.joinText}>Join Dizzit<Text style={{ color: '#FFC759' }}>Up</Text></Text>
+          <View style={styles.urlPill}>
+            <Ionicons name="globe-outline" size={12} color="#FFC759" style={{ marginRight: 5 }} />
+            <Text style={styles.urlPillText}>dizzitup.com</Text>
+          </View>
+        </View>
+
+        <View style={styles.footerRight}>
+          <Image
+            source={require('../../assets/brand/dizzitup_logo_cercle.png')}
+            style={styles.logoCircleFooter}
+          />
+          <Text style={styles.footerBrandTitle}>Dizzit<Text style={{ color: '#FFC759' }}>Up</Text></Text>
+          <Text style={styles.footerBrandTagline}>{t('shareSuccess.sendMoreGetMore', 'Send More, Get More')}</Text>
+        </View>
+      </View>
+    </>
+  );
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        
+
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={22} color="#1A2840" />
+            <Ionicons name="arrow-back" size={20} color="#1A2840" />
           </TouchableOpacity>
 
           <View style={styles.headerTitleWrap}>
-            <Text style={styles.headerTitle}>{t('shareSuccess.visualTitle', 'Aperçu de votre visuel')}</Text>
-            <Text style={styles.headerStepBadge}>{t('shareSuccess.visualStepBadge', 'Étape 2 sur 3')}</Text>
+            <Text style={styles.headerTitle}>{t('shareSuccess.visualTitle', 'Visual preview')}</Text>
+            <Text style={styles.headerStepBadge}>{t('shareSuccess.visualStepBadge', 'Step 2 of 3')}</Text>
             <Text style={styles.headerSubtitle}>
-              {t('shareSuccess.visualSubtitle', "Voici le visuel qui sera partagé. Vous pourrez modifier le texte à l'étape suivante.")}
+              {t('shareSuccess.visualSubtitle', "Here is the visual that will be shared. You can edit the text in the next step.")}
             </Text>
           </View>
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          
-          {/* Main Visual Template Card */}
-          <View style={[styles.visualCard, { backgroundColor: cardBackgrounds[customStyleIndex] }]}>
-            
-            {/* Top Brand Header inside Card */}
-            <View style={styles.visualHeaderRow}>
-              <View style={styles.brandRow}>
-                <Image 
-                  source={require('../../assets/brand/dizzitup_logo_cercle.png')} 
-                  style={styles.logoCircleImage} 
-                />
-                <Text style={styles.brandNameText}>Dizzit<Text style={{ color: '#FFC759' }}>Up</Text></Text>
-              </View>
 
-              <Text style={styles.hashtagText}>
-                #NoBorder<Text style={{ color: '#FFC759' }}>NoMiddleman</Text>
-              </Text>
-            </View>
+          {/* Main Visual Card */}
+          <LinearGradient
+            colors={cardBackgrounds[customStyleIndex]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.visualCard}
+          >
+            {renderCardContent()}
+          </LinearGradient>
 
-            {/* Pill: Transaction réussie */}
-            <View style={styles.statusPillWrap}>
-              <View style={styles.statusPill}>
-                <Text style={styles.statusPillText}>{t('shareSuccess.txSuccess', 'Transaction réussie !')}</Text>
-                <View style={styles.checkBadgeGreen}>
-                  <Ionicons name="checkmark" size={12} color="#FFFFFF" />
-                </View>
-              </View>
-            </View>
-
-            {/* Headline */}
-            <Text style={styles.headlineText}>
-              {t('shareSuccess.sentFundsPre', "J'ai")} <Text style={styles.goldText}>{actionType}</Text> {t('shareSuccess.sentFundsPost', 'des fonds')}
-            </Text>
-
-            {/* Huge Amount */}
-            <Text style={styles.amountLargeText}>{amount} {token}</Text>
-            <Text style={styles.amountSubText}>
-              via <Text style={{ color: '#FFC759', fontFamily: 'SpaceGrotesk_700Bold' }}>DZYWallet</Text>
-            </Text>
-
-            {/* Inset Details Box */}
-            <View style={styles.insetBox}>
-              
-              {/* Sender & Recipient Row */}
-              <View style={styles.usersRow}>
-                {/* Sender */}
-                <View style={styles.userCol}>
-                  <Text style={styles.userLabel}>{t('shareSuccess.from', 'De')}</Text>
-                  <View style={styles.userAvatarWrap}>
-                    <Image source={{ uri: 'https://i.pravatar.cc/150?img=12' }} style={styles.avatarImg} />
-                  </View>
-                  <Text style={styles.userName}>{senderName}</Text>
-                  <Text style={styles.userCountry}>{senderCountry} {senderFlag}</Text>
-                </View>
-
-                {/* Center Arrow */}
-                <View style={styles.transferArrowCircle}>
-                  <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
-                </View>
-
-                {/* Recipient */}
-                <View style={styles.userCol}>
-                  <Text style={styles.userLabel}>{t('shareSuccess.to', 'Vers')}</Text>
-                  <View style={[styles.userAvatarWrap, styles.userAvatarShielded]}>
-                    <Ionicons name="person" size={24} color="#CBD5E1" />
-                  </View>
-                  <Text style={styles.userName}>{recipientName}</Text>
-                  <Text style={styles.userCountry}>{recipientCountry} {recipientFlag}</Text>
-                </View>
-              </View>
-
-              <View style={styles.boxDivider} />
-
-              {/* Metadata Grid (3 columns) */}
-              <View style={styles.metaRow}>
-                <View style={styles.metaCol}>
-                  <View style={styles.metaIconRow}>
-                    <View style={styles.purplePolyBadge}>
-                      <Text style={{ color: '#FFF', fontSize: 10, fontWeight: 'bold' }}>∞</Text>
-                    </View>
-                    <Text style={styles.metaLabel}>{t('shareSuccess.network', 'Réseau')}</Text>
-                  </View>
-                  <Text style={styles.metaValue}>{network}</Text>
-                </View>
-
-                <View style={styles.metaCol}>
-                  <View style={styles.metaIconRow}>
-                    <Ionicons name="calendar-outline" size={14} color="#94A3B8" />
-                    <Text style={styles.metaLabel}>{t('shareSuccess.date', 'Date')}</Text>
-                  </View>
-                  <Text style={styles.metaValue}>{date}</Text>
-                </View>
-
-                <View style={styles.metaCol}>
-                  <View style={styles.metaIconRow}>
-                    <Ionicons name="pricetag-outline" size={14} color="#94A3B8" />
-                    <Text style={styles.metaLabel}>{t('shareSuccess.txId', 'ID de transaction')}</Text>
-                  </View>
-                  <View style={styles.hashCopyRow}>
-                    <Text style={styles.metaValue} numberOfLines={1}>{txHash}</Text>
-                    <Ionicons name="copy-outline" size={12} color="#94A3B8" style={{ marginLeft: 4 }} />
-                  </View>
-                </View>
-              </View>
-            </View>
-
-            {/* Visual Card Footer */}
-            <View style={styles.cardFooter}>
-              <View style={styles.footerLeft}>
-                <Text style={styles.footerSecurityText}>{t('shareSuccess.securedBlockchain', 'Sécurisé sur blockchains,')}</Text>
-                <Text style={styles.footerHighlightText}>{t('shareSuccess.noBorder', 'Sans frontière ni intermédiaire')}</Text>
-                
-                <View style={styles.footerDivider} />
-
-                <Text style={styles.wannaText}>{t('shareSuccess.wannaDoSame', 'Wanna do the same?')}</Text>
-                <Text style={styles.joinText}>Join Dizzit<Text style={{ color: '#FFC759' }}>Up</Text></Text>
-
-                <View style={styles.urlPill}>
-                  <Ionicons name="globe-outline" size={14} color="#FFC759" style={{ marginRight: 6 }} />
-                  <Text style={styles.urlPillText}>dizzitup.com/join</Text>
-                </View>
-              </View>
-
-              <View style={styles.footerRight}>
-                <Image 
-                  source={require('../../assets/brand/dizzitup_logo_cercle.png')} 
-                  style={styles.logoCircleFooter} 
-                />
-                <Text style={styles.footerBrandTitle}>Dizzit<Text style={{ color: '#FFC759' }}>Up</Text></Text>
-                <Text style={styles.footerBrandTagline}>{t('shareSuccess.sendMoreGetMore', 'Send More, Get More')}</Text>
-              </View>
-            </View>
-
-          </View>
-
-          {/* Control Action Buttons (Row of 2) */}
+          {/* Control Buttons */}
           <View style={styles.controlsRow}>
             <TouchableOpacity style={styles.controlBtn} onPress={toggleModifyVisual} activeOpacity={0.8}>
-              <Ionicons name="pencil-outline" size={18} color="#1A2840" style={{ marginRight: 8 }} />
-              <Text style={styles.controlBtnText}>{t('shareSuccess.modifyVisual', 'Modifier le visuel')}</Text>
+              <Text style={styles.controlBtnText}>{t('shareSuccess.modifyVisual', 'Modify visual')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.controlBtn} onPress={() => setIsFullscreen(true)} activeOpacity={0.8}>
-              <Ionicons name="expand-outline" size={18} color="#1A2840" style={{ marginRight: 8 }} />
-              <Text style={styles.controlBtnText}>{t('shareSuccess.fullscreen', 'Plein écran')}</Text>
+              <Text style={styles.controlBtnText}>{t('shareSuccess.fullscreen', 'Fullscreen')}</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Privacy Note Banner */}
+          {/* Privacy Banner */}
           <View style={styles.privacyBanner}>
             <View style={styles.shieldIconCircle}>
-              <Ionicons name="shield-outline" size={20} color="#D97706" />
+              <Ionicons name="shield-outline" size={18} color="#D97706" />
             </View>
             <Text style={styles.privacyBannerText}>
-              {t('shareSuccess.privacyNote', 'Vos informations personnelles sont protégées. Seuls le pays et le prénom sont visibles.')}
+              {t('shareSuccess.privacyNote', 'Your personal information is protected. Only country and first name are visible.')}
             </Text>
           </View>
 
-          {/* Bottom Primary Action Button */}
+          {/* Continue Button */}
           <TouchableOpacity style={styles.btnPrimary} onPress={handleContinue} activeOpacity={0.88}>
-            <Text style={styles.btnPrimaryText}>{t('shareSuccess.continue', 'Continuer')}</Text>
-            <Ionicons name="arrow-forward" size={20} color="#1A2840" style={styles.btnArrowRight} />
+            <Text style={styles.btnPrimaryText}>{t('shareSuccess.continue', 'Continue')}</Text>
+            <Ionicons name="arrow-forward" size={18} color="#1A2840" style={styles.btnArrowRight} />
           </TouchableOpacity>
 
           <View style={{ height: 20 }} />
         </ScrollView>
 
-        {/* Fullscreen Modal Preview */}
+        {/* Fullscreen Modal */}
         <Modal visible={isFullscreen} animationType="fade" transparent={true} onRequestClose={() => setIsFullscreen(false)}>
           <View style={styles.modalBg}>
             <TouchableOpacity style={styles.closeModalBtn} onPress={() => setIsFullscreen(false)}>
-              <Ionicons name="close-circle" size={36} color="#FFFFFF" />
+              <Ionicons name="close-circle" size={34} color="#FFFFFF" />
             </TouchableOpacity>
-            
             <View style={styles.modalCardContainer}>
-              <View style={[styles.visualCard, { backgroundColor: cardBackgrounds[customStyleIndex], width: '92%' }]}>
-                <View style={styles.visualHeaderRow}>
-                  <View style={styles.brandRow}>
-                    <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={styles.logoCircleImage} />
-                    <Text style={styles.brandNameText}>Dizzit<Text style={{ color: '#FFC759' }}>Up</Text></Text>
-                  </View>
-                  <Text style={styles.hashtagText}>#NoBorder<Text style={{ color: '#FFC759' }}>NoMiddleman</Text></Text>
-                </View>
-                <Text style={styles.headlineText}>{t('shareSuccess.sentFundsPre', "J'ai")} <Text style={styles.goldText}>{actionType}</Text> {t('shareSuccess.sentFundsPost', 'des fonds')}</Text>
-                <Text style={styles.amountLargeText}>{amount} {token}</Text>
-                <Text style={styles.amountSubText}>via DZYWallet</Text>
-              </View>
+              <LinearGradient
+                colors={cardBackgrounds[customStyleIndex]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[styles.visualCard, { width: '92%' }]}
+              >
+                {renderCardContent()}
+              </LinearGradient>
             </View>
           </View>
         </Modal>
@@ -279,16 +345,17 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   toastWrap: { position: 'absolute', left: 14, right: 14, top: 60, zIndex: 60 },
+
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingBottom: 10,
   },
   backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: '#F8FAFC',
     borderWidth: 1,
     borderColor: '#F1F5F9',
@@ -296,156 +363,159 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 10,
     marginTop: 2,
+    flexShrink: 0,
   },
   headerTitleWrap: {
     flex: 1,
     alignItems: 'center',
-    paddingRight: 38,
+    paddingRight: 36,
   },
   headerTitle: {
     fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 18,
+    fontSize: 17,
     color: '#1A2840',
   },
   headerStepBadge: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
+    fontSize: 11,
     color: '#64748B',
     marginTop: 2,
   },
   headerSubtitle: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 11.5,
+    fontSize: 11,
     color: '#94A3B8',
     textAlign: 'center',
-    marginTop: 6,
-    lineHeight: 16,
+    marginTop: 5,
+    lineHeight: 15,
   },
-  scrollView: {
-    flex: 1,
-  },
+
+  scrollView: { flex: 1 },
   scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 10,
+    paddingHorizontal: 14,
+    paddingTop: 8,
     paddingBottom: 30,
   },
 
-  /* Visual Card Template */
+  /* Visual Card */
   visualCard: {
-    backgroundColor: '#071D54',
-    borderRadius: 24,
-    padding: 20,
-    marginBottom: 20,
-    boxShadow: '0px 6px 16px rgba(7,29,84,0.3)',
-    elevation: 6,
+    borderRadius: 22,
+    padding: 18,
+    marginBottom: 16,
+    shadowColor: '#111D33',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 8,
   },
   visualHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   logoCircleImage: {
-    width: 28,
-    height: 28,
-    marginRight: 8,
+    width: 26,
+    height: 26,
+    marginRight: 6,
   },
   brandNameText: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 18,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 16,
     color: '#FFFFFF',
   },
   hashtagText: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 12,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 11,
     color: '#FFFFFF',
   },
   statusPillWrap: {
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: 12,
   },
   statusPill: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.25)',
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
   },
   statusPillText: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
+    fontSize: 11,
     color: '#FFFFFF',
     marginRight: 6,
   },
   checkBadgeGreen: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    width: 15,
+    height: 15,
+    borderRadius: 7.5,
     backgroundColor: '#10B981',
     justifyContent: 'center',
     alignItems: 'center',
   },
   headlineText: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 22,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 20,
     color: '#FFFFFF',
     textAlign: 'center',
-    marginBottom: 4,
+    marginBottom: 6,
   },
-  goldText: {
-    color: '#FFC759',
-  },
+  goldText: { color: '#FFC759' },
   amountLargeText: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 38,
-    color: '#10B981',
+    fontFamily: 'Inter_700Bold',
+    fontSize: 34,
+    color: '#FFFFFF',
     textAlign: 'center',
     letterSpacing: -0.5,
     marginBottom: 2,
   },
   amountSubText: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 13,
+    fontSize: 12,
     color: '#CBD5E1',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
+
+  /* Inset Box */
   insetBox: {
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 18,
+    borderRadius: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    padding: 16,
-    marginBottom: 20,
+    padding: 14,
+    marginBottom: 16,
   },
   usersRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   userCol: {
     flex: 1,
     alignItems: 'center',
+    overflow: 'hidden',
   },
   userLabel: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 11,
+    fontSize: 10,
     color: '#94A3B8',
-    marginBottom: 6,
+    marginBottom: 5,
   },
   userAvatarWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     overflow: 'hidden',
-    marginBottom: 6,
+    marginBottom: 5,
   },
   userAvatarShielded: {
     backgroundColor: 'rgba(255,255,255,0.1)',
@@ -453,138 +523,150 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarImg: {
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+  },
+  avatarInitialsText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 14,
+    color: '#CBD5E1',
   },
   userName: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 12.5,
+    fontSize: 11.5,
     color: '#FFFFFF',
     textAlign: 'center',
+    maxWidth: '90%',
   },
   userCountry: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 11,
+    fontSize: 10,
     color: '#CBD5E1',
     marginTop: 2,
   },
   transferArrowCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginHorizontal: 8,
+    marginHorizontal: 6,
+    flexShrink: 0,
   },
   boxDivider: {
     height: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    marginBottom: 14,
+    marginBottom: 12,
   },
+
+  /* Metadata */
   metaRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
   metaCol: {
     flex: 1,
+    overflow: 'hidden',
+    paddingRight: 6,
+    minWidth: 0,
   },
   metaIconRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   purplePolyBadge: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: 13,
+    height: 13,
+    borderRadius: 6.5,
     backgroundColor: '#8247E5',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 4,
+    marginRight: 3,
   },
   metaLabel: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 10,
+    fontSize: 9.5,
     color: '#94A3B8',
   },
   metaValue: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
+    fontSize: 10.5,
     color: '#FFFFFF',
   },
   hashCopyRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    overflow: 'hidden',
+    flex: 1,
   },
 
-  /* Footer inside Card */
+  /* Card Footer */
   cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
     paddingTop: 4,
   },
-  footerLeft: {
-    flex: 1,
-  },
+  footerLeft: { flex: 1, paddingRight: 8 },
   footerSecurityText: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 11,
+    fontSize: 10,
     color: '#CBD5E1',
   },
   footerHighlightText: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
+    fontSize: 10,
     color: '#FFC759',
   },
   footerDivider: {
     height: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    marginVertical: 8,
+    marginVertical: 7,
     width: '80%',
   },
   wannaText: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 10.5,
+    fontSize: 10,
     color: '#CBD5E1',
   },
   joinText: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 14,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 13,
     color: '#FFFFFF',
-    marginBottom: 6,
+    marginBottom: 5,
   },
   urlPill: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
+    borderRadius: 18,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     alignSelf: 'flex-start',
   },
   urlPillText: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 11,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 10,
     color: '#071D54',
   },
-  footerRight: {
-    alignItems: 'center',
-  },
+  footerRight: { alignItems: 'center' },
   logoCircleFooter: {
-    width: 36,
-    height: 36,
-    marginBottom: 4,
+    width: 32,
+    height: 32,
+    marginBottom: 3,
   },
   footerBrandTitle: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 15,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 13,
     color: '#FFFFFF',
   },
   footerBrandTagline: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 9,
+    fontSize: 8.5,
     color: '#CBD5E1',
     marginTop: 2,
   },
@@ -592,26 +674,29 @@ const styles = StyleSheet.create({
   /* Controls Row */
   controlsRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
+    gap: 10,
+    marginBottom: 14,
   },
   controlBtn: {
     flex: 1,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E2E8F0',
     borderRadius: 14,
-    height: 48,
-    boxShadow: '0px 2px 6px rgba(15,23,42,0.03)',
+    height: 46,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
     elevation: 1,
   },
   controlBtnText: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 13,
     color: '#1A2840',
+    textAlign: 'center',
   },
 
   /* Privacy Banner */
@@ -622,24 +707,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#FEF08A',
     borderRadius: 14,
-    padding: 14,
-    marginBottom: 20,
+    padding: 12,
+    marginBottom: 18,
   },
   shieldIconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: '#FEF3C7',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 10,
+    flexShrink: 0,
   },
   privacyBannerText: {
     flex: 1,
     fontFamily: 'Inter_400Regular',
-    fontSize: 11.5,
+    fontSize: 11,
     color: '#92400E',
-    lineHeight: 16,
+    lineHeight: 15,
   },
 
   /* Primary Button */
@@ -651,7 +737,10 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     height: 52,
     position: 'relative',
-    boxShadow: '0px 4px 8px rgba(255,199,89,0.3)',
+    shadowColor: '#FFC759',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
     elevation: 3,
   },
   btnPrimaryText: {
@@ -661,24 +750,25 @@ const styles = StyleSheet.create({
   },
   btnArrowRight: {
     position: 'absolute',
-    right: 20,
+    right: 18,
   },
 
   /* Modal */
   modalBg: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+    backgroundColor: 'rgba(15, 23, 42, 0.92)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   closeModalBtn: {
     position: 'absolute',
     top: 50,
-    right: 20,
+    right: 18,
     zIndex: 10,
   },
   modalCardContainer: {
     width: '100%',
     alignItems: 'center',
+    paddingHorizontal: 16,
   },
 });

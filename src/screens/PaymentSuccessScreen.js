@@ -223,7 +223,7 @@ export default function PaymentSuccessScreen({ route }) {
                   recipientFlag: recipientFlag,
                   date: dateFormatted,
                   txHash: txRef,
-                  actionType: 'payé',
+                  actionKey: 'actionSent',
                 },
               });
             }}
@@ -257,6 +257,18 @@ export default function PaymentSuccessScreen({ route }) {
 
           {/* Action Buttons */}
           <View style={styles.actionButtons}>
+            {(route?.params?.pivotScreen === 'ContactProfileScreen' || tx?.pivotScreen === 'ContactProfileScreen') && (
+              <TouchableOpacity 
+                style={styles.pivotContactBtn} 
+                onPress={() => navigation.navigate('ContactProfileScreen', route?.params?.pivotParams || tx?.pivotParams)}
+              >
+                <Ionicons name="person-circle-outline" size={20} color="#071D54" style={{ marginRight: 8 }} />
+                <Text style={styles.pivotContactBtnText}>
+                  {t('paymentSuccess.backToContact', 'Retour au profil du contact')}
+                </Text>
+              </TouchableOpacity>
+            )}
+
             <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation.navigate('TransactionHistoryScreen')}>
               <Ionicons name="receipt-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
               <Text style={styles.primaryBtnText}>{t('paymentSuccess.viewReceipt', 'View receipt')}</Text>
@@ -707,6 +719,22 @@ const styles = StyleSheet.create({
   actionButtons: {
     paddingHorizontal: 16,
     marginTop: 16,
+  },
+  pivotContactBtn: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#EEF2F6',
+    borderWidth: 1.5,
+    borderColor: '#071D54',
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  pivotContactBtnText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
+    color: '#071D54',
   },
   primaryBtn: {
     flexDirection: 'row',

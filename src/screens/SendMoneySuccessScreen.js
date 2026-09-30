@@ -7,6 +7,7 @@ import * as Clipboard from 'expo-clipboard';
 import AppToast from '../components/AppToast';
 import RatingPromptModal from '../components/RatingPromptModal';
 import { useApp } from '../context/AppContext';
+import { formatTxDate } from '../utils/formatTxDate';
 
 export default function SendMoneySuccessScreen() {
   const navigation = useNavigation();
@@ -16,6 +17,8 @@ export default function SendMoneySuccessScreen() {
   const { amount = '1', token = 'USDC', recipient = 'My Business', hash = '91d99789-98cc-44c0-8a14-da693a72e5f1' } = route.params || {};
   const [toast, setToast] = useState(null);
   const [showRatingModal, setShowRatingModal] = useState(false);
+  // Real timestamp captured when the success screen mounts
+  const nowDate = formatTxDate();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -94,8 +97,8 @@ export default function SendMoneySuccessScreen() {
                     token,
                     recipientName: recipient,
                     txHash: hash,
-                    date: '30 Mai 2025 • 09:41',
-                    actionType: 'envoyé',
+                    date: nowDate,
+                    actionKey: 'actionSent',
                   },
                 });
               }}

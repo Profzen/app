@@ -227,20 +227,22 @@ export default function ChooseServiceScreen() {
     if (!selectedProduct) return;
     
     if (selectedProduct.id === 'srv_remittance' || selectedProduct.isRemittance) {
-      navigation.navigate('SendMoneyScreen', { beneficiary });
+      navigation.navigate('SendMoneyScreen', { beneficiary, pivotScreen: route.params?.pivotScreen, pivotParams: route.params?.pivotParams });
     } else if (selectedProduct.id === 'srv_airtime' || selectedProduct.category === 'mobile_data_airtime') {
-      navigation.navigate('MobileRechargeScreen', { beneficiary, product: selectedProduct });
+      navigation.navigate('MobileRechargeScreen', { beneficiary, product: selectedProduct, pivotScreen: route.params?.pivotScreen, pivotParams: route.params?.pivotParams });
     } else if (selectedProduct.id === 'srv_electricity' || selectedProduct.category === 'utilities' || selectedProduct.category === 'education') {
-      navigation.navigate('BillDetailsScreen', { beneficiary });
+      navigation.navigate('BillDetailsScreen', { beneficiary, pivotScreen: route.params?.pivotScreen, pivotParams: route.params?.pivotParams });
     } else if (selectedProduct.id === 'srv_giftcard_50' || selectedProduct.category === 'gift_cards') {
-      navigation.navigate('ExploreGiftCardsScreen', { beneficiary });
+      navigation.navigate('ExploreGiftCardsScreen', { beneficiary, pivotScreen: route.params?.pivotScreen, pivotParams: route.params?.pivotParams });
     } else if (selectedProduct.isService === false) {
       navigation.navigate('ProductDetailsScreen', { 
         product: selectedProduct, 
-        shop: selectedProduct.merchant 
+        shop: selectedProduct.merchant,
+        pivotScreen: route.params?.pivotScreen,
+        pivotParams: route.params?.pivotParams,
       });
     } else {
-      navigation.navigate('BillDetailsScreen', { beneficiary });
+      navigation.navigate('BillDetailsScreen', { beneficiary, pivotScreen: route.params?.pivotScreen, pivotParams: route.params?.pivotParams });
     }
   };
 
@@ -249,7 +251,15 @@ export default function ChooseServiceScreen() {
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.backButton} onPress={() => {
+            const pivotScreen = route.params?.pivotScreen;
+            const pivotParams = route.params?.pivotParams;
+            if (pivotScreen) {
+              navigation.navigate(pivotScreen, pivotParams);
+            } else {
+              navigation.goBack();
+            }
+          }}>
             <Ionicons name="arrow-back" size={24} color="#20365B" />
           </TouchableOpacity>
           <View style={styles.headerTitleWrap}>
