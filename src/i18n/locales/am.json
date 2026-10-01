@@ -1041,6 +1041,7 @@
     },
     "copied": "ሊንክ ተቀድቷል",
     "done": "ተጠናቋል",
+    "backToContact": "ወደ አድራሻ ተመለስ",
     "confirm": "አረጋግጥ",
     "amount": "መጠን",
     "currency": "ምንዛሬ",
@@ -3791,7 +3792,17 @@
     "toastTitle": "አድራሻ ተቀድቷል!",
     "toastDesc": "አድራሻው ወደ ቅንጥብ ሰሌዳ ተቀድቷል።",
     "bannerTitle": "ደህንነቱ የተጠበቀ የ DizzitUp የግብይት ኖድ",
-    "bannerDesc": "ግብይቶችዎ በእኛ መሰረተ-ልማት የተጠበቁ ናቸው።"
+    "bannerDesc": "ግብይቶችዎ በእኛ መሰረተ-ልማት የተጠበቁ ናቸው።",
+    "requestAmount": "መጠን ይጠይቁ",
+    "requestSubtitle": "የክፍያ ጥያቄ ለማመንጨት መጠን ያስገቡ",
+    "changeNetwork": "ቀይር",
+    "networkModalTitle": "የብሎክቼይን አውታረ መረብ ይምረጡ",
+    "networkModalSubtitle": "ገንዘብ ለመቀበል አውታረ መረብ ይምረጡ (ፖሊጎን ነባሪ ነው)",
+    "shareRequestMessage": "ወደ DizzitUp ቦርሳዬ {{amount}} {{token}} ይላኩ ({{chain}}): {{address}}",
+    "shareAddressMessage": "የእኔ የ DizzitUp {{chain}} አድራሻ፡ {{address}}",
+    "requesting": "በመጠየቅ ላይ",
+    "recommendedFast": "የሚመከር • ፈጣን እና ዝቅተኛ ክፍያዎች",
+    "crossmintSupported": "ፈጣን • በCrossmint የተደገፈ"
   },
   "contactScreen": {
     "requiredField": "አስፈላጊ መስክ",
@@ -4136,6 +4147,7 @@
     },
     "giftRequestTitle": "ይህንን በDizzitUp ግዙልኝ: {{name}}",
     "giftRequestShopMsg": "ከ {{name}} ሱቅ በDizzitUp ስጦታ ይላኩልኝ: {{url}}",
+    "shareShopMsg": "በDizzitUp ላይ የ{{name}} ሱቅን ያግኙ: {{url}}",
     "giftProductTitle": "ይህን ግዙልኝ: {{name}}",
     "giftProductMsg": "ይህንን በDizzitUp እፈልጋለሁ: {{name}} ({{price}}) ከ {{shop}}። እዚህ ሊገዙልኝ ይችላሉ: {{url}}",
     "shareSuccessTitle": "የስጦታ ሊንክ ተጋርቷል",
@@ -4266,7 +4278,16 @@
     "orderFailed": "ትዕዛዙን ማስኬድ አልተሳካም። እባክዎ እንደገና ይሞክሩ።",
     "paymentSuccess": "ክፍያው በተሳካ ሁኔታ ተጠናቋል!",
     "paymentFailed": "ክፍያው ውድቅ ተደርጓል ወይም ተሰርዟል። እባክዎ እንደገና ይሞክሩ።",
-    "cryptoOpened": "የክሪፕቶ ደረሰኝ ተከፍቷል። እባክዎ ክፍያውን በዋሌትዎ ያጠናቅቁ።"
+    "cryptoOpened": "የክሪፕቶ ደረሰኝ ተከፍቷል። እባክዎ ክፍያውን በዋሌትዎ ያጠናቅቁ።",
+    "instantBadge": "ፈጣን",
+    "popularBadge": "ተወዳጅ",
+    "noActiveTokens": "በ DZYwallet ውስጥ ምንም ገቢር ቀሪ ሂሳብ የለም",
+    "noActiveTokensDesc": "የአውታረ መረብ ክፍያ ሳይኖር ሂሳቦችዎን ወዲያውኑ ለመክፈል USDT፣ USDC ወይም EURC ይሙሉ::",
+    "topUpToPay": "በ DZYwallet ለመክፈል የኪስ ቦርሳዎን ይሙሉ",
+    "orderCreatedSuccess": "ክፍያው በተሳካ ሁኔታ ተጠናቋል!",
+    "momoInitiated": "የሞባይል ገንዘብ ክፍያ ጥያቄ ወደ ስልክዎ ተልኳል::",
+    "walletAuthError": "DizzitUp Wallet ለመጠቀም በመለያ መግባት አለብዎት::",
+    "walletError": "በኪስ ቦርሳ ክፍያ ወቅት ስህተት ተከስቷል"
   },
   "actionScanCash": "ስካን እና ወጪ",
   "orderVerification": {
@@ -4586,7 +4607,16 @@
     "txSubmitted": "ግብይቱ ተልኳል!",
     "successMessage": "በተሳካ ሁኔታ {{amount}} {{token}} ወደ {{recipient}} ልከዋል",
     "secureNode": "ደህንነቱ የተጠበቀ የግብይት ኖድ",
-    "addressCopied": "አድራሻው በተሳካ ሁኔታ ተቀድቷል!"
+    "addressCopied": "አድራሻው በተሳካ ሁኔታ ተቀድቷል!",
+    "topUpNeeded": "ዜሮ ሂሳብ። {{token}} ለመሙላት ይንኩ",
+    "insufficientFunds": "በቂ ያልሆነ ሂሳብ",
+    "insufficientFundsDesc": "ያለዎት {{bal}} {{token}} ብቻ ነው።",
+    "view_on_polyscan": "በ PolygonScan ላይ ይመልከቱ",
+    "view_on_explorer": "በብሎክ ኤክስፕሎረር ላይ ይመልከቱ",
+    "sending_in_progress": "{{amount}} {{token}} በመላክ ላይ...",
+    "broadcasting_node": "ግብይቱን ወደ {{chain}} አውታረ መረብ በማስገባት ላይ...",
+    "secured_blockchain_tx": "ደህንነቱ የተጠበቀ የብሎክቼይን ግብይት",
+    "tx_error_title": "የግብይት ማስታወቂያ"
   },
   "withdrawFunds": {
     "title": "ገንዘብ ማውጣት",
@@ -5057,7 +5087,10 @@
     "hq_country_label": "የዋና መ/ቤት አገር",
     "unavailable_country": "በ {{country}} ውስጥ ገንዘብ ማውጣት ለጊዜው አይገኝም።",
     "unavailable_subtitle": "ይህ የክፍያ መስመር እየተከፈተ ሲሆን የማውጫ ግንኙነቱ ዝግጁ ሲሆን ተግባራዊ ይሆናል።",
-    "coming_soon": "በቅርብ ቀን"
+    "coming_soon": "በቅርብ ቀን",
+    "exchange_rate_unavailable": "የአሁኑ የምንዛሬ ተመን አይገኝም:: እባክዎ ትንሽ ቆይተው እንደገና ይሞክሩ::",
+    "noCashoutRouteCountry": "ለ{{country}} ብቁ የሆነ የገንዘብ ማውጣት አማራጭ የለም::",
+    "noCashoutRouteDesc": "በሞባይል ገንዘብ ገንዘብ ማውጣት በማዳጋስካር ውስጥ አይደገፍም:: እባክዎ ሌላ የመክፈያ አማራጭ ይጠቀሙ ወይም ድጋፍን ያግኙ::"
   },
   "rewards": {
     "title": "የ DZY ሽልማቶች",
@@ -5278,13 +5311,14 @@
     "unavailableInCountry": "በ{{country}} አይገኝም",
     "switchCountry": "አገር ቀይር",
     "momoUnavailableExplanation": "የሞባይል ገንዘብ ክፍያ ለ{{country}} አይገኝም። በ20 የአፍሪካ አገሮች (ቤኒን፣ ኮትዲቯር፣ ሴኔጋል፣ ቶጎ፣ ኬንያ...) ውስጥ ይሰራል::",
-    "paymentRegion": "የክፍያ ክልል፡",
+    "paymentRegion": "የክፍያ ክልል፦",
     "suggestAlternative": "እባክዎ ከላይ የባንክ ካርድ ወይም ክሪፕቶ (USDC/USDT) ይምረጡ።",
     "momoActiveDesc": "በ{{country}} ውስጥ በ{{operators}} ወዲያውኑ ይክፈሉ።",
     "momoWithdrawUnavailable": "የሞባይል ገንዘብ ማውጣት በ{{country}} አይገኝም።",
     "momoWithdrawAvailable": "ወደ {{operators}} ፈጣን ገንዘብ ማውጣት።",
     "notAvailableTitle": "የሞባይል ገንዘብ አይገኝም",
-    "cardAlternativeNote": "የሞባይል ገንዘብ እስካሁን በ{{country}} ውስጥ አይገኝም። የባንክ ካርድዎን (Visa / Mastercard) በመጠቀም ከየትኛውም የአለም ክፍል ሆነው መለያዎን ይሙሉ።"
+    "cardAlternativeNote": "የሞባይል ገንዘብ እስካሁን በ{{country}} ውስጥ አይገኝም። የባንክ ካርድዎን (Visa / Mastercard) በመጠቀም ከየትኛውም የአለም ክፍል ሆነው መለያዎን ይሙሉ።",
+    "topupRegionLabel": "የክፍያ ክልል፦"
   },
   "activityInboxTitle": "የእንቅስቃሴ ገቢ መልእክት",
   "tabAll": "ሁሉም",

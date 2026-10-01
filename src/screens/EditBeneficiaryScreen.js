@@ -335,7 +335,11 @@ export default function EditBeneficiaryScreen({ route }) {
         if (!addRes.success) throw new Error(addRes.error);
         AppToast.showSuccess(t('beneficiary.edit.save_success_add', "Beneficiary added"));
       }
-      navigation.goBack();
+      if (route.params?.pivotScreen) {
+        navigation.navigate(route.params.pivotScreen, route.params.pivotParams);
+      } else {
+        navigation.goBack();
+      }
     } catch (err) {
       console.error("Save error:", err);
       AppToast.showError(err?.message || t('beneficiary.edit.save_error', "Error saving beneficiary"));
@@ -361,6 +365,8 @@ export default function EditBeneficiaryScreen({ route }) {
           <TouchableOpacity style={styles.backButton} onPress={() => {
             if (currentStep === 2 && !isEditing) {
               setCurrentStep(1);
+            } else if (route.params?.pivotScreen) {
+              navigation.navigate(route.params.pivotScreen, route.params.pivotParams);
             } else {
               navigation.goBack();
             }

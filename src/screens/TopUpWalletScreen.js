@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
@@ -8,6 +8,7 @@ import { useApp } from '../context/AppContext';
 
 export default function TopUpWalletScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
   const { t } = useApp();
   const [selectedMethod, setSelectedMethod] = useState('card');
   const [modalVisible, setModalVisible] = useState(false);
@@ -19,7 +20,16 @@ export default function TopUpWalletScreen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+          <TouchableOpacity 
+            style={styles.iconBtn} 
+            onPress={() => {
+              if (route.params?.pivotScreen) {
+                navigation.navigate(route.params.pivotScreen, route.params.pivotParams);
+              } else {
+                navigation.goBack();
+              }
+            }}
+          >
           <Ionicons name="chevron-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <Text style={styles.pageTitle}>{t('topUpWallet.title', 'Top up wallet')}</Text>
@@ -206,7 +216,16 @@ export default function TopUpWalletScreen() {
           </View>
 
           {/* Continue Button */}
-          <TouchableOpacity style={styles.btnContinue} onPress={() => navigation.navigate(selectedMethod === 'card' ? 'TopUpWalletDetailsScreen' : 'TopUpDetailsScreen')}>
+          <TouchableOpacity 
+            style={styles.btnContinue} 
+            onPress={() => navigation.navigate(
+              selectedMethod === 'card' ? 'TopUpWalletDetailsScreen' : 'TopUpDetailsScreen',
+              {
+                pivotScreen: route.params?.pivotScreen,
+                pivotParams: route.params?.pivotParams,
+              }
+            )}
+          >
             <Text style={styles.btnContinueText}>{t('withdrawFunds.continueBtn', 'Continue')}</Text>
             <Ionicons name="arrow-forward" size={20} color="#1A2840" />
           </TouchableOpacity>

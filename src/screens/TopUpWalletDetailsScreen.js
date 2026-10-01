@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar, ActivityIndicator, TextInput, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
@@ -28,6 +28,7 @@ const getNetworkOptions = (t) => [
 
 export default function TopUpWalletDetailsScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
   const { session, user, t } = useApp();
   const evmAddress = user?.role === 'merchant' && user?.businessEvmAddress ? user.businessEvmAddress : user?.evmAddress || '';
   
@@ -212,7 +213,7 @@ export default function TopUpWalletDetailsScreen() {
                   onEvent={(event) => {
                     console.log("Crossmint Event:", event);
                     if (event.type === 'payment:process.succeeded') {
-                      navigation.navigate('TopUpWalletPaymentScreen');
+                      navigation.navigate('TopUpWalletPaymentScreen', route.params);
                     } else if (event.type === 'payment:process.failed') {
                       setError(t('topup.payment_failed'));
                     } else if (event.type === 'payment:process.rejected') {

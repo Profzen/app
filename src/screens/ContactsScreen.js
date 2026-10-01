@@ -1,7 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, TextInput, Image, Modal, Platform, StatusBar, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, TextInput, Image, Modal, Platform, StatusBar, ActivityIndicator, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
@@ -13,6 +13,33 @@ import contactService from '../services/contactService';
 import { supabase } from '../services/supabaseClient';
 import { getFullCountryName } from '../utils/countryCurrencyUtils';
 import { SwipeRow } from 'react-native-swipe-list-view';
+
+function HighlightedText({ text = '', highlight = '', style, highlightStyle }) {
+  if (!highlight || !text) {
+    return <Text style={style} numberOfLines={1}>{text}</Text>;
+  }
+
+  const str = String(text);
+  const lowerStr = str.toLowerCase();
+  const lowerHl = highlight.trim().toLowerCase();
+  const idx = lowerStr.indexOf(lowerHl);
+
+  if (idx === -1) {
+    return <Text style={style} numberOfLines={1}>{str}</Text>;
+  }
+
+  const before = str.slice(0, idx);
+  const match = str.slice(idx, idx + highlight.trim().length);
+  const after = str.slice(idx + highlight.trim().length);
+
+  return (
+    <Text style={style} numberOfLines={1}>
+      {before}
+      <Text style={highlightStyle}>{match}</Text>
+      {after}
+    </Text>
+  );
+}
 
 const quickActions = [
   { id: '1', titleKey: 'contacts.qa_essentials', defaultTitle: "Essentials\n& All", icon: "bag-handle-outline", color: "#8B5CF6", bgColor: "#F5F3FF" },
@@ -57,6 +84,9 @@ export default function ContactsScreen() {
   const [toast, setToast] = useState(null);
   const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'nearby', 'favorites', 'africa', 'world'
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const searchInputRef = useRef(null);
   const [contactToDelete, setContactToDelete] = useState(null);
 
   const nextScreen = route.params?.nextScreen;
@@ -68,7 +98,7 @@ export default function ContactsScreen() {
     '5': 'SendMoneyScreen',
     '6': 'RewardsScreen',
     '7': 'ShopsScreen',
-    '8': 'ContactsManageScreen',
+    '8': 'EditBeneficiaryScreen',
   };
 
   const fetchBeneficiaries = async () => {
@@ -155,13 +185,78 @@ export default function ContactsScreen() {
     setSelectedContact(null);
   };
 
+  const trimmedQuery = searchQuery.trim().toLowerCase();
+
+  const { prefixMatches, allSuggestions, topSuggestion, ghostRemainder } = useMemo(() => {
+    if (!trimmedQuery) {
+      return { prefixMatches: [], allSuggestions: [], topSuggestion: null, ghostRemainder: '' };
+    }
+
+    const prefixes = [];
+    const others = [];
+
+    contactItems.forEach(contact => {
+      const name = (contact.name || '').trim();
+      const nameLower = name.toLowerCase();
+      const firstNameLower = (contact.first_name || '').toLowerCase();
+      const lastNameLower = (contact.last_name || '').toLowerCase();
+      const loc = (contact.location || '').toLowerCase();
+      const phone = (contact.phone || '').toLowerCase();
+      const email = (contact.email || '').toLowerCase();
+
+      if (nameLower.startsWith(trimmedQuery)) {
+        prefixes.push(contact);
+      } else if (firstNameLower.startsWith(trimmedQuery)) {
+        prefixes.push(contact);
+      } else if (lastNameLower.startsWith(trimmedQuery)) {
+        prefixes.push(contact);
+      } else if (
+        nameLower.includes(trimmedQuery) ||
+        loc.includes(trimmedQuery) ||
+        phone.includes(trimmedQuery) ||
+        email.includes(trimmedQuery)
+      ) {
+        others.push(contact);
+      }
+    });
+
+    const suggestions = [...prefixes, ...others];
+
+    let bestMatch = null;
+    let remainder = '';
+
+    const directPrefixMatch = prefixes.find(c => (c.name || '').toLowerCase().startsWith(trimmedQuery));
+    if (directPrefixMatch) {
+      bestMatch = directPrefixMatch;
+      remainder = directPrefixMatch.name.slice(searchQuery.length);
+    }
+
+    return {
+      prefixMatches: prefixes,
+      allSuggestions: suggestions,
+      topSuggestion: bestMatch,
+      ghostRemainder: remainder,
+    };
+  }, [contactItems, searchQuery, trimmedQuery]);
+
   const filteredContacts = useMemo(() => {
-    return contactItems.filter(contact => {
+    const q = searchQuery.trim().toLowerCase();
+
+    const filtered = contactItems.filter(contact => {
       const name = (contact.name || '').toLowerCase();
       const loc = (contact.location || '').toLowerCase();
       const country = (contact.country || '').toLowerCase();
-      const q = searchQuery.trim().toLowerCase();
-      const matchesSearch = !q || name.includes(q) || loc.includes(q) || country.includes(q);
+      const phone = (contact.phone || '').toLowerCase();
+      const email = (contact.email || '').toLowerCase();
+      const city = (contact.city || '').toLowerCase();
+
+      const matchesSearch = !q || 
+        name.includes(q) || 
+        loc.includes(q) || 
+        country.includes(q) || 
+        phone.includes(q) || 
+        email.includes(q) || 
+        city.includes(q);
 
       if (!matchesSearch) return false;
 
@@ -173,6 +268,25 @@ export default function ContactsScreen() {
         return ['TG', 'NG', 'KE', 'SN', 'ML', 'BF', 'GH', 'CI', 'BJ', 'CM'].some(code => (contact.country_code || '').toUpperCase() === code);
       }
       return true;
+    });
+
+    if (!q) return filtered;
+
+    // Prioritize contacts whose name starts with query, then first name, then last name
+    return [...filtered].sort((a, b) => {
+      const aName = (a.name || '').toLowerCase();
+      const bName = (b.name || '').toLowerCase();
+      const aStarts = aName.startsWith(q);
+      const bStarts = bName.startsWith(q);
+      if (aStarts && !bStarts) return -1;
+      if (!aStarts && bStarts) return 1;
+
+      const aFirst = (a.first_name || '').toLowerCase().startsWith(q);
+      const bFirst = (b.first_name || '').toLowerCase().startsWith(q);
+      if (aFirst && !bFirst) return -1;
+      if (!aFirst && bFirst) return 1;
+
+      return aName.localeCompare(bName);
     });
   }, [contactItems, searchQuery, activeFilter]);
 
@@ -204,43 +318,227 @@ export default function ContactsScreen() {
           contentContainerStyle={styles.scrollContent} 
           showsVerticalScrollIndicator={false}
           stickyHeaderIndices={[1]}
+          keyboardShouldPersistTaps="handled"
+          onScrollBeginDrag={() => {
+            if (isDropdownOpen) setIsDropdownOpen(false);
+          }}
         >
           
           {/* Index 0: Top Non-Sticky Elements */}
-          <View>
+          <View style={{ zIndex: 100 }}>
             <Text style={styles.subtitle}>
               {nextScreen 
                 ? t('contacts.select_beneficiary_action', 'Sélectionnez un bénéficiaire pour continuer.')
                 : t('contacts.subtitle', "Soutenez vos bénéficiaires : envoyez de l'argent, payez des factures et achetez l'essentiel en Afrique.")}
             </Text>
 
-            {/* Sleek Search Bar */}
-            <View style={[styles.searchContainer, { 
-              paddingVertical: 10, 
-              paddingHorizontal: 16, 
-              borderRadius: 24, 
-              borderColor: '#FFC759', 
-              borderWidth: 1.5,
-              backgroundColor: '#FFFFFF',
-              shadowColor: '#FFC759',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.15,
-              shadowRadius: 10,
-              elevation: 4
-            }]}>
-              <Ionicons name="search" size={20} color="#D97706" style={{ marginRight: 10 }} />
-              <TextInput
-                style={{ flex: 1, fontFamily: 'Inter_500Medium', fontSize: 14, color: '#1A2840', padding: 0 }}
-                placeholder={t('contacts.search_hint_short', 'Search name, phone or email...')}
-                placeholderTextColor="#94A3B8"
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                autoCorrect={false}
-              />
-              {searchQuery.length > 0 && (
-                <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
-                  <Ionicons name="close-circle" size={18} color="#94A3B8" />
-                </TouchableOpacity>
+            {/* Search and Autocomplete Section */}
+            <View style={styles.searchSectionWrap}>
+              {/* Sleek Search Bar with Gray Ghost Auto-Fill */}
+              <View style={[
+                styles.searchContainer,
+                isSearchFocused && styles.searchContainerFocused
+              ]}>
+                <Ionicons 
+                  name="search" 
+                  size={20} 
+                  color={isSearchFocused ? "#D97706" : "#94A3B8"} 
+                  style={{ marginRight: 10 }} 
+                />
+
+                <View style={styles.searchInputWrapper}>
+                  {/* Gray Ghost Text Underlay */}
+                  {ghostRemainder.length > 0 && isSearchFocused && (
+                    <View pointerEvents="none" style={styles.ghostTextRow}>
+                      <Text style={styles.ghostTypedSpacer} numberOfLines={1}>
+                        {searchQuery}
+                      </Text>
+                      <Text style={styles.ghostAutoFillText} numberOfLines={1}>
+                        {ghostRemainder}
+                      </Text>
+                    </View>
+                  )}
+
+                  <TextInput
+                    ref={searchInputRef}
+                    style={styles.searchInputField}
+                    placeholder={searchQuery.length === 0 ? t('contacts.search_hint_short', 'Search name, phone or email...') : ''}
+                    placeholderTextColor="#94A3B8"
+                    value={searchQuery}
+                    onChangeText={(text) => {
+                      setSearchQuery(text);
+                      setIsDropdownOpen(true);
+                    }}
+                    onFocus={() => {
+                      setIsSearchFocused(true);
+                      if (searchQuery.trim().length > 0) setIsDropdownOpen(true);
+                    }}
+                    onBlur={() => {
+                      setIsSearchFocused(false);
+                    }}
+                    onSubmitEditing={() => {
+                      if (topSuggestion && ghostRemainder) {
+                        setSearchQuery(topSuggestion.name);
+                      }
+                      setIsDropdownOpen(false);
+                      Keyboard.dismiss();
+                    }}
+                    returnKeyType="search"
+                    autoCorrect={false}
+                    autoCapitalize="none"
+                  />
+                </View>
+
+                {/* Tab / Auto-fill button when ghost text exists */}
+                {ghostRemainder.length > 0 && (
+                  <TouchableOpacity
+                    style={styles.tabCompleteBtn}
+                    onPress={() => {
+                      if (topSuggestion) {
+                        setSearchQuery(topSuggestion.name);
+                        setIsDropdownOpen(false);
+                      }
+                    }}
+                    activeOpacity={0.7}
+                    hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+                  >
+                    <Ionicons name="return-down-forward" size={13} color="#475569" style={{ marginRight: 3 }} />
+                    <Text style={styles.tabCompleteText}>Tab</Text>
+                  </TouchableOpacity>
+                )}
+
+                {searchQuery.length > 0 && (
+                  <TouchableOpacity 
+                    onPress={() => {
+                      setSearchQuery('');
+                      setIsDropdownOpen(false);
+                    }} 
+                    hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+                  >
+                    <Ionicons name="close-circle" size={18} color="#94A3B8" />
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {/* Google-Style Quick Suggestion Pills */}
+              {searchQuery.trim().length > 0 && prefixMatches.length > 0 && (
+                <View style={styles.candidatePillsRow}>
+                  <ScrollView 
+                    horizontal 
+                    showsHorizontalScrollIndicator={false} 
+                    contentContainerStyle={styles.candidatePillsScroll}
+                    keyboardShouldPersistTaps="handled"
+                  >
+                    {prefixMatches.slice(0, 6).map((contact) => (
+                      <TouchableOpacity
+                        key={`pill-${contact.id}`}
+                        style={styles.candidatePill}
+                        onPress={() => {
+                          setSearchQuery(contact.name);
+                          setIsDropdownOpen(false);
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.candidatePillFlag}>{contact.flag || '👤'}</Text>
+                        <Text style={styles.candidatePillText} numberOfLines={1}>
+                          <Text style={styles.candidatePillHighlight}>{searchQuery}</Text>
+                          {contact.name.slice(searchQuery.length)}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+
+              {/* Google-Style Floating Suggestions Dropdown */}
+              {isDropdownOpen && searchQuery.trim().length > 0 && (
+                <View style={styles.dropdownCard}>
+                  {/* Top query status row */}
+                  <View style={styles.dropdownHeaderRow}>
+                    <View style={styles.dropdownHeaderLeft}>
+                      <Ionicons name="search" size={14} color="#D97706" style={{ marginRight: 6 }} />
+                      <Text style={styles.dropdownHeaderText} numberOfLines={1}>
+                        "{searchQuery}"
+                      </Text>
+                    </View>
+                    <View style={styles.dropdownCountBadge}>
+                      <Text style={styles.dropdownCountText}>
+                        {allSuggestions.length} {t('contacts.matches_count', 'trouvé(s)')}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {allSuggestions.length === 0 ? (
+                    <View style={styles.dropdownEmptyRow}>
+                      <Ionicons name="search-outline" size={18} color="#94A3B8" style={{ marginRight: 8 }} />
+                      <Text style={styles.dropdownEmptyText}>
+                        {t('contacts.no_matching_contact', 'Aucun contact ne commence par')} "{searchQuery}"
+                      </Text>
+                    </View>
+                  ) : (
+                    allSuggestions.slice(0, 5).map((contact, index) => (
+                      <TouchableOpacity
+                        key={`sugg-${contact.id}-${index}`}
+                        style={[
+                          styles.dropdownItemRow,
+                          index === allSuggestions.slice(0, 5).length - 1 && { borderBottomWidth: 0 }
+                        ]}
+                        onPress={() => {
+                          setIsDropdownOpen(false);
+                          Keyboard.dismiss();
+                          if (nextScreen) {
+                            navigation.navigate(nextScreen, { beneficiary: contact, contact });
+                          } else {
+                            setSelectedContact(contact);
+                          }
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        {/* Avatar */}
+                        <Avatar image={contact.image} name={contact.name} size={34} style={{ marginRight: 10 }} />
+
+                        {/* Details */}
+                        <View style={styles.dropdownItemCenter}>
+                          <HighlightedText
+                            text={contact.name}
+                            highlight={searchQuery}
+                            style={styles.dropdownItemName}
+                            highlightStyle={styles.dropdownItemHighlight}
+                          />
+                          <Text style={styles.dropdownItemSub} numberOfLines={1}>
+                            {contact.relation ? `${contact.relation} • ` : ''}{contact.flag || ''} {contact.location || ''}
+                          </Text>
+                        </View>
+
+                        {/* Google diagonal insert button (tap to put name in search) */}
+                        <TouchableOpacity
+                          style={styles.dropdownInsertBtn}
+                          onPress={() => {
+                            setSearchQuery(contact.name);
+                          }}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Ionicons name="arrow-up-outline" size={17} color="#94A3B8" style={{ transform: [{ rotate: '-45deg' }] }} />
+                        </TouchableOpacity>
+                      </TouchableOpacity>
+                    ))
+                  )}
+
+                  {/* Dropdown footer to view full results below */}
+                  {allSuggestions.length > 5 && (
+                    <TouchableOpacity
+                      style={styles.dropdownFooterBtn}
+                      onPress={() => {
+                        setIsDropdownOpen(false);
+                        Keyboard.dismiss();
+                      }}
+                    >
+                      <Text style={styles.dropdownFooterText}>
+                        {t('contacts.view_all_results', 'Voir tous les')} {allSuggestions.length} {t('contacts.results_plural', 'résultats')} ➔
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
               )}
             </View>
 
@@ -262,7 +560,7 @@ export default function ContactsScreen() {
                 <Text style={styles.sectionTitle}>{t('contacts.quick_actions', 'Actions rapides')}</Text>
                 <ScrollView 
                   horizontal 
-                  showsHorizontalScrollIndicator={false}
+                  showsHorizontalScrollIndicator={false} 
                   contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
                 >
                   {quickActions.map(action => (
@@ -275,7 +573,7 @@ export default function ContactsScreen() {
                         } else if (action.id === '7') {
                           shareShopLink();
                         } else if (action.id === '8') {
-                          navigation.navigate('ContactsManageScreen');
+                          navigation.navigate('EditBeneficiaryScreen');
                         } else {
                           navigation.setParams({ nextScreen: actionRoutes[action.id] });
                         }
@@ -300,7 +598,7 @@ export default function ContactsScreen() {
             {/* Mes bénéficiaires */}
             <View style={styles.sectionHeaderRow}>
               <Text style={styles.sectionTitleSticky}>{t('contacts.my_beneficiaries', 'Mes bénéficiaires')}</Text>
-              <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => navigation.navigate('ContactsManageScreen')}>
+              <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => navigation.navigate('EditBeneficiaryScreen')}>
                 <Text style={styles.showLessText}>{t('contacts.manage_contacts', 'Gérer contacts')}</Text>
                 <Ionicons name="arrow-forward" size={14} color="#3B82F6" style={{ marginLeft: 4 }} />
               </TouchableOpacity>
@@ -367,7 +665,7 @@ export default function ContactsScreen() {
                 <Ionicons name="people-outline" size={44} color="#CBD5E1" />
                 <Text style={styles.emptyTitle}>{t('contacts.no_beneficiaries', 'No beneficiaries yet')}</Text>
                 <Text style={styles.emptySubtitle}>{t('contacts.add_first_sub', 'Add your beneficiaries to send them funds and pay their bills.')}</Text>
-                <TouchableOpacity style={styles.addFirstBtn} onPress={() => navigation.navigate('ContactsManageScreen')}>
+                <TouchableOpacity style={styles.addFirstBtn} onPress={() => navigation.navigate('EditBeneficiaryScreen')}>
                   <Ionicons name="person-add" size={16} color="#071D54" style={{ marginRight: 6 }} />
                   <Text style={styles.addFirstBtnText}>{t('contacts.add_beneficiary', 'Add a beneficiary')}</Text>
                 </TouchableOpacity>
@@ -388,8 +686,14 @@ export default function ContactsScreen() {
                         if (nextScreen) {
                           navigation.navigate(nextScreen, { beneficiary: contact, contact });
                         } else {
-                          setSelectedContact(contact);
+                          navigation.navigate('ContactProfileScreen', { 
+                            contact, 
+                            pivotScreen: 'ContactsScreen' 
+                          });
                         }
+                      }}
+                      onMorePress={() => {
+                        setSelectedContact(contact);
                       }}
                     />
                   </View>
@@ -405,8 +709,15 @@ export default function ContactsScreen() {
           visible={!!selectedContact}
           onClose={() => setSelectedContact(null)}
           onNavigate={(routeStr, extraParams = {}) => {
+            const currentContact = selectedContact;
             setSelectedContact(null);
-            navigation.navigate(routeStr, { beneficiary: selectedContact, contact: selectedContact, ...extraParams });
+            navigation.navigate(routeStr, { 
+              beneficiary: currentContact, 
+              contact: currentContact, 
+              pivotScreen: 'ContactProfileScreen',
+              pivotParams: { contact: currentContact },
+              ...extraParams 
+            });
           }}
           onDelete={(id) => {
             setSelectedContact(null);
@@ -482,7 +793,7 @@ export default function ContactsScreen() {
   );
 }
 
-function ContactRow({ contact, onPress }) {
+function ContactRow({ contact, onPress, onMorePress }) {
   const { t } = useApp();
 
   return (
@@ -510,9 +821,17 @@ function ContactRow({ contact, onPress }) {
         </Text>
       </View>
 
-      <View style={styles.moreActionBtn}>
+      <TouchableOpacity 
+        style={styles.moreActionBtn} 
+        onPress={(e) => {
+          if (e && e.stopPropagation) e.stopPropagation();
+          if (onMorePress) onMorePress();
+          else if (onPress) onPress();
+        }}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      >
         <Ionicons name="ellipsis-vertical" size={20} color="#3B82F6" />
-      </View>
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 }
@@ -538,7 +857,228 @@ const styles = StyleSheet.create({
   todoButton: { minWidth: 60, alignItems: 'center', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
   todoButtonText: { fontFamily: 'Inter_600SemiBold', fontSize: 11 },
   subtitle: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#64748B', paddingHorizontal: 16, marginBottom: 16 },
-  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, padding: 12, marginHorizontal: 16, marginBottom: 24 },
+  searchSectionWrap: {
+    position: 'relative',
+    zIndex: 999,
+    marginBottom: 16,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#FFC759',
+    borderRadius: 24,
+    paddingVertical: 9,
+    paddingHorizontal: 16,
+    marginHorizontal: 16,
+    shadowColor: '#FFC759',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  searchContainerFocused: {
+    borderColor: '#D97706',
+    shadowColor: '#D97706',
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+  },
+  searchInputWrapper: {
+    flex: 1,
+    height: 32,
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  ghostTextRow: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  ghostTypedSpacer: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 14,
+    color: 'transparent',
+    includeFontPadding: false,
+  },
+  ghostAutoFillText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 14,
+    color: '#94A3B8',
+    includeFontPadding: false,
+  },
+  searchInputField: {
+    flex: 1,
+    fontFamily: 'Inter_500Medium',
+    fontSize: 14,
+    color: '#1A2840',
+    padding: 0,
+    margin: 0,
+    includeFontPadding: false,
+    backgroundColor: 'transparent',
+  },
+  tabCompleteBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    borderRadius: 8,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    marginRight: 6,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  tabCompleteText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    color: '#475569',
+  },
+  candidatePillsRow: {
+    marginTop: 8,
+    paddingHorizontal: 16,
+  },
+  candidatePillsScroll: {
+    alignItems: 'center',
+    paddingVertical: 2,
+  },
+  candidatePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginRight: 8,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  candidatePillFlag: {
+    fontSize: 13,
+    marginRight: 5,
+  },
+  candidatePillText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
+    color: '#334155',
+  },
+  candidatePillHighlight: {
+    fontFamily: 'Inter_700Bold',
+    color: '#D97706',
+  },
+  dropdownCard: {
+    position: 'absolute',
+    top: 50,
+    left: 16,
+    right: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#FFC759',
+    shadowColor: '#071D54',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.18,
+    shadowRadius: 20,
+    elevation: 12,
+    zIndex: 9999,
+    overflow: 'hidden',
+  },
+  dropdownHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    backgroundColor: '#F8FAFC',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  dropdownHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  dropdownHeaderText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: '#071D54',
+    flex: 1,
+  },
+  dropdownCountBadge: {
+    backgroundColor: '#EFF6FF',
+    borderRadius: 10,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  dropdownCountText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 10,
+    color: '#3B82F6',
+  },
+  dropdownEmptyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  dropdownEmptyText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12,
+    color: '#94A3B8',
+    flex: 1,
+  },
+  dropdownItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F8FAFC',
+  },
+  dropdownItemCenter: {
+    flex: 1,
+  },
+  dropdownItemName: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 13,
+    color: '#1A2840',
+    marginBottom: 2,
+  },
+  dropdownItemHighlight: {
+    fontFamily: 'Inter_700Bold',
+    color: '#D97706',
+  },
+  dropdownItemSub: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    color: '#64748B',
+  },
+  dropdownInsertBtn: {
+    padding: 6,
+    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
+    marginLeft: 6,
+  },
+  dropdownFooterBtn: {
+    alignItems: 'center',
+    paddingVertical: 10,
+    backgroundColor: '#FFFBEB',
+    borderTopWidth: 1,
+    borderTopColor: '#FEF3C7',
+  },
+  dropdownFooterText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    color: '#D97706',
+  },
   searchIcon: { marginRight: 12 },
   searchInput: { fontFamily: 'Inter_500Medium', fontSize: 14, color: '#1A2840', marginBottom: 2, padding: 0, outlineStyle: 'none' },
   searchSubText: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#94A3B8' },

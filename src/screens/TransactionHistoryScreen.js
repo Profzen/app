@@ -97,6 +97,29 @@ export default function TransactionHistoryScreen() {
     }
   };
 
+  const getExplorerUrl = (tx) => {
+    if (tx.onChain?.explorerLink && !tx.onChain.explorerLink.includes('-') && !tx.onChain.explorerLink.includes('/error')) {
+      return tx.onChain.explorerLink;
+    }
+    if (tx.explorerLink && !tx.explorerLink.includes('-') && !tx.explorerLink.includes('/error')) {
+      return tx.explorerLink;
+    }
+    const hash = tx.onChain?.txHash || tx.txHash;
+    if (!hash || typeof hash !== 'string' || hash.includes('-')) {
+      return null;
+    }
+    const chain = (tx.chain || '').toLowerCase();
+    if (chain.includes('solana') && hash.length >= 40 && hash.length <= 90) {
+      return `https://solscan.io/tx/${hash}`;
+    }
+    if (hash.startsWith('0x') && hash.length >= 64) {
+      if (chain.includes('base')) return `https://basescan.org/tx/${hash}`;
+      if (chain.includes('bsc') || chain.includes('bnb')) return `https://bscscan.com/tx/${hash}`;
+      return `https://polygonscan.com/tx/${hash}`;
+    }
+    return null;
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -236,9 +259,19 @@ export default function TransactionHistoryScreen() {
                           </View>
                         </View>
 
-                        {tx.onChain?.explorerLink && (
-                          <TouchableOpacity style={styles.explorerBtn} onPress={() => Linking.openURL(tx.onChain.explorerLink)}>
-                            <Text style={styles.explorerBtnText}>{t('common.wallet.view_onchain', 'Explorer')}</Text>
+                        {Boolean(getExplorerUrl(tx)) && (
+                          <TouchableOpacity 
+                            style={styles.explorerBtn} 
+                            onPress={() => {
+                              const url = getExplorerUrl(tx);
+                              if (url) Linking.openURL(url);
+                            }}
+                          >
+                            <Text style={styles.explorerBtnText}>
+                              {(tx.chain || '').toLowerCase().includes('polygon')
+                                ? 'PolygonScan'
+                                : t('common.wallet.view_onchain', 'Explorer')}
+                            </Text>
                             <Ionicons name="open-outline" size={14} color="#20365B" />
                           </TouchableOpacity>
                         )}

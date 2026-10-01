@@ -40,6 +40,52 @@ const mapWalletTx = (tx, currentUserId) => {
     toFrom = meta.sender_name || meta.fromName || meta.sender || tx.fromAddress || tx.from || "Unknown";
   }
 
+  const isValidOnChainHash = (h, chain = '') => {
+    if (!h || typeof h !== 'string') return false;
+    // Exclude internal UUIDs, errors, or placeholder text
+    if (h.includes('-') || h.includes('error') || h.includes('undefined')) return false;
+    const c = chain.toLowerCase();
+    if (c.includes('solana')) {
+      return h.length >= 40 && h.length <= 90;
+    }
+    // EVM (Polygon, Base, Ethereum, BSC): must start with 0x and standard hash length
+    return h.startsWith('0x') && h.length >= 64;
+  };
+
+  const chainName = (tx.chain || "Polygon").toLowerCase();
+  const candidateHashes = [
+    meta?.blockchainHash,
+    tx.onChain?.txHash,
+    meta?.onChain?.txHash,
+    tx.hash,
+    tx.txHash
+  ];
+  const realOnChainHash = candidateHashes.find(h => isValidOnChainHash(h, chainName)) || null;
+  const rawHash = realOnChainHash || tx.hash || tx.txHash || null;
+
+  let explorerLink = tx.onChain?.explorerLink || meta?.onChain?.explorerLink || meta?.explorerUrl;
+  // Discard invalid explorerLink containing a UUID, error, or incomplete path
+  if (explorerLink && (explorerLink.includes('-') || explorerLink.endsWith('/tx/') || explorerLink.includes('undefined') || explorerLink.includes('/error'))) {
+    explorerLink = null;
+  }
+
+  // Only auto-generate explorerLink if there is a verified on-chain blockchain hash
+  if (!explorerLink && realOnChainHash) {
+    if (chainName.includes("polygon") || chainName.includes("matic")) {
+      explorerLink = `https://polygonscan.com/tx/${realOnChainHash}`;
+    } else if (chainName.includes("base")) {
+      explorerLink = `https://basescan.org/tx/${realOnChainHash}`;
+    } else if (chainName.includes("solana")) {
+      explorerLink = `https://solscan.io/tx/${realOnChainHash}`;
+    } else if (chainName.includes("bsc") || chainName.includes("bnb")) {
+      explorerLink = `https://bscscan.com/tx/${realOnChainHash}`;
+    } else {
+      explorerLink = `https://etherscan.io/tx/${realOnChainHash}`;
+    }
+  }
+
+  const effectiveOnChain = (realOnChainHash && explorerLink) ? { txHash: realOnChainHash, explorerLink } : null;
+
   return {
     id: tx.id || tx.hash,
     type: type,
@@ -52,8 +98,9 @@ const mapWalletTx = (tx, currentUserId) => {
     country: meta.countryCode || (tx.chain === "polygon" ? "" : ""), 
     chain: tx.chain || "Polygon",
     source: "wallet",
-    txHash: tx.hash || tx.txHash,
-    onChain: tx.onChain,
+    txHash: rawHash,
+    onChain: effectiveOnChain,
+    explorerLink: explorerLink,
     metadata: meta,
     rawAddress: type === "SEND" ? (tx.toAddress || tx.to) : type === "RECEIVE" ? (tx.fromAddress || tx.from) : null
   };

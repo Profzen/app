@@ -359,7 +359,7 @@ export default function PayBillsScreen() {
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 16, paddingTop: 8 }}>
             <TouchableOpacity 
               style={{ flex: 1, flexDirection: 'column', alignItems: 'center', backgroundColor: '#FFF7E6', paddingVertical: 10, borderRadius: 16, marginRight: 8 }}
-              onPress={() => navigation.navigate('ContactsManageScreen')}
+              onPress={() => navigation.navigate('EditBeneficiaryScreen')}
             >
               <Ionicons name="person-add-outline" size={18} color="#D97706" style={{ marginBottom: 4 }} />
               <Text style={{ color: '#D97706', fontSize: 11, fontFamily: 'Inter_600SemiBold', textAlign: 'center' }}>{t('contacts.add_beneficiary', 'Add Contact')}</Text>
@@ -412,7 +412,7 @@ export default function PayBillsScreen() {
                 <Ionicons name="people-outline" size={44} color="#CBD5E1" />
                 <Text style={styles.emptyTitle}>{t('payBills.no_beneficiaries', 'No beneficiaries yet')}</Text>
                 <Text style={styles.emptySubtitle}>{t('payBills.add_first_beneficiary_sub', 'Add your first beneficiary to pay their bills.')}</Text>
-                <TouchableOpacity style={styles.addFirstBtn} onPress={() => navigation.navigate('ContactsManageScreen')}>
+                <TouchableOpacity style={styles.addFirstBtn} onPress={() => navigation.navigate('EditBeneficiaryScreen')}>
                   <Ionicons name="person-add" size={16} color="#071D54" style={{ marginRight: 6 }} />
                   <Text style={styles.addFirstBtnText}>{t('payBills.add_beneficiary', 'Add a Beneficiary')}</Text>
                 </TouchableOpacity>

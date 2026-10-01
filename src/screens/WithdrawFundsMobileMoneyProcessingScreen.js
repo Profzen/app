@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import { getOperatorLogo } from '../utils/operatorLogos';
+import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
 
 export default function WithdrawFundsMobileMoneyProcessingScreen() {
   const navigation = useNavigation();
@@ -14,17 +15,23 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
   const { user, session, t, language } = useApp();
   const { COUNTRY_METADATA } = require('../services/paymentCorridorService');
   
-  const countryParam = (destinationCountry || user?.country || 'TG').toUpperCase().trim();
-  const meta = COUNTRY_METADATA[countryParam] || COUNTRY_METADATA['TG'];
-  const countryName = t(`country.${countryParam}`, meta.name || 'Togo');
-  const providerName = selectedMethod === 'bank' ? t('withdrawFunds.bankTransfer', 'Virement bancaire') : ((meta.momoNetworks || [])[0] || 'Mobile Money') + ` (${countryName})`;
+  const countryParam = (destinationCountry || user?.country || user?.country_code || '').toUpperCase().trim();
+  const countryInfo = getCountryCurrencyInfo(countryParam);
+  const meta = COUNTRY_METADATA[countryParam] || {
+    name: countryInfo.label || countryParam,
+    flag: '🌍',
+    currency: countryInfo.currency || 'USD',
+    momoNetworks: []
+  };
+  const countryName = t(`country.${countryParam}`, meta.name || countryParam);
+  const providerName = selectedMethod === 'bank' ? t('withdrawFunds.bankTransfer', 'Virement bancaire') : ((meta.momoNetworks || [])[0] || 'Mobile Money') + (countryName ? ` (${countryName})` : '');
 
 
   useEffect(() => {
     let isMounted = true;
     const processCashout = async () => {
       try {
-        const token = session?.access_token || '';
+        const token = session?.access_token || user?.token || '';
         let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
         if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) {
           DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
@@ -39,7 +46,7 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
         
         const walletAddress = selectedNetwork?.toLowerCase() === 'solana' ? syncData.solanaAddress : syncData.evmAddress;
         
-        // 2. Perform Cashout
+        // 2. Perform Cashout via centralized DizzyWallet gateway
         let response;
         if (selectedMethod === 'mobile') {
           const phone = user?.phone || "+254712345678";
@@ -57,17 +64,17 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
             })
           });
         } else {
-          response = await fetch(`${DIZZY_URL}/offramp/create-order`, {
-             method: 'POST',
-             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-             body: JSON.stringify({
-               amount: parseFloat(amount?.toString().replace(/\s/g, '') || '0'),
-               token: selectedToken || 'USDC',
-               chain: selectedNetwork?.toLowerCase() || 'polygon',
-               walletAddress,
-               email: user?.email,
-               paymentMethod: 'bank'
-             })
+          response = await fetch(`${DIZZY_URL}/momo/wallet/cashout`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({
+              amount: parseFloat(amount?.toString().replace(/\s/g, '') || '0'),
+              currency: selectedToken || 'USDC',
+              country: countryParam,
+              walletAddress,
+              payoutMethod: 'bank',
+              payoutDetails: { bankAccount: user?.bankDetails || {} }
+            })
           });
         }
         

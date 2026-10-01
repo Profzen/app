@@ -1040,6 +1040,7 @@
     },
     "copied": "Link copied",
     "done": "Done",
+    "backToContact": "Back to Contact",
     "confirm": "Confirm",
     "amount": "Amount",
     "currency": "Currency",
@@ -3940,7 +3941,17 @@
     "toastTitle": "Address copied!",
     "toastDesc": "The address has been copied to the clipboard.",
     "bannerTitle": "DizzitUp Secure Transaction Node",
-    "bannerDesc": "Your transactions are protected by our infrastructure."
+    "bannerDesc": "Your transactions are protected by our infrastructure.",
+    "requestAmount": "Request Amount",
+    "requestSubtitle": "Enter an amount to generate a payment request",
+    "changeNetwork": "Change",
+    "networkModalTitle": "Select Blockchain Network",
+    "networkModalSubtitle": "Choose the network to receive funds (Polygon is default)",
+    "shareRequestMessage": "Send {{amount}} {{token}} to my DizzitUp wallet ({{chain}}): {{address}}",
+    "shareAddressMessage": "My DizzitUp {{chain}} address: {{address}}",
+    "requesting": "Requesting",
+    "recommendedFast": "Recommended • Fast and low fees",
+    "crossmintSupported": "Fast • Supported by Crossmint"
   },
   "contactScreen": {
     "requiredField": "Required Field",
@@ -4380,6 +4391,7 @@
     },
     "giftRequestTitle": "Buy this for me on DizzitUp: {{name}}",
     "giftRequestShopMsg": "Gift me items from {{name}} on DizzitUp: {{url}}",
+    "shareShopMsg": "Discover the {{name}} store on DizzitUp: {{url}}",
     "giftProductTitle": "Buy this for me: {{name}}",
     "giftProductMsg": "I would love this on DizzitUp: {{name}} ({{price}}) from {{shop}}. You can buy it for me here: {{url}}",
     "shareSuccessTitle": "Gift link ready",
@@ -4568,7 +4580,16 @@
     "orderFailed": "Failed to process order. Please try again.",
     "paymentSuccess": "Payment completed successfully!",
     "paymentFailed": "Payment was declined or cancelled. Please try again.",
-    "cryptoOpened": "Crypto invoice opened. Complete payment in your wallet."
+    "cryptoOpened": "Crypto invoice opened. Complete payment in your wallet.",
+    "instantBadge": "Instant",
+    "popularBadge": "Popular",
+    "noActiveTokens": "No active balance in DZYwallet",
+    "noActiveTokensDesc": "Top up USDT, USDC or EURC to pay your bills instantly with zero network fees.",
+    "topUpToPay": "Top up your wallet to pay with DZYwallet",
+    "orderCreatedSuccess": "Payment completed successfully!",
+    "momoInitiated": "Mobile Money payment prompt sent to your phone.",
+    "walletAuthError": "You must be logged in to use DizzitUp Wallet.",
+    "walletError": "Error during wallet payment"
   },
   "actionScanCash": "Scan & Cash",
   "orderVerification": {
@@ -4888,7 +4909,16 @@
     "txSubmitted": "Transaction submitted!",
     "successMessage": "You successfully sent {{amount}} {{token}} to {{recipient}}",
     "secureNode": "SECURE TRANSACTION NODE",
-    "addressCopied": "Address copied to clipboard!"
+    "addressCopied": "Address copied to clipboard!",
+    "topUpNeeded": "Zero balance. Tap to Top-Up {{token}}",
+    "insufficientFunds": "Insufficient Balance",
+    "insufficientFundsDesc": "You only have {{bal}} {{token}} available.",
+    "view_on_polyscan": "View on PolygonScan",
+    "view_on_explorer": "View on Block Explorer",
+    "sending_in_progress": "Sending {{amount}} {{token}}...",
+    "broadcasting_node": "Submitting transaction to {{chain}} network...",
+    "secured_blockchain_tx": "SECURED BLOCKCHAIN TRANSACTION",
+    "tx_error_title": "Transaction Notice"
   },
   "withdrawFunds": {
     "title": "Withdraw funds",
@@ -5254,7 +5284,10 @@
     "hq_country_label": "HQ country",
     "unavailable_country": "Cash-out is temporarily unavailable in {{country}}.",
     "unavailable_subtitle": "This payout route is being enabled and will become available once the off-ramp connection is ready.",
-    "coming_soon": "Coming soon"
+    "coming_soon": "Coming soon",
+    "exchange_rate_unavailable": "Current exchange rate is not available. Please try again later.",
+    "noCashoutRouteCountry": "No eligible cash-out route available for {{country}}.",
+    "noCashoutRouteDesc": "Cash-out via Mobile Money is not currently supported in Madagascar. Please use another payout option or contact support."
   },
   "rewards": {
     "title": "DZY Rewards",
@@ -5472,7 +5505,8 @@
     "momoWithdrawUnavailable": "Mobile Money withdrawal is not available in {{country}}.",
     "momoWithdrawAvailable": "Instant withdrawal to {{operators}}.",
     "notAvailableTitle": "Mobile Money unavailable",
-    "cardAlternativeNote": "Mobile Money is not yet available in {{country}}. Use your Visa or Mastercard card to top up your account from anywhere in the world."
+    "cardAlternativeNote": "Mobile Money is not yet available in {{country}}. Use your Visa or Mastercard card to top up your account from anywhere in the world.",
+    "topupRegionLabel": "Payment region:"
   },
   "activityInboxTitle": "Activity Inbox",
   "tabAll": "All",

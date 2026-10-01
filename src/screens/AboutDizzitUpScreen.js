@@ -35,7 +35,7 @@ export default function AboutDizzitUpScreen() {
           .maybeSingle();
 
         if (error) throw error;
-        
+
         // Fall back to English if the current language has no release-note entry
         if (!data) {
           const fallback = await supabase
@@ -45,18 +45,38 @@ export default function AboutDizzitUpScreen() {
             .eq('language', 'en')
             .eq('status', 'published')
             .maybeSingle();
-            
+
           if (fallback.error) throw fallback.error;
           data = fallback.data;
         }
-        
-        const formattedDate = data?.updated_at 
+
+        const sanitizeReleaseNote = (note) => {
+          if (typeof note !== 'string') return note;
+          return note
+            // Wallets & Web3 Providers
+            .replace(/Crossmint/gi, 'Wallet Provider')
+            // Telecom & Airtime Providers
+            .replace(/Reloadly/gi, 'Telecom Partner')
+            // E-commerce Engine
+            .replace(/Medusa/gi, 'Marketplace Engine')
+            // Cloud Infrastructure & DB
+            .replace(/Supabase/gi, 'Cloud Infrastructure')
+            // African Payment Gateways & On/Off Ramps
+            .replace(/Kotani(\s*Pay)?/gi, 'Payment Partner')
+            .replace(/Izi\s*change/gi, 'Exchange Partner')
+            .replace(/Kkiapay/gi, 'Payment Gateway')
+            .replace(/Maisha\s*pay/gi, 'Payment Gateway');
+        };
+
+        const formattedDate = data?.updated_at
           ? new Date(data.updated_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
           : currentDate;
 
         setReleaseNotes({
-          features: data?.new_features || [],
-          fixes: data?.fixes || [],
+          // features: data?.new_features || [],
+          // fixes: data?.fixes || [],
+          features: (data?.new_features || []).map(sanitizeReleaseNote),
+          fixes: (data?.fixes || []).map(sanitizeReleaseNote),
           releaseDate: formattedDate,
           isLoading: false
         });
@@ -349,7 +369,8 @@ export default function AboutDizzitUpScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#FAFAFC',
+  safeArea: {
+    flex: 1, backgroundColor: '#FAFAFC',
     paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 14,
   },
   container: { flex: 1, backgroundColor: '#FAFAFC' },

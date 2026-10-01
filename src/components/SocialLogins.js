@@ -6,15 +6,18 @@ import { useApp } from '../context/AppContext';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import { supabase } from '../services/supabaseClient';
+import { useNavigation } from '@react-navigation/native';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import AppToast from './AppToast';
 
 export const SocialLogins = ({ variant = 'row' }) => {
+  const navigation = useNavigation();
   const { language, t } = useApp();
   const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '', type: 'info' });
   const dividerText = t('auth.orContinueWith', 'or continue with');
 
   const handleSocialLogin = async (providerName) => {
-    if (providerName === 'X' || providerName === 'Apple') {
+    if (providerName === 'X') {
       setToastInfo({
         visible: true,
         title: t('common.comingSoon', 'Coming soon'),
@@ -26,7 +29,10 @@ export const SocialLogins = ({ variant = 'row' }) => {
 
     try {
       const providerId = providerName.toLowerCase();
-      const redirectTo = Linking.createURL('/auth-callback');
+      const isExpoGo = Constants?.appOwnership === 'expo' || Constants?.executionEnvironment === ExecutionEnvironment.StoreClient;
+      // In Expo Go use exp://... in Standalone build use dizzitup://auth-callback
+      const redirectTo = isExpoGo ? Linking.createURL('/auth-callback') : 'dizzitup://auth-callback';
+      console.log('🔵 [SocialLogins] Initiating OAuth for:', providerId, '| isExpoGo:', isExpoGo, '| redirectTo:', redirectTo);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: providerId,
@@ -37,23 +43,47 @@ export const SocialLogins = ({ variant = 'row' }) => {
       });
 
       if (error) {
+        console.error('🔴 [SocialLogins] signInWithOAuth error:', error);
         throw error;
       }
       
       if (data?.url) {
-        // Open the browser for authentication
+        console.log('🔵 [SocialLogins] Opening WebBrowser with data.url:', data.url);
         const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+        console.log('🔵 [SocialLogins] WebBrowser result:', JSON.stringify(result));
         
         if (result.type === 'success' && result.url) {
-          // Parse the URL and pass it to Supabase to extract the session
-          const urlParams = new URL(result.url.replace('#', '?'));
-          const accessToken = urlParams.searchParams.get('access_token');
-          const refreshToken = urlParams.searchParams.get('refresh_token');
-          
-          if (accessToken && refreshToken) {
+          // Parse parameters safely from both hash (#) and query (?)
+          const rawUrl = result.url;
+          let paramsString = '';
+          if (rawUrl.includes('#')) {
+            paramsString = rawUrl.substring(rawUrl.indexOf('#') + 1);
+          } else if (rawUrl.includes('?')) {
+            paramsString = rawUrl.substring(rawUrl.indexOf('?') + 1);
+          }
+
+          const params = new URLSearchParams(paramsString);
+          const code = params.get('code');
+          const accessToken = params.get('access_token');
+          const refreshToken = params.get('refresh_token');
+          const errorDescription = params.get('error_description') || params.get('error');
+
+          if (code) {
+            const { error: exchangeErr } = await supabase.auth.exchangeCodeForSession(code);
+            if (exchangeErr) throw exchangeErr;
+            navigation.navigate('HomeScreen');
+          } else if (accessToken && refreshToken) {
             await supabase.auth.setSession({
               access_token: accessToken,
               refresh_token: refreshToken
+            });
+            navigation.navigate('HomeScreen');
+          } else if (errorDescription) {
+            setToastInfo({
+              visible: true,
+              title: t('auth.loginFailed', 'Login Error'),
+              message: decodeURIComponent(errorDescription.replace(/\+/g, ' ')),
+              type: 'error'
             });
           }
         }

@@ -93,15 +93,16 @@ export default function ShopDetailsScreen({ route }) {
     setToast({ title: t('copied_title', `${label} copié !`, { label }), message: `${text}` });
   };
 
-  const shareShop = async () => {
-    const shopName = shop.shop_name || shop.name || 'Boutique';
-    const shopSlug = shop.slug || shop.id || 'boutique';
-    const shopUrl = `https://dizzitup.com/stores/${shopSlug}`;
+  const shopName = shop.shop_name || shop.name || 'Boutique';
+  const shopSlug = shop.slug || shop.id || 'boutique';
+  const shopUrl = `https://dizzitup.com/stores/${shopSlug}`;
+  const shareMessage = t('shop.shareShopMsg', `Discover the ${shopName} store on DizzitUp: ${shopUrl}`, { name: shopName, url: shopUrl });
 
+  const shareShop = async () => {
     try {
       await Share.share({
         title: shopName,
-        message: t('shop.giftRequestShopMsg', `Découvrez la boutique ${shopName} sur DizzitUp : ${shopUrl}`, { name: shopName, url: shopUrl })
+        message: shareMessage
       });
       setToast({
         title: t('shop.shareSuccessTitle', 'Boutique partagée'),
@@ -325,7 +326,7 @@ export default function ShopDetailsScreen({ route }) {
                 }}>
                   <Ionicons name="logo-instagram" size={16} color="#8B5CF6" />
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#F8FAFC' }]} onPress={() => Linking.openURL(`https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`).catch(() => shareShop())}>
+                <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#F8FAFC' }]} onPress={() => Linking.openURL(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessage)}`).catch(() => shareShop())}>
                   <Text style={{ fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840' }}>X</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#EFF6FF' }]} onPress={shareShop}>

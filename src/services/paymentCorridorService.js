@@ -22,10 +22,21 @@ export const IZICHANGE_OFFRAMP_CORRIDORS = [
   'NE', 'CG', 'GH', 'KE', 'NG', 'CF', 'TD', 'GW'
 ];
 
-// Union of all active Mobile Money corridors
+// Union of all active Mobile Money corridors (MG removed - no active offramp/onramp partner in DizzyWallet)
 export const ALL_MOMO_CORRIDORS = Array.from(
-  new Set([...KKIAPAY_CORRIDORS, ...KOTANIPAY_CORRIDORS, ...IZICHANGE_OFFRAMP_CORRIDORS, 'MG'])
+  new Set([...KKIAPAY_CORRIDORS, ...KOTANIPAY_CORRIDORS, ...IZICHANGE_OFFRAMP_CORRIDORS])
 );
+
+// Dedicated Off-ramp Corridors matching DizzyWallet MOMO_PROVIDERS registry
+export const OFFRAMP_MOMO_CORRIDORS = [
+  'BJ', 'CM', 'CG', 'CD', 'EG', 'ET', 'GA', 'GH', 'CI', 'KE', 'MW', 'RW', 'SN', 'TZ', 'TG', 'UG', 'ZM'
+];
+
+export const OFFRAMP_BANK_CORRIDORS = [
+  'BW', 'CM', 'CG', 'CD', 'GA', 'GH', 'CI', 'KE', 'MW', 'NG', 'RW', 'SN', 'ZA', 'TZ', 'UG', 'ZM',
+  // European SEPA / International wire
+  'FR', 'DE', 'IT', 'ES', 'NL', 'BE'
+];
 
 // Ecobank primary retail and corporate banking markets
 export const ECOBANK_CORRIDORS = [
@@ -33,8 +44,7 @@ export const ECOBANK_CORRIDORS = [
   'CM', 'CF', 'TD', 'CG', 'GA', 'GQ',             // CEMAC
   'GH', 'GN', 'LR', 'NG', 'SL', 'GM',             // WAMZ
   'BI', 'CD', 'RW', 'ST',                         // Central Africa
-  'KE', 'MW', 'MZ', 'SS', 'TZ', 'UG', 'ZM', 'ZW', // East & Southern Africa
-  'MG'                                            // Madagascar
+  'KE', 'MW', 'MZ', 'SS', 'TZ', 'UG', 'ZM', 'ZW'  // East & Southern Africa
 ];
 
 export const COUNTRY_METADATA = {
@@ -42,7 +52,7 @@ export const COUNTRY_METADATA = {
   CI: { name: 'Côte d’Ivoire', nameEn: 'Ivory Coast', flag: '🇨🇮', currency: 'XOF', dialCode: '+225', momoNetworks: ['Orange', 'Wave', 'MTN', 'Moov'] },
   SN: { name: 'Sénégal', nameEn: 'Senegal', flag: '🇸🇳', currency: 'XOF', dialCode: '+221', momoNetworks: ['Orange', 'Wave', 'Free Money'] },
   TG: { name: 'Togo', nameEn: 'Togo', flag: '🇹🇬', currency: 'XOF', dialCode: '+228', momoNetworks: ['Mixx by Yas (Tmoney)', 'Moov (Flooz)'] },
-  MG: { name: 'Madagascar', nameEn: 'Madagascar', flag: '🇲🇬', currency: 'MGA', dialCode: '+261', momoNetworks: ['MVola (Telma)', 'Orange Money', 'Airtel Money'] },
+  MG: { name: 'Madagascar', nameEn: 'Madagascar', flag: '🇲🇬', currency: 'MGA', dialCode: '+261', momoNetworks: [] },
   NE: { name: 'Niger', nameEn: 'Niger', flag: '🇳🇪', currency: 'XOF', dialCode: '+227', momoNetworks: ['Airtel', 'Nita', 'Moov'] },
   BF: { name: 'Burkina Faso', nameEn: 'Burkina Faso', flag: '🇧🇫', currency: 'XOF', dialCode: '+226', momoNetworks: ['Orange', 'Moov'] },
   ML: { name: 'Mali', nameEn: 'Mali', flag: '🇲🇱', currency: 'XOF', dialCode: '+223', momoNetworks: ['Orange', 'Moov'] },
@@ -126,17 +136,14 @@ export function getPaymentRailEligibility(countryCode, flow = 'checkout', lang =
     feeDesc: isFr ? 'Paiement Sécurisé' : isPt ? 'Pagamento Seguro' : 'Secure Payment',
   };
 
-  // 3. MOBILE MONEY: Strict corridor check
-  let momoSupported = false;
-  let momoProviders = [];
+  // 3. MOBILE MONEY: Strict corridor check (Flow-aware)
+  const momoSupported = flow === 'offramp'
+    ? OFFRAMP_MOMO_CORRIDORS.includes(normCountry)
+    : ALL_MOMO_CORRIDORS.includes(normCountry);
 
-  if (flow === 'offramp') {
-    momoSupported = IZICHANGE_OFFRAMP_CORRIDORS.includes(normCountry) || KOTANIPAY_CORRIDORS.includes(normCountry);
-    if (momoSupported) momoProviders.push(licensedNetworkStr);
-  } else {
-    // checkout or onramp
-    momoSupported = ALL_MOMO_CORRIDORS.includes(normCountry);
-    if (momoSupported) momoProviders.push(licensedNetworkStr);
+  let momoProviders = [];
+  if (momoSupported) {
+    momoProviders.push(licensedNetworkStr);
   }
 
   const momo = {
@@ -154,28 +161,43 @@ export function getPaymentRailEligibility(countryCode, flow = 'checkout', lang =
           : `Not available in ${localizedCountryName}. Available in 20 Sub-Saharan African countries.`),
   };
 
-  // 4. BANK TRANSFER / PAYOUT
+  // 4. BANK TRANSFER / PAYOUT (Flow-aware)
   let bankSupported = false;
   let bankProvider = 'international_wire';
 
-  if (ECOBANK_CORRIDORS.includes(normCountry)) {
-    bankSupported = true;
-    bankProvider = 'ecobank';
-  } else if (['ZA', 'NG', 'ET'].includes(normCountry)) {
-    bankSupported = true;
-    bankProvider = 'kotanipay_bank';
-  } else if (['FR', 'DE', 'IT', 'ES', 'NL', 'BE'].includes(normCountry)) {
-    bankSupported = true;
-    bankProvider = 'sepa';
+  if (flow === 'offramp') {
+    bankSupported = OFFRAMP_BANK_CORRIDORS.includes(normCountry);
+    if (['FR', 'DE', 'IT', 'ES', 'NL', 'BE'].includes(normCountry)) {
+      bankProvider = 'sepa';
+    } else if (['ZA', 'NG', 'ET', 'KE', 'GH', 'UG', 'TZ', 'RW', 'MW', 'ZM', 'CD', 'CM'].includes(normCountry)) {
+      bankProvider = 'kotanipay_bank';
+    } else {
+      bankProvider = 'yellowcard_bank';
+    }
+  } else {
+    if (ECOBANK_CORRIDORS.includes(normCountry)) {
+      bankSupported = true;
+      bankProvider = 'ecobank';
+    } else if (['ZA', 'NG', 'ET'].includes(normCountry)) {
+      bankSupported = true;
+      bankProvider = 'kotanipay_bank';
+    } else if (['FR', 'DE', 'IT', 'ES', 'NL', 'BE'].includes(normCountry)) {
+      bankSupported = true;
+      bankProvider = 'sepa';
+    }
   }
 
   const bank = {
     enabled: bankSupported,
     provider: bankProvider,
-    badge: bankProvider === 'ecobank' ? 'Ecobank (Gratuit)' : 'Virement Bancaire',
+    badge: bankProvider === 'ecobank' 
+      ? 'Ecobank (Gratuit)' 
+      : bankProvider === 'sepa'
+        ? 'SEPA Wire'
+        : (isFr ? 'Virement Bancaire' : 'Bank Transfer'),
     reason: bankSupported
-      ? `Virement bancaire disponible en ${meta.name}`
-      : `Virement local indisponible pour ${meta.name}`,
+      ? (isFr ? `Virement bancaire disponible en ${localizedCountryName}` : `Bank transfer available in ${localizedCountryName}`)
+      : (isFr ? `Virement local indisponible pour ${localizedCountryName}` : `Bank transfer unavailable in ${localizedCountryName}`),
   };
 
   return {
@@ -211,6 +233,8 @@ export default {
   KOTANIPAY_CORRIDORS,
   IZICHANGE_OFFRAMP_CORRIDORS,
   ALL_MOMO_CORRIDORS,
+  OFFRAMP_MOMO_CORRIDORS,
+  OFFRAMP_BANK_CORRIDORS,
   ECOBANK_CORRIDORS,
   COUNTRY_METADATA,
   getPaymentRailEligibility,

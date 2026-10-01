@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
@@ -8,12 +8,13 @@ import { useApp } from '../context/AppContext';
 
 export default function TopUpWalletPaymentScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
   const { t } = useApp();
 
   React.useEffect(() => {
-    const timer = setTimeout(() => navigation.navigate('TopUpWalletConfirmationScreen'), 2500);
+    const timer = setTimeout(() => navigation.navigate('TopUpWalletConfirmationScreen', route.params), 2500);
     return () => clearTimeout(timer);
-  }, [navigation]);
+  }, [navigation, route.params]);
 
   return (
     <SafeAreaView style={styles.safeArea}>

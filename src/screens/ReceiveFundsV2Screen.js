@@ -1,7 +1,20 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, Pressable, ScrollView, Animated, Share, Platform, StatusBar } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Pressable,
+  ScrollView,
+  TextInput,
+  Modal,
+  Share,
+  Platform,
+  StatusBar,
+  Dimensions,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Clipboard from 'expo-clipboard';
@@ -11,87 +24,222 @@ import BottomNavBar from '../components/BottomNavBar';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
+import { isSmallScreen } from '../utils/responsive';
+
+const CHAINS = [
+  { id: 'Polygon', name: 'Polygon', isDefault: true, subtitleKey: 'receiveFunds.recommendedFast', defaultSub: 'Recommended • Fast & Lowest Fees' },
+  { id: 'Solana', name: 'Solana', isDefault: false, subtitleKey: 'receiveFunds.crossmintSupported', defaultSub: 'Fast • Crossmint Supported' },
+  { id: 'Base', name: 'Base', isDefault: false, subtitleKey: '', defaultSub: 'Coinbase L2 • Low Fees' },
+  { id: 'BNB Chain', name: 'BNB Chain', isDefault: false, subtitleKey: '', defaultSub: 'Binance Smart Chain' },
+  { id: 'Ethereum', name: 'Ethereum', isDefault: false, subtitleKey: '', defaultSub: 'Ethereum Mainnet' },
+];
+
+const EVM_TOKENS = ['USDC', 'USDT', 'EURC', 'DZY', 'POL', 'ETH'];
+const SOLANA_TOKENS = ['USDC', 'USDT', 'SOL', 'DZY'];
+const QUICK_AMOUNTS = ['5', '10', '25', '50', '100'];
 
 export default function ReceiveFundsV2Screen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { session, t } = useApp();
+  const { session, user, t } = useApp();
+
   const [addresses, setAddresses] = useState({ evm: '', solana: '' });
+  const [selectedChain, setSelectedChain] = useState('Polygon');
+  const [token, setToken] = useState('USDC');
+  const [amount, setAmount] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  // Modals
+  const [showNetworkModal, setShowNetworkModal] = useState(false);
+  const [showTokenModal, setShowTokenModal] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchAddress = async () => {
       try {
-        const token = session?.access_token || '';
+        const authToken = session?.access_token || '';
         let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
         if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) {
           DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
         }
         const syncRes = await fetch(`${DIZZY_URL}/wallet/sync-smart-address`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { 'Authorization': `Bearer ${authToken}` },
         });
         const syncData = await syncRes.json();
-        if (syncRes.ok && syncData.success) {
-          setAddresses({ evm: syncData.evmAddress, solana: syncData.solanaAddress });
+        if (isMounted && syncRes.ok && syncData.success) {
+          setAddresses({
+            evm: syncData.evmAddress || '',
+            solana: syncData.solanaAddress || '',
+          });
         }
       } catch (err) {
-        console.error("Failed to fetch address:", err);
+        console.error('Failed to sync smart wallet address:', err);
       }
     };
     fetchAddress();
+    return () => { isMounted = false; };
   }, [session]);
-  const [activeTab, setActiveTab] = useState('adresse');
-  const [showToast, setShowToast] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [selectedChain, setSelectedChain] = useState('Polygon');
-  const address = selectedChain === 'Solana' ? (addresses.solana || 'Chargement...') : (addresses.evm || 'Chargement...');
-  const qr = address && address !== 'Chargement...' ? QRCode.create(address, { errorCorrectionLevel: 'M' }) : null;
-  const copyAddress = () => { setShowToast(true); setCopied(true); Clipboard.setStringAsync(address).catch(() => {}); setTimeout(() => setCopied(false), 2500); };
-  const shareAddress = async () => { try { await Share.share({ message: `Adresse DizzitUp ${selectedChain} : ${address}` }); } catch { await Clipboard.setStringAsync(address); setShowToast(true); setCopied(true); setTimeout(() => setCopied(false), 2500); } };
-  const chooseChain = (chain) => { setSelectedChain(chain); setDropdownOpen(false); };
+
+  // Resolve current active address
+  const evmAddress = addresses.evm || user?.evmAddress || user?.businessEvmAddress || '';
+  const solanaAddress = addresses.solana || user?.solanaAddress || '';
+  const activeAddress = selectedChain === 'Solana'
+    ? (solanaAddress || t('common.loading', 'Loading...'))
+    : (evmAddress || t('common.loading', 'Loading...'));
+
+  // Ensure selected token matches available network tokens
+  const currentTokens = selectedChain === 'Solana' ? SOLANA_TOKENS : EVM_TOKENS;
+  useEffect(() => {
+    if (!currentTokens.includes(token)) {
+      setToken(currentTokens[0]);
+    }
+  }, [selectedChain]);
+
+  // QR Code Generation
+  const qrPayload = amount && parseFloat(amount) > 0
+    ? (selectedChain === 'Solana'
+        ? `solana:${activeAddress}?amount=${amount}&spl-token=${token}`
+        : `ethereum:${activeAddress}@137?amount=${amount}&token=${token}`)
+    : activeAddress;
+
+  const qr = activeAddress && activeAddress !== t('common.loading', 'Loading...')
+    ? QRCode.create(qrPayload, { errorCorrectionLevel: 'M' })
+    : null;
+
+  const copyAddress = async () => {
+    if (!activeAddress || activeAddress === t('common.loading', 'Loading...')) return;
+    try {
+      await Clipboard.setStringAsync(activeAddress);
+      setCopied(true);
+      setToast({
+        title: t('receiveFunds.toastTitle', 'Address copied!'),
+        message: t('receiveFunds.toastDesc', 'The address has been copied to the clipboard.'),
+      });
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // ignore
+    }
+  };
+
+  const copyPaymentRequest = async () => {
+    if (!activeAddress || activeAddress === t('common.loading', 'Loading...')) return;
+    try {
+      const msg = amount && parseFloat(amount) > 0
+        ? t('receiveFunds.shareRequestMessage', 'Send {{amount}} {{token}} to my DizzitUp wallet ({{chain}}): {{address}}', {
+            amount,
+            token,
+            chain: selectedChain,
+            address: activeAddress,
+          })
+        : activeAddress;
+      await Clipboard.setStringAsync(msg);
+      setCopied(true);
+      setToast({
+        title: t('receiveFunds.toastTitle', 'Address copied!'),
+        message: amount ? t('common.copied', 'Copied!') : t('receiveFunds.toastDesc', 'The address has been copied to the clipboard.'),
+      });
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // ignore
+    }
+  };
+
+  const sharePaymentRequest = async () => {
+    if (!activeAddress || activeAddress === t('common.loading', 'Loading...')) return;
+    try {
+      const message = amount && parseFloat(amount) > 0
+        ? t('receiveFunds.shareRequestMessage', 'Send {{amount}} {{token}} to my DizzitUp wallet ({{chain}}): {{address}}', {
+            amount,
+            token,
+            chain: selectedChain,
+            address: activeAddress,
+          })
+        : t('receiveFunds.shareAddressMessage', 'My DizzitUp {{chain}} address: {{address}}', {
+            chain: selectedChain,
+            address: activeAddress,
+          });
+      await Share.share({ message });
+    } catch {
+      await copyPaymentRequest();
+    }
+  };
+
+  const handleSelectChain = (chain) => {
+    setSelectedChain(chain.id);
+    setShowNetworkModal(false);
+  };
+
+  const handleSelectToken = (selectedTok) => {
+    setToken(selectedTok);
+    setShowTokenModal(false);
+  };
+
+  const handleBack = () => {
+    const pivotScreen = route.params?.pivotScreen;
+    const pivotParams = route.params?.pivotParams;
+    if (pivotScreen) {
+      navigation.navigate(pivotScreen, pivotParams);
+    } else {
+      navigation.goBack();
+    }
+  };
+
   const RealQrCode = () => {
     if (!qr) return null;
+    const qrSize = isSmallScreen ? 160 : 180;
     return (
-      <Svg width={180} height={180} viewBox={`0 0 ${qr.modules.size} ${qr.modules.size}`} accessibilityLabel="QR code de l'adresse">
+      <Svg width={qrSize} height={qrSize} viewBox={`0 0 ${qr.modules.size} ${qr.modules.size}`} accessibilityLabel="QR Code">
         <Rect width={qr.modules.size} height={qr.modules.size} fill="#FFFFFF" />
-        {Array.from(qr.modules.data).map((cell, index) => cell ? <Rect key={index} x={index % qr.modules.size} y={Math.floor(index / qr.modules.size)} width="1" height="1" fill="#20365B" /> : null)}
+        {Array.from(qr.modules.data).map((cell, index) =>
+          cell ? (
+            <Rect
+              key={index}
+              x={index % qr.modules.size}
+              y={Math.floor(index / qr.modules.size)}
+              width="1"
+              height="1"
+              fill="#0F172A"
+            />
+          ) : null
+        )}
       </Svg>
     );
   };
 
-  const CHAINS = [
-    { id: 'Polygon', name: 'Polygon', isDefault: true, subtitle: 'DEFAULT' },
-    { id: 'Ethereum', name: 'Ethereum', isDefault: false, subtitle: 'Available Node' },
-    { id: 'Base', name: 'Base', isDefault: false, subtitle: 'Available Node' },
-    { id: 'Solana', name: 'Solana', isDefault: false, subtitle: 'Available Node' },
-    { id: 'BNB Chain', name: 'BNB Chain', isDefault: false, subtitle: 'Available Node' },
-  ];
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        
+        {/* Toast Alert */}
+        {!!toast && (
+          <View style={styles.toastWrap}>
+            <AppToast
+              title={toast.title}
+              message={toast.message}
+              onClose={() => setToast(null)}
+            />
+          </View>
+        )}
+
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => {
-            const pivotScreen = route.params?.pivotScreen;
-            const pivotParams = route.params?.pivotParams;
-            if (pivotScreen) {
-              navigation.navigate(pivotScreen, pivotParams);
-            } else {
-              navigation.goBack();
-            }
-          }}>
+          <TouchableOpacity style={styles.iconBtn} onPress={handleBack}>
             <Ionicons name="chevron-back" size={24} color="#1A2840" />
           </TouchableOpacity>
-          
-          <Text style={styles.headerTitle}>{t('receiveFunds.receive_funds_title', 'Recevoir des fonds')}</Text>
+
+          <View style={styles.headerCenter}>
+            <Text style={styles.headerTitle}>
+              {t('receiveFunds.receive_funds_title', 'Receive funds')}
+            </Text>
+            <View style={styles.secureBadgeRow}>
+              <View style={styles.secureDot} />
+              <Text style={styles.secureBadgeText}>
+                {t('receiveFunds.secureTransaction', '100% secure transaction')}
+              </Text>
+            </View>
+          </View>
 
           <View style={styles.headerRightIcons}>
-            <TouchableOpacity style={styles.iconBtn}>
-              <Ionicons name="notifications-outline" size={20} color="#1A2840" />
-              <View style={styles.notificationDot} />
-            </TouchableOpacity>
             <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('RewardsScreen')}>
               <Ionicons name="gift-outline" size={20} color="#1A2840" />
             </TouchableOpacity>
@@ -101,222 +249,342 @@ export default function ReceiveFundsV2Screen() {
           </View>
         </View>
 
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          
-            {/* Blockchain Selector */}
-            <View style={styles.blockchainSection}>
-              <Text style={styles.sectionLabel}>{t('receiveFunds.select_blockchain', 'SÉLECTIONNER LA BLOCKCHAIN')}</Text>
-              <TouchableOpacity 
-                style={[styles.dropdown, dropdownOpen && styles.dropdownOpen]}
-                onPress={() => setDropdownOpen(!dropdownOpen)}
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Hero Section: Request Amount First */}
+          <View style={styles.requestHeroCard}>
+            <View style={styles.requestHeaderRow}>
+              <View>
+                <Text style={styles.requestCardTitle}>
+                  {t('receiveFunds.requestAmount', 'Request Amount')}
+                </Text>
+                <Text style={styles.requestCardSubtitle}>
+                  {t('receiveFunds.requestSubtitle', 'Enter an amount to generate a payment request')}
+                </Text>
+              </View>
+              {amount ? (
+                <TouchableOpacity onPress={() => setAmount('')} style={styles.clearBtn} activeOpacity={0.7}>
+                  <Ionicons name="close-circle" size={18} color="#94A3B8" />
+                  <Text style={styles.clearBtnText}>{t('common.clear', 'Clear')}</Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+
+            {/* Amount Input with Token Selector Pill */}
+            <View style={styles.amountInputRow}>
+              <TextInput
+                style={styles.amountInput}
+                value={amount}
+                onChangeText={setAmount}
+                placeholder="0.00"
+                placeholderTextColor="#94A3B8"
+                keyboardType="decimal-pad"
+              />
+
+              <TouchableOpacity
+                style={styles.tokenPill}
+                onPress={() => setShowTokenModal(true)}
                 activeOpacity={0.8}
               >
-                <View style={styles.dropdownLeft}>
-                  <View style={{ marginRight: 12 }}>
-                    <CryptoIcon symbol={selectedChain} size={28} />
-                  </View>
-                  <Text style={styles.dropdownText}>{selectedChain}</Text>
-                </View>
-                <Ionicons name={dropdownOpen ? "chevron-up" : "chevron-down"} size={20} color="#1A2840" />
+                <CryptoIcon symbol={token} size={22} style={{ marginRight: 6 }} />
+                <Text style={styles.tokenPillText}>{token}</Text>
+                <Ionicons name="chevron-down" size={14} color="#0F172A" style={{ marginLeft: 4 }} />
               </TouchableOpacity>
+            </View>
 
-              {/* Dropdown Menu */}
-              {dropdownOpen && (
-                <View style={styles.dropdownMenu}>
-                  {CHAINS.map((chain, index) => {
-                    const isSelected = selectedChain === chain.id;
-                    return (
-                      <React.Fragment key={chain.id}>
-                        {index > 0 && <View style={styles.dropdownDivider} />}
-                        <TouchableOpacity 
-                          style={[styles.dropdownItem, isSelected && styles.dropdownItemActive]} 
-                          onPress={() => chooseChain(chain.id)}
-                          activeOpacity={0.7}
-                        >
-                          <View style={styles.dropdownItemLeft}>
-                            <View style={{ marginRight: 14 }}>
-                              <CryptoIcon symbol={chain.id} size={26} />
-                            </View>
-                            <View>
-                              <Text style={styles.dropdownItemTitle}>{chain.name}</Text>
-                              {chain.isDefault ? (
-                                <Text style={styles.dropdownItemSubYellow}>{chain.subtitle}</Text>
-                              ) : (
-                                <Text style={styles.dropdownItemSub}>{chain.subtitle}</Text>
-                              )}
-                            </View>
-                          </View>
-                          {isSelected && <Ionicons name="checkmark-circle" size={22} color="#FFC759" />}
-                        </TouchableOpacity>
-                      </React.Fragment>
-                    );
-                  })}
+            {/* Quick Amount Suggestion Chips */}
+            <View style={styles.quickChipsRow}>
+              {QUICK_AMOUNTS.map((val) => {
+                const isSelected = amount === val;
+                return (
+                  <TouchableOpacity
+                    key={val}
+                    style={[styles.quickChip, isSelected && styles.quickChipActive]}
+                    onPress={() => setAmount(val)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[styles.quickChipText, isSelected && styles.quickChipTextActive]}>
+                      +{val}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* QR Code and Address Card */}
+          <LinearGradient
+            colors={['#2B4C7E', '#20365B']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.qrCard}
+          >
+            {/* Top pill showing current chain */}
+            <View style={styles.cardHeaderTop}>
+              <View style={styles.chainPill}>
+                <CryptoIcon symbol={selectedChain} size={14} />
+                <Text style={styles.chainPillText}>{selectedChain.toUpperCase()}</Text>
+              </View>
+
+              <View style={styles.nodeTagRow}>
+                <Ionicons name="shield-checkmark" size={13} color="#10B981" style={{ marginRight: 4 }} />
+                <Text style={styles.nodeTagText}>{t('receiveFunds.secure', 'SECURE')}</Text>
+              </View>
+            </View>
+
+            {/* QR Center Box */}
+            <View style={styles.qrCenterWrapper}>
+              <View style={styles.qrWhiteBox}>
+                <RealQrCode />
+              </View>
+
+              {/* Dynamic Request Pill */}
+              {amount && parseFloat(amount) > 0 ? (
+                <View style={styles.requestedAmountBadge}>
+                  <Text style={styles.requestedAmountLabel}>
+                    {t('receiveFunds.requesting', 'Requesting')}:
+                  </Text>
+                  <Text style={styles.requestedAmountValue}>
+                    {amount} {token}
+                  </Text>
                 </View>
+              ) : (
+                <Text style={styles.qrScanHint}>
+                  {t('receiveFunds.scan_to_pay', 'Scan to Pay')}
+                </Text>
               )}
             </View>
 
-          {/* Tabs */}
-          <View style={styles.tabsContainer}>
-            <TouchableOpacity 
-              style={[styles.tab, activeTab === 'adresse' ? styles.tabActive : styles.tabInactive]}
-              onPress={() => setActiveTab('adresse')}
-              activeOpacity={0.8}
+            {/* Divider */}
+            <View style={styles.cardDivider} />
+
+            {/* Address Row */}
+            <Text style={styles.addressLabel}>
+              {t('receiveFunds.your_address', 'YOUR ADDRESS')}
+            </Text>
+            <View style={styles.addressBox}>
+              <Text style={styles.addressText} numberOfLines={1} ellipsizeMode="middle">
+                {activeAddress}
+              </Text>
+              <Pressable style={styles.addressCopyBtn} onPress={copyAddress}>
+                <Ionicons name={copied ? 'checkmark' : 'copy-outline'} size={18} color="#FFFFFF" />
+              </Pressable>
+            </View>
+          </LinearGradient>
+
+          {/* Action Buttons: Copy & Share */}
+          <View style={styles.actionBtnsRow}>
+            <TouchableOpacity
+              style={styles.copyBtn}
+              onPress={copyPaymentRequest}
+              activeOpacity={0.85}
             >
-              <Ionicons name="wallet-outline" size={18} color={activeTab === 'adresse' ? '#FFFFFF' : '#1A2840'} style={{marginRight: 6}} />
-              <Text style={[styles.tabText, activeTab === 'adresse' ? styles.tabTextActive : styles.tabTextInactive]}>{t('receiveFunds.your_address', 'ADRESSE')}</Text>
+              <Ionicons name="copy-outline" size={18} color="#0F172A" style={{ marginRight: 8 }} />
+              <Text style={styles.copyBtnText}>
+                {copied ? t('receiveFunds.copied', 'COPIED') : t('receiveFunds.copy', 'COPY')}
+              </Text>
             </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.tab, activeTab === 'qrcode' ? styles.tabActive : styles.tabInactive]}
-              onPress={() => setActiveTab('qrcode')}
-              activeOpacity={0.8}
+
+            <TouchableOpacity
+              style={styles.shareBtn}
+              onPress={sharePaymentRequest}
+              activeOpacity={0.85}
             >
-              <Ionicons name="scan-outline" size={18} color={activeTab === 'qrcode' ? '#FFFFFF' : '#1A2840'} style={{marginRight: 6}} />
-              <Text style={[styles.tabText, activeTab === 'qrcode' ? styles.tabTextActive : styles.tabTextInactive]}>{t('receiveFunds.scan', 'SCANNER QR')}</Text>
+              <Ionicons name="share-outline" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+              <Text style={styles.shareBtnText}>
+                {t('receiveFunds.share', 'SHARE')}
+              </Text>
             </TouchableOpacity>
           </View>
 
-          {activeTab === 'adresse' ? (
-            <>
-              {/* Address Card */}
-              <LinearGradient colors={['#2B4C7E', '#20365B']} start={{x: 0, y: 0}} end={{x: 1, y: 1}} style={styles.addressCard}>
-                {/* Top of Card */}
-                <View style={styles.cardTop}>
-                  <View style={styles.polygonPill}>
-                    <View style={styles.polygonIconSmall}>
-                      <Ionicons name="infinite" size={12} color="#FFFFFF" />
-                    </View>
-                    <View style={styles.pillDot} />
-                    <Text style={styles.polygonPillText}>POLYGON</Text>
-                  </View>
-                  <View style={styles.nodeSecureRow}>
-                    <Ionicons name="shield-checkmark-outline" size={14} color="#94A3B8" style={{marginRight: 4}} />
-                    <View style={styles.nodeDot} />
-                    <Text style={styles.nodeSecureText}>{t('receiveFunds.secure', 'NOEUD SÉCURISÉ')}</Text>
-                  </View>
-                </View>
-
-                {/* Address Area */}
-                <Text style={styles.addressLabel}>{t('receiveFunds.your_address', 'VOTRE ADRESSE')}</Text>
-                <View style={styles.addressRow}>
-                  <Text style={styles.addressText}>
-                    {address}
-                  </Text>
-                  <Pressable style={styles.btnCopyIcon} onPress={copyAddress} onPressIn={copyAddress}>
-                    <Ionicons name="copy-outline" size={18} color="#FFFFFF" />
-                  </Pressable>
-                </View>
-
-              </LinearGradient>
-
-              {/* Action Buttons */}
-              <View style={styles.actionBtnsRow}>
-                <Pressable style={styles.btnCopy} onPress={copyAddress} onPressIn={copyAddress} accessibilityLabel="Copier l'adresse">
-                  <Ionicons name="copy-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
-                  <Text style={styles.btnCopyText}>{copied ? t('receiveFunds.copied', 'COPIÉ ✔') : t('receiveFunds.copy', 'COPIER')}</Text>
-                </Pressable>
-                <TouchableOpacity style={styles.btnShare} onPress={shareAddress}>
-                  <Ionicons name="share-outline" size={20} color="#FFFFFF" style={{marginRight: 8}} />
-                  <Text style={styles.btnShareText}>{t('receiveFunds.share', 'PARTAGER')}</Text>
-                </TouchableOpacity>
+          {/* Discreet Multichain Switcher Chip */}
+          <TouchableOpacity
+            style={styles.networkChip}
+            onPress={() => setShowNetworkModal(true)}
+            activeOpacity={0.8}
+          >
+            <View style={styles.networkChipLeft}>
+              <View style={styles.networkIconWrapper}>
+                <CryptoIcon symbol={selectedChain} size={20} />
               </View>
-
-            </>
-          ) : (
-            <>
-              {/* QR Code Card */}
-              <LinearGradient colors={['#2B4C7E', '#20365B']} start={{x: 0, y: 0}} end={{x: 1, y: 1}} style={styles.addressCard}>
-                {/* Top of Card */}
-                <View style={styles.cardTop}>
-                  <View style={styles.polygonPill}>
-                    <View style={styles.polygonIconSmall}>
-                      <Ionicons name="infinite" size={12} color="#FFFFFF" />
-                    </View>
-                    <View style={styles.pillDot} />
-                    <Text style={styles.polygonPillText}>POLYGON</Text>
-                  </View>
-                  <View style={styles.nodeSecureRow}>
-                    <Ionicons name="shield-checkmark-outline" size={14} color="#94A3B8" style={{marginRight: 4}} />
-                    <View style={styles.nodeDot} />
-                    <Text style={styles.nodeSecureText}>{t('receiveFunds.secure', 'NOEUD SÉCURISÉ')}</Text>
-                  </View>
-                </View>
-
-                {/* QR Content */}
-                <View style={styles.qrContentWrapper}>
-                  <Text style={styles.qrCardTitle}>{t('receiveFunds.scan_to_pay', 'Scanner pour payer')}</Text>
-                  <Text style={styles.qrCardSub}>{t('receiveFunds.dedicatedAddress', 'Ceci est votre adresse dédiée pour {{chain}}').replace('{{chain}}', selectedChain)}</Text>
-                  
-                  <View style={styles.qrCodeBox}>
-                    <RealQrCode />
-                  </View>
-                  
-                  <View style={styles.qrInnerTabs}>
-                    <TouchableOpacity style={styles.qrInnerTab} onPress={() => setActiveTab('adresse')}>
-                      <Ionicons name="wallet-outline" size={14} color="#FFFFFF" style={{marginRight: 6}} />
-                      <Text style={styles.qrInnerTabText}>{t('receiveFunds.view_address', "VOIR L'ADRESSE")}</Text>
-                    </TouchableOpacity>
-                    <View style={styles.qrInnerTabDivider} />
-                    <TouchableOpacity style={styles.qrInnerTab}>
-                      <Ionicons name="scan-outline" size={14} color="#FFFFFF" style={{marginRight: 6}} />
-                      <Text style={styles.qrInnerTabText}>{t('receiveFunds.scan', 'SCANNER')}</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                <View style={styles.cardDivider} />
-
-                {/* Address Area Small */}
-                <Text style={styles.addressLabelSmall}>{t('receiveFunds.your_address', 'VOTRE ADRESSE')}</Text>
-                <View style={styles.addressRow}>
-                  <Text style={styles.addressTextSmall} numberOfLines={1} ellipsizeMode="middle">
-                    {address}
-                  </Text>
-                  <Pressable style={styles.btnCopyIcon} onPress={copyAddress} onPressIn={copyAddress}>
-                    <Ionicons name="copy-outline" size={18} color="#FFFFFF" />
-                  </Pressable>
-                </View>
-
-              </LinearGradient>
-
-              {/* Action Buttons */}
-              <View style={styles.actionBtnsRow}>
-                <Pressable style={styles.btnCopy} onPress={copyAddress} onPressIn={copyAddress} accessibilityLabel="Copier l'adresse">
-                  <Ionicons name="copy-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
-                  <Text style={styles.btnCopyText}>{copied ? t('receiveFunds.copied', 'COPIÉ ✔') : t('receiveFunds.copy', 'COPIER')}</Text>
-                </Pressable>
-                <TouchableOpacity style={styles.btnShare} onPress={shareAddress}>
-                  <Ionicons name="share-outline" size={20} color="#FFFFFF" style={{marginRight: 8}} />
-                  <Text style={styles.btnShareText}>{t('receiveFunds.share', 'PARTAGER')}</Text>
-                </TouchableOpacity>
+              <View>
+                <Text style={styles.networkChipTitle}>
+                  {t('common.network', 'Network')}:{' '}
+                  <Text style={styles.networkChipBold}>{selectedChain}</Text>
+                  {selectedChain === 'Polygon' ? ` (${t('common.default', 'Default')})` : ''}
+                </Text>
+                <Text style={styles.networkChipSubtitle}>
+                  {selectedChain === 'Polygon'
+                    ? t('receiveFunds.recommendedFast', 'Recommended • Fast & Lowest Fees')
+                    : selectedChain === 'Solana'
+                    ? t('receiveFunds.crossmintSupported', 'Fast • Crossmint Supported')
+                    : `${selectedChain} Network Node`}
+                </Text>
               </View>
-            </>
-          )}
-
-          {showToast && (
-            <View style={styles.toastCard}>
-              <View style={styles.toastIconBg}><Ionicons name="checkmark" size={16} color="#FFFFFF" /></View>
-              <View style={styles.toastContent}><Text style={styles.toastTitle}>{t('receiveFunds.toastTitle', 'Adresse copiée !')}</Text><Text style={styles.toastDesc}>{t('receiveFunds.toastDesc', "L'adresse a été copiée dans le presse-papiers.")}</Text></View>
-              <TouchableOpacity onPress={() => setShowToast(false)}><Ionicons name="close" size={20} color="#94A3B8" /></TouchableOpacity>
             </View>
+
+            <View style={styles.networkChipRight}>
+              <Text style={styles.networkChangeText}>
+                {t('receiveFunds.changeNetwork', 'Change')}
+              </Text>
+              <Ionicons name="chevron-forward" size={14} color="#2563EB" />
+            </View>
+          </TouchableOpacity>
+
+          {/* Pivot Return Button if arriving from ContactProfile */}
+          {route.params?.pivotScreen && (
+            <TouchableOpacity
+              style={styles.pivotButton}
+              onPress={() => navigation.navigate(route.params.pivotScreen, route.params.pivotParams)}
+              activeOpacity={0.88}
+            >
+              <Ionicons name="arrow-back" size={16} color="#071D54" style={{ marginRight: 6 }} />
+              <Text style={styles.pivotButtonText}>
+                {t('common.backToContact', 'Back to Contact')}
+              </Text>
+            </TouchableOpacity>
           )}
 
           {/* Bottom Security Banner */}
-          <View style={styles.bottomBanner}>
-            <View style={styles.bottomBannerLeft}>
-              <View style={styles.bottomBannerShield}>
-                <Ionicons name="shield-checkmark-outline" size={20} color="#FFB800" />
-              </View>
-              <View style={styles.bottomBannerContent}>
-                <Text style={styles.bottomBannerTitle}>{t('receiveFunds.bannerTitle', 'Noeud de transaction sécurisé DizzitUp')}</Text>
-                <Text style={styles.bottomBannerDesc}>{t('receiveFunds.bannerDesc', 'Vos transactions sont protégées par notre infrastructure.')}</Text>
-              </View>
+          <View style={styles.securityBanner}>
+            <View style={styles.securityIconBox}>
+              <Ionicons name="shield-checkmark" size={18} color="#FFC759" />
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
+            <View style={styles.securityContent}>
+              <Text style={styles.securityBannerTitle}>
+                {t('receiveFunds.bannerTitle', 'DizzitUp Secure Transaction Node')}
+              </Text>
+              <Text style={styles.securityBannerDesc}>
+                {t('receiveFunds.bannerDesc', 'Your transactions are protected by our infrastructure.')}
+              </Text>
+            </View>
           </View>
-
         </ScrollView>
 
         <BottomNavBar />
+
+        {/* Modal: Discreet Multichain Selection Sheet */}
+        <Modal
+          visible={showNetworkModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowNetworkModal(false)}
+        >
+          <Pressable style={styles.modalOverlay} onPress={() => setShowNetworkModal(false)}>
+            <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
+              <View style={styles.modalHeader}>
+                <View>
+                  <Text style={styles.modalTitle}>
+                    {t('receiveFunds.networkModalTitle', 'Select Blockchain Network')}
+                  </Text>
+                  <Text style={styles.modalSubtitle}>
+                    {t('receiveFunds.networkModalSubtitle', 'Choose network to receive funds (Polygon is default)')}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.modalCloseBtn}
+                  onPress={() => setShowNetworkModal(false)}
+                >
+                  <Ionicons name="close" size={20} color="#64748B" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.chainsList}>
+                {CHAINS.map((chain, index) => {
+                  const isSelected = selectedChain === chain.id;
+                  const subtitle = chain.subtitleKey ? t(chain.subtitleKey, chain.defaultSub) : chain.defaultSub;
+                  return (
+                    <TouchableOpacity
+                      key={chain.id}
+                      style={[styles.chainRow, isSelected && styles.chainRowActive]}
+                      onPress={() => handleSelectChain(chain)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.chainRowLeft}>
+                        <View style={styles.chainIconSquare}>
+                          <CryptoIcon symbol={chain.id} size={24} />
+                        </View>
+                        <View>
+                          <View style={styles.chainNameRow}>
+                            <Text style={styles.chainRowName}>{chain.name}</Text>
+                            {chain.isDefault ? (
+                              <View style={styles.defaultBadge}>
+                                <Text style={styles.defaultBadgeText}>DEFAULT</Text>
+                              </View>
+                            ) : null}
+                          </View>
+                          <Text style={styles.chainRowSub}>{subtitle}</Text>
+                        </View>
+                      </View>
+
+                      {isSelected ? (
+                        <Ionicons name="checkmark-circle" size={22} color="#10B981" />
+                      ) : (
+                        <Ionicons name="radio-button-off" size={20} color="#CBD5E1" />
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </Pressable>
+          </Pressable>
+        </Modal>
+
+        {/* Modal: Token Selector Sheet */}
+        <Modal
+          visible={showTokenModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowTokenModal(false)}
+        >
+          <Pressable style={styles.modalOverlay} onPress={() => setShowTokenModal(false)}>
+            <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
+              <View style={styles.modalHeader}>
+                <View>
+                  <Text style={styles.modalTitle}>
+                    {t('common.currency', 'Currency')} / Token
+                  </Text>
+                  <Text style={styles.modalSubtitle}>
+                    {t('common.select', 'Select')} token to receive
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.modalCloseBtn}
+                  onPress={() => setShowTokenModal(false)}
+                >
+                  <Ionicons name="close" size={20} color="#64748B" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.tokensGrid}>
+                {currentTokens.map((tok) => {
+                  const isSelected = token === tok;
+                  return (
+                    <TouchableOpacity
+                      key={tok}
+                      style={[styles.tokenGridItem, isSelected && styles.tokenGridItemActive]}
+                      onPress={() => handleSelectToken(tok)}
+                      activeOpacity={0.75}
+                    >
+                      <CryptoIcon symbol={tok} size={28} style={{ marginBottom: 6 }} />
+                      <Text style={[styles.tokenGridText, isSelected && styles.tokenGridTextActive]}>
+                        {tok}
+                      </Text>
+                      {isSelected ? (
+                        <View style={styles.tokenCheckDot}>
+                          <Ionicons name="checkmark" size={10} color="#FFFFFF" />
+                        </View>
+                      ) : null}
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </Pressable>
+          </Pressable>
+        </Modal>
       </View>
     </SafeAreaView>
   );
@@ -330,21 +598,53 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+    position: 'relative',
   },
+  toastWrap: {
+    position: 'absolute',
+    left: 14,
+    right: 14,
+    top: 60,
+    zIndex: 99,
+  },
+
+  /* Header */
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingHorizontal: isSmallScreen ? 12 : 16,
+    paddingBottom: 10,
+    maxWidth: 520,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
+    marginHorizontal: 8,
   },
   headerTitle: {
-    flex: 1,
     fontFamily: 'Inter_700Bold',
-    fontSize: 17,
-    color: '#1A2840',
-    textAlign: 'center',
-    marginHorizontal: 8,
+    fontSize: isSmallScreen ? 16 : 17,
+    color: '#0F172A',
+  },
+  secureBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  secureDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10B981',
+    marginRight: 4,
+  },
+  secureBadgeText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 10,
+    color: '#10B981',
   },
   headerRightIcons: {
     flexDirection: 'row',
@@ -361,490 +661,525 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 6,
   },
-  notificationDot: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#FFC759',
-    borderWidth: 1.5,
-    borderColor: '#FFFFFF',
-  },
-  headerCenter: {
-    alignItems: 'center',
-  },
-  pageTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 18,
-    color: '#1A2840',
-    marginBottom: 4,
-  },
-  secureTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  secureDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#10B981',
-    marginRight: 4,
-  },
-  secureText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 11,
-    color: '#10B981',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconBtnHeader: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 6,
-  },
-  notifDot: {
-    position: 'absolute',
-    top: -2,
-    right: -2,
-    backgroundColor: '#FFB800',
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#FFFFFF',
-  },
-  notifText: {
-    fontSize: 8,
-    fontFamily: 'Inter_700Bold',
-    color: '#1A2840',
-  },
+
+  /* Scroll Body */
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 40,
+    paddingHorizontal: isSmallScreen ? 12 : 16,
+    paddingTop: 8,
+    paddingBottom: 70,
+    maxWidth: 500,
+    width: '100%',
+    alignSelf: 'center',
   },
-  blockchainSection: {
-    marginBottom: 20,
+
+  /* Hero Request Amount Card */
+  requestHeroCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: isSmallScreen ? 14 : 16,
+    marginBottom: 14,
+    boxShadow: '0px 2px 8px #F1F5F9',
   },
-  sectionLabel: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
-    color: '#94A3B8',
-    marginBottom: 12,
-  },
-  dropdown: {
+  requestHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 10,
+  },
+  requestCardTitle: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: isSmallScreen ? 14 : 15,
+    color: '#0F172A',
+  },
+  requestCardSubtitle: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  clearBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+  },
+  clearBtnText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    color: '#64748B',
+    marginLeft: 3,
+  },
+  amountInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
     borderWidth: 1.5,
     borderColor: '#CBD5E1',
     borderRadius: 16,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     height: 54,
+    marginBottom: 10,
   },
-  dropdownOpen: {
-    borderColor: '#FFC759',
-    borderWidth: 2,
+  amountInput: {
+    flex: 1,
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: isSmallScreen ? 22 : 26,
+    color: '#0F172A',
+    outlineStyle: 'none',
   },
-  dropdownLeft: {
+  tokenPill: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  dropdownText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 15,
-    color: '#1A2840',
-  },
-  dropdownMenu: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    marginTop: 8,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    overflow: 'hidden',
-    boxShadow: '0px 8px 24px rgba(15, 23, 42, 0.08)',
-    elevation: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
   },
-  dropdownItem: {
+  tokenPillText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 13,
+    color: '#0F172A',
+  },
+  quickChipsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 6,
+  },
+  quickChip: {
+    flex: 1,
+    backgroundColor: '#F1F5F9',
+    paddingVertical: 6,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  quickChipActive: {
+    backgroundColor: '#071D54',
+  },
+  quickChipText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: '#334155',
+  },
+  quickChipTextActive: {
+    color: '#FFFFFF',
+    fontFamily: 'Inter_700Bold',
+  },
+
+  /* QR Card */
+  qrCard: {
+    borderRadius: 24,
+    padding: isSmallScreen ? 16 : 20,
+    marginBottom: 12,
+    boxShadow: '0px 8px 24px #20365B',
+  },
+  cardHeaderTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    marginBottom: 16,
   },
-  dropdownItemActive: {
-    backgroundColor: '#FFFDF5',
-  },
-  dropdownItemLeft: {
+  chainPill: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    gap: 6,
   },
-  dropdownItemTitle: {
+  chainPillText: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 14,
-    color: '#1A2840',
-  },
-  dropdownItemSub: {
-    fontFamily: 'Inter_400Regular',
     fontSize: 11,
-    color: '#94A3B8',
-    marginTop: 1,
-  },
-  dropdownItemSubYellow: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 10,
-    color: '#D97706',
-    marginTop: 1,
+    color: '#FFFFFF',
     letterSpacing: 0.5,
   },
-  dropdownDivider: {
-    height: 1,
-    backgroundColor: '#F1F5F9',
-    marginLeft: 56,
-  },
-  tabsContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#F8F9FE',
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: 24,
-  },
-  tab: {
-    flex: 1,
-    flexDirection: 'row',
-    paddingVertical: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 12,
-  },
-  tabActive: {
-    backgroundColor: '#20365B',
-  },
-  tabInactive: {
-    backgroundColor: '#FFFFFF',
-  },
-  tabText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 13,
-  },
-  tabTextActive: {
-    color: '#FFFFFF',
-  },
-  tabTextInactive: {
-    color: '#1A2840',
-  },
-  addressCard: {
-    borderRadius: 24,
-    padding: 24,
-    marginBottom: 24,
-  },
-  cardTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  polygonPill: {
+  nodeTagRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(130, 71, 229, 0.2)', // Purple tint
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
     paddingHorizontal: 8,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingVertical: 3,
+    borderRadius: 8,
   },
-  polygonIconSmall: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#8247E5',
-    justifyContent: 'center',
+  nodeTagText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 10,
+    color: '#10B981',
+    letterSpacing: 0.5,
+  },
+
+  /* QR Box */
+  qrCenterWrapper: {
     alignItems: 'center',
-    marginRight: 6,
+    marginVertical: 4,
   },
-  pillDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
+  qrWhiteBox: {
     backgroundColor: '#FFFFFF',
-    marginRight: 4,
+    padding: 12,
+    borderRadius: 18,
+    boxShadow: '0px 4px 12px #000',
   },
-  polygonPillText: {
+  requestedAmountBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFC759',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 12,
+    marginTop: 12,
+    gap: 6,
+  },
+  requestedAmountLabel: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 11,
-    color: '#FFFFFF',
+    color: '#071D54',
   },
-  nodeSecureRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  nodeDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#10B981',
-    marginRight: 4,
-  },
-  nodeSecureText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 11,
-    color: '#94A3B8',
-  },
-  addressLabel: {
-    fontFamily: 'Inter_400Regular',
+  requestedAmountValue: {
+    fontFamily: 'SpaceGrotesk_700Bold',
     fontSize: 13,
-    color: '#94A3B8',
-    textAlign: 'center',
-    marginBottom: 8,
+    color: '#071D54',
   },
-  addressRow: {
+  qrScanHint: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
+    color: '#E2E8F0',
+    marginTop: 10,
+  },
+
+  cardDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    marginVertical: 14,
+  },
+
+  /* Address Box */
+  addressLabel: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 10,
+    color: '#94A3B8',
+    letterSpacing: 0.8,
+    marginBottom: 6,
+  },
+  addressBox: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    height: 44,
   },
   addressText: {
     flex: 1,
-    fontFamily: 'SpaceGrotesk_600SemiBold',
-    fontSize: 18,
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
     color: '#FFFFFF',
-    textAlign: 'center',
-    lineHeight: 26,
-    marginRight: 12,
+    marginRight: 8,
   },
-  btnCopyIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
+  addressCopyBtn: {
+    padding: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 8,
   },
-  cardDivider: {
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    marginBottom: 20,
-  },
-  actionBtnsRowCard: {
+
+  /* Action Buttons */
+  actionBtnsRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
+    marginBottom: 12,
   },
-  btnCopyCard: {
+  copyBtn: {
     flex: 1,
+    height: 48,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    borderRadius: 14,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    paddingVertical: 14,
-    borderRadius: 12,
   },
-  btnShareCard: {
+  copyBtnText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 13,
+    color: '#0F172A',
+  },
+  shareBtn: {
     flex: 1,
+    height: 48,
+    backgroundColor: '#071D54',
+    borderRadius: 14,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    paddingVertical: 14,
-    borderRadius: 12,
+    boxShadow: '0px 4px 8px #071D54',
   },
-  btnCardText: {
-    fontFamily: 'Inter_600SemiBold',
+  shareBtnText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
     fontSize: 13,
     color: '#FFFFFF',
   },
-  actionBtnsRow: {
+
+  /* Discreet Network Switcher Chip */
+  networkChip: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 24,
-  },
-  btnCopy: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'space-between',
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    paddingVertical: 14,
     borderRadius: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    marginBottom: 12,
   },
-  btnCopyText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-    color: '#1A2840',
-  },
-  btnShare: {
+  networkChipLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#20365B',
-    paddingVertical: 14,
-    borderRadius: 16,
+    marginRight: 8,
   },
-  btnShareText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 14,
-    color: '#FFFFFF',
-  },
-  toastCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F0FDF4', // Light green bg
-    borderWidth: 1,
-    borderColor: '#DCFCE7',
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 16,
-  },
-  toastIconBg: {
+  networkIconWrapper: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#10B981',
+    backgroundColor: '#F8FAFC',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  networkChipTitle: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
+    color: '#475569',
+  },
+  networkChipBold: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    color: '#0F172A',
+  },
+  networkChipSubtitle: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 10,
+    color: '#64748B',
+    marginTop: 1,
+  },
+  networkChipRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    gap: 2,
+  },
+  networkChangeText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 11,
+    color: '#2563EB',
+  },
+
+  /* Pivot Button */
+  pivotButton: {
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    height: 48,
+    borderRadius: 14,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  pivotButtonText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 13,
+    color: '#071D54',
+  },
+
+  /* Bottom Security Banner */
+  securityBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFDF5',
+    borderWidth: 1,
+    borderColor: '#FEF3C7',
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 10,
+  },
+  securityIconBox: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#FEF3C7',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  securityContent: {
+    flex: 1,
+  },
+  securityBannerTitle: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 11,
+    color: '#0F172A',
+  },
+  securityBannerDesc: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 10,
+    color: '#64748B',
+    marginTop: 1,
+  },
+
+  /* Modal Sheets */
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    paddingBottom: Platform.OS === 'android' ? 24 : 36,
+    maxWidth: 520,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+    paddingBottom: 12,
+  },
+  modalTitle: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 16,
+    color: '#0F172A',
+  },
+  modalSubtitle: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  modalCloseBtn: {
+    padding: 4,
+  },
+  chainsList: {
+    gap: 8,
+  },
+  chainRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    padding: 12,
+  },
+  chainRowActive: {
+    backgroundColor: '#F0FDF4',
+    borderColor: '#86EFAC',
+  },
+  chainRowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  chainIconSquare: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
-  toastContent: {
-    flex: 1,
-  },
-  toastTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 14,
-    color: '#064E3B',
-    marginBottom: 2,
-  },
-  toastDesc: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    color: '#065F46',
-  },
-  bottomBanner: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#FAFAFA',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 16,
-  },
-  bottomBannerLeft: {
+  chainNameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
+    gap: 6,
   },
-  bottomBannerShield: {
-    marginRight: 12,
-  },
-  bottomBannerContent: {
-    flex: 1,
-  },
-  bottomBannerTitle: {
-    fontFamily: 'Inter_700Bold',
+  chainRowName: {
+    fontFamily: 'SpaceGrotesk_700Bold',
     fontSize: 13,
-    color: '#1A2840',
-    marginBottom: 2,
+    color: '#0F172A',
   },
-  bottomBannerDesc: {
+  defaultBadge: {
+    backgroundColor: '#15803D',
+    borderRadius: 4,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+  },
+  defaultBadgeText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 8,
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  chainRowSub: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 12,
+    fontSize: 11,
     color: '#64748B',
+    marginTop: 1,
   },
-  qrContentWrapper: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  qrCardTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 18,
-    color: '#FFFFFF',
-    marginBottom: 6,
-  },
-  qrCardSub: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    color: '#94A3B8',
-    marginBottom: 24,
-  },
-  qrCodeBox: {
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 24,
-  },
-  qrInnerTabs: {
+
+  /* Tokens Grid Modal */
+  tokensGrid: {
     flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 20,
+    flexWrap: 'wrap',
+    gap: 10,
     paddingVertical: 8,
-    paddingHorizontal: 16,
   },
-  qrInnerTab: {
-    flexDirection: 'row',
+  tokenGridItem: {
+    width: (Dimensions.get('window').width > 500 ? 480 : Dimensions.get('window').width - 56) / 3,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 16,
+    paddingVertical: 14,
     alignItems: 'center',
-    paddingHorizontal: 12,
+    position: 'relative',
   },
-  qrInnerTabDivider: {
-    width: 1,
+  tokenGridItemActive: {
+    backgroundColor: '#EFF6FF',
+    borderColor: '#3B82F6',
+  },
+  tokenGridText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 13,
+    color: '#334155',
+  },
+  tokenGridTextActive: {
+    color: '#1D4ED8',
+  },
+  tokenCheckDot: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 16,
     height: 16,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 8,
+    backgroundColor: '#3B82F6',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  qrInnerTabText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-    color: '#FFFFFF',
-  },
-  addressLabelSmall: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-    color: '#94A3B8',
-    marginBottom: 8,
-  },
-  addressTextSmall: {
-    flex: 1,
-    fontFamily: 'SpaceGrotesk_600SemiBold',
-    fontSize: 15,
-    color: '#FFFFFF',
-    marginRight: 12,
-  },
-  walletAddressesCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 20, boxShadow: '0px 4px 10px rgba(0,0,0,0.05)', elevation: 3, borderWidth: 1, borderColor: '#F1F5F9' },
-  waHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  waIconBox: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(32,54,91,0.05)', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  waTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#20365B' },
-  waList: { gap: 12 },
-  waItem: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 12, borderWidth: 1, borderColor: '#F1F5F9', boxShadow: '0px 2px 4px rgba(0,0,0,0.05)', elevation: 2 },
-  waItemContent: { flexDirection: 'row', alignItems: 'center' },
-  waNetworkIconEVM: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  waNetworkIconSOL: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  waTextWrap: { flex: 1 },
-  waNetworkTitle: { fontFamily: 'Inter_700Bold', fontSize: 12, color: '#20365B', textTransform: 'uppercase', marginBottom: 2 },
-  waAddressText: { fontFamily: 'SpaceGrotesk_400Regular', fontSize: 12, color: '#64748B' },
-  waCopyBtnEVM: { width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(255,199,89,0.15)', justifyContent: 'center', alignItems: 'center', marginLeft: 12 },
-  waCopyBtnSOL: { width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(32,54,91,0.1)', justifyContent: 'center', alignItems: 'center', marginLeft: 12 },
-  waEmpty: { backgroundColor: '#F8FAFC', borderRadius: 16, padding: 24, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#F1F5F9' },
-  waEmptyText: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#64748B', textAlign: 'center', marginTop: 12 },
 });

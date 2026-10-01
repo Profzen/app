@@ -56,7 +56,32 @@ export const shareShopLink = async (shopCode = 'SHOP2026') => {
   }
 };
 
-export const handleUserInviteShare = (user) => {
+export const handleUserInviteShare = (user, contact = null) => {
   const code = user?.id ? `DZY-${user.id.substring(0, 6).toUpperCase()}` : 'DZY500';
-  shareInviteLink(code);
+  const inviteUrl = `https://dizzitup.com/invite?ref=${code}`;
+  const recipientGreeting = contact?.name ? `Hello ${contact.name}, ` : '';
+  const message = `${recipientGreeting}Join me on DizzitUp to support wisely your family in Africa by covering their needs while developing local economy. Buy goods, Pay bills, Invest in local businesses. Use my referral code ${code} to earn rewards: ${inviteUrl}`;
+  
+  try {
+    if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.share) {
+      navigator.share({
+        title: 'Invitation DizzitUp',
+        text: message,
+        url: inviteUrl,
+      }).catch(() => {});
+    } else {
+      Share.share(
+        {
+          title: 'Invitation DizzitUp',
+          message: message,
+          url: inviteUrl,
+        },
+        {
+          dialogTitle: 'Inviter un ami sur DizzitUp',
+        }
+      ).catch(() => {});
+    }
+  } catch (error) {
+    console.log('Share invitation cancelled or error:', error);
+  }
 };
