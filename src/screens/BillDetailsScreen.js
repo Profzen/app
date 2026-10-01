@@ -223,6 +223,8 @@ export default function BillDetailsScreen() {
         receiveCurrency: currency,
         feeAmount: (numAmount * 0.015).toFixed(2),
       },
+      pivotScreen: route.params?.pivotScreen,
+      pivotParams: route.params?.pivotParams,
     });
   };
 
@@ -242,7 +244,17 @@ export default function BillDetailsScreen() {
 
         {/* Top Navigation Bar */}
         <View style={styles.topBar}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.7}>
+          <TouchableOpacity 
+            style={styles.backBtn} 
+            onPress={() => {
+              if (route.params?.pivotScreen) {
+                navigation.navigate(route.params.pivotScreen, route.params.pivotParams);
+              } else {
+                navigation.goBack();
+              }
+            }} 
+            activeOpacity={0.7}
+          >
             <Ionicons name="arrow-back" size={22} color="#1A2840" />
           </TouchableOpacity>
           <View style={styles.topBarCenter}>

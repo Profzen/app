@@ -46,25 +46,6 @@ export default function TransactionHistoryScreen() {
     await generateAndShareStatement(filteredTransactions, user, t);
   };
 
-  const getExplorerUrl = (tx) => {
-    if (tx.onChain?.explorerLink) return tx.onChain.explorerLink;
-    const hash = tx.txHash || tx.hash || (typeof tx.id === 'string' && tx.id.startsWith('0x') ? tx.id : null);
-    if (!hash) return null;
-    const chain = (tx.chain || 'polygon').toLowerCase();
-    if (chain.includes('polygon') || chain.includes('matic') || chain.includes('pol')) {
-      return `https://polygonscan.com/tx/${hash}`;
-    } else if (chain.includes('base')) {
-      return `https://basescan.org/tx/${hash}`;
-    } else if (chain.includes('solana') || chain.includes('sol')) {
-      return `https://solscan.io/tx/${hash}`;
-    } else if (chain.includes('eth')) {
-      return `https://etherscan.io/tx/${hash}`;
-    } else if (chain.includes('bnb') || chain.includes('bsc')) {
-      return `https://bscscan.com/tx/${hash}`;
-    }
-    return `https://polygonscan.com/tx/${hash}`;
-  };
-
   const getTypeIcon = (type, meta = {}) => {
     const isBill = meta?.payment_context === 'bill_payment' || meta?.type === 'invoice_payment' || meta?.type === 'invoice';
     if (isBill) return <Ionicons name="cart" size={20} color="#10B981" />; // Emerald
@@ -114,6 +95,29 @@ export default function TransactionHistoryScreen() {
     } catch (e) {
       return '';
     }
+  };
+
+  const getExplorerUrl = (tx) => {
+    if (tx.onChain?.explorerLink && !tx.onChain.explorerLink.includes('-') && !tx.onChain.explorerLink.includes('/error')) {
+      return tx.onChain.explorerLink;
+    }
+    if (tx.explorerLink && !tx.explorerLink.includes('-') && !tx.explorerLink.includes('/error')) {
+      return tx.explorerLink;
+    }
+    const hash = tx.onChain?.txHash || tx.txHash;
+    if (!hash || typeof hash !== 'string' || hash.includes('-')) {
+      return null;
+    }
+    const chain = (tx.chain || '').toLowerCase();
+    if (chain.includes('solana') && hash.length >= 40 && hash.length <= 90) {
+      return `https://solscan.io/tx/${hash}`;
+    }
+    if (hash.startsWith('0x') && hash.length >= 64) {
+      if (chain.includes('base')) return `https://basescan.org/tx/${hash}`;
+      if (chain.includes('bsc') || chain.includes('bnb')) return `https://bscscan.com/tx/${hash}`;
+      return `https://polygonscan.com/tx/${hash}`;
+    }
+    return null;
   };
 
   return (
@@ -255,16 +259,22 @@ export default function TransactionHistoryScreen() {
                           </View>
                         </View>
 
-                        {(() => {
-                          const explorerUrl = getExplorerUrl(tx);
-                          if (!explorerUrl) return null;
-                          return (
-                            <TouchableOpacity style={styles.explorerBtn} onPress={() => Linking.openURL(explorerUrl)}>
-                              <Text style={styles.explorerBtnText}>{t('common.wallet.view_onchain', 'Polygonscan')}</Text>
-                              <Ionicons name="open-outline" size={14} color="#20365B" style={{ marginLeft: 4 }} />
-                            </TouchableOpacity>
-                          );
-                        })()}
+                        {Boolean(getExplorerUrl(tx)) && (
+                          <TouchableOpacity 
+                            style={styles.explorerBtn} 
+                            onPress={() => {
+                              const url = getExplorerUrl(tx);
+                              if (url) Linking.openURL(url);
+                            }}
+                          >
+                            <Text style={styles.explorerBtnText}>
+                              {(tx.chain || '').toLowerCase().includes('polygon')
+                                ? 'PolygonScan'
+                                : t('common.wallet.view_onchain', 'Explorer')}
+                            </Text>
+                            <Ionicons name="open-outline" size={14} color="#20365B" />
+                          </TouchableOpacity>
+                        )}
                       </View>
                     );
                   })}

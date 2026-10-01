@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useCallback, useEffect } from 'react';
-import { Platform } from 'react-native';
+import { Platform, Linking } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import enDict from '../i18n/locales/en.json';
@@ -603,7 +603,42 @@ export function AppProvider({ children }) {
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Handle OAuth deep link callbacks when Android OS delivers intent directly
+    const handleAuthUrl = async (url) => {
+      if (!url || !url.includes('auth-callback')) return;
+      try {
+        const rawUrl = url;
+        let paramsString = '';
+        if (rawUrl.includes('#')) {
+          paramsString = rawUrl.substring(rawUrl.indexOf('#') + 1);
+        } else if (rawUrl.includes('?')) {
+          paramsString = rawUrl.substring(rawUrl.indexOf('?') + 1);
+        }
+        const params = new URLSearchParams(paramsString);
+        const code = params.get('code');
+        const accessToken = params.get('access_token');
+        const refreshToken = params.get('refresh_token');
+
+        if (code) {
+          await supabase.auth.exchangeCodeForSession(code);
+        } else if (accessToken && refreshToken) {
+          await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to handle auth deep link:', err);
+      }
+    };
+
+    Linking.getInitialURL().then(handleAuthUrl);
+    const linkingSub = Linking.addEventListener('url', (event) => handleAuthUrl(event.url));
+
+    return () => {
+      subscription.unsubscribe();
+      linkingSub?.remove?.();
+    };
   }, []);
 
   const [shops, setShops] = useState([]);

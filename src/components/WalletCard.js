@@ -98,30 +98,21 @@ export default function WalletCard({ balances, badgeTitle }) {
                   </View>
                 )}
               </View>
-              {/* Business HQ info: Company/Shop name - Flag - Country name (not currency) */}
-              {isBusinessCard && (user?.merchantProfile?.shop_name || user?.merchantProfile?.business_name || primaryCountry?.countryName) ? (
-                <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', marginTop: 2, marginBottom: 2 }}>
-                  {!!(user?.merchantProfile?.shop_name || user?.merchantProfile?.business_name) && (
-                    <Text style={styles.merchantSubtitleText}>
-                      {user?.merchantProfile?.shop_name || user?.merchantProfile?.business_name}
-                    </Text>
-                  )}
-                  {!!(user?.merchantProfile?.shop_name || user?.merchantProfile?.business_name) && (primaryCountry?.countryName || primaryCountry?.code) && (
-                    <Text style={styles.merchantSeparatorText}>
-                      {' - '}
-                    </Text>
-                  )}
-                  {primaryCountry?.code ? (
-                    <Image
-                      source={{ uri: `https://flagcdn.com/w20/${primaryCountry.code}.png` }}
-                      style={{ width: 14, height: 10, borderRadius: 2, marginRight: 5 }}
-                    />
-                  ) : null}
-                  {primaryCountry?.countryName ? (
-                    <Text style={styles.merchantCountryNameText}>
-                      {primaryCountry.countryName}
-                    </Text>
-                  ) : null}
+              {isBusinessCard && (user?.merchantProfile?.shop_name || user?.merchantProfile?.business_name) ? (
+                <Text style={styles.merchantSubtitleText}>
+                  {user?.merchantProfile?.shop_name || user?.merchantProfile?.business_name}
+                </Text>
+              ) : null}
+              {/* Business HQ country + flag — always shows merchant registered country, never geoloc */}
+              {isBusinessCard && primaryCountry?.code ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3 }}>
+                  <Image
+                    source={{ uri: `https://flagcdn.com/w20/${primaryCountry.code}.png` }}
+                    style={{ width: 14, height: 10, borderRadius: 2, marginRight: 5 }}
+                  />
+                  <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 10, color: 'rgba(255,255,255,0.7)', letterSpacing: 0.2 }}>
+                    {primaryCountry.countryName}
+                  </Text>
                 </View>
               ) : null}
               <Text style={styles.titleText}>10 DZY = $1.00 USD</Text>
@@ -236,19 +227,11 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   merchantSubtitleText: {
-    fontFamily: 'Inter_500Medium',
+    fontFamily: 'Inter_400Regular',
     fontSize: 12,
     color: '#FFFFFF',
-  },
-  merchantSeparatorText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.45)',
-  },
-  merchantCountryNameText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.85)',
+    marginTop: 2,
+    marginBottom: 1,
   },
   titleText: {
     fontFamily: 'Inter_500Medium',

@@ -2509,6 +2509,7 @@
     },
     "copied": "تم نسخ الرابط",
     "done": "تم",
+    "backToContact": "العودة إلى جهة الاتصال",
     "confirm": "تأكيد",
     "amount": "المبلغ",
     "currency": "العملة",
@@ -3824,7 +3825,17 @@
     "toastTitle": "تم نسخ العنوان!",
     "toastDesc": "تم نسخ العنوان إلى الحافظة.",
     "bannerTitle": "عقدة المعاملات الآمنة لـ DizzitUp",
-    "bannerDesc": "معاملاتك محمية بواسطة بنيتنا التحتية."
+    "bannerDesc": "معاملاتك محمية بواسطة بنيتنا التحتية.",
+    "requestAmount": "طلب مبلغ",
+    "requestSubtitle": "أدخل مبلغًا لإنشاء طلب دفع",
+    "changeNetwork": "تغيير",
+    "networkModalTitle": "اختر شبكة البلوكشين",
+    "networkModalSubtitle": "اختر الشبكة لاستلام الأموال (بوليجون افتراضيًا)",
+    "shareRequestMessage": "أرسل {{amount}} {{token}} إلى محفظة DizzitUp الخاصة بي ({{chain}}): {{address}}",
+    "shareAddressMessage": "عنوان DizzitUp الخاص بي على {{chain}}: {{address}}",
+    "requesting": "طلب",
+    "recommendedFast": "موصى به • سريع ورسوم منخفضة",
+    "crossmintSupported": "سريع • مدعوم من Crossmint"
   },
   "contactScreen": {
     "requiredField": "حقل مطلوب",
@@ -4236,6 +4247,7 @@
     },
     "giftRequestTitle": "اشترِ هذا لي على DizzitUp: {{name}}",
     "giftRequestShopMsg": "أهدني منتجات من متجر {{name}} على DizzitUp: {{url}}",
+    "shareShopMsg": "اكتشف متجر {{name}} على DizzitUp: {{url}}",
     "giftProductTitle": "اشترِ لي هذا: {{name}}",
     "giftProductMsg": "أتمنى الحصول على هذا من DizzitUp: {{name}} ({{price}}) من {{shop}}. يمكنك شراؤه لي هنا: {{url}}",
     "shareSuccessTitle": "تمت مشاركة رابط الهدية",
@@ -4366,7 +4378,16 @@
     "orderFailed": "فشلت معالجة الطلب. يرجى المحاولة مرة أخرى.",
     "paymentSuccess": "تم الدفع بنجاح!",
     "paymentFailed": "تم رفض الدفع أو إلغاؤه. يرجى المحاولة مرة أخرى.",
-    "cryptoOpened": "تم فتح فاتورة العملات المشفرة. أكمل الدفع في محفظتك."
+    "cryptoOpened": "تم فتح فاتورة العملات المشفرة. أكمل الدفع في محفظتك.",
+    "instantBadge": "فوري",
+    "popularBadge": "شائع",
+    "noActiveTokens": "لا يوجد رصيد نشط في محفظة DZYwallet",
+    "noActiveTokensDesc": "قم بشحن USDT أو USDC أو EURC لدفع فواتيرك فوراً بدون رسوم شبكة.",
+    "topUpToPay": "اشحن محفظتك للدفع عبر DZYwallet",
+    "orderCreatedSuccess": "تم الدفع بنجاح!",
+    "momoInitiated": "تم إرسال إشعار دفع الأموال عبر الهاتف إلى هاتفك.",
+    "walletAuthError": "يجب تسجيل الدخول لاستخدام محفظة DizzitUp.",
+    "walletError": "خطأ أثناء الدفع بالمحفظة"
   },
   "actionScanCash": "المسح والسحب",
   "orderVerification": {
@@ -4686,7 +4707,16 @@
     "txSubmitted": "تم إرسال المعاملة!",
     "successMessage": "لقد أرسلت بنجاح {{amount}} {{token}} إلى {{recipient}}",
     "secureNode": "عقدة معاملة آمنة",
-    "addressCopied": "تم نسخ العنوان بنجاح!"
+    "addressCopied": "تم نسخ العنوان بنجاح!",
+    "topUpNeeded": "الرصيد صفر. اضغط لشحن {{token}}",
+    "insufficientFunds": "رصيد غير كافٍ",
+    "insufficientFundsDesc": "لديك فقط {{bal}} {{token}} متاح.",
+    "view_on_polyscan": "عرض على PolygonScan",
+    "view_on_explorer": "عرض في مستكشف البلوكتشين",
+    "sending_in_progress": "جارٍ إرسال {{amount}} {{token}}...",
+    "broadcasting_node": "إرسال المعاملة إلى شبكة {{chain}}...",
+    "secured_blockchain_tx": "معاملة بلوكتشين آمنة",
+    "tx_error_title": "إشعار المعاملة"
   },
   "withdrawFunds": {
     "title": "سحب الأموال",
@@ -5065,7 +5095,10 @@
     "hq_country_label": "بلد المقر",
     "unavailable_country": "السحب غير متوفر مؤقتاً في {{country}}.",
     "unavailable_subtitle": "يتم الآن تفعيل مسار الدفع هذا وسيكون متاحاً بمجرد جاهزية اتصال المخرج.",
-    "coming_soon": "قريباً"
+    "coming_soon": "قريباً",
+    "exchange_rate_unavailable": "سعر الصرف الحالي غير متاح. يرجى المحاولة مرة أخرى لاحقًا.",
+    "noCashoutRouteCountry": "لا يوجد مسار سحب مؤهل متاح لـ {{country}}.",
+    "noCashoutRouteDesc": "السحب عبر Mobile Money غير مدعوم حاليًا في مدغشقر. يرجى استخدام خيار دفع آخر أو الاتصال بالدعم."
   },
   "rewards": {
     "title": "مكافآت DZY",
@@ -5291,7 +5324,9 @@
     "momoWithdrawUnavailable": "سحب Mobile Money غير متوفر في {{country}}.",
     "momoWithdrawAvailable": "سحب فوري إلى {{operators}}.",
     "notAvailableTitle": "خدمة Mobile Money غير متاحة",
-    "cardAlternativeNote": "خدمة Mobile Money غير متاحة حتى الآن في {{country}}. استخدم بطاقتك المصرفية (Visa / Mastercard) لتعبئة حسابك من أي مكان في العالم."
+    "cardAlternativeNote": "خدمة Mobile Money غير متاحة حتى الآن في {{country}}. استخدم بطاقتك المصرفية (Visa / Mastercard) لتعبئة حسابك من أي مكان في العالم.",
+    "topupRegionLabel": "منطقة الدفع:",
+    "paymentRegion": "منطقة الدفع:"
   },
   "activityInboxTitle": "صندوق النشاط",
   "tabAll": "الكل",

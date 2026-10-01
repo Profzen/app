@@ -1,18 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, ScrollView, 
-  Platform, LayoutAnimation, UIManager, Animated, Easing, Dimensions
+  Platform, LayoutAnimation, Animated, Easing, Dimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import { buyGoodsApi } from '../services/buyGoodsApi';
-
-// Enable LayoutAnimation on Android
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 const { width } = Dimensions.get('window');
 

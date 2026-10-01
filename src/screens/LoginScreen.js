@@ -19,15 +19,22 @@ import { isSmallScreen, isShortScreen } from '../utils/responsive';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
-  const { language, toggleLanguage, setLanguage, t } = useApp();
+  const { language, toggleLanguage, setLanguage, t, session } = useApp();
   const [activeTab, setActiveTab] = useState('email'); // 'email' | 'phone'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '', type: 'info' });
 
+  // Automatically navigate to HomeScreen when session is active (e.g. from OAuth or existing login)
+  React.useEffect(() => {
+    if (session) {
+      navigation.navigate('HomeScreen');
+    }
+  }, [session, navigation]);
+
   const appVersion = Application.nativeApplicationVersion || Constants?.expoConfig?.version || '1.0.0';
-  const appBuildNumber = Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '59';
+  const appBuildNumber = Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '56';
   const [errorMessage, setErrorMessage] = useState(null);
 
   const handleLogin = async () => {

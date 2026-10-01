@@ -35,7 +35,7 @@ export default function RegisterScreen({ route }) {
   }, [route?.params]);
 
   const appVersion = Application.nativeApplicationVersion || Constants?.expoConfig?.version || '1.0.0';
-  const appBuildNumber = Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '59';
+  const appBuildNumber = Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '56';
 
   const getPasswordStrength = (pass) => {
     if (!pass) return 0;

@@ -7,11 +7,12 @@ import { useApp } from '../context/AppContext';
 import { currencyRateService, EMERGENCY_RATES } from '../services/currencyRateService';
 import { COUNTRY_METADATA } from '../services/paymentCorridorService';
 import { getOperatorLogo } from '../utils/operatorLogos';
+import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
 
 export default function WithdrawFundsMobileMoneySummaryScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { t, user, language, getEffectiveWalletCountry } = useApp();
+  const { t, user, language, detectedCountry, getEffectiveWalletCountry } = useApp();
   const isBusinessCard = user?.role === 'merchant';
   const {
     amount = '0',
@@ -33,10 +34,33 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
   const [quoteError, setQuoteError] = useState('');
 
   // ─── Resolve country + currency dynamically from paymentCorridorService metadata ───
-  const fallbackCountry = getEffectiveWalletCountry ? getEffectiveWalletCountry(isBusinessCard) : (user?.country || 'TG');
-  const countryParam = (destinationCountry || fallbackCountry).toUpperCase().trim();
-  const meta = COUNTRY_METADATA[countryParam] || COUNTRY_METADATA['TG'];
-  const countryName = t(`country.${countryParam}`, meta.name || 'Togo');
+  const resolveCountryIso = (val) => {
+    if (!val) {
+      const fallback = (getEffectiveWalletCountry ? getEffectiveWalletCountry(isBusinessCard) : null) || user?.country || user?.country_code || detectedCountry || '';
+      if (fallback) {
+        const info = getCountryCurrencyInfo(fallback);
+        if (info?.code && info.code.length === 2) return info.code.toUpperCase();
+      }
+      return '';
+    }
+    const str = String(val).trim();
+    if (str.length === 2 && /^[a-zA-Z]{2}$/.test(str)) return str.toUpperCase();
+    const info = getCountryCurrencyInfo(str);
+    return (info?.code && info.code.length === 2 ? info.code : str).toUpperCase();
+  };
+
+  const fallbackCountry = (getEffectiveWalletCountry ? getEffectiveWalletCountry(isBusinessCard) : null) || user?.country || user?.country_code || detectedCountry || '';
+  const countryParam = resolveCountryIso(destinationCountry || fallbackCountry);
+  const countryInfo = getCountryCurrencyInfo(countryParam);
+  const meta = COUNTRY_METADATA[countryParam] || {
+    name: countryInfo.label || countryParam,
+    nameEn: countryInfo.label || countryParam,
+    flag: '🌍',
+    currency: countryInfo.currency || 'USD',
+    dialCode: '+',
+    momoNetworks: []
+  };
+  const countryName = t(`country.${countryParam}`, meta.name || countryParam);
   const flag = meta.flag || '🌍';
 
   // Prefer the currency from route params (already normalised by WithdrawFundsScreen),

@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import { getOperatorLogo } from '../utils/operatorLogos';
+import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
 
 export default function WithdrawFundsMobileMoneySuccessScreen() {
   const navigation = useNavigation();
@@ -28,9 +29,15 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
   } = route.params || {};
 
   const { COUNTRY_METADATA } = require('../services/paymentCorridorService');
-  const countryParam = (user?.country || 'TG').toUpperCase().trim();
-  const meta = COUNTRY_METADATA[countryParam] || COUNTRY_METADATA['TG'];
-  const effectiveCurrency = ['XOF', 'XAF'].includes(meta.currency || 'XOF') ? 'FCFA' : (meta.currency || 'XOF');
+  const countryParam = (route.params?.destinationCountry || user?.country || user?.country_code || '').toUpperCase().trim();
+  const countryInfo = getCountryCurrencyInfo(countryParam);
+  const meta = COUNTRY_METADATA[countryParam] || {
+    name: countryInfo.label || countryParam,
+    flag: '🌍',
+    currency: countryInfo.currency || 'USD',
+    momoNetworks: []
+  };
+  const effectiveCurrency = ['XOF', 'XAF'].includes(meta.currency || countryInfo.currency || 'XOF') ? 'FCFA' : (meta.currency || countryInfo.currency || 'XOF');
 
   const formattedAmount = parseFloat(amount).toLocaleString(language);
   const finalFiatAmount = quote.finalFiatAmountReceived

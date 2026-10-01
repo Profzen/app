@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
@@ -11,6 +11,7 @@ import { formatTxDate } from '../utils/formatTxDate';
 
 export default function TopUpWalletConfirmationScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
   const { t, user } = useApp();
   const [toast, setToast] = useState(null);
   // Real timestamp captured when the screen loads
@@ -22,7 +23,16 @@ export default function TopUpWalletConfirmationScreen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+          <TouchableOpacity 
+            style={styles.iconBtn} 
+            onPress={() => {
+              if (route.params?.pivotScreen) {
+                navigation.navigate(route.params.pivotScreen, route.params.pivotParams);
+              } else {
+                navigation.goBack();
+              }
+            }}
+          >
           <Ionicons name="chevron-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <Text style={styles.pageTitle}>{t('topUpWallet.title', 'Top up wallet')}</Text>
@@ -255,6 +265,18 @@ export default function TopUpWalletConfirmationScreen() {
           </TouchableOpacity>
 
           {/* Buttons */}
+          {route.params?.pivotScreen && (
+            <TouchableOpacity 
+              style={[styles.btnPrimary, { backgroundColor: '#FFC759', marginBottom: 12 }]} 
+              onPress={() => navigation.navigate(route.params.pivotScreen, route.params.pivotParams)}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="cart-outline" size={20} color="#20365B" style={styles.btnIconLeft} />
+              <Text style={[styles.btnPrimaryText, { color: '#20365B' }]}>{t('paybillsSummary.returnToCheckout', 'Return to Checkout')}</Text>
+              <Ionicons name="arrow-forward" size={20} color="#20365B" style={styles.btnIconRight} />
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity style={styles.btnPrimary} onPress={() => navigation.navigate('AssetsListScreen')}>
             <Ionicons name="wallet-outline" size={20} color="#1A2840" style={styles.btnIconLeft} />
             <Text style={styles.btnPrimaryText}>{t('topUpWallet.viewMyWallet', 'View my DZYwallet')}</Text>

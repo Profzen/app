@@ -275,6 +275,8 @@ export default function MobileRechargeScreen() {
           currency: selectedPlan.currency || 'USD',
           planDescription: selectedPlan.planDescription,
         },
+        pivotScreen: route.params?.pivotScreen,
+        pivotParams: route.params?.pivotParams,
       });
     } else {
       const finalAmount = parseFloat(customAmount);

@@ -8,13 +8,31 @@ import AppToast from '../components/AppToast';
 import RatingPromptModal from '../components/RatingPromptModal';
 import { useApp } from '../context/AppContext';
 import { formatTxDate } from '../utils/formatTxDate';
+import { isSmallScreen } from '../utils/responsive';
 
 export default function SendMoneySuccessScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const { t } = useApp();
 
-  const { amount = '1', token = 'USDC', recipient = 'My Business', hash = '91d99789-98cc-44c0-8a14-da693a72e5f1' } = route.params || {};
+  const {
+    amount = '',
+    token = '',
+    chain = '',
+    recipient = '',
+    hash = '',
+    explorerUrl = null,
+  } = route.params || {};
+
+  const effectiveExplorerUrl = explorerUrl || (
+    hash && hash.startsWith('0x')
+      ? (chain?.toLowerCase().includes('base')
+          ? `https://basescan.org/tx/${hash}`
+          : chain?.toLowerCase().includes('solana')
+            ? `https://solscan.io/tx/${hash}`
+            : `https://polygonscan.com/tx/${hash}`)
+      : null
+  );
   const [toast, setToast] = useState(null);
   const [showRatingModal, setShowRatingModal] = useState(false);
   // Real timestamp captured when the success screen mounts
@@ -28,6 +46,7 @@ export default function SendMoneySuccessScreen() {
   }, []);
 
   const handleCopyHash = async () => {
+    if (!hash) return;
     try {
       await Clipboard.setStringAsync(hash);
       setToast({ title: t('common.copied', 'Copied!'), message: t('sendMoney.addressCopied', 'Address copied to clipboard!') });
@@ -76,32 +95,33 @@ export default function SendMoneySuccessScreen() {
             </Text>
 
             {/* Hash Code Copy Box */}
-            <View style={styles.hashBox}>
-              <Text style={styles.hashText} numberOfLines={1} ellipsisMode="middle">
-                {hash}
-              </Text>
-
-              <TouchableOpacity style={styles.copyBtn} onPress={handleCopyHash} activeOpacity={0.7}>
-                <Ionicons name="copy-outline" size={18} color="#0F172A" />
-              </TouchableOpacity>
-            </View>
-
-            {/* View on Polygonscan Button */}
-            {hash && (
-              <TouchableOpacity
-                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 4, marginBottom: 12 }}
-                onPress={() => {
-                  const cleanHash = hash.trim();
-                  const url = cleanHash.startsWith('0x') ? `https://polygonscan.com/tx/${cleanHash}` : `https://polygonscan.com/tx/0x${cleanHash}`;
-                  Linking.openURL(url).catch(() => {});
-                }}
-              >
-                <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#3B82F6', marginRight: 4 }}>
-                  {t('common.wallet.view_onchain', 'View on Polygonscan')}
+            {hash ? (
+              <View style={styles.hashBox}>
+                <Text style={styles.hashText} numberOfLines={1} ellipsisMode="middle">
+                  {hash}
                 </Text>
-                <Ionicons name="open-outline" size={14} color="#3B82F6" />
+
+                <TouchableOpacity style={styles.copyBtn} onPress={handleCopyHash} activeOpacity={0.7}>
+                  <Ionicons name="copy-outline" size={18} color="#0F172A" />
+                </TouchableOpacity>
+              </View>
+            ) : null}
+
+            {/* View on PolygonScan / Explorer Button */}
+            {effectiveExplorerUrl ? (
+              <TouchableOpacity
+                style={styles.explorerButton}
+                onPress={() => Linking.openURL(effectiveExplorerUrl)}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="open-outline" size={16} color="#071D54" style={{ marginRight: 8 }} />
+                <Text style={styles.explorerButtonText}>
+                  {chain?.toLowerCase().includes('polygon')
+                    ? t('sendMoney.view_on_polyscan', 'View on PolygonScan')
+                    : t('sendMoney.view_on_explorer', 'View on Block Explorer')}
+                </Text>
               </TouchableOpacity>
-            )}
+            ) : null}
 
             {/* Partager mon succès CTA Card */}
             <TouchableOpacity 
@@ -147,6 +167,17 @@ export default function SendMoneySuccessScreen() {
               <Ionicons name="chevron-forward" size={20} color="#FFC759" />
             </TouchableOpacity>
 
+            {route.params?.pivotScreen && (
+              <TouchableOpacity 
+                style={styles.pivotButton} 
+                onPress={() => navigation.navigate(route.params.pivotScreen, route.params.pivotParams)}
+                activeOpacity={0.88}
+              >
+                <Ionicons name="arrow-back" size={16} color="#071D54" style={{ marginRight: 6 }} />
+                <Text style={styles.pivotButtonText}>{t('common.backToContact', 'Back to Contact')}</Text>
+              </TouchableOpacity>
+            )}
+
             {/* Main Action Button */}
             <TouchableOpacity 
               style={styles.doneButton} 
@@ -186,38 +217,85 @@ const styles = StyleSheet.create({
   container: { flex: 1, position: 'relative' },
   toastWrap: { position: 'absolute', left: 14, right: 14, top: 50, zIndex: 50 },
   mainScroll: { flex: 1 },
-  scrollContent: { paddingHorizontal: 16, paddingTop: Platform.OS === 'android' ? 44 : 20, paddingBottom: 40, alignItems: 'center' },
-  mainCard: { width: '100%', backgroundColor: '#FFFFFF', borderRadius: 28, borderWidth: 1, borderColor: '#F1F5F9', padding: 20, boxShadow: '0px 6px 16px #0F172A', marginTop: 10 },
+  scrollContent: {
+    paddingHorizontal: isSmallScreen ? 12 : 16,
+    paddingTop: Platform.OS === 'android' ? 44 : 20,
+    paddingBottom: 40,
+    alignItems: 'center',
+    maxWidth: 500,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  mainCard: {
+    width: '100%',
+    maxWidth: 480,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    padding: isSmallScreen ? 16 : 20,
+    boxShadow: '0px 6px 16px #0F172A',
+    marginTop: 10,
+    alignSelf: 'center',
+  },
   cardHeaderBox: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
   headerIconSquare: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#FFC759', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   headerTextWrap: { flex: 1 },
-  headerTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#0F172A' },
+  headerTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: isSmallScreen ? 16 : 18, color: '#0F172A' },
   secureTagRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
   greenDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#10B981', marginRight: 4 },
   secureTagText: { fontFamily: 'Inter_700Bold', fontSize: 10, color: '#10B981', letterSpacing: 0.5 },
-  dividerLine: { height: 1, backgroundColor: '#F1F5F9', marginHorizontal: -20, marginBottom: 32 },
+  dividerLine: { height: 1, backgroundColor: '#F1F5F9', marginHorizontal: -20, marginBottom: 28 },
   successCircleWrapper: { alignItems: 'center', marginBottom: 20 },
-  successCircle: { width: 84, height: 84, borderRadius: 42, backgroundColor: '#10B981', justifyContent: 'center', alignItems: 'center', boxShadow: '0px 6px 12px #10B981' },
-  successTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 22, color: '#0F172A', textAlign: 'center', marginBottom: 10 },
-  successSubtitle: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#15803D', textAlign: 'center', paddingHorizontal: 12, lineHeight: 20, marginBottom: 24 },
-  hashBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, paddingLeft: 16, paddingRight: 8, height: 52, marginBottom: 16 },
-  hashText: { flex: 1, fontFamily: 'Inter_500Medium', fontSize: 13, color: '#475569', marginRight: 8 },
+  successCircle: {
+    width: isSmallScreen ? 72 : 84,
+    height: isSmallScreen ? 72 : 84,
+    borderRadius: isSmallScreen ? 36 : 42,
+    backgroundColor: '#10B981',
+    justifyContent: 'center',
+    alignItems: 'center',
+    boxShadow: '0px 6px 12px #10B981',
+  },
+  successTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: isSmallScreen ? 20 : 22, color: '#0F172A', textAlign: 'center', marginBottom: 10 },
+  successSubtitle: { fontFamily: 'Inter_600SemiBold', fontSize: isSmallScreen ? 12 : 13, color: '#15803D', textAlign: 'center', paddingHorizontal: 8, lineHeight: 20, marginBottom: 24 },
+  hashBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, paddingLeft: 14, paddingRight: 8, height: 50, marginBottom: 12 },
+  hashText: { flex: 1, fontFamily: 'Inter_500Medium', fontSize: isSmallScreen ? 11 : 13, color: '#475569', marginRight: 8 },
   copyBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#CBD5E1', justifyContent: 'center', alignItems: 'center' },
+  explorerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1.5,
+    borderColor: '#FFC759',
+    borderRadius: 14,
+    height: 46,
+    marginBottom: 16,
+    width: '100%',
+  },
+  explorerButtonText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 13,
+    color: '#071D54',
+    letterSpacing: 0.2,
+  },
   /* Partager mon succès CTA Card Styles */
-  shareCtaCard: { backgroundColor: '#071D54', borderRadius: 18, padding: 14, flexDirection: 'row', alignItems: 'center', marginBottom: 16, boxShadow: '0px 4px 8px #071D54' },
+  shareCtaCard: { backgroundColor: '#071D54', borderRadius: 18, padding: isSmallScreen ? 12 : 14, flexDirection: 'row', alignItems: 'center', marginBottom: 16, boxShadow: '0px 4px 8px #071D54' },
   shareIconWrapper: { position: 'relative', marginRight: 12 },
   sparkRaysWrap: { position: 'absolute', top: -6, right: -4, flexDirection: 'row', gap: 2, zIndex: 2 },
   sparkRay: { width: 2, height: 6, backgroundColor: '#FFC759', borderRadius: 1 },
-  shareWhiteSquare: { width: 50, height: 50, borderRadius: 14, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' },
+  shareWhiteSquare: { width: isSmallScreen ? 44 : 50, height: isSmallScreen ? 44 : 50, borderRadius: 14, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' },
   shareTextWrap: { flex: 1, paddingRight: 4 },
-  shareCtaTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#FFFFFF', marginBottom: 2 },
-  shareCtaSub1: { fontFamily: 'Inter_600SemiBold', fontSize: 11.5, color: '#FFFFFF', marginBottom: 2 },
+  shareCtaTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: isSmallScreen ? 14 : 15, color: '#FFFFFF', marginBottom: 2 },
+  shareCtaSub1: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#FFFFFF', marginBottom: 2 },
   goldText: { color: '#FFC759', fontFamily: 'Inter_700Bold' },
-  shareCtaSub2: { fontFamily: 'Inter_400Regular', fontSize: 10.5, color: '#94A3B8', lineHeight: 14 },
+  shareCtaSub2: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#94A3B8', lineHeight: 14 },
 
-  doneButton: { backgroundColor: '#071D54', height: 52, borderRadius: 14, justifyContent: 'center', alignItems: 'center', boxShadow: '0px 4px 8px #071D54' },
+  pivotButton: { backgroundColor: '#F1F5F9', borderWidth: 1, borderColor: '#E2E8F0', height: 48, borderRadius: 14, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
+  pivotButtonText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#071D54' },
+  doneButton: { backgroundColor: '#071D54', height: 50, borderRadius: 14, justifyContent: 'center', alignItems: 'center', boxShadow: '0px 4px 8px #071D54' },
   doneButtonText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#FFFFFF' },
-  securityFooterRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 24 },
+  securityFooterRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 24, maxWidth: 480, width: '100%', alignSelf: 'center' },
   goldDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#FFC759', marginRight: 6 },
   securityFooterText: { fontFamily: 'Inter_700Bold', fontSize: 10, color: '#94A3B8', letterSpacing: 0.8 },
 });

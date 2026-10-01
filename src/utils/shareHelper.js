@@ -63,7 +63,7 @@ export const handleUserInviteShare = (user, contact = null) => {
   const message = `${recipientGreeting}Join me on DizzitUp to support wisely your family in Africa by covering their needs while developing local economy. Buy goods, Pay bills, Invest in local businesses. Use my referral code ${code} to earn rewards: ${inviteUrl}`;
   
   try {
-    if (Platform.OS === 'web' && navigator.share) {
+    if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.share) {
       navigator.share({
         title: 'Invitation DizzitUp',
         text: message,

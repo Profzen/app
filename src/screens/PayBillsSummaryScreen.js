@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -22,9 +22,10 @@ import WalletIcon from '../components/WalletIcon';
 import { currencyRateService } from '../services/currencyRateService';
 import { getIsoCountryCode, resolveBeneficiaryCountry, getCountryFromPhone } from '../utils/countryCurrencyUtils';
 import { ALL_COUNTRIES } from '../utils/countriesData';
+import { isSmallScreen } from '../utils/responsive';
 
 const { width } = Dimensions.get('window');
-const isSmallDevice = width < 375;
+const isSmallDevice = isSmallScreen || width <= 380;
 
 const getPayBillsApiUrl = () => {
   let url = process.env.EXPO_PUBLIC_PAY_BILLS_API_URL || 'https://api.dizzitup.com';
@@ -97,6 +98,21 @@ export default function PayBillsSummaryScreen() {
         if (!cancelled && data) {
           const list = Array.isArray(data) ? data : data.balances || [];
           setWalletBalances(list);
+
+          // Auto-select token: prioritize a token with sufficient balance, then any positive balance
+          const positiveTokens = dzyTokens.filter((tItem) => {
+            const b = list.find((item) => (item.token || item.symbol)?.toLowerCase() === tItem.id);
+            return parseFloat(b?.balance || 0) > 0;
+          });
+          if (positiveTokens.length > 0) {
+            const sufficient = positiveTokens.find((tItem) => {
+              const b = list.find((item) => (item.token || item.symbol)?.toLowerCase() === tItem.id);
+              const bal = parseFloat(b?.balance || 0);
+              const needed = tItem.id === 'dzy' ? numTotalCost * 10 : numTotalCost;
+              return bal >= needed;
+            });
+            setSelectedDzyToken(sufficient ? sufficient.id : positiveTokens[0].id);
+          }
         }
       } catch (err) {
         console.warn('[PayBillsSummary] Error fetching wallet balances:', err);
@@ -106,7 +122,7 @@ export default function PayBillsSummaryScreen() {
     };
     fetchWalletBalances();
     return () => { cancelled = true; };
-  }, [selectedMethod, session?.access_token]);
+  }, [selectedMethod, session?.access_token, numTotalCost]);
 
 
 
@@ -124,11 +140,22 @@ export default function PayBillsSummaryScreen() {
   // DZY Wallet Cost & Balance Check
   const numTotalCost = parseFloat(totalCost || 0);
   const requiredDzyAmount = selectedDzyToken === 'dzy' ? numTotalCost * 10 : numTotalCost;
+
+  // Filter dzyTokens to only show tokens with positive balance (> 0)
+  const availableDzyTokens = useMemo(() => {
+    return dzyTokens.filter((tItem) => {
+      const balItem = walletBalances.find(
+        (b) => (b.token || b.symbol)?.toLowerCase() === tItem.id
+      );
+      return parseFloat(balItem?.balance || 0) > 0;
+    });
+  }, [walletBalances]);
+
   const currentCoinBalance = walletBalances.find(
     (b) => (b.token || b.symbol)?.toLowerCase() === selectedDzyToken
   )?.balance || 0;
   const parsedCoinBalance = parseFloat(currentCoinBalance || 0);
-  const hasInsufficientBalance = selectedMethod === 'wallet' && !walletLoading && parsedCoinBalance < requiredDzyAmount;
+  const hasInsufficientBalance = selectedMethod === 'wallet' && !walletLoading && (availableDzyTokens.length === 0 || parsedCoinBalance < requiredDzyAmount);
 
   // Ecobank FX & Multi-Currency Breakdown
   // Official BCEAO/BEAC fixed parity (1 EUR = 655.957 FCFA) with live currencyRateService support
@@ -833,13 +860,15 @@ export default function PayBillsSummaryScreen() {
                 <Ionicons name="wallet" size={18} color="#D97706" />
               </View>
               <View style={styles.methodInfo}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={styles.methodTitle}>{t('paybillsSummary.dizzyWallet', 'DZYwallet (Stablecoins & DZY)')}</Text>
+                <View style={styles.methodTitleRow}>
+                  <Text style={styles.methodTitle} numberOfLines={1} ellipsizeMode="tail">
+                    {t('paybillsSummary.dizzyWallet', 'DZYwallet')}
+                  </Text>
                   <View style={styles.stablecoinTag}>
-                    <Text style={styles.stablecoinTagText}>Instant</Text>
+                    <Text style={styles.stablecoinTagText}>{t('paybillsSummary.instantBadge', 'Instant')}</Text>
                   </View>
                 </View>
-                <Text style={styles.methodSubtitle} numberOfLines={1}>
+                <Text style={styles.methodSubtitle} numberOfLines={1} ellipsizeMode="tail">
                   {t('paybillsSummary.dizzyWalletSub', 'Pay directly with your USDT, USDC, EURC or DZY')}
                 </Text>
               </View>
@@ -853,48 +882,73 @@ export default function PayBillsSummaryScreen() {
                   {walletLoading && <ActivityIndicator size="small" color="#FFC759" />}
                 </View>
 
-                {dzyTokens.map((tItem) => {
-                  const balItem = walletBalances.find(
-                    (b) => (b.token || b.symbol)?.toLowerCase() === tItem.id
-                  );
-                  const bal = parseFloat(balItem?.balance || 0);
-                  const needed = tItem.id === 'dzy' ? numTotalCost * 10 : numTotalCost;
-                  const isInsufficient = bal < needed;
-                  const isSelected = selectedDzyToken === tItem.id;
+                {availableDzyTokens.length > 0 ? (
+                  availableDzyTokens.map((tItem) => {
+                    const balItem = walletBalances.find(
+                      (b) => (b.token || b.symbol)?.toLowerCase() === tItem.id
+                    );
+                    const bal = parseFloat(balItem?.balance || 0);
+                    const needed = tItem.id === 'dzy' ? numTotalCost * 10 : numTotalCost;
+                    const isInsufficient = bal < needed;
+                    const isSelected = selectedDzyToken === tItem.id;
 
-                  return (
-                    <TouchableOpacity
-                      key={tItem.id}
-                      style={[styles.subTokenRow, isSelected && styles.subTokenRowActive]}
-                      onPress={() => setSelectedDzyToken(tItem.id)}
-                      activeOpacity={0.75}
-                    >
-                      <View style={styles.subTokenLeft}>
-                        <View style={styles.subTokenIconWrapper}>
-                          <CryptoIcon symbol={tItem.symbol} size={22} />
-                        </View>
-                        <View>
-                          <Text style={styles.subTokenName}>{tItem.name}</Text>
-                          <Text style={styles.subTokenDesc}>{tItem.description}</Text>
-                        </View>
-                      </View>
-                      
-                      <View style={styles.subTokenRight}>
-                        <Text style={[styles.subTokenBalance, isInsufficient ? styles.balanceInsufficient : styles.balanceSufficient]}>
-                          {bal.toLocaleString(undefined, { maximumFractionDigits: 4 })} {tItem.name}
-                        </Text>
-                        {isSelected && (
-                          <View style={styles.subTokenSelectedDot}>
-                            <Ionicons name="checkmark" size={10} color="#20365B" />
+                    return (
+                      <TouchableOpacity
+                        key={tItem.id}
+                        style={[styles.subTokenRow, isSelected && styles.subTokenRowActive]}
+                        onPress={() => setSelectedDzyToken(tItem.id)}
+                        activeOpacity={0.75}
+                      >
+                        <View style={styles.subTokenLeft}>
+                          <View style={styles.subTokenIconWrapper}>
+                            <CryptoIcon symbol={tItem.symbol} size={22} />
                           </View>
-                        )}
-                      </View>
+                          <View>
+                            <Text style={styles.subTokenName}>{tItem.name}</Text>
+                            <Text style={styles.subTokenDesc}>{tItem.description}</Text>
+                          </View>
+                        </View>
+                        
+                        <View style={styles.subTokenRight}>
+                          <Text style={[styles.subTokenBalance, isInsufficient ? styles.balanceInsufficient : styles.balanceSufficient]}>
+                            {bal.toLocaleString(undefined, { maximumFractionDigits: 4 })} {tItem.name}
+                          </Text>
+                          {isSelected && (
+                            <View style={styles.subTokenSelectedDot}>
+                              <Ionicons name="checkmark" size={10} color="#20365B" />
+                            </View>
+                          )}
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })
+                ) : !walletLoading ? (
+                  <View style={styles.emptyWalletBox}>
+                    <View style={styles.emptyWalletIconCircle}>
+                      <Ionicons name="wallet-outline" size={24} color="#D97706" />
+                    </View>
+                    <Text style={styles.emptyWalletTitle}>
+                      {t('paybillsSummary.noActiveTokens', 'No active balance in DZYwallet')}
+                    </Text>
+                    <Text style={styles.emptyWalletDesc}>
+                      {t('paybillsSummary.noActiveTokensDesc', 'Top up USDT, USDC or EURC to pay your bills instantly with zero network fees.')}
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.topUpCtaBtn}
+                      onPress={() => navigation.navigate('TopUpWalletScreen', {
+                        pivotScreen: 'PayBillsSummaryScreen',
+                        pivotParams: route.params,
+                      })}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="add-circle" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
+                      <Text style={styles.topUpCtaText}>{t('paybillsSummary.topUpWallet', 'Top-Up DZYwallet')}</Text>
                     </TouchableOpacity>
-                  );
-                })}
+                  </View>
+                ) : null}
 
                 {/* Insufficient Balance Box + Top Up Button */}
-                {hasInsufficientBalance && (
+                {availableDzyTokens.length > 0 && hasInsufficientBalance && (
                   <View style={styles.insufficientBox}>
                     <View style={styles.insufficientTextRow}>
                       <Ionicons name="alert-circle" size={16} color="#DC2626" style={{ marginRight: 6 }} />
@@ -904,7 +958,10 @@ export default function PayBillsSummaryScreen() {
                     </View>
                     <TouchableOpacity
                       style={styles.topUpCtaBtn}
-                      onPress={() => navigation.navigate('TopUpWalletScreen')}
+                      onPress={() => navigation.navigate('TopUpWalletScreen', {
+                        pivotScreen: 'PayBillsSummaryScreen',
+                        pivotParams: route.params,
+                      })}
                       activeOpacity={0.8}
                     >
                       <Ionicons name="add-circle" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
@@ -928,13 +985,15 @@ export default function PayBillsSummaryScreen() {
                 <Ionicons name="wallet-outline" size={18} color="#4F46E5" />
               </View>
               <View style={styles.methodInfo}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={styles.methodTitle}>{t('paybillsSummary.externalWallets', 'External Web3 Wallet')}</Text>
+                <View style={styles.methodTitleRow}>
+                  <Text style={styles.methodTitle} numberOfLines={1} ellipsizeMode="tail">
+                    {t('paybillsSummary.externalWallets', 'External Web3 Wallet')}
+                  </Text>
                   <View style={styles.web3Tag}>
-                    <Text style={styles.web3TagText}>Popular</Text>
+                    <Text style={styles.web3TagText}>{t('paybillsSummary.popularBadge', 'Popular')}</Text>
                   </View>
                 </View>
-                <Text style={styles.methodSubtitle} numberOfLines={1}>
+                <Text style={styles.methodSubtitle} numberOfLines={1} ellipsizeMode="tail">
                   {t('paybillsSummary.externalWalletsSub', 'MetaMask, Coinbase, Trust Wallet, Binance')}
                 </Text>
               </View>
@@ -1002,13 +1061,15 @@ export default function PayBillsSummaryScreen() {
                 <Ionicons name="card" size={18} color="#20365B" />
               </View>
               <View style={styles.methodInfo}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={styles.methodTitle}>{t('paybillsSummary.cardPayment', 'Credit / Debit Card')}</Text>
+                <View style={styles.methodTitleRow}>
+                  <Text style={styles.methodTitle} numberOfLines={1} ellipsizeMode="tail">
+                    {t('paybillsSummary.cardPayment', 'Credit / Debit Card')}
+                  </Text>
                   <View style={styles.ecobankTag}>
                     <Text style={styles.ecobankTagText}>Ecobank</Text>
                   </View>
                 </View>
-                <Text style={styles.methodSubtitle} numberOfLines={1}>
+                <Text style={styles.methodSubtitle} numberOfLines={1} ellipsizeMode="tail">
                   {t('paybillsSummary.cardPaymentSub', 'Visa, Mastercard via CyberSource')}
                 </Text>
               </View>
@@ -1178,10 +1239,19 @@ export default function PayBillsSummaryScreen() {
           <TouchableOpacity
             style={[
               styles.payButton, 
-              (loading || isBelowMinimumAmount || (selectedMethod === 'wallet' && (walletLoading || hasInsufficientBalance))) && styles.payButtonDisabled
+              (loading || isBelowMinimumAmount || (selectedMethod === 'wallet' && walletLoading)) && styles.payButtonDisabled
             ]}
-            onPress={handleConfirmAndPay}
-            disabled={loading || isBelowMinimumAmount || (selectedMethod === 'wallet' && (walletLoading || hasInsufficientBalance))}
+            onPress={() => {
+              if (selectedMethod === 'wallet' && hasInsufficientBalance) {
+                navigation.navigate('TopUpWalletScreen', {
+                  pivotScreen: 'PayBillsSummaryScreen',
+                  pivotParams: route.params,
+                });
+                return;
+              }
+              handleConfirmAndPay();
+            }}
+            disabled={loading || isBelowMinimumAmount || (selectedMethod === 'wallet' && walletLoading)}
             activeOpacity={0.8}
           >
             {loading ? (
@@ -1193,11 +1263,11 @@ export default function PayBillsSummaryScreen() {
                   {t('paybillsSummary.belowMinBtn', 'Below $1.00 min.')}
                 </Text>
               </View>
-            ) : hasInsufficientBalance ? (
+            ) : selectedMethod === 'wallet' && hasInsufficientBalance ? (
               <View style={styles.payButtonContent}>
-                <Ionicons name="alert-circle-outline" size={15} color="#6B7280" style={{ marginRight: 6 }} />
-                <Text style={[styles.payButtonText, { color: '#6B7280', fontSize: 13 }]}>
-                  {t('paybillsSummary.insufficientBalanceShort', 'Insufficient {{coin}}', { coin: selectedDzyToken.toUpperCase() })}
+                <Ionicons name="add-circle" size={16} color="#20365B" style={{ marginRight: 6 }} />
+                <Text style={styles.payButtonText}>
+                  {t('paybillsSummary.topUpToPay', 'Top-Up to Pay')}
                 </Text>
               </View>
             ) : (
@@ -1477,12 +1547,13 @@ const styles = StyleSheet.create({
   methodCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
+    padding: isSmallDevice ? 10 : 12,
     borderRadius: 14,
     borderWidth: 1.5,
     borderColor: '#F3F4F6',
     backgroundColor: '#FAFAFA',
     marginBottom: 10,
+    overflow: 'hidden',
   },
   methodCardActive: {
     borderColor: '#FFC759',
@@ -1496,7 +1567,8 @@ const styles = StyleSheet.create({
     borderColor: '#D1D5DB',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 10,
+    marginRight: isSmallDevice ? 8 : 10,
+    flexShrink: 0,
   },
   methodRadioInner: {
     width: 10,
@@ -1505,26 +1577,36 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFC759',
   },
   methodIconBadge: {
-    width: 36,
-    height: 36,
+    width: isSmallDevice ? 34 : 36,
+    height: isSmallDevice ? 34 : 36,
     borderRadius: 10,
     backgroundColor: '#FFF8E7',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 10,
+    marginRight: isSmallDevice ? 8 : 10,
+    flexShrink: 0,
   },
   methodInfo: {
     flex: 1,
+    minWidth: 0,
+    justifyContent: 'center',
+  },
+  methodTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 6,
+    marginBottom: 2,
   },
   methodTitle: {
-    fontSize: isSmallDevice ? 13 : 14,
+    fontSize: isSmallDevice ? 12 : 13.5,
     fontWeight: '700',
     color: '#20365B',
+    flexShrink: 1,
   },
   methodSubtitle: {
-    fontSize: 11,
+    fontSize: isSmallDevice ? 10 : 11,
     color: '#9CA3AF',
-    marginTop: 2,
   },
   securityBadge: {
     flexDirection: 'row',
@@ -1567,10 +1649,10 @@ const styles = StyleSheet.create({
   },
   payButton: {
     backgroundColor: '#FFC759',
-    height: 44,
-    width: '78%',
-    maxWidth: 280,
-    borderRadius: 22,
+    height: 46,
+    width: '90%',
+    maxWidth: 360,
+    borderRadius: 23,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#FFC759',
@@ -1598,27 +1680,29 @@ const styles = StyleSheet.create({
   },
   ecobankTag: {
     backgroundColor: '#EBF3FF',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: isSmallDevice ? 6 : 7,
+    paddingVertical: 2.5,
     borderRadius: 6,
     borderWidth: 1,
     borderColor: '#BFDBFE',
+    flexShrink: 0,
   },
   ecobankTagText: {
-    fontSize: 10,
+    fontSize: isSmallDevice ? 9.5 : 10,
     fontWeight: '700',
     color: '#20365B',
   },
   stablecoinTag: {
     backgroundColor: '#FEF3C7',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: isSmallDevice ? 6 : 7,
+    paddingVertical: 2.5,
     borderRadius: 6,
     borderWidth: 1,
     borderColor: '#FDE68A',
+    flexShrink: 0,
   },
   stablecoinTagText: {
-    fontSize: 10,
+    fontSize: isSmallDevice ? 9.5 : 10,
     fontWeight: '800',
     color: '#D97706',
   },
@@ -1716,6 +1800,39 @@ const styles = StyleSheet.create({
     marginTop: 6,
     gap: 8,
   },
+  emptyWalletBox: {
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    borderRadius: 12,
+    padding: isSmallDevice ? 12 : 16,
+    alignItems: 'center',
+    marginTop: 6,
+    gap: 8,
+  },
+  emptyWalletIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FEF3C7',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  emptyWalletTitle: {
+    fontSize: isSmallDevice ? 12 : 13,
+    fontFamily: 'Inter_700Bold',
+    color: '#92400E',
+    textAlign: 'center',
+  },
+  emptyWalletDesc: {
+    fontSize: isSmallDevice ? 10.5 : 11.5,
+    fontFamily: 'Inter_400Regular',
+    color: '#B45309',
+    textAlign: 'center',
+    lineHeight: 16,
+    marginBottom: 4,
+  },
   insufficientTextRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1800,14 +1917,15 @@ const styles = StyleSheet.create({
   },
   web3Tag: {
     backgroundColor: '#EEF2FF',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: isSmallDevice ? 6 : 7,
+    paddingVertical: 2.5,
     borderRadius: 6,
     borderWidth: 1,
     borderColor: '#C7D2FE',
+    flexShrink: 0,
   },
   web3TagText: {
-    fontSize: 10,
+    fontSize: isSmallDevice ? 9.5 : 10,
     fontWeight: '800',
     color: '#4F46E5',
   },
@@ -1847,6 +1965,8 @@ const styles = StyleSheet.create({
   },
   walletItemInfo: {
     flex: 1,
+    minWidth: 0,
+    marginRight: 8,
   },
   walletItemName: {
     fontSize: 13,
@@ -1934,15 +2054,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
-    flexWrap: 'wrap',
-    gap: 6,
+    marginBottom: 10,
+    gap: 8,
   },
   ecobankFxHeaderTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    minWidth: 180,
+    marginRight: 6,
   },
   ecobankIconCircle: {
     width: 24,
@@ -1951,29 +2070,29 @@ const styles = StyleSheet.create({
     backgroundColor: '#EFF6FF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 6,
+    marginRight: 8,
   },
   ecobankFxHeaderTitle: {
-    fontSize: isSmallDevice ? 11 : 12,
-    fontFamily: 'Inter_800ExtraBold',
+    fontSize: isSmallDevice ? 12 : 13,
+    fontFamily: 'Inter_700Bold',
     color: '#1E293B',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    flexShrink: 1,
   },
   cybersourceBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E293B',
+    backgroundColor: '#0F172A',
     paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
+    paddingVertical: 3.5,
+    borderRadius: 6,
     gap: 4,
+    flexShrink: 0,
   },
   cybersourceBadgeText: {
-    fontSize: 9,
-    fontFamily: 'Inter_700Bold',
+    fontSize: 10,
+    fontFamily: 'Inter_600SemiBold',
     color: '#FFFFFF',
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
   },
   ecobankFxMessage: {
     fontSize: isSmallDevice ? 11 : 12,

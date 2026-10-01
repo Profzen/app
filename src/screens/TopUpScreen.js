@@ -112,7 +112,7 @@ export default function TopUpScreen() {
           {/* Destination Country Indicator & Switcher */}
           <View style={styles.topupCountryRow}>
             <Text style={styles.topupCountryLabel}>
-              {t('paymentRails.paymentRegion', 'Payment region:')}
+              {t('paymentRails.topupRegionLabel', 'Payment region:')}
             </Text>
             <TouchableOpacity
               style={styles.topupCountryPill}
@@ -172,17 +172,17 @@ export default function TopUpScreen() {
               <View style={styles.featuresRow}>
                 <View style={styles.featureCol}>
                   <Ionicons name="shield-checkmark-outline" size={15} color="#1A2840" style={{ marginRight: 4 }} />
-                  <Text style={styles.featureText}>{t('topup.features.lowFees', 'Frais réduits')}</Text>
+                  <Text style={styles.featureText}>{t('topup.features.lowFees', 'Low fees')}</Text>
                 </View>
 
                 <View style={styles.featureCol}>
                   <Ionicons name="flash-outline" size={15} color="#1A2840" style={{ marginRight: 4 }} />
-                  <Text style={styles.featureText}>{t('topup.features.fastPayments', 'Paiements rapides')}</Text>
+                  <Text style={styles.featureText}>{t('topup.features.fastPayments', 'Fast payments')}</Text>
                 </View>
 
                 <View style={styles.featureCol}>
                   <Ionicons name="lock-closed-outline" size={15} color="#1A2840" style={{ marginRight: 4 }} />
-                  <Text style={styles.featureText}>{t('topup.features.secure', 'Sécurisé')}</Text>
+                  <Text style={styles.featureText}>{t('topup.features.secure', 'Secure')}</Text>
                 </View>
               </View>
             </TouchableOpacity>
@@ -204,7 +204,7 @@ export default function TopUpScreen() {
                     <View style={styles.disabledTopupBadge}>
                       <Ionicons name="lock-closed" size={10} color="#64748B" style={{ marginRight: 2 }} />
                       <Text style={styles.disabledTopupBadgeText}>
-                        {t('paymentRails.unavailableInCountry', `Indisponible en/au ${railEligibility.countryName}`, {
+                        {t('paymentRails.unavailableInCountry', `Unavailable in ${railEligibility.countryName}`, {
                           country: railEligibility.countryName,
                         })}
                       </Text>
@@ -213,7 +213,7 @@ export default function TopUpScreen() {
                   <Text style={styles.disabledTopupSubtext}>
                     {t(
                       'paymentRails.momoUnavailableExplanation',
-                      `Le paiement Mobile Money n'est pas disponible pour ${railEligibility.countryName}. Il est actif dans 20 pays d'Afrique (Bénin, Côte d'Ivoire, Sénégal, Togo, Cameroun, Kenya...).`,
+                      `Mobile Money is not available for ${railEligibility.countryName}. It is active in 20 African countries (Benin, Ivory Coast, Senegal, Togo, Kenya, Ghana...).`,
                       { country: railEligibility.countryName }
                     )}
                   </Text>

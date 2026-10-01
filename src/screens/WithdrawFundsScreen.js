@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
 import { useApp } from '../context/AppContext';
 import { currencyRateService, EMERGENCY_RATES } from '../services/currencyRateService';
+import { getPaymentRailEligibility } from '../services/paymentCorridorService';
 
 export default function WithdrawFundsScreen() {
   const navigation = useNavigation();
@@ -14,8 +15,9 @@ export default function WithdrawFundsScreen() {
 
   // 1. Resolve fiat currency: for merchants use HQ country, for users use their account country
   const isBusinessCard = user?.role === 'merchant';
-  const rawCountryKey = getEffectiveWalletCountry ? getEffectiveWalletCountry(isBusinessCard) : (user?.country || 'TG');
-  const effectiveCountryKey = getCountryCurrencyInfo(rawCountryKey).code || 'TG';
+  const rawCountryKey = getEffectiveWalletCountry ? getEffectiveWalletCountry(isBusinessCard) : (user?.country || user?.country_code || '');
+  const resolvedCode = getCountryCurrencyInfo(rawCountryKey).code;
+  const effectiveCountryKey = (resolvedCode && resolvedCode.length === 2 ? resolvedCode : (rawCountryKey || '')).toUpperCase();
   const userCountryInfo = useMemo(() => getCountryCurrencyInfo(effectiveCountryKey), [effectiveCountryKey]);
   const localCurrency = ['XOF', 'XAF'].includes(userCountryInfo.currency) ? 'FCFA' : userCountryInfo.currency;
 
@@ -79,15 +81,22 @@ export default function WithdrawFundsScreen() {
         });
         const data = await response.json();
         if (isMounted) {
-          if (data && data.status === 'UNAVAILABLE') {
+          if (data && (data.status === 'UNAVAILABLE' || data.success === false)) {
             setTokenStatus('UNAVAILABLE');
-            setTokenStatusMsg(data.message);
+            setTokenStatusMsg(data.message || data.error);
           } else {
             setTokenStatus('AVAILABLE');
           }
         }
       } catch (err) {
-        if (isMounted) setTokenStatus('AVAILABLE'); // fallback
+        if (isMounted) {
+          const rail = getPaymentRailEligibility(effectiveCountryKey, 'offramp');
+          if (rail && (rail.momo?.enabled || rail.bank?.enabled)) {
+            setTokenStatus('AVAILABLE');
+          } else {
+            setTokenStatus('AVAILABLE'); // Fallback to let user view available corridors in method screen
+          }
+        }
       }
     };
     checkAvailability();
@@ -312,7 +321,7 @@ export default function WithdrawFundsScreen() {
               amount,
               currency: localCurrency,
               selectedToken,
-              // selectedNetwork intentionally not passed — backend handles routing
+              countryCode: effectiveCountryKey,
             })}
           >
             <Text style={styles.btnContinueText}>{t('btnContinue', 'Continuer')}</Text>
