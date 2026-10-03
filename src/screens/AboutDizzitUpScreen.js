@@ -277,7 +277,7 @@ export default function AboutDizzitUpScreen() {
             </Text>
             <View style={styles.bulletItem}>
               <Ionicons name="storefront-outline" size={16} color="#3B82F6" style={styles.bulletIcon} />
-              <Text style={styles.bulletText}>{t('aboutApp.bizSellGlobal', 'Sell products & services globally to the diaspora')}</Text>
+              <Text style={styles.bulletText}>{t('aboutApp.bizSellGlobal', 'Sell products & services globally')}</Text>
             </View>
             <View style={styles.bulletItem}>
               <Ionicons name="receipt-outline" size={16} color="#3B82F6" style={styles.bulletIcon} />

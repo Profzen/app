@@ -1,10 +1,12 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, TextInput, Platform, StatusBar, KeyboardAvoidingView, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
+import AppSelect from '../components/AppSelect';
+import { ALL_COUNTRIES } from '../utils/countriesData';
 import { useApp } from '../context/AppContext';
 
 export default function PersonalAccountScreen() {
@@ -16,9 +18,18 @@ export default function PersonalAccountScreen() {
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '');
-  const [country, setCountry] = useState(user?.country || '');
+  const [country, setCountry] = useState(user?.country || 'Hong Kong');
   const [city, setCity] = useState(user?.city || '');
   const [isSaving, setIsSaving] = useState(false);
+
+  const countryOptions = useMemo(() => {
+    return ALL_COUNTRIES.map(c => ({
+      value: c.name,
+      label: c.name,
+      subtitle: c.dial,
+      flagUrl: `https://flagcdn.com/w40/${c.code.toLowerCase()}.png`
+    }));
+  }, []);
 
   useEffect(() => {
     // When the user context finally loads/updates, sync the local form state
@@ -26,7 +37,7 @@ export default function PersonalAccountScreen() {
       setName(user.name || '');
       setEmail(user.email || '');
       setPhone(user.phone || '');
-      setCountry(user.country || '');
+      setCountry(user.country || 'Hong Kong');
       setCity(user.city || '');
     }
   }, [user]);
@@ -128,10 +139,24 @@ export default function PersonalAccountScreen() {
 
             <View style={styles.fieldRow}>
               <Text style={styles.fieldLabel}>{t('personalAccount.country', 'Country of Residence')}</Text>
-              <View style={styles.inputWrap}>
-                <Ionicons name="flag-outline" size={18} color="#6B7280" style={styles.inputIcon} />
-                <TextInput style={styles.input} value={country} onChangeText={setCountry} />
-              </View>
+              <AppSelect
+                value={country}
+                options={countryOptions}
+                onChange={(val) => setCountry(val)}
+                title={t('personalAccount.country', 'Country of Residence')}
+                searchPlaceholder={t('common.search', 'Search country...')}
+                style={{ backgroundColor: '#F9FAFB', borderColor: '#E5E7EB', borderRadius: 12, minHeight: 46, height: 46 }}
+                textStyle={{ fontFamily: 'Inter_500Medium', fontSize: 14, color: '#1A2840' }}
+                renderLeading={(sel) => (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10 }}>
+                    {sel?.flagUrl ? (
+                      <Image source={{ uri: sel.flagUrl }} style={{ width: 22, height: 16, borderRadius: 2, marginRight: 6 }} />
+                    ) : (
+                      <Ionicons name="flag-outline" size={18} color="#6B7280" style={{ marginRight: 6 }} />
+                    )}
+                  </View>
+                )}
+              />
             </View>
 
             <View style={styles.fieldRow}>

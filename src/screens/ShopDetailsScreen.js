@@ -8,7 +8,7 @@ import AppToast from '../components/AppToast';
 import PriceDisplay from '../components/PriceDisplay';
 import { useBuyGoods } from '../hooks/useBuyGoods';
 import { useApp } from '../context/AppContext';
-import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
+import { getCountryCurrencyInfo, getFullCountryName } from '../utils/countryCurrencyUtils';
 
 
 export default function ShopDetailsScreen({ route }) {
@@ -314,22 +314,48 @@ export default function ShopDetailsScreen({ route }) {
             <View style={styles.fullCard}>
               <Text style={styles.cardTitle}>{t('shop.actions.share_store', 'Share store')}</Text>
               <View style={styles.socialIconsRow}>
-                <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#ECFDF5' }]} onPress={() => Linking.openURL(`whatsapp://send?text=${encodeURIComponent(shopUrl)}`).catch(() => shareShop())}>
+                <TouchableOpacity 
+                  style={[styles.socialBtn, { backgroundColor: '#ECFDF5' }]} 
+                  onPress={() => Linking.openURL(`https://wa.me/?text=${encodeURIComponent(shareMessage)}`).catch(() => {
+                    copyToClipboard('Lien boutique', shopUrl);
+                  })}
+                  accessibilityLabel="Partager sur WhatsApp"
+                >
                   <Ionicons name="logo-whatsapp" size={16} color="#10B981" />
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#EFF6FF' }]} onPress={() => Linking.openURL(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shopUrl)}`).catch(() => shareShop())}>
+                <TouchableOpacity 
+                  style={[styles.socialBtn, { backgroundColor: '#EFF6FF' }]} 
+                  onPress={() => Linking.openURL(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shopUrl)}`).catch(() => {
+                    copyToClipboard('Lien boutique', shopUrl);
+                  })}
+                  accessibilityLabel="Partager sur Facebook"
+                >
                   <Ionicons name="logo-facebook" size={16} color="#3B82F6" />
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#F5F3FF' }]} onPress={() => {
-                  copyToClipboard('Lien Instagram', shopUrl);
-                  Linking.openURL('instagram://app').catch(() => shareShop());
-                }}>
+                <TouchableOpacity 
+                  style={[styles.socialBtn, { backgroundColor: '#F5F3FF' }]} 
+                  onPress={() => {
+                    copyToClipboard('Lien Instagram', shopUrl);
+                    Linking.openURL('https://instagram.com').catch(() => {});
+                  }}
+                  accessibilityLabel="Instagram"
+                >
                   <Ionicons name="logo-instagram" size={16} color="#8B5CF6" />
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#F8FAFC' }]} onPress={() => Linking.openURL(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessage)}`).catch(() => shareShop())}>
+                <TouchableOpacity 
+                  style={[styles.socialBtn, { backgroundColor: '#F8FAFC' }]} 
+                  onPress={() => Linking.openURL(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessage)}`).catch(() => {
+                    copyToClipboard('Lien boutique', shopUrl);
+                  })}
+                  accessibilityLabel="Partager sur X"
+                >
                   <Text style={{ fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840' }}>X</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.socialBtn, { backgroundColor: '#EFF6FF' }]} onPress={shareShop}>
+                <TouchableOpacity 
+                  style={[styles.socialBtn, { backgroundColor: '#EFF6FF' }]} 
+                  onPress={shareShop}
+                  accessibilityLabel="Partager"
+                >
                   <Ionicons name="share-social-outline" size={16} color="#3B82F6" />
                 </TouchableOpacity>
               </View>
@@ -347,19 +373,44 @@ export default function ShopDetailsScreen({ route }) {
             </TouchableOpacity>
             {shopInfoExpanded && (
               <View style={styles.accordionContent}>
-                <TouchableOpacity style={styles.infoRow}>
+                <TouchableOpacity 
+                  style={styles.infoRow}
+                  onPress={() => {
+                    const addressText = shop.street_name || shop.neighborhood || shop.city_village || 'Non spécifié';
+                    copyToClipboard('Adresse', addressText);
+                  }}
+                >
                   <Ionicons name="cube-outline" size={16} color="#1A2840" />
                   <View style={{ flex: 1, marginHorizontal: 8 }}>
                     <Text style={styles.infoTextSmall}>{t('shop.info.address', 'Adresse')}</Text>
-                    <Text style={styles.infoTextSub}>{shop.street_name || shop.neighborhood || t('shop.info.not_specified', 'Non spécifié')}</Text>
+                    <Text style={styles.infoTextSub}>{shop.street_name || shop.neighborhood || shop.city_village || t('shop.info.not_specified', 'Non spécifié')}</Text>
                   </View>
+                  <Ionicons name="copy-outline" size={14} color="#9CA3AF" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.infoRow}>
+                <TouchableOpacity 
+                  style={styles.infoRow}
+                  onPress={() => {
+                    const countryFormatted = getFullCountryName(shop.country || shop.raw?.country || shop.country_code);
+                    const cityFormatted = shop.city_village || shop.raw?.city_village || shop.city;
+                    const loc = shop.location || [cityFormatted, countryFormatted].filter(Boolean).join(', ') || 'Airport West, Accra, Ghana';
+                    const mapUrl = Platform.select({
+                      ios: `maps:0,0?q=${encodeURIComponent(loc)}`,
+                      android: `geo:0,0?q=${encodeURIComponent(loc)}`,
+                      default: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`,
+                    });
+                    Linking.openURL(mapUrl).catch(() => {
+                      copyToClipboard('Localisation', loc);
+                    });
+                  }}
+                >
                   <Ionicons name="location-outline" size={16} color="#1A2840" />
                   <View style={{ flex: 1, marginHorizontal: 8 }}>
                     <Text style={styles.infoTextSmall}>{t('shop.info.location', 'Localisation')}</Text>
-                    <Text style={styles.infoTextSub}>{shop.location || [shop.city_village || shop.raw?.city_village || shop.city, shop.country || shop.raw?.country].filter(Boolean).join(', ') || t('shop.info.not_specified', 'Non spécifié')}</Text>
+                    <Text style={styles.infoTextSub}>
+                      {shop.location || [shop.city_village || shop.raw?.city_village || shop.city, getFullCountryName(shop.country || shop.raw?.country || shop.country_code)].filter(Boolean).join(', ') || 'Airport West, Accra, Ghana'}
+                    </Text>
                   </View>
+                  <Ionicons name="open-outline" size={14} color="#3B82F6" />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.infoRow}>
                   <Ionicons name="bus-outline" size={16} color="#1A2840" />

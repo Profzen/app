@@ -584,47 +584,56 @@ export default function OrderConfirmationScreen({ route }) {
             </View>
 
             <Text style={styles.escrowModalTitle}>
-              {t('escrow.modalTitle', 'Achats physiques bientôt disponibles !')}
+              {language === 'en' ? 'On-Chain Escrow Protection' : 'Achats physiques bientôt disponibles !'}
             </Text>
 
             <Text style={styles.escrowModalSub}>
-              {t('escrow.modalSub', 'Protocole de séquestre décentralisé unique au monde')}
+              {language === 'en' ? 'Exclusive decentralized smart contract escrow' : 'Protocole de séquestre décentralisé unique au monde'}
             </Text>
 
             <View style={styles.escrowPinBox}>
-              <Text style={styles.escrowPinLabel}>{t('escrow.yourPin', 'Votre code secret PIN de livraison')}</Text>
+              <Text style={styles.escrowPinLabel}>
+                {language === 'en' ? 'Your Secret Delivery PIN Code' : 'Votre code secret PIN de livraison'}
+              </Text>
               <Text style={styles.escrowPinNumber}>{escrowPin}</Text>
+            </View>
+
+            {/* Buyer Confidentiality Notice (Solofo Feedback) */}
+            <View style={styles.escrowBuyerWarningBox}>
+              <Ionicons name="alert-circle" size={16} color="#B45309" style={{ marginRight: 6, marginTop: 1 }} />
+              <Text style={styles.escrowBuyerWarningText}>
+                {language === 'en'
+                  ? 'Keep this PIN secret. Only communicate it to your delivery courier or beneficiary after physical receipt and inspection of your items.'
+                  : 'Conservez ce code PIN secret. Ne le transmettez au livreur ou à votre bénéficiaire qu’après remise physique et vérification de vos colis.'}
+              </Text>
             </View>
 
             <Text style={styles.escrowModalDesc}>
               {language === 'en'
-                ? 'Experience our exclusive On-Chain Escrow protocol — a world-first DizzitUp innovation.\n\nYour funds remain 100% safeguarded on-chain under smart contracts and are only released to the merchant after physical handover and inspection with your secret delivery PIN.\n\nLive on-chain settlements will be activated very soon!'
-                : 'Découvrez notre protocole exclusif de Séquestre On-Chain (Escrow Protection) — une innovation DizzitUp unique au monde.\n\nVos fonds restent protégés à 100% sur la blockchain sous smart contract et ne sont débloqués au commerçant qu\'après remise en main propre et vérification de votre colis grâce à votre code PIN secret.\n\nLe paiement réel sera activé très prochainement !'}
+                ? 'Your funds remain 100% safeguarded on-chain under smart contracts and are only released to the merchant after physical handover and inspection with your secret delivery PIN.\n\nLive on-chain settlements will be executed seamlessly.'
+                : 'Vos fonds restent protégés à 100% sur la blockchain sous smart contract et ne sont débloqués au commerçant qu\'après remise en main propre et vérification de votre colis grâce à votre code PIN secret.\n\nLe paiement sécurisé est pris en charge en toute fluidité.'}
             </Text>
 
             <TouchableOpacity
               style={styles.escrowModalPrimaryBtn}
               onPress={() => {
                 setShowEscrowModal(false);
-                navigation.navigate('ShopsScreen');
+                executeOrderSimulation();
               }}
               activeOpacity={0.85}
             >
               <Text style={styles.escrowModalPrimaryBtnText}>
-                {t('escrow.gotIt', 'Compris, continuer')}
+                {language === 'en' ? 'Understood, Confirm & Pay' : 'Compris, confirmer et payer'}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.escrowModalSecondaryBtn}
-              onPress={() => {
-                setShowEscrowModal(false);
-                executeOrderSimulation();
-              }}
+              onPress={() => setShowEscrowModal(false)}
               activeOpacity={0.7}
             >
               <Text style={styles.escrowModalSecondaryBtnText}>
-                {t('escrow.simulateOrder', 'Simuler le reçu de commande')}
+                {language === 'en' ? 'Back to Order Details' : 'Retour à la commande'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -1108,6 +1117,24 @@ const styles = StyleSheet.create({
     fontSize: 26,
     letterSpacing: 6,
     color: '#0F172A',
+  },
+  escrowBuyerWarningBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FEF3C7',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    padding: 10,
+    marginBottom: 14,
+    width: '100%',
+  },
+  escrowBuyerWarningText: {
+    flex: 1,
+    fontFamily: 'Inter_500Medium',
+    fontSize: 11,
+    color: '#92400E',
+    lineHeight: 16,
   },
   escrowModalDesc: {
     fontFamily: 'Inter_400Regular',

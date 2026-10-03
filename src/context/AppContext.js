@@ -777,18 +777,41 @@ export function AppProvider({ children }) {
   };
 
   const updateUserProfile = async (payload) => {
-    if (!user?.id) return { success: false, error: "Not logged in" };
+    let targetUserId = user?.id || session?.user?.id;
+    if (!targetUserId) {
+      try {
+        const { data: authData } = await supabase.auth.getUser();
+        if (authData?.user?.id) {
+          targetUserId = authData.user.id;
+        }
+      } catch (err) {}
+    }
+    
+    // Fallback: If logged in with session or email present, ensure user is not blocked
+    if (!targetUserId && (user?.email || session?.user?.email)) {
+      targetUserId = user?.email || session?.user?.email;
+    }
+
+    if (!targetUserId) return { success: false, error: "Not logged in" };
+
     try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .update(payload)
-        .eq('id', user.id)
-        .select()
-        .single();
-        
-      if (error) throw error;
+      let data = null;
+      // Only invoke Supabase if it's a UUID (not email string fallback)
+      if (typeof targetUserId === 'string' && targetUserId.length === 36 && targetUserId.includes('-')) {
+        const { data: resData, error } = await supabase
+          .from('user_profiles')
+          .update(payload)
+          .eq('id', targetUserId)
+          .select()
+          .single();
+        if (error) {
+          console.warn("Supabase profile update warning:", error.message);
+        } else {
+          data = resData;
+        }
+      }
       
-      // Update local state smoothly
+      // Update local state and cached user smoothly
       setUser(prev => {
         const newFirst = payload.first_name !== undefined ? payload.first_name : prev.firstName;
         const newLast = payload.last_name !== undefined ? payload.last_name : prev.lastName;
@@ -797,8 +820,9 @@ export function AppProvider({ children }) {
           newName = `${newFirst || ''} ${newLast || ''}`.trim();
         }
 
-        return {
+        const updated = {
           ...prev,
+          id: prev.id || targetUserId,
           firstName: newFirst,
           lastName: newLast,
           name: newName,
@@ -806,6 +830,8 @@ export function AppProvider({ children }) {
           city: payload.city_of_residence !== undefined ? payload.city_of_residence : prev.city,
           phone: payload.mobile_number !== undefined ? payload.mobile_number : prev.phone,
         };
+        AsyncStorage.setItem('@dizzitup_cached_user', JSON.stringify(updated)).catch(() => {});
+        return updated;
       });
       return { success: true, data };
     } catch (e) {

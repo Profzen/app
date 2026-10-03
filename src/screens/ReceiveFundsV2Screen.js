@@ -14,6 +14,7 @@ import {
   Platform,
   StatusBar,
   Dimensions,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -25,6 +26,7 @@ import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import { isSmallScreen } from '../utils/responsive';
+import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
 
 const CHAINS = [
   { id: 'Polygon', name: 'Polygon', isDefault: true, subtitleKey: 'receiveFunds.recommendedFast', defaultSub: 'Recommended • Fast & Lowest Fees' },
@@ -581,6 +583,40 @@ export default function ReceiveFundsV2Screen() {
                     </TouchableOpacity>
                   );
                 })}
+
+                {/* Local Resident FIAT (Greyed out with 'Coming next' per Solofo & Assia Mandate) */}
+                {(() => {
+                  const residentCountry = user?.country_of_residence || user?.residence_country || user?.country || 'Madagascar';
+                  const residentFiatInfo = getCountryCurrencyInfo(residentCountry);
+                  const residentFiat = residentFiatInfo?.currency || 'MGA';
+                  const flagCode = residentFiatInfo?.code || 'mg';
+
+                  return (
+                    <TouchableOpacity
+                      style={[styles.tokenGridItem, styles.tokenGridItemDisabled]}
+                      onPress={() => {
+                        setToast({
+                          title: `${residentFiat} - Coming next`,
+                          message: t('receiveFunds.fiatComingNext', `Local ${residentFiat} receiving via Mobile Money & African bank accounts will be connected in the next release!`),
+                          type: 'info'
+                        });
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      <View style={styles.comingNextBadge}>
+                        <Text style={styles.comingNextBadgeText}>Coming next</Text>
+                      </View>
+                      <Image 
+                        source={{ uri: `https://flagcdn.com/w40/${flagCode}.png` }} 
+                        style={{ width: 26, height: 18, borderRadius: 3, marginBottom: 6, opacity: 0.65 }} 
+                        resizeMode="cover"
+                      />
+                      <Text style={[styles.tokenGridText, { color: '#94A3B8' }]}>
+                        {residentFiat}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })()}
               </View>
             </Pressable>
           </Pressable>
@@ -1181,5 +1217,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#3B82F6',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  tokenGridItemDisabled: {
+    backgroundColor: '#F8FAFC',
+    borderColor: '#E2E8F0',
+    opacity: 0.8,
+  },
+  comingNextBadge: {
+    position: 'absolute',
+    top: -6,
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    borderRadius: 6,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    zIndex: 10,
+  },
+  comingNextBadgeText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 7.5,
+    color: '#B45309',
+    letterSpacing: 0.2,
   },
 });

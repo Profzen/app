@@ -1,14 +1,16 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from './CryptoIcon';
 
 export default function AppSelect({
   value,
-  options,
+  options = [],
   onChange,
   title = 'Choisir une option',
+  searchPlaceholder = 'Rechercher...',
+  searchable,
   style,
   textStyle,
   renderLeading,
@@ -17,11 +19,31 @@ export default function AppSelect({
   renderCustomTrigger,
 }) {
   const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const selected = options.find((option) => option.value === value) || options[0];
+
+  const showSearch = searchable !== undefined ? searchable : options.length > 7;
+
+  const filteredOptions = useMemo(() => {
+    if (!searchQuery.trim()) return options;
+    const q = searchQuery.toLowerCase().trim();
+    return options.filter((opt) => 
+      (opt.label && opt.label.toLowerCase().includes(q)) ||
+      (opt.subtitle && opt.subtitle.toLowerCase().includes(q)) ||
+      (opt.name && opt.name.toLowerCase().includes(q)) ||
+      (opt.value && String(opt.value).toLowerCase().includes(q))
+    );
+  }, [options, searchQuery]);
 
   const select = (option) => {
     onChange?.(option.value, option);
     setOpen(false);
+    setSearchQuery('');
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setSearchQuery('');
   };
 
   return (
@@ -44,63 +66,91 @@ export default function AppSelect({
         </TouchableOpacity>
       )}
 
-      <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
+      <Modal visible={open} transparent animationType="fade" onRequestClose={handleClose}>
         <SafeAreaView style={styles.overlay}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={() => setOpen(false)} />
+          <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
           
           {/* Floating Discrete Modal Card with Margins */}
           <View style={styles.modalCard}>
             <View style={styles.cardHeader}>
               <Text style={styles.cardTitle}>{title}</Text>
-              <TouchableOpacity style={styles.closeBtn} onPress={() => setOpen(false)} accessibilityLabel="Fermer la liste">
+              <TouchableOpacity style={styles.closeBtn} onPress={handleClose} accessibilityLabel="Fermer la liste">
                 <Ionicons name="close" size={20} color="#0F172A" />
               </TouchableOpacity>
             </View>
 
-            <ScrollView style={styles.optionsScroll} bounces={false} showsVerticalScrollIndicator={false}>
-              {options.map((option) => {
-                const active = option.value === selected?.value;
-                return (
-                  <TouchableOpacity 
-                    key={option.value} 
-                    style={[styles.optionRow, active && styles.optionRowActive]} 
-                    onPress={() => select(option)}
-                    activeOpacity={0.8}
-                  >
-                    <View style={styles.optionContent}>
-                      {/* Logo Icon Badge */}
-                      {option.flagUrl ? (
-                        <Image source={{ uri: option.flagUrl }} style={{ width: 34, height: 34, borderRadius: 17, marginRight: 12, resizeMode: 'cover', borderWidth: 1, borderColor: '#F1F5F9' }} />
-                      ) : (option.cryptoSymbol || option.value) && (option.isCrypto || ['Polygon', 'Ethereum', 'Solana', 'BNB Chain', 'Base', 'USDC', 'USDT', 'BTC', 'ETH', 'SOL', 'POL', 'DAI', 'EURC', 'DIZ'].includes(option.cryptoSymbol || option.value)) ? (
-                        <View style={{ marginRight: 12 }}>
-                          <CryptoIcon symbol={option.cryptoSymbol || option.value} size={34} />
+            {showSearch && (
+              <View style={styles.searchBar}>
+                <Ionicons name="search-outline" size={18} color="#94A3B8" style={{ marginRight: 8 }} />
+                <TextInput
+                  style={styles.searchInput}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholder={searchPlaceholder}
+                  placeholderTextColor="#94A3B8"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  clearButtonMode="while-editing"
+                />
+                {searchQuery.length > 0 && (
+                  <TouchableOpacity onPress={() => setSearchQuery('')} style={{ padding: 4 }}>
+                    <Ionicons name="close-circle" size={16} color="#94A3B8" />
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+
+            <ScrollView style={styles.optionsScroll} bounces={false} showsVerticalScrollIndicator={filteredOptions.length > 5} keyboardShouldPersistTaps="handled">
+              {filteredOptions.length === 0 ? (
+                <View style={styles.emptyWrap}>
+                  <Ionicons name="search" size={28} color="#CBD5E1" />
+                  <Text style={styles.emptyText}>Aucun résultat pour « {searchQuery} »</Text>
+                </View>
+              ) : (
+                filteredOptions.map((option) => {
+                  const active = option.value === selected?.value;
+                  return (
+                    <TouchableOpacity 
+                      key={option.value} 
+                      style={[styles.optionRow, active && styles.optionRowActive]} 
+                      onPress={() => select(option)}
+                      activeOpacity={0.8}
+                    >
+                      <View style={styles.optionContent}>
+                        {/* Logo Icon Badge */}
+                        {option.flagUrl ? (
+                          <Image source={{ uri: option.flagUrl }} style={{ width: 34, height: 34, borderRadius: 17, marginRight: 12, resizeMode: 'cover', borderWidth: 1, borderColor: '#F1F5F9' }} />
+                        ) : (option.cryptoSymbol || option.value) && (option.isCrypto || ['Polygon', 'Ethereum', 'Solana', 'BNB Chain', 'Base', 'USDC', 'USDT', 'BTC', 'ETH', 'SOL', 'POL', 'DAI', 'EURC', 'DIZ'].includes(option.cryptoSymbol || option.value)) ? (
+                          <View style={{ marginRight: 12 }}>
+                            <CryptoIcon symbol={option.cryptoSymbol || option.value} size={34} />
+                          </View>
+                        ) : option.iconName ? (
+                          <View style={[styles.iconBadge, { backgroundColor: option.bg || '#3B82F6' }]}>
+                            <Ionicons name={option.iconName} size={16} color={option.color || '#FFFFFF'} />
+                          </View>
+                        ) : (
+                          <View style={[styles.iconBadge, { backgroundColor: '#F1F5F9' }]}>
+                            <Text style={styles.iconBadgeText}>{option.label?.substring(0, 2)}</Text>
+                          </View>
+                        )}
+
+                        <View style={styles.optionTextWrap}>
+                          <Text style={[styles.optionLabel, active && styles.optionLabelActive]}>{option.label}</Text>
+                          {!!(option.subtitle || option.name) && (
+                            <Text style={styles.optionSubtitle}>{option.subtitle || option.name}</Text>
+                          )}
                         </View>
-                      ) : option.iconName ? (
-                        <View style={[styles.iconBadge, { backgroundColor: option.bg || '#3B82F6' }]}>
-                          <Ionicons name={option.iconName} size={16} color={option.color || '#FFFFFF'} />
-                        </View>
-                      ) : (
-                        <View style={[styles.iconBadge, { backgroundColor: '#F1F5F9' }]}>
-                          <Text style={styles.iconBadgeText}>{option.label?.substring(0, 2)}</Text>
+                      </View>
+                      
+                      {active && (
+                        <View style={styles.activeCheckCircle}>
+                          <Ionicons name="checkmark" size={12} color="#FFFFFF" />
                         </View>
                       )}
-
-                      <View style={styles.optionTextWrap}>
-                        <Text style={[styles.optionLabel, active && styles.optionLabelActive]}>{option.label}</Text>
-                        {!!(option.subtitle || option.name) && (
-                          <Text style={styles.optionSubtitle}>{option.subtitle || option.name}</Text>
-                        )}
-                      </View>
-                    </View>
-                    
-                    {active && (
-                      <View style={styles.activeCheckCircle}>
-                        <Ionicons name="checkmark" size={12} color="#FFFFFF" />
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
+                    </TouchableOpacity>
+                  );
+                })
+              )}
             </ScrollView>
           </View>
         </SafeAreaView>
@@ -116,10 +166,14 @@ const styles = StyleSheet.create({
   
   /* Discrete Floating Modal Popup with Margins */
   overlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(15, 23, 42, 0.45)', paddingHorizontal: 20 },
-  modalCard: { width: '100%', maxWidth: 380, maxHeight: '68%', backgroundColor: '#FFFFFF', borderRadius: 24, paddingHorizontal: 20, paddingTop: 18, paddingBottom: 20, boxShadow: '0px 8px 20px #000' },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
+  modalCard: { width: '100%', maxWidth: 380, maxHeight: '78%', backgroundColor: '#FFFFFF', borderRadius: 24, paddingHorizontal: 20, paddingTop: 18, paddingBottom: 20, boxShadow: '0px 8px 20px #000' },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
   cardTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 17, color: '#0F172A' },
   closeBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' },
+  searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 12, paddingHorizontal: 12, height: 42, marginBottom: 12 },
+  searchInput: { flex: 1, fontFamily: 'Inter_500Medium', fontSize: 14, color: '#0F172A', paddingVertical: 0 },
+  emptyWrap: { alignItems: 'center', justifyContent: 'center', paddingVertical: 24 },
+  emptyText: { marginTop: 8, fontFamily: 'Inter_400Regular', fontSize: 13, color: '#94A3B8', textAlign: 'center' },
   optionsScroll: { flexGrow: 0 },
   optionRow: { minHeight: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderColor: '#F1F5F9', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 10, marginBottom: 8, backgroundColor: '#FFFFFF' },
   optionRowActive: { backgroundColor: '#FFFDF0', borderColor: '#FFC759' },

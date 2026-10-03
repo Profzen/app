@@ -215,6 +215,35 @@ export const buyGoodsApi = {
       console.error('buyGoodsApi.createMarketplaceTransaction Error:', error);
       throw error;
     }
+  },
+
+  searchGlobal: async (query, { type = 'all', country = '' } = {}) => {
+    try {
+      const params = new URLSearchParams();
+      if (query) params.append('q', query.trim());
+      if (type && type !== 'all') params.append('type', type);
+      if (country) params.append('country', country);
+      const url = `${BASE_URL}/search?${params.toString()}`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Global search failed');
+      return await response.json();
+    } catch (error) {
+      console.error('buyGoodsApi.searchGlobal Error:', error);
+      return { results: [], groupedResults: {} };
+    }
+  },
+
+  searchSuggestions: async (query) => {
+    try {
+      if (!query || !query.trim()) return { suggestions: [] };
+      const url = `${BASE_URL}/search/suggest?q=${encodeURIComponent(query.trim())}`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Search suggestions failed');
+      return await response.json();
+    } catch (error) {
+      console.error('buyGoodsApi.searchSuggestions Error:', error);
+      return { suggestions: [] };
+    }
   }
 };
 

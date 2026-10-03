@@ -61,12 +61,36 @@ export const useBuyGoods = () => {
     }
   }, []);
 
+  const searchGlobal = useCallback(async (query, options = {}) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await buyGoodsApi.searchGlobal(query, options);
+      setLoading(false);
+      return data;
+    } catch (err) {
+      setError(err.message || 'Search failed');
+      setLoading(false);
+      return { results: [], groupedResults: {} };
+    }
+  }, []);
+
+  const searchSuggestions = useCallback(async (query) => {
+    try {
+      return await buyGoodsApi.searchSuggestions(query);
+    } catch (err) {
+      return { suggestions: [] };
+    }
+  }, []);
+
   return {
     loading,
     error,
     fetchMerchants,
     fetchStoreDetails,
     fetchAllProducts,
-    fetchProductById
+    fetchProductById,
+    searchGlobal,
+    searchSuggestions
   };
 };
