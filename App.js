@@ -18,8 +18,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import AppNavigator from './src/navigation/AppNavigator';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { SpaceGrotesk_400Regular, SpaceGrotesk_500Medium, SpaceGrotesk_600SemiBold, SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk';
-import { AppProvider } from './src/context/AppContext';
-import { CrossmintProvider } from '@crossmint/client-sdk-react-native-ui';
+import { AppProvider, useApp } from './src/context/AppContext';
+import { CrossmintProvider, CrossmintWalletProvider, useCrossmint } from '@crossmint/client-sdk-react-native-ui';
 import * as SplashScreen from 'expo-splash-screen';
 import AnimatedSplashScreen from './src/components/AnimatedSplashScreen';
 import { GlobalToast } from './src/components/AppToast';
@@ -154,6 +154,28 @@ export default function App() {
     </NavigationContainer>
   );
 
+  function CrossmintJwtSync() {
+    const { setJwt } = useCrossmint();
+    const { user } = useApp();
+
+    React.useEffect(() => {
+      const isMerchant = user?.role === 'merchant';
+      const jwt = (isMerchant && user?.businessCrossmintJWT)
+        ? user.businessCrossmintJWT
+        : (user?.businessCrossmintJWT || user?.crossmintJWT);
+
+      if (jwt && typeof setJwt === 'function') {
+        try {
+          setJwt(jwt);
+        } catch (err) {
+          console.warn('[CrossmintJwtSync] setJwt error:', err);
+        }
+      }
+    }, [user?.role, user?.crossmintJWT, user?.businessCrossmintJWT, setJwt]);
+
+    return null;
+  }
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaProvider style={{ flex: 1 }}>
@@ -161,7 +183,10 @@ export default function App() {
           <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" translucent={false} />
           {isValidCrossmintKey ? (
             <CrossmintProvider apiKey={rawCrossmintKey}>
-              {appNav}
+              <CrossmintWalletProvider showOtpSignerPrompt={true}>
+                <CrossmintJwtSync />
+                {appNav}
+              </CrossmintWalletProvider>
             </CrossmintProvider>
           ) : (
             appNav

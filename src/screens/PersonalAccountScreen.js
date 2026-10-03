@@ -4,8 +4,8 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, TextInput,
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
-import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
+import Avatar from '../components/Avatar';
 
 export default function PersonalAccountScreen() {
   const navigation = useNavigation();
@@ -87,7 +87,7 @@ export default function PersonalAccountScreen() {
           {/* User Header Avatar */}
           <View style={styles.profileHeaderCard}>
             <View style={styles.avatarWrap}>
-              <Image source={user?.avatar || require('../../assets/avatars/david.jpg')} style={styles.avatarImage} />
+              <Avatar image={user?.avatar_url || user?.avatar} name={name || user?.email} size={70} style={styles.avatarImage} />
               <TouchableOpacity style={styles.editAvatarBtn} onPress={() => setToast({ title: t('personalAccount.title', 'Profile Photo'), message: 'Sélecteur de photo ouvert', type: 'info' })}>
                 <Ionicons name="camera" size={14} color="#1A2840" />
               </TouchableOpacity>

@@ -436,6 +436,9 @@ export default function ContactsScreen() {
                         onPress={() => {
                           setSearchQuery(contact.name);
                           setIsDropdownOpen(false);
+                          if (nextScreen) {
+                            navigation.navigate(nextScreen, { beneficiary: contact, contact });
+                          }
                         }}
                         activeOpacity={0.7}
                       >

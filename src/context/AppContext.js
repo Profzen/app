@@ -275,6 +275,8 @@ export function AppProvider({ children }) {
         let fetchedBusinessSolanaAddress = '';
         let fetchedDizzyToken = '';
         let fetchedBusinessDizzyToken = '';
+        let fetchedCrossmintJWT = '';
+        let fetchedBusinessCrossmintJWT = '';
         let newBalances = { DZY: 0 };
         let businessBalances = { DZY: 0 };
         let totalUsdValue = 0;
@@ -360,6 +362,9 @@ export function AppProvider({ children }) {
             if (syncData.token) {
               fetchedDizzyToken = syncData.token;
             }
+            if (syncData.crossmintJWT) {
+              fetchedCrossmintJWT = syncData.crossmintJWT;
+            }
             if (syncData.user) {
               // Only use sync-buygoods address as fallback — do NOT overwrite the user's
               // primary dizzy-wallet address (from Supabase evm_wallet_address)
@@ -392,6 +397,9 @@ export function AppProvider({ children }) {
               console.log("sync-crossmint success, evmAddress:", bizSyncData.user?.evmAddress);
               if (bizSyncData.token) {
                 fetchedBusinessDizzyToken = bizSyncData.token;
+              }
+              if (bizSyncData.crossmintJWT) {
+                fetchedBusinessCrossmintJWT = bizSyncData.crossmintJWT;
               }
               if (bizSyncData.user) {
                 fetchedBusinessEvmAddress = bizSyncData.user.evmAddress || bizSyncData.user.walletAddress || '';
@@ -559,6 +567,8 @@ export function AppProvider({ children }) {
           businessSolanaAddress: fetchedBusinessSolanaAddress,
           dizzyToken: fetchedDizzyToken,
           businessDizzyToken: fetchedBusinessDizzyToken,
+          crossmintJWT: fetchedCrossmintJWT,
+          businessCrossmintJWT: fetchedBusinessCrossmintJWT,
           businessBalances: businessBalances,
           businessRawBalances: businessRawBalancesArray,
           businessTotalUsdValue: businessTotalUsdValue

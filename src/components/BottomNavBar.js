@@ -33,16 +33,20 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
     { id: '1', icon: 'bag-handle-outline', color: '#3B82F6', bgColor: '#EFF6FF', label: t('actionBuyGoods', 'Buy goods'), route: 'ShopsScreen' },
     { id: '2', icon: 'document-text-outline', color: '#8B5CF6', bgColor: '#F5F3FF', label: t('actionPayBills', 'Pay bills'), route: 'PayBillsScreen' },
     { id: '3', icon: 'cart-outline', color: '#F59E0B', bgColor: '#FFFBEB', label: t('actionRequestMoney', 'Request money'), route: 'ReceiveFundsV2Screen' },
-    { id: '4', icon: 'people-outline', color: '#10B981', bgColor: '#ECFDF5', label: t('actionSendMoney', 'Send money'), route: 'ContactsScreen' },
+    { id: '4', icon: 'people-outline', color: '#10B981', bgColor: '#ECFDF5', label: t('actionSendMoney', 'Send money'), route: 'ContactsScreen', params: { nextScreen: 'SendMoneyScreen' } },
     { id: '5', icon: 'add-circle-outline', color: '#10B981', bgColor: '#ECFDF5', label: t('actionTopUp', 'Top-up'), route: 'TopUpScreen' },
     { id: '6', icon: 'storefront-outline', color: '#F59E0B', bgColor: '#FFFBEB', label: t('actionReferStore', 'Refer a store'), route: 'ReferBusinessScreen' },
     { id: '7', icon: 'swap-horizontal', color: '#3B82F6', bgColor: '#EFF6FF', label: t('tabSwap', 'Swap'), route: 'SwapTokensScreen' },
     { id: '8', icon: 'qr-code-outline', color: '#10B981', bgColor: '#F0FDFA', label: t('actionScanCash', 'Scan & Cash'), route: 'LocalExchangeScreen' },
   ];
 
-  const closeAndNavigate = (route) => {
+  const closeAndNavigate = (action) => {
     setLocalMenuOpen(false);
-    navigation.navigate(route);
+    if (typeof action === 'string') {
+      navigation.navigate(action);
+    } else {
+      navigation.navigate(action.route, action.params || {});
+    }
   };
 
   const activeTabLower = (activeTab || '').toLowerCase();
@@ -61,7 +65,7 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
             <Text style={styles.shortcutTitle}>{t('quickActionsTitle', 'Actions rapides')}</Text>
             <View style={styles.quickActionsGrid}>
               {QUICK_ACTIONS.map((action) => (
-                <TouchableOpacity key={action.id} style={styles.actionGridItem} onPress={() => closeAndNavigate(action.route)}>
+                <TouchableOpacity key={action.id} style={styles.actionGridItem} onPress={() => closeAndNavigate(action)}>
                   <View style={[styles.actionGridIcon, { backgroundColor: action.bgColor }]}>
                     <Ionicons name={action.icon} size={22} color={action.color} />
                   </View>

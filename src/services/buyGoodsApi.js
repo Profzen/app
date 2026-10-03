@@ -19,6 +19,26 @@ if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location.ho
 }
 
 export const buyGoodsApi = {
+  searchGlobal: async (query = '') => {
+    try {
+      if (!query || query.trim().length < 2) return [];
+      const response = await fetch(`${BASE_URL}/search?q=${encodeURIComponent(query.trim())}`);
+      if (!response.ok) return [];
+      const data = await response.json();
+      if (!data.results || !Array.isArray(data.results)) return [];
+      const seen = new Set();
+      return data.results.filter(item => {
+        const key = `${item.entity_type || 'item'}_${item.entity_id || item.id || item.title}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    } catch (error) {
+      console.warn('buyGoodsApi.searchGlobal Error:', error);
+      return [];
+    }
+  },
+
   getMerchants: async (query = '') => {
     try {
       if (query && query.length >= 2) {
