@@ -19,6 +19,7 @@ import * as Clipboard from 'expo-clipboard';
 import { WebView } from 'react-native-webview';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
+import SocialShareModal from '../components/SocialShareModal';
 import { useApp } from '../context/AppContext';
 import { buyGoodsApi } from '../services/buyGoodsApi';
 
@@ -34,6 +35,9 @@ export default function OrderConfirmationScreen({ route }) {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
 
+  // Social Share Modal State
+  const [showShareModal, setShowShareModal] = useState(false);
+
   // CyberSource WebView Modal State
   const [showCyberSourceModal, setShowCyberSourceModal] = useState(false);
   const [cyberSourceHtml, setCyberSourceHtml] = useState(null);
@@ -48,19 +52,19 @@ export default function OrderConfirmationScreen({ route }) {
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('order.emptyCart', 'Votre panier est vide')}</Text>
+          <Text style={styles.headerTitle}>{t('order.emptyCart', 'Your cart is empty')}</Text>
           <View style={{ width: 44 }} />
         </View>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
           <Ionicons name="cart-outline" size={64} color="#CBD5E1" />
           <Text style={{ fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#1A2840', marginTop: 16 }}>
-            {t('order.emptyCart', 'Votre panier est vide')}
+            {t('order.emptyCart', 'Your cart is empty')}
           </Text>
           <TouchableOpacity
             style={{ marginTop: 20, backgroundColor: '#FFB800', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24 }}
             onPress={() => navigation.navigate('ShopsScreen')}
           >
-            <Text style={{ fontFamily: 'Inter_600SemiBold', color: '#1A2840' }}>{t('nav.shops', 'Boutiques')}</Text>
+            <Text style={{ fontFamily: 'Inter_600SemiBold', color: '#1A2840' }}>{t('nav.shops', 'Shops')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -74,32 +78,17 @@ export default function OrderConfirmationScreen({ route }) {
   const displayCurrency = rawCurrency === 'XOF' ? 'FCFA' : rawCurrency;
   const numLocale = language === 'en' ? 'en-US' : 'fr-FR';
 
-  const orderShareUrl = `dizzitup.com/orders/${orderData.orderId}`;
-
-  const shareOrder = async () => {
-    try {
-      await Share.share({
-        title: t('orderConfirmation.shareOrder', 'Achetez ceci pour moi sur DizzitUp'),
-        message: `${t(
-          'orderConfirmation.shareDesc',
-          'Pouvez-vous régler cette commande pour moi sur DizzitUp ?'
-        )} ${orderShareUrl}`,
-      });
-    } catch {
-      setToast({
-        title: t('product.sharedTitle', 'Commande partagée'),
-        message: t('product.sharedDesc', 'Lien de partage prêt.'),
-      });
-    }
+  const shareOrder = () => {
+    setShowShareModal(true);
   };
 
   const copyOrder = async () => {
     await Clipboard.setStringAsync(orderData.orderId);
     setToast({
-      title: t('orderConfirmation.orderRefCopiedTitle', 'Réf copiée !'),
+      title: t('orderConfirmation.orderRefCopiedTitle', 'Reference Copied!'),
       message: t(
         'orderConfirmation.orderRefCopied',
-        `Référence commande ${orderData.orderId} copiée dans le presse-papier.`,
+        `Order reference ${orderData.orderId} copied to clipboard.`,
         { id: orderData.orderId }
       ),
     });
@@ -108,10 +97,10 @@ export default function OrderConfirmationScreen({ route }) {
   const copyPin = async () => {
     await Clipboard.setStringAsync(escrowPin);
     setToast({
-      title: t('orderConfirmation.pinCopiedTitle', 'Code PIN copié !'),
+      title: t('orderConfirmation.pinCopiedTitle', 'PIN Code Copied!'),
       message: t(
         'orderConfirmation.pinCopied',
-        `Code PIN secret ${escrowPin} copié.`,
+        `Secret PIN code ${escrowPin} copied.`,
         { pin: escrowPin }
       ),
     });
@@ -277,10 +266,10 @@ export default function OrderConfirmationScreen({ route }) {
         setLoading(false);
         navigation.navigate('PaymentSuccessScreen', {
           transaction: {
-            title: orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', 'Commande DizzitUp'),
+            title: orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', 'DizzitUp Order'),
             amount: orderData.totalAmount,
             currency: displayCurrency,
-            paymentMethod: t('orderConfirmation.cardVisaMc', 'Carte Bancaire (Visa/MC)'),
+            paymentMethod: t('orderConfirmation.cardVisaMc', 'Bank Card (Visa/MC)'),
             orderId: orderData.orderId,
             escrowPin: escrowPin,
             recipientName: orderData.recipient?.name,
@@ -309,7 +298,7 @@ export default function OrderConfirmationScreen({ route }) {
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#1A2840" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('orderConfirmation.title', 'Récapitulatif & Confirmation')}</Text>
+        <Text style={styles.headerTitle}>{t('orderConfirmation.title', 'Summary & Confirmation')}</Text>
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('HelpCenterPage')}>
           <Ionicons name="headset-outline" size={22} color="#1A2840" />
         </TouchableOpacity>
@@ -322,9 +311,9 @@ export default function OrderConfirmationScreen({ route }) {
             <Ionicons name="lock-closed" size={20} color="#047857" />
           </View>
           <View style={styles.securityAlertContent}>
-            <Text style={styles.securityAlertTitle}>{t('orderConfirmation.securityTitle', 'Protection Escrow DizzitUp')}</Text>
+            <Text style={styles.securityAlertTitle}>{t('orderConfirmation.securityTitle', 'DizzitUp Escrow Protection')}</Text>
             <Text style={styles.securityAlertText}>
-              {t('orderConfirmation.securityDesc', 'Vos fonds restent protégés en séquestre escrow. Le commerçant n\'est payé qu\'une fois vos articles livrés et validés.')}
+              {t('orderConfirmation.securityDesc', 'Your funds remain protected in escrow. The merchant is only paid once your items are delivered and verified.')}
             </Text>
           </View>
         </View>
@@ -333,24 +322,24 @@ export default function OrderConfirmationScreen({ route }) {
         <View style={styles.escrowPinCard}>
           <View style={styles.escrowPinHeader}>
             <Ionicons name="key" size={20} color="#FFB800" />
-            <Text style={styles.escrowPinTitle}>{t('orderConfirmation.escrowPinTitle', 'Votre Code Secret de Livraison')}</Text>
+            <Text style={styles.escrowPinTitle}>{t('orderConfirmation.escrowPinTitle', 'Your Secret Delivery PIN Code')}</Text>
             <TouchableOpacity style={styles.btnCopyPin} onPress={copyPin}>
               <Ionicons name="copy-outline" size={16} color="#1A2840" />
-              <Text style={styles.btnCopyPinText}>{t('orderConfirmation.copy', 'Copier')}</Text>
+              <Text style={styles.btnCopyPinText}>{t('orderConfirmation.copy', 'Copy')}</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.pinCodeBox}>
             <Text style={styles.pinCodeText}>{escrowPin}</Text>
           </View>
           <Text style={styles.escrowPinDesc}>
-            {t('orderConfirmation.escrowPinWarning', '⚠️ Communiquez ce code à 4 chiffres au livreur UNIQUEMENT après réception et vérification physique de vos articles.')}
+            {t('orderConfirmation.escrowPinBuyerWarning', '⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary (or to the courier only upon physical delivery and inspection of your items).')}
           </Text>
         </View>
 
         {/* You are Buying Section */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionTitleRow}>
-            <Text style={styles.sectionTitle}>{t('orderConfirmation.youAreBuying', 'Articles commandés')}</Text>
+            <Text style={styles.sectionTitle}>{t('orderConfirmation.youAreBuying', 'You are buying')}</Text>
             <TouchableOpacity onPress={copyOrder} style={styles.orderRefBadge}>
               <Text style={styles.orderRefText}>{orderData.orderId}</Text>
               <Ionicons name="copy-outline" size={12} color="#64748B" style={{ marginLeft: 4 }} />
@@ -391,10 +380,10 @@ export default function OrderConfirmationScreen({ route }) {
 
         {/* Payment & Recipient Details */}
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>{t('orderConfirmation.paymentDetails', 'Détails du paiement & livraison')}</Text>
+          <Text style={styles.sectionTitle}>{t('orderConfirmation.paymentDetails', 'Payment & delivery details')}</Text>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('orderConfirmation.youPayWith', 'Mode de règlement')}</Text>
+            <Text style={styles.detailLabel}>{t('orderConfirmation.youPayWith', 'Payment method')}</Text>
             <View style={styles.detailValueRow}>
               {orderData.paymentRail === 'crypto' && (
                 <>
@@ -405,65 +394,65 @@ export default function OrderConfirmationScreen({ route }) {
               {orderData.paymentRail === 'card' && (
                 <>
                   <Ionicons name="card" size={20} color="#1A2840" />
-                  <Text style={styles.detailValueBold}>{t('orderConfirmation.cardVisaMc', 'Carte Bancaire (Visa/MC)')}</Text>
+                  <Text style={styles.detailValueBold}>{t('orderConfirmation.cardVisaMc', 'Bank Card (Visa/MC)')}</Text>
                 </>
               )}
               {orderData.paymentRail === 'momo' && (
                 <>
                   <Ionicons name="phone-portrait" size={18} color="#D97706" />
-                  <Text style={styles.detailValueBold}>{t('orderConfirmation.momoInstant', 'Mobile Money Instantané')}</Text>
+                  <Text style={styles.detailValueBold}>{t('orderConfirmation.momoInstant', 'Instant Mobile Money')}</Text>
                 </>
               )}
             </View>
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('orderConfirmation.recipient', 'Destinataire')}</Text>
+            <Text style={styles.detailLabel}>{t('orderConfirmation.recipient', 'Recipient')}</Text>
             <Text style={styles.detailValue}>{orderData.recipient?.name || user?.name || ''}</Text>
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('orderConfirmation.phone', 'Téléphone')}</Text>
+            <Text style={styles.detailLabel}>{t('orderConfirmation.phone', 'Phone')}</Text>
             <Text style={styles.detailValue}>{orderData.recipient?.phone || user?.phone || ''}</Text>
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('orderConfirmation.deliveryAddress', 'Adresse de livraison')}</Text>
+            <Text style={styles.detailLabel}>{t('orderConfirmation.deliveryAddress', 'Delivery address')}</Text>
             <Text style={styles.detailValue}>{orderData.recipient?.address || user?.city || ''}</Text>
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('orderConfirmation.deliveryMode', 'Mode de réception')}</Text>
+            <Text style={styles.detailLabel}>{t('orderConfirmation.deliveryMode', 'Delivery mode')}</Text>
             <Text style={styles.detailValue}>
               {orderData.deliveryOption === 'domicile'
-                ? t('orderConfirmation.homeDelivery', 'Livraison à domicile')
-                : t('orderConfirmation.storePickup', 'Retrait en boutique')}
+                ? t('orderConfirmation.homeDelivery', 'Home delivery')
+                : t('orderConfirmation.storePickup', 'Store pickup')}
             </Text>
           </View>
 
           <View style={styles.divider} />
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('orderConfirmation.subtotal', 'Sous-total')}</Text>
+            <Text style={styles.detailLabel}>{t('orderConfirmation.subtotal', 'Subtotal')}</Text>
             <Text style={styles.detailValue}>{(Number(orderData.subtotal) || 0).toLocaleString(numLocale)} {displayCurrency}</Text>
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('orderConfirmation.deliveryFee', 'Frais de livraison')}</Text>
+            <Text style={styles.detailLabel}>{t('orderConfirmation.deliveryFee', 'Delivery fee')}</Text>
             <Text style={styles.detailValue}>
               {orderData.deliveryFee > 0
                 ? `${Number(orderData.deliveryFee).toLocaleString(numLocale)} ${displayCurrency}`
-                : t('orderConfirmation.free', 'Gratuit')}
+                : t('orderConfirmation.free', 'Free')}
             </Text>
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('orderConfirmation.networkFee', 'Frais de service réseau')}</Text>
+            <Text style={styles.detailLabel}>{t('orderConfirmation.networkFee', 'Network service fee')}</Text>
             <Text style={styles.detailValue}>{(Number(orderData.platformFee) || 0).toLocaleString(numLocale)} {displayCurrency}</Text>
           </View>
 
           <View style={[styles.detailRow, styles.totalRow]}>
-            <Text style={styles.totalLabel}>{t('orderConfirmation.netTotal', 'Total net')}</Text>
+            <Text style={styles.totalLabel}>{t('orderConfirmation.netTotal', 'Net total')}</Text>
             <View style={{ alignItems: 'flex-end' }}>
               <Text style={styles.totalValueMain}>
                 {orderData.paymentRail === 'crypto'
@@ -488,15 +477,15 @@ export default function OrderConfirmationScreen({ route }) {
               <Ionicons name="people-outline" size={22} color="#3B82F6" />
             </View>
             <View style={styles.shareContent}>
-              <Text style={styles.shareTitle}>{t('orderConfirmation.shareTitle', 'Partager avec un proche')}</Text>
+              <Text style={styles.shareTitle}>{t('orderConfirmation.shareTitle', 'Share with a loved one')}</Text>
               <Text style={styles.shareText}>
-                {t('orderConfirmation.shareText', 'Un proche ou un sponsor peut régler cette commande pour vous à distance.')}
+                {t('orderConfirmation.shareText', 'A friend, family member, or sponsor can pay for this order remotely.')}
               </Text>
             </View>
           </View>
           <TouchableOpacity style={styles.btnShare} onPress={shareOrder}>
             <Ionicons name="arrow-redo-outline" size={15} color="#3B82F6" style={{ marginRight: 4 }} />
-            <Text style={styles.btnShareText}>{t('orderConfirmation.shareBtn', 'Partager')}</Text>
+            <Text style={styles.btnShareText}>{t('orderConfirmation.shareBtn', 'Share')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -515,14 +504,14 @@ export default function OrderConfirmationScreen({ route }) {
               <View style={styles.btnConfirmCenter}>
                 <View style={styles.btnConfirmTitleRow}>
                   <Ionicons name="lock-closed-outline" size={17} color="#1A2840" style={{ marginRight: 6 }} />
-                  <Text style={styles.btnConfirmTitle}>{t('orderConfirmation.confirmAndPay', 'Confirmer et Payer')}</Text>
+                  <Text style={styles.btnConfirmTitle}>{t('orderConfirmation.confirmAndPay', 'Confirm and Pay')}</Text>
                 </View>
                 <Text style={styles.btnConfirmSub}>
                   {orderData.paymentRail === 'crypto'
-                    ? t('orderConfirmation.debitToken', `Débiter ${orderData.selectedToken === 'DZY' ? orderData.totalDZY + ' DZY' : orderData.totalUSDC + ' ' + orderData.selectedToken}`, {
+                    ? t('orderConfirmation.debitToken', `Debit ${orderData.selectedToken === 'DZY' ? orderData.totalDZY + ' DZY' : orderData.totalUSDC + ' ' + orderData.selectedToken}`, {
                         amount: orderData.selectedToken === 'DZY' ? `${orderData.totalDZY} DZY` : `${orderData.totalUSDC} ${orderData.selectedToken}`
                       })
-                    : t('orderConfirmation.securePaymentOf', `Paiement sécurisé de ${(Number(orderData.totalAmount) || 0).toLocaleString(numLocale)} ${displayCurrency}`, {
+                    : t('orderConfirmation.securePaymentOf', `Secure payment of ${(Number(orderData.totalAmount) || 0).toLocaleString(numLocale)} ${displayCurrency}`, {
                         amount: `${(Number(orderData.totalAmount) || 0).toLocaleString(numLocale)} ${displayCurrency}`
                       })}
                 </Text>
@@ -541,7 +530,7 @@ export default function OrderConfirmationScreen({ route }) {
               <TouchableOpacity onPress={() => setShowCyberSourceModal(false)} style={{ padding: 8 }}>
                 <Ionicons name="close" size={24} color="#1A2840" />
               </TouchableOpacity>
-              <Text style={styles.modalTitle}>{t('orderConfirmation.cyberSourceTitle', 'Paiement Sécurisé CyberSource')}</Text>
+              <Text style={styles.modalTitle}>{t('orderConfirmation.cyberSourceTitle', 'CyberSource Secure Payment')}</Text>
               <View style={{ width: 40 }} />
             </View>
             <WebView
@@ -553,7 +542,7 @@ export default function OrderConfirmationScreen({ route }) {
                   setShowCyberSourceModal(false);
                   navigation.navigate('PaymentSuccessScreen', {
                     transaction: {
-                      title: orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', 'Commande DizzitUp'),
+                      title: orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', 'DizzitUp Order'),
                       amount: orderData.totalAmount,
                       currency: displayCurrency,
                       orderId: orderData.orderId,
@@ -584,34 +573,23 @@ export default function OrderConfirmationScreen({ route }) {
             </View>
 
             <Text style={styles.escrowModalTitle}>
-              {language === 'en' ? 'On-Chain Escrow Protection' : 'Achats physiques bientôt disponibles !'}
+              {t('escrow.modalTitle', 'On-Chain Escrow Protection')}
             </Text>
 
             <Text style={styles.escrowModalSub}>
-              {language === 'en' ? 'Exclusive decentralized smart contract escrow' : 'Protocole de séquestre décentralisé unique au monde'}
+              {t('escrow.modalSub', 'World-First Decentralized Escrow Protocol')}
             </Text>
 
             <View style={styles.escrowPinBox}>
-              <Text style={styles.escrowPinLabel}>
-                {language === 'en' ? 'Your Secret Delivery PIN Code' : 'Votre code secret PIN de livraison'}
-              </Text>
+              <Text style={styles.escrowPinLabel}>{t('escrow.yourPin', 'Your Secret Delivery PIN Code')}</Text>
               <Text style={styles.escrowPinNumber}>{escrowPin}</Text>
-            </View>
-
-            {/* Buyer Confidentiality Notice (Solofo Feedback) */}
-            <View style={styles.escrowBuyerWarningBox}>
-              <Ionicons name="alert-circle" size={16} color="#B45309" style={{ marginRight: 6, marginTop: 1 }} />
-              <Text style={styles.escrowBuyerWarningText}>
-                {language === 'en'
-                  ? 'Keep this PIN secret. Only communicate it to your delivery courier or beneficiary after physical receipt and inspection of your items.'
-                  : 'Conservez ce code PIN secret. Ne le transmettez au livreur ou à votre bénéficiaire qu’après remise physique et vérification de vos colis.'}
+              <Text style={styles.escrowModalBuyerNotice}>
+                {t('escrow.buyerWarning', '⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary (or to the courier only upon physical delivery and inspection of your items).')}
               </Text>
             </View>
 
             <Text style={styles.escrowModalDesc}>
-              {language === 'en'
-                ? 'Your funds remain 100% safeguarded on-chain under smart contracts and are only released to the merchant after physical handover and inspection with your secret delivery PIN.\n\nLive on-chain settlements will be executed seamlessly.'
-                : 'Vos fonds restent protégés à 100% sur la blockchain sous smart contract et ne sont débloqués au commerçant qu\'après remise en main propre et vérification de votre colis grâce à votre code PIN secret.\n\nLe paiement sécurisé est pris en charge en toute fluidité.'}
+              {t('escrow.modalDesc', 'Experience our exclusive On-Chain Escrow protocol — a world-first DizzitUp innovation.\n\nYour funds remain 100% safeguarded on-chain under smart contracts and are only released to the merchant after physical handover and inspection with your secret delivery PIN.\n\nLive on-chain settlements will be activated very soon!')}
             </Text>
 
             <TouchableOpacity
@@ -623,22 +601,38 @@ export default function OrderConfirmationScreen({ route }) {
               activeOpacity={0.85}
             >
               <Text style={styles.escrowModalPrimaryBtnText}>
-                {language === 'en' ? 'Understood, Confirm & Pay' : 'Compris, confirmer et payer'}
+                {t('escrow.proceedToPayment', 'Understood, Proceed to Payment')}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.escrowModalSecondaryBtn}
-              onPress={() => setShowEscrowModal(false)}
+              onPress={() => {
+                setShowEscrowModal(false);
+              }}
               activeOpacity={0.7}
             >
               <Text style={styles.escrowModalSecondaryBtnText}>
-                {language === 'en' ? 'Back to Order Details' : 'Retour à la commande'}
+                {t('escrow.reviewOrder', 'Review Order')}
               </Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
+
+      {/* Dedicated Social Share Sheet */}
+      <SocialShareModal
+        visible={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        title={t('orderConfirmation.shareTitle', 'Share with a loved one')}
+        subtitle={t('orderConfirmation.shareText', 'A friend, family member, or sponsor can pay for this order remotely.')}
+        shareUrl={`https://dizzitup.com/orders/${orderData.orderId}`}
+        shareMessage={t('share.orderShareMessage', 'Can you please pay for my order {{orderId}} ({{amount}}) on DizzitUp?', {
+          orderId: orderData.orderId,
+          amount: `${(Number(orderData.totalAmount) || 0).toLocaleString(numLocale)} ${displayCurrency}`,
+        })}
+        recipientPhone={orderData.recipient?.phone || ''}
+      />
 
       {!!toast && (
         <View style={styles.toastWrap}>
@@ -1118,23 +1112,14 @@ const styles = StyleSheet.create({
     letterSpacing: 6,
     color: '#0F172A',
   },
-  escrowBuyerWarningBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#FEF3C7',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#FDE68A',
-    padding: 10,
-    marginBottom: 14,
-    width: '100%',
-  },
-  escrowBuyerWarningText: {
-    flex: 1,
+  escrowModalBuyerNotice: {
     fontFamily: 'Inter_500Medium',
     fontSize: 11,
-    color: '#92400E',
-    lineHeight: 16,
+    color: '#B45309',
+    textAlign: 'center',
+    marginTop: 6,
+    lineHeight: 15,
+    paddingHorizontal: 8,
   },
   escrowModalDesc: {
     fontFamily: 'Inter_400Regular',

@@ -2,9 +2,9 @@
 
 
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Platform, StatusBar, ActivityIndicator, Animated } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Platform, StatusBar, ActivityIndicator, Animated, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import WalletCard from '../components/WalletCard';
 import BottomNavBar from '../components/BottomNavBar';
@@ -13,6 +13,7 @@ import { LanguageSelector } from '../components/LanguageSelector';
 import { shareShopLink, handleUserInviteShare } from '../utils/shareHelper';
 import { useApp } from '../context/AppContext';
 import { useBuyGoods } from '../hooks/useBuyGoods';
+import { buyGoodsApi } from '../services/buyGoodsApi';
 import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
 import PriceDisplay from '../components/PriceDisplay';
 
@@ -29,6 +30,114 @@ export default function HomeScreen() {
   const [newsProducts, setNewsProducts] = useState([]);
   const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '' });
   const { fetchMerchants, fetchAllProducts, loading: dataLoading } = useBuyGoods();
+
+  // Global Search State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [selectedSearchTab, setSelectedSearchTab] = useState('ALL');
+
+  useEffect(() => {
+    if (!searchQuery.trim() || searchQuery.trim().length < 2) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const results = await buyGoodsApi.searchGlobal(searchQuery);
+        setSearchResults(results);
+      } catch (err) {
+        console.warn('Search error on HomeScreen:', err);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const uniqueSearchResults = useMemo(() => {
+    if (!Array.isArray(searchResults)) return [];
+    const seen = new Set();
+    return searchResults.filter((item) => {
+      const key = `${item.entity_type || 'item'}_${item.entity_id || item.id || item.title}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [searchResults]);
+
+  const categorizedResults = useMemo(() => {
+    const groups = {
+      giftCards: [],
+      products: [],
+      utilities: [],
+      operators: [],
+      stores: [],
+    };
+
+    uniqueSearchResults.forEach((item) => {
+      if (item.entity_type === 'gift_card') groups.giftCards.push(item);
+      else if (item.entity_type === 'product') groups.products.push(item);
+      else if (item.entity_type === 'utility_provider') groups.utilities.push(item);
+      else if (item.entity_type === 'mobile_operator') groups.operators.push(item);
+      else if (item.entity_type === 'merchant' || item.entity_type === 'store') groups.stores.push(item);
+    });
+
+    return groups;
+  }, [uniqueSearchResults]);
+
+  const filteredSearchResults = useMemo(() => {
+    if (selectedSearchTab === 'ALL') return uniqueSearchResults;
+    if (selectedSearchTab === 'gift_card') return categorizedResults.giftCards;
+    if (selectedSearchTab === 'product') return categorizedResults.products;
+    if (selectedSearchTab === 'utility_provider') return categorizedResults.utilities;
+    if (selectedSearchTab === 'mobile_operator') return categorizedResults.operators;
+    if (selectedSearchTab === 'merchant') return categorizedResults.stores;
+    return uniqueSearchResults;
+  }, [selectedSearchTab, uniqueSearchResults, categorizedResults]);
+
+  const handleSearchResultPress = (item) => {
+    const queryBackup = searchQuery;
+    setSearchQuery('');
+    setSearchResults([]);
+
+    if (item.entity_type === 'gift_card') {
+      navigation.navigate('ExploreGiftCardsScreen', {
+        initialQuery: item.title,
+        selectedCardId: String(item.entity_id),
+      });
+    } else if (item.entity_type === 'product') {
+      navigation.navigate('ProductDetailsScreen', {
+        product: {
+          id: item.entity_id,
+          name: item.title,
+          title: item.title,
+          price: item.price,
+          currency: item.currency,
+          images: item.image_url ? [item.image_url] : [],
+        },
+      });
+    } else if (item.entity_type === 'utility_provider') {
+      navigation.navigate('BillDetailsScreen', {
+        providerId: item.entity_id,
+        operatorName: item.title,
+      });
+    } else if (item.entity_type === 'mobile_operator') {
+      navigation.navigate('MobileRechargeScreen', {
+        operatorId: item.entity_id,
+        operatorName: item.title,
+      });
+    } else if (item.entity_type === 'merchant' || item.entity_type === 'store') {
+      navigation.navigate('ShopsScreen', {
+        merchantId: item.entity_id,
+        searchQuery: item.title,
+      });
+    }
+  };
 
   useEffect(() => {
     const loadRealData = async () => {
@@ -181,6 +290,149 @@ export default function HomeScreen() {
                 <Ionicons name="settings-outline" size={20} color="#1A2840" />
               </TouchableOpacity>
             </View>
+          </View>
+
+          {/* Global Search Bar */}
+          <View style={styles.searchBarWrapper}>
+            <View style={styles.searchBarContainer}>
+              <Ionicons name="search" size={18} color="#64748B" style={{ marginRight: 8 }} />
+              <TextInput
+                style={styles.searchBarInput}
+                placeholder={t('home.searchPlaceholder', 'Search products, gift cards, utilities...')}
+                placeholderTextColor="#94A3B8"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                returnKeyType="search"
+                autoCorrect={false}
+              />
+              {isSearching && (
+                <ActivityIndicator size="small" color="#20365B" style={{ marginRight: 6 }} />
+              )}
+              {!!searchQuery && !isSearching && (
+                <TouchableOpacity onPress={() => { setSearchQuery(''); setSearchResults([]); }} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                  <Ionicons name="close-circle" size={18} color="#94A3B8" />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Live Search Results Dropdown */}
+            {searchQuery.trim().length >= 2 && (
+              <View style={styles.searchResultsPanel}>
+                {/* Category Filter Pills */}
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.searchFilterTabs}>
+                  {[
+                    { id: 'ALL', label: `All (${searchResults.length})` },
+                    { id: 'gift_card', label: `Gift Cards (${categorizedResults.giftCards.length})` },
+                    { id: 'product', label: `Products (${categorizedResults.products.length})` },
+                    { id: 'utility_provider', label: `Utilities (${categorizedResults.utilities.length})` },
+                    { id: 'mobile_operator', label: `Operators (${categorizedResults.operators.length})` },
+                    { id: 'merchant', label: `Stores (${categorizedResults.stores.length})` },
+                  ].map(tab => (
+                    <TouchableOpacity
+                      key={tab.id}
+                      style={[styles.searchFilterTab, selectedSearchTab === tab.id && styles.searchFilterTabActive]}
+                      onPress={() => setSelectedSearchTab(tab.id)}
+                    >
+                      <Text style={[styles.searchFilterTabText, selectedSearchTab === tab.id && styles.searchFilterTabTextActive]}>
+                        {tab.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+
+                {isSearching ? (
+                  <View style={{ padding: 24, alignItems: 'center' }}>
+                    <ActivityIndicator size="small" color="#20365B" />
+                    <Text style={{ marginTop: 8, fontSize: 12, color: '#64748B' }}>Searching across DizzitUp...</Text>
+                  </View>
+                ) : filteredSearchResults.length === 0 ? (
+                  <View style={{ padding: 20, alignItems: 'center' }}>
+                    <Ionicons name="search-outline" size={28} color="#CBD5E1" />
+                    <Text style={{ marginTop: 6, fontSize: 13, color: '#64748B', fontWeight: '600' }}>
+                      No results for "{searchQuery}"
+                    </Text>
+                    <Text style={{ fontSize: 11, color: '#94A3B8', marginTop: 2 }}>
+                      Try searching for "Roblox", "Netflix", or an African country
+                    </Text>
+                  </View>
+                ) : (
+                  <ScrollView style={{ maxHeight: 320 }} nestedScrollEnabled showsVerticalScrollIndicator={false}>
+                    {filteredSearchResults.map((item, idx) => {
+                      const isGiftCard = item.entity_type === 'gift_card';
+                      const isProduct = item.entity_type === 'product';
+                      const isUtility = item.entity_type === 'utility_provider';
+                      const isOperator = item.entity_type === 'mobile_operator';
+                      const isStore = item.entity_type === 'merchant' || item.entity_type === 'store';
+
+                      let badgeColor = '#3B82F6';
+                      let badgeBg = '#EFF6FF';
+                      let badgeLabel = 'Service';
+                      let defaultIcon = 'cube-outline';
+
+                      if (isGiftCard) {
+                        badgeColor = '#059669';
+                        badgeBg = '#ECFDF5';
+                        badgeLabel = 'Gift Card';
+                        defaultIcon = 'gift-outline';
+                      } else if (isProduct) {
+                        badgeColor = '#D97706';
+                        badgeBg = '#FFFBEB';
+                        badgeLabel = 'Product';
+                        defaultIcon = 'pricetag-outline';
+                      } else if (isUtility) {
+                        badgeColor = '#7C3AED';
+                        badgeBg = '#F5F3FF';
+                        badgeLabel = 'Utility';
+                        defaultIcon = 'flash-outline';
+                      } else if (isOperator) {
+                        badgeColor = '#2563EB';
+                        badgeBg = '#EFF6FF';
+                        badgeLabel = 'Airtime';
+                        defaultIcon = 'cellular-outline';
+                      } else if (isStore) {
+                        badgeColor = '#DB2777';
+                        badgeBg = '#FDF2F8';
+                        badgeLabel = 'Store';
+                        defaultIcon = 'storefront-outline';
+                      }
+
+                      return (
+                        <TouchableOpacity
+                          key={`srch-${item.entity_type || 'item'}-${item.entity_id || idx}-${idx}`}
+                          style={styles.searchResultRow}
+                          onPress={() => handleSearchResultPress(item)}
+                          activeOpacity={0.7}
+                        >
+                          <View style={styles.searchThumbWrap}>
+                            {item.image_url ? (
+                              <Image source={{ uri: item.image_url }} style={styles.searchThumb} resizeMode="contain" />
+                            ) : (
+                              <View style={[styles.searchThumbPlaceholder, { backgroundColor: badgeBg }]}>
+                                <Ionicons name={defaultIcon} size={18} color={badgeColor} />
+                              </View>
+                            )}
+                          </View>
+                          <View style={styles.searchInfoCol}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                              <Text style={styles.searchResultTitle} numberOfLines={1}>
+                                {item.title}
+                              </Text>
+                              <View style={[styles.searchResultBadge, { backgroundColor: badgeBg }]}>
+                                <Text style={[styles.searchResultBadgeText, { color: badgeColor }]}>{badgeLabel}</Text>
+                              </View>
+                            </View>
+                            <Text style={styles.searchResultSub} numberOfLines={1}>
+                              {item.subtitle || item.category || item.provider || item.country_code || ''}
+                            </Text>
+                          </View>
+                          <Ionicons name="chevron-forward" size={16} color="#CBD5E1" />
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </ScrollView>
+                )}
+              </View>
+            )}
           </View>
 
           {isUserLoading && !user?.id ? (
@@ -337,7 +589,7 @@ export default function HomeScreen() {
                 {featuredShops.length > 0 ? featuredShops.map((shop, index) => {
                   const locationStr = `${shop.city_village || 'Local'}, ${shop.country || 'Global'}`;
                   return (
-                    <TouchableOpacity key={shop.id || index} style={styles.timelineCard} onPress={() => navigation.navigate('ShopDetailsScreen', { shop })}>
+                    <TouchableOpacity key={`shop-${shop.id || 'id'}-${index}`} style={styles.timelineCard} onPress={() => navigation.navigate('ShopDetailsScreen', { shop })}>
                       <Image
                         source={shop.shop_logo_url ? { uri: shop.shop_logo_url } : (shop.shop_banner_url ? { uri: shop.shop_banner_url } : require('../../assets/brand/store_default_banner.jpg'))}
                         defaultSource={require('../../assets/brand/store_default_banner.jpg')}
@@ -363,7 +615,7 @@ export default function HomeScreen() {
               <View style={styles.timelineList}>
                 {newsProducts.length > 0 ? newsProducts.map((product, index) => {
                   return (
-                    <TouchableOpacity key={product.id || index} style={styles.timelineCard} onPress={() => navigation.navigate('ProductDetailsScreen', { product })}>
+                    <TouchableOpacity key={`product-${product.id || 'id'}-${index}`} style={styles.timelineCard} onPress={() => navigation.navigate('ProductDetailsScreen', { product })}>
                       <Image
                         source={product.product_images && product.product_images.length > 0 ? { uri: product.product_images[0] } : product.thumbnail ? { uri: product.thumbnail } : product.images && product.images.length > 0 ? { uri: product.images[0] } : require('../../assets/brand/product_no_image.jpg')}
                         defaultSource={require('../../assets/brand/product_no_image.jpg')}
@@ -686,7 +938,129 @@ const styles = StyleSheet.create({
   securityTextContent: { flex: 1 },
   securityTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840', marginBottom: 2 },
   securityDesc: { fontFamily: 'Inter_400Regular', fontSize: 10, color: '#6B7280', lineHeight: 14 },
-  lockIconWrapper: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center', marginLeft: 8 }
+  lockIconWrapper: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center', marginLeft: 8 },
+
+  // Global Search Bar Styles
+  searchBarWrapper: {
+    marginHorizontal: isSmallScreen ? 14 : 20,
+    marginTop: 4,
+    marginBottom: 12,
+    zIndex: 100,
+  },
+  searchBarContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    height: 46,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    shadowColor: '#071D54',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  searchBarInput: {
+    flex: 1,
+    fontFamily: 'Inter_500Medium',
+    fontSize: 13,
+    color: '#1A2840',
+    paddingVertical: 0,
+  },
+  searchResultsPanel: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#071D54',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 6,
+    overflow: 'hidden',
+  },
+  searchFilterTabs: {
+    flexDirection: 'row',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    gap: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  searchFilterTab: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  searchFilterTabActive: {
+    backgroundColor: '#20365B',
+    borderColor: '#20365B',
+  },
+  searchFilterTabText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    color: '#64748B',
+  },
+  searchFilterTabTextActive: {
+    color: '#FFFFFF',
+  },
+  searchResultRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F8FAFC',
+  },
+  searchThumbWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    overflow: 'hidden',
+    marginRight: 10,
+    backgroundColor: '#F8FAFC',
+  },
+  searchThumb: {
+    width: '100%',
+    height: '100%',
+  },
+  searchThumbPlaceholder: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 10,
+  },
+  searchInfoCol: {
+    flex: 1,
+  },
+  searchResultTitle: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 13,
+    color: '#1A2840',
+    flexShrink: 1,
+  },
+  searchResultBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 6,
+  },
+  searchResultBadgeText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 9,
+    textTransform: 'uppercase',
+  },
+  searchResultSub: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    color: '#64748B',
+  },
 });
 
 

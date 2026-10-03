@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Dimensions, Share, Platform, StatusBar, ActivityIndicator, ImageBackground, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Dimensions, Share, Platform, StatusBar, ActivityIndicator, ImageBackground, Linking, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Clipboard from 'expo-clipboard';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
 import PriceDisplay from '../components/PriceDisplay';
@@ -29,6 +31,7 @@ export default function ShopDetailsScreen({ route }) {
   const [shopInfoExpanded, setShopInfoExpanded] = useState(false);
   const [paymentInfoExpanded, setPaymentInfoExpanded] = useState(false);
   const [toast, setToast] = useState(null);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const shopCategoriesList = useMemo(() => {
     const raw = shop.shop_categories || shop.raw?.shop_categories || shop.category;
@@ -93,10 +96,176 @@ export default function ShopDetailsScreen({ route }) {
     setToast({ title: t('copied_title', `${label} copié !`, { label }), message: `${text}` });
   };
 
+  const rawData = shop.raw || {};
+
+  // 1. Location & Address Resolution (Prevents 'Not specified' when store location exists)
+  const displayAddress = useMemo(() => {
+    return (
+      shop.shop_address ||
+      rawData.shop_address ||
+      shop.street_name_number ||
+      rawData.street_name_number ||
+      shop.street_name ||
+      rawData.street_name ||
+      shop.neighborhood ||
+      rawData.neighborhood ||
+      shop.african_way_address ||
+      rawData.african_way_address ||
+      shop.how_to_get_there ||
+      rawData.how_to_get_there ||
+      null
+    );
+  }, [shop, rawData]);
+
+  const displayLocation = useMemo(() => {
+    const city = shop.city_village || rawData.city_village || shop.city;
+    const country = shop.country || rawData.country;
+    const combined = [city, country].filter(Boolean).join(', ');
+    if (combined) return combined;
+    if (shop.location) return shop.location;
+    return displayAddress || null;
+  }, [shop, rawData, displayAddress]);
+
+  const effectiveAddress = displayAddress || displayLocation || t('shop.info.not_specified', 'Not specified');
+  const effectiveLocation = displayLocation || displayAddress || t('shop.info.not_specified', 'Not specified');
+
+  // 2. Open in Maps (Apple Maps on iOS / Google Maps on Android & Web)
+  const openInMaps = (addressOrLocation) => {
+    if (!addressOrLocation || addressOrLocation === t('shop.info.not_specified', 'Not specified')) return;
+    const query = encodeURIComponent(addressOrLocation.trim());
+    const googleMapsWeb = `https://www.google.com/maps/search/?api=1&query=${query}`;
+
+    if (Platform.OS === 'ios') {
+      const appleMaps = `maps:0,0?q=${query}`;
+      Linking.canOpenURL(appleMaps).then((supported) => {
+        if (supported) {
+          Linking.openURL(appleMaps);
+        } else {
+          Linking.openURL(googleMapsWeb);
+        }
+      }).catch(() => Linking.openURL(googleMapsWeb));
+    } else if (Platform.OS === 'android') {
+      const geoUrl = `geo:0,0?q=${query}`;
+      Linking.canOpenURL(geoUrl).then((supported) => {
+        if (supported) {
+          Linking.openURL(geoUrl);
+        } else {
+          Linking.openURL(googleMapsWeb);
+        }
+      }).catch(() => Linking.openURL(googleMapsWeb));
+    } else {
+      Linking.openURL(googleMapsWeb);
+    }
+  };
+
+  // 3. Social Media URLs & Merchant Settings Resolution
+  const merchantWhatsapp = shop.shop_whatsapp_number || rawData.shop_whatsapp_number || shop.whatsapp;
+  const merchantTelegram = shop.shop_telegram_username || rawData.shop_telegram_username || shop.telegram || shop.shop_telegram;
+  const merchantFacebook = shop.shop_facebook_page || rawData.shop_facebook_page || shop.facebook || shop.shop_facebook;
+  const merchantInstagram = shop.shop_instagram || rawData.shop_instagram || shop.instagram;
+  const rawWebsite = shop.shop_website || rawData.shop_website || shop.website;
+  const merchantWebsite = (rawWebsite && !rawWebsite.includes('dizzitup.com/DZYstore')) ? rawWebsite : null;
+
+  const getCleanHandle = (value, platform) => {
+    if (!value || typeof value !== 'string') return null;
+    let str = value.trim();
+    if (!str) return null;
+    str = str.replace(/^https?:\/\//i, '').replace(/^www\./i, '');
+    if (platform === 'telegram') {
+      str = str.replace(/^t\.me\//i, '').replace(/^\/+/, '');
+      return str.startsWith('@') ? str : '@' + str;
+    }
+    if (platform === 'instagram') {
+      str = str.replace(/^instagram\.com\//i, '').replace(/^\/+/, '');
+      return str.startsWith('@') ? str : '@' + str;
+    }
+    if (platform === 'facebook') {
+      str = str.replace(/^facebook\.com\//i, '').replace(/^\/+/, '');
+      return str.startsWith('@') ? str : '@' + str;
+    }
+    if (platform === 'website') {
+      return str.split('/')[0];
+    }
+    if (platform === 'whatsapp') {
+      return str;
+    }
+    return str;
+  };
+
+  const tgHandle = getCleanHandle(merchantTelegram, 'telegram');
+  const igHandle = getCleanHandle(merchantInstagram, 'instagram');
+  const fbHandle = getCleanHandle(merchantFacebook, 'facebook');
+  const webHandle = getCleanHandle(merchantWebsite, 'website');
+
+  const cleanWhatsAppUrl = (phone) => {
+    if (!phone || typeof phone !== 'string') return null;
+    const clean = phone.replace(/[^0-9]/g, '');
+    return clean.length >= 7 ? `https://wa.me/${clean}` : null;
+  };
+
+  const normalizeTelegramUrl = (handle) => {
+    if (!handle || typeof handle !== 'string') return null;
+    const clean = handle.trim().replace(/^@/, '');
+    if (!clean) return null;
+    if (clean.startsWith('http://') || clean.startsWith('https://')) return clean;
+    return `https://t.me/${clean}`;
+  };
+
+  const normalizeInstagramUrl = (handle) => {
+    if (!handle || typeof handle !== 'string') return null;
+    const clean = handle.trim().replace(/^@/, '');
+    if (!clean) return null;
+    if (clean.startsWith('http://') || clean.startsWith('https://')) return clean;
+    return `https://instagram.com/${clean}`;
+  };
+
+  const normalizeFacebookUrl = (value) => {
+    if (!value || typeof value !== 'string') return null;
+    const clean = value.trim();
+    if (!clean) return null;
+    if (clean.startsWith('http://') || clean.startsWith('https://')) return clean;
+    if (clean.includes('facebook.com')) return `https://${clean.replace(/^https?:\/\//, '')}`;
+    return `https://facebook.com/${clean.replace(/^@/, '')}`;
+  };
+
+  const normalizeWebUrl = (value) => {
+    if (!value || typeof value !== 'string') return null;
+    const clean = value.trim();
+    if (!clean) return null;
+    if (clean.startsWith('http://') || clean.startsWith('https://')) return clean;
+    return `https://${clean}`;
+  };
+
+  const waUrl = cleanWhatsAppUrl(merchantWhatsapp);
+  const tgUrl = normalizeTelegramUrl(merchantTelegram);
+  const fbUrl = normalizeFacebookUrl(merchantFacebook);
+  const igUrl = normalizeInstagramUrl(merchantInstagram);
+  const webUrl = normalizeWebUrl(merchantWebsite);
+
+  const hasAnySocial = Boolean(waUrl || tgUrl || fbUrl || igUrl || webUrl);
+
   const shopName = shop.shop_name || shop.name || 'Boutique';
   const shopSlug = shop.slug || shop.id || 'boutique';
-  const shopUrl = `https://dizzitup.com/stores/${shopSlug}`;
-  const shareMessage = t('shop.shareShopMsg', `Discover the ${shopName} store on DizzitUp: ${shopUrl}`, { name: shopName, url: shopUrl });
+  const countrySlug = (shop.country || rawData.country || 'global').toLowerCase().replace(/\s+/g, '-');
+  const citySlug = (shop.city_village || rawData.city_village || shop.city || 'city').toLowerCase().replace(/\s+/g, '-');
+  const publicStoreUrl = `https://dizzitup.com/DZYstore/${countrySlug}/${citySlug}/${shopSlug}`;
+  const shareText = `Check out ${shopName} on DizzitUp!`;
+  const shareMessage = t('shop.shareShopMsg', `Discover the ${shopName} store on DizzitUp: ${publicStoreUrl}`, { name: shopName, url: publicStoreUrl });
+
+  const copyStoreLink = async () => {
+    try {
+      await Clipboard.setStringAsync(publicStoreUrl);
+      setToast({
+        title: t('shop.shareCopiedTitle', 'Lien copié'),
+        message: t('store.linkCopied', 'Store link copied to clipboard!')
+      });
+    } catch {
+      setToast({
+        title: t('shop.shareCopiedTitle', 'Lien copié'),
+        message: publicStoreUrl
+      });
+    }
+  };
 
   const shareShop = async () => {
     try {
@@ -111,19 +280,16 @@ export default function ShopDetailsScreen({ route }) {
     } catch {
       setToast({
         title: t('shop.shareCopiedTitle', 'Lien copié'),
-        message: `${shopUrl}`
+        message: publicStoreUrl
       });
     }
   };
 
   const shareShopGiftRequest = async () => {
-    const shopName = shop.shop_name || shop.name || 'Boutique';
-    const shopSlug = shop.slug || shop.id || 'boutique';
-    const shopUrl = `https://dizzitup.com/stores/${shopSlug}`;
     try {
       await Share.share({
         title: t('shop.giftRequestTitle', `Achetez-le moi sur DizzitUp : ${shopName}`, { name: shopName }),
-        message: t('shop.giftRequestShopMsg', `Offrez-moi des articles de la boutique ${shopName} sur DizzitUp : ${shopUrl}`, { name: shopName, url: shopUrl })
+        message: t('shop.giftRequestShopMsg', `Offrez-moi des articles de la boutique ${shopName} sur DizzitUp : ${publicStoreUrl}`, { name: shopName, url: publicStoreUrl })
       });
       setToast({
         title: t('shop.shareSuccessTitle', 'Lien cadeau partagé'),
@@ -132,7 +298,7 @@ export default function ShopDetailsScreen({ route }) {
     } catch {
       setToast({
         title: t('shop.shareCopiedTitle', 'Lien copié'),
-        message: `${shopUrl}`
+        message: publicStoreUrl
       });
     }
   };
@@ -189,7 +355,7 @@ export default function ShopDetailsScreen({ route }) {
             <TouchableOpacity style={styles.iconBtnRight} onPress={() => setFavorite(!favorite)}>
               <Ionicons name={favorite ? "heart" : "heart-outline"} size={18} color={favorite ? "#EF4444" : "#1A2840"} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnRight} onPress={shareShop}>
+            <TouchableOpacity style={styles.iconBtnRight} onPress={() => setShowShareModal(true)}>
               <Ionicons name="share-outline" size={18} color="#1A2840" />
               <View style={styles.shareBadgeDot} />
             </TouchableOpacity>
@@ -271,8 +437,18 @@ export default function ShopDetailsScreen({ route }) {
               <Text style={styles.ratingText}>{shop.rating || '5.0'}</Text>
               <Text style={styles.reviewsText}>({shop.review_count || shop.reviews || t('shop.reviews.verifiedMerchant', 'Marchand vérifié')})</Text>
               <Text style={styles.dotSeparator}>•</Text>
-              <Ionicons name="location-outline" size={13} color="#64748B" />
-              <Text style={styles.locationText}>{shop.location || [shop.city_village || shop.raw?.city_village || shop.city, shop.country || shop.raw?.country].filter(Boolean).join(', ')}</Text>
+
+              <TouchableOpacity
+                style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 1 }}
+                onPress={() => openInMaps(effectiveLocation)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="location-outline" size={13} color="#2563EB" style={{ marginRight: 2 }} />
+                <Text style={[styles.locationText, { color: '#2563EB', textDecorationLine: 'underline' }]} numberOfLines={1}>
+                  {effectiveLocation}
+                </Text>
+              </TouchableOpacity>
+
               {!!shop.distance && (
                 <>
                   <Text style={styles.dotSeparator}>•</Text>
@@ -309,56 +485,110 @@ export default function ShopDetailsScreen({ route }) {
             </View>
           </View>
 
-          {/* Share Card Row */}
+          {/* Social Profiles & Share Store Card */}
           <View style={styles.shareCardContainer}>
             <View style={styles.fullCard}>
-              <Text style={styles.cardTitle}>{t('shop.actions.share_store', 'Share store')}</Text>
-              <View style={styles.socialIconsRow}>
-                <TouchableOpacity 
-                  style={[styles.socialBtn, { backgroundColor: '#ECFDF5' }]} 
-                  onPress={() => Linking.openURL(`https://wa.me/?text=${encodeURIComponent(shareMessage)}`).catch(() => {
-                    copyToClipboard('Lien boutique', shopUrl);
-                  })}
-                  accessibilityLabel="Partager sur WhatsApp"
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <Text style={styles.cardTitle}>
+                  {hasAnySocial ? t('shop.actions.connect_and_share', 'Store Links & Share') : t('shop.actions.share_store', 'Share store')}
+                </Text>
+                <TouchableOpacity
+                  style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#EFF6FF', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12, borderWidth: 1, borderColor: '#BFDBFE' }}
+                  onPress={() => setShowShareModal(true)}
+                  activeOpacity={0.7}
                 >
-                  <Ionicons name="logo-whatsapp" size={16} color="#10B981" />
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.socialBtn, { backgroundColor: '#EFF6FF' }]} 
-                  onPress={() => Linking.openURL(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shopUrl)}`).catch(() => {
-                    copyToClipboard('Lien boutique', shopUrl);
-                  })}
-                  accessibilityLabel="Partager sur Facebook"
-                >
-                  <Ionicons name="logo-facebook" size={16} color="#3B82F6" />
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.socialBtn, { backgroundColor: '#F5F3FF' }]} 
-                  onPress={() => {
-                    copyToClipboard('Lien Instagram', shopUrl);
-                    Linking.openURL('https://instagram.com').catch(() => {});
-                  }}
-                  accessibilityLabel="Instagram"
-                >
-                  <Ionicons name="logo-instagram" size={16} color="#8B5CF6" />
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.socialBtn, { backgroundColor: '#F8FAFC' }]} 
-                  onPress={() => Linking.openURL(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareMessage)}`).catch(() => {
-                    copyToClipboard('Lien boutique', shopUrl);
-                  })}
-                  accessibilityLabel="Partager sur X"
-                >
-                  <Text style={{ fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840' }}>X</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.socialBtn, { backgroundColor: '#EFF6FF' }]} 
-                  onPress={shareShop}
-                  accessibilityLabel="Partager"
-                >
-                  <Ionicons name="share-social-outline" size={16} color="#3B82F6" />
+                  <Ionicons name="share-social-outline" size={13} color="#2563EB" style={{ marginRight: 4 }} />
+                  <Text style={{ fontSize: 11, fontFamily: 'Inter_600SemiBold', color: '#2563EB' }}>
+                    {t('shop.actions.share', 'Share')}
+                  </Text>
                 </TouchableOpacity>
               </View>
+
+              {hasAnySocial ? (
+                <View style={styles.socialIconsRow}>
+                  {/* WhatsApp */}
+                  {waUrl && (
+                    <TouchableOpacity
+                      style={[styles.socialBrandBtn, { backgroundColor: '#25D366' }]}
+                      onPress={() => Linking.openURL(waUrl).catch(() => setToast({ title: 'WhatsApp', message: t('shop.social.error', 'Could not open WhatsApp') }))}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="logo-whatsapp" size={20} color="#FFFFFF" />
+                    </TouchableOpacity>
+                  )}
+
+                  {/* Telegram */}
+                  {tgUrl && (
+                    <TouchableOpacity
+                      style={[styles.socialBrandBtn, { backgroundColor: '#229ED9' }]}
+                      onPress={() => Linking.openURL(tgUrl).catch(() => setToast({ title: 'Telegram', message: t('shop.social.error', 'Could not open Telegram') }))}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="paper-plane" size={18} color="#FFFFFF" />
+                    </TouchableOpacity>
+                  )}
+
+                  {/* Instagram with authentic multi-stop gradient */}
+                  {igUrl && (
+                    <TouchableOpacity
+                      onPress={() => Linking.openURL(igUrl).catch(() => setToast({ title: 'Instagram', message: t('shop.social.error', 'Could not open Instagram') }))}
+                      activeOpacity={0.8}
+                    >
+                      <LinearGradient
+                        colors={['#f09433', '#e6683c', '#dc2743', '#cc2366', '#bc1888']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.socialBrandBtn}
+                      >
+                        <Ionicons name="logo-instagram" size={20} color="#FFFFFF" />
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  )}
+
+                  {/* Facebook */}
+                  {fbUrl && (
+                    <TouchableOpacity
+                      style={[styles.socialBrandBtn, { backgroundColor: '#1877F2' }]}
+                      onPress={() => Linking.openURL(fbUrl).catch(() => setToast({ title: 'Facebook', message: t('shop.social.error', 'Could not open Facebook') }))}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="logo-facebook" size={20} color="#FFFFFF" />
+                    </TouchableOpacity>
+                  )}
+
+                  {/* Website */}
+                  {webUrl && (
+                    <TouchableOpacity
+                      style={[styles.socialBrandBtn, { backgroundColor: '#059669' }]}
+                      onPress={() => Linking.openURL(webUrl).catch(() => setToast({ title: 'Website', message: t('shop.social.error', 'Could not open website') }))}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="globe-outline" size={19} color="#FFFFFF" />
+                    </TouchableOpacity>
+                  )}
+
+                  {/* Direct Share Circle Button */}
+                  <TouchableOpacity
+                    style={[styles.socialBrandBtn, { backgroundColor: '#EFF6FF', borderWidth: 1.5, borderColor: '#BFDBFE' }]}
+                    onPress={() => setShowShareModal(true)}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="share-social-outline" size={18} color="#2563EB" />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                /* No social links configured by merchant -> clean full-width Share button */
+                <TouchableOpacity
+                  style={styles.fullShareBtn}
+                  onPress={() => setShowShareModal(true)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="share-social-outline" size={18} color="#2563EB" />
+                  <Text style={styles.fullShareBtnText}>
+                    {t('shop.actions.share_this_store', 'Share this store with friends')}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
 
@@ -373,71 +603,255 @@ export default function ShopDetailsScreen({ route }) {
             </TouchableOpacity>
             {shopInfoExpanded && (
               <View style={styles.accordionContent}>
-                <TouchableOpacity 
-                  style={styles.infoRow}
-                  onPress={() => {
-                    const addressText = shop.street_name || shop.neighborhood || shop.city_village || 'Non spécifié';
-                    copyToClipboard('Adresse', addressText);
-                  }}
+                {/* ── 1. Logistics Section ── */}
+                <TouchableOpacity
+                  style={styles.channelCard}
+                  onPress={() => openInMaps(effectiveAddress)}
+                  activeOpacity={effectiveAddress !== t('shop.info.not_specified', 'Non spécifié') ? 0.7 : 1}
                 >
-                  <Ionicons name="cube-outline" size={16} color="#1A2840" />
-                  <View style={{ flex: 1, marginHorizontal: 8 }}>
-                    <Text style={styles.infoTextSmall}>{t('shop.info.address', 'Adresse')}</Text>
-                    <Text style={styles.infoTextSub}>{shop.street_name || shop.neighborhood || shop.city_village || t('shop.info.not_specified', 'Non spécifié')}</Text>
+                  <View style={[styles.channelIconBox, { backgroundColor: '#F1F5F9' }]}>
+                    <Ionicons name="cube-outline" size={18} color="#1A2840" />
                   </View>
-                  <Ionicons name="copy-outline" size={14} color="#9CA3AF" />
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.infoRow}
-                  onPress={() => {
-                    const countryFormatted = getFullCountryName(shop.country || shop.raw?.country || shop.country_code);
-                    const cityFormatted = shop.city_village || shop.raw?.city_village || shop.city;
-                    const loc = shop.location || [cityFormatted, countryFormatted].filter(Boolean).join(', ') || 'Airport West, Accra, Ghana';
-                    const mapUrl = Platform.select({
-                      ios: `maps:0,0?q=${encodeURIComponent(loc)}`,
-                      android: `geo:0,0?q=${encodeURIComponent(loc)}`,
-                      default: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`,
-                    });
-                    Linking.openURL(mapUrl).catch(() => {
-                      copyToClipboard('Localisation', loc);
-                    });
-                  }}
-                >
-                  <Ionicons name="location-outline" size={16} color="#1A2840" />
-                  <View style={{ flex: 1, marginHorizontal: 8 }}>
-                    <Text style={styles.infoTextSmall}>{t('shop.info.location', 'Localisation')}</Text>
-                    <Text style={styles.infoTextSub}>
-                      {shop.location || [shop.city_village || shop.raw?.city_village || shop.city, getFullCountryName(shop.country || shop.raw?.country || shop.country_code)].filter(Boolean).join(', ') || 'Airport West, Accra, Ghana'}
+                  <View style={styles.channelInfo}>
+                    <Text style={styles.channelName}>{t('shop.info.address', 'Adresse')}</Text>
+                    <Text style={effectiveAddress !== t('shop.info.not_specified', 'Non spécifié') ? styles.channelHandle : styles.channelNotSpecified} numberOfLines={1}>
+                      {effectiveAddress}
                     </Text>
                   </View>
-                  <Ionicons name="open-outline" size={14} color="#3B82F6" />
+                  {effectiveAddress !== t('shop.info.not_specified', 'Non spécifié') ? (
+                    <View style={[styles.channelActionBtn, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}>
+                      <Text style={[styles.channelActionText, { color: '#2563EB' }]}>{t('common.open', 'Ouvrir')}</Text>
+                      <Ionicons name="location-outline" size={12} color="#2563EB" style={{ marginLeft: 3 }} />
+                    </View>
+                  ) : (
+                    <View style={styles.channelDisabledBadge}>
+                      <Text style={styles.channelDisabledText}>{t('shop.info.not_specified', 'Non spécifié')}</Text>
+                    </View>
+                  )}
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.infoRow}>
-                  <Ionicons name="bus-outline" size={16} color="#1A2840" />
-                  <View style={{ flex: 1, marginHorizontal: 8 }}>
-                    <Text style={styles.infoTextSmall}>{t('shop.info.delivery', 'Retrait / Livraison')}</Text>
-                    <Text style={styles.infoTextSub}>{shop.deliveryTime ? t('shop.info.available', 'Disponible') : t('shop.info.not_specified', 'Non spécifié')}</Text>
+
+                <TouchableOpacity
+                  style={styles.channelCard}
+                  onPress={() => openInMaps(effectiveLocation)}
+                  activeOpacity={effectiveLocation !== t('shop.info.not_specified', 'Non spécifié') ? 0.7 : 1}
+                >
+                  <View style={[styles.channelIconBox, { backgroundColor: '#EFF6FF' }]}>
+                    <Ionicons name="location-outline" size={18} color="#2563EB" />
+                  </View>
+                  <View style={styles.channelInfo}>
+                    <Text style={styles.channelName}>{t('shop.info.location', 'Localisation')}</Text>
+                    <Text style={effectiveLocation !== t('shop.info.not_specified', 'Non spécifié') ? styles.channelHandle : styles.channelNotSpecified} numberOfLines={1}>
+                      {effectiveLocation}
+                    </Text>
+                  </View>
+                  {effectiveLocation !== t('shop.info.not_specified', 'Non spécifié') ? (
+                    <View style={[styles.channelActionBtn, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}>
+                      <Text style={[styles.channelActionText, { color: '#2563EB' }]}>{t('common.open', 'Ouvrir')}</Text>
+                      <Ionicons name="location-outline" size={12} color="#2563EB" style={{ marginLeft: 3 }} />
+                    </View>
+                  ) : (
+                    <View style={styles.channelDisabledBadge}>
+                      <Text style={styles.channelDisabledText}>{t('shop.info.not_specified', 'Non spécifié')}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+
+                <View style={styles.channelCard}>
+                  <View style={[styles.channelIconBox, { backgroundColor: '#F8FAFC' }]}>
+                    <Ionicons name="bus-outline" size={18} color="#1A2840" />
+                  </View>
+                  <View style={styles.channelInfo}>
+                    <Text style={styles.channelName}>{t('shop.info.delivery', 'Retrait / Livraison')}</Text>
+                    <Text style={styles.channelHandle}>
+                      {shop.deliveryTime || '24-48h'} • {t('shop.info.available', 'Disponible')}
+                    </Text>
+                  </View>
+                  <View style={[styles.channelActionBtn, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
+                    <Text style={[styles.channelActionText, { color: '#059669' }]}>{t('shop.info.available', 'Dispo')}</Text>
+                    <Ionicons name="checkmark-circle-outline" size={12} color="#059669" style={{ marginLeft: 3 }} />
+                  </View>
+                </View>
+
+                {/* ── 2. Social Media & Direct Contact Section (Clickable Brand Cards, NO RAW URLS!) ── */}
+                <Text style={styles.sectionSubhead}>{t('shop.info.social_media_title', 'Réseaux sociaux & Contact')}</Text>
+
+                {/* WhatsApp */}
+                <TouchableOpacity
+                  style={styles.channelCard}
+                  onPress={() => { if (waUrl) Linking.openURL(waUrl); }}
+                  activeOpacity={waUrl ? 0.7 : 1}
+                >
+                  <View style={[styles.channelIconBox, { backgroundColor: '#25D36618' }]}>
+                    <Ionicons name="logo-whatsapp" size={20} color="#25D366" />
+                  </View>
+                  <View style={styles.channelInfo}>
+                    <Text style={styles.channelName}>{t('shop.info.whatsapp', 'WhatsApp')}</Text>
+                    <Text style={waUrl ? styles.channelHandle : styles.channelNotSpecified} numberOfLines={1}>
+                      {waUrl ? (merchantWhatsapp || t('shop.info.contact_on_whatsapp', 'Discuter en direct')) : t('shop.info.not_specified', 'Non spécifié')}
+                    </Text>
+                  </View>
+                  {waUrl ? (
+                    <View style={[styles.channelActionBtn, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
+                      <Text style={[styles.channelActionText, { color: '#059669' }]}>{t('common.open', 'Ouvrir')}</Text>
+                      <Ionicons name="arrow-forward" size={11} color="#059669" style={{ marginLeft: 3 }} />
+                    </View>
+                  ) : (
+                    <View style={styles.channelDisabledBadge}>
+                      <Text style={styles.channelDisabledText}>{t('shop.info.not_specified', 'Non spécifié')}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+
+                {/* Telegram */}
+                <TouchableOpacity
+                  style={styles.channelCard}
+                  onPress={() => { if (tgUrl) Linking.openURL(tgUrl); }}
+                  activeOpacity={tgUrl ? 0.7 : 1}
+                >
+                  <View style={[styles.channelIconBox, { backgroundColor: '#229ED918' }]}>
+                    <Ionicons name="paper-plane" size={18} color="#229ED9" />
+                  </View>
+                  <View style={styles.channelInfo}>
+                    <Text style={styles.channelName}>{t('shop.info.telegram', 'Telegram')}</Text>
+                    <Text style={tgUrl ? styles.channelHandle : styles.channelNotSpecified} numberOfLines={1}>
+                      {tgUrl ? (tgHandle || t('shop.info.telegram', 'Telegram')) : t('shop.info.not_specified', 'Non spécifié')}
+                    </Text>
+                  </View>
+                  {tgUrl ? (
+                    <View style={[styles.channelActionBtn, { backgroundColor: '#F0F9FF', borderColor: '#BAE6FD' }]}>
+                      <Text style={[styles.channelActionText, { color: '#0284C7' }]}>{t('common.open', 'Ouvrir')}</Text>
+                      <Ionicons name="arrow-forward" size={11} color="#0284C7" style={{ marginLeft: 3 }} />
+                    </View>
+                  ) : (
+                    <View style={styles.channelDisabledBadge}>
+                      <Text style={styles.channelDisabledText}>{t('shop.info.not_specified', 'Non spécifié')}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+
+                {/* Facebook */}
+                <TouchableOpacity
+                  style={styles.channelCard}
+                  onPress={() => { if (fbUrl) Linking.openURL(fbUrl); }}
+                  activeOpacity={fbUrl ? 0.7 : 1}
+                >
+                  <View style={[styles.channelIconBox, { backgroundColor: '#1877F218' }]}>
+                    <Ionicons name="logo-facebook" size={20} color="#1877F2" />
+                  </View>
+                  <View style={styles.channelInfo}>
+                    <Text style={styles.channelName}>{t('shop.info.facebook', 'Facebook')}</Text>
+                    <Text style={fbUrl ? styles.channelHandle : styles.channelNotSpecified} numberOfLines={1}>
+                      {fbUrl ? (fbHandle || t('shop.info.facebook', 'Page Facebook')) : t('shop.info.not_specified', 'Non spécifié')}
+                    </Text>
+                  </View>
+                  {fbUrl ? (
+                    <View style={[styles.channelActionBtn, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}>
+                      <Text style={[styles.channelActionText, { color: '#1D4ED8' }]}>{t('common.open', 'Ouvrir')}</Text>
+                      <Ionicons name="arrow-forward" size={11} color="#1D4ED8" style={{ marginLeft: 3 }} />
+                    </View>
+                  ) : (
+                    <View style={styles.channelDisabledBadge}>
+                      <Text style={styles.channelDisabledText}>{t('shop.info.not_specified', 'Non spécifié')}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+
+                {/* Instagram */}
+                <TouchableOpacity
+                  style={styles.channelCard}
+                  onPress={() => { if (igUrl) Linking.openURL(igUrl); }}
+                  activeOpacity={igUrl ? 0.7 : 1}
+                >
+                  <LinearGradient
+                    colors={['#f09433', '#e6683c', '#dc2743', '#cc2366', '#bc1888']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.channelIconBox}
+                  >
+                    <Ionicons name="logo-instagram" size={19} color="#FFFFFF" />
+                  </LinearGradient>
+                  <View style={styles.channelInfo}>
+                    <Text style={styles.channelName}>{t('shop.info.instagram', 'Instagram')}</Text>
+                    <Text style={igUrl ? styles.channelHandle : styles.channelNotSpecified} numberOfLines={1}>
+                      {igUrl ? (igHandle || t('shop.info.instagram', 'Profil Instagram')) : t('shop.info.not_specified', 'Non spécifié')}
+                    </Text>
+                  </View>
+                  {igUrl ? (
+                    <View style={[styles.channelActionBtn, { backgroundColor: '#FDF2F8', borderColor: '#FBCFE8' }]}>
+                      <Text style={[styles.channelActionText, { color: '#BE185D' }]}>{t('common.open', 'Ouvrir')}</Text>
+                      <Ionicons name="arrow-forward" size={11} color="#BE185D" style={{ marginLeft: 3 }} />
+                    </View>
+                  ) : (
+                    <View style={styles.channelDisabledBadge}>
+                      <Text style={styles.channelDisabledText}>{t('shop.info.not_specified', 'Non spécifié')}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+
+                {/* Website */}
+                <TouchableOpacity
+                  style={styles.channelCard}
+                  onPress={() => { if (webUrl) Linking.openURL(webUrl); }}
+                  activeOpacity={webUrl ? 0.7 : 1}
+                >
+                  <View style={[styles.channelIconBox, { backgroundColor: '#05966918' }]}>
+                    <Ionicons name="globe-outline" size={20} color="#059669" />
+                  </View>
+                  <View style={styles.channelInfo}>
+                    <Text style={styles.channelName}>{t('shop.info.website', 'Site web')}</Text>
+                    <Text style={webUrl ? styles.channelHandle : styles.channelNotSpecified} numberOfLines={1}>
+                      {webUrl ? (webHandle || t('shop.info.website', 'Visiter le site')) : t('shop.info.not_specified', 'Non spécifié')}
+                    </Text>
+                  </View>
+                  {webUrl ? (
+                    <View style={[styles.channelActionBtn, { backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }]}>
+                      <Text style={[styles.channelActionText, { color: '#059669' }]}>{t('common.visit', 'Visiter')}</Text>
+                      <Ionicons name="arrow-forward" size={11} color="#059669" style={{ marginLeft: 3 }} />
+                    </View>
+                  ) : (
+                    <View style={styles.channelDisabledBadge}>
+                      <Text style={styles.channelDisabledText}>{t('shop.info.not_specified', 'Non spécifié')}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+
+                {/* ── 3. DZYstore Web & Sharing Card ── */}
+                <TouchableOpacity
+                  style={styles.channelCard}
+                  onPress={copyStoreLink}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.channelIconBox, { backgroundColor: '#1A284014' }]}>
+                    <Ionicons name="link-outline" size={19} color="#1A2840" />
+                  </View>
+                  <View style={styles.channelInfo}>
+                    <Text style={styles.channelName}>DZYstore Web</Text>
+                    <Text style={styles.channelHandle} numberOfLines={1}>dizzitup.com/stores/{shopSlug}</Text>
+                  </View>
+                  <View style={[styles.channelActionBtn, { backgroundColor: '#1A2840', borderColor: '#1A2840' }]}>
+                    <Ionicons name="copy-outline" size={11} color="#FFFFFF" style={{ marginRight: 3 }} />
+                    <Text style={[styles.channelActionText, { color: '#FFFFFF' }]}>{t('store.copyBtn', 'Copier')}</Text>
                   </View>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.infoRow} onPress={() => {
-                  const formatForUrl = (text) => text ? text.toLowerCase().replace(/\s+/g, '-') : 'unknown';
-                  const countryStr = formatForUrl(shop.country || 'sn');
-                  const cityStr = formatForUrl(shop.city_village || 'dakar');
-                  const shopUrl = `dizzitup://DZYstore/${countryStr}/${cityStr}/${shop.slug || 'boutique'}`;
-                  copyToClipboard('URL DZYStore', shopUrl);
-                }}>
-                  <Ionicons name="globe-outline" size={16} color="#1A2840" />
-                  <View style={{ flex: 1, marginHorizontal: 8 }}>
-                    <Text style={styles.infoTextSmall}>DZYstore URL</Text>
-                    <Text style={styles.infoTextSub} numberOfLines={1}>dizzitup://.../{shop.slug || 'boutique'}</Text>
+
+                {/* Prominent Share Banner */}
+                <TouchableOpacity
+                  style={styles.shareBannerCard}
+                  onPress={() => setShowShareModal(true)}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.shareBannerLeft}>
+                    <View style={styles.shareBannerIconBox}>
+                      <Ionicons name="share-social" size={18} color="#2563EB" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.shareBannerTitle}>{t('store.shareStoreTitle', 'Partager la boutique')}</Text>
+                      <Text style={styles.shareBannerSub} numberOfLines={1}>{t('shop.info.share_store_sub', 'Partager avec vos proches')}</Text>
+                    </View>
                   </View>
-                  <Ionicons name="copy-outline" size={14} color="#9CA3AF" />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.infoRow} onPress={shareShop}>
-                  <Ionicons name="logo-whatsapp" size={16} color="#10B981" />
-                  <View style={{ flex: 1, marginHorizontal: 8 }}>
-                    <Text style={styles.infoTextSmall}>{t('shop.info.social_share', 'Partage sur les réseaux')}</Text>
-                    <Text style={styles.infoTextSub}>WhatsApp, Facebook, IG...</Text>
+                  <View style={styles.shareBannerBtn}>
+                    <Ionicons name="share-social-outline" size={12} color="#FFFFFF" />
+                    <Text style={styles.shareBannerBtnText}>{t('shop.actions.share', 'Partager')}</Text>
                   </View>
                 </TouchableOpacity>
               </View>
@@ -568,6 +982,159 @@ export default function ShopDetailsScreen({ route }) {
 
           <View style={{ height: 40 }} />
         </ScrollView>
+
+        {/* Share Store Modal (Pixel-perfect replica of web DZYstore Share Store modal) */}
+        <Modal
+          visible={showShareModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowShareModal(false)}
+        >
+          <TouchableOpacity
+            style={styles.modalBackdrop}
+            activeOpacity={1}
+            onPress={() => setShowShareModal(false)}
+          >
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.modalCard}
+              onPress={(e) => e?.stopPropagation && e.stopPropagation()}
+            >
+              <Text style={styles.modalTitle}>
+                {t('store.shareStoreTitle', 'Share Store')}
+              </Text>
+              <Text style={styles.modalSubtitle}>
+                {t('store.helpStoreReach', { storeName: shopName, defaultValue: `Help ${shopName} reach more customers!` })}
+              </Text>
+
+              {/* 4 Share Channels Grid */}
+              <View style={styles.shareChannelsRow}>
+                {/* X (Twitter) */}
+                <TouchableOpacity
+                  style={styles.shareChannelItem}
+                  onPress={() => {
+                    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(publicStoreUrl)}`;
+                    Linking.openURL(url).catch(() => {});
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <View style={[styles.shareChannelIconBox, { backgroundColor: '#F1F5F9' }]}>
+                    <Text style={{ fontFamily: 'SpaceGrotesk_700Bold', fontSize: 20, color: '#000000' }}>X</Text>
+                  </View>
+                  <Text style={styles.shareChannelLabel} numberOfLines={1}>X (Twitter)</Text>
+                </TouchableOpacity>
+
+                {/* Facebook */}
+                <TouchableOpacity
+                  style={styles.shareChannelItem}
+                  onPress={() => {
+                    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(publicStoreUrl)}`;
+                    Linking.openURL(url).catch(() => {});
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <View style={[styles.shareChannelIconBox, { backgroundColor: '#1877F215' }]}>
+                    <Ionicons name="logo-facebook" size={24} color="#1877F2" />
+                  </View>
+                  <Text style={styles.shareChannelLabel} numberOfLines={1}>Facebook</Text>
+                </TouchableOpacity>
+
+                {/* Telegram */}
+                <TouchableOpacity
+                  style={styles.shareChannelItem}
+                  onPress={() => {
+                    const url = `https://t.me/share/url?url=${encodeURIComponent(publicStoreUrl)}&text=${encodeURIComponent(shareText)}`;
+                    Linking.openURL(url).catch(() => {});
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <View style={[styles.shareChannelIconBox, { backgroundColor: '#229ED915' }]}>
+                    <Ionicons name="paper-plane" size={20} color="#229ED9" />
+                  </View>
+                  <Text style={styles.shareChannelLabel} numberOfLines={1}>Telegram</Text>
+                </TouchableOpacity>
+
+                {/* WhatsApp */}
+                <TouchableOpacity
+                  style={styles.shareChannelItem}
+                  onPress={async () => {
+                    const nativeWa = `whatsapp://send?text=${encodeURIComponent(shareText + ' ' + publicStoreUrl)}`;
+                    const webWa = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + publicStoreUrl)}`;
+                    const supported = await Linking.canOpenURL(nativeWa);
+                    if (supported) {
+                      Linking.openURL(nativeWa);
+                    } else {
+                      Linking.openURL(webWa).catch(() => {});
+                    }
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <View style={[styles.shareChannelIconBox, { backgroundColor: '#25D36615' }]}>
+                    <Ionicons name="logo-whatsapp" size={24} color="#25D366" />
+                  </View>
+                  <Text style={styles.shareChannelLabel} numberOfLines={1}>WhatsApp</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Instagram Row Centered */}
+              <View style={styles.instagramShareRow}>
+                <TouchableOpacity
+                  style={styles.shareChannelItem}
+                  onPress={async () => {
+                    await Clipboard.setStringAsync(publicStoreUrl);
+                    setToast({
+                      title: 'Instagram',
+                      message: t('store.openInstagram', 'Link copied! Open Instagram to paste.')
+                    });
+                    const nativeIg = 'instagram://app';
+                    const supported = await Linking.canOpenURL(nativeIg);
+                    if (supported) {
+                      Linking.openURL(nativeIg);
+                    } else {
+                      Linking.openURL('https://instagram.com').catch(() => {});
+                    }
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <LinearGradient
+                    colors={['#f09433', '#e6683c', '#dc2743', '#cc2366', '#bc1888']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.shareChannelIconBox}
+                  >
+                    <Ionicons name="logo-instagram" size={24} color="#FFFFFF" />
+                  </LinearGradient>
+                  <Text style={styles.shareChannelLabel}>Instagram</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Copy URL Bar */}
+              <View style={styles.copyUrlBar}>
+                <Text style={styles.copyUrlText} numberOfLines={1}>
+                  {publicStoreUrl}
+                </Text>
+                <TouchableOpacity
+                  style={styles.copyUrlBtn}
+                  onPress={copyStoreLink}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="copy-outline" size={13} color="#FFFFFF" style={{ marginRight: 6 }} />
+                  <Text style={styles.copyUrlBtnText}>{t('store.copyBtn', 'Copy')}</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Close Button */}
+              <TouchableOpacity
+                style={styles.modalCloseBtn}
+                onPress={() => setShowShareModal(false)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.modalCloseBtnText}>{t('common.close', 'Close')}</Text>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
+
         {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
       </View>
     </SafeAreaView>
@@ -619,9 +1186,9 @@ const styles = StyleSheet.create({
   shareCardContainer: { marginHorizontal: 16, marginBottom: 12 },
   fullCard: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0F2F5', borderRadius: 14, padding: 14 },
   cardHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  cardTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840', marginBottom: 8 },
-  socialIconsRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
-  socialBtn: { width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
+  cardTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#1A2840' },
+  socialIconsRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', flexWrap: 'wrap', gap: 12, marginTop: 4 },
+  socialBtn: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
   flagCityBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F1F5F9', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, marginLeft: 'auto' },
   flagCityText: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#1A2840' },
   accordionContainer: { marginHorizontal: 16, marginBottom: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 14, overflow: 'hidden' },
@@ -669,5 +1236,270 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold',
     fontSize: 9,
     color: '#FFFFFF',
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 24,
+    width: '100%',
+    maxWidth: 380,
+    alignItems: 'center',
+    boxShadow: '0px 10px 25px rgba(0,0,0,0.15)',
+    elevation: 8,
+  },
+  modalTitle: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 22,
+    color: '#1A2840',
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  modalSubtitle: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 13,
+    color: '#64748B',
+    marginBottom: 22,
+    textAlign: 'center',
+    paddingHorizontal: 8,
+  },
+  shareChannelsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: 16,
+  },
+  shareChannelItem: {
+    alignItems: 'center',
+    width: 68,
+  },
+  shareChannelIconBox: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  shareChannelLabel: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 10,
+    color: '#1A2840',
+    textAlign: 'center',
+  },
+  instagramShareRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: '100%',
+    marginBottom: 20,
+  },
+  copyUrlBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 6,
+    width: '100%',
+    marginBottom: 16,
+  },
+  copyUrlText: {
+    flex: 1,
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12,
+    color: '#64748B',
+    paddingHorizontal: 8,
+  },
+  copyUrlBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1A2840',
+    borderRadius: 10,
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+  },
+  copyUrlBtnText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 12,
+    color: '#FFFFFF',
+  },
+  modalCloseBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  modalCloseBtnText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
+    color: '#64748B',
+  },
+  fullShareBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    gap: 8,
+  },
+  fullShareBtnText: {
+    fontSize: 13,
+    fontFamily: 'Inter_600SemiBold',
+    color: '#2563EB',
+  },
+  socialBrandBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    justifyContent: 'center',
+    alignItems: 'center',
+    boxShadow: '0px 2px 5px rgba(0,0,0,0.1)',
+    elevation: 3,
+  },
+  infoIconBox: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  channelCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FAFBFC',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#F0F2F5',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+  },
+  channelIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  channelInfo: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingRight: 6,
+  },
+  channelName: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 13,
+    color: '#1A2840',
+    marginBottom: 2,
+  },
+  channelHandle: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
+    color: '#64748B',
+  },
+  channelNotSpecified: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    color: '#94A3B8',
+  },
+  channelActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 76,
+    height: 30,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  channelActionText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+  },
+  channelDisabledBadge: {
+    width: 76,
+    height: 30,
+    borderRadius: 8,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  channelDisabledText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 10,
+    color: '#94A3B8',
+  },
+  sectionSubhead: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 11,
+    letterSpacing: 0.6,
+    color: '#94A3B8',
+    textTransform: 'uppercase',
+    marginTop: 10,
+    marginBottom: 8,
+  },
+  shareBannerCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#EFF6FF',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    padding: 12,
+    marginTop: 8,
+  },
+  shareBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 8,
+  },
+  shareBannerIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+  shareBannerTitle: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 13,
+    color: '#1E3A8A',
+  },
+  shareBannerSub: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    color: '#3B82F6',
+    marginTop: 1,
+  },
+  shareBannerBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2563EB',
+    borderRadius: 10,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+  },
+  shareBannerBtnText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    color: '#FFFFFF',
+    marginLeft: 4,
   },
 });

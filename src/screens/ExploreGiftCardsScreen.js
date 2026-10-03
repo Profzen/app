@@ -11,12 +11,14 @@ import {
   ActivityIndicator,
   Dimensions,
   Modal,
+  Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import { resolveBeneficiaryCountry } from '../utils/countryCurrencyUtils';
+import AppToast from '../components/AppToast';
 
 const { width } = Dimensions.get('window');
 const isSmallDevice = width < 375;
@@ -40,7 +42,7 @@ export default function ExploreGiftCardsScreen() {
   const route = useRoute();
   const { t, user } = useApp();
 
-  const { beneficiary = {} } = route.params || {};
+  const { beneficiary = {}, initialQuery, selectedCardId } = route.params || {};
   const { countryCode, countryName } = resolveBeneficiaryCountry(beneficiary, {
     phone: beneficiary.phone || route.params?.phone,
     user,
@@ -50,15 +52,23 @@ export default function ExploreGiftCardsScreen() {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('ALL');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialQuery || '');
 
   // Purchase Modal State
   const [selectedCard, setSelectedCard] = useState(null);
   const [selectedAmount, setSelectedAmount] = useState(null);
   const [customAmount, setCustomAmount] = useState('');
-  const [recipientEmail, setRecipientEmail] = useState(beneficiary.email || '');
-  const [recipientPhone, setRecipientPhone] = useState(beneficiary.phone || '');
+  const [recipientEmail, setRecipientEmail] = useState(beneficiary.email || user?.email || '');
+  const [recipientPhone, setRecipientPhone] = useState(beneficiary.phone || user?.phone || '');
+  const [emailError, setEmailError] = useState('');
   const [toast, setToast] = useState(null);
+
+  // Sync logged-in user email if not pre-populated
+  useEffect(() => {
+    if (!recipientEmail && (beneficiary.email || user?.email)) {
+      setRecipientEmail(beneficiary.email || user?.email || '');
+    }
+  }, [beneficiary.email, user?.email]);
 
   useEffect(() => {
     let isMounted = true;
@@ -66,35 +76,83 @@ export default function ExploreGiftCardsScreen() {
       setLoading(true);
       try {
         const baseUrl = getPayBillsApiUrl();
-        // 1. Fetch live gift cards for target country
-        let res = await fetch(`${baseUrl}/payments/giftCard/cards/country/${countryCode}`, {
-          headers: { Accept: 'application/json' },
-        });
 
-        let rawItems = [];
-        if (res.ok) {
-          const json = await res.json();
-          rawItems = Array.isArray(json) ? json : (Array.isArray(json.content) ? json.content : []);
+        // 1. Fetch live gift cards for target country (if countryCode provided)
+        let countryItems = [];
+        if (countryCode) {
+          try {
+            const res = await fetch(`${baseUrl}/payments/giftCard/cards/country/${countryCode}`, {
+              headers: { Accept: 'application/json' },
+            });
+            if (res.ok) {
+              const json = await res.json();
+              countryItems = Array.isArray(json) ? json : (Array.isArray(json.content) ? json.content : []);
+            }
+          } catch (err) {
+            console.warn('Failed to load country gift cards:', err);
+          }
         }
 
-        // 2. If no cards for this country, fetch global cards
-        if (rawItems.length === 0) {
+        // 2. ALWAYS fetch worldwide / global cards so all products (Roblox, Steam, Xbox, Free Fire, etc.) are available for everyone
+        let globalItems = [];
+        try {
           const fallbackRes = await fetch(`${baseUrl}/payments/giftCard/cards/country/`, {
             headers: { Accept: 'application/json' },
           });
           if (fallbackRes.ok) {
             const fallbackJson = await fallbackRes.json();
-            rawItems = Array.isArray(fallbackJson) ? fallbackJson : (Array.isArray(fallbackJson.content) ? fallbackJson.content : []);
+            globalItems = Array.isArray(fallbackJson) ? fallbackJson : (Array.isArray(fallbackJson.content) ? fallbackJson.content : []);
           }
+        } catch (err) {
+          console.warn('Failed to load global gift cards:', err);
         }
+
+        // 3. Merge country items and global items without duplicates (country-specific first)
+        const seen = new Set();
+        const rawItems = [];
+
+        countryItems.forEach(c => {
+          const id = String(c.productId || c.id);
+          if (!seen.has(id)) {
+            seen.add(id);
+            rawItems.push(c);
+          }
+        });
+
+        globalItems.forEach(c => {
+          const id = String(c.productId || c.id);
+          if (!seen.has(id)) {
+            seen.add(id);
+            rawItems.push(c);
+          }
+        });
 
         if (rawItems.length > 0 && isMounted) {
           const formatted = rawItems.map(c => {
-            const minDenom = parseFloat(c.minRecipientDenomination || c.minAmount || 10);
-            const maxDenom = parseFloat(c.maxRecipientDenomination || c.maxAmount || 250);
-            const fixedDenoms = Array.isArray(c.fixedRecipientDenominations) && c.fixedRecipientDenominations.length > 0
-              ? c.fixedRecipientDenominations
+            const isFixed = c.denominationType === 'FIXED' || (Array.isArray(c.fixedRecipientDenominations) && c.fixedRecipientDenominations.length > 0);
+            const fixedDenoms = (Array.isArray(c.fixedRecipientDenominations) && c.fixedRecipientDenominations.length > 0)
+              ? c.fixedRecipientDenominations.map(Number).filter(n => !isNaN(n) && n > 0).sort((a, b) => a - b)
+              : [];
+
+            const minDenom = (isFixed && fixedDenoms.length > 0)
+              ? fixedDenoms[0]
+              : parseFloat(c.minRecipientDenomination || c.minSenderDenomination || c.minAmount || 1);
+
+            const maxDenom = (isFixed && fixedDenoms.length > 0)
+              ? fixedDenoms[fixedDenoms.length - 1]
+              : parseFloat(c.maxRecipientDenomination || c.maxSenderDenomination || c.maxAmount || minDenom);
+
+            const denominationsList = isFixed && fixedDenoms.length > 0
+              ? fixedDenoms
               : [minDenom, Math.round((minDenom + maxDenom) / 2), maxDenom].filter((v, idx, arr) => arr.indexOf(v) === idx);
+
+            const cardCurrency = c.recipientCurrencyCode || c.currencyCode || c.currency || 'USD';
+            const userCurrency = c.usersCurrencyCode || c.senderCurrencyCode || null;
+
+            // Formatted price string for grid card
+            const priceLabel = isFixed && minDenom === maxDenom
+              ? `${cardCurrency} ${minDenom}`
+              : `${cardCurrency} ${minDenom} - ${maxDenom}`;
 
             return {
               id: String(c.productId || c.id),
@@ -102,10 +160,15 @@ export default function ExploreGiftCardsScreen() {
               brand: c.brand?.brandName || c.brand || c.productName || c.name,
               category: (c.category?.name || c.category || 'DIGITAL').toUpperCase(),
               logo: (Array.isArray(c.logoUrls) && c.logoUrls.length > 0) ? c.logoUrls[0] : (c.logo || null),
-              denominations: fixedDenoms,
+              denominations: denominationsList,
               minAmount: minDenom,
               maxAmount: maxDenom,
-              currency: c.recipientCurrencyCode || c.currencyCode || c.currency || 'USD',
+              currency: cardCurrency,
+              userCurrency: userCurrency,
+              priceLabel: priceLabel,
+              isFixed: isFixed,
+              isGlobal: Boolean(c.global),
+              countryName: c.country?.name || (c.global ? 'Worldwide' : ''),
               redeemInstruction: c.redeemInstruction?.concise || c.redeemInstruction?.verbose || '',
             };
           });
@@ -123,22 +186,87 @@ export default function ExploreGiftCardsScreen() {
 
     fetchGiftCards();
     return () => { isMounted = false; };
-  }, [countryCode]);
+  }, [countryCode, selectedCardId]);
 
   // Filter Cards
   const filteredCards = useMemo(() => {
     let result = cards;
+    if (activeTab !== 'ALL') {
+      result = result.filter(c => {
+        const cat = (c.category || '').toUpperCase();
+        if (activeTab === 'GAMING') return cat.includes('GAM') || c.name.toLowerCase().includes('roblox') || c.name.toLowerCase().includes('free fire') || c.name.toLowerCase().includes('pubg') || c.name.toLowerCase().includes('steam') || c.name.toLowerCase().includes('xbox') || c.name.toLowerCase().includes('playstation') || c.name.toLowerCase().includes('nintendo') || c.name.toLowerCase().includes('razer');
+        if (activeTab === 'STREAMING') return cat.includes('STREAM') || cat.includes('MEDIA') || c.name.toLowerCase().includes('netflix') || c.name.toLowerCase().includes('spotify') || c.name.toLowerCase().includes('apple');
+        if (activeTab === 'SHOPPING') return cat.includes('SHOP') || cat.includes('RETAIL') || c.name.toLowerCase().includes('amazon') || c.name.toLowerCase().includes('walmart') || c.name.toLowerCase().includes('ebay');
+        if (activeTab === 'FOOD') return cat.includes('FOOD') || cat.includes('GROCER') || cat.includes('REST');
+        return cat.includes(activeTab);
+      });
+    }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(c => c.name.toLowerCase().includes(q) || c.brand.toLowerCase().includes(q));
     }
     return result;
-  }, [cards, searchQuery]);
+  }, [cards, activeTab, searchQuery]);
 
   const handleOpenPurchaseModal = (card) => {
     setSelectedCard(card);
     setSelectedAmount(card.denominations?.[0] || card.minAmount);
     setCustomAmount('');
+    setEmailError('');
+    if (!recipientEmail && (beneficiary.email || user?.email)) {
+      setRecipientEmail(beneficiary.email || user?.email || '');
+    }
+  };
+
+  // Auto-open modal if navigated with selectedCardId or initialQuery
+  useEffect(() => {
+    if (cards.length > 0) {
+      if (selectedCardId) {
+        const found = cards.find(c => String(c.id) === String(selectedCardId));
+        if (found) {
+          handleOpenPurchaseModal(found);
+          return;
+        }
+      }
+      if (initialQuery) {
+        setSearchQuery(initialQuery);
+        const match = cards.find(c =>
+          c.name.toLowerCase().includes(initialQuery.toLowerCase()) ||
+          c.brand.toLowerCase().includes(initialQuery.toLowerCase())
+        );
+        if (match) {
+          handleOpenPurchaseModal(match);
+        }
+      }
+    }
+  }, [cards, selectedCardId, initialQuery]);
+
+  const handleShareBuyMe = async () => {
+    if (!selectedCard) return;
+    const finalAmount = parseFloat(customAmount) || selectedAmount;
+    const cardName = selectedCard.name || 'Gift Card';
+    const currency = selectedCard.currency || 'USD';
+    const shareUrl = `https://dizzitup.com/marketplace?country=${countryCode}&category=gift_cards&q=${encodeURIComponent(cardName)}&provider_id=${selectedCard.id}&buy_me=true`;
+
+    try {
+      await Share.share({
+        title: t('giftCards.shareBuyMeTitle', `Gift Request: ${cardName}`, { name: cardName }),
+        message: t('giftCards.shareBuyMeMsg', `I would love this ${cardName} (${currency} ${finalAmount}) on DizzitUp! You can gift it to me directly here: ${shareUrl}`, {
+          name: cardName,
+          amount: `${currency} ${finalAmount}`,
+          url: shareUrl,
+        }),
+      });
+      setToast({
+        title: t('shop.shareSuccessTitle', 'Gift Link Ready'),
+        message: t('giftCards.shareSuccessDesc', 'Gift card request link shared successfully.'),
+      });
+    } catch {
+      setToast({
+        title: t('shop.shareCopiedTitle', 'Link Copied'),
+        message: shareUrl,
+      });
+    }
   };
 
   const handleConfirmPurchase = () => {
@@ -149,18 +277,35 @@ export default function ExploreGiftCardsScreen() {
       setToast({
         title: t('common.error', 'Error'),
         message: `${t('giftCards.errorMinAmount', 'Minimum amount is')} ${selectedCard.minAmount} ${selectedCard.currency}`,
+        type: 'error',
       });
       return;
     }
 
-    if (!recipientEmail.trim()) {
+    const trimmedEmail = (recipientEmail || '').trim();
+    if (!trimmedEmail) {
+      const err = t('giftCards.errorEmailRequired', 'Please enter a recipient email address for digital code delivery.');
+      setEmailError(err);
       setToast({
         title: t('common.error', 'Error'),
-        message: t('giftCards.errorEmailRequired', 'Please enter a recipient email address for digital code delivery.'),
+        message: err,
+        type: 'error',
       });
       return;
     }
 
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      const err = t('giftCards.errorEmailInvalid', 'Please enter a valid email address');
+      setEmailError(err);
+      setToast({
+        title: t('common.error', 'Error'),
+        message: err,
+        type: 'error',
+      });
+      return;
+    }
+
+    setEmailError('');
     const cardToCheckout = selectedCard;
     setSelectedCard(null);
 
@@ -292,16 +437,13 @@ export default function ExploreGiftCardsScreen() {
                         <Ionicons name="gift-outline" size={36} color="#D97706" />
                       </View>
                     )}
-                    <View style={styles.currencyPill}>
-                      <Text style={styles.currencyPillText}>{card.currency}</Text>
-                    </View>
                   </View>
 
                   <View style={styles.cardDetails}>
                     <Text style={styles.cardName} numberOfLines={1}>{card.name}</Text>
                     <Text style={styles.cardBrand} numberOfLines={1}>{card.brand}</Text>
                     <Text style={styles.cardRange}>
-                      {card.currency} {card.minAmount} - {card.maxAmount}
+                      {card.priceLabel || (card.minAmount === card.maxAmount ? `${card.currency} ${card.minAmount}` : `${card.currency} ${card.minAmount} - ${card.maxAmount}`)}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -370,42 +512,72 @@ export default function ExploreGiftCardsScreen() {
                 <View style={styles.inputGroup}>
                   <Text style={styles.modalSectionLabel}>{t('giftCards.deliveryEmail', 'DELIVERY EMAIL ADDRESS')}</Text>
                   <TextInput
-                    style={styles.modalInput}
+                    style={[styles.modalInput, !!emailError && styles.modalInputError]}
                     placeholder="user@example.com"
                     placeholderTextColor="#94A3B8"
                     value={recipientEmail}
-                    onChangeText={setRecipientEmail}
+                    onChangeText={(text) => {
+                      setRecipientEmail(text);
+                      if (emailError) setEmailError('');
+                    }}
                     keyboardType="email-address"
                     autoCapitalize="none"
                   />
-                  <Text style={styles.inputHint}>
-                    {t('giftCards.emailHint', 'The digital gift card code will be sent to this email immediately.')}
-                  </Text>
+                  {!!emailError ? (
+                    <Text style={styles.inputErrorText}>{emailError}</Text>
+                  ) : (
+                    <Text style={styles.inputHint}>
+                      {t('giftCards.emailHint', 'The digital gift card code will be sent to this email immediately.')}
+                    </Text>
+                  )}
                 </View>
 
-                {/* Submit Checkout Button */}
-                <TouchableOpacity
-                  style={styles.modalCheckoutBtn}
-                  onPress={handleConfirmPurchase}
-                  activeOpacity={0.85}
-                >
-                  <Text style={styles.modalCheckoutBtnText}>
-                    {t('billDetails.checkout', 'CHECKOUT')} • {selectedCard.currency} {parseFloat(customAmount) || selectedAmount}
-                  </Text>
-                  <Ionicons name="arrow-forward" size={16} color="#FFFFFF" style={{ marginLeft: 6 }} />
-                </TouchableOpacity>
+                {/* In-modal Error Banner */}
+                {!!emailError && (
+                  <View style={styles.modalAlertBox}>
+                    <Ionicons name="alert-circle" size={16} color="#DC2626" />
+                    <Text style={styles.modalAlertText}>{emailError}</Text>
+                  </View>
+                )}
+
+                {/* Actions: Buy Me & Checkout */}
+                <View style={{ gap: 10 }}>
+                  <TouchableOpacity
+                    style={styles.modalBuyMeBtn}
+                    onPress={handleShareBuyMe}
+                    activeOpacity={0.85}
+                  >
+                    <Ionicons name="gift" size={17} color="#059669" style={{ marginRight: 6 }} />
+                    <Text style={styles.modalBuyMeBtnText}>
+                      {t('giftCards.buyMe', 'Ask a Friend (Buy Me)')}
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.modalCheckoutBtn}
+                    onPress={handleConfirmPurchase}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={styles.modalCheckoutBtnText}>
+                      {t('billDetails.checkout', 'CHECKOUT')} • {selectedCard.currency} {parseFloat(customAmount) || selectedAmount}
+                    </Text>
+                    <Ionicons name="arrow-forward" size={16} color="#FFFFFF" style={{ marginLeft: 6 }} />
+                  </TouchableOpacity>
+                </View>
 
               </View>
             )}
           </View>
         </Modal>
 
-        {/* Toast */}
-        {!!toast && (
-          <View style={styles.toastContainer}>
-            <AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} />
-          </View>
-        )}
+        {/* Global Screen Toast */}
+        <AppToast
+          visible={!!toast}
+          title={toast?.title}
+          message={toast?.message}
+          type={toast?.type || 'error'}
+          onClose={() => setToast(null)}
+        />
 
       </View>
     </SafeAreaView>
@@ -721,6 +893,22 @@ const styles = StyleSheet.create({
     marginTop: 4,
     lineHeight: 14,
   },
+  modalBuyMeBtn: {
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1.5,
+    borderColor: '#A7F3D0',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalBuyMeBtnText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 14,
+    color: '#059669',
+    letterSpacing: 0.3,
+  },
   modalCheckoutBtn: {
     height: 48,
     borderRadius: 14,
@@ -734,5 +922,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#FFFFFF',
     letterSpacing: 0.5,
+  },
+  modalInputError: {
+    borderColor: '#EF4444',
+    borderWidth: 1.5,
+    backgroundColor: '#FEF2F2',
+  },
+  inputErrorText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 11,
+    color: '#EF4444',
+    marginTop: 4,
+    lineHeight: 15,
+  },
+  modalAlertBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    marginBottom: 12,
+  },
+  modalAlertText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 11.5,
+    color: '#DC2626',
+    flex: 1,
+    lineHeight: 16,
   },
 });

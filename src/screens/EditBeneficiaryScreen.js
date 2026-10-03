@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, KeyboardAvoidingView, ActivityIndicator, Modal, FlatList, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, KeyboardAvoidingView, ActivityIndicator, Modal, FlatList, TextInput, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -170,9 +170,14 @@ export default function EditBeneficiaryScreen({ route }) {
           const account = accounts[0];
           setFormData(prev => ({
             ...prev,
+            first_name: prev.first_name || account.first_name || (account.name ? account.name.split(' ')[0] : ''),
+            last_name: prev.last_name || account.last_name || (account.name ? account.name.split(' ').slice(1).join(' ') : ''),
             email: account.email || prev.email,
+            country: prev.country || account.country || '',
+            city: prev.city || account.city || '',
             evm_address: account.evm_address || prev.evm_address,
             solana_address: account.solana_address || prev.solana_address,
+            avatar_url: account.avatar_url || account.avatar || prev.avatar_url,
           }));
           setWalletsSynced(true);
           setUserNotRegistered(false);
@@ -224,9 +229,14 @@ export default function EditBeneficiaryScreen({ route }) {
   const handleSelectDuplicate = (account) => {
     setFormData(prev => ({
       ...prev,
+      first_name: prev.first_name || account.first_name || (account.name ? account.name.split(' ')[0] : ''),
+      last_name: prev.last_name || account.last_name || (account.name ? account.name.split(' ').slice(1).join(' ') : ''),
       email: account.email || prev.email,
+      country: prev.country || account.country || '',
+      city: prev.city || account.city || '',
       evm_address: account.evm_address || prev.evm_address,
       solana_address: account.solana_address || prev.solana_address,
+      avatar_url: account.avatar_url || account.avatar || prev.avatar_url,
     }));
     setWalletsSynced(true);
     setUserNotRegistered(false);
@@ -424,6 +434,19 @@ export default function EditBeneficiaryScreen({ route }) {
                 <Text style={styles.sectionTitle}>{t('beneficiary.edit.personal_info', 'Personal Information')}</Text>
 
                 <Text style={styles.label}>{t('beneficiary.edit.avatar', 'Avatar')}</Text>
+                {formData.avatar_url && (formData.avatar_url.startsWith('http') || formData.avatar_url.startsWith('data:')) ? (
+                  <View style={styles.syncedAvatarPreview}>
+                    <Image source={{ uri: formData.avatar_url }} style={styles.syncedAvatarImage} />
+                    <View style={styles.syncedAvatarInfo}>
+                      <Text style={styles.syncedAvatarBadge}>
+                        {t('beneficiary.edit.real_avatar', '✨ DizzitUp Account Photo')}
+                      </Text>
+                      <TouchableOpacity onPress={() => handleInputChange('avatar_url', '')} style={{ marginTop: 4 }}>
+                        <Text style={styles.resetAvatarText}>{t('common.remove', 'Use default emoji')}</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ) : null}
                 <View style={styles.avatarGrid}>
                   {AVATARS.map((av) => (
                     <TouchableOpacity
@@ -898,6 +921,37 @@ const styles = StyleSheet.create({
   },
   avatarEmoji: {
     fontSize: 22,
+  },
+  syncedAvatarPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#3B82F6',
+    borderRadius: 14,
+    padding: 10,
+    marginBottom: 12,
+  },
+  syncedAvatarImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#F1F5F9',
+  },
+  syncedAvatarInfo: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  syncedAvatarBadge: {
+    fontSize: 13,
+    fontFamily: 'Inter_600SemiBold',
+    color: '#1D4ED8',
+  },
+  resetAvatarText: {
+    fontSize: 12,
+    fontFamily: 'Inter_500Medium',
+    color: '#64748B',
+    textDecorationLine: 'underline',
   },
   relationGrid: {
     flexDirection: 'row',

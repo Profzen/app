@@ -13,6 +13,7 @@ import { useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { isSmallScreen } from '../utils/responsive';
 import { useWallet, EVMWallet, SolanaWallet } from '@crossmint/client-sdk-react-native-ui';
+import * as LocalAuthentication from 'expo-local-authentication';
 
 const BLOCKCHAINS = [
   { value: 'Polygon', label: 'Polygon', name: 'Polygon Network', isCrypto: true, cryptoSymbol: 'Polygon' },
@@ -37,12 +38,16 @@ export default function SendMoneyScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const { session, user, t, refreshTransactions, refreshBalances } = useApp();
-  const { wallet: crossmintWallet } = useWallet();
+  const { wallet: crossmintWallet, getWallet } = useWallet();
 
   const [txStatus, setTxStatus] = useState(null);
   const [activeTxHash, setActiveTxHash] = useState(null);
   const [signerEmail, setSignerEmail] = useState(null);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
+  const [approvalOtp, setApprovalOtp] = useState('');
+  const [approvalMessage, setApprovalMessage] = useState(null);
+  const [isCheckingEmailApproval, setIsCheckingEmailApproval] = useState(false);
+  const [isResendingOtp, setIsResendingOtp] = useState(false);
 
   const [apiRecipients, setApiRecipients] = useState([]);
   const [savedBeneficiaries, setSavedBeneficiaries] = useState([]);
@@ -70,12 +75,48 @@ export default function SendMoneyScreen() {
   }, [effectiveRawBalances]);
   
   // Recipient selection states
-  const initialRecipientName = route.params?.recipient || route.params?.contact?.name || '';
+  const passedContact = route.params?.contact || route.params?.beneficiary;
+  const initialRecipientName = route.params?.recipient || passedContact?.name || '';
   
-  const [selectedRecipient, setSelectedRecipient] = useState(null);
+  const [selectedRecipient, setSelectedRecipient] = useState(() => {
+    if (passedContact) {
+      return {
+        id: passedContact.id,
+        name: passedContact.name || `${passedContact.first_name || ''} ${passedContact.last_name || ''}`.trim() || passedContact.phone,
+        tag: passedContact.relationship || passedContact.tag || 'BENEFICIARY',
+        address: passedContact.evm_address || passedContact.solana_address || passedContact.wallet_address || passedContact.address || passedContact.phone || passedContact.email,
+        evm_address: passedContact.evm_address,
+        solana_address: passedContact.solana_address,
+        phone: passedContact.phone || passedContact.phone_number,
+        email: passedContact.email,
+        avatar_url: passedContact.avatar_url || passedContact.image,
+      };
+    }
+    return null;
+  });
   const [isSearchingRecipient, setIsSearchingRecipient] = useState(false);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Sync recipient if route params change
+  useEffect(() => {
+    const contactFromRoute = route.params?.contact || route.params?.beneficiary;
+    if (contactFromRoute) {
+      setSelectedRecipient({
+        id: contactFromRoute.id,
+        name: contactFromRoute.name || `${contactFromRoute.first_name || ''} ${contactFromRoute.last_name || ''}`.trim() || contactFromRoute.phone,
+        tag: contactFromRoute.relationship || contactFromRoute.tag || 'BENEFICIARY',
+        address: contactFromRoute.evm_address || contactFromRoute.solana_address || contactFromRoute.wallet_address || contactFromRoute.address || contactFromRoute.phone || contactFromRoute.email,
+        evm_address: contactFromRoute.evm_address,
+        solana_address: contactFromRoute.solana_address,
+        phone: contactFromRoute.phone || contactFromRoute.phone_number,
+        email: contactFromRoute.email,
+        avatar_url: contactFromRoute.avatar_url || contactFromRoute.image,
+      });
+      setIsSearchingRecipient(false);
+      setIsDropdownVisible(false);
+    }
+  }, [route.params?.contact, route.params?.beneficiary]);
   
   const [amount, setAmount] = useState('1');
   const [toast, setToast] = useState(null);
@@ -133,8 +174,10 @@ export default function SendMoneyScreen() {
       const chainMatches = !cleanChain || 
         bChain === cleanChain ||
         (cleanChain === 'polygon' && (bChain === 'matic' || bChain === 'polygon')) ||
-        (cleanChain === 'bnbchain' && (bChain === 'bsc' || bChain === 'binance')) ||
-        (cleanChain === 'ethereum' && (bChain === 'eth' || bChain === 'mainnet'));
+        (cleanChain === 'bnbchain' && (bChain === 'bsc' || bChain === 'binance' || bChain === 'bnb' || bChain === 'bnbchain')) ||
+        (cleanChain === 'ethereum' && (bChain === 'eth' || bChain === 'mainnet' || bChain === 'ethereum')) ||
+        (cleanChain === 'solana' && (bChain === 'sol' || bChain === 'solana')) ||
+        (cleanChain === 'base' && bChain === 'base');
       return bSym === cleanSym && chainMatches;
     });
 
@@ -142,7 +185,12 @@ export default function SendMoneyScreen() {
       return parseFloat(exactMatch.balance || 0);
     }
 
-    // 2. Fallback to any chain balance for this token
+    // STRICT: If a specific network was queried, do NOT fall back to other chains!
+    if (cleanChain) {
+      return 0;
+    }
+
+    // Only if no specific network was requested (aggregate check):
     const anyTokenMatch = list.find(b => {
       const bSym = (b.token || b.symbol || b.currency || '').toUpperCase();
       return bSym === cleanSym;
@@ -151,7 +199,6 @@ export default function SendMoneyScreen() {
       return parseFloat(anyTokenMatch.balance || 0);
     }
 
-    // 3. Fallback to user.allBalances map
     if (user?.allBalances && user.allBalances[cleanSym] !== undefined) {
       return parseFloat(user.allBalances[cleanSym] || 0);
     }
@@ -160,6 +207,25 @@ export default function SendMoneyScreen() {
   };
 
   const currentAvailableBalance = getBalanceForToken(token, blockchain);
+
+  // Auto-switch blockchain if current chain has 0 balance for the token, but another chain has funds
+  useEffect(() => {
+    const curBal = getBalanceForToken(token, blockchain);
+    if (curBal <= 0) {
+      const chainWithFunds = BLOCKCHAINS.find(b => getBalanceForToken(token, b.value) > 0);
+      if (chainWithFunds && chainWithFunds.value !== blockchain) {
+        setBlockchain(chainWithFunds.value);
+      }
+    }
+  }, [walletBalances, token]);
+
+  const blockchainOptions = BLOCKCHAINS.map(b => {
+    const bal = getBalanceForToken(token, b.value);
+    return {
+      ...b,
+      label: bal > 0 ? `${b.label} (${bal.toFixed(2)} ${token})` : b.label,
+    };
+  });
 
   // Rule of provisioned tokens: only show tokens with positive balance if any exist
   const positiveTokens = CRYPTO_TOKENS.filter(t => getBalanceForToken(t.value, blockchain) > 0);
@@ -316,6 +382,25 @@ export default function SendMoneyScreen() {
       return;
     }
 
+    // 🔐 Native Device Biometric Authentication (Touch ID / Face ID / Passcode)
+    try {
+      if (Platform.OS !== 'web') {
+        const hasHardware = await LocalAuthentication.hasHardwareAsync();
+        const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+        if (hasHardware && isEnrolled) {
+          const bioResult = await LocalAuthentication.authenticateAsync({
+            promptMessage: t('sendMoney.biometricPrompt', 'Authorize Transfer of {{amount}} {{token}}', { amount, token }),
+            fallbackLabel: t('sendMoney.usePasscode', 'Use Device Passcode'),
+          });
+          if (!bioResult.success) {
+            return;
+          }
+        }
+      }
+    } catch (bioErr) {
+      console.warn('[SendMoneyScreen] Biometric verification skipped:', bioErr);
+    }
+
     setIsSending(true);
     setErrorMessage(null);
     try {
@@ -362,10 +447,47 @@ export default function SendMoneyScreen() {
       if (!res.ok || !data.success) {
         if (data.status === 'requires-handshake' || data.crossmintStatus === 'awaiting-approval') {
           const txId = data.txId || data.txHash || data.id;
+          const actualSignerEmail = data.signerAddress?.replace('email:', '') || user?.email;
           setActiveTxHash(txId);
           setTxStatus('awaiting-approval');
-          setSignerEmail(data.signerAddress?.replace('email:', '') || user?.email);
+          setSignerEmail(actualSignerEmail);
           setIsSending(false);
+
+          // 🔐 Mirror Web WalletContext: Call getWallet -> useSigner -> approve
+          // This prompts Crossmint's client signer to send the OTP email & open native signer prompt
+          if (txId && typeof getWallet === 'function') {
+            (async () => {
+              try {
+                const chainName = (blockchain || 'polygon').toLowerCase() === 'solana' ? 'solana' : 'polygon';
+                console.log(`🔐 [SendMoneyScreen] Invoking activeWallet.approve for tx ${txId} on ${chainName}...`);
+                const activeWallet = await getWallet({ chain: chainName });
+                if (activeWallet) {
+                  if (actualSignerEmail) {
+                    await activeWallet.useSigner({ type: 'email', email: actualSignerEmail });
+                  }
+                  await activeWallet.approve({ transactionId: txId });
+                  console.log('✅ [SendMoneyScreen] SDK approval completed successfully');
+                  if (typeof refreshTransactions === 'function') refreshTransactions();
+                  if (typeof refreshBalances === 'function') refreshBalances();
+                  setTxStatus(null);
+                  navigation.navigate('SendMoneySuccessScreen', {
+                    amount,
+                    token,
+                    chain: blockchain,
+                    recipient: selectedRecipient ? selectedRecipient.name : searchQuery,
+                    hash: txId,
+                    explorerUrl: txId?.startsWith('0x') ? `https://polygonscan.com/tx/${txId}` : null,
+                    pivotScreen: route.params?.pivotScreen,
+                    pivotParams: route.params?.pivotParams,
+                  });
+                  return;
+                }
+              } catch (sdkErr) {
+                console.warn('⚠️ [SendMoneyScreen] SDK approval flow note:', sdkErr?.message || sdkErr);
+              }
+            })();
+          }
+
           if (txId) {
             pollTransactionStatus(txId, authToken, DIZZY_URL);
           }
@@ -406,10 +528,13 @@ export default function SendMoneyScreen() {
 
   const pollTransactionStatus = (txId, tokenToUse, apiUrl) => {
     let attempts = 0;
-    const maxAttempts = 30;
+    const maxAttempts = 20;
+    let isPolling = false;
 
     const interval = setInterval(async () => {
+      if (isPolling) return;
       attempts++;
+      isPolling = true;
       try {
         let baseApi = apiUrl;
         if (!baseApi) {
@@ -420,7 +545,10 @@ export default function SendMoneyScreen() {
         }
 
         const effectiveAuth = tokenToUse || (isMerchant && user?.businessDizzyToken ? user.businessDizzyToken : (user?.dizzyToken || session?.access_token));
-        if (!effectiveAuth) return;
+        if (!effectiveAuth) {
+          isPolling = false;
+          return;
+        }
 
         const res = await fetch(`${baseApi}/swap/check-crossmint-status/${txId}`, {
           headers: {
@@ -429,10 +557,20 @@ export default function SendMoneyScreen() {
           },
         });
 
-        if (!res.ok) return;
+        // Politely back off if rate limited (HTTP 429)
+        if (res.status === 429) {
+          console.warn('⚠️ [SendMoneyScreen] Crossmint status polling hit 429, backing off...');
+          isPolling = false;
+          return;
+        }
+
+        if (!res.ok) {
+          isPolling = false;
+          return;
+        }
 
         const checkRes = await res.json().catch(() => ({}));
-        const crossStatus = checkRes.crossmintStatus || checkRes.status;
+        const crossStatus = (checkRes.crossmintStatus || checkRes.status || '').toLowerCase();
 
         if (checkRes.status === 'COMPLETED' || crossStatus === 'completed' || crossStatus === 'success') {
           clearInterval(interval);
@@ -473,6 +611,8 @@ export default function SendMoneyScreen() {
         }
       } catch (err) {
         // Silent polling retry
+      } finally {
+        isPolling = false;
       }
 
       if (attempts >= maxAttempts) {
@@ -480,39 +620,205 @@ export default function SendMoneyScreen() {
         setIsAuthorizing(false);
         setTxStatus(null);
       }
-    }, 4000);
+    }, 8000); // 8-second interval prevents 429 rate-limiting
+  };
+
+  const handleCheckEmailLink = async () => {
+    try {
+      setIsCheckingEmailApproval(true);
+      setApprovalMessage(null);
+
+      let rawWalletApi = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
+      if (Platform.OS === 'android' && rawWalletApi.includes('localhost')) {
+        rawWalletApi = rawWalletApi.replace('localhost', '10.0.2.2');
+      }
+      const authToken = (isMerchant && user?.businessDizzyToken) ? user.businessDizzyToken : (user?.dizzyToken || session?.access_token);
+      const baseApi = rawWalletApi.replace(/\/wallet\/?$/, '').replace(/\/api\/?$/, '') + '/api';
+
+      const res = await fetch(`${baseApi}/swap/check-crossmint-status/${activeTxHash}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        const crossStatus = (data.crossmintStatus || data.status || '').toLowerCase();
+        if (crossStatus === 'completed' || crossStatus === 'success') {
+          setTxStatus(null);
+          setIsAuthorizing(false);
+          if (typeof refreshTransactions === 'function') refreshTransactions();
+          if (typeof refreshBalances === 'function') refreshBalances();
+
+          const confirmedHash = data.blockchainHash || data.onChain?.txHash || activeTxHash;
+          const confirmedExplorerUrl = data.blockchainHash?.startsWith('0x')
+            ? `https://polygonscan.com/tx/${data.blockchainHash}`
+            : (data.onChain?.explorerLink || null);
+
+          navigation.navigate('SendMoneySuccessScreen', {
+            amount,
+            token,
+            chain: blockchain,
+            recipient: selectedRecipient ? selectedRecipient.name : searchQuery,
+            hash: confirmedHash,
+            explorerUrl: confirmedExplorerUrl,
+            pivotScreen: route.params?.pivotScreen,
+            pivotParams: route.params?.pivotParams,
+          });
+          return;
+        } else if (crossStatus === 'pending' || crossStatus === 'in-progress') {
+          setApprovalMessage(t('sendMoney.approved_processing', 'Approved! Processing on blockchain...'));
+          setIsAuthorizing(true);
+          pollTransactionStatus(activeTxHash, authToken, `${baseApi}/wallet`);
+          return;
+        }
+      }
+
+      setApprovalMessage(t('sendMoney.email_not_yet_approved', 'No approval detected yet. Please tap the approval link in your email or enter the 6-digit code above.'));
+    } catch (e) {
+      setApprovalMessage(t('sendMoney.email_check_error', 'Could not verify status. Please enter the 6-digit code.'));
+    } finally {
+      setIsCheckingEmailApproval(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    try {
+      setIsResendingOtp(true);
+      setApprovalMessage(null);
+      if (activeTxHash && typeof getWallet === 'function') {
+        const chainName = (blockchain || 'polygon').toLowerCase() === 'solana' ? 'solana' : 'polygon';
+        const activeWallet = await getWallet({ chain: chainName });
+        if (activeWallet) {
+          if (signerEmail) {
+            await activeWallet.useSigner({ type: 'email', email: signerEmail });
+          }
+          await activeWallet.approve({ transactionId: activeTxHash });
+          setApprovalMessage(t('sendMoney.code_resent', 'Verification code requested! Please check your email inbox and spam.'));
+          return;
+        }
+      }
+      setApprovalMessage(t('sendMoney.resend_hint', 'Please check your email inbox and spam folder.'));
+    } catch (e) {
+      console.warn('[SendMoneyScreen] Resend OTP:', e?.message || e);
+      setApprovalMessage(t('sendMoney.resend_triggered', 'Verification requested. Please check your email.'));
+    } finally {
+      setIsResendingOtp(false);
+    }
   };
 
   const handleAuthorize = async () => {
     try {
       setIsAuthorizing(true);
-      if (!crossmintWallet) {
-        setIsAuthorizing(false);
-        if (activeTxHash) {
-          pollTransactionStatus(activeTxHash);
+      setApprovalMessage(null);
+
+      // 1. Biometric verification prompt if available on phone
+      try {
+        const hasHardware = await LocalAuthentication.hasHardwareAsync();
+        const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+        if (hasHardware && isEnrolled) {
+          const bioRes = await LocalAuthentication.authenticateAsync({
+            promptMessage: t('sendMoney.biometric_prompt', 'Verify to authorize transfer'),
+            cancelLabel: t('common.cancel', 'Cancel'),
+            disableDeviceFallback: false,
+          });
+          if (!bioRes.success) {
+            setIsAuthorizing(false);
+            return;
+          }
         }
+      } catch (bioErr) {
+        console.warn('[SendMoneyScreen] Biometric check skipped:', bioErr);
+      }
+
+      let rawWalletApi = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
+      if (Platform.OS === 'android' && rawWalletApi.includes('localhost')) {
+        rawWalletApi = rawWalletApi.replace('localhost', '10.0.2.2');
+      }
+      const walletBase = rawWalletApi.replace(/\/wallet\/?$/, '').replace(/\/api\/?$/, '') + '/api/wallet';
+      const authToken = (isMerchant && user?.businessDizzyToken) ? user.businessDizzyToken : (user?.dizzyToken || session?.access_token);
+
+      const senderFromAddress = (blockchain || 'polygon').toLowerCase() === 'solana'
+        ? (user?.solanaAddress || user?.solana_wallet_address)
+        : (user?.evmAddress || user?.evm_wallet_address || user?.walletAddress);
+
+      // 2. If OTP code entered, submit it to /approve-transaction
+      if (approvalOtp.trim()) {
+        const approveRes = await fetch(`${walletBase}/approve-transaction`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({
+            txId: activeTxHash,
+            code: approvalOtp.trim(),
+            walletAddress: senderFromAddress,
+          }),
+        });
+
+        const approveData = await approveRes.json().catch(() => ({}));
+        if (!approveRes.ok || !approveData.success) {
+          setIsAuthorizing(false);
+          setApprovalMessage(approveData.error || t('sendMoney.approval_code_invalid', 'Invalid verification code. Please check the code sent to your email.'));
+          return;
+        }
+
+        setApprovalMessage(t('sendMoney.approval_confirmed', 'Approval submitted! Finalizing transfer...'));
+        pollTransactionStatus(activeTxHash, authToken, walletBase);
         return;
       }
 
-      const activeWallet = (blockchain || 'polygon').toLowerCase() === 'solana'
-        ? SolanaWallet.from(crossmintWallet)
-        : EVMWallet.from(crossmintWallet);
-      const emailToUse = signerEmail || user?.email;
+      // 3. If no code entered, check if user approved via email link
+      const baseApi = rawWalletApi.replace(/\/wallet\/?$/, '').replace(/\/api\/?$/, '') + '/api';
+      const checkRes = await fetch(`${baseApi}/swap/check-crossmint-status/${activeTxHash}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
+      });
 
-      await activeWallet.useSigner({ type: 'email', email: emailToUse });
-      await activeWallet.approve({ transactionId: activeTxHash });
+      if (checkRes.ok) {
+        const checkData = await checkRes.json().catch(() => ({}));
+        const st = (checkData.crossmintStatus || checkData.status || '').toLowerCase();
+        if (st === 'completed' || st === 'success') {
+          setTxStatus(null);
+          setIsAuthorizing(false);
+          if (typeof refreshTransactions === 'function') refreshTransactions();
+          if (typeof refreshBalances === 'function') refreshBalances();
 
-      pollTransactionStatus(activeTxHash);
+          const confirmedHash = checkData.blockchainHash || checkData.onChain?.txHash || activeTxHash;
+          const confirmedExplorerUrl = checkData.blockchainHash?.startsWith('0x')
+            ? `https://polygonscan.com/tx/${checkData.blockchainHash}`
+            : (checkData.onChain?.explorerLink || null);
+
+          navigation.navigate('SendMoneySuccessScreen', {
+            amount,
+            token,
+            chain: blockchain,
+            recipient: selectedRecipient ? selectedRecipient.name : searchQuery,
+            hash: confirmedHash,
+            explorerUrl: confirmedExplorerUrl,
+            pivotScreen: route.params?.pivotScreen,
+            pivotParams: route.params?.pivotParams,
+          });
+          return;
+        } else if (st === 'pending' || st === 'in-progress') {
+          setApprovalMessage(t('sendMoney.approval_confirmed', 'Approval confirmed! Finalizing transfer...'));
+          pollTransactionStatus(activeTxHash, authToken, walletBase);
+          return;
+        }
+      }
+
+      // 4. Still awaiting approval - prompt the user to input the code or click the email link
+      setIsAuthorizing(false);
+      setApprovalMessage(t('sendMoney.enter_code_or_email_prompt', 'Please enter the 6-digit code received in your email or tap the link in the email sent to approve.'));
+      pollTransactionStatus(activeTxHash, authToken, walletBase);
     } catch (e) {
       console.error("[SendMoneyScreen] Authorize error:", e);
       setIsAuthorizing(false);
-
-      const errMsg = String(e);
-      if (errMsg.includes("Already has the required number of approvals")) {
-        pollTransactionStatus(activeTxHash);
-      } else {
-        setErrorMessage(e.message || 'Authorization failed');
-      }
+      setApprovalMessage(e.message || t('sendMoney.auth_failed', 'Authorization failed. Please try again.'));
     }
   };
 
@@ -702,7 +1008,7 @@ export default function SendMoneyScreen() {
               </View>
               <AppSelect
                 value={blockchain}
-                options={BLOCKCHAINS}
+                options={blockchainOptions}
                 onChange={(val) => setBlockchain(val)}
                 title={t('common.wallet.select_chain', 'Select Network')}
                 style={styles.compactAppSelect}
@@ -924,37 +1230,107 @@ export default function SendMoneyScreen() {
           </View>
         </Modal>
 
-        {/* 🔐 Crossmint Signature / Biometric Handshake Modal */}
+        {/* 🔐 Signature / Security Verification Modal */}
         <Modal visible={txStatus === 'awaiting-approval'} transparent animationType="fade">
           <View style={approvalModalStyles.modalOverlay}>
             <View style={approvalModalStyles.modalContent}>
               <View style={approvalModalStyles.modalHeaderIcon}>
-                <Ionicons name="lock-closed" size={28} color="#EA580C" />
+                <Ionicons name="shield-checkmark" size={28} color="#071D54" />
               </View>
-              <Text style={approvalModalStyles.modalTitle}>{t('common.wallet.swap_ui.signature_required', 'Signature Required')}</Text>
-              <Text style={approvalModalStyles.modalSubtitle}>{t('common.wallet.swap_ui.crossmint_action_needed', 'Crossmint Action Needed')}</Text>
+              <Text style={approvalModalStyles.modalTitle}>{t('sendMoney.signature_required', 'Signature Required')}</Text>
+              <Text style={approvalModalStyles.modalSubtitle}>{t('sendMoney.action_needed', 'Verification Needed')}</Text>
 
               <View style={approvalModalStyles.modalInfoBox}>
-                <Text style={approvalModalStyles.modalInfoTextBold}>{t('common.wallet.swap_ui.verification_request', 'A verification request has been deployed to your profile.')}</Text>
-                <View style={approvalModalStyles.emailBadge}>
-                  <Text style={approvalModalStyles.emailBadgeText}>{t('common.wallet.swap_ui.check_email', '📧 Check Email:')} {signerEmail}</Text>
-                </View>
-                <Text style={approvalModalStyles.modalInfoText}>{t('common.wallet.swap_ui.secure_link_prompt', 'Please follow the secure external link or utilize biometric passkey authorizations if prompted.')}</Text>
+                <Text style={approvalModalStyles.modalInfoTextBold}>
+                  {t('sendMoney.verification_request', 'Please confirm and approve your transfer.')}
+                </Text>
+                {signerEmail ? (
+                  <View style={approvalModalStyles.emailBadge}>
+                    <Ionicons name="mail-outline" size={14} color="#0E0E0E" style={{ marginRight: 6 }} />
+                    <Text style={approvalModalStyles.emailBadgeText} numberOfLines={1}>
+                      {signerEmail}
+                    </Text>
+                  </View>
+                ) : null}
+                <Text style={approvalModalStyles.modalInfoText}>
+                  {t('sendMoney.secure_otp_prompt', 'A security code or approval link was sent to your email. Enter the 6-digit code below or tap the link in your email.')}
+                </Text>
               </View>
 
+              {/* 🔢 6-Digit OTP Code Input */}
+              <View style={approvalModalStyles.otpContainer}>
+                <Text style={approvalModalStyles.otpLabel}>{t('sendMoney.enter_code_label', 'Enter 6-digit code')}</Text>
+                <TextInput
+                  style={approvalModalStyles.otpInput}
+                  value={approvalOtp}
+                  onChangeText={setApprovalOtp}
+                  placeholder="------"
+                  placeholderTextColor="#94A3B8"
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  textAlign="center"
+                  autoCapitalize="none"
+                />
+              </View>
+
+              {/* 🔄 Resend OTP Code Button */}
+              <TouchableOpacity
+                onPress={handleResendOtp}
+                disabled={isResendingOtp || isAuthorizing}
+                style={{ marginBottom: 14, paddingVertical: 4, alignItems: 'center' }}
+              >
+                <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#2563EB' }}>
+                  {isResendingOtp
+                    ? t('common.loading', 'Requesting code...')
+                    : t('sendMoney.resend_code', "Didn't receive code? Resend email")}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Status / Error feedback */}
+              {approvalMessage ? (
+                <Text style={[
+                  approvalModalStyles.approvalStatusText,
+                  approvalMessage.toLowerCase().includes('fail') || approvalMessage.toLowerCase().includes('error') || approvalMessage.toLowerCase().includes('invalid')
+                    ? { color: '#DC2626' }
+                    : { color: '#2563EB' }
+                ]}>
+                  {approvalMessage}
+                </Text>
+              ) : null}
+
+              {/* Primary Action Button */}
               <TouchableOpacity
                 style={[approvalModalStyles.authBtn, isAuthorizing && approvalModalStyles.authBtnDisabled]}
                 onPress={handleAuthorize}
                 disabled={isAuthorizing}
               >
-                {isAuthorizing ? <ActivityIndicator color="#FFF" /> : <Ionicons name="lock-closed" size={20} color="#FFF" style={{ marginRight: 8 }} />}
+                {isAuthorizing ? <ActivityIndicator color="#FFF" /> : <Ionicons name="shield-checkmark" size={20} color="#FFF" style={{ marginRight: 8 }} />}
                 <Text style={approvalModalStyles.authBtnText}>
-                  {isAuthorizing ? t('common.wallet.swap_ui.authorizing', 'Authorizing...') : t('common.wallet.swap_ui.authorize_swap', 'Authorize Release')}
+                  {isAuthorizing ? t('sendMoney.authorizing', 'Authorizing...') : t('sendMoney.authorize_transfer', 'Authorize Transfer')}
                 </Text>
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => { setTxStatus(null); setIsAuthorizing(false); }} style={approvalModalStyles.dismissBtn}>
-                <Text style={approvalModalStyles.dismissBtnText}>{t('common.wallet.swap_ui.dismiss_banner', 'Dismiss Banner')}</Text>
+              {/* Email link quick check */}
+              <TouchableOpacity
+                style={approvalModalStyles.checkEmailLinkBtn}
+                onPress={handleCheckEmailLink}
+                disabled={isAuthorizing || isCheckingEmailApproval}
+              >
+                {isCheckingEmailApproval ? (
+                  <ActivityIndicator size="small" color="#20365B" style={{ marginRight: 6 }} />
+                ) : (
+                  <Ionicons name="mail-open-outline" size={16} color="#20365B" style={{ marginRight: 6 }} />
+                )}
+                <Text style={approvalModalStyles.checkEmailLinkText}>
+                  {t('sendMoney.check_email_approval', 'Approved via email? Check status')}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => { setTxStatus(null); setIsAuthorizing(false); setApprovalOtp(''); setApprovalMessage(null); }}
+                style={approvalModalStyles.dismissBtn}
+              >
+                <Text style={approvalModalStyles.dismissBtnText}>{t('common.cancel', 'Cancel')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1150,6 +1526,45 @@ const modalStyles = StyleSheet.create({
     fontSize: 13,
     color: '#94A3B8',
   },
+  alternateChainBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginTop: 8,
+  },
+  alternateChainLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 8,
+  },
+  alternateChainText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
+    color: '#1D4ED8',
+    flex: 1,
+  },
+  switchChainBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#93C5FD',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  switchChainBtnText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 11,
+    color: '#2563EB',
+  },
 });
 
 const approvalModalStyles = StyleSheet.create({
@@ -1223,13 +1638,16 @@ const approvalModalStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
     borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
+    padding: 10,
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   emailBadgeText: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 13,
     color: '#0E0E0E',
+    flex: 1,
   },
   modalInfoText: {
     fontFamily: 'Inter_500Medium',
@@ -1237,15 +1655,65 @@ const approvalModalStyles = StyleSheet.create({
     color: '#878FA4',
     lineHeight: 18,
   },
+  otpContainer: {
+    width: '100%',
+    marginBottom: 14,
+    alignItems: 'center',
+  },
+  otpLabel: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: '#475569',
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  otpInput: {
+    width: '100%',
+    height: 52,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    borderRadius: 14,
+    fontSize: 22,
+    fontFamily: 'SpaceGrotesk_700Bold',
+    letterSpacing: 8,
+    textAlign: 'center',
+    color: '#0F172A',
+  },
+  approvalStatusText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
+    textAlign: 'center',
+    marginBottom: 12,
+    lineHeight: 16,
+    paddingHorizontal: 8,
+  },
+  checkEmailLinkBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    backgroundColor: '#F1F5F9',
+    marginBottom: 10,
+    width: '100%',
+  },
+  checkEmailLinkText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: '#20365B',
+  },
   authBtn: {
     backgroundColor: '#20365B',
     width: '100%',
-    height: 56,
+    height: 52,
     borderRadius: 16,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
     shadowColor: '#20365B',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -1253,24 +1721,39 @@ const approvalModalStyles = StyleSheet.create({
     elevation: 4,
   },
   authBtnDisabled: {
-    backgroundColor: '#B9B9B9',
+    backgroundColor: '#94A3B8',
     shadowOpacity: 0,
     elevation: 0,
   },
   authBtnText: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 16,
+    fontSize: 15,
     color: '#FFFFFF',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   dismissBtn: {
-    padding: 12,
+    width: '100%',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    backgroundColor: '#FFFDF0',
+    borderWidth: 1.5,
+    borderColor: '#FFC759',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 4,
+    shadowColor: '#FFC759',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 1,
   },
   dismissBtnText: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 12,
-    color: '#94A3B8',
+    fontSize: 13,
+    color: '#8A5800',
     textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
 });
