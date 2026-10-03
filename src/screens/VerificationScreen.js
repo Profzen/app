@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
@@ -14,7 +14,9 @@ import { useApp } from '../context/AppContext';
 
 export default function VerificationScreen() {
   const navigation = useNavigation();
-  const { t } = useApp();
+  const route = useRoute();
+  const { t, user } = useApp();
+  const displayedEmail = route.params?.emailOrPhone || route.params?.email || route.params?.phone || user?.email || '';
   const [code, setCode] = useState('');
   const [timeLeft, setTimeLeft] = useState(45);
   const [isLoading, setIsLoading] = useState(false);
@@ -108,8 +110,8 @@ export default function VerificationScreen() {
           
           <Text style={styles.verificationText}>
             {t('verificationStep.codeSentTo', 'We sent a verification code to')}{'\n'}
-            <Text style={styles.emailText}>exemple@email.com</Text>{'   '}
-            <Text style={styles.modifyText}>{t('common.edit', 'Edit')}</Text>
+            <Text style={styles.emailText}>{displayedEmail}</Text>{'   '}
+            <Text style={styles.modifyText} onPress={() => navigation.goBack()}>{t('common.edit', 'Edit')}</Text>
           </Text>
 
           <Text style={styles.sectionSubtitle}>{t('verificationStep.enter6Digit', 'Enter the 6-digit code')}</Text>

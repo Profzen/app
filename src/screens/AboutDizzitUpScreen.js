@@ -18,7 +18,8 @@ export default function AboutDizzitUpScreen() {
   const [releaseNotes, setReleaseNotes] = useState({ features: [], fixes: [], releaseDate: null, isLoading: true });
 
   const appVersion = Application.nativeApplicationVersion || Constants?.expoConfig?.version || '1.0.0';
-  const appBuildNumber = Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '56';
+  // Real installed build (EAS remote auto-increment). No hardcoded or app.json fallback number.
+  const appBuildNumber = Application.nativeBuildVersion || '—';
 
   const currentYear = new Date().getFullYear();
   const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -324,7 +325,7 @@ export default function AboutDizzitUpScreen() {
 
             <View style={styles.divider} />
 
-            <TouchableOpacity style={styles.linkRow} onPress={() => openLink('Licences', 'dizzitup.com/licenses')}>
+            <TouchableOpacity style={styles.linkRow} onPress={() => openLink('Licences', 'dizzitup.com/compliance')}>
               <Ionicons name="ribbon-outline" size={20} color="#F59E0B" style={styles.linkIcon} />
               <Text style={styles.linkText}>{t('aboutApp.licenses', 'Licenses & Regulatory Compliance')}</Text>
               <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />

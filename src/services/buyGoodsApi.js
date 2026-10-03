@@ -19,15 +19,20 @@ if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location.ho
 }
 
 export const buyGoodsApi = {
-  searchGlobal: async (query = '') => {
+  searchGlobal: async (query = '', { type = 'all', country = '' } = {}) => {
     try {
       if (!query || query.trim().length < 2) return [];
-      const response = await fetch(`${BASE_URL}/search?q=${encodeURIComponent(query.trim())}`);
+      const params = new URLSearchParams();
+      params.append('q', query.trim());
+      if (type && type !== 'all') params.append('type', type);
+      if (country) params.append('country', country);
+      const response = await fetch(`${BASE_URL}/search?${params.toString()}`);
       if (!response.ok) return [];
       const data = await response.json();
-      if (!data.results || !Array.isArray(data.results)) return [];
+      const rawList = Array.isArray(data) ? data : data?.results;
+      if (!Array.isArray(rawList)) return [];
       const seen = new Set();
-      return data.results.filter(item => {
+      return rawList.filter(item => {
         const key = `${item.entity_type || 'item'}_${item.entity_id || item.id || item.title}`;
         if (seen.has(key)) return false;
         seen.add(key);
@@ -36,6 +41,19 @@ export const buyGoodsApi = {
     } catch (error) {
       console.warn('buyGoodsApi.searchGlobal Error:', error);
       return [];
+    }
+  },
+
+  searchSuggestions: async (query = '') => {
+    try {
+      if (!query || !query.trim()) return { suggestions: [] };
+      const response = await fetch(`${BASE_URL}/search/suggest?q=${encodeURIComponent(query.trim())}`);
+      if (!response.ok) return { suggestions: [] };
+      const data = await response.json();
+      return { suggestions: Array.isArray(data?.suggestions) ? data.suggestions : [] };
+    } catch (error) {
+      console.warn('buyGoodsApi.searchSuggestions Error:', error);
+      return { suggestions: [] };
     }
   },
 

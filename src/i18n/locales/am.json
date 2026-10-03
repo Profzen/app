@@ -568,6 +568,9 @@
     "codeValidated": "ኮዱ በስኬት ተረጋግጧል!"
   },
   "common": {
+    "selectOption": "አማራጭ ይምረጡ",
+    "noResults": "ምንም ውጤት አልተገኘም",
+    "clear": "አጽዳ",
     "me": "እኔ",
     "add": "አክል",
     "selectServiceGateway": {
@@ -3526,6 +3529,8 @@
     }
   },
   "personalAccount": {
+    "selectCountry": "አገርዎን ይምረጡ",
+    "searchCountry": "አገር ይፈልጉ",
     "title": "የግል መለያ",
     "subtitle": "የግል ዝርዝሮች እና ማረጋገጫ",
     "verifiedBadge": "የተረጋገጠ መለያ (ደረጃ 2)",
@@ -4412,6 +4417,7 @@
     "escrowDeployed": "በ{{network}} ላይ የተረጋገጠ የኤስክሮው ውል"
   },
   "orderConfirmation": {
+    "storeAddress": "የመደብሩ አድራሻ",
     "title": "ማጠቃለያ እና ማረጋገጫ",
     "alertTitle": "ግዢዎን ይገምግሙ እና ያረጋግጡ",
     "alertDesc": "ክፍያዎ በብሎክቼይን ከተረጋገጠ በኋላ ለሻጩ በደህንነት ይላካል።",

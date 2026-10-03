@@ -2035,6 +2035,9 @@
     }
   },
   "common": {
+    "selectOption": "اختر خيارًا",
+    "noResults": "لم يتم العثور على نتائج",
+    "clear": "مسح",
     "me": "أنا",
     "add": "إضافة",
     "selectServiceGateway": {
@@ -3559,6 +3562,8 @@
     }
   },
   "personalAccount": {
+    "selectCountry": "اختر بلدك",
+    "searchCountry": "ابحث عن بلد",
     "title": "حساب شخصي",
     "subtitle": "التفاصيل الشخصية والتحقق",
     "verifiedBadge": "حساب تم التحقق منه (المستوى 2)",
@@ -4512,6 +4517,7 @@
     "escrowDeployed": "عقد الضمان معتمد على {{network}}"
   },
   "orderConfirmation": {
+    "storeAddress": "عنوان المتجر",
     "title": "الملخص والتأكيد",
     "alertTitle": "راجع وأكد عملية الشراء",
     "alertDesc": "سيتم إرسال دفعتك بأمان إلى البائع بعد تأكيد المعاملة على البلوكشين.",

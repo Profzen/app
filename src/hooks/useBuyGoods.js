@@ -61,12 +61,31 @@ export const useBuyGoods = () => {
     }
   }, []);
 
+  const searchGlobal = useCallback(async (query, options = {}) => {
+    setLoading(true);
+    setError(null);
+    try {
+      return await buyGoodsApi.searchGlobal(query, options);
+    } catch (err) {
+      setError(err.message || 'Search failed');
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const searchSuggestions = useCallback(async (query) => {
+    return buyGoodsApi.searchSuggestions(query);
+  }, []);
+
   return {
     loading,
     error,
     fetchMerchants,
     fetchStoreDetails,
     fetchAllProducts,
-    fetchProductById
+    fetchProductById,
+    searchGlobal,
+    searchSuggestions
   };
 };

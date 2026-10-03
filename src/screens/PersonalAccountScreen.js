@@ -1,11 +1,23 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, TextInput, Platform, StatusBar, KeyboardAvoidingView, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
+import AppSelect from '../components/AppSelect';
+import AppToast from '../components/AppToast';
+import { ALL_COUNTRIES } from '../utils/countriesData';
 import { useApp } from '../context/AppContext';
 import Avatar from '../components/Avatar';
+
+// Maps the saved profile value (country name or ISO code) to the canonical country name; unknown values are kept as-is
+const resolveCountryName = (raw) => {
+  const value = (raw || '').toString().trim();
+  if (!value) return '';
+  const q = value.toLowerCase();
+  const match = ALL_COUNTRIES.find((c) => c.name?.toLowerCase() === q || c.code?.toLowerCase() === q);
+  return match ? match.name : value;
+};
 
 export default function PersonalAccountScreen() {
   const navigation = useNavigation();
@@ -16,9 +28,23 @@ export default function PersonalAccountScreen() {
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '');
-  const [country, setCountry] = useState(user?.country || '');
+  const [country, setCountry] = useState(resolveCountryName(user?.country));
   const [city, setCity] = useState(user?.city || '');
   const [isSaving, setIsSaving] = useState(false);
+
+  const countryOptions = useMemo(() => {
+    const list = ALL_COUNTRIES.map((c) => ({
+      value: c.name,
+      label: c.name,
+      subtitle: c.dial,
+      flagUrl: `https://flagcdn.com/w40/${c.code.toLowerCase()}.png`,
+    }));
+    // Keep a saved value that is not in the list so it is never silently lost
+    if (country && !list.some((o) => o.value === country)) {
+      list.unshift({ value: country, label: country });
+    }
+    return list;
+  }, [country]);
 
   useEffect(() => {
     // When the user context finally loads/updates, sync the local form state
@@ -26,7 +52,7 @@ export default function PersonalAccountScreen() {
       setName(user.name || '');
       setEmail(user.email || '');
       setPhone(user.phone || '');
-      setCountry(user.country || '');
+      setCountry(resolveCountryName(user.country));
       setCity(user.city || '');
     }
   }, [user]);
@@ -128,10 +154,24 @@ export default function PersonalAccountScreen() {
 
             <View style={styles.fieldRow}>
               <Text style={styles.fieldLabel}>{t('personalAccount.country', 'Country of Residence')}</Text>
-              <View style={styles.inputWrap}>
-                <Ionicons name="flag-outline" size={18} color="#6B7280" style={styles.inputIcon} />
-                <TextInput style={styles.input} value={country} onChangeText={setCountry} />
-              </View>
+              <AppSelect
+                value={country}
+                options={countryOptions}
+                onChange={(val) => setCountry(val)}
+                title={t('personalAccount.country', 'Country of Residence')}
+                placeholder={t('personalAccount.selectCountry', 'Select your country')}
+                searchPlaceholder={t('personalAccount.searchCountry', 'Search country')}
+                accessibilityLabel={t('personalAccount.country', 'Country of Residence')}
+                style={styles.countrySelect}
+                textStyle={styles.countrySelectText}
+                renderLeading={(sel) => (
+                  sel?.flagUrl ? (
+                    <Image source={{ uri: sel.flagUrl }} style={styles.countryFlag} />
+                  ) : (
+                    <Ionicons name="flag-outline" size={18} color="#6B7280" style={styles.inputIcon} />
+                  )
+                )}
+              />
             </View>
 
             <View style={styles.fieldRow}>
@@ -208,6 +248,9 @@ const styles = StyleSheet.create({
   inputWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9FAFB', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 12, height: 46 },
   inputIcon: { marginRight: 10 },
   input: { flex: 1, fontFamily: 'Inter_500Medium', fontSize: 14, color: '#1A2840' },
+  countrySelect: { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB', borderRadius: 12, minHeight: 46, height: 46, paddingHorizontal: 12 },
+  countrySelectText: { fontFamily: 'Inter_500Medium', fontSize: 14, color: '#1A2840' },
+  countryFlag: { width: 22, height: 16, borderRadius: 2, marginRight: 10 },
   docRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
   docIconWrap: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#EFF6FF', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   docText: { flex: 1, paddingRight: 6 },

@@ -62,9 +62,10 @@ export default function HomeScreen() {
       setIsSearching(true);
       try {
         const results = await buyGoodsApi.searchGlobal(searchQuery);
-        setSearchResults(results);
+        setSearchResults(Array.isArray(results) ? results : (Array.isArray(results?.results) ? results.results : []));
       } catch (err) {
         console.warn('Search error on HomeScreen:', err);
+        setSearchResults([]);
       } finally {
         setIsSearching(false);
       }

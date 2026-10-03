@@ -520,6 +520,9 @@
     "codeValidated": "Code validé avec succès !"
   },
   "common": {
+    "selectOption": "Sélectionnez une option",
+    "noResults": "Aucun résultat trouvé",
+    "clear": "Effacer",
     "me": "Moi",
     "add": "Ajouter",
     "selectServiceGateway": {
@@ -3723,6 +3726,8 @@
     }
   },
   "personalAccount": {
+    "selectCountry": "Sélectionnez votre pays",
+    "searchCountry": "Rechercher un pays",
     "title": "Compte personnel",
     "subtitle": "Informations personnelles & Vérification",
     "verifiedBadge": "COMPTE VÉRIFIÉ (NIVEAU 2)",
@@ -4762,6 +4767,7 @@
     "escrowDeployed": "Séquestre Escrow vérifié sur {{network}}"
   },
   "orderConfirmation": {
+    "storeAddress": "Adresse de la boutique",
     "title": "Résumé et confirmation",
     "alertTitle": "Vérifiez et confirmez votre achat",
     "alertDesc": "Votre paiement sera envoyé en toute sécurité au vendeur après confirmation sur la blockchain.",

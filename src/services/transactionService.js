@@ -95,7 +95,9 @@ export const transactionService = {
 
       if (pbRes.status === 'fulfilled' && pbRes.value) {
         const txs = pbRes.value.data || [];
-        allTransactions.push(...txs.map(tx => normalizeTransaction(tx, 'pay-bills', userId)));
+        // CHECKOUT = order created but never paid (pay-bills-backend OrderStatus enum) -> not a real debit
+        const paidOrAttempted = txs.filter(tx => String(tx.status || '').toUpperCase() !== 'CHECKOUT');
+        allTransactions.push(...paidOrAttempted.map(tx => normalizeTransaction(tx, 'pay-bills', userId)));
       }
 
       // Deduplicate

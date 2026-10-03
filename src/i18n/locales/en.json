@@ -521,6 +521,9 @@
     "codeValidated": "Code validated successfully!"
   },
   "common": {
+    "selectOption": "Select an option",
+    "noResults": "No results found",
+    "clear": "Clear",
     "me": "Me",
     "add": "Add",
     "selectServiceGateway": {
@@ -3675,6 +3678,8 @@
     }
   },
   "personalAccount": {
+    "selectCountry": "Select your country",
+    "searchCountry": "Search country",
     "title": "Personal Account",
     "subtitle": "Personal Details & Verification",
     "verifiedBadge": "VERIFIED ACCOUNT (LEVEL 2)",
@@ -4714,6 +4719,7 @@
     "escrowDeployed": "Escrow contract verified on {{network}}"
   },
   "orderConfirmation": {
+    "storeAddress": "Store address",
     "title": "Summary & Confirmation",
     "alertTitle": "Review and confirm your purchase",
     "alertDesc": "Your payment will be securely sent to the seller after blockchain confirmation.",

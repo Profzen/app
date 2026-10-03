@@ -521,6 +521,9 @@
     "codeValidated": "Código validado com sucesso!"
   },
   "common": {
+    "selectOption": "Selecione uma opção",
+    "noResults": "Nenhum resultado encontrado",
+    "clear": "Limpar",
     "me": "Eu",
     "add": "Adicionar",
     "selectServiceGateway": {
@@ -3508,6 +3511,8 @@
     }
   },
   "personalAccount": {
+    "selectCountry": "Selecione o seu país",
+    "searchCountry": "Pesquisar país",
     "title": "Conta Pessoal",
     "subtitle": "Detalhes Pessoais e Verificação",
     "verifiedBadge": "CONTA VERIFICADA (NÍVEL 2)",
@@ -4486,6 +4491,7 @@
     "escrowDeployed": "Contrato Escrow verificado em {{network}}"
   },
   "orderConfirmation": {
+    "storeAddress": "Endereço da loja",
     "title": "Resumo e confirmação",
     "alertTitle": "Reveja e confirme a sua compra",
     "alertDesc": "O seu pagamento será enviado com segurança ao vendedor após confirmação na blockchain.",

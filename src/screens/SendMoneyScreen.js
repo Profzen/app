@@ -1043,7 +1043,7 @@ export default function SendMoneyScreen() {
             {hasZeroBalance && (
               <TouchableOpacity
                 style={styles.topUpBannerRow}
-                onPress={() => navigation.navigate('TopUpWalletConfirmationScreen', {
+                onPress={() => navigation.navigate('TopUpWalletScreen', {
                   pivotScreen: 'SendMoneyScreen',
                   pivotParams: route.params,
                 })}
