@@ -50,7 +50,7 @@ const getUniversalFlag = (emoji, code) => {
 
 export default function EditBeneficiaryScreen({ route }) {
   const navigation = useNavigation();
-  const { session, t } = useApp();
+  const { session, user, t } = useApp();
   
   const isEditing = route.params?.isEditing || false;
   const beneficiary = route.params?.beneficiary || {};
@@ -335,7 +335,7 @@ export default function EditBeneficiaryScreen({ route }) {
         avatar_url: formData.avatar_url || '',
       };
 
-      const userId = session?.user?.id;
+      const userId = user?.id || session?.user?.id || user?.user_id;
       if (isEditing && beneficiary?.id) {
         const updateRes = await contactService.updateBeneficiary(beneficiary.id, payload);
         if (!updateRes.success) throw new Error(updateRes.error);

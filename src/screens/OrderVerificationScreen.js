@@ -116,7 +116,7 @@ export default function OrderVerificationScreen({ route }) {
     return [];
   }, [cart, directItem]);
 
-  const [deliveryOption, setDeliveryOption] = useState('home'); // 'home', 'pickup'
+  const [deliveryOption, setDeliveryOption] = useState('pickup'); // Default 'pickup' (Store Pickup per Solofo mandate)
   const [paymentRail, setPaymentRail] = useState('crypto'); // 'crypto', 'card', 'momo'
   const [selectedToken, setSelectedToken] = useState('USDC'); // 'USDC', 'USDT', 'EURC', 'DZY'
   const [network, setNetwork] = useState('Polygon'); // 'Polygon', 'Base', 'Ethereum', 'Solana'
@@ -217,6 +217,16 @@ export default function OrderVerificationScreen({ route }) {
     .filter(Boolean)
     .join(', ') || t('product.partnerPlatform', 'Partenaire DizzitUp');
 
+  const merchantStreet =
+    cartMerchant?.street_name ||
+    cartMerchant?.address ||
+    directOrder?.shop?.street_name ||
+    directOrder?.shop?.address ||
+    directOrder?.shop?.neighborhood ||
+    items[0]?.merchantStreet ||
+    '';
+  const merchantFullAddress = [merchantStreet, merchantLocation].filter(Boolean).join(', ') || merchantLocation;
+
   // Pricing calculations
   const subtotal = useMemo(() => {
     return items.reduce((acc, i) => acc + (Number(i.price) || 0) * (Number(i.quantity) || 1), 0);
@@ -302,9 +312,10 @@ export default function OrderVerificationScreen({ route }) {
       totalUSDC: parseFloat(totalUSDC),
       totalDZY: parseFloat(totalDZY),
       recipient: {
-        name: recipientName,
-        phone: recipientPhone,
-        address: recipientAddress,
+        name: deliveryOption === 'pickup' ? merchantName : recipientName,
+        phone: deliveryOption === 'pickup' ? (merchantObj?.phone || user?.phone || '') : recipientPhone,
+        address: deliveryOption === 'pickup' ? merchantFullAddress : recipientAddress,
+        deliveryOption,
       },
       paymentRail,
       payerCountry,
@@ -427,32 +438,61 @@ export default function OrderVerificationScreen({ route }) {
           ))}
         </View>
 
-        {/* Recipient & Delivery Address Card */}
+        {/* Recipient & Delivery / Pickup Address Card */}
         <View style={styles.addressCard}>
           <View style={styles.cardHeaderRow}>
-            <View style={styles.iconCircle}>
-              <Ionicons name="location-outline" size={18} color="#3B82F6" />
+            <View style={[styles.iconCircle, deliveryOption === 'pickup' && { backgroundColor: '#FEF3C7' }]}>
+              <Ionicons 
+                name={deliveryOption === 'pickup' ? "storefront-outline" : "location-outline"} 
+                size={18} 
+                color={deliveryOption === 'pickup' ? "#D97706" : "#3B82F6"} 
+              />
             </View>
             <View style={styles.addressInfo}>
-              <Text style={styles.sectionLabel}>{t('orderVerification.deliveryAddress', 'Destinataire & Adresse')}</Text>
-              <Text style={styles.recipientNameText}>{recipientName}</Text>
+              <Text style={styles.sectionLabel}>
+                {deliveryOption === 'pickup' 
+                  ? t('orderVerification.pickupLocationTitle', 'Lieu de retrait en boutique')
+                  : t('orderVerification.deliveryAddress', 'Destinataire & Adresse de livraison')}
+              </Text>
+              <Text style={styles.recipientNameText}>
+                {deliveryOption === 'pickup' ? merchantName : recipientName}
+              </Text>
               <Text style={styles.addressValue}>
-                {recipientPhone} • {recipientAddress}
+                {deliveryOption === 'pickup' 
+                  ? merchantFullAddress
+                  : `${recipientPhone} • ${recipientAddress || t('orderVerification.addressNotSet', 'Adresse non renseignée')}`}
               </Text>
             </View>
-            <TouchableOpacity style={styles.btnModifier} onPress={() => setIsEditingRecipient(!isEditingRecipient)}>
-              <Text style={styles.btnModifierText}>
-                {isEditingRecipient ? t('common.done', 'Fermer') : t('orderVerification.modify', 'Modifier')}
-              </Text>
-              <Ionicons
-                name={isEditingRecipient ? 'chevron-up' : 'chevron-forward'}
-                size={15}
-                color="#3B82F6"
-              />
-            </TouchableOpacity>
+            {deliveryOption === 'home' ? (
+              <TouchableOpacity style={styles.btnModifier} onPress={() => setIsEditingRecipient(!isEditingRecipient)}>
+                <Text style={styles.btnModifierText}>
+                  {isEditingRecipient ? t('common.done', 'Fermer') : t('orderVerification.modify', 'Modifier')}
+                </Text>
+                <Ionicons
+                  name={isEditingRecipient ? 'chevron-up' : 'chevron-forward'}
+                  size={15}
+                  color="#3B82F6"
+                />
+              </TouchableOpacity>
+            ) : (
+              <View style={[styles.btnModifier, { backgroundColor: '#FEF3C7', borderColor: '#FDE68A' }]}>
+                <Ionicons name="checkmark-circle" size={14} color="#D97706" style={{ marginRight: 3 }} />
+                <Text style={[styles.btnModifierText, { color: '#B45309' }]}>
+                  {t('orderVerification.pickupBadge', 'Retrait direct')}
+                </Text>
+              </View>
+            )}
           </View>
 
-          {isEditingRecipient && (
+          {deliveryOption === 'pickup' && (
+            <View style={{ marginTop: 8, paddingHorizontal: 4 }}>
+              <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 11, color: '#64748B', lineHeight: 16 }}>
+                💡 {t('orderVerification.pickupHint', 'Votre commande sera préparée à cette adresse. Vous recevrez un code PIN secret à présenter au commerçant lors du retrait.')}
+              </Text>
+            </View>
+          )}
+
+          {deliveryOption === 'home' && isEditingRecipient && (
             <View style={styles.editRecipientForm}>
               <Text style={styles.formInputLabel}>{t('orderVerification.recipientNameLabel', 'Nom & Prénom du destinataire')}</Text>
               <TextInput
@@ -492,6 +532,24 @@ export default function OrderVerificationScreen({ route }) {
           </View>
 
           <View style={styles.deliveryOptionsRow}>
+            {/* Store Pickup (First & Default per Solofo Mandate) */}
+            <TouchableOpacity
+              style={[styles.deliveryOption, deliveryOption === 'pickup' && styles.optionSelected]}
+              onPress={() => setDeliveryOption('pickup')}
+            >
+              <View style={[styles.radioOuter, deliveryOption === 'pickup' && styles.radioOuterSelected]}>
+                {deliveryOption === 'pickup' && <View style={styles.radioInner} />}
+              </View>
+              <View style={{ flex: 1 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
+                  <Text style={styles.optionTitle}>{t('orderVerification.storePickup', 'En boutique')}</Text>
+                  <Text style={[styles.optionPrice, { color: '#10B981' }]}>{t('orderVerification.free', 'Gratuit')}</Text>
+                </View>
+                <Text style={styles.optionDesc}>{t('orderVerification.storePickupDesc', 'Retrait immédiat en boutique')}</Text>
+              </View>
+            </TouchableOpacity>
+
+            {/* Home Delivery */}
             <TouchableOpacity
               style={[styles.deliveryOption, deliveryOption === 'home' && styles.optionSelected]}
               onPress={() => setDeliveryOption('home')}
@@ -513,22 +571,6 @@ export default function OrderVerificationScreen({ route }) {
                   )}
                 </View>
                 <Text style={styles.optionDesc}>{t('orderVerification.homeDeliveryDesc', 'Livraison sécurisée sous 24-48h')}</Text>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.deliveryOption, deliveryOption === 'pickup' && styles.optionSelected]}
-              onPress={() => setDeliveryOption('pickup')}
-            >
-              <View style={[styles.radioOuter, deliveryOption === 'pickup' && styles.radioOuterSelected]}>
-                {deliveryOption === 'pickup' && <View style={styles.radioInner} />}
-              </View>
-              <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
-                  <Text style={styles.optionTitle}>{t('orderVerification.storePickup', 'En boutique')}</Text>
-                  <Text style={[styles.optionPrice, { color: '#10B981' }]}>{t('orderVerification.free', 'Gratuit')}</Text>
-                </View>
-                <Text style={styles.optionDesc}>{t('orderVerification.storePickupDesc', 'Retrait immédiat en boutique')}</Text>
               </View>
             </TouchableOpacity>
           </View>

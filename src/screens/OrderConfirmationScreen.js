@@ -407,7 +407,11 @@ export default function OrderConfirmationScreen({ route }) {
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('orderConfirmation.recipient', 'Recipient')}</Text>
+            <Text style={styles.detailLabel}>
+              {orderData.deliveryOption === 'pickup'
+                ? t('orderConfirmation.pickupPoint', 'Pickup Store')
+                : t('orderConfirmation.recipient', 'Recipient')}
+            </Text>
             <Text style={styles.detailValue}>{orderData.recipient?.name || user?.name || ''}</Text>
           </View>
 
@@ -417,14 +421,18 @@ export default function OrderConfirmationScreen({ route }) {
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('orderConfirmation.deliveryAddress', 'Delivery address')}</Text>
+            <Text style={styles.detailLabel}>
+              {orderData.deliveryOption === 'pickup'
+                ? t('orderConfirmation.storeAddress', 'Store address')
+                : t('orderConfirmation.deliveryAddress', 'Delivery address')}
+            </Text>
             <Text style={styles.detailValue}>{orderData.recipient?.address || user?.city || ''}</Text>
           </View>
 
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('orderConfirmation.deliveryMode', 'Delivery mode')}</Text>
             <Text style={styles.detailValue}>
-              {orderData.deliveryOption === 'domicile'
+              {orderData.deliveryOption === 'home' || orderData.deliveryOption === 'domicile'
                 ? t('orderConfirmation.homeDelivery', 'Home delivery')
                 : t('orderConfirmation.storePickup', 'Store pickup')}
             </Text>

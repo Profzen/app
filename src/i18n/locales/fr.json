@@ -5730,7 +5730,7 @@
   "noActivityMessage": "Votre boîte est vide. Les nouvelles mises à jour, transactions et rappels apparaîtront ici.",
   "buyGoods": {
     "unavailableTitle": "Bientôt disponible",
-    "unavailableMessage": "L'achat et le paiement de biens physiques sont actuellement indisponibles. Vous pouvez continuer à parcourir la boutique, mais les commandes ne peuvent pas être acceptées pour le moment. En attendant, vous pouvez continuer à payer vos factures et services, recharger votre forfait mobile, acheter des cartes-cadeaux et envoyer ou recevoir des fonds. Nous vous informerons dès que le service 'Achat de biens' sera entièrement déployé.",
+    "unavailableMessage": "Nous déployons actuellement un réseau de livraison sécurisé en/au {{country}} pour vous garantir des produits authentifiés auprès de marchands certifiés. Les commandes de biens physiques ouvriront très prochainement ! En attendant, explorez librement les boutiques, rechargez vos forfaits, réglez vos factures, achetez des cartes-cadeaux ou échangez des fonds.",
     "continueBrowsing": "Continuer la navigation"
   },
   "dizzitapp_page": {

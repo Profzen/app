@@ -76,7 +76,8 @@ const formatRelation = (rel, t) => {
 export default function ContactsScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { language, t, session } = useApp();
+  const { language, t, session, user } = useApp();
+  const currentUserId = user?.id || session?.user?.id || user?.user_id;
   const [showInvite, setShowInvite] = useState(true);
   const [contactItems, setContactItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -102,13 +103,14 @@ export default function ContactsScreen() {
   };
 
   const fetchBeneficiaries = async () => {
-    if (!session?.user?.id) {
+    const userId = user?.id || session?.user?.id || user?.user_id;
+    if (!userId) {
       setContactItems([]);
       setIsLoading(false);
       return;
     }
     setIsLoading(true);
-    const { success, data } = await contactService.getBeneficiaries(session.user.id);
+    const { success, data } = await contactService.getBeneficiaries(userId);
     if (success && data && data.length > 0) {
       const formatted = data.map(b => {
         const fullCountry = getFullCountryName(b.country || b.country_name || b.country_code);
@@ -144,15 +146,15 @@ export default function ContactsScreen() {
   useFocusEffect(
     React.useCallback(() => {
       fetchBeneficiaries();
-    }, [session?.user?.id])
+    }, [currentUserId])
   );
 
   useEffect(() => {
-    if (!session?.user?.id) return;
+    if (!currentUserId) return;
 
     // Use a unique channel name each mount to avoid Supabase returning
     // an already-subscribed channel instance (which throws on .on() calls).
-    const channelName = `beneficiaries-${session.user.id}-${Date.now()}`;
+    const channelName = `beneficiaries-${currentUserId}-${Date.now()}`;
     const channel = supabase
       .channel(channelName)
       .on(
@@ -161,7 +163,7 @@ export default function ContactsScreen() {
           event: '*',
           schema: 'public',
           table: 'beneficiaries',
-          filter: `user_id=eq.${session.user.id}`,
+          filter: `user_id=eq.${currentUserId}`,
         },
         () => {
           fetchBeneficiaries();
@@ -172,7 +174,7 @@ export default function ContactsScreen() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [session?.user?.id]);
+  }, [currentUserId]);
 
   const removeContact = async (id) => {
     const { success, error } = await contactService.deleteBeneficiary(id);

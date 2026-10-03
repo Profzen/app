@@ -5,8 +5,9 @@ import { useApp } from '../context/AppContext';
 
 const { width } = Dimensions.get('window');
 
-export default function PhysicalGoodsWarningModal({ visible, onClose, onContinue }) {
+export default function PhysicalGoodsWarningModal({ visible, onClose, onContinue, country }) {
   const { t } = useApp();
+  const targetCountry = country || 'your region';
 
   return (
     <Modal
@@ -26,7 +27,7 @@ export default function PhysicalGoodsWarningModal({ visible, onClose, onContinue
           </Text>
           
           <Text style={styles.message}>
-            {t('buyGoods.unavailableMessage', "Buying and paying for physical goods is currently unavailable. You may continue browsing the shop, but orders cannot be accepted at this time. Meanwhile, you can continue paying bills & services, recharging your mobile plan, buying gift cards, and sending or receiving funds. We will notify you as soon as the 'Buy goods' service is fully rolled out.")}
+            {t('buyGoods.unavailableMessage', "We are establishing a secure delivery network in {{country}} to ensure you receive verified products from certified merchants. Physical goods orders will open shortly! Meanwhile, you can freely browse shops, recharge mobile plans, pay utility bills, buy gift cards, or send & receive funds.", { country: targetCountry })}
           </Text>
 
           <View style={styles.buttonContainer}>

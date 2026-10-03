@@ -83,6 +83,7 @@ export default function ProductDetailsScreen({ route }) {
   const merchantName = shop?.shop_name || shop?.name || product?.merchant?.shop_name || product?.merchant?.name || t('paymentSuccess.partnerMerchant', 'Partner Merchant');
   const merchantInitial = (merchantName || 'DZ').slice(0, 2).toUpperCase();
   const merchantLogo = shop?.shop_logo_url || shop?.logoUrl || shop?.raw?.shop_logo_url || product?.merchant?.shop_logo_url || product?.merchant?.logoUrl || product?.merchant_logo;
+  const merchantCountry = shop?.country || product?.merchant?.country || shop?.raw?.country || user?.country || 'Bénin';
 
   const executeAddToCart = (force = false) => {
     const res = addToCart(product, quantity, shop, force);
@@ -580,6 +581,7 @@ export default function ProductDetailsScreen({ route }) {
         visible={warningModalVisible}
         onClose={() => setWarningModalVisible(false)}
         onContinue={handleWarningContinue}
+        country={merchantCountry}
       />
 
     </SafeAreaView>
