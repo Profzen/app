@@ -580,6 +580,7 @@ export default function ProductDetailsScreen({ route }) {
         visible={warningModalVisible}
         onClose={() => setWarningModalVisible(false)}
         onContinue={handleWarningContinue}
+        shopCountry={shop?.country || product?.merchant?.country || 'your region'}
       />
 
     </SafeAreaView>

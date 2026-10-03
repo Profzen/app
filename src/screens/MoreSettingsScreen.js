@@ -14,7 +14,7 @@ import { useApp } from '../context/AppContext';
 
 export default function MoreSettingsScreen() {
   const navigation = useNavigation();
-  const { language, toggleLanguage, t, user } = useApp();
+  const { language, toggleLanguage, t, user, hasUnreadNotifications } = useApp();
   const [toast, setToast] = useState(null);
 
   const appVersion = Application.nativeApplicationVersion || Constants?.expoConfig?.version || '1.0.0';
@@ -63,7 +63,7 @@ export default function MoreSettingsScreen() {
             </View>
             <TouchableOpacity style={styles.notificationButton} onPress={() => navigation.navigate('NotificationsScreen')} accessibilityLabel="Notifications">
               <Ionicons name="notifications-outline" size={20} color="#1A2840" />
-              <View style={styles.notificationDot} />
+              {hasUnreadNotifications && <View style={styles.notificationDot} />}
             </TouchableOpacity>
           </View>
 

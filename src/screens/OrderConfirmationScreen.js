@@ -502,21 +502,15 @@ export default function OrderConfirmationScreen({ route }) {
           ) : (
             <>
               <View style={styles.btnConfirmCenter}>
-                <View style={styles.btnConfirmTitleRow}>
-                  <Ionicons name="lock-closed-outline" size={17} color="#1A2840" style={{ marginRight: 6 }} />
-                  <Text style={styles.btnConfirmTitle}>{t('orderConfirmation.confirmAndPay', 'Confirm and Pay')}</Text>
-                </View>
-                <Text style={styles.btnConfirmSub}>
+                <Ionicons name="lock-closed" size={16} color="#1A2840" style={{ marginRight: 8 }} />
+                <Text style={styles.btnConfirmTitle}>
+                  {t('orderConfirmation.confirmAndPay', 'Confirm and Pay')}
+                  {' • '}
                   {orderData.paymentRail === 'crypto'
-                    ? t('orderConfirmation.debitToken', `Debit ${orderData.selectedToken === 'DZY' ? orderData.totalDZY + ' DZY' : orderData.totalUSDC + ' ' + orderData.selectedToken}`, {
-                        amount: orderData.selectedToken === 'DZY' ? `${orderData.totalDZY} DZY` : `${orderData.totalUSDC} ${orderData.selectedToken}`
-                      })
-                    : t('orderConfirmation.securePaymentOf', `Secure payment of ${(Number(orderData.totalAmount) || 0).toLocaleString(numLocale)} ${displayCurrency}`, {
-                        amount: `${(Number(orderData.totalAmount) || 0).toLocaleString(numLocale)} ${displayCurrency}`
-                      })}
+                    ? (orderData.selectedToken === 'DZY' ? `${orderData.totalDZY} DZY` : `${orderData.totalUSDC} ${orderData.selectedToken}`)
+                    : `${(Number(orderData.totalAmount) || 0).toLocaleString(numLocale)} ${displayCurrency}`}
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#1A2840" />
             </>
           )}
         </TouchableOpacity>
@@ -977,37 +971,34 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
     borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
+    borderTopColor: '#F1F5F9',
   },
   btnConfirm: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     backgroundColor: '#FFB800',
-    borderRadius: 14,
+    borderRadius: 100, // Pill shape
     paddingHorizontal: 20,
     paddingVertical: 14,
+    shadowColor: '#FFB800',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 4,
   },
   btnConfirmCenter: {
-    flex: 1,
-  },
-  btnConfirmTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   btnConfirmTitle: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 15,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 14,
     color: '#1A2840',
-  },
-  btnConfirmSub: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 11,
-    color: 'rgba(26, 40, 64, 0.75)',
-    marginTop: 2,
   },
   modalHeader: {
     flexDirection: 'row',

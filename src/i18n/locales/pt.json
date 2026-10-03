@@ -5484,8 +5484,8 @@
   "noActivityMessage": "Sua caixa está vazia. Novas atualizações, transações e lembretes aparecerão aqui.",
   "buyGoods": {
     "unavailableTitle": "Em Breve",
-    "unavailableMessage": "A compra e o pagamento de bens físicos estão atualmente indisponíveis. Você pode continuar navegando na loja, mas os pedidos não podem ser aceitos no momento. Enquanto isso, você pode continuar pagando contas e serviços, recarregando seu plano de celular, comprando vales-presente e enviando ou recebendo fundos. Avisaremos assim que o serviço 'Comprar bens' estiver totalmente implementado.",
-    "continueBrowsing": "Continuar Navegando"
+    "unavailableMessage": "Estamos a estabelecer uma rede de entrega segura no/em {{country}} para garantir que os seus entes queridos recebam produtos autênticos de comerciantes verificados.\n\nA compra de bens físicos está temporariamente indisponível, mas ainda pode explorar as lojas. Entretanto, pode continuar a pagar contas, recarregar telemóveis e enviar ou receber fundos. Iremos notificá-lo assim que o serviço estiver totalmente implementado.",
+    "continueBrowsing": "Continuar a navegar"
   },
   "dizzitapp_page": {
     "seo_title": "Baixar DizzitApp | DizzitUp",

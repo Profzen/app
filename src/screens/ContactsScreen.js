@@ -76,7 +76,7 @@ const formatRelation = (rel, t) => {
 export default function ContactsScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { language, t, session } = useApp();
+  const { language, t, session, hasUnreadNotifications } = useApp();
   const [showInvite, setShowInvite] = useState(true);
   const [contactItems, setContactItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -302,7 +302,7 @@ export default function ContactsScreen() {
           <View style={styles.headerRightIcons}>
             <TouchableOpacity style={styles.iconBtnRight}>
               <Ionicons name="notifications-outline" size={20} color="#1A2840" />
-              <View style={styles.notificationDot} />
+              {hasUnreadNotifications && <View style={styles.notificationDot} />}
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconBtnRight} onPress={() => navigation.navigate('RewardsScreen')}>
               <Ionicons name="gift-outline" size={20} color="#1A2840" />

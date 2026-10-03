@@ -4,7 +4,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Platform, StatusBar, ActivityIndicator, Animated, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Platform, StatusBar, ActivityIndicator, Animated, TextInput, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import WalletCard from '../components/WalletCard';
 import BottomNavBar from '../components/BottomNavBar';
@@ -21,7 +21,7 @@ import { isSmallScreen, isShortScreen } from '../utils/responsive';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
-  const { language, toggleLanguage, t, user, isUserLoading, detectedCountry } = useApp();
+  const { language, toggleLanguage, t, user, isUserLoading, detectedCountry, refreshUser, hasUnreadNotifications } = useApp();
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [activeSlide, setActiveSlide] = useState(0);
   const [walletBalances, setWalletBalances] = useState({});
@@ -36,6 +36,20 @@ export default function HomeScreen() {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedSearchTab, setSelectedSearchTab] = useState('ALL');
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      if (refreshUser) {
+        await refreshUser();
+      }
+    } catch (err) {
+      console.warn('Refresh error:', err);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     if (!searchQuery.trim() || searchQuery.trim().length < 2) {
@@ -254,7 +268,19 @@ export default function HomeScreen() {
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       <View style={styles.container}>
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} bounces={false}>
+        <ScrollView 
+          style={styles.scrollView} 
+          showsVerticalScrollIndicator={false} 
+          bounces={true}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#FFB800']}
+              tintColor="#FFB800"
+            />
+          }
+        >
 
           <View style={styles.header}>
             <TouchableOpacity
@@ -281,7 +307,7 @@ export default function HomeScreen() {
               <LanguageSelector />
               <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('NotificationsScreen')} accessibilityLabel="Notifications">
                 <Ionicons name="notifications-outline" size={18} color="#1A2840" />
-                <View style={styles.notificationDot} />
+                {hasUnreadNotifications && <View style={styles.notificationDot} />}
               </TouchableOpacity>
               <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('RewardsScreen')}>
                 <Ionicons name="gift-outline" size={18} color="#1A2840" />

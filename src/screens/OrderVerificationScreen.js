@@ -11,6 +11,7 @@ import {
   TextInput,
   Platform,
   StatusBar,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
@@ -19,6 +20,8 @@ import { useApp } from '../context/AppContext';
 import { convertCurrencyAmount } from '../utils/countryCurrencyUtils';
 import { getPaymentRailEligibility, COUNTRY_METADATA } from '../services/paymentCorridorService';
 import PaymentRegionModal from '../components/PaymentRegionModal';
+import { contactService } from '../services/contactService';
+import SelectableContactItem from '../components/SelectableContactItem';
 
 const BLOCKCHAIN_NETWORKS = [
   {
@@ -116,7 +119,7 @@ export default function OrderVerificationScreen({ route }) {
     return [];
   }, [cart, directItem]);
 
-  const [deliveryOption, setDeliveryOption] = useState('home'); // 'home', 'pickup'
+  const [deliveryOption, setDeliveryOption] = useState('pickup'); // 'home', 'pickup'
   const [paymentRail, setPaymentRail] = useState('crypto'); // 'crypto', 'card', 'momo'
   const [selectedToken, setSelectedToken] = useState('USDC'); // 'USDC', 'USDT', 'EURC', 'DZY'
   const [network, setNetwork] = useState('Polygon'); // 'Polygon', 'Base', 'Ethereum', 'Solana'
@@ -157,13 +160,22 @@ export default function OrderVerificationScreen({ route }) {
 
   // Recipient info
   const [isEditingRecipient, setIsEditingRecipient] = useState(false);
-  const [recipientName, setRecipientName] = useState(
-    user?.name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.email || ''
-  );
-  const [recipientPhone, setRecipientPhone] = useState(user?.phone || '');
-  const [recipientAddress, setRecipientAddress] = useState(
-    user?.address || (user?.city ? `${user.city}${user.country ? ', ' + user.country : ''}` : '')
-  );
+  const [recipientName, setRecipientName] = useState('');
+  const [recipientPhone, setRecipientPhone] = useState('');
+  const [recipientAddress, setRecipientAddress] = useState('');
+  
+  const [beneficiaries, setBeneficiaries] = useState([]);
+  const [selectedBeneficiaryId, setSelectedBeneficiaryId] = useState(null);
+
+  useEffect(() => {
+    if (user?.id) {
+      contactService.getBeneficiaries(user.id).then(res => {
+        if (res?.success && Array.isArray(res.data)) {
+          setBeneficiaries(res.data);
+        }
+      });
+    }
+  }, [user?.id]);
 
   // Quantity updates
   const handleIncrement = (item) => {
@@ -270,10 +282,42 @@ export default function OrderVerificationScreen({ route }) {
     return userBalance < parseFloat(totalUSDC);
   }, [paymentRail, selectedToken, userBalance, totalDZY, totalEURC, totalUSDC]);
 
-  const handleProceedToConfirmation = () => {
+  const handleProceedToConfirmation = async () => {
     if (items.length === 0) {
       AppToast.showError(t('cart.emptyDesc', 'Your cart is empty.'), t('common.error', 'Error'));
       return;
+    }
+
+    // Validation for Home Delivery
+    if (deliveryOption === 'home') {
+      if (!recipientName || !recipientPhone || !recipientAddress) {
+        AppToast.showError(t('orderVerification.missingDeliveryInfo', 'Please select a beneficiary or enter delivery details.'), t('common.error', 'Error'));
+        return;
+      }
+      
+      // Validate city matches merchant city
+      const storeCity = merchantLocation.split(',')[0].trim().toLowerCase();
+      const delCity = recipientAddress.split(',').pop().trim().toLowerCase(); // simplistic check
+      // For this version, we require the word to be present in the address
+      if (storeCity && !recipientAddress.toLowerCase().includes(storeCity)) {
+        AppToast.showError(
+          t('orderVerification.cityMismatch', `Delivery is currently restricted to the store's city (${merchantLocation.split(',')[0]}).`),
+          t('common.error', 'Error')
+        );
+        return;
+      }
+
+      // Persist manual address if not a selected beneficiary
+      if (!selectedBeneficiaryId && isEditingRecipient && user?.id) {
+        try {
+           await contactService.addBeneficiary(user.id, {
+             first_name: recipientName,
+             phone: recipientPhone,
+             city: recipientAddress,
+             relationship: 'Delivery'
+           });
+        } catch (e) { console.log('Failed to save beneficiary', e); }
+      }
     }
 
     const orderPayload = {
@@ -302,9 +346,9 @@ export default function OrderVerificationScreen({ route }) {
       totalUSDC: parseFloat(totalUSDC),
       totalDZY: parseFloat(totalDZY),
       recipient: {
-        name: recipientName,
-        phone: recipientPhone,
-        address: recipientAddress,
+        name: deliveryOption === 'pickup' ? user?.name || 'Moi' : recipientName,
+        phone: deliveryOption === 'pickup' ? user?.phone || '' : recipientPhone,
+        address: deliveryOption === 'pickup' ? merchantLocation : recipientAddress,
       },
       paymentRail,
       payerCountry,
@@ -427,61 +471,6 @@ export default function OrderVerificationScreen({ route }) {
           ))}
         </View>
 
-        {/* Recipient & Delivery Address Card */}
-        <View style={styles.addressCard}>
-          <View style={styles.cardHeaderRow}>
-            <View style={styles.iconCircle}>
-              <Ionicons name="location-outline" size={18} color="#3B82F6" />
-            </View>
-            <View style={styles.addressInfo}>
-              <Text style={styles.sectionLabel}>{t('orderVerification.deliveryAddress', 'Destinataire & Adresse')}</Text>
-              <Text style={styles.recipientNameText}>{recipientName}</Text>
-              <Text style={styles.addressValue}>
-                {recipientPhone} • {recipientAddress}
-              </Text>
-            </View>
-            <TouchableOpacity style={styles.btnModifier} onPress={() => setIsEditingRecipient(!isEditingRecipient)}>
-              <Text style={styles.btnModifierText}>
-                {isEditingRecipient ? t('common.done', 'Fermer') : t('orderVerification.modify', 'Modifier')}
-              </Text>
-              <Ionicons
-                name={isEditingRecipient ? 'chevron-up' : 'chevron-forward'}
-                size={15}
-                color="#3B82F6"
-              />
-            </TouchableOpacity>
-          </View>
-
-          {isEditingRecipient && (
-            <View style={styles.editRecipientForm}>
-              <Text style={styles.formInputLabel}>{t('orderVerification.recipientNameLabel', 'Nom & Prénom du destinataire')}</Text>
-              <TextInput
-                style={styles.formInput}
-                value={recipientName}
-                onChangeText={setRecipientName}
-                placeholder={t('orderVerification.namePlaceholder', 'Ex : Koffi Mensah')}
-              />
-
-              <Text style={styles.formInputLabel}>{t('orderVerification.recipientPhoneLabel', 'Numéro de téléphone')}</Text>
-              <TextInput
-                style={styles.formInput}
-                value={recipientPhone}
-                onChangeText={setRecipientPhone}
-                placeholder={user?.phone || '+228 90 00 00 00'}
-                keyboardType="phone-pad"
-              />
-
-              <Text style={styles.formInputLabel}>{t('orderVerification.recipientAddressLabel', 'Adresse / Ville de livraison')}</Text>
-              <TextInput
-                style={styles.formInput}
-                value={recipientAddress}
-                onChangeText={setRecipientAddress}
-                placeholder={t('orderVerification.addressPlaceholder', 'Quartier, Rue, Ville')}
-              />
-            </View>
-          )}
-        </View>
-
         {/* Delivery Options */}
         <View style={styles.deliverySection}>
           <View style={styles.sectionHeaderRow}>
@@ -492,6 +481,22 @@ export default function OrderVerificationScreen({ route }) {
           </View>
 
           <View style={styles.deliveryOptionsRow}>
+            <TouchableOpacity
+              style={[styles.deliveryOption, deliveryOption === 'pickup' && styles.optionSelected]}
+              onPress={() => setDeliveryOption('pickup')}
+            >
+              <View style={[styles.radioOuter, deliveryOption === 'pickup' && styles.radioOuterSelected]}>
+                {deliveryOption === 'pickup' && <View style={styles.radioInner} />}
+              </View>
+              <View style={{ flex: 1 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
+                  <Text style={styles.optionTitle}>{t('orderVerification.storePickup', 'En boutique')}</Text>
+                  <Text style={[styles.optionPrice, { color: '#10B981' }]}>{t('orderVerification.free', 'Gratuit')}</Text>
+                </View>
+                <Text style={styles.optionDesc}>{t('orderVerification.storePickupDesc', 'Retrait immédiat en boutique')}</Text>
+              </View>
+            </TouchableOpacity>
+
             <TouchableOpacity
               style={[styles.deliveryOption, deliveryOption === 'home' && styles.optionSelected]}
               onPress={() => setDeliveryOption('home')}
@@ -515,24 +520,123 @@ export default function OrderVerificationScreen({ route }) {
                 <Text style={styles.optionDesc}>{t('orderVerification.homeDeliveryDesc', 'Livraison sécurisée sous 24-48h')}</Text>
               </View>
             </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.deliveryOption, deliveryOption === 'pickup' && styles.optionSelected]}
-              onPress={() => setDeliveryOption('pickup')}
-            >
-              <View style={[styles.radioOuter, deliveryOption === 'pickup' && styles.radioOuterSelected]}>
-                {deliveryOption === 'pickup' && <View style={styles.radioInner} />}
-              </View>
-              <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
-                  <Text style={styles.optionTitle}>{t('orderVerification.storePickup', 'En boutique')}</Text>
-                  <Text style={[styles.optionPrice, { color: '#10B981' }]}>{t('orderVerification.free', 'Gratuit')}</Text>
-                </View>
-                <Text style={styles.optionDesc}>{t('orderVerification.storePickupDesc', 'Retrait immédiat en boutique')}</Text>
-              </View>
-            </TouchableOpacity>
           </View>
         </View>
+
+        {/* Recipient & Delivery Address Card */}
+        <View style={styles.addressCard}>
+          <View style={styles.cardHeaderRow}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="location-outline" size={18} color="#3B82F6" />
+            </View>
+            <View style={styles.addressInfo}>
+              <Text style={styles.sectionLabel}>{t('orderVerification.deliveryAddress', 'Destinataire & Adresse')}</Text>
+              
+              {deliveryOption === 'pickup' ? (
+                <>
+                  <Text style={styles.recipientNameText}>{user?.name || t('common.me', 'Me')}</Text>
+                  <Text style={styles.addressValue}>{merchantLocation}</Text>
+                  <Text style={{ fontSize: 12, color: '#10B981', marginTop: 2, fontFamily: 'Inter_500Medium' }}>
+                    {t('orderVerification.pickupNotice', 'Vous retirerez la commande à cette adresse.')}
+                  </Text>
+                </>
+              ) : (
+                <>
+                  {(recipientName || recipientAddress) ? (
+                    <>
+                      <Text style={styles.recipientNameText}>{recipientName}</Text>
+                      <Text style={styles.addressValue}>{recipientPhone} • {recipientAddress}</Text>
+                    </>
+                  ) : null}
+                </>
+              )}
+            </View>
+            
+            {deliveryOption === 'home' && (recipientName || recipientAddress || isEditingRecipient) && (
+              <TouchableOpacity style={styles.btnModifier} onPress={() => setIsEditingRecipient(!isEditingRecipient)}>
+                <Text style={styles.btnModifierText}>
+                  {isEditingRecipient ? t('common.done', 'Done') : t('orderVerification.modify', 'Modify')}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {deliveryOption === 'home' && !recipientName && !recipientAddress && !isEditingRecipient && (
+             <View style={styles.noAddressContainer}>
+               <Ionicons name="location-outline" size={16} color="#DC2626" />
+               <Text style={styles.noAddressText}>
+                 {t('orderVerification.noAddressSelected', 'Please select or enter a delivery address.')}
+               </Text>
+               <TouchableOpacity style={styles.btnModifier} onPress={() => setIsEditingRecipient(true)}>
+                 <Text style={styles.btnModifierText}>{t('common.add', 'Add')}</Text>
+               </TouchableOpacity>
+             </View>
+          )}
+
+          {deliveryOption === 'home' && isEditingRecipient && (
+            <View style={styles.editRecipientForm}>
+              {beneficiaries.length > 0 && (
+                <>
+                  <Text style={styles.formInputLabel}>{t('payBills.myBeneficiaries', 'My Beneficiaries')}</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
+                    {beneficiaries.map(b => (
+                      <TouchableOpacity 
+                        key={b.id}
+                        style={[
+                          styles.beneficiaryPill, 
+                          selectedBeneficiaryId === b.id && styles.beneficiaryPillSelected
+                        ]}
+                        onPress={() => {
+                          setSelectedBeneficiaryId(b.id);
+                          setRecipientName(b.first_name + (b.last_name ? ' ' + b.last_name : ''));
+                          setRecipientPhone(b.phone || '');
+                          setRecipientAddress(b.city || '');
+                        }}
+                      >
+                        <Text style={[styles.beneficiaryPillText, selectedBeneficiaryId === b.id && styles.beneficiaryPillTextSelected]}>
+                          {b.first_name} {b.last_name}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                  <View style={styles.divider} />
+                  <Text style={styles.formInputLabel}>{t('orderVerification.orEnterManually', 'Ou saisir manuellement')}</Text>
+                </>
+              )}
+
+              <Text style={styles.formInputLabel}>{t('orderVerification.recipientNameLabel', 'Nom & Prénom du destinataire')}</Text>
+              <TextInput
+                style={styles.formInput}
+                value={recipientName}
+                onChangeText={(t) => { setRecipientName(t); setSelectedBeneficiaryId(null); }}
+                placeholder={t('orderVerification.namePlaceholder', 'Ex : Koffi Mensah')}
+              />
+
+              <Text style={styles.formInputLabel}>{t('orderVerification.recipientPhoneLabel', 'Numéro de téléphone')}</Text>
+              <TextInput
+                style={styles.formInput}
+                value={recipientPhone}
+                onChangeText={(t) => { setRecipientPhone(t); setSelectedBeneficiaryId(null); }}
+                placeholder={'+228 90 00 00 00'}
+                keyboardType="phone-pad"
+              />
+
+              <Text style={styles.formInputLabel}>{t('orderVerification.recipientAddressLabel', 'Adresse / Ville de livraison')}</Text>
+              <TextInput
+                style={styles.formInput}
+                value={recipientAddress}
+                onChangeText={(t) => { setRecipientAddress(t); setSelectedBeneficiaryId(null); }}
+                placeholder={t('orderVerification.addressPlaceholder', 'Quartier, Rue, Ville')}
+                placeholderTextColor="#94A3B8"
+              />
+              <Text style={[styles.addressValue, { marginTop: 6, color: '#64748B' }]}>
+                {t('orderVerification.cityRestrictionInfo', 'The delivery city must match the shop city.')}
+              </Text>
+            </View>
+          )}
+        </View>
+
+
 
         {/* Payment Rails Selector */}
         <View style={styles.paymentSection}>
@@ -559,7 +663,6 @@ export default function OrderVerificationScreen({ route }) {
               style={[styles.railTab, paymentRail === 'crypto' && styles.railTabActive]}
               onPress={() => setPaymentRail('crypto')}
             >
-              <Ionicons name="wallet-outline" size={16} color={paymentRail === 'crypto' ? '#1A2840' : '#64748B'} />
               <Text style={[styles.railTabText, paymentRail === 'crypto' && styles.railTabTextActive]} adjustsFontSizeToFit numberOfLines={1}>
                 {t('orderVerification.cryptoTab', 'DZY & Stablecoins')}
               </Text>
@@ -569,9 +672,8 @@ export default function OrderVerificationScreen({ route }) {
               style={[styles.railTab, paymentRail === 'card' && styles.railTabActive]}
               onPress={() => setPaymentRail('card')}
             >
-              <Ionicons name="card-outline" size={16} color={paymentRail === 'card' ? '#1A2840' : '#64748B'} />
               <Text style={[styles.railTabText, paymentRail === 'card' && styles.railTabTextActive]} adjustsFontSizeToFit numberOfLines={1}>
-                {t('orderVerification.cardTab', 'Carte Bancaire')}
+                {t('orderVerification.cardTab', 'Bank Card')}
               </Text>
             </TouchableOpacity>
 
@@ -580,7 +682,6 @@ export default function OrderVerificationScreen({ route }) {
                 style={[styles.railTab, paymentRail === 'momo' && styles.railTabActive]}
                 onPress={() => setPaymentRail('momo')}
               >
-                <Ionicons name="phone-portrait-outline" size={16} color={paymentRail === 'momo' ? '#1A2840' : '#64748B'} />
                 <Text style={[styles.railTabText, paymentRail === 'momo' && styles.railTabTextActive]} adjustsFontSizeToFit numberOfLines={1}>
                   {t('orderVerification.momoTab', 'Mobile Money')}
                 </Text>
@@ -591,7 +692,6 @@ export default function OrderVerificationScreen({ route }) {
                 onPress={() => setRegionModalVisible(true)}
                 activeOpacity={0.7}
               >
-                <Ionicons name="lock-closed" size={13} color="#94A3B8" style={{ marginRight: 2 }} />
                 <Text style={[styles.railTabText, styles.railTabTextDisabled]} adjustsFontSizeToFit numberOfLines={1}>
                   {t('orderVerification.momoTab', 'Mobile Money')}
                 </Text>
@@ -724,8 +824,8 @@ export default function OrderVerificationScreen({ route }) {
                   <View style={{ flex: 1 }}>
                     <Text style={styles.balanceWarningTitle}>{t('orderVerification.insufficientBalanceTitle', 'Insufficient balance')}</Text>
                     <Text style={styles.balanceWarningText}>
-                      {t('orderVerification.insufficientBalanceDesc', `Your current balance is ${userBalance} ${selectedToken}. You can top up your account or choose another method.`, {
-                        balance: userBalance,
+                      {t('orderVerification.insufficientBalanceDesc', `Your current balance is ${Number(userBalance).toLocaleString('en-US', { maximumFractionDigits: 4 })} ${selectedToken}. You can top up your account or choose another method.`, {
+                        balance: Number(userBalance).toLocaleString('en-US', { maximumFractionDigits: 4 }),
                         token: selectedToken
                       })}
                     </Text>
@@ -1113,15 +1213,43 @@ const styles = StyleSheet.create({
     color: '#64748B',
     marginTop: 2,
   },
+  noAddressContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FEE2E2',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    marginTop: 12,
+    marginBottom: 8,
+    marginHorizontal: 12,
+  },
+  noAddressText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 11,
+    color: '#DC2626',
+    marginLeft: 6,
+    flex: 1,
+  },
   btnModifier: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#FFB800',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    shadowColor: '#FFB800',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 2,
   },
   btnModifierText: {
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: 'Inter_700Bold',
     fontSize: 12,
-    color: '#3B82F6',
-    marginRight: 2,
+    color: '#1A2840',
   },
   editRecipientForm: {
     marginTop: 12,
@@ -1137,9 +1265,9 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   formInput: {
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1.5,
+    borderColor: '#1A2840',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -1214,8 +1342,8 @@ const styles = StyleSheet.create({
   },
   railTabsRow: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
     padding: 4,
     borderWidth: 1,
     borderColor: '#E2E8F0',
@@ -1224,22 +1352,27 @@ const styles = StyleSheet.create({
   },
   railTab: {
     flex: 1,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 2,
-    borderRadius: 8,
-    gap: 3,
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    borderRadius: 10,
   },
   railTabActive: {
     backgroundColor: '#FFB800',
+    shadowColor: '#FFB800',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    elevation: 4,
+    borderColor: '#E6A600',
+    borderWidth: 1.5,
   },
   railTabText: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
+    fontSize: 11.5,
     color: '#64748B',
-    flexShrink: 1,
+    textAlign: 'center',
   },
   railTabTextActive: {
     color: '#1A2840',
@@ -1777,5 +1910,38 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     fontSize: 10.5,
     color: '#065F46',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#E2E8F0',
+    marginVertical: 12,
+  },
+  addressHelpText: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: -8,
+    marginBottom: 12,
+  },
+  beneficiaryPill: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#F1F5F9',
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  beneficiaryPillSelected: {
+    backgroundColor: '#EFF6FF',
+    borderColor: '#3B82F6',
+  },
+  beneficiaryPillText: {
+    fontSize: 13,
+    color: '#475569',
+    fontFamily: 'Inter_500Medium',
+  },
+  beneficiaryPillTextSelected: {
+    color: '#1D4ED8',
+    fontFamily: 'Inter_600SemiBold',
   },
 });

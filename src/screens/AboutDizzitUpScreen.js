@@ -125,11 +125,11 @@ export default function AboutDizzitUpScreen() {
           {/* Logo & Brand Header */}
           <View style={styles.brandCard}>
             <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={styles.logoImage} resizeMode="contain" />
-            <Text style={styles.appName}>DizzitUp Mobile App</Text>
-            <Text style={styles.versionText}>{`Version v${appVersion} (Build ${appBuildNumber} / ${currentYear})`}</Text>
+            <Text style={styles.appName} selectable={true}>DizzitUp Mobile App</Text>
+            <Text style={styles.versionText} selectable={true}>{`Version v${appVersion} (Build ${appBuildNumber} / ${currentYear})`}</Text>
             <View style={styles.statusBadge}>
               <View style={styles.statusDot} />
-              <Text style={styles.statusText}>Prod-Ready • Web3 & Stablecoins</Text>
+              <Text style={styles.statusText} selectable={true}>Prod-Ready • Web3 & Stablecoins</Text>
             </View>
           </View>
 
@@ -140,14 +140,14 @@ export default function AboutDizzitUpScreen() {
             <View style={styles.buildMetaRow}>
               <View style={styles.buildChip}>
                 <Ionicons name="cube-outline" size={13} color="#1A2840" style={{ marginRight: 4 }} />
-                <Text style={styles.buildChipText}>{`Build #${appBuildNumber}`}</Text>
+                <Text style={styles.buildChipText} selectable={true}>{`Build #${appBuildNumber}`}</Text>
               </View>
               <View style={styles.versionChip}>
-                <Text style={styles.versionChipText}>{`v${appVersion}`}</Text>
+                <Text style={styles.versionChipText} selectable={true}>{`v${appVersion}`}</Text>
               </View>
               <View style={styles.dateBadge}>
                 <Ionicons name="calendar-outline" size={12} color="#6B7280" style={{ marginRight: 4 }} />
-                <Text style={styles.dateBadgeText}>{releaseNotes.releaseDate || currentDate}</Text>
+                <Text style={styles.dateBadgeText} selectable={true}>{releaseNotes.releaseDate || currentDate}</Text>
               </View>
             </View>
 
@@ -166,19 +166,19 @@ export default function AboutDizzitUpScreen() {
                     <View key={index} style={styles.releaseItem}>
                       <Text style={styles.releaseBullet}>•</Text>
                       {colonIdx > 0 && colonIdx < 45 ? (
-                        <Text style={styles.releaseText}>
+                        <Text style={styles.releaseText} selectable={true}>
                           <Text style={styles.releaseBold}>{feature.substring(0, colonIdx + 1)}</Text>
                           {feature.substring(colonIdx + 1)}
                         </Text>
                       ) : (
-                        <Text style={styles.releaseText}>{feature}</Text>
+                        <Text style={styles.releaseText} selectable={true}>{feature}</Text>
                       )}
                     </View>
                   );
                 })
               ) : (
                 <View style={styles.releaseItem}>
-                  <Text style={styles.releaseText}>{t('aboutApp.noFeatures', 'No new feature notes available.')}</Text>
+                  <Text style={styles.releaseText} selectable={true}>{t('aboutApp.noFeatures', 'No new feature notes available.')}</Text>
                 </View>
               )}
             </View>
@@ -200,19 +200,19 @@ export default function AboutDizzitUpScreen() {
                     <View key={index} style={styles.releaseItem}>
                       <Text style={styles.releaseBullet}>•</Text>
                       {colonIdx > 0 && colonIdx < 45 ? (
-                        <Text style={styles.releaseText}>
+                        <Text style={styles.releaseText} selectable={true}>
                           <Text style={styles.releaseBold}>{fix.substring(0, colonIdx + 1)}</Text>
                           {fix.substring(colonIdx + 1)}
                         </Text>
                       ) : (
-                        <Text style={styles.releaseText}>{fix}</Text>
+                        <Text style={styles.releaseText} selectable={true}>{fix}</Text>
                       )}
                     </View>
                   );
                 })
               ) : (
                 <View style={styles.releaseItem}>
-                  <Text style={styles.releaseText}>{t('aboutApp.noFixes', 'No bug fixes available.')}</Text>
+                  <Text style={styles.releaseText} selectable={true}>{t('aboutApp.noFixes', 'No bug fixes available.')}</Text>
                 </View>
               )}
             </View>
@@ -223,9 +223,9 @@ export default function AboutDizzitUpScreen() {
             <View style={styles.warningContainer}>
               <View style={styles.warningHeader}>
                 <Ionicons name="warning-outline" size={15} color="#D97706" style={{ marginRight: 6 }} />
-                <Text style={styles.warningTitle}>{t('aboutApp.generalWarningTitle', 'GENERAL WARNING')}</Text>
+                <Text style={styles.warningTitle} selectable={true}>{t('aboutApp.generalWarningTitle', 'GENERAL WARNING')}</Text>
               </View>
-              <Text style={styles.warningText}>
+              <Text style={styles.warningText} selectable={true}>
                 {t('aboutApp.generalWarningText', 'Beta Test Version: This build is strictly intended for internal validation, TestFlight, and Google Play beta testers. Financial, mobile money, and blockchain operations may interact with test corridors. Please report any unexpected behavior to the team.')}
               </Text>
             </View>
@@ -247,27 +247,27 @@ export default function AboutDizzitUpScreen() {
             </Text>
             <View style={styles.bulletItem}>
               <Ionicons name="cart-outline" size={16} color="#FFC759" style={styles.bulletIcon} />
-              <Text style={styles.bulletText}>{t('aboutApp.featBuyGoods', 'Buy goods & essentials locally and cross-border')}</Text>
+              <Text style={styles.bulletText} selectable={true}>{t('aboutApp.featBuyGoods', 'Buy goods & essentials locally and cross-border')}</Text>
             </View>
             <View style={styles.bulletItem}>
               <Ionicons name="flash-outline" size={16} color="#FFC759" style={styles.bulletIcon} />
-              <Text style={styles.bulletText}>{t('aboutApp.featPayBills', 'Pay bills (Electricity, Water, Internet, Tuition)')}</Text>
+              <Text style={styles.bulletText} selectable={true}>{t('aboutApp.featPayBills', 'Pay bills (Electricity, Water, Internet, Tuition)')}</Text>
             </View>
             <View style={styles.bulletItem}>
               <Ionicons name="phone-portrait-outline" size={16} color="#FFC759" style={styles.bulletIcon} />
-              <Text style={styles.bulletText}>{t('aboutApp.featRecharge', 'Recharge mobile airtime & data bundles')}</Text>
+              <Text style={styles.bulletText} selectable={true}>{t('aboutApp.featRecharge', 'Recharge mobile airtime & data bundles')}</Text>
             </View>
             <View style={styles.bulletItem}>
               <Ionicons name="card-outline" size={16} color="#FFC759" style={styles.bulletIcon} />
-              <Text style={styles.bulletText}>{t('aboutApp.featOnRamp', 'Buy / On-ramp / Top-up USD & EUR stablecoins (Visa, Mastercard & Mobile Money)')}</Text>
+              <Text style={styles.bulletText} selectable={true}>{t('aboutApp.featOnRamp', 'Buy / On-ramp / Top-up USD & EUR stablecoins (Visa, Mastercard & Mobile Money)')}</Text>
             </View>
             <View style={styles.bulletItem}>
               <Ionicons name="cash-outline" size={16} color="#FFC759" style={styles.bulletIcon} />
-              <Text style={styles.bulletText}>{t('aboutApp.featOffRamp', 'Sell / Off-ramp / Cash-out USD & EUR stablecoins to local African money (Mobile Money or Bank account)')}</Text>
+              <Text style={styles.bulletText} selectable={true}>{t('aboutApp.featOffRamp', 'Sell / Off-ramp / Cash-out USD & EUR stablecoins to local African money (Mobile Money or Bank account)')}</Text>
             </View>
             <View style={styles.bulletItem}>
               <Ionicons name="globe-outline" size={16} color="#FFC759" style={styles.bulletIcon} />
-              <Text style={styles.bulletText}>{t('aboutApp.featSendReceive', 'Send & receive worldwide USD & EUR stablecoins instantly')}</Text>
+              <Text style={styles.bulletText} selectable={true}>{t('aboutApp.featSendReceive', 'Send & receive worldwide USD & EUR stablecoins instantly')}</Text>
             </View>
 
             <View style={[styles.divider, { marginVertical: 12 }]} />
@@ -277,15 +277,15 @@ export default function AboutDizzitUpScreen() {
             </Text>
             <View style={styles.bulletItem}>
               <Ionicons name="storefront-outline" size={16} color="#3B82F6" style={styles.bulletIcon} />
-              <Text style={styles.bulletText}>{t('aboutApp.bizSellGlobal', 'Sell products & services globally to the diaspora')}</Text>
+              <Text style={styles.bulletText} selectable={true}>{t('aboutApp.bizSellGlobal', 'Sell products & services globally to the diaspora')}</Text>
             </View>
             <View style={styles.bulletItem}>
               <Ionicons name="receipt-outline" size={16} color="#3B82F6" style={styles.bulletIcon} />
-              <Text style={styles.bulletText}>{t('aboutApp.bizInvoice', 'Invoice customers and send instant Pay links')}</Text>
+              <Text style={styles.bulletText} selectable={true}>{t('aboutApp.bizInvoice', 'Invoice customers and send instant Pay links')}</Text>
             </View>
             <View style={styles.bulletItem}>
               <Ionicons name="wallet-outline" size={16} color="#3B82F6" style={styles.bulletIcon} />
-              <Text style={styles.bulletText}>{t('aboutApp.bizSettle', 'Settle and get paid in USD, EUR stablecoins or local African money (Mobile Money or Bank account)')}</Text>
+              <Text style={styles.bulletText} selectable={true}>{t('aboutApp.bizSettle', 'Settle and get paid in USD, EUR stablecoins or local African money (Mobile Money or Bank account)')}</Text>
             </View>
           </View>
 

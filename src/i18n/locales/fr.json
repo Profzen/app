@@ -5729,8 +5729,8 @@
   "noActivityTitle": "Tout est à jour !",
   "noActivityMessage": "Votre boîte est vide. Les nouvelles mises à jour, transactions et rappels apparaîtront ici.",
   "buyGoods": {
-    "unavailableTitle": "Bientôt disponible",
-    "unavailableMessage": "L'achat et le paiement de biens physiques sont actuellement indisponibles. Vous pouvez continuer à parcourir la boutique, mais les commandes ne peuvent pas être acceptées pour le moment. En attendant, vous pouvez continuer à payer vos factures et services, recharger votre forfait mobile, acheter des cartes-cadeaux et envoyer ou recevoir des fonds. Nous vous informerons dès que le service 'Achat de biens' sera entièrement déployé.",
+    "unavailableTitle": "Bientôt Disponible",
+    "unavailableMessage": "Nous établissons un réseau de livraison sécurisé au/en {{country}} pour garantir que vos proches reçoivent des produits authentiques de marchands vérifiés.\n\nL'achat de biens physiques est temporairement indisponible, mais vous pouvez toujours parcourir les boutiques. En attendant, vous pouvez continuer à payer vos factures, recharger du crédit téléphonique et envoyer ou recevoir des fonds. Nous vous informerons dès que le service sera entièrement déployé.",
     "continueBrowsing": "Continuer la navigation"
   },
   "dizzitapp_page": {

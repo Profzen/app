@@ -189,6 +189,7 @@ export function AppProvider({ children }) {
   const [isTransactionsLoading, setIsTransactionsLoading] = useState(false);
   const [isAppLocked, setIsAppLocked] = useState(false);
   const [isCheckingLock, setIsCheckingLock] = useState(true);
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
 
   // Cart Hydration
   useEffect(() => {
@@ -255,10 +256,9 @@ export function AppProvider({ children }) {
     checkLockState();
   }, []);
 
-  useEffect(() => {
-    const syncUser = async (sessionObj) => {
-      setSession(sessionObj);
-      setIsUserLoading(true);
+  const syncUser = async (sessionObj) => {
+    setSession(sessionObj);
+    setIsUserLoading(true);
       if (sessionObj?.user) {
         let fetchedName = sessionObj.user.user_metadata?.full_name || sessionObj.user.email.split('@')[0];
         let fetchedFirstName = '';
@@ -283,6 +283,15 @@ export function AppProvider({ children }) {
         let rawBalancesArray = [];
         let businessRawBalancesArray = [];
         let businessTotalUsdValue = 0;
+        
+        // 0. Fetch Contacts asynchronously (don't await)
+        if (contactService?.getBeneficiaries) {
+          contactService.getBeneficiaries(sessionObj.user.id).then(res => {
+            if (res && res.success && Array.isArray(res.data)) {
+              setContacts(res.data);
+            }
+          }).catch(err => console.log('Error fetching beneficiaries:', err));
+        }
         
         try {
           const { data: profile } = await supabase
@@ -426,21 +435,25 @@ export function AppProvider({ children }) {
               }
             } catch (e) {}
           } else if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) {
-            // Android emulator maps 10.0.2.2 to the host machine's localhost
             DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
           }
+          
           const fetchBalance = async (token) => {
-            const res = await fetch(`${DIZZY_URL}/wallet/balance`, {
-              headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (res.ok) {
-              return await res.json();
+            try {
+              const res = await fetch(`${DIZZY_URL}/wallet/balance`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              if (res.ok) {
+                return await res.json();
+              }
+            } catch (e) {
+              console.log("Balance fetch failed:", e);
             }
             return null;
           };
 
-          // Fetch personal balance using dizzyToken
-          if (fetchedDizzyToken) {
+          const doPersonalBalance = async () => {
+            if (!fetchedDizzyToken) return;
             const bData = await fetchBalance(fetchedDizzyToken);
             if (bData) {
               let sumPersonalTokensUsd = 0;
@@ -480,9 +493,10 @@ export function AppProvider({ children }) {
                 newBalances['XOF'] = usdVal * 605;
               }
             }
-          }
-          // Fetch business balance if merchant
-          if (fetchedBusinessDizzyToken) {
+          };
+
+          const doBusinessBalance = async () => {
+            if (!fetchedBusinessDizzyToken) return;
             const bData = await fetchBalance(fetchedBusinessDizzyToken);
             if (bData) {
               let sumBusinessTokensUsd = 0;
@@ -507,6 +521,7 @@ export function AppProvider({ children }) {
               businessTotalUsdValue = usdVal;
               businessBalances['DZY'] = usdVal * 10;
               businessBalances['USD'] = usdVal;
+              
               const knownCryptoTokens = ['POL', 'USDT', 'USDC', 'ETH', 'BTC', 'WBTC', 'SOL', 'MATIC', 'BNB', 'DAI'];
               Object.keys(newBalances).forEach(key => {
                 if (key !== 'DZY' && key !== 'USD' && !knownCryptoTokens.includes(key) && newBalances[key]) {
@@ -514,20 +529,29 @@ export function AppProvider({ children }) {
                 }
               });
             }
-          }
+          };
+
+          const doTransactions = async () => {
+            try {
+              setIsTransactionsLoading(true);
+              const txs = await transactionService.fetchUnifiedTransactions(sessionObj.user.id, fetchedDizzyToken);
+              setTransactions(txs);
+            } catch (e) {
+              console.log("Transaction fetch failed:", e);
+            } finally {
+              setIsTransactionsLoading(false);
+            }
+          };
+
+          // Run them concurrently
+          await Promise.allSettled([
+            doPersonalBalance().then(() => doBusinessBalance()),
+            doTransactions()
+          ]);
         } catch (e) {
-          console.log("Balance fetch failed:", e);
+          console.log("Concurrency block failed:", e);
         }
 
-        try {
-          setIsTransactionsLoading(true);
-          const txs = await transactionService.fetchUnifiedTransactions(sessionObj.user.id, fetchedDizzyToken);
-          setTransactions(txs);
-        } catch (e) {
-          console.log("Transaction fetch failed:", e);
-        } finally {
-          setIsTransactionsLoading(false);
-        }
 
         const isMerchant = fetchedRole === 'merchant';
         const primaryBalances = (isMerchant && (businessTotalUsdValue > 0 || Object.keys(businessBalances).length > 0))
@@ -576,13 +600,7 @@ export function AppProvider({ children }) {
         setUser(fullUserData);
         AsyncStorage.setItem('@dizzitup_cached_user', JSON.stringify(fullUserData)).catch(() => {});
         
-        if (contactService?.getBeneficiaries) {
-          contactService.getBeneficiaries(sessionObj.user.id).then(res => {
-            if (res && res.success && Array.isArray(res.data)) {
-              setContacts(res.data);
-            }
-          }).catch(err => console.log('Error fetching beneficiaries:', err));
-        }
+
 
         // Auto-register and sync Expo Push Token to user_profiles table in Supabase
         if (sessionObj.user.id) {
@@ -598,6 +616,18 @@ export function AppProvider({ children }) {
       setIsUserLoading(false);
     };
 
+  const refreshUser = async () => {
+    if (session) {
+      await syncUser(session);
+    } else {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (currentSession) {
+        await syncUser(currentSession);
+      }
+    }
+  };
+
+  useEffect(() => {
     let lastToken = null;
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.access_token !== lastToken) {
@@ -1001,6 +1031,9 @@ export function AppProvider({ children }) {
       getEffectivePosCountry,
       setUserCountry: handleSetUserCountry,
       clearUserCountry: handleClearUserCountry,
+      refreshUser,
+      hasUnreadNotifications,
+      setHasUnreadNotifications,
     }}>
       {children}
     </AppContext.Provider>

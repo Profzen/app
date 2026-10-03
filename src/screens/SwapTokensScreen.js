@@ -23,7 +23,7 @@ export default function SwapTokensScreen() {
   const navigation = useNavigation();
 
   const { wallet: crossmintWallet } = useWallet();
-  const { user, session, refreshBalances, t } = useApp();
+  const { user, session, refreshUser, t } = useApp();
 
   const [fromChain, setFromChain] = useState('polygon');
   const [toChain, setToChain] = useState('polygon');
@@ -95,7 +95,7 @@ export default function SwapTokensScreen() {
           } else {
             setLoading(false);
             setIsAuthorizing(false);
-            refreshBalances();
+            if (typeof refreshUser === 'function') refreshUser();
             setTxStatus('success');
             setTimeout(() => navigation.goBack(), 2000);
           }
@@ -358,7 +358,9 @@ export default function SwapTokensScreen() {
               <View style={styles.emailBadge}>
                 <Text style={styles.emailBadgeText}>{t('common.wallet.swap_ui.check_email', '📧 Check Email:')} {signerEmail}</Text>
               </View>
-              <Text style={styles.modalInfoText}>{t('common.wallet.swap_ui.secure_link_prompt', 'Please follow the secure external link or utilize biometric passkey authorizations if prompted.')}</Text>
+              <Text style={[styles.modalInfoText, { fontSize: 16, color: '#071D54', fontWeight: 'bold' }]}>
+                {t('sendMoney.wait_for_popup', 'Your DZYwallet verification code will be sent to email, please wait to receive the code')}
+              </Text>
             </View>
 
             <TouchableOpacity

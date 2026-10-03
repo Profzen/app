@@ -17,7 +17,7 @@ const paymentCurrencies = [
 export default function ReviewPaymentScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { t } = useApp();
+  const { t, hasUnreadNotifications } = useApp();
 
   // Extract dynamic params if passed, fallback to default for demo purposes
   const {
@@ -57,7 +57,7 @@ export default function ReviewPaymentScreen() {
             <View style={styles.headerIcons}>
               <TouchableOpacity style={styles.iconButton}>
                 <Ionicons name="notifications-outline" size={18} color="#1A2840" />
-                <View style={styles.notificationDot} />
+                {hasUnreadNotifications && <View style={styles.notificationDot} />}
               </TouchableOpacity>
               <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('RewardsScreen')}>
                 <Ionicons name="gift-outline" size={18} color="#1A2840" />

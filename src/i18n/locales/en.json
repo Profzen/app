@@ -5691,7 +5691,7 @@
   "noActivityMessage": "Your inbox is empty. New updates, transactions, and reminders will appear here.",
   "buyGoods": {
     "unavailableTitle": "Coming Soon",
-    "unavailableMessage": "Buying and paying for physical goods is currently unavailable. You may continue browsing the shop, but orders cannot be accepted at this time. Meanwhile, you can continue paying bills & services, recharging your mobile plan, buying gift cards, and sending or receiving funds. We will notify you as soon as the 'Buy goods' service is fully rolled out.",
+    "unavailableMessage": "We are establishing a secure delivery network in {{country}} to ensure your loved ones receive authentic products from verified merchants.\n\nBuying physical goods is temporarily unavailable, but you can still browse the shops. In the meantime, you can continue to pay bills, recharge airtime, and send or receive funds. We will notify you as soon as the service is fully rolled out.",
     "continueBrowsing": "Continue Browsing"
   },
   "dizzitapp_page": {

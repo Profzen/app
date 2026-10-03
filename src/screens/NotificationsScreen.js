@@ -20,7 +20,7 @@ const CATEGORIES = [
 
 export default function NotificationsScreen() {
   const navigation = useNavigation();
-  const { user, t, session } = useApp();
+  const { user, t, session, setHasUnreadNotifications } = useApp();
   
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -62,6 +62,11 @@ export default function NotificationsScreen() {
         type: n.type || (n.title.toLowerCase().includes('pay') ? 'transaction' : 'alert')
       }));
       setNotifications(processedData);
+      
+      if (typeof setHasUnreadNotifications === 'function') {
+        const unreadCount = processedData.filter(n => !n.is_read).length;
+        setHasUnreadNotifications(unreadCount > 0);
+      }
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
     } finally {
@@ -77,7 +82,14 @@ export default function NotificationsScreen() {
         await buyGoodsApi.markUserNotificationAsRead(id);
       }
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+      setNotifications(prev => {
+        const next = prev.map(n => n.id === id ? { ...n, is_read: true } : n);
+        if (typeof setHasUnreadNotifications === 'function') {
+          const unreadCount = next.filter(n => !n.is_read).length;
+          setHasUnreadNotifications(unreadCount > 0);
+        }
+        return next;
+      });
     } catch (error) {
       console.error("Failed to mark read:", error);
     }
@@ -93,6 +105,9 @@ export default function NotificationsScreen() {
         await buyGoodsApi.markAllUserNotificationsAsRead(user.id);
       }
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      if (typeof setHasUnreadNotifications === 'function') {
+        setHasUnreadNotifications(false);
+      }
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
     } catch (error) {
       console.error("Failed to mark all read:", error);

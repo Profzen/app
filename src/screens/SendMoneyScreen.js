@@ -37,7 +37,7 @@ const CRYPTO_TOKENS = [
 export default function SendMoneyScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { session, user, t, refreshTransactions, refreshBalances } = useApp();
+  const { session, user, t, refreshTransactions, refreshUser, hasUnreadNotifications } = useApp();
   const { wallet: crossmintWallet, getWallet } = useWallet();
 
   const [txStatus, setTxStatus] = useState(null);
@@ -465,10 +465,14 @@ export default function SendMoneyScreen() {
                   if (actualSignerEmail) {
                     await activeWallet.useSigner({ type: 'email', email: actualSignerEmail });
                   }
+                  
+                  // Allow user to read the security modal before native Crossmint SDK takes over
+                  await new Promise(resolve => setTimeout(resolve, 3500));
+                  
                   await activeWallet.approve({ transactionId: txId });
                   console.log('✅ [SendMoneyScreen] SDK approval completed successfully');
                   if (typeof refreshTransactions === 'function') refreshTransactions();
-                  if (typeof refreshBalances === 'function') refreshBalances();
+                  if (typeof refreshUser === 'function') refreshUser();
                   setTxStatus(null);
                   navigation.navigate('SendMoneySuccessScreen', {
                     amount,
@@ -580,8 +584,8 @@ export default function SendMoneyScreen() {
           if (typeof refreshTransactions === 'function') {
             refreshTransactions();
           }
-          if (typeof refreshBalances === 'function') {
-            refreshBalances();
+          if (typeof refreshUser === 'function') {
+            refreshUser();
           }
 
           const confirmedHash = checkRes.blockchainHash || checkRes.onChain?.txHash || txId;
@@ -649,7 +653,7 @@ export default function SendMoneyScreen() {
           setTxStatus(null);
           setIsAuthorizing(false);
           if (typeof refreshTransactions === 'function') refreshTransactions();
-          if (typeof refreshBalances === 'function') refreshBalances();
+          if (typeof refreshUser === 'function') refreshUser();
 
           const confirmedHash = data.blockchainHash || data.onChain?.txHash || activeTxHash;
           const confirmedExplorerUrl = data.blockchainHash?.startsWith('0x')
@@ -786,7 +790,7 @@ export default function SendMoneyScreen() {
           setTxStatus(null);
           setIsAuthorizing(false);
           if (typeof refreshTransactions === 'function') refreshTransactions();
-          if (typeof refreshBalances === 'function') refreshBalances();
+          if (typeof refreshUser === 'function') refreshUser();
 
           const confirmedHash = checkData.blockchainHash || checkData.onChain?.txHash || activeTxHash;
           const confirmedExplorerUrl = checkData.blockchainHash?.startsWith('0x')
@@ -851,7 +855,7 @@ export default function SendMoneyScreen() {
           <View style={styles.headerRightIcons}>
             <TouchableOpacity style={styles.iconBtn}>
               <Ionicons name="notifications-outline" size={18} color="#1A2840" />
-              <View style={styles.notificationDot} />
+              {hasUnreadNotifications && <View style={styles.notificationDot} />}
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('RewardsScreen')}>
               <Ionicons name="gift-outline" size={18} color="#1A2840" />
@@ -1233,102 +1237,40 @@ export default function SendMoneyScreen() {
         {/* 🔐 Signature / Security Verification Modal */}
         <Modal visible={txStatus === 'awaiting-approval'} transparent animationType="fade">
           <View style={approvalModalStyles.modalOverlay}>
-            <View style={approvalModalStyles.modalContent}>
+            <View style={[approvalModalStyles.modalContent, { paddingBottom: 30 }]}>
               <View style={approvalModalStyles.modalHeaderIcon}>
                 <Ionicons name="shield-checkmark" size={28} color="#071D54" />
               </View>
               <Text style={approvalModalStyles.modalTitle}>{t('sendMoney.signature_required', 'Signature Required')}</Text>
-              <Text style={approvalModalStyles.modalSubtitle}>{t('sendMoney.action_needed', 'Verification Needed')}</Text>
+              
+              <ActivityIndicator size="large" color="#071D54" style={{ marginVertical: 20 }} />
 
-              <View style={approvalModalStyles.modalInfoBox}>
-                <Text style={approvalModalStyles.modalInfoTextBold}>
-                  {t('sendMoney.verification_request', 'Please confirm and approve your transfer.')}
+              <View style={[approvalModalStyles.modalInfoBox, { borderWidth: 0, backgroundColor: 'transparent', padding: 0 }]}>
+                <Text style={[approvalModalStyles.modalInfoTextBold, { textAlign: 'center', fontSize: 14, marginBottom: 8 }]}>
+                  {t('sendMoney.loading_secure_env', 'Loading Secure Environment...')}
                 </Text>
+                
+                <Text style={[approvalModalStyles.modalInfoText, { textAlign: 'center', marginBottom: 12, fontSize: 16, color: '#071D54', fontWeight: 'bold' }]}>
+                  {t('sendMoney.wait_for_popup', 'Your DZYwallet verification code will be sent to email, please wait to receive the code')}
+                </Text>
+                
+                <Text style={[approvalModalStyles.modalInfoText, { textAlign: 'center', color: '#071D54', fontWeight: 'bold' }]}>
+                  {t('sendMoney.crossmint_email_hint', 'You will receive an email from hello@crossmint.com with subject "Your DZYwallet verification code".')}
+                </Text>
+                
                 {signerEmail ? (
-                  <View style={approvalModalStyles.emailBadge}>
+                  <View style={[approvalModalStyles.emailBadge, { alignSelf: 'center', marginTop: 16 }]}>
                     <Ionicons name="mail-outline" size={14} color="#0E0E0E" style={{ marginRight: 6 }} />
                     <Text style={approvalModalStyles.emailBadgeText} numberOfLines={1}>
                       {signerEmail}
                     </Text>
                   </View>
                 ) : null}
-                <Text style={approvalModalStyles.modalInfoText}>
-                  {t('sendMoney.secure_otp_prompt', 'A security code or approval link was sent to your email. Enter the 6-digit code below or tap the link in your email.')}
-                </Text>
               </View>
-
-              {/* 🔢 6-Digit OTP Code Input */}
-              <View style={approvalModalStyles.otpContainer}>
-                <Text style={approvalModalStyles.otpLabel}>{t('sendMoney.enter_code_label', 'Enter 6-digit code')}</Text>
-                <TextInput
-                  style={approvalModalStyles.otpInput}
-                  value={approvalOtp}
-                  onChangeText={setApprovalOtp}
-                  placeholder="------"
-                  placeholderTextColor="#94A3B8"
-                  keyboardType="number-pad"
-                  maxLength={6}
-                  textAlign="center"
-                  autoCapitalize="none"
-                />
-              </View>
-
-              {/* 🔄 Resend OTP Code Button */}
-              <TouchableOpacity
-                onPress={handleResendOtp}
-                disabled={isResendingOtp || isAuthorizing}
-                style={{ marginBottom: 14, paddingVertical: 4, alignItems: 'center' }}
-              >
-                <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#2563EB' }}>
-                  {isResendingOtp
-                    ? t('common.loading', 'Requesting code...')
-                    : t('sendMoney.resend_code', "Didn't receive code? Resend email")}
-                </Text>
-              </TouchableOpacity>
-
-              {/* Status / Error feedback */}
-              {approvalMessage ? (
-                <Text style={[
-                  approvalModalStyles.approvalStatusText,
-                  approvalMessage.toLowerCase().includes('fail') || approvalMessage.toLowerCase().includes('error') || approvalMessage.toLowerCase().includes('invalid')
-                    ? { color: '#DC2626' }
-                    : { color: '#2563EB' }
-                ]}>
-                  {approvalMessage}
-                </Text>
-              ) : null}
-
-              {/* Primary Action Button */}
-              <TouchableOpacity
-                style={[approvalModalStyles.authBtn, isAuthorizing && approvalModalStyles.authBtnDisabled]}
-                onPress={handleAuthorize}
-                disabled={isAuthorizing}
-              >
-                {isAuthorizing ? <ActivityIndicator color="#FFF" /> : <Ionicons name="shield-checkmark" size={20} color="#FFF" style={{ marginRight: 8 }} />}
-                <Text style={approvalModalStyles.authBtnText}>
-                  {isAuthorizing ? t('sendMoney.authorizing', 'Authorizing...') : t('sendMoney.authorize_transfer', 'Authorize Transfer')}
-                </Text>
-              </TouchableOpacity>
-
-              {/* Email link quick check */}
-              <TouchableOpacity
-                style={approvalModalStyles.checkEmailLinkBtn}
-                onPress={handleCheckEmailLink}
-                disabled={isAuthorizing || isCheckingEmailApproval}
-              >
-                {isCheckingEmailApproval ? (
-                  <ActivityIndicator size="small" color="#20365B" style={{ marginRight: 6 }} />
-                ) : (
-                  <Ionicons name="mail-open-outline" size={16} color="#20365B" style={{ marginRight: 6 }} />
-                )}
-                <Text style={approvalModalStyles.checkEmailLinkText}>
-                  {t('sendMoney.check_email_approval', 'Approved via email? Check status')}
-                </Text>
-              </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={() => { setTxStatus(null); setIsAuthorizing(false); setApprovalOtp(''); setApprovalMessage(null); }}
-                style={approvalModalStyles.dismissBtn}
+                style={[approvalModalStyles.dismissBtn, { marginTop: 16 }]}
               >
                 <Text style={approvalModalStyles.dismissBtnText}>{t('common.cancel', 'Cancel')}</Text>
               </TouchableOpacity>

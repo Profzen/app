@@ -24,7 +24,7 @@ const getQuickActions = (t) => [
 
 export default function ShopsScreen() {
   const navigation = useNavigation();
-  const { language, toggleLanguage, t, user, appSettings } = useApp();
+  const { language, toggleLanguage, t, user, appSettings, hasUnreadNotifications } = useApp();
   const { loading, error, fetchMerchants } = useBuyGoods();
   const [shopsList, setShopsList] = useState([]);
   const categories = React.useMemo(() => [
@@ -197,9 +197,11 @@ export default function ShopsScreen() {
             </View>
             <TouchableOpacity style={styles.iconBtnRight} onPress={() => navigation.navigate('NotificationsScreen')} accessibilityLabel="Notifications">
               <Ionicons name="notifications-outline" size={20} color="#1A2840" />
-              <View style={styles.notificationDot}>
-                <Text style={{ color: '#FFFFFF', fontSize: 7, fontWeight: 'bold', textAlign: 'center' }}>1</Text>
-              </View>
+              {hasUnreadNotifications && (
+                <View style={styles.notificationDot}>
+                  <Text style={{ color: '#FFFFFF', fontSize: 7, fontWeight: 'bold', textAlign: 'center' }}>1</Text>
+                </View>
+              )}
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconBtnRight} onPress={() => navigation.navigate('RewardsScreen')}>
               <Ionicons name="gift-outline" size={20} color="#1A2840" />
