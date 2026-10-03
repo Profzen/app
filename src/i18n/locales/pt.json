@@ -521,6 +521,8 @@
     "codeValidated": "Código validado com sucesso!"
   },
   "common": {
+    "me": "Eu",
+    "add": "Adicionar",
     "selectServiceGateway": {
       "beneficiaryDestination": "Destino do beneficiário",
       "selectService": "Selecione um serviço",
@@ -4423,6 +4425,21 @@
   },
   "actionScanCash": "Scan & Saque",
   "orderVerification": {
+    "pickupLocationTitle": "Local de retirada na loja",
+    "pickupNotice": "Você retirará seu pedido neste endereço.",
+    "noAddressSelected": "Selecione ou insira um endereço de entrega.",
+    "missingDeliveryInfo": "Selecione um beneficiário ou insira os dados de entrega.",
+    "orEnterManually": "Ou inserir manualmente",
+    "streetLabel": "Rua / Bairro",
+    "streetPlaceholder": "Rua, bairro, ponto de referência",
+    "deliveryCityLabel": "Cidade de entrega",
+    "deliveryCityPlaceholder": "Cidade",
+    "cityRestrictionInfo": "A entrega está disponível apenas em {{city}}, a cidade da loja.",
+    "cityMismatch": "A entrega está disponível apenas em {{city}}.",
+    "beneficiaryOutsideCity": "O endereço salvo deste beneficiário está fora de {{city}}. Insira um endereço em {{city}}: ele será salvo no cadastro dele.",
+    "addressWillBeSaved": "Este endereço será salvo no beneficiário para seus próximos pedidos.",
+    "addressSaved": "Endereço de entrega salvo no beneficiário.",
+    "addressSaveFailed": "Não foi possível salvar este endereço no beneficiário. Seu pedido continuará.",
     "title": "Verificação do pedido",
     "deliveryAddress": "Endereço de entrega",
     "modify": "Alterar",

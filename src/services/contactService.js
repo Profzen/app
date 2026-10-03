@@ -34,13 +34,19 @@ class ContactService {
       const firstName = contactData.first_name || '';
       const lastName = contactData.last_name || '';
 
+      // Derive ISO country code only from real data (never a hardcoded default)
+      const derivedCountryCode = contactData.country_code
+        || (contactData.country && contactData.country.length === 2 ? contactData.country.toUpperCase() : null);
+
       const insertPayload = {
         user_id: userId,
         first_name: firstName,
         last_name: lastName,
         relationship: contactData.relationship || contactData.relation || 'friend',
-        country_code: contactData.country_code || (contactData.country && contactData.country.length === 2 ? contactData.country.toUpperCase() : (contactData.country ? contactData.country.slice(0, 2).toUpperCase() : 'US')),
+        ...(derivedCountryCode ? { country_code: derivedCountryCode } : {}),
         city: contactData.city || '',
+        delivery_address: contactData.delivery_address || null,
+        delivery_city: contactData.delivery_city || null,
         phone: contactData.phone || '',
         email: contactData.email || '',
         bank_name: contactData.bank_name || '',
@@ -86,6 +92,8 @@ class ContactService {
         updatePayload.country_code = contactData.country.toUpperCase();
       }
       if (contactData.city !== undefined) updatePayload.city = contactData.city;
+      if (contactData.delivery_address !== undefined) updatePayload.delivery_address = contactData.delivery_address;
+      if (contactData.delivery_city !== undefined) updatePayload.delivery_city = contactData.delivery_city;
       if (contactData.phone !== undefined) updatePayload.phone = contactData.phone;
       if (contactData.email !== undefined) updatePayload.email = contactData.email;
       if (contactData.bank_name !== undefined) updatePayload.bank_name = contactData.bank_name;

@@ -521,6 +521,8 @@
     "codeValidated": "Code validated successfully!"
   },
   "common": {
+    "me": "Me",
+    "add": "Add",
     "selectServiceGateway": {
       "beneficiaryDestination": "Beneficiary's Destination",
       "selectService": "Select a Service",
@@ -4651,6 +4653,21 @@
   },
   "actionScanCash": "Scan & Cash",
   "orderVerification": {
+    "pickupLocationTitle": "Store pickup location",
+    "pickupNotice": "You will collect your order at this address.",
+    "noAddressSelected": "Please select or enter a delivery address.",
+    "missingDeliveryInfo": "Please select a beneficiary or enter delivery details.",
+    "orEnterManually": "Or enter manually",
+    "streetLabel": "Street / Neighborhood",
+    "streetPlaceholder": "Street, neighborhood, landmark",
+    "deliveryCityLabel": "Delivery city",
+    "deliveryCityPlaceholder": "City",
+    "cityRestrictionInfo": "Delivery is only available in {{city}}, the store's city.",
+    "cityMismatch": "Delivery is only available in {{city}}.",
+    "beneficiaryOutsideCity": "This beneficiary's saved address is outside {{city}}. Enter an address in {{city}}: it will be saved on their record.",
+    "addressWillBeSaved": "This address will be saved on the beneficiary for your next orders.",
+    "addressSaved": "Delivery address saved on the beneficiary.",
+    "addressSaveFailed": "We could not save this address on the beneficiary. Your order will continue.",
     "title": "Order Verification",
     "deliveryAddress": "Delivery address",
     "modify": "Edit",

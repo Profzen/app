@@ -2035,6 +2035,8 @@
     }
   },
   "common": {
+    "me": "أنا",
+    "add": "إضافة",
     "selectServiceGateway": {
       "beneficiaryDestination": "وجهة المستفيد",
       "selectService": "اختر خدمة",
@@ -4449,6 +4451,21 @@
   },
   "actionScanCash": "المسح والسحب",
   "orderVerification": {
+    "pickupLocationTitle": "مكان الاستلام من المتجر",
+    "pickupNotice": "ستستلم طلبك من هذا العنوان.",
+    "noAddressSelected": "يرجى اختيار عنوان توصيل أو إدخاله.",
+    "missingDeliveryInfo": "يرجى اختيار مستفيد أو إدخال بيانات التوصيل.",
+    "orEnterManually": "أو أدخل يدويًا",
+    "streetLabel": "الشارع / الحي",
+    "streetPlaceholder": "الشارع، الحي، معلم قريب",
+    "deliveryCityLabel": "مدينة التوصيل",
+    "deliveryCityPlaceholder": "المدينة",
+    "cityRestrictionInfo": "التوصيل متاح فقط في {{city}}، مدينة المتجر.",
+    "cityMismatch": "التوصيل متاح فقط في {{city}}.",
+    "beneficiaryOutsideCity": "العنوان المحفوظ لهذا المستفيد خارج {{city}}. أدخل عنوانًا في {{city}}: سيتم حفظه في سجله.",
+    "addressWillBeSaved": "سيتم حفظ هذا العنوان لدى المستفيد لطلباتك القادمة.",
+    "addressSaved": "تم حفظ عنوان التوصيل لدى المستفيد.",
+    "addressSaveFailed": "تعذر حفظ هذا العنوان لدى المستفيد. سيستمر طلبك.",
     "title": "التحقق من الطلب",
     "deliveryAddress": "عنوان التوصيل",
     "modify": "تعديل",

@@ -22,6 +22,19 @@ import { getPaymentRailEligibility, COUNTRY_METADATA } from '../services/payment
 import PaymentRegionModal from '../components/PaymentRegionModal';
 import { contactService } from '../services/contactService';
 import SelectableContactItem from '../components/SelectableContactItem';
+import { ALL_COUNTRIES } from '../utils/countriesData';
+
+// Accent/case/dash-insensitive city comparison (works for Latin, Arabic and Ethiopic scripts)
+const normalizeCity = (value) =>
+  (value || '')
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[\s\-_'.,]+/g, ' ')
+    .trim();
+
+const digitsOnly = (value) => (value || '').replace(/[^0-9]/g, '');
 
 const BLOCKCHAIN_NETWORKS = [
   {
@@ -73,7 +86,7 @@ const BLOCKCHAIN_NETWORKS = [
 
 export default function OrderVerificationScreen({ route }) {
   const navigation = useNavigation();
-  const { user, cart, updateCartQuantity, removeFromCart, cartMerchant, t, language, userCountry, setUserCountry } = useApp();
+  const { user, session, cart, updateCartQuantity, removeFromCart, cartMerchant, t, language, userCountry, setUserCountry } = useApp();
 
   const directOrder = route?.params?.directOrder;
 
@@ -158,24 +171,29 @@ export default function OrderVerificationScreen({ route }) {
   const displayCurrency = rawCurrency === 'XOF' ? 'FCFA' : rawCurrency;
   const numLocale = language === 'en' ? 'en-US' : 'fr-FR';
 
-  // Recipient info
+  // Recipient info (Home Delivery)
+  const currentUserId = user?.id || session?.user?.id;
   const [isEditingRecipient, setIsEditingRecipient] = useState(false);
   const [recipientName, setRecipientName] = useState('');
   const [recipientPhone, setRecipientPhone] = useState('');
-  const [recipientAddress, setRecipientAddress] = useState('');
+  const [recipientAddress, setRecipientAddress] = useState(''); // street / neighborhood
+  const [manualDeliveryCity, setManualDeliveryCity] = useState(''); // only used when the store has no city in DB
   
   const [beneficiaries, setBeneficiaries] = useState([]);
   const [selectedBeneficiaryId, setSelectedBeneficiaryId] = useState(null);
+  const [isSavingAddress, setIsSavingAddress] = useState(false);
+
+  const loadBeneficiaries = React.useCallback(async () => {
+    if (!currentUserId) return;
+    const res = await contactService.getBeneficiaries(currentUserId);
+    if (res?.success && Array.isArray(res.data)) {
+      setBeneficiaries(res.data);
+    }
+  }, [currentUserId]);
 
   useEffect(() => {
-    if (user?.id) {
-      contactService.getBeneficiaries(user.id).then(res => {
-        if (res?.success && Array.isArray(res.data)) {
-          setBeneficiaries(res.data);
-        }
-      });
-    }
-  }, [user?.id]);
+    loadBeneficiaries();
+  }, [loadBeneficiaries]);
 
   // Quantity updates
   const handleIncrement = (item) => {
@@ -222,12 +240,127 @@ export default function OrderVerificationScreen({ route }) {
     cartMerchant?.logoUrl ||
     items[0]?.merchantLogo;
 
-  const merchantLocation = [
-    cartMerchant?.city || directOrder?.shop?.city_village || items[0]?.merchantCity,
-    cartMerchant?.country || directOrder?.shop?.country || items[0]?.merchantCountry,
-  ]
+  const merchantCityRaw = (
+    cartMerchant?.city ||
+    cartMerchant?.city_village ||
+    directOrder?.shop?.city_village ||
+    directOrder?.shop?.city ||
+    items[0]?.merchantCity ||
+    ''
+  ).trim();
+  const merchantCountryRaw = (
+    cartMerchant?.country ||
+    directOrder?.shop?.country ||
+    items[0]?.merchantCountry ||
+    ''
+  ).trim();
+  const merchantStreet = (
+    cartMerchant?.street_name ||
+    cartMerchant?.address ||
+    directOrder?.shop?.street_name ||
+    directOrder?.shop?.address ||
+    directOrder?.product?.merchant?.street_name ||
+    items[0]?.merchantStreet ||
+    ''
+  ).trim();
+
+  const merchantLocation = [merchantCityRaw, merchantCountryRaw]
     .filter(Boolean)
-    .join(', ') || t('product.partnerPlatform', 'Partenaire DizzitUp');
+    .join(', ') || t('product.partnerPlatform', 'DizzitUp Partner');
+  const merchantFullAddress = [merchantStreet, merchantCityRaw, merchantCountryRaw].filter(Boolean).join(', ') || merchantLocation;
+
+  // Store country (ISO code + dial code) resolved from real merchant data, never hardcoded
+  const merchantCountryInfo = useMemo(() => {
+    if (!merchantCountryRaw) return null;
+    const q = merchantCountryRaw.toLowerCase();
+    return ALL_COUNTRIES.find((c) => c.code?.toLowerCase() === q || c.name?.toLowerCase() === q) || null;
+  }, [merchantCountryRaw]);
+
+  // Delivery must stay within the store's city (Solofo requirement)
+  const storeCityKey = normalizeCity(merchantCityRaw);
+  const deliveryCityValue = storeCityKey ? merchantCityRaw : manualDeliveryCity.trim();
+  const selectedBeneficiary = beneficiaries.find((b) => b.id === selectedBeneficiaryId) || null;
+  const selectedBeneficiaryCity = selectedBeneficiary ? (selectedBeneficiary.delivery_city || selectedBeneficiary.city || '') : '';
+  const selectedBeneficiaryOutsideCity = !!(
+    storeCityKey &&
+    selectedBeneficiaryCity &&
+    normalizeCity(selectedBeneficiaryCity) !== storeCityKey
+  );
+
+  const handleSelectBeneficiary = (b) => {
+    setSelectedBeneficiaryId(b.id);
+    setRecipientName([b.first_name, b.last_name].filter(Boolean).join(' '));
+    setRecipientPhone(b.phone || '');
+    const bCity = b.delivery_city || b.city || '';
+    const sameCity = !storeCityKey || (bCity && normalizeCity(bCity) === storeCityKey);
+    // Pre-fill the saved street only when it is in the store's city; otherwise the buyer enters an alternative address
+    setRecipientAddress(sameCity ? (b.delivery_address || '') : '');
+    if (!storeCityKey) setManualDeliveryCity(bCity);
+  };
+
+  /**
+   * Persist the delivery address on the Beneficiary record:
+   * - selected beneficiary -> update its delivery_address / delivery_city
+   * - manual entry -> update an existing beneficiary with the same phone, otherwise create one
+   * Never blocks the order: on failure a translated toast is shown and checkout continues.
+   */
+  const saveDeliveryAddress = async (deliveryCity) => {
+    if (!currentUserId) return null;
+    const street = recipientAddress.trim();
+    const phone = recipientPhone.trim();
+    const target =
+      selectedBeneficiary ||
+      beneficiaries.find((b) => digitsOnly(b.phone) && digitsOnly(b.phone) === digitsOnly(phone)) ||
+      null;
+
+    if (
+      target &&
+      (target.delivery_address || '').trim() === street &&
+      normalizeCity(target.delivery_city) === normalizeCity(deliveryCity)
+    ) {
+      return target.id; // already saved, nothing to update
+    }
+
+    setIsSavingAddress(true);
+    try {
+      let res;
+      if (target) {
+        res = await contactService.updateBeneficiary(target.id, {
+          delivery_address: street,
+          delivery_city: deliveryCity,
+        });
+      } else {
+        const [firstName, ...rest] = recipientName.trim().split(/\s+/);
+        res = await contactService.addBeneficiary(currentUserId, {
+          first_name: firstName || '',
+          last_name: rest.join(' '),
+          phone,
+          relationship: 'friend',
+          country_code: merchantCountryInfo?.code,
+          city: deliveryCity,
+          delivery_address: street,
+          delivery_city: deliveryCity,
+        });
+      }
+
+      if (!res?.success) {
+        AppToast.showError(
+          t('orderVerification.addressSaveFailed', 'We could not save this address on the beneficiary. Your order will continue.'),
+          t('common.error', 'Error')
+        );
+        return target?.id || null;
+      }
+
+      AppToast.showSuccess(t('orderVerification.addressSaved', 'Delivery address saved on the beneficiary.'));
+      await loadBeneficiaries();
+      return res.data?.id || target?.id || null;
+    } catch (e) {
+      console.log('saveDeliveryAddress error:', e?.message);
+      return target?.id || null;
+    } finally {
+      setIsSavingAddress(false);
+    }
+  };
 
   // Pricing calculations
   const subtotal = useMemo(() => {
@@ -283,41 +416,33 @@ export default function OrderVerificationScreen({ route }) {
   }, [paymentRail, selectedToken, userBalance, totalDZY, totalEURC, totalUSDC]);
 
   const handleProceedToConfirmation = async () => {
+    if (isSavingAddress) return;
     if (items.length === 0) {
       AppToast.showError(t('cart.emptyDesc', 'Your cart is empty.'), t('common.error', 'Error'));
       return;
     }
 
+    let savedBeneficiaryId = null;
+
     // Validation for Home Delivery
     if (deliveryOption === 'home') {
-      if (!recipientName || !recipientPhone || !recipientAddress) {
+      if (!recipientName.trim() || !recipientPhone.trim() || !recipientAddress.trim() || !deliveryCityValue) {
+        setIsEditingRecipient(true);
         AppToast.showError(t('orderVerification.missingDeliveryInfo', 'Please select a beneficiary or enter delivery details.'), t('common.error', 'Error'));
         return;
       }
-      
-      // Validate city matches merchant city
-      const storeCity = merchantLocation.split(',')[0].trim().toLowerCase();
-      const delCity = recipientAddress.split(',').pop().trim().toLowerCase(); // simplistic check
-      // For this version, we require the word to be present in the address
-      if (storeCity && !recipientAddress.toLowerCase().includes(storeCity)) {
+
+      // City is locked to the store's city in the UI; this guards the manual-city case only
+      if (storeCityKey && normalizeCity(deliveryCityValue) !== storeCityKey) {
         AppToast.showError(
-          t('orderVerification.cityMismatch', `Delivery is currently restricted to the store's city (${merchantLocation.split(',')[0]}).`),
+          t('orderVerification.cityMismatch', 'Delivery is only available in {{city}}.', { city: merchantCityRaw }),
           t('common.error', 'Error')
         );
         return;
       }
 
-      // Persist manual address if not a selected beneficiary
-      if (!selectedBeneficiaryId && isEditingRecipient && user?.id) {
-        try {
-           await contactService.addBeneficiary(user.id, {
-             first_name: recipientName,
-             phone: recipientPhone,
-             city: recipientAddress,
-             relationship: 'Delivery'
-           });
-        } catch (e) { console.log('Failed to save beneficiary', e); }
-      }
+      // Save the (alternative) address on the Beneficiary record
+      savedBeneficiaryId = await saveDeliveryAddress(deliveryCityValue);
     }
 
     const orderPayload = {
@@ -345,11 +470,23 @@ export default function OrderVerificationScreen({ route }) {
       apiCurrency,
       totalUSDC: parseFloat(totalUSDC),
       totalDZY: parseFloat(totalDZY),
-      recipient: {
-        name: deliveryOption === 'pickup' ? user?.name || 'Moi' : recipientName,
-        phone: deliveryOption === 'pickup' ? user?.phone || '' : recipientPhone,
-        address: deliveryOption === 'pickup' ? merchantLocation : recipientAddress,
-      },
+      recipient: deliveryOption === 'pickup'
+        ? {
+            name: user?.name || t('common.me', 'Me'),
+            phone: user?.phone || '',
+            address: merchantFullAddress,
+            city: merchantCityRaw,
+            deliveryOption,
+          }
+        : {
+            name: recipientName.trim(),
+            phone: recipientPhone.trim(),
+            address: [recipientAddress.trim(), deliveryCityValue].filter(Boolean).join(', '),
+            street: recipientAddress.trim(),
+            city: deliveryCityValue,
+            beneficiaryId: savedBeneficiaryId,
+            deliveryOption,
+          },
       paymentRail,
       payerCountry,
       selectedToken: paymentRail === 'crypto' ? selectedToken : null,
@@ -526,18 +663,26 @@ export default function OrderVerificationScreen({ route }) {
         {/* Recipient & Delivery Address Card */}
         <View style={styles.addressCard}>
           <View style={styles.cardHeaderRow}>
-            <View style={styles.iconCircle}>
-              <Ionicons name="location-outline" size={18} color="#3B82F6" />
+            <View style={[styles.iconCircle, deliveryOption === 'pickup' && styles.iconCirclePickup]}>
+              <Ionicons
+                name={deliveryOption === 'pickup' ? 'storefront-outline' : 'location-outline'}
+                size={18}
+                color={deliveryOption === 'pickup' ? '#D97706' : '#3B82F6'}
+              />
             </View>
             <View style={styles.addressInfo}>
-              <Text style={styles.sectionLabel}>{t('orderVerification.deliveryAddress', 'Destinataire & Adresse')}</Text>
+              <Text style={styles.sectionLabel}>
+                {deliveryOption === 'pickup'
+                  ? t('orderVerification.pickupLocationTitle', 'Store pickup location')
+                  : t('orderVerification.deliveryAddress', 'Recipient & Address')}
+              </Text>
               
               {deliveryOption === 'pickup' ? (
                 <>
-                  <Text style={styles.recipientNameText}>{user?.name || t('common.me', 'Me')}</Text>
-                  <Text style={styles.addressValue}>{merchantLocation}</Text>
+                  <Text style={styles.recipientNameText}>{merchantName}</Text>
+                  <Text style={styles.addressValue}>{merchantFullAddress}</Text>
                   <Text style={{ fontSize: 12, color: '#10B981', marginTop: 2, fontFamily: 'Inter_500Medium' }}>
-                    {t('orderVerification.pickupNotice', 'Vous retirerez la commande à cette adresse.')}
+                    {t('orderVerification.pickupNotice', 'You will collect your order at this address.')}
                   </Text>
                 </>
               ) : (
@@ -545,7 +690,9 @@ export default function OrderVerificationScreen({ route }) {
                   {(recipientName || recipientAddress) ? (
                     <>
                       <Text style={styles.recipientNameText}>{recipientName}</Text>
-                      <Text style={styles.addressValue}>{recipientPhone} • {recipientAddress}</Text>
+                      <Text style={styles.addressValue}>
+                        {[recipientPhone, [recipientAddress, deliveryCityValue].filter(Boolean).join(', ')].filter(Boolean).join(' • ')}
+                      </Text>
                     </>
                   ) : null}
                 </>
@@ -586,51 +733,81 @@ export default function OrderVerificationScreen({ route }) {
                           styles.beneficiaryPill, 
                           selectedBeneficiaryId === b.id && styles.beneficiaryPillSelected
                         ]}
-                        onPress={() => {
-                          setSelectedBeneficiaryId(b.id);
-                          setRecipientName(b.first_name + (b.last_name ? ' ' + b.last_name : ''));
-                          setRecipientPhone(b.phone || '');
-                          setRecipientAddress(b.city || '');
-                        }}
+                        onPress={() => handleSelectBeneficiary(b)}
                       >
                         <Text style={[styles.beneficiaryPillText, selectedBeneficiaryId === b.id && styles.beneficiaryPillTextSelected]}>
-                          {b.first_name} {b.last_name}
+                          {[b.first_name, b.last_name].filter(Boolean).join(' ')}
                         </Text>
+                        {!!(b.delivery_city || b.city) && (
+                          <Text style={styles.beneficiaryPillCity}>{b.delivery_city || b.city}</Text>
+                        )}
                       </TouchableOpacity>
                     ))}
                   </ScrollView>
+                  {selectedBeneficiaryOutsideCity && (
+                    <View style={styles.cityHintRow}>
+                      <Ionicons name="information-circle-outline" size={15} color="#B45309" style={{ marginRight: 6 }} />
+                      <Text style={styles.cityHintText}>
+                        {t('orderVerification.beneficiaryOutsideCity', "This beneficiary's saved address is outside {{city}}. Enter an address in {{city}}: it will be saved on their record.", { city: merchantCityRaw })}
+                      </Text>
+                    </View>
+                  )}
                   <View style={styles.divider} />
-                  <Text style={styles.formInputLabel}>{t('orderVerification.orEnterManually', 'Ou saisir manuellement')}</Text>
+                  <Text style={styles.formInputLabel}>{t('orderVerification.orEnterManually', 'Or enter manually')}</Text>
                 </>
               )}
 
-              <Text style={styles.formInputLabel}>{t('orderVerification.recipientNameLabel', 'Nom & Prénom du destinataire')}</Text>
+              <Text style={styles.formInputLabel}>{t('orderVerification.recipientNameLabel', "Recipient's full name")}</Text>
               <TextInput
                 style={styles.formInput}
                 value={recipientName}
-                onChangeText={(t) => { setRecipientName(t); setSelectedBeneficiaryId(null); }}
-                placeholder={t('orderVerification.namePlaceholder', 'Ex : Koffi Mensah')}
+                onChangeText={(text) => { setRecipientName(text); setSelectedBeneficiaryId(null); }}
+                placeholder={t('orderVerification.namePlaceholder', 'Full name')}
+                placeholderTextColor="#94A3B8"
               />
 
-              <Text style={styles.formInputLabel}>{t('orderVerification.recipientPhoneLabel', 'Numéro de téléphone')}</Text>
+              <Text style={styles.formInputLabel}>{t('orderVerification.recipientPhoneLabel', 'Phone number')}</Text>
               <TextInput
                 style={styles.formInput}
                 value={recipientPhone}
-                onChangeText={(t) => { setRecipientPhone(t); setSelectedBeneficiaryId(null); }}
-                placeholder={'+228 90 00 00 00'}
+                onChangeText={(text) => { setRecipientPhone(text); setSelectedBeneficiaryId(null); }}
+                placeholder={merchantCountryInfo?.dial || ''}
+                placeholderTextColor="#94A3B8"
                 keyboardType="phone-pad"
               />
 
-              <Text style={styles.formInputLabel}>{t('orderVerification.recipientAddressLabel', 'Adresse / Ville de livraison')}</Text>
+              {/* Street: editing keeps the selected beneficiary so the alternative address is saved on THEIR record */}
+              <Text style={styles.formInputLabel}>{t('orderVerification.streetLabel', 'Street / Neighborhood')}</Text>
               <TextInput
                 style={styles.formInput}
                 value={recipientAddress}
-                onChangeText={(t) => { setRecipientAddress(t); setSelectedBeneficiaryId(null); }}
-                placeholder={t('orderVerification.addressPlaceholder', 'Quartier, Rue, Ville')}
+                onChangeText={setRecipientAddress}
+                placeholder={t('orderVerification.streetPlaceholder', 'Street, neighborhood, landmark')}
                 placeholderTextColor="#94A3B8"
               />
-              <Text style={[styles.addressValue, { marginTop: 6, color: '#64748B' }]}>
-                {t('orderVerification.cityRestrictionInfo', 'The delivery city must match the shop city.')}
+
+              <Text style={styles.formInputLabel}>{t('orderVerification.deliveryCityLabel', 'Delivery city')}</Text>
+              {storeCityKey ? (
+                <View style={[styles.formInput, styles.lockedCityField]}>
+                  <Ionicons name="lock-closed" size={14} color="#64748B" style={{ marginRight: 8 }} />
+                  <Text style={styles.lockedCityText}>{merchantCityRaw}</Text>
+                </View>
+              ) : (
+                <TextInput
+                  style={styles.formInput}
+                  value={manualDeliveryCity}
+                  onChangeText={setManualDeliveryCity}
+                  placeholder={t('orderVerification.deliveryCityPlaceholder', 'City')}
+                  placeholderTextColor="#94A3B8"
+                />
+              )}
+              {!!storeCityKey && (
+                <Text style={[styles.addressValue, { marginTop: 6, color: '#64748B' }]}>
+                  {t('orderVerification.cityRestrictionInfo', "Delivery is only available in {{city}}, the store's city.", { city: merchantCityRaw })}
+                </Text>
+              )}
+              <Text style={[styles.addressValue, { marginTop: 4, color: '#64748B' }]}>
+                {t('orderVerification.addressWillBeSaved', 'This address will be saved on the beneficiary for your next orders.')}
               </Text>
             </View>
           )}
@@ -1943,5 +2120,41 @@ const styles = StyleSheet.create({
   beneficiaryPillTextSelected: {
     color: '#1D4ED8',
     fontFamily: 'Inter_600SemiBold',
+  },
+  beneficiaryPillCity: {
+    fontSize: 10.5,
+    color: '#64748B',
+    fontFamily: 'Inter_400Regular',
+    marginTop: 1,
+  },
+  cityHintRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 4,
+  },
+  cityHintText: {
+    flex: 1,
+    fontSize: 11.5,
+    lineHeight: 16,
+    color: '#92400E',
+    fontFamily: 'Inter_500Medium',
+  },
+  lockedCityField: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+  },
+  lockedCityText: {
+    fontSize: 14,
+    color: '#334155',
+    fontFamily: 'Inter_600SemiBold',
+  },
+  iconCirclePickup: {
+    backgroundColor: '#FEF3C7',
   },
 });

@@ -520,6 +520,8 @@
     "codeValidated": "Code validé avec succès !"
   },
   "common": {
+    "me": "Moi",
+    "add": "Ajouter",
     "selectServiceGateway": {
       "beneficiaryDestination": "Destination du bénéficiaire",
       "selectService": "Sélectionnez un service",
@@ -4699,6 +4701,21 @@
   },
   "actionScanCash": "Scan & Retrait",
   "orderVerification": {
+    "pickupLocationTitle": "Lieu de retrait en boutique",
+    "pickupNotice": "Vous retirerez votre commande à cette adresse.",
+    "noAddressSelected": "Veuillez sélectionner ou saisir une adresse de livraison.",
+    "missingDeliveryInfo": "Veuillez sélectionner un bénéficiaire ou saisir les informations de livraison.",
+    "orEnterManually": "Ou saisir manuellement",
+    "streetLabel": "Rue / Quartier",
+    "streetPlaceholder": "Rue, quartier, point de repère",
+    "deliveryCityLabel": "Ville de livraison",
+    "deliveryCityPlaceholder": "Ville",
+    "cityRestrictionInfo": "La livraison est disponible uniquement à {{city}}, la ville de la boutique.",
+    "cityMismatch": "La livraison est disponible uniquement à {{city}}.",
+    "beneficiaryOutsideCity": "L'adresse enregistrée de ce bénéficiaire est hors de {{city}}. Saisissez une adresse à {{city}} : elle sera enregistrée sur sa fiche.",
+    "addressWillBeSaved": "Cette adresse sera enregistrée sur la fiche du bénéficiaire pour vos prochaines commandes.",
+    "addressSaved": "Adresse de livraison enregistrée sur le bénéficiaire.",
+    "addressSaveFailed": "Impossible d'enregistrer cette adresse sur le bénéficiaire. Votre commande continue.",
     "title": "Vérification de la commande",
     "deliveryAddress": "Adresse de livraison",
     "modify": "Modifier",

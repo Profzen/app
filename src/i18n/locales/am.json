@@ -568,6 +568,8 @@
     "codeValidated": "ኮዱ በስኬት ተረጋግጧል!"
   },
   "common": {
+    "me": "እኔ",
+    "add": "አክል",
     "selectServiceGateway": {
       "beneficiaryDestination": "የተቀባይ መድረሻ",
       "selectService": "አገልግሎት ይምረጡ",
@@ -4349,6 +4351,21 @@
   },
   "actionScanCash": "ስካን እና ወጪ",
   "orderVerification": {
+    "pickupLocationTitle": "ከመደብር የሚወሰድበት ቦታ",
+    "pickupNotice": "ትዕዛዝዎን ከዚህ አድራሻ ይወስዳሉ።",
+    "noAddressSelected": "እባክዎ የማድረሻ አድራሻ ይምረጡ ወይም ያስገቡ።",
+    "missingDeliveryInfo": "እባክዎ ተጠቃሚ ይምረጡ ወይም የማድረሻ መረጃ ያስገቡ።",
+    "orEnterManually": "ወይም በእጅ ያስገቡ",
+    "streetLabel": "መንገድ / ሰፈር",
+    "streetPlaceholder": "መንገድ፣ ሰፈር፣ መለያ ምልክት",
+    "deliveryCityLabel": "የማድረሻ ከተማ",
+    "deliveryCityPlaceholder": "ከተማ",
+    "cityRestrictionInfo": "ማድረስ የሚቻለው በመደብሩ ከተማ በ{{city}} ብቻ ነው።",
+    "cityMismatch": "ማድረስ የሚቻለው በ{{city}} ብቻ ነው።",
+    "beneficiaryOutsideCity": "የዚህ ተጠቃሚ የተቀመጠ አድራሻ ከ{{city}} ውጭ ነው። በ{{city}} ውስጥ አድራሻ ያስገቡ፤ በመዝገባቸው ላይ ይቀመጣል።",
+    "addressWillBeSaved": "ይህ አድራሻ ለሚቀጥሉት ትዕዛዞችዎ በተጠቃሚው ላይ ይቀመጣል።",
+    "addressSaved": "የማድረሻ አድራሻው በተጠቃሚው ላይ ተቀምጧል።",
+    "addressSaveFailed": "ይህን አድራሻ በተጠቃሚው ላይ ማስቀመጥ አልተቻለም። ትዕዛዝዎ ይቀጥላል።",
     "title": "የትዕዛዝ ማረጋገጫ",
     "deliveryAddress": "የማድረሻ አድራሻ",
     "modify": "አስተካክል",
