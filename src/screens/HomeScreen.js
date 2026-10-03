@@ -48,9 +48,10 @@ export default function HomeScreen() {
       setIsSearching(true);
       try {
         const results = await buyGoodsApi.searchGlobal(searchQuery);
-        setSearchResults(results);
+        setSearchResults(Array.isArray(results) ? results : (results && results.results ? results.results : []));
       } catch (err) {
         console.warn('Search error on HomeScreen:', err);
+        setSearchResults([]);
       } finally {
         setIsSearching(false);
       }
@@ -321,7 +322,7 @@ export default function HomeScreen() {
                 {/* Category Filter Pills */}
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.searchFilterTabs}>
                   {[
-                    { id: 'ALL', label: `All (${searchResults.length})` },
+                    { id: 'ALL', label: `All (${Array.isArray(searchResults) ? searchResults.length : 0})` },
                     { id: 'gift_card', label: `Gift Cards (${categorizedResults.giftCards.length})` },
                     { id: 'product', label: `Products (${categorizedResults.products.length})` },
                     { id: 'utility_provider', label: `Utilities (${categorizedResults.utilities.length})` },

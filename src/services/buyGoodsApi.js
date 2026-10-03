@@ -19,15 +19,20 @@ if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location.ho
 }
 
 export const buyGoodsApi = {
-  searchGlobal: async (query = '') => {
+  searchGlobal: async (query = '', { type = 'all', country = '' } = {}) => {
     try {
       if (!query || query.trim().length < 2) return [];
-      const response = await fetch(`${BASE_URL}/search?q=${encodeURIComponent(query.trim())}`);
+      const params = new URLSearchParams();
+      params.append('q', query.trim());
+      if (type && type !== 'all') params.append('type', type);
+      if (country) params.append('country', country);
+      const response = await fetch(`${BASE_URL}/search?${params.toString()}`);
       if (!response.ok) return [];
       const data = await response.json();
-      if (!data.results || !Array.isArray(data.results)) return [];
+      const rawList = Array.isArray(data) ? data : (data.results || []);
+      if (!Array.isArray(rawList)) return [];
       const seen = new Set();
-      return data.results.filter(item => {
+      return rawList.filter(item => {
         const key = `${item.entity_type || 'item'}_${item.entity_id || item.id || item.title}`;
         if (seen.has(key)) return false;
         seen.add(key);
@@ -79,7 +84,7 @@ export const buyGoodsApi = {
   getMerchantProducts: async (merchantId) => {
     try {
       const all = await buyGoodsApi.getAllProducts();
-      return all.filter(p => (p.merchant_id === merchantId || p.merchant?.id === merchantId));
+      return all.filter(p => (p.merchant_id === merchantId || (p.merchant && p.merchant.id === merchantId)));
     } catch (error) {
       console.error('buyGoodsApi.getMerchantProducts Error:', error);
       return [];
@@ -237,21 +242,6 @@ export const buyGoodsApi = {
     }
   },
 
-  searchGlobal: async (query, { type = 'all', country = '' } = {}) => {
-    try {
-      const params = new URLSearchParams();
-      if (query) params.append('q', query.trim());
-      if (type && type !== 'all') params.append('type', type);
-      if (country) params.append('country', country);
-      const url = `${BASE_URL}/search?${params.toString()}`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Global search failed');
-      return await response.json();
-    } catch (error) {
-      console.error('buyGoodsApi.searchGlobal Error:', error);
-      return { results: [], groupedResults: {} };
-    }
-  },
 
   searchSuggestions: async (query) => {
     try {

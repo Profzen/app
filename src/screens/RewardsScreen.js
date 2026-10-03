@@ -43,8 +43,8 @@ export default function RewardsScreen() {
     user?.referralCode ||
     (user?.id ? `DZY-${user.id.slice(0, 6).toUpperCase()}` : 'DZY-VIP');
 
-  // Dynamic Rewards Balance from user profile or default mock
-  const totalRewardsDzy = Number(user?.balanceDZY || user?.rewardsDZY || 2354.82);
+  // Dynamic Rewards Balance from user profile or wallet balance
+  const totalRewardsDzy = Number(user?.rewardsDZY !== null && user?.rewardsDZY !== undefined ? user.rewardsDZY : (user?.balanceDZY || 0));
 
   // Currency conversion setup
   const userCountryKey = (user?.country || '').toLowerCase().trim();

@@ -75,6 +75,9 @@ export default function TransactionHistoryScreen() {
     if (statusUpper === 'PROCESSING') {
       return { bg: '#DBEAFE', text: '#1E40AF', icon: 'sync' };
     }
+    if (['CHECKOUT', 'ABANDONED', 'UNPAID', 'DRAFT', 'CART'].includes(statusUpper)) {
+      return { bg: '#F1F5F9', text: '#64748B', icon: 'cart-outline' };
+    }
     return { bg: '#FEF3C7', text: '#92400E', icon: 'time' };
   };
 
@@ -242,9 +245,15 @@ export default function TransactionHistoryScreen() {
                           </View>
                           
                           <View style={styles.txDetailsRight}>
-                            <Text style={[styles.txAmount, isPositive ? styles.amountPos : styles.amountNeg]}>
-                              {isPositive ? '+' : '-'}{formatAmount(tx.amount)}
-                            </Text>
+                            {['CHECKOUT', 'ABANDONED', 'UNPAID', 'DRAFT', 'CART'].includes((tx.status || '').toUpperCase()) ? (
+                              <Text style={[styles.txAmount, { color: '#64748B' }]}>
+                                {formatAmount(tx.amount)}
+                              </Text>
+                            ) : (
+                              <Text style={[styles.txAmount, isPositive ? styles.amountPos : styles.amountNeg]}>
+                                {isPositive ? '+' : '-'}{formatAmount(tx.amount)}
+                              </Text>
+                            )}
                             <View style={styles.txCurrencyChain}>
                               <Text style={styles.txCurrency}>{tx.currency}</Text>
                               <Text style={styles.txDot}>•</Text>

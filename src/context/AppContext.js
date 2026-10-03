@@ -277,6 +277,7 @@ export function AppProvider({ children }) {
         let fetchedBusinessDizzyToken = '';
         let fetchedCrossmintJWT = '';
         let fetchedBusinessCrossmintJWT = '';
+        let fetchedRewardsDZY = null;
         let newBalances = { DZY: 0 };
         let businessBalances = { DZY: 0 };
         let totalUsdValue = 0;
@@ -312,6 +313,8 @@ export function AppProvider({ children }) {
             if (profile.avatar_url) fetchedAvatar = profile.avatar_url;
             if (profile.evm_wallet_address) fetchedEvmAddress = profile.evm_wallet_address;
             if (profile.solana_wallet_address) fetchedSolanaAddress = profile.solana_wallet_address;
+            if (profile.rewards_dzy !== undefined && profile.rewards_dzy !== null) fetchedRewardsDZY = Number(profile.rewards_dzy);
+            else if (profile.loyalty_dzy !== undefined && profile.loyalty_dzy !== null) fetchedRewardsDZY = Number(profile.loyalty_dzy);
             
             // If they are a merchant, fetch full business profile
             if (fetchedRole === 'merchant') {
@@ -463,7 +466,9 @@ export function AppProvider({ children }) {
               const backendUsd = bData.totalUsdValue !== undefined ? parseFloat(bData.totalUsdValue || 0) : 0;
               const usdVal = Math.max(backendUsd, sumPersonalTokensUsd);
               totalUsdValue = usdVal;
-              newBalances['DZY'] = usdVal * 10;
+              if (newBalances['DZY'] === undefined || newBalances['DZY'] === null || newBalances['DZY'] === 0) {
+                newBalances['DZY'] = usdVal * 10;
+              }
               newBalances['USD'] = usdVal;
               try {
                 const rateRes = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
@@ -505,7 +510,9 @@ export function AppProvider({ children }) {
               const backendBizUsd = bData.totalUsdValue !== undefined ? parseFloat(bData.totalUsdValue || 0) : 0;
               const usdVal = Math.max(backendBizUsd, sumBusinessTokensUsd);
               businessTotalUsdValue = usdVal;
-              businessBalances['DZY'] = usdVal * 10;
+              if (businessBalances['DZY'] === undefined || businessBalances['DZY'] === null || businessBalances['DZY'] === 0) {
+                businessBalances['DZY'] = usdVal * 10;
+              }
               businessBalances['USD'] = usdVal;
               const knownCryptoTokens = ['POL', 'USDT', 'USDC', 'ETH', 'BTC', 'WBTC', 'SOL', 'MATIC', 'BNB', 'DAI'];
               Object.keys(newBalances).forEach(key => {
@@ -552,6 +559,7 @@ export function AppProvider({ children }) {
           phone: fetchedPhone,
           avatar: fetchedAvatar ? { uri: fetchedAvatar } : null,
           balanceDZY: primaryBalances.DZY ?? (primaryTotalUsd * 10),
+          rewardsDZY: fetchedRewardsDZY,
           balanceUSDT: primaryBalances.USDT,
           balanceCFA: primaryBalances.XOF || primaryBalances.CFA,
           totalUsdValue: primaryTotalUsd,

@@ -324,7 +324,7 @@ export default function AboutDizzitUpScreen() {
 
             <View style={styles.divider} />
 
-            <TouchableOpacity style={styles.linkRow} onPress={() => openLink('Licences', 'dizzitup.com/licenses')}>
+            <TouchableOpacity style={styles.linkRow} onPress={() => openLink('Licences', 'dizzitup.com/terms')}>
               <Ionicons name="ribbon-outline" size={20} color="#F59E0B" style={styles.linkIcon} />
               <Text style={styles.linkText}>{t('aboutApp.licenses', 'Licenses & Regulatory Compliance')}</Text>
               <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
