@@ -18,7 +18,7 @@ export default function MoreSettingsScreen() {
   const [toast, setToast] = useState(null);
 
   const appVersion = Application.nativeApplicationVersion || Constants?.expoConfig?.version || '1.0.0';
-  const appBuildNumber = Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '56';
+  const appBuildNumber = Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '61';
 
   const SETTINGS = [
     { id: 'account', title: t('settings.general', 'Account Settings'), description: t('settings.account_desc', 'Gérer les préférences et la sécurité de votre compte'), icon: 'person-outline', color: '#3B82F6', background: '#EFF6FF', route: 'AccountSettingsScreen' },

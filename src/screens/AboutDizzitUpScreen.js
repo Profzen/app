@@ -18,7 +18,7 @@ export default function AboutDizzitUpScreen() {
   const [releaseNotes, setReleaseNotes] = useState({ features: [], fixes: [], releaseDate: null, isLoading: true });
 
   const appVersion = Application.nativeApplicationVersion || Constants?.expoConfig?.version || '1.0.0';
-  const appBuildNumber = Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '56';
+  const appBuildNumber = Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '61';
 
   const currentYear = new Date().getFullYear();
   const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -82,7 +82,22 @@ export default function AboutDizzitUpScreen() {
         });
       } catch (err) {
         console.log('Failed to fetch release notes from Supabase:', err.message);
-        setReleaseNotes({ isLoading: false, features: [], fixes: [], releaseDate: currentDate });
+        setReleaseNotes({
+          isLoading: false,
+          features: [
+            'Store Pickup by Default: Verified in-store pickup with physical merchant address display.',
+            'Dynamic Physical Goods Notice: Localized warning inserting merchant country across 5 languages.',
+            'Master Search Engine: Unified search across stores, products, utilities and mobile airtime.',
+            'DZY Loyalty Sync: Authentic reward points preservation with clear Pre-TGE badges.'
+          ],
+          fixes: [
+            'Contacts Recovery: Instant beneficiary loading through universal session resolution.',
+            'Transaction History: Abandoned PayBills checkouts filtered out to eliminate false debit records.',
+            'Zero-Balance CTA: Direct navigation to wallet top-up method selection.',
+            'Regulatory Links: Seamless routing to official terms preventing web 404 errors.'
+          ],
+          releaseDate: currentDate
+        });
       }
     };
     fetchReleaseNotes();
