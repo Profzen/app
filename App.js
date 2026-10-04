@@ -50,6 +50,8 @@ LogBox.ignoreLogs([
   '"textShadow*" style props are deprecated',
   'props.pointerEvents is deprecated',
   'setLayoutAnimationEnabledExperimental',
+  // Crossmint info notice: recovery only applies to device signers (DZYwallet uses email signers)
+  '[SDK] wallet.recover.skipped',
 ]);
 
 if (Platform.OS === 'web' && typeof console !== 'undefined') {

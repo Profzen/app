@@ -9,7 +9,7 @@ import AppToast from '../components/AppToast';
 import BottomNavBar from '../components/BottomNavBar';
 import CryptoIcon from '../components/CryptoIcon';
 import { useApp } from '../context/AppContext';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { isSmallScreen } from '../utils/responsive';
 import { useWallet, EVMWallet, SolanaWallet } from '@crossmint/client-sdk-react-native-ui';
@@ -48,6 +48,32 @@ export default function SendMoneyScreen() {
   const [approvalMessage, setApprovalMessage] = useState(null);
   const [isCheckingEmailApproval, setIsCheckingEmailApproval] = useState(false);
   const [isResendingOtp, setIsResendingOtp] = useState(false);
+  // Crossmint's own OTP prompt is open: hide our modal so two modals never stack (Android flicker)
+  const [sdkPromptOpen, setSdkPromptOpen] = useState(false);
+  const approveInFlightRef = useRef(false);
+  const pollIntervalRef = useRef(null);
+
+  const stopPolling = () => {
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = null;
+    }
+  };
+  useEffect(() => stopPolling, []); // stop polling when leaving the screen
+
+  // Single entry point to Crossmint approval: one prompt at a time, our modal hidden meanwhile
+  const runSdkApproval = async (activeWallet, transactionId) => {
+    if (approveInFlightRef.current) return false;
+    approveInFlightRef.current = true;
+    setSdkPromptOpen(true);
+    try {
+      await activeWallet.approve({ transactionId });
+      return true;
+    } finally {
+      approveInFlightRef.current = false;
+      setSdkPromptOpen(false);
+    }
+  };
 
   const [apiRecipients, setApiRecipients] = useState([]);
   const [savedBeneficiaries, setSavedBeneficiaries] = useState([]);
@@ -469,7 +495,8 @@ export default function SendMoneyScreen() {
                   // Allow user to read the security modal before native Crossmint SDK takes over
                   await new Promise(resolve => setTimeout(resolve, 3500));
                   
-                  await activeWallet.approve({ transactionId: txId });
+                  const approved = await runSdkApproval(activeWallet, txId);
+                  if (!approved) return; // another approval prompt is already handling this transfer
                   console.log('✅ [SendMoneyScreen] SDK approval completed successfully');
                   if (typeof refreshTransactions === 'function') refreshTransactions();
                   if (typeof refreshUser === 'function') refreshUser();
@@ -535,6 +562,7 @@ export default function SendMoneyScreen() {
     const maxAttempts = 20;
     let isPolling = false;
 
+    stopPolling(); // never run two polling timers at once
     const interval = setInterval(async () => {
       if (isPolling) return;
       attempts++;
@@ -625,6 +653,7 @@ export default function SendMoneyScreen() {
         setTxStatus(null);
       }
     }, 8000); // 8-second interval prevents 429 rate-limiting
+    pollIntervalRef.current = interval;
   };
 
   const handleCheckEmailLink = async () => {
@@ -698,7 +727,12 @@ export default function SendMoneyScreen() {
           if (signerEmail) {
             await activeWallet.useSigner({ type: 'email', email: signerEmail });
           }
-          await activeWallet.approve({ transactionId: activeTxHash });
+          if (approveInFlightRef.current) {
+            // Crossmint prompt already open: it has its own "Re-send code" button
+            setApprovalMessage(t('sendMoney.resend_hint', 'Please check your email inbox and spam folder.'));
+            return;
+          }
+          await runSdkApproval(activeWallet, activeTxHash);
           setApprovalMessage(t('sendMoney.code_resent', 'Verification code requested! Please check your email inbox and spam.'));
           return;
         }
@@ -1235,7 +1269,7 @@ export default function SendMoneyScreen() {
         </Modal>
 
         {/* 🔐 Signature / Security Verification Modal */}
-        <Modal visible={txStatus === 'awaiting-approval'} transparent animationType="fade">
+        <Modal visible={txStatus === 'awaiting-approval' && !sdkPromptOpen} transparent animationType="fade">
           <View style={approvalModalStyles.modalOverlay}>
             <View style={[approvalModalStyles.modalContent, { paddingBottom: 30 }]}>
               <View style={approvalModalStyles.modalHeaderIcon}>
@@ -1269,7 +1303,7 @@ export default function SendMoneyScreen() {
               </View>
 
               <TouchableOpacity
-                onPress={() => { setTxStatus(null); setIsAuthorizing(false); setApprovalOtp(''); setApprovalMessage(null); }}
+                onPress={() => { stopPolling(); setTxStatus(null); setIsAuthorizing(false); setApprovalOtp(''); setApprovalMessage(null); }}
                 style={[approvalModalStyles.dismissBtn, { marginTop: 16 }]}
               >
                 <Text style={approvalModalStyles.dismissBtnText}>{t('common.cancel', 'Cancel')}</Text>

@@ -40,6 +40,7 @@ export default function SwapTokensScreen() {
   const [activeTxHash, setActiveTxHash] = useState(null);
   const [signerEmail, setSignerEmail] = useState(null);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
+  const [sdkPromptOpen, setSdkPromptOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const amountInputRef = React.useRef(null);
 
@@ -172,6 +173,7 @@ export default function SwapTokensScreen() {
   };
 
   const handleAuthorize = async () => {
+    if (sdkPromptOpen) return; // Crossmint prompt already open
     try {
       setIsAuthorizing(true);
       if (!crossmintWallet) throw new Error('Crossmint wallet not connected');
@@ -180,7 +182,13 @@ export default function SwapTokensScreen() {
       const emailToUse = signerEmail || user?.email;
 
       await activeWallet.useSigner({ type: 'email', email: emailToUse });
-      await activeWallet.approve({ transactionId: activeTxHash });
+      // Hide our modal while Crossmint's OTP prompt is shown (two stacked modals flicker on Android)
+      setSdkPromptOpen(true);
+      try {
+        await activeWallet.approve({ transactionId: activeTxHash });
+      } finally {
+        setSdkPromptOpen(false);
+      }
 
       pollTransactionStatus(activeTxHash);
     } catch (e) {
@@ -344,7 +352,7 @@ export default function SwapTokensScreen() {
       </View>
 
       {/* Signature Required Modal */}
-      <Modal visible={txStatus === 'awaiting-approval'} transparent animationType="fade">
+      <Modal visible={txStatus === 'awaiting-approval' && !sdkPromptOpen} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeaderIcon}>
