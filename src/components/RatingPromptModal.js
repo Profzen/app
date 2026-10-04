@@ -2,18 +2,43 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, Image, Platform, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as StoreReview from 'expo-store-review';
+import * as Application from 'expo-application';
 import { useApp } from '../context/AppContext';
+import { supabase } from '../services/supabaseClient';
 
 export default function RatingPromptModal({ visible, onClose, transactionType = 'transaction' }) {
-  const { t, language } = useApp();
+  const { t, language, session, user } = useApp();
   const [selectedRating, setSelectedRating] = useState(0);
   const [hasRated, setHasRated] = useState(false);
 
   if (!visible) return null;
 
+  const storeName = Platform.OS === 'ios' ? 'App Store' : 'Google Play';
+
+  // Save every rating (1-5) in app_ratings; never blocks the UI
+  const saveRating = async (stars) => {
+    try {
+      const userId = session?.user?.id || user?.id;
+      if (!userId) return;
+      const { error } = await supabase.from('app_ratings').insert({
+        user_id: userId,
+        rating: stars,
+        platform: Platform.OS,
+        app_version: Application.nativeApplicationVersion || null,
+        build_number: Application.nativeBuildVersion || null,
+        language: language || null,
+        context: transactionType || null,
+      });
+      if (error) console.log('Error saving rating', error.message);
+    } catch (e) {
+      console.log('Error saving rating', e);
+    }
+  };
+
   const handleRate = async (stars) => {
     setSelectedRating(stars);
     setHasRated(true);
+    saveRating(stars);
 
     setTimeout(async () => {
       if (stars >= 4) {
@@ -53,7 +78,7 @@ export default function RatingPromptModal({ visible, onClose, transactionType = 
           <Text style={styles.subtitle}>
             {hasRated
               ? t('rating.thankYou', 'Thank you for your rating!')
-              : t('rating.tapStar', 'Tap a star to rate it on the App Store.')}
+              : t('rating.tapStar', 'Tap a star to rate DizzitUp on {{store}}.', { store: storeName })}
           </Text>
 
           {/* Stars row */}

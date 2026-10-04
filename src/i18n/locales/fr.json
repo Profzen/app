@@ -1059,6 +1059,12 @@
     "comingNext": "Bientôt disponible",
     "switch": "Changer"
   },
+  "rating": {
+    "enjoyingApp": "Vous aimez DizzitUp ?",
+    "tapStar": "Touchez une étoile pour noter DizzitUp sur {{store}}.",
+    "thankYou": "Merci pour votre note !",
+    "notNow": "Plus tard"
+  },
   "profile": {
     "editProfile": "Modifier le profil",
     "signOut": "Se déconnecter",

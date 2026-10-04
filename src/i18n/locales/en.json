@@ -1059,6 +1059,12 @@
     "comingNext": "Coming next",
     "switch": "Switch"
   },
+  "rating": {
+    "enjoyingApp": "Enjoying DizzitUp?",
+    "tapStar": "Tap a star to rate DizzitUp on {{store}}.",
+    "thankYou": "Thank you for your rating!",
+    "notNow": "Not Now"
+  },
   "profile": {
     "editProfile": "Edit profile",
     "signOut": "Sign out",

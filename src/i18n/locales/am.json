@@ -1060,6 +1060,12 @@
     "comingNext": "በቅርቡ የሚመጣ",
     "switch": "ቀይር"
   },
+  "rating": {
+    "enjoyingApp": "DizzitUpን እየወደዱት ነው?",
+    "tapStar": "DizzitUpን በ{{store}} ላይ ለመገምገም ኮከብ ይንኩ።",
+    "thankYou": "ስለ ግምገማዎ እናመሰግናለን!",
+    "notNow": "አሁን አይደለም"
+  },
   "profile": {
     "editProfile": "መገለጫ አስተካክል",
     "signOut": "ውጣ",

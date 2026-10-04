@@ -520,6 +520,12 @@
     "completeAndAccess": "إكمال والوصول إلى حسابي",
     "codeValidated": "تم التحقق من الرمز بنجاح!"
   },
+  "rating": {
+    "enjoyingApp": "هل تستمتع باستخدام DizzitUp؟",
+    "tapStar": "اضغط على نجمة لتقييم DizzitUp على {{store}}.",
+    "thankYou": "شكرًا لتقييمك!",
+    "notNow": "ليس الآن"
+  },
   "profile": {
     "editProfile": "تعديل الملف الشخصي",
     "signOut": "تسجيل الخروج",

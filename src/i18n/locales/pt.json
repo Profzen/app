@@ -1013,6 +1013,12 @@
     "comingNext": "Em breve",
     "switch": "Mudar"
   },
+  "rating": {
+    "enjoyingApp": "Está a gostar do DizzitUp?",
+    "tapStar": "Toque numa estrela para avaliar o DizzitUp na {{store}}.",
+    "thankYou": "Obrigado pela sua avaliação!",
+    "notNow": "Agora não"
+  },
   "profile": {
     "editProfile": "Editar perfil",
     "signOut": "Sair",
