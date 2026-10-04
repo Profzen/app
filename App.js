@@ -52,6 +52,8 @@ LogBox.ignoreLogs([
   'setLayoutAnimationEnabledExperimental',
   // Crossmint info notice: recovery only applies to device signers (DZYwallet uses email signers)
   '[SDK] wallet.recover.skipped',
+  // Crossmint info notice: its internal logger ignores repeated init when getWallet() is called
+  '[SDK] SdkLogger.init called multiple times',
 ]);
 
 if (Platform.OS === 'web' && typeof console !== 'undefined') {
