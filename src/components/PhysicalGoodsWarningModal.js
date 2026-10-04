@@ -26,7 +26,14 @@ export default function PhysicalGoodsWarningModal({ visible, onClose, onContinue
           </Text>
           
           <Text style={styles.message}>
-            {t('buyGoods.unavailableMessage', "We are establishing a secure delivery network in {{country}} to ensure your loved ones receive authentic products from verified merchants.\n\nBuying physical goods is temporarily unavailable, but you can still browse the shops. In the meantime, you can continue to pay bills, recharge airtime, and send or receive funds. We will notify you as soon as the service is fully rolled out.", { country: shopCountry })}
+            {t('buyGoods.unavailableMessage', "We are establishing a secure delivery network in {{country}} to ensure your loved ones receive authentic products from verified merchants.\n\nBuying physical goods is temporarily unavailable, but you can still browse the shops. In the meantime, you can continue to pay bills, top up airtime, buy gift cards, and send or receive funds.\n\nWe will notify you as soon as the service is fully rolled out.")
+              .split('{{country}}')
+              .map((part, index, parts) => (
+                <React.Fragment key={index}>
+                  {part}
+                  {index < parts.length - 1 && <Text style={styles.countryHighlight}>{shopCountry}</Text>}
+                </React.Fragment>
+              ))}
           </Text>
 
           <View style={styles.buttonContainer}>
@@ -95,6 +102,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 24,
+  },
+  countryHighlight: {
+    fontFamily: 'Inter_700Bold',
+    color: '#1A2840',
   },
   buttonContainer: {
     flexDirection: 'column',

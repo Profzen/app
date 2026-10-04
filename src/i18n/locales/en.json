@@ -5728,7 +5728,7 @@
   "noActivityMessage": "Your inbox is empty. New updates, transactions, and reminders will appear here.",
   "buyGoods": {
     "unavailableTitle": "Coming Soon",
-    "unavailableMessage": "We are establishing a secure delivery network in {{country}} to ensure your loved ones receive authentic products from verified merchants.\n\nBuying physical goods is temporarily unavailable, but you can still browse the shops. In the meantime, you can continue to pay bills, recharge airtime, and send or receive funds. We will notify you as soon as the service is fully rolled out.",
+    "unavailableMessage": "We are establishing a secure delivery network in {{country}} to ensure your loved ones receive authentic products from verified merchants.\n\nBuying physical goods is temporarily unavailable, but you can still browse the shops. In the meantime, you can continue to pay bills, recharge airtime, buy gift cards, and send or receive funds.\n\nWe will notify you as soon as the service is fully rolled out.",
     "continueBrowsing": "Continue Browsing"
   },
   "dizzitapp_page": {

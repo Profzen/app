@@ -5521,7 +5521,7 @@
   "noActivityMessage": "Sua caixa está vazia. Novas atualizações, transações e lembretes aparecerão aqui.",
   "buyGoods": {
     "unavailableTitle": "Em Breve",
-    "unavailableMessage": "Estamos a estabelecer uma rede de entrega segura no/em {{country}} para garantir que os seus entes queridos recebam produtos autênticos de comerciantes verificados.\n\nA compra de bens físicos está temporariamente indisponível, mas ainda pode explorar as lojas. Entretanto, pode continuar a pagar contas, recarregar telemóveis e enviar ou receber fundos. Iremos notificá-lo assim que o serviço estiver totalmente implementado.",
+    "unavailableMessage": "Estamos a estabelecer uma rede de entrega segura no/em {{country}} para garantir que os seus entes queridos recebam produtos autênticos de comerciantes verificados.\n\nA compra de bens físicos está temporariamente indisponível, mas ainda pode explorar as lojas. Entretanto, pode continuar a pagar contas, recarregar telemóveis, comprar cartões-presente e enviar ou receber fundos.\n\nIremos notificá-lo assim que o serviço estiver totalmente implementado.",
     "continueBrowsing": "Continuar a navegar"
   },
   "dizzitapp_page": {
