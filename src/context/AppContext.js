@@ -13,6 +13,7 @@ import { supabase } from '../services/supabaseClient';
 import { transactionService } from '../services/transactionService';
 import contactService from '../services/contactService';
 import { buyGoodsApi } from '../services/buyGoodsApi';
+import { getProductCoverImage } from '../utils/productMedia';
 import { detectUserCountry, getCachedCountry, setManualCountry } from '../services/geolocationService';
 import { notificationService } from '../services/notificationService';
 
@@ -683,21 +684,30 @@ export function AppProvider({ children }) {
 
   const [shops, setShops] = useState([]);
   const [contacts, setContacts] = useState([]);
+  // Favorites keys: "product:<id>" / "merchant:<id>" (shared user_favorites table, same as the website)
   const [favorites, setFavorites] = useState([]);
+  const favoritesUserId = session?.user?.id || user?.id || null;
 
-  // Hydrate favorites from AsyncStorage
+  // Load favorites for the logged-in account: cached copy first (instant), then the database
   useEffect(() => {
-    const hydrateFavorites = async () => {
+    AsyncStorage.removeItem('@dizzitup_favorites').catch(() => {}); // legacy phone-only list (ids without type)
+    if (!favoritesUserId) { setFavorites([]); return undefined; }
+    let cancelled = false;
+    const cacheKey = `@dizzitup_favorites_${favoritesUserId}`;
+    (async () => {
       try {
-        const stored = await AsyncStorage.getItem('@dizzitup_favorites');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed)) setFavorites(parsed);
-        }
+        const cached = await AsyncStorage.getItem(cacheKey);
+        const parsed = cached ? JSON.parse(cached) : null;
+        if (!cancelled && Array.isArray(parsed)) setFavorites(parsed);
       } catch (e) {}
-    };
-    hydrateFavorites();
-  }, []);
+      const rows = await buyGoodsApi.getUserFavorites(favoritesUserId, session?.access_token);
+      if (cancelled || !Array.isArray(rows)) return; // network failure: keep cache
+      const keys = rows.map((r) => `${r.target_type}:${r.target_id}`);
+      setFavorites(keys);
+      AsyncStorage.setItem(cacheKey, JSON.stringify(keys)).catch(() => {});
+    })();
+    return () => { cancelled = true; };
+  }, [favoritesUserId, !!session?.access_token]);
 
   // Hydrate shops dynamically from buyGoodsApi
   useEffect(() => {
@@ -808,12 +818,29 @@ export function AppProvider({ children }) {
     return result;
   }, [language]);
 
-  const toggleFavorite = (id) => {
-    setFavorites(prev => {
-      const updated = prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id];
-      AsyncStorage.setItem('@dizzitup_favorites', JSON.stringify(updated)).catch(() => {});
+  const isFavorite = useCallback(
+    (targetType, targetId) => !!targetId && favorites.includes(`${targetType}:${targetId}`),
+    [favorites]
+  );
+
+  // Optimistic toggle; reverted if the server refuses. Returns { success, isFavorite }.
+  const toggleFavorite = async (targetType, targetId) => {
+    if (!targetType || !targetId) return { success: false };
+    const token = session?.access_token;
+    if (!token || !favoritesUserId) return { success: false, reason: 'auth' };
+    const key = `${targetType}:${targetId}`;
+    const cacheKey = `@dizzitup_favorites_${favoritesUserId}`;
+    const wasFavorite = favorites.includes(key);
+    const apply = (makeFavorite) => setFavorites((prev) => {
+      const without = prev.filter((k) => k !== key);
+      const updated = makeFavorite ? [...without, key] : without;
+      AsyncStorage.setItem(cacheKey, JSON.stringify(updated)).catch(() => {});
       return updated;
     });
+    apply(!wasFavorite);
+    const ok = await buyGoodsApi.setFavorite({ targetType, targetId, isFavorite: !wasFavorite, token });
+    if (!ok) apply(wasFavorite);
+    return { success: ok, isFavorite: ok ? !wasFavorite : wasFavorite };
   };
 
   const updateUserProfile = async (payload) => {
@@ -893,11 +920,7 @@ export function AppProvider({ children }) {
       }
     }
 
-    const itemImage = (product.product_images && product.product_images.length > 0)
-      ? product.product_images[0]
-      : (product.images && product.images.length > 0)
-      ? product.images[0]
-      : product.thumbnail || product.image || null;
+    const itemImage = getProductCoverImage(product);
 
     const newItem = {
       id: product.id || product._id || `item_${Date.now()}`,
@@ -1002,6 +1025,7 @@ export function AppProvider({ children }) {
       refreshTransactions,
       favorites,
       toggleFavorite,
+      isFavorite,
       cart,
       setCart,
       addToCart,

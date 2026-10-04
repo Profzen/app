@@ -528,6 +528,9 @@
     "helpful": "مفيد",
     "favorites": {
       "my_favorites": "مفضلاتي",
+      "added": "تمت الإضافة إلى مفضلاتك",
+      "removed": "تمت الإزالة من مفضلاتك",
+      "error": "تعذر تحديث مفضلاتك. يرجى المحاولة مرة أخرى.",
       "discover_more": "اكتشف المزيد",
       "favorite_shops": "المتاجر المفضلة",
       "favorite_products": "المنتجات المفضلة",
@@ -1272,6 +1275,10 @@
     }
   },
   "product": {
+    "playVideo": "تشغيل الفيديو",
+    "videoErrorTitle": "الفيديو غير متاح",
+    "videoErrorDesc": "تعذر فتح هذا الفيديو على جهازك.",
+    "noReviewsYet": "لا توجد تقييمات بعد",
     "details": "تفاصيل المنتج",
     "description": "الوصف",
     "price": "السعر",
@@ -4456,6 +4463,7 @@
   },
   "actionScanCash": "المسح والسحب",
   "orderVerification": {
+    "searchBeneficiary": "ابحث بالاسم أو الهاتف أو المدينة",
     "pickupLocationTitle": "مكان الاستلام من المتجر",
     "pickupNotice": "ستستلم طلبك من هذا العنوان.",
     "noAddressSelected": "يرجى اختيار عنوان توصيل أو إدخاله.",

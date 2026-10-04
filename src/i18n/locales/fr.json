@@ -1067,6 +1067,9 @@
     "helpful": "Utile",
     "favorites": {
       "my_favorites": "Mes Favoris",
+      "added": "Ajouté à vos favoris",
+      "removed": "Retiré de vos favoris",
+      "error": "Impossible de mettre à jour vos favoris. Veuillez réessayer.",
       "discover_more": "Découvrir Plus",
       "favorite_shops": "Boutiques Favorites",
       "favorite_products": "Produits Favoris",
@@ -2018,6 +2021,10 @@
     "orBrowseGoods": "OU DÉCOUVREZ LES PRODUITS LOCAUX"
   },
   "product": {
+    "playVideo": "Lire la vidéo",
+    "videoErrorTitle": "Vidéo indisponible",
+    "videoErrorDesc": "Cette vidéo n'a pas pu être ouverte sur votre appareil.",
+    "noReviewsYet": "Aucun avis pour le moment",
     "details": "Détails du produit",
     "description": "Description",
     "price": "Prix",
@@ -4706,6 +4713,7 @@
   },
   "actionScanCash": "Scan & Retrait",
   "orderVerification": {
+    "searchBeneficiary": "Rechercher par nom, téléphone ou ville",
     "pickupLocationTitle": "Lieu de retrait en boutique",
     "pickupNotice": "Vous retirerez votre commande à cette adresse.",
     "noAddressSelected": "Veuillez sélectionner ou saisir une adresse de livraison.",

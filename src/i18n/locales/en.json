@@ -1067,6 +1067,9 @@
     "helpful": "Helpful",
     "favorites": {
       "my_favorites": "My Favorites",
+      "added": "Added to your favorites",
+      "removed": "Removed from your favorites",
+      "error": "We couldn't update your favorites. Please try again.",
       "discover_more": "Discover More",
       "favorite_shops": "Favorite Shops",
       "favorite_products": "Favorite Products",
@@ -2015,6 +2018,10 @@
     "orBrowseGoods": "OR BROWSE LOCAL GOODS"
   },
   "product": {
+    "playVideo": "Play video",
+    "videoErrorTitle": "Video unavailable",
+    "videoErrorDesc": "This video could not be opened on your device.",
+    "noReviewsYet": "No reviews yet",
     "details": "Product Details",
     "description": "Description",
     "price": "Price",
@@ -4658,6 +4665,7 @@
   },
   "actionScanCash": "Scan & Cash",
   "orderVerification": {
+    "searchBeneficiary": "Search by name, phone or city",
     "pickupLocationTitle": "Store pickup location",
     "pickupNotice": "You will collect your order at this address.",
     "noAddressSelected": "Please select or enter a delivery address.",

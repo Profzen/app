@@ -11,6 +11,7 @@ import PriceDisplay from '../components/PriceDisplay';
 import { useBuyGoods } from '../hooks/useBuyGoods';
 import { useApp } from '../context/AppContext';
 import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
+import { getProductCoverImage } from '../utils/productMedia';
 
 
 export default function ShopDetailsScreen({ route }) {
@@ -18,20 +19,34 @@ export default function ShopDetailsScreen({ route }) {
   const shopParam = route?.params?.shop;
   const initialShop = shopParam || {};
 
-  const { t, cartCount } = useApp();
+  const { t, cartCount, user, isFavorite, toggleFavorite } = useApp();
   const { fetchStoreDetails, fetchAllProducts } = useBuyGoods();
 
   const [shop, setShop] = useState(initialShop);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [favorite, setFavorite] = useState(false);
-  const [productFavorites, setProductFavorites] = useState([]);
+  const [favoriteBusyKey, setFavoriteBusyKey] = useState(null);
   const [aboutExpanded, setAboutExpanded] = useState(false);
   const [shopInfoExpanded, setShopInfoExpanded] = useState(false);
   const [paymentInfoExpanded, setPaymentInfoExpanded] = useState(false);
   const [toast, setToast] = useState(null);
   const [showShareModal, setShowShareModal] = useState(false);
+
+  // Favorites (shared user_favorites table). Merchants can't favorite their own shop or products.
+  const shopId = shop?.id || shop?.merchant_id || null;
+  const isOwnShop = !!(user?.merchantProfile?.id && shopId && String(user.merchantProfile.id) === String(shopId));
+  const shopIsFavorite = isFavorite('merchant', shopId);
+  const handleToggleFavorite = async (targetType, targetId, label) => {
+    const busyKey = `${targetType}:${targetId}`;
+    if (!targetId || favoriteBusyKey === busyKey) return;
+    setFavoriteBusyKey(busyKey);
+    const result = await toggleFavorite(targetType, targetId);
+    setFavoriteBusyKey(null);
+    setToast(result.success
+      ? { title: t(result.isFavorite ? 'profile.favorites.added' : 'profile.favorites.removed', result.isFavorite ? 'Added to your favorites' : 'Removed from your favorites'), message: label || '' }
+      : { title: t('profile.favorites.error', "We couldn't update your favorites. Please try again."), message: '' });
+  };
 
   const shopCategoriesList = useMemo(() => {
     const raw = shop.shop_categories || shop.raw?.shop_categories || shop.category;
@@ -352,9 +367,11 @@ export default function ShopDetailsScreen({ route }) {
                 </View>
               )}
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnRight} onPress={() => setFavorite(!favorite)}>
-              <Ionicons name={favorite ? "heart" : "heart-outline"} size={18} color={favorite ? "#EF4444" : "#1A2840"} />
-            </TouchableOpacity>
+            {!isOwnShop && (
+              <TouchableOpacity style={styles.iconBtnRight} onPress={() => handleToggleFavorite('merchant', shopId, shop?.name || shop?.shop_name)} accessibilityRole="button" accessibilityState={{ selected: shopIsFavorite }}>
+                <Ionicons name={shopIsFavorite ? "heart" : "heart-outline"} size={18} color={shopIsFavorite ? "#EF4444" : "#1A2840"} />
+              </TouchableOpacity>
+            )}
             <TouchableOpacity style={styles.iconBtnRight} onPress={() => setShowShareModal(true)}>
               <Ionicons name="share-outline" size={18} color="#1A2840" />
               <View style={styles.shareBadgeDot} />
@@ -927,21 +944,20 @@ export default function ShopDetailsScreen({ route }) {
             {!loading && products.length === 0 && <Text style={{ margin: 20, color: '#64748B' }}>{t('shop.products.no_products_found', 'Aucun produit trouvé.')}</Text>}
             {products.map(product => (
               <View key={product.id} style={styles.productCard}>
-                <TouchableOpacity style={styles.heartIcon} onPress={() => setProductFavorites((items) => items.includes(product.id) ? items.filter((id) => id !== product.id) : [...items, product.id])}>
-                  <Ionicons name={productFavorites.includes(product.id) ? "heart" : "heart-outline"} size={16} color="#F59E0B" />
-                </TouchableOpacity>
+                {!isOwnShop && (
+                  <TouchableOpacity style={styles.heartIcon} onPress={() => handleToggleFavorite('product', product.id, product.name || product.title)}>
+                    <Ionicons name={isFavorite('product', product.id) ? "heart" : "heart-outline"} size={16} color="#F59E0B" />
+                  </TouchableOpacity>
+                )}
 
                 <TouchableOpacity activeOpacity={0.8} onPress={() => navigation.navigate('ProductDetailsScreen', { product, shop })}>
                   <View style={[styles.productImgPlaceholder, { padding: 0, overflow: 'hidden' }]}>
-                    {product.product_images && product.product_images.length > 0 ? (
-                      <Image source={{ uri: product.product_images[0] }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
-                    ) : product.images && product.images.length > 0 ? (
-                      <Image source={{ uri: product.images[0] }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
-                    ) : product.thumbnail ? (
-                      <Image source={{ uri: product.thumbnail }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
-                    ) : (
-                      <Image source={require('../../assets/brand/product_no_image.jpg')} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
-                    )}
+                    <Image
+                      source={getProductCoverImage(product) ? { uri: getProductCoverImage(product) } : require('../../assets/brand/product_no_image.jpg')}
+                      defaultSource={require('../../assets/brand/product_no_image.jpg')}
+                      style={{ width: '100%', height: '100%' }}
+                      resizeMode="cover"
+                    />
                   </View>
                 </TouchableOpacity>
 

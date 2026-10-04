@@ -1021,6 +1021,9 @@
     "helpful": "Útil",
     "favorites": {
       "my_favorites": "Meus Favoritos",
+      "added": "Adicionado aos seus favoritos",
+      "removed": "Removido dos seus favoritos",
+      "error": "Não foi possível atualizar os seus favoritos. Tente novamente.",
       "discover_more": "Descobrir Mais",
       "favorite_shops": "Lojas Favoritas",
       "favorite_products": "Produtos Favoritos",
@@ -1961,6 +1964,10 @@
     "orBrowseGoods": "OU EXPLORE PRODUTOS LOCAIS"
   },
   "product": {
+    "playVideo": "Reproduzir vídeo",
+    "videoErrorTitle": "Vídeo indisponível",
+    "videoErrorDesc": "Não foi possível abrir este vídeo no seu dispositivo.",
+    "noReviewsYet": "Ainda sem avaliações",
     "details": "Detalhes do Produto",
     "description": "Descrição",
     "price": "Preço",
@@ -4430,6 +4437,7 @@
   },
   "actionScanCash": "Scan & Saque",
   "orderVerification": {
+    "searchBeneficiary": "Pesquisar por nome, telefone ou cidade",
     "pickupLocationTitle": "Local de retirada na loja",
     "pickupNotice": "Você retirará seu pedido neste endereço.",
     "noAddressSelected": "Selecione ou insira um endereço de entrega.",

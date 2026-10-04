@@ -11,6 +11,7 @@ import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { shareShopLink, handleUserInviteShare } from '../utils/shareHelper';
+import { getProductCoverImage } from '../utils/productMedia';
 import { useApp } from '../context/AppContext';
 import { useBuyGoods } from '../hooks/useBuyGoods';
 import { buyGoodsApi } from '../services/buyGoodsApi';
@@ -18,6 +19,14 @@ import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
 import PriceDisplay from '../components/PriceDisplay';
 
 import { isSmallScreen, isShortScreen } from '../utils/responsive';
+
+// Universal Search service entries (buy-goods-backend searchIndexerService.indexPlatformFeatures) -> app screens
+const SERVICE_TYPES = ['platform_feature', 'paybill_service', 'wallet_service'];
+const SERVICE_ROUTES = {
+  feat_dzy_wallet: { route: 'AssetListScreen' },
+  feat_paybills: { route: 'PayBillsScreen' },
+  feat_send_money: { route: 'ContactsScreen', params: { nextScreen: 'SendMoneyScreen' } },
+};
 
 export default function HomeScreen() {
   const navigation = useNavigation();
@@ -151,6 +160,9 @@ export default function HomeScreen() {
         merchantId: item.entity_id,
         searchQuery: item.title,
       });
+    } else if (SERVICE_TYPES.includes(item.entity_type)) {
+      const target = SERVICE_ROUTES[item.entity_id] || (item.entity_type === 'paybill_service' ? SERVICE_ROUTES.feat_paybills : null);
+      if (target) navigation.navigate(target.route, target.params || {});
     }
   };
 
@@ -286,7 +298,7 @@ export default function HomeScreen() {
           <View style={styles.header}>
             <TouchableOpacity
               style={styles.userInfo}
-              onPress={() => navigation.navigate('PersonalAccountScreen')}
+              onPress={() => navigation.navigate(user?.role === 'merchant' ? 'BusinessAccountScreen' : 'PersonalAccountScreen')}
               activeOpacity={0.7}
             >
               <View style={[styles.avatarRing, user?.role === 'merchant' ? styles.merchantRing : styles.userRing]}>
@@ -421,6 +433,10 @@ export default function HomeScreen() {
                         badgeBg = '#FDF2F8';
                         badgeLabel = 'Store';
                         defaultIcon = 'storefront-outline';
+                      } else if (SERVICE_TYPES.includes(item.entity_type)) {
+                        badgeColor = '#20365B';
+                        badgeBg = '#FFF7E0';
+                        defaultIcon = item.entity_id === 'feat_dzy_wallet' ? 'wallet-outline' : item.entity_id === 'feat_send_money' ? 'paper-plane-outline' : 'document-text-outline';
                       }
 
                       return (
@@ -644,7 +660,7 @@ export default function HomeScreen() {
                   return (
                     <TouchableOpacity key={`product-${product.id || 'id'}-${index}`} style={styles.timelineCard} onPress={() => navigation.navigate('ProductDetailsScreen', { product })}>
                       <Image
-                        source={product.product_images && product.product_images.length > 0 ? { uri: product.product_images[0] } : product.thumbnail ? { uri: product.thumbnail } : product.images && product.images.length > 0 ? { uri: product.images[0] } : require('../../assets/brand/product_no_image.jpg')}
+                        source={getProductCoverImage(product) ? { uri: getProductCoverImage(product) } : require('../../assets/brand/product_no_image.jpg')}
                         defaultSource={require('../../assets/brand/product_no_image.jpg')}
                         style={styles.timelineImage}
                         resizeMode="cover"

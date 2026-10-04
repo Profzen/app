@@ -1,7 +1,7 @@
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Dimensions, Share, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Dimensions, Share, Platform, StatusBar, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
@@ -10,22 +10,53 @@ import PriceDisplay from '../components/PriceDisplay';
 import PhysicalGoodsWarningModal from '../components/PhysicalGoodsWarningModal';
 import { useApp } from '../context/AppContext';
 import { convertCurrencyAmount } from '../utils/countryCurrencyUtils';
+import { buyGoodsApi } from '../services/buyGoodsApi';
+import { getProductMedia, isVideoUrl } from '../utils/productMedia';
+
+import ProductVideoSlide from '../components/ProductVideoSlide';
 
 const { width } = Dimensions.get('window');
+// Compact gallery so price, quantity and actions stay visible without scrolling
+const GALLERY_HEIGHT = Math.min(Math.round(width * 0.62), 250);
+const THUMB_STEP = 54; // thumbnail width (46) + gap (8)
 
 export default function ProductDetailsScreen({ route }) {
   const navigation = useNavigation();
-  const { t, cart, addToCart, cartCount, language } = useApp();
-  const product = route?.params?.product;
+  const { t, cart, addToCart, cartCount, language, user, isFavorite, toggleFavorite } = useApp();
+  const routeProduct = route?.params?.product;
   const shop = route?.params?.shop;
 
+  // Always load the full product by id: Home search / deep links only pass a partial
+  // search-index row (no price, one image). The marketplace row is refreshed too.
+  const [fetchedProduct, setFetchedProduct] = useState(null);
+  const [isHydrating, setIsHydrating] = useState(!!routeProduct?.id);
+  useEffect(() => {
+    let active = true;
+    const id = routeProduct?.id;
+    if (!id) { setIsHydrating(false); return undefined; }
+    setIsHydrating(true);
+    buyGoodsApi.getProductById(id)
+      .then((p) => { if (active && p) setFetchedProduct(p); })
+      .catch(() => {})
+      .finally(() => { if (active) setIsHydrating(false); });
+    return () => { active = false; };
+  }, [routeProduct?.id]);
+
+  const product = routeProduct
+    ? (fetchedProduct ? { ...routeProduct, ...fetchedProduct, name: fetchedProduct.name || routeProduct.name || routeProduct.title } : routeProduct)
+    : null;
+
   const [quantity, setQuantity] = useState(1);
-  const [favorite, setFavorite] = useState(false);
+  const [favoriteBusy, setFavoriteBusy] = useState(false);
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [toast, setToast] = useState(null);
   const [conflictModal, setConflictModal] = useState(null);
   const [warningModalVisible, setWarningModalVisible] = useState(false);
   const [pendingAction, setPendingAction] = useState(null); // 'cart' or 'buy'
+  const [activeMediaIndex, setActiveMediaIndex] = useState(0);
+  const [galleryWidth, setGalleryWidth] = useState(width);
+  const galleryRef = useRef(null);
+  const thumbsRef = useRef(null);
 
   const insets = useSafeAreaInsets();
   const bottomPadding = Math.max(insets.bottom, Platform.OS === 'ios' ? 24 : 16);
@@ -64,6 +95,40 @@ export default function ProductDetailsScreen({ route }) {
   const displayPrice = (rawAmount !== undefined && rawAmount !== null && !isNaN(Number(rawAmount)))
     ? `${Number(rawAmount).toLocaleString(numLocale)} ${displayCurrency}`
     : (product.price || '');
+  const hasValidPrice = rawAmount !== undefined && rawAmount !== null && rawAmount !== '' && !isNaN(Number(rawAmount));
+  // Never let a product be bought while its real price is still loading / unknown
+  const canPurchase = hasValidPrice && !isHydrating;
+
+  // All images + videos stored by the merchant in product_images
+  const media = getProductMedia(product).all;
+  const safeMediaIndex = activeMediaIndex < media.length ? activeMediaIndex : 0;
+  const activeMedia = media[safeMediaIndex] || null;
+  const goToMedia = (idx) => {
+    if (!media.length) return;
+    const next = Math.max(0, Math.min(idx, media.length - 1));
+    setActiveMediaIndex(next);
+    galleryRef.current?.scrollTo({ x: next * galleryWidth, animated: true });
+    thumbsRef.current?.scrollTo({ x: Math.max(0, next * THUMB_STEP - THUMB_STEP * 2), animated: true });
+  };
+
+  // Favorites (shared user_favorites table). Merchants can't favorite their own products.
+  const productOwnerId = product?.merchant_id || product?.merchant?.id || shop?.id || null;
+  const isOwnProduct = !!(user?.merchantProfile?.id && productOwnerId && String(user.merchantProfile.id) === String(productOwnerId));
+  const productIsFavorite = isFavorite('product', product?.id);
+  const handleToggleFavorite = async () => {
+    if (!product?.id || favoriteBusy) return;
+    setFavoriteBusy(true);
+    const result = await toggleFavorite('product', product.id);
+    setFavoriteBusy(false);
+    setToast(result.success
+      ? { title: t(result.isFavorite ? 'profile.favorites.added' : 'profile.favorites.removed', result.isFavorite ? 'Added to your favorites' : 'Removed from your favorites'), message: product?.name || product?.title || '' }
+      : { title: t('profile.favorites.error', "We couldn't update your favorites. Please try again."), message: '' });
+  };
+  const ratingValue = Math.max(0, Math.min(5, Number(product?.rating) || 0));
+  const reviewCount = Math.max(0, Number(product?.review_count ?? product?.reviewCount) || 0);
+  const merchantSpecs = Array.isArray(product?.metadata?.specifications)
+    ? product.metadata.specifications.filter((s) => s && s.key && s.value)
+    : [];
 
   // Dynamic delivery fee from merchant settings in buygoods backend
   const rawDeliveryFee = (shop?.delivery_fee !== undefined && shop?.delivery_fee !== null)
@@ -126,11 +191,13 @@ export default function ProductDetailsScreen({ route }) {
   };
 
   const handleAddToCart = () => {
+    if (!canPurchase) return;
     setPendingAction('cart');
     setWarningModalVisible(true);
   };
 
   const handleBuyNow = () => {
+    if (!canPurchase) return;
     setPendingAction('buy');
     setWarningModalVisible(true);
   };
@@ -210,9 +277,11 @@ export default function ProductDetailsScreen({ route }) {
               </View>
             )}
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconBtnRight} onPress={() => setFavorite(!favorite)}>
-            <Ionicons name={favorite ? "heart" : "heart-outline"} size={20} color={favorite ? "#EF4444" : "#1A2840"} />
-          </TouchableOpacity>
+          {!isOwnProduct && (
+            <TouchableOpacity style={styles.iconBtnRight} onPress={handleToggleFavorite} disabled={favoriteBusy} accessibilityRole="button" accessibilityState={{ selected: productIsFavorite }}>
+              <Ionicons name={productIsFavorite ? "heart" : "heart-outline"} size={20} color={productIsFavorite ? "#EF4444" : "#1A2840"} />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity style={styles.iconBtnRight} onPress={shareProduct}>
             <Ionicons name="share-outline" size={20} color="#1A2840" />
           </TouchableOpacity>
@@ -221,57 +290,130 @@ export default function ProductDetailsScreen({ route }) {
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
-        {/* Top Section: 2 Columns Layout */}
-        <View style={styles.topSection}>
-          
-          {/* Left Column: Images */}
-          <View style={styles.leftCol}>
-            <View style={styles.mainImageContainer}>
-              <Image
-                source={
-                  (product.product_images && product.product_images.length > 0)
-                    ? { uri: product.product_images[0] }
-                    : (product.images && product.images.length > 0)
-                    ? { uri: product.images[0] }
-                    : product.thumbnail
-                    ? { uri: product.thumbnail }
-                    : product.image
-                    ? { uri: product.image }
-                    : require('../../assets/brand/product_no_image.jpg')
-                }
-                defaultSource={require('../../assets/brand/product_no_image.jpg')}
-                style={{ width: '100%', height: 180, borderRadius: 12 }}
-                resizeMode="cover"
-              />
+        {/* Full-width media carousel (swipe or arrows), images + videos */}
+        <View style={styles.galleryWrap} onLayout={(e) => setGalleryWidth(e.nativeEvent.layout.width || width)}>
+          <ScrollView
+            ref={galleryRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            scrollEventThrottle={16}
+            onScroll={(e) => {
+              const idx = Math.round(e.nativeEvent.contentOffset.x / (galleryWidth || 1));
+              if (idx !== safeMediaIndex && idx >= 0 && idx < media.length) {
+                setActiveMediaIndex(idx);
+                thumbsRef.current?.scrollTo({ x: Math.max(0, idx * THUMB_STEP - THUMB_STEP * 2), animated: true });
+              }
+            }}
+          >
+            {(media.length > 0 ? media : [null]).map((url, idx) => (
+              <View key={`${url || 'placeholder'}-${idx}`} style={{ width: galleryWidth, height: GALLERY_HEIGHT }}>
+                {url && isVideoUrl(url) ? (
+                  <ProductVideoSlide
+                    uri={url}
+                    isActive={idx === safeMediaIndex}
+                    playLabel={t('product.playVideo', 'Play video')}
+                    errorTitle={t('product.videoErrorTitle', 'Video unavailable')}
+                    errorDesc={t('product.videoErrorDesc', 'This video could not be opened on your device.')}
+                  />
+                ) : (
+                  <Image
+                    source={url ? { uri: url } : require('../../assets/brand/product_no_image.jpg')}
+                    defaultSource={require('../../assets/brand/product_no_image.jpg')}
+                    style={{ width: '100%', height: '100%' }}
+                    resizeMode="contain"
+                  />
+                )}
+              </View>
+            ))}
+          </ScrollView>
+
+          {media.length > 1 && safeMediaIndex > 0 && (
+            <TouchableOpacity style={[styles.galleryArrow, { left: 12 }]} onPress={() => goToMedia(safeMediaIndex - 1)} accessibilityLabel={t('common.previous', 'Previous')}>
+              <Ionicons name="chevron-back" size={22} color="#1A2840" />
+            </TouchableOpacity>
+          )}
+          {media.length > 1 && safeMediaIndex < media.length - 1 && (
+            <TouchableOpacity style={[styles.galleryArrow, { right: 12 }]} onPress={() => goToMedia(safeMediaIndex + 1)} accessibilityLabel={t('common.next', 'Next')}>
+              <Ionicons name="chevron-forward" size={22} color="#1A2840" />
+            </TouchableOpacity>
+          )}
+          {media.length > 1 && (
+            <View style={styles.mediaCounter}>
+              {activeMedia && isVideoUrl(activeMedia) && <Ionicons name="videocam" size={12} color="#FFB800" style={{ marginRight: 4 }} />}
+              <Text style={styles.mediaCounterText}>{safeMediaIndex + 1}/{media.length}</Text>
             </View>
-          </View>
+          )}
+        </View>
+
+        {media.length > 1 && (
+          <ScrollView ref={thumbsRef} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.mediaThumbRow}>
+            {media.map((url, idx) => (
+              <TouchableOpacity
+                key={`${url}-${idx}`}
+                style={[styles.mediaThumb, idx === safeMediaIndex && styles.mediaThumbActive]}
+                onPress={() => goToMedia(idx)}
+                activeOpacity={0.8}
+              >
+                {isVideoUrl(url) ? (
+                  <View style={styles.mediaThumbVideo}>
+                    <Ionicons name="play-circle" size={24} color="#FFB800" />
+                  </View>
+                ) : (
+                  <Image source={{ uri: url }} style={styles.mediaThumbImage} resizeMode="cover" />
+                )}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+
+        {/* Top Section: Product Info */}
+        <View style={styles.topSection}>
 
           {/* Right Column: Product Info */}
           <View style={styles.rightCol}>
-            <View style={styles.categoryBadge}>
-              <Text style={styles.categoryBadgeText}>{product.category || product.desc1 || 'High-Tech'}</Text>
-            </View>
+            {!!(product.category || product.desc1) && (
+              <View style={styles.categoryBadge}>
+                <Text style={styles.categoryBadgeText}>{product.category || product.desc1}</Text>
+              </View>
+            )}
             
             <Text style={styles.productTitle}>{product.name}</Text>
             
+            {/* Real rating from the database (products.rating / review_count) */}
             <View style={styles.ratingRow}>
-              <Ionicons name="star" size={14} color="#F59E0B" />
-              <Ionicons name="star" size={14} color="#F59E0B" />
-              <Ionicons name="star" size={14} color="#F59E0B" />
-              <Ionicons name="star" size={14} color="#F59E0B" />
-              <Ionicons name="star-half" size={14} color="#F59E0B" />
-              <Text style={styles.ratingText}>4.6</Text>
-              <Text style={styles.reviewsText}>{t('product.reviewsCount', '(3,235 reviews)', { count: '3,235' })}</Text>
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Ionicons
+                  key={`star-${i}`}
+                  name={reviewCount > 0 && ratingValue >= i ? 'star' : reviewCount > 0 && ratingValue >= i - 0.5 ? 'star-half' : 'star-outline'}
+                  size={14}
+                  color={reviewCount > 0 ? '#F59E0B' : '#CBD5E1'}
+                />
+              ))}
+              {reviewCount > 0 ? (
+                <>
+                  <Text style={styles.ratingText}>{ratingValue.toFixed(1)}</Text>
+                  <Text style={styles.reviewsText}>{t('product.reviewsCount', '({{count}} reviews)', { count: reviewCount.toLocaleString(numLocale) })}</Text>
+                </>
+              ) : (
+                <Text style={styles.reviewsText}>{t('product.noReviewsYet', 'No reviews yet')}</Text>
+              )}
             </View>
 
             {/* Multi-Currency Price Display: Local currency first, USDT & DZY */}
-            <PriceDisplay
-              amount={rawAmount}
-              baseCurrency={rawCurrency}
-              quantity={quantity}
-              size="large"
-              style={{ marginVertical: 8 }}
-            />
+            {hasValidPrice ? (
+              <PriceDisplay
+                amount={rawAmount}
+                baseCurrency={rawCurrency}
+                quantity={quantity}
+                size="large"
+                style={{ marginVertical: 8 }}
+              />
+            ) : (
+              <View style={{ marginVertical: 14, alignItems: 'flex-start' }}>
+                <ActivityIndicator size="small" color="#FFB800" />
+              </View>
+            )}
 
             {/* Quantity Selector */}
             <View style={styles.qtyContainer}>
@@ -451,6 +593,18 @@ export default function ProductDetailsScreen({ route }) {
             </View>
 
           </View>
+
+          {/* Merchant-defined specifications (products.metadata.specifications) */}
+          {merchantSpecs.length > 0 && (
+            <View style={styles.merchantSpecsCard}>
+              {merchantSpecs.map((spec, idx) => (
+                <View key={`${spec.key}-${idx}`} style={[styles.merchantSpecRow, idx < merchantSpecs.length - 1 && styles.merchantSpecDivider]}>
+                  <Text style={styles.merchantSpecKey}>{spec.key}</Text>
+                  <Text style={styles.merchantSpecValue}>{spec.value}</Text>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
 
         {/* Livraison & Retrait Section */}
@@ -537,8 +691,9 @@ export default function ProductDetailsScreen({ route }) {
 
         {/* Add to Cart Action */}
         <TouchableOpacity 
-          style={styles.btnCartModern} 
+          style={[styles.btnCartModern, !canPurchase && { opacity: 0.5 }]} 
           onPress={() => handleAddToCart(false)}
+          disabled={!canPurchase}
           activeOpacity={0.8}
         >
           <Ionicons name="cart-outline" size={18} color="#1A2840" style={{ marginRight: 5 }} />
@@ -552,8 +707,9 @@ export default function ProductDetailsScreen({ route }) {
 
         {/* Primary CTA: Buy Now */}
         <TouchableOpacity 
-          style={styles.btnBuyModern} 
+          style={[styles.btnBuyModern, !canPurchase && { opacity: 0.5 }]} 
           onPress={handleBuyNow}
+          disabled={!canPurchase}
           activeOpacity={0.85}
         >
           <Ionicons name="flash" size={16} color="#1A2840" style={{ marginRight: 5 }} />
@@ -645,6 +801,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  galleryWrap: { backgroundColor: '#FFFFFF', marginBottom: 8 },
+  galleryArrow: { position: 'absolute', top: '50%', marginTop: -17, width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(255, 255, 255, 0.95)', borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center', shadowColor: '#1A2840', shadowOpacity: 0.18, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 4 },
+  mediaCounter: { position: 'absolute', right: 10, bottom: 10, flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(26, 40, 64, 0.85)', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 },
+  mediaCounterText: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 11 },
+  mediaThumbRow: { gap: 8, paddingHorizontal: 16, paddingBottom: 10 },
+  mediaThumb: { width: 46, height: 46, borderRadius: 10, borderWidth: 2, borderColor: '#E2E8F0', overflow: 'hidden', backgroundColor: '#FFFFFF' },
+  mediaThumbActive: { borderColor: '#FFB800' },
+  mediaThumbImage: { width: '100%', height: '100%' },
+  mediaThumbVideo: { flex: 1, backgroundColor: '#1A2840', justifyContent: 'center', alignItems: 'center' },
+  merchantSpecsCard: { marginTop: 14, backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 1, borderColor: '#E2E8F0', paddingHorizontal: 14 },
+  merchantSpecRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingVertical: 11, gap: 12 },
+  merchantSpecDivider: { borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+  merchantSpecKey: { flex: 1, fontFamily: 'Inter_500Medium', fontSize: 13, color: '#64748B' },
+  merchantSpecValue: { flex: 1.2, fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#1A2840', textAlign: 'right' },
   mockMainImage: {
     width: '80%',
     height: '80%',

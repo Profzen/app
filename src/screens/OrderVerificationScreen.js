@@ -12,17 +12,24 @@ import {
   Platform,
   StatusBar,
   Alert,
+  LayoutAnimation,
+  UIManager,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import { convertCurrencyAmount } from '../utils/countryCurrencyUtils';
+import { getProductCoverImage } from '../utils/productMedia';
 import { getPaymentRailEligibility, COUNTRY_METADATA } from '../services/paymentCorridorService';
 import PaymentRegionModal from '../components/PaymentRegionModal';
 import { contactService } from '../services/contactService';
-import SelectableContactItem from '../components/SelectableContactItem';
+// import SelectableContactItem from '../components/SelectableContactItem';
 import { ALL_COUNTRIES } from '../utils/countriesData';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 // Accent/case/dash-insensitive city comparison (works for Latin, Arabic and Ethiopic scripts)
 const normalizeCity = (value) =>
@@ -106,12 +113,7 @@ export default function OrderVerificationScreen({ route }) {
               : 0),
         currency: directOrder.product.currency || 'XOF',
         quantity: directOrder.quantity || 1,
-        image:
-          directOrder.product.product_images?.[0] ||
-          directOrder.product.images?.[0] ||
-          directOrder.product.thumbnail ||
-          directOrder.product.image ||
-          null,
+        image: getProductCoverImage(directOrder.product),
         category: directOrder.product.category || 'Marketplace',
         merchantId: directOrder.shop?.id || directOrder.product?.merchant_id || null,
         merchantName:
@@ -178,7 +180,7 @@ export default function OrderVerificationScreen({ route }) {
   const [recipientPhone, setRecipientPhone] = useState('');
   const [recipientAddress, setRecipientAddress] = useState(''); // street / neighborhood
   const [manualDeliveryCity, setManualDeliveryCity] = useState(''); // only used when the store has no city in DB
-  
+
   const [beneficiaries, setBeneficiaries] = useState([]);
   const [selectedBeneficiaryId, setSelectedBeneficiaryId] = useState(null);
   const [isSavingAddress, setIsSavingAddress] = useState(false);
@@ -194,6 +196,10 @@ export default function OrderVerificationScreen({ route }) {
   useEffect(() => {
     loadBeneficiaries();
   }, [loadBeneficiaries]);
+
+  // Beneficiary search: name, phone or city (accent-insensitive)
+  const [beneficiaryQuery, setBeneficiaryQuery] = useState('');
+  const [isBeneficiaryPickerOpen, setIsBeneficiaryPickerOpen] = useState(false);
 
   // Quantity updates
   const handleIncrement = (item) => {
@@ -287,6 +293,29 @@ export default function OrderVerificationScreen({ route }) {
     normalizeCity(selectedBeneficiaryCity) !== storeCityKey
   );
 
+  const isBeneficiaryInStoreCity = (b) => {
+    const bCity = b.delivery_city || b.city || '';
+    return !!(storeCityKey && bCity && normalizeCity(bCity) === storeCityKey);
+  };
+
+  const filteredBeneficiaries = useMemo(() => {
+    const q = normalizeCity(beneficiaryQuery);
+    const list = !q ? beneficiaries : beneficiaries.filter((b) =>
+      [b.first_name, b.last_name, [b.first_name, b.last_name].filter(Boolean).join(' '), b.phone, b.delivery_city, b.city]
+        .filter(Boolean)
+        .some((v) => normalizeCity(v).includes(q))
+    );
+    // Beneficiaries already in the store's city first
+    return [...list].sort((a, b) => Number(isBeneficiaryInStoreCity(b)) - Number(isBeneficiaryInStoreCity(a)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [beneficiaries, beneficiaryQuery, storeCityKey]);
+
+  const toggleBeneficiaryPicker = (open) => {
+    LayoutAnimation.configureNext(LayoutAnimation.create(220, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity));
+    setIsBeneficiaryPickerOpen((prev) => (typeof open === 'boolean' ? open : !prev));
+    if (open === false) setBeneficiaryQuery('');
+  };
+
   const handleSelectBeneficiary = (b) => {
     setSelectedBeneficiaryId(b.id);
     setRecipientName([b.first_name, b.last_name].filter(Boolean).join(' '));
@@ -296,6 +325,7 @@ export default function OrderVerificationScreen({ route }) {
     // Pre-fill the saved street only when it is in the store's city; otherwise the buyer enters an alternative address
     setRecipientAddress(sameCity ? (b.delivery_address || '') : '');
     if (!storeCityKey) setManualDeliveryCity(bCity);
+    toggleBeneficiaryPicker(false);
   };
 
   /**
@@ -472,21 +502,21 @@ export default function OrderVerificationScreen({ route }) {
       totalDZY: parseFloat(totalDZY),
       recipient: deliveryOption === 'pickup'
         ? {
-            name: user?.name || t('common.me', 'Me'),
-            phone: user?.phone || '',
-            address: merchantFullAddress,
-            city: merchantCityRaw,
-            deliveryOption,
-          }
+          name: user?.name || t('common.me', 'Me'),
+          phone: user?.phone || '',
+          address: merchantFullAddress,
+          city: merchantCityRaw,
+          deliveryOption,
+        }
         : {
-            name: recipientName.trim(),
-            phone: recipientPhone.trim(),
-            address: [recipientAddress.trim(), deliveryCityValue].filter(Boolean).join(', '),
-            street: recipientAddress.trim(),
-            city: deliveryCityValue,
-            beneficiaryId: savedBeneficiaryId,
-            deliveryOption,
-          },
+          name: recipientName.trim(),
+          phone: recipientPhone.trim(),
+          address: [recipientAddress.trim(), deliveryCityValue].filter(Boolean).join(', '),
+          street: recipientAddress.trim(),
+          city: deliveryCityValue,
+          beneficiaryId: savedBeneficiaryId,
+          deliveryOption,
+        },
       paymentRail,
       payerCountry,
       selectedToken: paymentRail === 'crypto' ? selectedToken : null,
@@ -676,7 +706,7 @@ export default function OrderVerificationScreen({ route }) {
                   ? t('orderVerification.pickupLocationTitle', 'Store pickup location')
                   : t('orderVerification.deliveryAddress', 'Recipient & Address')}
               </Text>
-              
+
               {deliveryOption === 'pickup' ? (
                 <>
                   <Text style={styles.recipientNameText}>{merchantName}</Text>
@@ -698,7 +728,7 @@ export default function OrderVerificationScreen({ route }) {
                 </>
               )}
             </View>
-            
+
             {deliveryOption === 'home' && (recipientName || recipientAddress || isEditingRecipient) && (
               <TouchableOpacity style={styles.btnModifier} onPress={() => setIsEditingRecipient(!isEditingRecipient)}>
                 <Text style={styles.btnModifierText}>
@@ -709,41 +739,109 @@ export default function OrderVerificationScreen({ route }) {
           </View>
 
           {deliveryOption === 'home' && !recipientName && !recipientAddress && !isEditingRecipient && (
-             <View style={styles.noAddressContainer}>
-               <Ionicons name="location-outline" size={16} color="#DC2626" />
-               <Text style={styles.noAddressText}>
-                 {t('orderVerification.noAddressSelected', 'Please select or enter a delivery address.')}
-               </Text>
-               <TouchableOpacity style={styles.btnModifier} onPress={() => setIsEditingRecipient(true)}>
-                 <Text style={styles.btnModifierText}>{t('common.add', 'Add')}</Text>
-               </TouchableOpacity>
-             </View>
+            <View style={styles.noAddressContainer}>
+              <Ionicons name="location-outline" size={16} color="#DC2626" />
+              <Text style={styles.noAddressText}>
+                {t('orderVerification.noAddressSelected', 'Please select or enter a delivery address.')}
+              </Text>
+              <TouchableOpacity style={styles.btnModifier} onPress={() => setIsEditingRecipient(true)}>
+                <Text style={styles.btnModifierText}>{t('common.add', 'Add')}</Text>
+              </TouchableOpacity>
+            </View>
           )}
 
           {deliveryOption === 'home' && isEditingRecipient && (
             <View style={styles.editRecipientForm}>
               {beneficiaries.length > 0 && (
                 <>
-                  <Text style={styles.formInputLabel}>{t('payBills.myBeneficiaries', 'My Beneficiaries')}</Text>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-                    {beneficiaries.map(b => (
-                      <TouchableOpacity 
-                        key={b.id}
-                        style={[
-                          styles.beneficiaryPill, 
-                          selectedBeneficiaryId === b.id && styles.beneficiaryPillSelected
-                        ]}
-                        onPress={() => handleSelectBeneficiary(b)}
-                      >
-                        <Text style={[styles.beneficiaryPillText, selectedBeneficiaryId === b.id && styles.beneficiaryPillTextSelected]}>
-                          {[b.first_name, b.last_name].filter(Boolean).join(' ')}
-                        </Text>
-                        {!!(b.delivery_city || b.city) && (
-                          <Text style={styles.beneficiaryPillCity}>{b.delivery_city || b.city}</Text>
+                  {/* Collapsible beneficiary dropdown: stays one line tall whatever the number of beneficiaries */}
+                  <TouchableOpacity
+                    style={[styles.benTrigger, isBeneficiaryPickerOpen && styles.benTriggerOpen]}
+                    onPress={() => toggleBeneficiaryPicker()}
+                    activeOpacity={0.9}
+                    accessibilityRole="button"
+                    accessibilityState={{ expanded: isBeneficiaryPickerOpen }}
+                  >
+                    <View style={styles.benTriggerIcon}>
+                      <Ionicons name={selectedBeneficiary ? 'person' : 'people'} size={18} color="#1A2840" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.benTriggerTitle} numberOfLines={1}>
+                        {selectedBeneficiary
+                          ? [selectedBeneficiary.first_name, selectedBeneficiary.last_name].filter(Boolean).join(' ')
+                          : t('sendRemittance.selectBeneficiary', 'Select Beneficiary')}
+                      </Text>
+                      <Text style={styles.benTriggerSub} numberOfLines={1}>
+                        {selectedBeneficiary
+                          ? [selectedBeneficiary.phone, selectedBeneficiaryCity].filter(Boolean).join(' · ')
+                          : t('payBills.myBeneficiaries', 'My Beneficiaries')}
+                      </Text>
+                    </View>
+                    <View style={styles.benCountBadge}>
+                      <Text style={styles.benCountText}>{beneficiaries.length}</Text>
+                    </View>
+                    <Ionicons name={isBeneficiaryPickerOpen ? 'chevron-up' : 'chevron-down'} size={20} color="#FFB800" />
+                  </TouchableOpacity>
+
+                  {isBeneficiaryPickerOpen && (
+                    <View style={styles.benPanel}>
+                      <View style={styles.benSearchBar}>
+                        <Ionicons name="search-outline" size={18} color="#1A2840" style={{ marginRight: 8 }} />
+                        <TextInput
+                          style={styles.benSearchInput}
+                          value={beneficiaryQuery}
+                          onChangeText={setBeneficiaryQuery}
+                          placeholder={t('orderVerification.searchBeneficiary', 'Search by name, phone or city')}
+                          placeholderTextColor="#64748B"
+                          autoCorrect={false}
+                        />
+                        {beneficiaryQuery.length > 0 && (
+                          <TouchableOpacity onPress={() => setBeneficiaryQuery('')} style={{ padding: 4 }} accessibilityLabel={t('common.clear', 'Clear')}>
+                            <Ionicons name="close-circle" size={16} color="#64748B" />
+                          </TouchableOpacity>
                         )}
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
+                      </View>
+                      <ScrollView style={styles.benList} nestedScrollEnabled keyboardShouldPersistTaps="handled">
+                        {filteredBeneficiaries.length === 0 ? (
+                          <Text style={styles.benEmptyText}>{t('common.noResults', 'No results found')}</Text>
+                        ) : (
+                          filteredBeneficiaries.map((b, idx) => {
+                            const bCity = b.delivery_city || b.city || '';
+                            const fullName = [b.first_name, b.last_name].filter(Boolean).join(' ');
+                            const initials = fullName.split(' ').filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+                            const isSelected = selectedBeneficiaryId === b.id;
+                            const inCity = isBeneficiaryInStoreCity(b);
+                            return (
+                              <TouchableOpacity
+                                key={b.id}
+                                style={[styles.benRow, idx > 0 && styles.benRowDivider, isSelected && styles.benRowSelected]}
+                                onPress={() => handleSelectBeneficiary(b)}
+                                activeOpacity={0.75}
+                              >
+                                <View style={styles.benAvatar}>
+                                  {b.avatar_url ? (
+                                    <Image source={{ uri: b.avatar_url }} style={styles.benAvatarImg} />
+                                  ) : (
+                                    <Text style={styles.benAvatarText}>{initials || '?'}</Text>
+                                  )}
+                                  <View style={[styles.benCityDot, { backgroundColor: inCity ? '#10B981' : '#F59E0B' }]} />
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                  <Text style={styles.benRowName} numberOfLines={1}>{fullName}</Text>
+                                  <Text style={styles.benRowSub} numberOfLines={1}>{[b.phone, bCity].filter(Boolean).join(' · ')}</Text>
+                                </View>
+                                <Ionicons
+                                  name={isSelected ? 'checkmark-circle' : 'chevron-forward'}
+                                  size={isSelected ? 22 : 16}
+                                  color={isSelected ? '#FFB800' : '#94A3B8'}
+                                />
+                              </TouchableOpacity>
+                            );
+                          })
+                        )}
+                      </ScrollView>
+                    </View>
+                  )}
                   {selectedBeneficiaryOutsideCity && (
                     <View style={styles.cityHintRow}>
                       <Ionicons name="information-circle-outline" size={15} color="#B45309" style={{ marginRight: 6 }} />
@@ -2127,6 +2225,27 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_400Regular',
     marginTop: 1,
   },
+  benTrigger: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A2840', borderRadius: 16, paddingVertical: 12, paddingHorizontal: 14, marginBottom: 12, gap: 10, shadowColor: '#1A2840', shadowOpacity: 0.25, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 4 },
+  benTriggerOpen: { borderBottomLeftRadius: 0, borderBottomRightRadius: 0, marginBottom: 0 },
+  benTriggerIcon: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFB800', justifyContent: 'center', alignItems: 'center' },
+  benTriggerTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#FFFFFF' },
+  benTriggerSub: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#CBD5E1', marginTop: 2 },
+  benCountBadge: { minWidth: 26, height: 22, borderRadius: 11, paddingHorizontal: 7, backgroundColor: 'rgba(255, 184, 0, 0.18)', borderWidth: 1, borderColor: '#FFB800', justifyContent: 'center', alignItems: 'center' },
+  benCountText: { fontFamily: 'Inter_700Bold', fontSize: 12, color: '#FFB800' },
+  benPanel: { borderWidth: 1.5, borderTopWidth: 0, borderColor: '#1A2840', borderBottomLeftRadius: 16, borderBottomRightRadius: 16, backgroundColor: '#FFFFFF', padding: 10, marginBottom: 12 },
+  benSearchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF7E0', borderWidth: 1, borderColor: '#FFD666', borderRadius: 12, paddingHorizontal: 12, height: 42, marginBottom: 6 },
+  benSearchInput: { flex: 1, fontFamily: 'Inter_500Medium', fontSize: 14, color: '#1A2840', paddingVertical: 0 },
+  benList: { maxHeight: 290 },
+  benEmptyText: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#64748B', textAlign: 'center', paddingVertical: 16 },
+  benRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 8, gap: 10, borderRadius: 12 },
+  benRowDivider: { borderTopWidth: 1, borderTopColor: '#F1F5F9' },
+  benRowSelected: { backgroundColor: '#FFF7E0', borderTopColor: 'transparent' },
+  benAvatar: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#1A2840', justifyContent: 'center', alignItems: 'center' },
+  benAvatarImg: { width: 38, height: 38, borderRadius: 19 },
+  benAvatarText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#FFB800' },
+  benCityDot: { position: 'absolute', right: -1, bottom: -1, width: 11, height: 11, borderRadius: 6, borderWidth: 2, borderColor: '#FFFFFF' },
+  benRowName: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#1A2840' },
+  benRowSub: { fontFamily: 'Inter_400Regular', fontSize: 12, color: '#64748B', marginTop: 2 },
   cityHintRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',

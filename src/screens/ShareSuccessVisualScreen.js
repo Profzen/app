@@ -319,7 +319,7 @@ export default function ShareSuccessVisualScreen() {
                 colors={cardBackgrounds[customStyleIndex]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={[styles.visualCard, { width: '92%' }]}
+                style={[styles.visualCard, styles.fullscreenVisualCard]}
               >
                 {renderCardContent()}
               </LinearGradient>
@@ -756,19 +756,27 @@ const styles = StyleSheet.create({
   /* Modal */
   modalBg: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.92)',
+    backgroundColor: 'rgba(15, 23, 42, 0.95)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   closeModalBtn: {
     position: 'absolute',
-    top: 50,
-    right: 18,
-    zIndex: 10,
+    top: Platform.OS === 'android' ? 36 : 54,
+    right: 20,
+    zIndex: 20,
   },
   modalCardContainer: {
     width: '100%',
+    maxWidth: 440,
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
+  },
+  fullscreenVisualCard: {
+    width: '98%',
+    maxWidth: 420,
+    paddingVertical: 24,
+    paddingHorizontal: 18,
+    borderRadius: 24,
   },
 });

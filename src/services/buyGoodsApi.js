@@ -19,6 +19,40 @@ if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location.ho
 }
 
 export const buyGoodsApi = {
+  // ── Favorites (shared user_favorites table, same as the website) ──
+  getUserFavorites: async (userId, token) => {
+    if (!userId || !token) return null;
+    try {
+      const response = await fetch(`${BASE_URL}/user-stats/${encodeURIComponent(userId)}/favorites`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) return null;
+      const json = await response.json();
+      return Array.isArray(json?.data) ? json.data : [];
+    } catch (error) {
+      console.error('buyGoodsApi.getUserFavorites Error:', error);
+      return null; // null = network failure (keep cached favorites)
+    }
+  },
+
+  setFavorite: async ({ targetType, targetId, isFavorite, token }) => {
+    if (!token || !targetType || !targetId) return false;
+    try {
+      const response = await fetch(`${BASE_URL}/user-stats/favorites`, {
+        method: isFavorite ? 'POST' : 'DELETE',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ target_type: targetType, target_id: String(targetId) }),
+      });
+      if (response.ok) return true;
+      // Already favorited on another device counts as success
+      const json = await response.json().catch(() => ({}));
+      return isFavorite && /already favorited/i.test(json?.error || '');
+    } catch (error) {
+      console.error('buyGoodsApi.setFavorite Error:', error);
+      return false;
+    }
+  },
+
   searchGlobal: async (query = '', { type = 'all', country = '' } = {}) => {
     try {
       if (!query || query.trim().length < 2) return [];

@@ -9,6 +9,7 @@ import AppToast from '../components/AppToast';
 
 import { useBuyGoods } from '../hooks/useBuyGoods';
 import { useApp } from '../context/AppContext';
+import { getProductCoverImage } from '../utils/productMedia';
 import PriceDisplay from '../components/PriceDisplay';
 import ShopSmartFilterModal from '../components/ShopSmartFilterModal';
 import WriteReviewModal from '../components/WriteReviewModal';
@@ -21,9 +22,8 @@ export default function ShopProductsScreen({ route }) {
 
   const { fetchAllProducts, fetchStoreDetails } = useBuyGoods();
   const { width } = useWindowDimensions();
-  const { t, cartCount, user } = useApp();
-  const [favorite, setFavorite] = useState(false);
-  const [favorites, setFavorites] = useState([]);
+  const { t, cartCount, user, isFavorite, toggleFavorite } = useApp();
+  const [favoriteBusyKey, setFavoriteBusyKey] = useState(null);
   const [activeTab, setActiveTab] = useState('products');
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('All');
@@ -40,6 +40,21 @@ export default function ShopProductsScreen({ route }) {
   const [editingReview, setEditingReview] = useState(null);
   const [reviewsRefreshKey, setReviewsRefreshKey] = useState(0);
   const [toast, setToast] = useState(null);
+
+  // Favorites (shared user_favorites table). Merchants can't favorite their own shop or products.
+  const shopId = shop?.id || shop?.merchant_id || null;
+  const isOwnShop = !!(user?.merchantProfile?.id && shopId && String(user.merchantProfile.id) === String(shopId));
+  const shopIsFavorite = isFavorite('merchant', shopId);
+  const handleToggleFavorite = async (targetType, targetId, label) => {
+    const busyKey = `${targetType}:${targetId}`;
+    if (!targetId || favoriteBusyKey === busyKey) return;
+    setFavoriteBusyKey(busyKey);
+    const result = await toggleFavorite(targetType, targetId);
+    setFavoriteBusyKey(null);
+    setToast(result.success
+      ? { title: t(result.isFavorite ? 'profile.favorites.added' : 'profile.favorites.removed', result.isFavorite ? 'Added to your favorites' : 'Removed from your favorites'), message: label || '' }
+      : { title: t('profile.favorites.error', "We couldn't update your favorites. Please try again."), message: '' });
+  };
   
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -276,9 +291,11 @@ export default function ShopProductsScreen({ route }) {
                 </View>
               )}
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtnRight} onPress={() => setFavorite(!favorite)}>
-              <Ionicons name={favorite ? "heart" : "heart-outline"} size={20} color={favorite ? "#EF4444" : "#1A2840"} />
-            </TouchableOpacity>
+            {!isOwnShop && (
+              <TouchableOpacity style={styles.iconBtnRight} onPress={() => handleToggleFavorite('merchant', shopId, shop?.name || shop?.shop_name)} accessibilityRole="button" accessibilityState={{ selected: shopIsFavorite }}>
+                <Ionicons name={shopIsFavorite ? "heart" : "heart-outline"} size={20} color={shopIsFavorite ? "#EF4444" : "#1A2840"} />
+              </TouchableOpacity>
+            )}
             <TouchableOpacity style={styles.iconBtnRight} onPress={shareShop}>
               <Ionicons name="share-outline" size={20} color="#1A2840" />
             </TouchableOpacity>
@@ -450,20 +467,19 @@ export default function ShopProductsScreen({ route }) {
             ) : (
               filteredProducts.map((product) => (
                 <View key={product.id} style={[styles.productCard, {width: productWidth}]}>
-                  <TouchableOpacity style={styles.heartIcon} onPress={() => setFavorites((items) => items.includes(product.id) ? items.filter((id) => id !== product.id) : [...items, product.id])}>
-                    <Ionicons name={favorites.includes(product.id) ? "heart" : "heart-outline"} size={14} color={favorites.includes(product.id) ? "#EF4444" : "#64748B"} />
-                  </TouchableOpacity>
+                  {!isOwnShop && (
+                    <TouchableOpacity style={styles.heartIcon} onPress={() => handleToggleFavorite('product', product.id, product.name || product.title)}>
+                      <Ionicons name={isFavorite('product', product.id) ? "heart" : "heart-outline"} size={14} color={isFavorite('product', product.id) ? "#EF4444" : "#64748B"} />
+                    </TouchableOpacity>
+                  )}
                   
                   <TouchableOpacity activeOpacity={0.85} onPress={() => navigation.navigate('ProductDetailsScreen', { product: product, shop: shop })}>
-                    {product.product_images && product.product_images.length > 0 ? (
-                      <Image source={{ uri: product.product_images[0] }} style={styles.productImgPlaceholder} resizeMode="cover" />
-                    ) : product.thumbnail ? (
-                      <Image source={{ uri: product.thumbnail }} style={styles.productImgPlaceholder} resizeMode="cover" />
-                    ) : product.images && product.images.length > 0 ? (
-                      <Image source={{ uri: product.images[0] }} style={styles.productImgPlaceholder} resizeMode="cover" />
-                    ) : (
-                      <Image source={require('../../assets/brand/product_no_image.jpg')} style={styles.productImgPlaceholder} resizeMode="cover" />
-                    )}
+                    <Image
+                      source={getProductCoverImage(product) ? { uri: getProductCoverImage(product) } : require('../../assets/brand/product_no_image.jpg')}
+                      defaultSource={require('../../assets/brand/product_no_image.jpg')}
+                      style={styles.productImgPlaceholder}
+                      resizeMode="cover"
+                    />
                   </TouchableOpacity>
                   
                   <View style={styles.productContent}>
