@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, Image, Platform, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as StoreReview from 'expo-store-review';
 import { useApp } from '../context/AppContext';
 
 export default function RatingPromptModal({ visible, onClose, transactionType = 'transaction' }) {
@@ -16,14 +17,17 @@ export default function RatingPromptModal({ visible, onClose, transactionType = 
 
     setTimeout(async () => {
       if (stars >= 4) {
-        // Open App Store or Google Play
+        // Native in-app rating sheet (stays in the app); official store page only as fallback
         try {
-          const storeUrl = Platform.OS === 'ios'
-            ? 'https://testflight.apple.com/join/v41'
-            : 'https://github.com/Dizzitup/dizzitapp-v2/releases';
-          await Linking.openURL(storeUrl);
+          const canAskInApp = await StoreReview.isAvailableAsync() && await StoreReview.hasAction();
+          if (canAskInApp) {
+            await StoreReview.requestReview();
+          } else {
+            const storeUrl = StoreReview.storeUrl(); // from app.json ios.appStoreUrl / android.playStoreUrl
+            if (storeUrl) await Linking.openURL(storeUrl);
+          }
         } catch (e) {
-          console.log('Error opening store review URL', e);
+          console.log('Error opening store review', e);
         }
       }
       onClose();
