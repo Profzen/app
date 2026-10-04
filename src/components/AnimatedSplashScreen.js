@@ -49,7 +49,7 @@ export default function AnimatedSplashScreen({ onAnimationComplete }) {
     });
   }, []);
 
-  const appBuildNumber = Application.nativeBuildVersion || Constants?.expoConfig?.ios?.buildNumber || Constants?.expoConfig?.android?.versionCode || '56';
+  const appBuildNumber = Application.nativeBuildVersion || '—';
 
   return (
     <Modal

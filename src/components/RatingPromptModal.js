@@ -17,14 +17,11 @@ export default function RatingPromptModal({ visible, onClose, transactionType = 
 
     setTimeout(async () => {
       if (stars >= 4) {
-        // Native in-app rating sheet (stays in the app); official store page only as fallback
+        // Native in-app rating sheet only (stays in the app). Not shown in TestFlight / closed testing:
+        // the user just sees the thank-you message. Works automatically once the app is public.
         try {
-          const canAskInApp = await StoreReview.isAvailableAsync() && await StoreReview.hasAction();
-          if (canAskInApp) {
+          if (await StoreReview.isAvailableAsync() && await StoreReview.hasAction()) {
             await StoreReview.requestReview();
-          } else {
-            const storeUrl = StoreReview.storeUrl(); // from app.json ios.appStoreUrl / android.playStoreUrl
-            if (storeUrl) await Linking.openURL(storeUrl);
           }
         } catch (e) {
           console.log('Error opening store review', e);

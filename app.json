@@ -10,22 +10,18 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dizzitup.app",
-      "appStoreUrl": "https://apps.apple.com/app/id6799749556",
-      "buildNumber": "59",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "package": "com.dizzitup.app",
-      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.dizzitup.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/brand/dizzitup_logo_cercle_cropped.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      },
-      "versionCode": 59
+      }
     },
     "web": {
       "favicon": "./assets/brand/finalLogo.png"
