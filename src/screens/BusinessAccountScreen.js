@@ -10,7 +10,7 @@ import { useApp } from '../context/AppContext';
 export default function BusinessAccountScreen() {
   const navigation = useNavigation();
   const [toast, setToast] = useState(null);
-  const { accountMode, setAccountMode, language, t, user } = useApp();
+  const { accountMode, setAccountMode, language, t, user, logout } = useApp();
 
   const isMerchant = user?.role === 'merchant';
   const hasBusinessAccount = isMerchant && !!user?.merchantProfile;
@@ -39,7 +39,7 @@ export default function BusinessAccountScreen() {
 
   const handleLogout = async () => {
     setInfoModalVisible(false);
-    // Ideally clear Supabase session here
+    await logout();
     navigation.reset({ index: 0, routes: [{ name: 'LoginScreen' }] });
   };
 

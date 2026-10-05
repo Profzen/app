@@ -78,11 +78,11 @@ export default function DizzyFamilyScreen() {
             <View style={styles.referralActionButtons}>
               <TouchableOpacity style={styles.copyBtnSecondary} onPress={handleCopyCode}>
                 <Ionicons name="copy-outline" size={15} color="#1A2840" style={{ marginRight: 4 }} />
-                <Text style={styles.actionBtnText}>{t('btnCopy', 'Copier')}</Text>
+                <Text style={styles.actionBtnText}>{t('btnCopy', 'Copy')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.shareBtnPrimary} onPress={() => shareInviteLink(referralCode)}>
                 <Ionicons name="paper-plane-outline" size={15} color="#1A2840" style={{ marginRight: 4 }} />
-                <Text style={styles.actionBtnText}>{t('common.share', 'Partager')}</Text>
+                <Text style={styles.actionBtnText}>{t('btnShare', 'Share')}</Text>
               </TouchableOpacity>
             </View>
           </View>

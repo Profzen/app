@@ -1012,12 +1012,35 @@ export function AppProvider({ children }) {
     }
   };
 
+  const logout = async () => {
+    try {
+      await SecureStore.deleteItemAsync('user_pin');
+      await SecureStore.deleteItemAsync('use_biometrics');
+      await AsyncStorage.removeItem('@dizzitup_cached_user');
+      setUser({
+        name: 'Utilisateur',
+        email: '',
+        avatar: null,
+        balanceDZY: 0,
+        allBalances: {},
+        currency: 'DZY',
+        role: 'user',
+        country: '',
+      });
+      setSession(null);
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.log('Error during logout:', e);
+    }
+  };
+
   return (
     <AppContext.Provider value={{
       user,
       setUser,
       isUserLoading,
       session,
+      logout,
       shops,
       contacts,
       transactions,

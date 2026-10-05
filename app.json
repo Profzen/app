@@ -32,6 +32,12 @@
       "expo-secure-store",
       "expo-web-browser",
       [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow DizzitUp to use Face ID for secure transactions and login."
+        }
+      ],
+      [
         "expo-build-properties",
         {
           "android": {

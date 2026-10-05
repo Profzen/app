@@ -14,7 +14,7 @@ import { useApp } from '../context/AppContext';
 
 export default function MoreSettingsScreen() {
   const navigation = useNavigation();
-  const { language, toggleLanguage, t, user, hasUnreadNotifications } = useApp();
+  const { language, toggleLanguage, t, user, hasUnreadNotifications, logout } = useApp();
   const [toast, setToast] = useState(null);
 
   const appVersion = Application.nativeApplicationVersion || Constants?.expoConfig?.version || '1.0.0';
@@ -135,7 +135,7 @@ export default function MoreSettingsScreen() {
           )}
 
           {/* Log out Button */}
-          <TouchableOpacity style={styles.logoutButton} onPress={() => navigation.reset({ index: 0, routes: [{ name: 'LoginScreen' }] })} accessibilityLabel="Log out">
+          <TouchableOpacity style={styles.logoutButton} onPress={async () => { await logout(); navigation.reset({ index: 0, routes: [{ name: 'LoginScreen' }] }); }} accessibilityLabel="Log out">
             <Ionicons name="log-out-outline" size={20} color="#EF4444" style={{ marginRight: 8 }} />
             <Text style={styles.logoutText}>{t('btnLogOut', 'Log out')}</Text>
           </TouchableOpacity>

@@ -93,7 +93,7 @@ export default function PaymentSuccessScreen({ route }) {
             <Text style={styles.successTitle}>{t('paymentSuccess.title', 'Paiement Réussi !')}</Text>
             <Text style={styles.successSub}>
               {tx.escrowPin
-                ? t('paymentSuccess.fundsEscrowed', 'Vos fonds sont sécurisés sous séquestre escrow.')
+                ? t('paymentSuccess.fundsEscrowed', 'Your funds are secured under an on-chain Smart Contract.')
                 : t('paymentSuccess.subtitle', 'Votre paiement a été validé avec succès.')}
             </Text>
 
@@ -114,7 +114,7 @@ export default function PaymentSuccessScreen({ route }) {
                 <Text style={styles.escrowPinText}>{tx.escrowPin}</Text>
               </View>
               <Text style={styles.escrowSuccessNote}>
-                {t('paymentSuccess.escrowPinNote', 'Donnez ce code secret à 4 chiffres au livreur UNIQUEMENT après réception et vérification physique de vos articles.')}
+                {t('paymentSuccess.escrowPinNote', 'Give this 4-digit secret code to the courier or Shop Manager ONLY after receiving and physically inspecting your items.')}
               </Text>
             </View>
           )}
@@ -200,7 +200,7 @@ export default function PaymentSuccessScreen({ route }) {
               </View>
             </View>
             <View style={styles.rewardContent}>
-              <Text style={styles.rewardTitle}>{t('paymentSuccess.cashbackWon', { amount: '2.50', defaultValue: 'You won 2.50 DZY in Cashback!' })}</Text>
+              <Text style={styles.rewardTitle}>{t('paymentSuccess.cashbackWon', { amount: '2.50', defaultValue: 'You earned {{amount}} DZY in Cashback!' })}</Text>
               <Text style={styles.rewardSub}>{t('paymentSuccess.cashbackCredited', 'This reward has been credited to your DZYWallet.')}</Text>
               <TouchableOpacity style={styles.rewardLink} onPress={() => navigation.navigate('RewardsScreen')}>
                 <Text style={styles.rewardLinkText}>{t('paymentSuccess.viewRewards', 'View my Rewards')}</Text>

@@ -1,5 +1,5 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +16,8 @@ import { supabase } from '../services/supabaseClient';
 import Constants from 'expo-constants';
 import * as Application from 'expo-application';
 import { isSmallScreen, isShortScreen } from '../utils/responsive';
+import AppSelect from '../components/AppSelect';
+import { ALL_COUNTRIES } from '../utils/countriesData';
 
 export default function RegisterScreen({ route }) {
   const navigation = useNavigation();
@@ -23,15 +25,42 @@ export default function RegisterScreen({ route }) {
   const initialRef = route?.params?.ref || route?.params?.parrain || route?.params?.referral_code || '';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [parrain, setParrain] = useState(initialRef);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [country, setCountry] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '', type: 'success' });
+
+  const countryOptions = useMemo(() => {
+    return ALL_COUNTRIES.map((c) => ({
+      value: c.name,
+      label: c.name,
+      subtitle: c.dial,
+      flagUrl: `https://flagcdn.com/w40/${c.code.toLowerCase()}.png`,
+    }));
+  }, []);
 
   useEffect(() => {
     const incomingRef = route?.params?.ref || route?.params?.parrain || route?.params?.referral_code;
     if (incomingRef) {
       setParrain(incomingRef);
     }
+    
+    // Auto-detect country
+    fetch('https://ipapi.co/json/')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.country_name) {
+          const matchedCountry = ALL_COUNTRIES.find(c => c.name === data.country_name);
+          if (matchedCountry) {
+            setCountry(matchedCountry.name);
+          }
+        }
+      })
+      .catch(() => {}); // silently fail if blocked
   }, [route?.params]);
 
   const appVersion = Application.nativeApplicationVersion || Constants?.expoConfig?.version || '1.0.0';
@@ -57,7 +86,12 @@ export default function RegisterScreen({ route }) {
   };
 
   const handleRegister = async () => {
-    if (!email || !password || strength < 2) return;
+    if (!email || !password || !confirmPassword || !firstName || !lastName || !country || !phone || strength < 2) return;
+    
+    if (password !== confirmPassword) {
+      setToastInfo({ visible: true, title: t('common.error', 'Error'), message: t('auth.passwordsNotMatch', 'Passwords do not match'), type: 'error' });
+      return;
+    }
     
     setIsLoading(true);
 
@@ -76,12 +110,36 @@ export default function RegisterScreen({ route }) {
             role: 'user',
             auth_provider: 'email',
             referral_code: parrain || null,
+            first_name: firstName,
+            last_name: lastName,
+            phone: phone,
+            country: country
           }
         }
       });
 
       if (error) {
         throw error;
+      }
+
+      // If the email already exists, Supabase returns the user but with empty identities (for security)
+      if (data?.user && data.user.identities && data.user.identities.length === 0) {
+        // Try to fetch the provider they originally signed up with
+        const { data: provider, error: rpcError } = await supabase.rpc('get_auth_provider', { lookup_email: email });
+        
+        if (!rpcError && provider) {
+          if (provider === 'google') {
+            throw new Error(t('auth.emailExistsGoogle', 'This email already exists with Google login. Please log in using your Google account.'));
+          } else if (provider === 'facebook') {
+            throw new Error(t('auth.emailExistsFacebook', 'This email already exists with Facebook login. Please log in using your Facebook account.'));
+          } else if (provider === 'apple') {
+            throw new Error(t('auth.emailExistsApple', 'This email already exists with Apple login. Please log in using your Apple account.'));
+          } else {
+            throw new Error(t('auth.emailExistsEmail', 'This email already exists. Please log in with your password.'));
+          }
+        } else {
+           throw new Error(t('auth.emailExistsEmail', 'This email already exists. Please log in with your password.'));
+        }
       }
 
       setToastInfo({ visible: true, title: t('common.success', 'Registration successful'), message: t('auth.registrationSuccessMsg', 'Your verification code is ready.'), type: 'success' });
@@ -135,11 +193,57 @@ export default function RegisterScreen({ route }) {
         {/* Form */}
         <View style={styles.formContainer}>
           <DizzitInput
+            label={t('personalAccount.firstName', 'First Name')}
+            placeholder={t('personalAccount.firstName', 'First Name')}
+            value={firstName}
+            onChangeText={setFirstName}
+            iconLeft={<Ionicons name="person-outline" size={18} color="#64748B" />}
+          />
+          <DizzitInput
+            label={t('personalAccount.lastName', 'Last Name')}
+            placeholder={t('personalAccount.lastName', 'Last Name')}
+            value={lastName}
+            onChangeText={setLastName}
+            iconLeft={<Ionicons name="person-outline" size={18} color="#64748B" />}
+          />
+          <DizzitInput
+            label={t('personalAccount.phone', 'Phone Number')}
+            placeholder={t('personalAccount.phone', 'Phone Number')}
+            value={phone}
+            onChangeText={setPhone}
+            iconLeft={<Ionicons name="call-outline" size={18} color="#64748B" />}
+            keyboardType="phone-pad"
+          />
+          
+          <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 14, color: theme.colors.primary, marginBottom: 6 }}>
+            {t('personalAccount.country', 'Country of Residence')}
+          </Text>
+          <View style={{ marginBottom: 16, padding: 1.5, borderRadius: 12, backgroundColor: '#E2E8F0' }}>
+            <AppSelect
+              value={country}
+              options={countryOptions}
+              onChange={(val) => setCountry(val)}
+              title={t('personalAccount.country', 'Country of Residence')}
+              placeholder={t('personalAccount.selectCountry', 'Select your country')}
+              searchPlaceholder={t('personalAccount.searchCountry', 'Search country')}
+              style={{ backgroundColor: '#F8FAFC', borderRadius: 10.5, minHeight: 44, paddingHorizontal: 12, borderWidth: 0, margin: 0 }}
+              textStyle={{ fontFamily: 'Inter_500Medium', fontSize: 14, color: theme.colors.textPrimary, marginLeft: 8 }}
+              renderLeading={(sel) => (
+                sel?.flagUrl ? (
+                  <Image source={{ uri: sel.flagUrl }} style={{ width: 22, height: 14, borderRadius: 2 }} />
+                ) : (
+                  <Ionicons name="globe-outline" size={18} color="#64748B" />
+                )
+              )}
+            />
+          </View>
+
+          <DizzitInput
             label={t('auth.enterEmailOrPhone', 'Enter your email or phone number')}
             placeholder={t('auth.enterEmailOrPhonePlaceholder', 'Enter your email or phone number')}
             value={email}
             onChangeText={setEmail}
-            iconLeft={<Ionicons name="mail-outline" size={20} color={theme.colors.primary} />}
+            iconLeft={<Ionicons name="mail-outline" size={18} color="#64748B" />}
           />
           
           <DizzitInput
@@ -148,9 +252,18 @@ export default function RegisterScreen({ route }) {
             isPassword
             value={password}
             onChangeText={setPassword}
-            iconLeft={<Ionicons name="lock-closed-outline" size={20} color={theme.colors.primary} />}
+            iconLeft={<Ionicons name="lock-closed-outline" size={18} color="#64748B" />}
           />
           
+          <DizzitInput
+            label={t('auth.confirmPassword', 'Confirm Password')}
+            placeholder={t('auth.confirmPasswordPlaceholder', 'Confirm your password')}
+            isPassword
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            iconLeft={<Ionicons name="shield-checkmark-outline" size={18} color="#64748B" />}
+          />
+
           {/* Password Strength */}
           <View style={styles.strengthContainer}>
             <View style={styles.strengthBarContainer}>
@@ -170,7 +283,7 @@ export default function RegisterScreen({ route }) {
             placeholder={t('auth.referralCodePlaceholder', 'Enter referral code if you have one')}
             value={parrain}
             onChangeText={setParrain}
-            iconLeft={<Ionicons name="people-outline" size={20} color={theme.colors.primary} />}
+            iconLeft={<Ionicons name="people-outline" size={18} color="#64748B" />}
           />
 
           {/* Security Banner */}
@@ -182,7 +295,7 @@ export default function RegisterScreen({ route }) {
             style={{marginTop: theme.spacing.sm}}
             onPress={handleRegister}
             isLoading={isLoading}
-            disabled={!email || !password || strength < 2}
+            disabled={!email || !password || !confirmPassword || strength < 2}
           />
         </View>
 

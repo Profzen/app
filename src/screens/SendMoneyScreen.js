@@ -14,6 +14,7 @@ import { supabase } from '../services/supabaseClient';
 import { isSmallScreen } from '../utils/responsive';
 import { useWallet, EVMWallet, SolanaWallet } from '@crossmint/client-sdk-react-native-ui';
 import * as LocalAuthentication from 'expo-local-authentication';
+import { PinConfirmationModal } from '../components/PinConfirmationModal';
 
 const BLOCKCHAINS = [
   { value: 'Polygon', label: 'Polygon', name: 'Polygon Network', isCrypto: true, cryptoSymbol: 'Polygon' },
@@ -37,6 +38,36 @@ const CRYPTO_TOKENS = [
 export default function SendMoneyScreen() {
   const navigation = useNavigation();
   const route = useRoute();
+  
+  const [pinModalVisible, setPinModalVisible] = useState(false);
+  const [pinModalAmount, setPinModalAmount] = useState('');
+  const [pinModalToken, setPinModalToken] = useState('');
+  const pinResolveRef = useRef(null);
+
+  const requestPinAuth = (amt = '', tkn = '') => {
+    return new Promise((resolve) => {
+      setPinModalAmount(amt);
+      setPinModalToken(tkn);
+      pinResolveRef.current = resolve;
+      setPinModalVisible(true);
+    });
+  };
+
+  const handlePinSuccess = () => {
+    setPinModalVisible(false);
+    if (pinResolveRef.current) {
+      pinResolveRef.current(true);
+      pinResolveRef.current = null;
+    }
+  };
+
+  const handlePinCancel = () => {
+    setPinModalVisible(false);
+    if (pinResolveRef.current) {
+      pinResolveRef.current(false);
+      pinResolveRef.current = null;
+    }
+  };
   const { session, user, t, refreshTransactions, refreshUser, hasUnreadNotifications } = useApp();
   const { wallet: crossmintWallet, getWallet } = useWallet();
 
@@ -408,24 +439,9 @@ export default function SendMoneyScreen() {
       return;
     }
 
-    // 🔐 Native Device Biometric Authentication (Touch ID / Face ID / Passcode)
-    try {
-      if (Platform.OS !== 'web') {
-        const hasHardware = await LocalAuthentication.hasHardwareAsync();
-        const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-        if (hasHardware && isEnrolled) {
-          const bioResult = await LocalAuthentication.authenticateAsync({
-            promptMessage: t('sendMoney.biometricPrompt', 'Authorize Transfer of {{amount}} {{token}}', { amount, token }),
-            fallbackLabel: t('sendMoney.usePasscode', 'Use Device Passcode'),
-          });
-          if (!bioResult.success) {
-            return;
-          }
-        }
-      }
-    } catch (bioErr) {
-      console.warn('[SendMoneyScreen] Biometric verification skipped:', bioErr);
-    }
+    // 🔐 DizzitUp PIN / Biometric Authentication
+    const isAuthenticated = await requestPinAuth(amount, token);
+    if (!isAuthenticated) return;
 
     setIsSending(true);
     setErrorMessage(null);
@@ -751,23 +767,11 @@ export default function SendMoneyScreen() {
       setIsAuthorizing(true);
       setApprovalMessage(null);
 
-      // 1. Biometric verification prompt if available on phone
-      try {
-        const hasHardware = await LocalAuthentication.hasHardwareAsync();
-        const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-        if (hasHardware && isEnrolled) {
-          const bioRes = await LocalAuthentication.authenticateAsync({
-            promptMessage: t('sendMoney.biometric_prompt', 'Verify to authorize transfer'),
-            cancelLabel: t('common.cancel', 'Cancel'),
-            disableDeviceFallback: false,
-          });
-          if (!bioRes.success) {
-            setIsAuthorizing(false);
-            return;
-          }
-        }
-      } catch (bioErr) {
-        console.warn('[SendMoneyScreen] Biometric check skipped:', bioErr);
+      // 1. Biometric/PIN verification prompt
+      const isAuthenticated = await requestPinAuth(amount, token);
+      if (!isAuthenticated) {
+        setIsAuthorizing(false);
+        return;
       }
 
       let rawWalletApi = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
@@ -1312,6 +1316,13 @@ export default function SendMoneyScreen() {
           </View>
         </Modal>
       </View>
+      <PinConfirmationModal
+        visible={pinModalVisible}
+        onSuccess={handlePinSuccess}
+        onCancel={handlePinCancel}
+        amount={pinModalAmount}
+        tokenName={pinModalToken}
+      />
     </SafeAreaView>
   );
 }

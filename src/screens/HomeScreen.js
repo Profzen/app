@@ -247,26 +247,24 @@ export default function HomeScreen() {
       buttonText: t('home.todos.complete_profile.button', 'Compléter'),
       buttonColor: '#3B82F6',
       buttonBgColor: '#EFF6FF',
-      route: 'SecureAccountScreen'
+      route: user?.role === 'merchant' ? 'BusinessAccountScreen' : 'PersonalAccountScreen'
     });
   }
 
-  // Always show Business/Merchant card as the final call to action
-  TODO_LIST.push({
-      id: '4',
-      icon: 'storefront-outline',
-      iconColor: '#8B5CF6',
-      iconBgColor: '#F5F3FF',
-      title: user?.role === 'merchant'
-        ? t('home.todos.merchant_dashboard.title', 'Accéder à votre\nTableau de bord Pro')
-        : t('home.todos.create_store.title', 'Créez votre DZYStore\net commencez à vendre'),
-      buttonText: user?.role === 'merchant'
-        ? t('home.todos.merchant_dashboard.button', 'Accéder')
-        : t('home.todos.create_store.button', 'Créer'),
-      buttonColor: '#8B5CF6',
-      buttonBgColor: '#F5F3FF',
-      route: user?.role === 'merchant' ? 'BusinessAccountScreen' : 'ShopsScreen'
-  });
+  // Only show Business/Merchant card if the user is actually a merchant
+  if (user?.role === 'merchant') {
+    TODO_LIST.push({
+        id: '4',
+        icon: 'storefront-outline',
+        iconColor: '#8B5CF6',
+        iconBgColor: '#F5F3FF',
+        title: t('home.todos.merchant_dashboard.title', 'Accéder à votre\nTableau de bord Pro'),
+        buttonText: t('home.todos.merchant_dashboard.button', 'Accéder'),
+        buttonColor: '#8B5CF6',
+        buttonBgColor: '#F5F3FF',
+        route: 'BusinessAccountScreen'
+    });
+  }
 
 
 

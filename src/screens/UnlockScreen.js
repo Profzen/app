@@ -10,9 +10,10 @@ import { DizzitInput } from '../components/DizzitInput';
 import { supabase } from '../services/supabaseClient';
 import Constants from 'expo-constants';
 import * as Application from 'expo-application';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function UnlockScreen() {
-  const { t, setIsAppLocked } = useApp();
+  const { t, setIsAppLocked, logout } = useApp();
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -73,10 +74,8 @@ export default function UnlockScreen() {
 
   const handleLogout = async () => {
     try {
-      await SecureStore.deleteItemAsync('user_pin');
-      await SecureStore.deleteItemAsync('use_biometrics');
-      await supabase.auth.signOut();
-      setIsAppLocked(false); // Navigation will auto-route to LoginScreen because session is null
+      await logout();
+      setIsAppLocked(false);
     } catch (e) {
       console.log('Error during logout:', e);
     }
@@ -120,25 +119,30 @@ export default function UnlockScreen() {
             />
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
           </View>
-
           <View style={styles.buttonRow}>
             <TouchableOpacity 
               style={[
-                styles.actionButton, 
-                styles.nextButton,
+                styles.actionButtonContainer, 
                 pin.length < 6 && styles.nextButtonDisabled
               ]}
               onPress={handleUnlock}
               disabled={pin.length < 6 || isLoading}
             >
-              {isLoading ? (
-                <ActivityIndicator color="#FFFFFF" />
-              ) : (
-                <Text style={[
-                  styles.nextButtonText,
-                  pin.length < 6 && styles.nextButtonTextDisabled
-                ]}>{t('common.unlock', 'DÉVERROUILLER')}</Text>
-              )}
+              <LinearGradient
+                colors={pin.length < 6 ? ['#E5E7EB', '#D1D5DB'] : ['#FFC759', '#F6B056']}
+                style={styles.gradientButton}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color={pin.length < 6 ? "#9CA3AF" : "#20365B"} />
+                ) : (
+                  <Text style={[
+                    styles.nextButtonText,
+                    { color: pin.length < 6 ? '#9CA3AF' : '#20365B', fontWeight: '900', letterSpacing: 1.5 },
+                  ]}>{t('common.unlock', 'DÉVERROUILLER')}</Text>
+                )}
+              </LinearGradient>
             </TouchableOpacity>
           </View>
 
@@ -265,5 +269,22 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#94A3B8',
     letterSpacing: 0.4,
+  },
+  actionButtonContainer: {
+    width: '100%',
+    height: 56,
+    borderRadius: 28,
+    overflow: 'hidden',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  gradientButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

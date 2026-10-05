@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, KeyboardAvoidingView, ActivityIndicator, Modal, FlatList, TextInput, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, KeyboardAvoidingView, ActivityIndicator, Modal, FlatList, TextInput, Image, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -8,6 +8,7 @@ import { DizzitButton } from '../components/DizzitButton';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import contactService from '../services/contactService';
+import { smsService } from '../services/smsService';
 import { supabase } from '../services/supabaseClient';
 import { isValidPhoneNumber } from 'libphonenumber-js';
 
@@ -83,9 +84,11 @@ export default function EditBeneficiaryScreen({ route }) {
   // Modals state
   const [duplicateAccounts, setDuplicateAccounts] = useState([]);
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+  const [showNoWalletModal, setShowNoWalletModal] = useState(false);
 
   const [countries, setCountries] = useState([]);
   const [showCountryPicker, setShowCountryPicker] = useState(false);
+  const [countrySearch, setCountrySearch] = useState('');
   
   const [cities, setCities] = useState([]);
   const [citySearch, setCitySearch] = useState('');
@@ -146,7 +149,7 @@ export default function EditBeneficiaryScreen({ route }) {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const performLookup = async (phone) => {
+  const performLookup = async (phone, email = '') => {
     setIsSyncing(true);
     try {
       const token = session?.access_token;
@@ -154,7 +157,12 @@ export default function EditBeneficiaryScreen({ route }) {
       const rawWalletApi = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'https://wallet.dizzitup.com/api';
       const walletBase = rawWalletApi.replace(/\/wallet\/?$/, '').replace(/\/api\/?$/, '') + '/api/wallet';
 
-      const res = await fetch(`${walletBase}/lookup-by-phone?phone=${encodeURIComponent(phoneToSend)}`, {
+      let queryParams = `phone=${encodeURIComponent(phoneToSend)}`;
+      if (email && typeof email === 'string' && email.trim()) {
+        queryParams += `&email=${encodeURIComponent(email.trim())}`;
+      }
+
+      const res = await fetch(`${walletBase}/lookup-by-phone?${queryParams}`, {
         headers: { 'Authorization': token ? `Bearer ${token}` : '' }
       });
 
@@ -172,7 +180,7 @@ export default function EditBeneficiaryScreen({ route }) {
             ...prev,
             first_name: prev.first_name || account.first_name || (account.name ? account.name.split(' ')[0] : ''),
             last_name: prev.last_name || account.last_name || (account.name ? account.name.split(' ').slice(1).join(' ') : ''),
-            email: account.email || prev.email,
+            email: prev.email || account.email,
             country: prev.country || account.country || '',
             city: prev.city || account.city || '',
             evm_address: account.evm_address || prev.evm_address,
@@ -218,7 +226,7 @@ export default function EditBeneficiaryScreen({ route }) {
       return;
     }
     const cleanPhone = formData.phone.trim();
-    const result = await performLookup(cleanPhone);
+    const result = await performLookup(cleanPhone, formData.email);
     if (result.found && !result.duplicate) {
       AppToast.showSuccess(t('beneficiary.form.wallet_synced_success', "DizzitUp User found! Wallets auto-synced. ✨"));
     } else if (!result.found) {
@@ -231,7 +239,7 @@ export default function EditBeneficiaryScreen({ route }) {
       ...prev,
       first_name: prev.first_name || account.first_name || (account.name ? account.name.split(' ')[0] : ''),
       last_name: prev.last_name || account.last_name || (account.name ? account.name.split(' ').slice(1).join(' ') : ''),
-      email: account.email || prev.email,
+      email: prev.email || account.email,
       country: prev.country || account.country || '',
       city: prev.city || account.city || '',
       evm_address: account.evm_address || prev.evm_address,
@@ -277,7 +285,11 @@ export default function EditBeneficiaryScreen({ route }) {
 
     // Automatically check user in background if not synced yet
     if (!walletsSynced && !isEditing) {
-      await performLookup(cleanPhone);
+      const result = await performLookup(cleanPhone, formData.email);
+      if (!result.found && !result.duplicate) {
+        setShowNoWalletModal(true);
+        return;
+      }
     }
 
     setCurrentStep(2);
@@ -363,6 +375,10 @@ export default function EditBeneficiaryScreen({ route }) {
     if (!c) return '🌍';
     return getUniversalFlag(c.flag_emoji, c.code);
   };
+
+  const filteredCountries = countrySearch 
+    ? countries.filter(c => c.name.toLowerCase().includes(countrySearch.toLowerCase())) 
+    : countries;
 
   const filteredCities = citySearch 
     ? cities.filter(c => c.toLowerCase().includes(citySearch.toLowerCase())) 
@@ -668,8 +684,17 @@ export default function EditBeneficiaryScreen({ route }) {
                   <Ionicons name="close" size={24} color="#1A2840" />
                 </TouchableOpacity>
               </View>
+
+              <TextInput
+                style={styles.citySearchInput}
+                placeholder={t('common.search', 'Search...')}
+                placeholderTextColor="#94A3B8"
+                value={countrySearch}
+                onChangeText={setCountrySearch}
+              />
+
               <FlatList
-                data={countries}
+                data={filteredCountries}
                 keyExtractor={(item) => item.code}
                 renderItem={({ item }) => (
                   <TouchableOpacity
@@ -751,6 +776,91 @@ export default function EditBeneficiaryScreen({ route }) {
                   </Text>
                 </TouchableOpacity>
               )}
+            </View>
+          </View>
+        </Modal>
+
+        {/* No Crypto Wallet Linked Modal */}
+        <Modal
+          visible={showNoWalletModal}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => {
+            setShowNoWalletModal(false);
+            setCurrentStep(2);
+          }}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, { paddingHorizontal: 20 }]}>
+              <View style={{ alignItems: 'center', marginBottom: 16 }}>
+                <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: '#FEF3C7', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                  <Ionicons name="wallet-outline" size={26} color="#D97706" />
+                </View>
+                <Text style={{ fontSize: 18, fontFamily: 'Inter_700Bold', color: '#1A2840', textAlign: 'center', marginBottom: 8 }}>
+                  {t('wallet.no_crypto_wallet_title', 'No Crypto Wallet Linked')}
+                </Text>
+                <Text style={{ fontSize: 14, fontFamily: 'Inter_400Regular', color: '#64748B', textAlign: 'center' }}>
+                  {t('wallet.no_crypto_wallet_desc', { name: formData.first_name || 'This beneficiary' })}
+                </Text>
+              </View>
+
+              <View style={{ marginTop: 8 }}>
+                <TouchableOpacity
+                  style={{ backgroundColor: '#0052FF', borderRadius: 12, paddingVertical: 14, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', marginBottom: 12 }}
+                  onPress={async () => {
+                    const inviteMsg = t('wallet.invite_msg', 'Join me on DizzitUp to easily receive funds and manage your payments: https://dizzitup.com/invite');
+                    try {
+                      await Share.share({ message: inviteMsg });
+                      setShowNoWalletModal(false);
+                      setCurrentStep(2);
+                    } catch (e) {
+                      console.warn(e);
+                      AppToast.showError(e.message || t('common.error', 'An error occurred'));
+                    }
+                  }}
+                >
+                  <Ionicons name="paper-plane" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
+                  <Text style={{ color: '#FFFFFF', fontSize: 15, fontFamily: 'Inter_600SemiBold' }}>
+                    {t('wallet.action_send_invite', 'Send Invite (SMS / WhatsApp)')}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={{ backgroundColor: '#F1F5F9', borderRadius: 12, paddingVertical: 14, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', marginBottom: 12 }}
+                  onPress={() => {
+                    setShowNoWalletModal(false);
+                    setCurrentStep(2);
+                  }}
+                >
+                  <Ionicons name="create-outline" size={16} color="#1A2840" style={{ marginRight: 6 }} />
+                  <Text style={{ color: '#1A2840', fontSize: 15, fontFamily: 'Inter_600SemiBold' }}>
+                    {t('wallet.action_enter_manual', 'Enter Address Manually')}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={{ backgroundColor: '#F1F5F9', borderRadius: 12, paddingVertical: 14, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', marginBottom: 12 }}
+                  onPress={() => {
+                    setShowNoWalletModal(false);
+                    handleSave();
+                  }}
+                >
+                  <Ionicons name="save-outline" size={16} color="#1A2840" style={{ marginRight: 6 }} />
+                  <Text style={{ color: '#1A2840', fontSize: 15, fontFamily: 'Inter_600SemiBold' }}>
+                    {t('beneficiary.edit.btn_save_now', 'Save Beneficiary Now')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity
+                style={{ alignItems: 'center', marginTop: 4, paddingVertical: 12 }}
+                onPress={() => {
+                  setShowNoWalletModal(false);
+                  setCurrentStep(2);
+                }}
+              >
+                <Text style={{ color: '#64748B', fontSize: 15, fontFamily: 'Inter_600SemiBold' }}>{t('common.cancel', 'Cancel')}</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </Modal>

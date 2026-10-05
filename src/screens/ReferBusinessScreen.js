@@ -1,11 +1,13 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Platform, StatusBar, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 import AppToast from '../components/AppToast';
+import AppSelect from '../components/AppSelect';
+import { ALL_COUNTRIES } from '../utils/countriesData';
 
 export default function ReferBusinessScreen() {
   const navigation = useNavigation();
@@ -22,6 +24,15 @@ export default function ReferBusinessScreen() {
     email: user?.email || "",
     mobile: user?.phone || ""
   });
+
+  const countryOptions = useMemo(() => {
+    return ALL_COUNTRIES.map((c) => ({
+      value: c.name,
+      label: c.name,
+      subtitle: c.dial,
+      flagUrl: `https://flagcdn.com/w40/${c.code.toLowerCase()}.png`
+    }));
+  }, []);
 
   const [business, setBusiness] = useState({
     name: "",
@@ -150,7 +161,21 @@ export default function ReferBusinessScreen() {
 
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>{t('referBusiness.country', 'Country')}</Text>
-              <TextInput style={styles.input} value={business.country} onChangeText={(t) => setBusiness({...business, country: t})} placeholder="Country" placeholderTextColor="#94A3B8" />
+              <View style={{ padding: 1.5, borderRadius: 12, backgroundColor: '#E2E8F0' }}>
+                <AppSelect
+                  value={business.country}
+                  options={countryOptions}
+                  onChange={(val) => setBusiness({...business, country: val})}
+                  title={t('referBusiness.country', 'Country')}
+                  placeholder={t('personalAccount.selectCountry', 'Select your country')}
+                  searchPlaceholder={t('personalAccount.searchCountry', 'Search country')}
+                  style={{ backgroundColor: '#F8FAFC', borderRadius: 10.5, minHeight: 48, paddingHorizontal: 12, borderWidth: 0, margin: 0 }}
+                  textStyle={{ fontFamily: 'Inter_500Medium', fontSize: 14, color: '#20365B', marginLeft: 8 }}
+                  renderLeading={(sel) => (
+                    sel?.icon ? <Text style={{ fontSize: 20 }}>{sel.icon}</Text> : null
+                  )}
+                />
+              </View>
             </View>
           </View>
 

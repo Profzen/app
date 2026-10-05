@@ -37,14 +37,14 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
           DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
         }
         
-        // 1. Get Wallet Address
-        const syncRes = await fetch(`${DIZZY_URL}/wallet/sync-smart-address`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const syncData = await syncRes.json();
-        if (!syncRes.ok || !syncData.success) throw new Error('Failed to fetch wallet address');
-        
-        const walletAddress = selectedNetwork?.toLowerCase() === 'solana' ? syncData.solanaAddress : syncData.evmAddress;
+        // 1. Get Wallet Address directly from context (synced on boot)
+        const walletAddress = selectedNetwork?.toLowerCase() === 'solana' 
+            ? (user?.solanaAddress || user?.solana_wallet_address) 
+            : (user?.evmAddress || user?.evm_wallet_address || user?.walletAddress);
+
+        if (!walletAddress) {
+            throw new Error('Failed to fetch wallet address: Missing in profile. Please restart app.');
+        }
         
         // 2. Perform Cashout via centralized DizzyWallet gateway
         let response;
@@ -100,7 +100,11 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
         console.error("Cashout API error:", err);
         if (isMounted) {
           AppToast.showError(err.message || t('withdrawFunds.withdrawalFailed', 'Withdrawal failed'), t('common.error', 'Error'));
-          navigation.goBack();
+          if (navigation.canGoBack()) {
+            navigation.goBack();
+          } else {
+            navigation.navigate('HomeScreen');
+          }
         }
       }
     };
@@ -115,7 +119,13 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
         
         {/* Header Top Bar */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.iconCircleBtn} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.iconCircleBtn} onPress={() => {
+            if (navigation.canGoBack()) {
+              navigation.goBack();
+            } else {
+              navigation.navigate('HomeScreen');
+            }
+          }}>
             <Ionicons name="chevron-back" size={20} color="#1A2840" />
           </TouchableOpacity>
           <Text style={styles.pageTitle}>{t('withdrawFunds.titleToMobileMoney', 'Withdraw funds to Mobile Money')}</Text>

@@ -423,10 +423,12 @@ export default function ShopDetailsScreen({ route }) {
 
           {/* Shop Metadata */}
           <View style={styles.shopInfoHeader}>
-            <View style={styles.shopNameRow}>
-              <Text style={styles.shopName}>{shop.shop_name || shop.name || t('shop.default_name', 'Boutique')}</Text>
-              {(shop.is_verified || shop.verified) && <Ionicons name="checkmark-circle" size={18} color="#3B82F6" style={{ marginLeft: 6 }} />}
-              <View style={styles.flagCityBadge}>
+            <View style={[styles.shopNameRow, { flexWrap: 'wrap', gap: 6 }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 1 }}>
+                <Text style={[styles.shopName, { flexShrink: 1 }]} numberOfLines={2}>{shop.shop_name || shop.name || t('shop.default_name', 'Boutique')}</Text>
+                {(shop.is_verified || shop.verified) && <Ionicons name="checkmark-circle" size={18} color="#3B82F6" style={{ marginLeft: 6, flexShrink: 0 }} />}
+              </View>
+              <View style={[styles.flagCityBadge, { marginLeft: 0 }]}>
                 <Image source={{ uri: `https://flagcdn.com/w20/${getFlagCode(shop.country || shop.raw?.country || shop.country_code)}.png` }} style={{ width: 16, height: 11, marginRight: 4, borderRadius: 2 }} />
                 <Text style={styles.flagCityText}>
                   {shop.city_village || shop.raw?.city_village || shop.city || ''}
@@ -521,91 +523,64 @@ export default function ShopDetailsScreen({ route }) {
                 </TouchableOpacity>
               </View>
 
-              {hasAnySocial ? (
-                <View style={styles.socialIconsRow}>
-                  {/* WhatsApp */}
-                  {waUrl && (
-                    <TouchableOpacity
-                      style={[styles.socialBrandBtn, { backgroundColor: '#25D366' }]}
-                      onPress={() => Linking.openURL(waUrl).catch(() => setToast({ title: 'WhatsApp', message: t('shop.social.error', 'Could not open WhatsApp') }))}
-                      activeOpacity={0.8}
-                    >
-                      <Ionicons name="logo-whatsapp" size={20} color="#FFFFFF" />
-                    </TouchableOpacity>
-                  )}
-
-                  {/* Telegram */}
-                  {tgUrl && (
-                    <TouchableOpacity
-                      style={[styles.socialBrandBtn, { backgroundColor: '#229ED9' }]}
-                      onPress={() => Linking.openURL(tgUrl).catch(() => setToast({ title: 'Telegram', message: t('shop.social.error', 'Could not open Telegram') }))}
-                      activeOpacity={0.8}
-                    >
-                      <Ionicons name="paper-plane" size={18} color="#FFFFFF" />
-                    </TouchableOpacity>
-                  )}
-
-                  {/* Instagram with authentic multi-stop gradient */}
-                  {igUrl && (
-                    <TouchableOpacity
-                      onPress={() => Linking.openURL(igUrl).catch(() => setToast({ title: 'Instagram', message: t('shop.social.error', 'Could not open Instagram') }))}
-                      activeOpacity={0.8}
-                    >
-                      <LinearGradient
-                        colors={['#f09433', '#e6683c', '#dc2743', '#cc2366', '#bc1888']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={styles.socialBrandBtn}
-                      >
-                        <Ionicons name="logo-instagram" size={20} color="#FFFFFF" />
-                      </LinearGradient>
-                    </TouchableOpacity>
-                  )}
-
-                  {/* Facebook */}
-                  {fbUrl && (
-                    <TouchableOpacity
-                      style={[styles.socialBrandBtn, { backgroundColor: '#1877F2' }]}
-                      onPress={() => Linking.openURL(fbUrl).catch(() => setToast({ title: 'Facebook', message: t('shop.social.error', 'Could not open Facebook') }))}
-                      activeOpacity={0.8}
-                    >
-                      <Ionicons name="logo-facebook" size={20} color="#FFFFFF" />
-                    </TouchableOpacity>
-                  )}
-
-                  {/* Website */}
-                  {webUrl && (
-                    <TouchableOpacity
-                      style={[styles.socialBrandBtn, { backgroundColor: '#059669' }]}
-                      onPress={() => Linking.openURL(webUrl).catch(() => setToast({ title: 'Website', message: t('shop.social.error', 'Could not open website') }))}
-                      activeOpacity={0.8}
-                    >
-                      <Ionicons name="globe-outline" size={19} color="#FFFFFF" />
-                    </TouchableOpacity>
-                  )}
-
-                  {/* Direct Share Circle Button */}
-                  <TouchableOpacity
-                    style={[styles.socialBrandBtn, { backgroundColor: '#EFF6FF', borderWidth: 1.5, borderColor: '#BFDBFE' }]}
-                    onPress={() => setShowShareModal(true)}
-                    activeOpacity={0.8}
-                  >
-                    <Ionicons name="share-social-outline" size={18} color="#2563EB" />
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                /* No social links configured by merchant -> clean full-width Share button */
+              <View style={styles.socialIconsRow}>
+                {/* WhatsApp */}
                 <TouchableOpacity
-                  style={styles.fullShareBtn}
+                  style={[styles.socialBrandBtn, { backgroundColor: waUrl ? '#25D366' : '#E5E7EB' }]}
+                  onPress={() => waUrl ? Linking.openURL(waUrl).catch(() => setToast({ title: 'WhatsApp', message: t('shop.social.error', 'Could not open WhatsApp') })) : setToast({ title: 'WhatsApp', message: t('shop.social.missing', 'This store does not have a WhatsApp number provided.') })}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="logo-whatsapp" size={20} color={waUrl ? "#FFFFFF" : "#9CA3AF"} />
+                </TouchableOpacity>
+
+                {/* Telegram */}
+                <TouchableOpacity
+                  style={[styles.socialBrandBtn, { backgroundColor: tgUrl ? '#229ED9' : '#E5E7EB' }]}
+                  onPress={() => tgUrl ? Linking.openURL(tgUrl).catch(() => setToast({ title: 'Telegram', message: t('shop.social.error', 'Could not open Telegram') })) : setToast({ title: 'Telegram', message: t('shop.social.missing', 'This store does not have a Telegram account provided.') })}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="paper-plane" size={18} color={tgUrl ? "#FFFFFF" : "#9CA3AF"} />
+                </TouchableOpacity>
+
+                {/* Instagram */}
+                <TouchableOpacity
+                  onPress={() => igUrl ? Linking.openURL(igUrl).catch(() => setToast({ title: 'Instagram', message: t('shop.social.error', 'Could not open Instagram') })) : setToast({ title: 'Instagram', message: t('shop.social.missing', 'This store does not have an Instagram account provided.') })}
+                  activeOpacity={0.8}
+                >
+                  {igUrl ? (
+                    <LinearGradient
+                      colors={['#f09433', '#e6683c', '#dc2743', '#cc2366', '#bc1888']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.socialBrandBtn}
+                    >
+                      <Ionicons name="logo-instagram" size={20} color="#FFFFFF" />
+                    </LinearGradient>
+                  ) : (
+                    <View style={[styles.socialBrandBtn, { backgroundColor: '#E5E7EB' }]}>
+                      <Ionicons name="logo-instagram" size={20} color="#9CA3AF" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+
+                {/* Facebook */}
+                <TouchableOpacity
+                  style={[styles.socialBrandBtn, { backgroundColor: fbUrl ? '#1877F2' : '#E5E7EB' }]}
+                  onPress={() => fbUrl ? Linking.openURL(fbUrl).catch(() => setToast({ title: 'Facebook', message: t('shop.social.error', 'Could not open Facebook') })) : setToast({ title: 'Facebook', message: t('shop.social.missing', 'This store does not have a Facebook page provided.') })}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="logo-facebook" size={20} color={fbUrl ? "#FFFFFF" : "#9CA3AF"} />
+                </TouchableOpacity>
+
+                {/* Direct Share Circle Button */}
+                <TouchableOpacity
+                  style={[styles.socialBrandBtn, { backgroundColor: '#EFF6FF', borderWidth: 1.5, borderColor: '#BFDBFE' }]}
                   onPress={() => setShowShareModal(true)}
-                  activeOpacity={0.7}
+                  activeOpacity={0.8}
                 >
                   <Ionicons name="share-social-outline" size={18} color="#2563EB" />
-                  <Text style={styles.fullShareBtnText}>
-                    {t('shop.actions.share_this_store', 'Share this store with friends')}
-                  </Text>
                 </TouchableOpacity>
-              )}
+              </View>
             </View>
           </View>
 
@@ -1058,9 +1033,15 @@ export default function ShopDetailsScreen({ route }) {
                 {/* Telegram */}
                 <TouchableOpacity
                   style={styles.shareChannelItem}
-                  onPress={() => {
-                    const url = `https://t.me/share/url?url=${encodeURIComponent(publicStoreUrl)}&text=${encodeURIComponent(shareText)}`;
-                    Linking.openURL(url).catch(() => {});
+                  onPress={async () => {
+                    const tgAppUrl = `tg://msg?text=${encodeURIComponent(shareText + ' ' + publicStoreUrl)}`;
+                    const tgWebUrl = `https://t.me/share/url?url=${encodeURIComponent(publicStoreUrl)}&text=${encodeURIComponent(shareText)}`;
+                    const supported = await Linking.canOpenURL(tgAppUrl);
+                    if (supported) {
+                      Linking.openURL(tgAppUrl);
+                    } else {
+                      Linking.openURL(tgWebUrl).catch(() => {});
+                    }
                   }}
                   activeOpacity={0.8}
                 >
@@ -1097,17 +1078,16 @@ export default function ShopDetailsScreen({ route }) {
                 <TouchableOpacity
                   style={styles.shareChannelItem}
                   onPress={async () => {
-                    await Clipboard.setStringAsync(publicStoreUrl);
-                    setToast({
-                      title: 'Instagram',
-                      message: t('store.openInstagram', 'Link copied! Open Instagram to paste.')
-                    });
-                    const nativeIg = 'instagram://app';
-                    const supported = await Linking.canOpenURL(nativeIg);
-                    if (supported) {
-                      Linking.openURL(nativeIg);
-                    } else {
-                      Linking.openURL('https://instagram.com').catch(() => {});
+                    // Instagram doesn't support text intent sharing directly to chats.
+                    // The native Share sheet is the best way to show a user's recent direct contacts.
+                    try {
+                      await Share.share({
+                        message: shareText + ' ' + publicStoreUrl,
+                        url: publicStoreUrl, // iOS only
+                        title: shareText,
+                      });
+                    } catch (error) {
+                      console.log('Share error:', error.message);
                     }
                   }}
                   activeOpacity={0.8}
@@ -1123,7 +1103,6 @@ export default function ShopDetailsScreen({ route }) {
                   <Text style={styles.shareChannelLabel}>Instagram</Text>
                 </TouchableOpacity>
               </View>
-
               {/* Copy URL Bar */}
               <View style={styles.copyUrlBar}>
                 <Text style={styles.copyUrlText} numberOfLines={1}>

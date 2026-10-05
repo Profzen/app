@@ -22,6 +22,7 @@ import AppToast from '../components/AppToast';
 import SocialShareModal from '../components/SocialShareModal';
 import { useApp } from '../context/AppContext';
 import { buyGoodsApi } from '../services/buyGoodsApi';
+import { getFullCountryName } from '../utils/countryCurrencyUtils';
 
 export default function OrderConfirmationScreen({ route }) {
   const navigation = useNavigation();
@@ -29,11 +30,19 @@ export default function OrderConfirmationScreen({ route }) {
 
   const orderData = route?.params?.orderData;
 
+  const isPickup = orderData?.deliveryOption === 'pickup' || orderData?.deliveryOption === 'store_pickup';
+  const rawCountry = isPickup
+    ? (orderData?.merchant?.country || orderData?.merchant?.business_country || orderData?.recipient?.country || user?.merchantProfile?.country || user?.country || '')
+    : (orderData?.recipient?.country || orderData?.merchant?.country || user?.merchantProfile?.country || user?.country || '');
+  
+  const recipientCountryName = getFullCountryName(rawCountry, language);
+
   const [escrowPin] = useState(
     () => orderData?.escrowPin || Math.floor(1000 + Math.random() * 9000).toString()
   );
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
+  const [pinCopied, setPinCopied] = useState(false);
 
   // Social Share Modal State
   const [showShareModal, setShowShareModal] = useState(false);
@@ -96,6 +105,10 @@ export default function OrderConfirmationScreen({ route }) {
 
   const copyPin = async () => {
     await Clipboard.setStringAsync(escrowPin);
+    setPinCopied(true);
+    setTimeout(() => {
+      setPinCopied(false);
+    }, 2000);
     setToast({
       title: t('orderConfirmation.pinCopiedTitle', 'PIN Code Copied!'),
       message: t(
@@ -311,9 +324,9 @@ export default function OrderConfirmationScreen({ route }) {
             <Ionicons name="lock-closed" size={20} color="#047857" />
           </View>
           <View style={styles.securityAlertContent}>
-            <Text style={styles.securityAlertTitle}>{t('orderConfirmation.securityTitle', 'DizzitUp Escrow Protection')}</Text>
+            <Text style={styles.securityAlertTitle}>{t('orderConfirmation.securityTitle', 'DizzitUp On-chain Escrow Protection')}</Text>
             <Text style={styles.securityAlertText}>
-              {t('orderConfirmation.securityDesc', 'Your funds remain protected in escrow. The merchant is only paid once your items are delivered and verified.')}
+              {t('orderConfirmation.securityDesc', 'Your funds remain protected in blockchain escrow. The merchant is only paid once your items are delivered and verified.')}
             </Text>
           </View>
         </View>
@@ -321,18 +334,32 @@ export default function OrderConfirmationScreen({ route }) {
         {/* Secret Escrow PIN Banner */}
         <View style={styles.escrowPinCard}>
           <View style={styles.escrowPinHeader}>
-            <Ionicons name="key" size={20} color="#FFB800" />
-            <Text style={styles.escrowPinTitle}>{t('orderConfirmation.escrowPinTitle', 'Your Secret Delivery PIN Code')}</Text>
+            <View style={styles.escrowPinTitleRow}>
+              <Ionicons name="shield-checkmark" size={18} color="#0369A1" />
+              <Text style={styles.escrowPinTitle}>{t('orderConfirmation.escrowPinTitle', 'Your Secret Delivery PIN Code')}</Text>
+            </View>
             <TouchableOpacity style={styles.btnCopyPin} onPress={copyPin}>
-              <Ionicons name="copy-outline" size={16} color="#1A2840" />
-              <Text style={styles.btnCopyPinText}>{t('orderConfirmation.copy', 'Copy')}</Text>
+              {pinCopied ? (
+                <>
+                  <Ionicons name="checkmark-outline" size={14} color="#059669" />
+                  <Text style={[styles.btnCopyPinText, { color: '#059669' }]}>{t('orderConfirmation.copied', 'Copied')}</Text>
+                </>
+              ) : (
+                <>
+                  <Ionicons name="copy-outline" size={14} color="#0369A1" />
+                  <Text style={styles.btnCopyPinText}>{t('orderConfirmation.copy', 'Copy')}</Text>
+                </>
+              )}
             </TouchableOpacity>
           </View>
           <View style={styles.pinCodeBox}>
             <Text style={styles.pinCodeText}>{escrowPin}</Text>
           </View>
           <Text style={styles.escrowPinDesc}>
-            {t('orderConfirmation.escrowPinBuyerWarning', '⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary (or to the courier only upon physical delivery and inspection of your items).')}
+            {t('orderConfirmation.escrowPinBuyerWarning', '⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the courier / Shop Manager only after physical delivery and inspection of your items.')}
+          </Text>
+          <Text style={styles.escrowPinNotice}>
+            {t('escrow.buyerProtectionNotice', { country: recipientCountryName, defaultValue: `This protection is for you, the Buyer, and your Beneficiary in ${recipientCountryName}.` })}
           </Text>
         </View>
 
@@ -582,7 +609,10 @@ export default function OrderConfirmationScreen({ route }) {
               <Text style={styles.escrowPinLabel}>{t('escrow.yourPin', 'Your Secret Delivery PIN Code')}</Text>
               <Text style={styles.escrowPinNumber}>{escrowPin}</Text>
               <Text style={styles.escrowModalBuyerNotice}>
-                {t('escrow.buyerWarning', '⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary (or to the courier only upon physical delivery and inspection of your items).')}
+                {t('escrow.buyerWarning', '⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the courier / Shop Manager only after physical delivery and inspection of your items.')}
+              </Text>
+              <Text style={[styles.escrowModalBuyerNotice, { marginTop: 8, color: '#0369A1' }]}>
+                {t('escrow.buyerProtectionNotice', { country: recipientCountryName, defaultValue: `This protection is for you, the Buyer, and your Beneficiary in ${recipientCountryName}.` })}
               </Text>
             </View>
 
@@ -708,58 +738,77 @@ const styles = StyleSheet.create({
     lineHeight: 15,
   },
   escrowPinCard: {
-    backgroundColor: '#1A2840',
+    backgroundColor: '#F0F9FF',
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E0F2FE',
   },
   escrowPinHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 12,
+  },
+  escrowPinTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
   escrowPinTitle: {
-    fontFamily: 'SpaceGrotesk_700Bold',
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 13,
-    color: '#FFB800',
-    flex: 1,
-    marginLeft: 8,
+    color: '#0369A1',
+    marginLeft: 6,
   },
   btnCopyPin: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFB800',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    backgroundColor: '#E0F2FE',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
     gap: 4,
   },
   btnCopyPinText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 11,
-    color: '#1A2840',
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: '#0369A1',
   },
   pinCodeBox: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
     paddingVertical: 10,
     alignItems: 'center',
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255, 184, 0, 0.4)',
+    borderColor: '#BAE6FD',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   pinCodeText: {
     fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 28,
+    fontSize: 26,
     letterSpacing: 10,
-    color: '#FFB800',
+    color: '#0F172A',
   },
   escrowPinDesc: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 11,
-    color: '#94A3B8',
-    lineHeight: 15,
+    fontSize: 12,
+    color: '#475569',
+    lineHeight: 18,
+    textAlign: 'center',
+  },
+  escrowPinNotice: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
+    color: '#0369A1',
+    marginTop: 8,
+    textAlign: 'center',
   },
   sectionCard: {
     backgroundColor: '#FFFFFF',

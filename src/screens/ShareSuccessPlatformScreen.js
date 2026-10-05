@@ -42,7 +42,13 @@ export default function ShareSuccessPlatformScreen() {
         
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => {
+            if (navigation.canGoBack()) {
+              navigation.goBack();
+            } else {
+              navigation.navigate('HomeScreen');
+            }
+          }}>
             <Ionicons name="arrow-back" size={22} color="#1A2840" />
           </TouchableOpacity>
           

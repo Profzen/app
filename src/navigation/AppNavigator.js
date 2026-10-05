@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useApp } from '../context/AppContext';
 import UnlockScreen from '../screens/UnlockScreen';
@@ -96,19 +96,12 @@ export default function AppNavigator() {
     );
   }
 
-  if (session && isAppLocked) {
-    return (
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="UnlockScreen" component={UnlockScreen} />
-      </Stack.Navigator>
-    );
-  }
-
   return (
-    <Stack.Navigator 
-      initialRouteName="LoginScreen"
-      screenOptions={{ headerShown: false }}
-    >
+    <View style={{ flex: 1 }}>
+      <Stack.Navigator 
+        initialRouteName={session ? 'HomeScreen' : 'LoginScreen'}
+        screenOptions={{ headerShown: false }}
+      >
       <Stack.Screen name="ShareSuccessPlatformScreen" component={ShareSuccessPlatformScreen} />
       <Stack.Screen name="ShareSuccessVisualScreen" component={ShareSuccessVisualScreen} />
       <Stack.Screen name="ShareSuccessCaptionScreen" component={ShareSuccessCaptionScreen} />
@@ -191,6 +184,13 @@ export default function AppNavigator() {
       <Stack.Screen name="WithdrawFundsMobileMoneySummaryScreen" component={WithdrawFundsMobileMoneySummaryScreen} />
       <Stack.Screen name="WithdrawFundsScreen" component={WithdrawFundsScreen} />
       <Stack.Screen name="TodoListScreen" component={TodoListScreen} />
-    </Stack.Navigator>
+      </Stack.Navigator>
+      
+      {session && isAppLocked && (
+        <View style={[StyleSheet.absoluteFill, { zIndex: 9999, elevation: 9999 }]}>
+          <UnlockScreen />
+        </View>
+      )}
+    </View>
   );
 }

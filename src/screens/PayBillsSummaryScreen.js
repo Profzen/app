@@ -23,6 +23,8 @@ import { currencyRateService } from '../services/currencyRateService';
 import { getIsoCountryCode, resolveBeneficiaryCountry, getCountryFromPhone } from '../utils/countryCurrencyUtils';
 import { ALL_COUNTRIES } from '../utils/countriesData';
 import { isSmallScreen } from '../utils/responsive';
+import { PinConfirmationModal } from '../components/PinConfirmationModal';
+import { useRef } from 'react';
 
 const { width } = Dimensions.get('window');
 const isSmallDevice = isSmallScreen || width <= 380;
@@ -43,6 +45,32 @@ export default function PayBillsSummaryScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const { user, session, language, t } = useApp();
+
+  const [pinModalVisible, setPinModalVisible] = useState(false);
+  const pinResolveRef = useRef(null);
+
+  const requestPinAuth = () => {
+    return new Promise((resolve) => {
+      pinResolveRef.current = resolve;
+      setPinModalVisible(true);
+    });
+  };
+
+  const handlePinSuccess = () => {
+    setPinModalVisible(false);
+    if (pinResolveRef.current) {
+      pinResolveRef.current(true);
+      pinResolveRef.current = null;
+    }
+  };
+
+  const handlePinCancel = () => {
+    setPinModalVisible(false);
+    if (pinResolveRef.current) {
+      pinResolveRef.current(false);
+      pinResolveRef.current = null;
+    }
+  };
 
   const {
     serviceType = 'airtime',
@@ -356,6 +384,10 @@ export default function PayBillsSummaryScreen() {
   };
 
   const handleConfirmAndPay = async () => {
+    // Prompt for PIN/Biometrics first
+    const isAuthenticated = await requestPinAuth();
+    if (!isAuthenticated) return;
+
     setPaymentError(null);
     if (isBelowMinimumAmount) {
       const msg = t('paybillsSummary.minAmountNotice', 'Minimum transaction amount is $1.00 USD (approx. {{minAmount}} {{currency}}).', {
@@ -1292,6 +1324,14 @@ export default function PayBillsSummaryScreen() {
             )}
           </TouchableOpacity>
         </SafeAreaView>
+
+        <PinConfirmationModal
+          visible={pinModalVisible}
+          onSuccess={handlePinSuccess}
+          onCancel={handlePinCancel}
+          amount={selectedMethod === 'wallet' ? requiredDzyAmount : totalCost}
+          tokenName={selectedMethod === 'wallet' ? selectedDzyToken.toUpperCase() : currency}
+        />
 
         {/* CyberSource / Ecobank Secure Checkout In-App Sheet */}
         <Modal

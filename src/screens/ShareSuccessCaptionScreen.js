@@ -8,30 +8,40 @@ import * as Clipboard from 'expo-clipboard';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import { getOperatorLogo } from '../utils/operatorLogos';
+import { ALL_COUNTRIES } from '../utils/countriesData';
 
 export default function ShareSuccessCaptionScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { t } = useApp();
+  const { t, user } = useApp();
 
   const { platform = 'whatsapp', transactionData = {}, cardStyle = ['#20365B', '#111D33'] } = route.params || {};
 
   const {
-    amount = '100',
+    amount = '0.00',
     token = 'USDC',
     actionKey = null,
     actionType = null,
-    senderName = 'John Mensah',
-    senderCountry = 'Ghana',
-    senderFlag = '🇬🇭',
-    recipientName = 'Un bénéficiaire',
-    recipientCountry = 'Togo',
-    recipientFlag = '🇹🇬',
     network = 'Polygon',
-    date = '30 Mai 2025 • 09:41',
-    txHash = '0x7a3f...e9b2c4d',
+    date = '',
+    txHash = '',
     senderAvatar = null,
   } = transactionData;
+
+  // Anonymize sender (use actual user data if available)
+  const rawSenderName = transactionData.senderName || user?.firstName || user?.name || 'User';
+  const displaySenderName = rawSenderName.split(' ')[0];
+  const rawSenderCountry = transactionData.senderCountry || user?.country || 'FR';
+  const matchedSenderCountry = ALL_COUNTRIES.find(c => c.name.toLowerCase() === rawSenderCountry.toLowerCase() || c.code.toLowerCase() === rawSenderCountry.toLowerCase());
+  const senderFlag = transactionData.senderFlag || matchedSenderCountry?.flag || '🇫🇷';
+
+  // Anonymize recipient
+  const rawRecipientName = transactionData.recipientName || 'Bénéficiaire';
+  const displayRecipientName = rawRecipientName.split(' ')[0];
+  const rawRecipientCountry = transactionData.recipientCountry || 'TG';
+  const matchedRecipientCountry = ALL_COUNTRIES.find(c => c.name.toLowerCase() === rawRecipientCountry.toLowerCase() || c.code.toLowerCase() === rawRecipientCountry.toLowerCase());
+  const recipientFlag = transactionData.recipientFlag || matchedRecipientCountry?.flag || '🇹🇬';
+
 
   const resolvedAction = actionKey
     ? t(`shareSuccess.${actionKey}`, actionType || 'transferred')
@@ -42,7 +52,7 @@ export default function ShareSuccessCaptionScreen() {
     : txHash;
 
   // Resolve operator logo for recipient (e.g. Mixx by Yas, Moov, MTN, Orange, etc.)
-  const opLogo = getOperatorLogo(recipientName)
+  const opLogo = getOperatorLogo(rawRecipientName)
     || getOperatorLogo(transactionData?.operatorName)
     || getOperatorLogo(transactionData?.providerName)
     || getOperatorLogo(transactionData?.recipient);
@@ -79,7 +89,7 @@ export default function ShareSuccessCaptionScreen() {
 
   // Clean, modern, professional social message (no emoji clutter, clean link)
   const generateDefaultCaption = () => {
-    const cleanRecipient = recipientName?.replace(/\s*\(.*?\)/g, '').trim() || recipientName;
+    const cleanRecipient = rawRecipientName?.replace(/\s*\(.*?\)/g, '').trim() || rawRecipientName;
     if (isWithdraw) {
       return `Successfully cashed out ${amount} ${token} to ${cleanRecipient} with @DizzitUp. Instant, borderless, and without middlemen.\n\nhttps://dizzitup.com`;
     }
@@ -145,7 +155,13 @@ export default function ShareSuccessCaptionScreen() {
 
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => {
+            if (navigation.canGoBack()) {
+              navigation.goBack();
+            } else {
+              navigation.navigate('HomeScreen');
+            }
+          }}>
             <Ionicons name="arrow-back" size={22} color="#1A2840" />
           </TouchableOpacity>
 
@@ -211,10 +227,10 @@ export default function ShareSuccessCaptionScreen() {
                     {senderAvatar ? (
                       <Image source={{ uri: senderAvatar }} style={styles.compactAvatarImg} />
                     ) : (
-                      <Text style={styles.compactAvatarText}>{senderName?.slice(0, 2).toUpperCase() || 'DZ'}</Text>
+                      <Text style={styles.compactAvatarText}>{displaySenderName?.slice(0, 2).toUpperCase() || 'DZ'}</Text>
                     )}
                   </View>
-                  <Text style={styles.compactUserName} numberOfLines={1}>{senderName?.split(' ')[0]}</Text>
+                  <Text style={styles.compactUserName} numberOfLines={1}>{displaySenderName} {senderFlag}</Text>
                 </View>
 
                 <Ionicons name="arrow-forward" size={13} color="rgba(255,255,255,0.7)" style={{ marginHorizontal: 6 }} />
@@ -227,10 +243,10 @@ export default function ShareSuccessCaptionScreen() {
                     ) : transactionData?.recipientAvatar ? (
                       <Image source={{ uri: transactionData.recipientAvatar }} style={styles.compactAvatarImg} />
                     ) : (
-                      <Text style={styles.compactAvatarText}>{recipientName?.slice(0, 2).toUpperCase() || '?'}</Text>
+                      <Text style={styles.compactAvatarText}>{displayRecipientName?.slice(0, 2).toUpperCase() || '?'}</Text>
                     )}
                   </View>
-                  <Text style={styles.compactUserName} numberOfLines={1}>{recipientName?.split(' ')[0]}</Text>
+                  <Text style={styles.compactUserName} numberOfLines={1}>{displayRecipientName} {recipientFlag}</Text>
                 </View>
               </View>
             </View>

@@ -66,3 +66,12 @@ scratch/
 
 # Journal de bord personnel Aziz
 memoire.md*
+
+# AI / Debug Files
+debug*.log
+*.png
+CLAUDE.md
+AGENTS.md
+update-*.js
+test-*.js
+check-*.js

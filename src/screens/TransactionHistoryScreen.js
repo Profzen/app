@@ -1,9 +1,10 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useCallback } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar, RefreshControl, Image, Linking, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar, RefreshControl, Image, Linking, Modal, ToastAndroid } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Clipboard from 'expo-clipboard';
 import BottomNavBar from '../components/BottomNavBar';
 import { useApp } from '../context/AppContext';
 import { generateAndShareStatement } from '../utils/pdfGenerator';
@@ -21,8 +22,16 @@ export default function TransactionHistoryScreen() {
   const stats = calculateTransactionStats(transactions, selectedCurrency, t);
 
   const getFilteredTransactions = () => {
-    if (filterType === 'ALL') return transactions;
-    return transactions.filter(tx => {
+    // Hide spam/dusting
+    const cleanTransactions = transactions.filter(tx => {
+      if (tx.type === 'RECEIVE' && (tx.currency === 'USDC' || tx.currency === 'USDT' || tx.currency === 'DZY') && Number(tx.amount) < 0.01) {
+        return false;
+      }
+      return true;
+    });
+
+    if (filterType === 'ALL') return cleanTransactions;
+    return cleanTransactions.filter(tx => {
       const type = (tx.type || '').toUpperCase();
       const metaType = tx.metadata?.type || '';
       const paymentCtx = tx.metadata?.payment_context || '';
@@ -95,6 +104,53 @@ export default function TransactionHistoryScreen() {
     } catch (e) {
       return '';
     }
+  };
+
+  const formatTimeStacked = (dateObj) => {
+    if (!dateObj) return { date: '', time: '' };
+    try {
+      const d = new Date(dateObj);
+      return {
+        date: d.toLocaleDateString(),
+        time: d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+    } catch (e) {
+      return { date: '', time: '' };
+    }
+  };
+
+  const copyToClipboard = async (text) => {
+    await Clipboard.setStringAsync(text);
+    if (Platform.OS === 'android') {
+      ToastAndroid.show(t('common.wallet.copied', 'Copied to clipboard'), ToastAndroid.SHORT);
+    }
+  };
+
+  const formatToFrom = (tx) => {
+    const text = tx.toFrom;
+    const meta = tx.metadata || {};
+    
+    if (meta.merchant_name) return <Text style={styles.txToFromValue}>{meta.merchant_name}</Text>;
+    if (meta.shop_name) return <Text style={styles.txToFromValue}>{meta.shop_name}</Text>;
+    if (meta.beneficiary_name) return <Text style={styles.txToFromValue}>{meta.beneficiary_name}</Text>;
+    if (meta.sender_name) return <Text style={styles.txToFromValue}>{meta.sender_name}</Text>;
+    if (meta.user_name) return <Text style={styles.txToFromValue}>{meta.user_name}</Text>;
+
+    if (!text || text === 'Unknown') return <Text style={styles.txToFromValue}>{t('common.wallet.na', 'N/A')}</Text>;
+    
+    if ((text.startsWith('0x') && text.length > 20) || (text.length > 30 && !text.includes(' '))) {
+      const truncated = `${text.substring(0, 6)}...${text.substring(text.length - 4)}`;
+      return (
+        <TouchableOpacity 
+          style={{ flexDirection: 'row', alignItems: 'center' }} 
+          onPress={() => copyToClipboard(text)}
+        >
+          <Text style={[styles.txToFromValue, { borderBottomWidth: 1, borderBottomColor: '#CBD5E1', borderStyle: 'dashed' }]}>{truncated}</Text>
+          <Ionicons name="copy-outline" size={14} color="#94A3B8" style={{ marginLeft: 6 }} />
+        </TouchableOpacity>
+      );
+    }
+    return <Text style={styles.txToFromValue}>{text}</Text>;
   };
 
   const getExplorerUrl = (tx) => {
@@ -234,11 +290,14 @@ export default function TransactionHistoryScreen() {
                         <View style={styles.txBody}>
                           <View style={styles.txDetailsLeft}>
                             <Text style={styles.txToFromLabel}>{t('common.wallet.to_from', 'Vers / De')}</Text>
-                            <Text style={styles.txToFromValue}>{tx.toFrom}</Text>
+                            {formatToFrom(tx)}
                             {!!tx.merchant && tx.type !== 'SEND' && (
                               <Text style={styles.txMerchant}>{tx.merchant}</Text>
                             )}
-                            <Text style={styles.txDate}>{formatTime(tx.timestamp)}</Text>
+                            <View style={{ marginTop: 4 }}>
+                              <Text style={styles.txDate}>{formatTimeStacked(tx.timestamp).date}</Text>
+                              <Text style={[styles.txDate, { marginTop: 0, color: '#CBD5E1' }]}>{formatTimeStacked(tx.timestamp).time}</Text>
+                            </View>
                           </View>
                           
                           <View style={styles.txDetailsRight}>

@@ -1,19 +1,7 @@
 import { Linking, Platform } from 'react-native';
 
-let WALLET_API = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
-if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-  try {
-    const urlObj = new URL(WALLET_API);
-    if (urlObj.hostname === 'localhost') {
-      urlObj.hostname = window.location.hostname;
-      WALLET_API = urlObj.toString();
-    }
-  } catch (e) {
-    console.warn('Failed to parse WALLET_API URL', e);
-  }
-} else if (Platform.OS === 'android') {
-  WALLET_API = WALLET_API.replace('localhost', '10.0.2.2');
-}
+let WALLET_API = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'https://wallet.dizzitup.com/api';
+const walletBase = WALLET_API.replace(/\/wallet\/?$/, '').replace(/\/api\/?$/, '') + '/api/wallet';
 
 export const smsService = {
   /**
@@ -26,7 +14,7 @@ export const smsService = {
     if (!phone) throw new Error('Phone number is required');
 
     const cleanPhone = phone.replace(/[^0-9+]/g, '');
-    const res = await fetch(`${WALLET_API}/wallet/send-sms-invite`, {
+    const res = await fetch(`${walletBase}/send-sms-invite`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

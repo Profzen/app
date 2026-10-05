@@ -8,31 +8,40 @@ import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import { getOperatorLogo } from '../utils/operatorLogos';
 
+import { ALL_COUNTRIES } from '../utils/countriesData';
+
 export default function ShareSuccessVisualScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { t } = useApp();
+  const { t, user } = useApp();
 
   const { platform = 'whatsapp', transactionData = {} } = route.params || {};
 
   const {
-    amount = '100',
+    amount = '0.00',
     token = 'USDC',
-    // actionKey: translation key like 'actionWithdrawn', 'actionSent', 'actionTopup'
-    // Fallback: actionType (legacy raw string)
     actionKey = null,
     actionType = null,
-    senderName = 'John Mensah',
-    senderCountry = 'Ghana',
-    senderFlag = '🇬🇭',
-    recipientName = 'Un bénéficiaire',
-    recipientCountry = 'Togo',
-    recipientFlag = '🇹🇬',
     network = 'Polygon',
-    date = '30 Mai 2025 - 09:41',
-    txHash = '0x7a3f...e9b2c4d',
+    date = '',
+    txHash = '',
     senderAvatar = null,
   } = transactionData;
+
+  // Anonymize sender (use actual user data if available)
+  const rawSenderName = transactionData.senderName || user?.firstName || user?.name || 'User';
+  const displaySenderName = rawSenderName.split(' ')[0];
+  const rawSenderCountry = transactionData.senderCountry || user?.country || 'FR';
+  const matchedSenderCountry = ALL_COUNTRIES.find(c => c.name.toLowerCase() === rawSenderCountry.toLowerCase() || c.code.toLowerCase() === rawSenderCountry.toLowerCase());
+  const senderFlag = transactionData.senderFlag || matchedSenderCountry?.flag || '🇫🇷';
+
+  // Anonymize recipient
+  const rawRecipientName = transactionData.recipientName || 'Bénéficiaire';
+  const displayRecipientName = rawRecipientName.split(' ')[0];
+  const rawRecipientCountry = transactionData.recipientCountry || 'TG';
+  const matchedRecipientCountry = ALL_COUNTRIES.find(c => c.name.toLowerCase() === rawRecipientCountry.toLowerCase() || c.code.toLowerCase() === rawRecipientCountry.toLowerCase());
+  const recipientFlag = transactionData.recipientFlag || matchedRecipientCountry?.flag || '🇹🇬';
+
 
   // Resolve action label: prefer key-based i18n, fall back to raw string
   const resolvedAction = actionKey
@@ -70,7 +79,7 @@ export default function ShareSuccessVisualScreen() {
     : txHash;
 
   // Resolve operator logo for recipient (e.g. Mixx by Yas, Moov, MTN, Orange, etc.)
-  const opLogo = getOperatorLogo(recipientName) 
+  const opLogo = getOperatorLogo(rawRecipientName) 
     || getOperatorLogo(transactionData?.operatorName) 
     || getOperatorLogo(transactionData?.providerName) 
     || getOperatorLogo(transactionData?.recipient);
@@ -154,12 +163,11 @@ export default function ShareSuccessVisualScreen() {
                 <Image source={{ uri: senderAvatar }} style={styles.avatarImg} />
               ) : (
                 <Text style={styles.avatarInitialsText}>
-                  {senderName?.slice(0, 2).toUpperCase() || 'DZ'}
+                  {displaySenderName?.slice(0, 2).toUpperCase() || 'DZ'}
                 </Text>
               )}
             </View>
-            <Text style={styles.userName} numberOfLines={1}>{senderName}</Text>
-            <Text style={styles.userCountry}>{senderCountry} {senderFlag}</Text>
+            <Text style={styles.userName} numberOfLines={1}>{displaySenderName} {senderFlag}</Text>
           </View>
 
           <View style={styles.transferArrowCircle}>
@@ -175,12 +183,11 @@ export default function ShareSuccessVisualScreen() {
                 <Image source={{ uri: transactionData.recipientAvatar }} style={styles.avatarImg} />
               ) : (
                 <Text style={styles.avatarInitialsText}>
-                  {recipientName?.slice(0, 2).toUpperCase() || '?'}
+                  {displayRecipientName?.slice(0, 2).toUpperCase() || '?'}
                 </Text>
               )}
             </View>
-            <Text style={styles.userName} numberOfLines={1}>{recipientName}</Text>
-            <Text style={styles.userCountry}>{recipientCountry} {recipientFlag}</Text>
+            <Text style={styles.userName} numberOfLines={1}>{displayRecipientName} {recipientFlag}</Text>
           </View>
         </View>
 
@@ -253,7 +260,13 @@ export default function ShareSuccessVisualScreen() {
 
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => {
+            if (navigation.canGoBack()) {
+              navigation.goBack();
+            } else {
+              navigation.navigate('HomeScreen');
+            }
+          }}>
             <Ionicons name="arrow-back" size={20} color="#1A2840" />
           </TouchableOpacity>
 

@@ -23,6 +23,13 @@ export default function ResetPasswordCodeScreen() {
   const email = route.params?.email || '';
   const { t } = useApp();
   
+  const obfuscateEmail = (em) => {
+    if (!em || !em.includes('@')) return em;
+    const [local, domain] = em.split('@');
+    if (local.length <= 2) return `${local[0]}***@${domain}`;
+    return `${local[0]}***${local[local.length - 1]}@${domain}`;
+  };
+  
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '', type: 'success' });
@@ -78,7 +85,7 @@ export default function ResetPasswordCodeScreen() {
           <View style={styles.titleSection}>
             <Text style={styles.mainTitle}>{t('auth.verificationCodeTitle', 'Code de vérification')}</Text>
             <Text style={styles.subtitle}>
-              {t('auth.enterVerificationCode', 'Veuillez entrer le code de vérification reçu ci-dessous.')}
+              {t('auth.enterVerificationCode', { email: obfuscateEmail(email), defaultValue: `We sent a verification code to ${obfuscateEmail(email)}.` })}
             </Text>
           </View>
 

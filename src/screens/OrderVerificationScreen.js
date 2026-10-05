@@ -506,6 +506,7 @@ export default function OrderVerificationScreen({ route }) {
           phone: user?.phone || '',
           address: merchantFullAddress,
           city: merchantCityRaw,
+          country: merchantCountryRaw,
           deliveryOption,
         }
         : {
@@ -514,6 +515,7 @@ export default function OrderVerificationScreen({ route }) {
           address: [recipientAddress.trim(), deliveryCityValue].filter(Boolean).join(', '),
           street: recipientAddress.trim(),
           city: deliveryCityValue,
+          country: merchantCountryRaw,
           beneficiaryId: savedBeneficiaryId,
           deliveryOption,
         },

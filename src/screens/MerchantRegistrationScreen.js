@@ -1,5 +1,5 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,6 +14,8 @@ import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../services/supabaseClient';
 import { isSmallScreen, isShortScreen } from '../utils/responsive';
+import AppSelect from '../components/AppSelect';
+import { ALL_COUNTRIES } from '../utils/countriesData';
 
 export default function MerchantRegistrationScreen() {
   const navigation = useNavigation();
@@ -22,8 +24,21 @@ export default function MerchantRegistrationScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [parrain, setParrain] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [country, setCountry] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '', type: 'success' });
+
+  const countryOptions = useMemo(() => {
+    return ALL_COUNTRIES.map((c) => ({
+      value: c.name,
+      label: c.name,
+      subtitle: c.dial,
+      flagUrl: `https://flagcdn.com/w40/${c.code.toLowerCase()}.png`,
+    }));
+  }, []);
 
   const getPasswordStrength = (pass) => {
     if (!pass) return 0;
@@ -45,7 +60,7 @@ export default function MerchantRegistrationScreen() {
   };
 
   const handleRegister = async () => {
-    if (!businessName || !email || !password || strength < 2) {
+    if (!businessName || !email || !password || !firstName || !lastName || !country || !phone || strength < 2) {
       setToastInfo({ visible: true, title: t('common.error', 'Error'), message: t('auth.fillRequiredFields', 'Please fill all required fields correctly.'), type: 'error' });
       return;
     }
@@ -64,12 +79,33 @@ export default function MerchantRegistrationScreen() {
             business_name: businessName,
             auth_provider: 'email',
             referral_code: parrain || null,
+            first_name: firstName,
+            last_name: lastName,
+            phone: phone,
+            country: country
           }
         }
       });
 
       if (error) {
         throw error;
+      }
+
+      if (data?.user && data.user.identities && data.user.identities.length === 0) {
+        const { data: provider, error: rpcError } = await supabase.rpc('get_auth_provider', { lookup_email: email });
+        if (!rpcError && provider) {
+          if (provider === 'google') {
+            throw new Error(t('auth.emailExistsGoogle', 'This email already exists with Google login. Please log in using your Google account.'));
+          } else if (provider === 'facebook') {
+            throw new Error(t('auth.emailExistsFacebook', 'This email already exists with Facebook login. Please log in using your Facebook account.'));
+          } else if (provider === 'apple') {
+            throw new Error(t('auth.emailExistsApple', 'This email already exists with Apple login. Please log in using your Apple account.'));
+          } else {
+            throw new Error(t('auth.emailExistsEmail', 'This email already exists. Please log in with your password.'));
+          }
+        } else {
+           throw new Error(t('auth.emailExistsEmail', 'This email already exists. Please log in with your password.'));
+        }
       }
 
       setToastInfo({ visible: true, title: t('common.success', 'Registration successful'), message: t('auth.registrationSuccessMsg', 'Your verification code is ready.'), type: 'success' });
@@ -122,6 +158,50 @@ export default function MerchantRegistrationScreen() {
 
         {/* Form */}
         <View style={styles.formContainer}>
+          <DizzitInput
+            label={t('personalAccount.firstName', 'First Name')}
+            placeholder={t('personalAccount.firstName', 'First Name')}
+            value={firstName}
+            onChangeText={setFirstName}
+            iconLeft={<Ionicons name="person-outline" size={20} color={theme.colors.primary} />}
+          />
+          <DizzitInput
+            label={t('personalAccount.lastName', 'Last Name')}
+            placeholder={t('personalAccount.lastName', 'Last Name')}
+            value={lastName}
+            onChangeText={setLastName}
+            iconLeft={<Ionicons name="person-outline" size={20} color={theme.colors.primary} />}
+          />
+          <DizzitInput
+            label={t('personalAccount.phone', 'Phone Number')}
+            placeholder={t('personalAccount.phone', 'Phone Number')}
+            value={phone}
+            onChangeText={setPhone}
+            iconLeft={<Ionicons name="call-outline" size={20} color={theme.colors.primary} />}
+            keyboardType="phone-pad"
+          />
+          
+          <Text style={{ fontFamily: 'Inter_500Medium', fontSize: 14, color: theme.colors.textSecondary, marginBottom: 8 }}>
+            {t('personalAccount.country', 'Country of Residence')}
+          </Text>
+          <AppSelect
+            value={country}
+            options={countryOptions}
+            onChange={(val) => setCountry(val)}
+            title={t('personalAccount.country', 'Country of Residence')}
+            placeholder={t('personalAccount.selectCountry', 'Select your country')}
+            searchPlaceholder={t('personalAccount.searchCountry', 'Search country')}
+            style={{ marginBottom: 16, backgroundColor: theme.colors.surface, borderColor: '#E2E8F0', borderWidth: 1, borderRadius: 12 }}
+            textStyle={{ fontFamily: 'Inter_400Regular', fontSize: 16, color: theme.colors.textPrimary }}
+            renderLeading={(sel) => (
+              sel?.flagUrl ? (
+                <Image source={{ uri: sel.flagUrl }} style={{ width: 24, height: 16, borderRadius: 2 }} />
+              ) : (
+                <Ionicons name="flag-outline" size={18} color="#6B7280" />
+              )
+            )}
+          />
+
           <DizzitInput
             label={t('auth.businessName', 'Business Name')}
             placeholder={t('auth.businessNamePlaceholder', 'Enter your business or shop name')}

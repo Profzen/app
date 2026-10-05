@@ -8,11 +8,13 @@ import { currencyRateService, EMERGENCY_RATES } from '../services/currencyRateSe
 import { COUNTRY_METADATA } from '../services/paymentCorridorService';
 import { getOperatorLogo } from '../utils/operatorLogos';
 import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
+import { PinConfirmationModal } from '../components/PinConfirmationModal';
+import { useRef } from 'react';
 
 export default function WithdrawFundsMobileMoneySummaryScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { t, user, language, detectedCountry, getEffectiveWalletCountry } = useApp();
+  const { t, user, session, language, detectedCountry, getEffectiveWalletCountry } = useApp();
   const isBusinessCard = user?.role === 'merchant';
   const {
     amount = '0',
@@ -21,6 +23,32 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
     selectedMethod = 'momo',
     destinationCountry,
   } = route.params || {};
+
+  const [pinModalVisible, setPinModalVisible] = useState(false);
+  const pinResolveRef = useRef(null);
+
+  const requestPinAuth = () => {
+    return new Promise((resolve) => {
+      pinResolveRef.current = resolve;
+      setPinModalVisible(true);
+    });
+  };
+
+  const handlePinSuccess = () => {
+    setPinModalVisible(false);
+    if (pinResolveRef.current) {
+      pinResolveRef.current(true);
+      pinResolveRef.current = null;
+    }
+  };
+
+  const handlePinCancel = () => {
+    setPinModalVisible(false);
+    if (pinResolveRef.current) {
+      pinResolveRef.current(false);
+      pinResolveRef.current = null;
+    }
+  };
 
   // ─── Live rates from currencyRateService (Supabase → live API → emergency fallback) ───
   const [rates, setRates] = useState(currencyRateService.getRates() || EMERGENCY_RATES);
@@ -102,7 +130,7 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
     const fetchQuote = async () => {
       try {
         setQuoteLoading(true);
-        const sessionToken = user?.token || ''; // or AppContext session
+        const sessionToken = user?.dizzyToken || session?.access_token || '';
         let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
         if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) {
           DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
@@ -352,16 +380,21 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
           <TouchableOpacity
             style={[styles.btnContinue, (quoteLoading || quoteError) && { opacity: 0.5 }]}
             disabled={quoteLoading || !!quoteError}
-            onPress={() => navigation.navigate('WithdrawFundsMobileMoneyProcessingScreen', {
-              amount,
-              currency: effectiveCurrency,
-              selectedToken: token,
-              selectedMethod,
-              destinationCountry: countryParam,
-              quoteId: quote?.quoteId,
-              quote: quote,
-              // selectedNetwork intentionally omitted — backend handles routing via quote
-            })}
+            onPress={async () => {
+              const isAuthenticated = await requestPinAuth();
+              if (isAuthenticated) {
+                navigation.navigate('WithdrawFundsMobileMoneyProcessingScreen', {
+                  amount,
+                  currency: effectiveCurrency,
+                  selectedToken: token,
+                  selectedMethod,
+                  destinationCountry: countryParam,
+                  quoteId: quote?.quoteId,
+                  quote: quote,
+                  // selectedNetwork intentionally omitted — backend handles routing via quote
+                });
+              }
+            }}
           >
             <Ionicons name="lock-closed" size={18} color="#1A2840" style={{marginRight: 8}} />
             <Text style={styles.btnContinueText}>
@@ -371,6 +404,13 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
 
         </ScrollView>
       </View>
+      <PinConfirmationModal
+        visible={pinModalVisible}
+        onSuccess={handlePinSuccess}
+        onCancel={handlePinCancel}
+        amount={amount}
+        tokenName={token}
+      />
     </SafeAreaView>
   );
 }

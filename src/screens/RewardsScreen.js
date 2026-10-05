@@ -10,6 +10,7 @@ import {
   Share,
   Modal,
   Image,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -112,6 +113,27 @@ export default function RewardsScreen() {
     } catch (e) {
       console.warn('Failed to share invite', e);
     }
+  };
+
+  // Renders a description where the reward phrase (e.g. "Earn 50 DZY") is highlighted.
+  // The translation contains a {{reward}} placeholder so word order works in every language.
+  const renderRewardDesc = (descKey, descFallback, rewardKey, rewardFallback, highlightStyle) => {
+    const MARK = '%%REWARD%%';
+    const reward = t(rewardKey, rewardFallback);
+    const raw = t(descKey, descFallback, { reward: MARK });
+    const parts = String(raw).split(MARK);
+    return (
+      <Text style={styles.programDesc}>
+        {parts.map((part, i) => (
+          <React.Fragment key={i}>
+            {part}
+            {i < parts.length - 1 && (
+              <Text style={[styles.rewardHighlight, highlightStyle]}>{reward}</Text>
+            )}
+          </React.Fragment>
+        ))}
+      </Text>
+    );
   };
 
   return (
@@ -488,23 +510,23 @@ export default function RewardsScreen() {
               </View>
             </View>
 
-            <Text style={styles.programDesc}>
-              {t(
-                'rewards.refer_merchant_desc',
-                'Recommend a local merchant or shop owner. Earn 50 DZY once they register and accept payments on DizzitUp.'
-              )}
-            </Text>
+            {renderRewardDesc(
+              'rewards.refer_merchant_desc',
+              'Recommend a local merchant or shop owner. {{reward}} once they register and accept payments on DizzitUp.',
+              'rewards.refer_merchant_reward',
+              'Earn 50 DZY',
+              { color: '#6D28D9' }
+            )}
 
-            <TouchableOpacity
-              style={styles.outlineActionBtn}
+            {/* Action Button: Refer Merchant (purple, dark text — aligned with Share CTA) */}
+            <GradientCta
+              colors={['#DDD6FE', '#C4B5FD', '#A78BFA']}
+              glowColor="#7C3AED"
+              icon="business"
+              iconColor="#5B21B6"
+              label={t('rewards.btn_refer_merchant', 'Refer a Merchant')}
               onPress={() => navigation.navigate('ReferBusinessScreen')}
-              activeOpacity={0.85}
-            >
-              <Ionicons name="business-outline" size={16} color="#7C3AED" style={{ marginRight: 6 }} />
-              <Text style={[styles.outlineActionBtnText, { color: '#7C3AED' }]}>
-                {t('rewards.btn_refer_merchant', 'Refer a Merchant')}
-              </Text>
-            </TouchableOpacity>
+            />
           </View>
 
           {/* Program Card 2: Refer a Friend (10 DZY) */}
@@ -527,12 +549,13 @@ export default function RewardsScreen() {
               </View>
             </View>
 
-            <Text style={styles.programDesc}>
-              {t(
-                'rewards.refer_friend_desc',
-                'Share your code with friends. Earn 10 DZY as soon as they make their first payment or top-up.'
-              )}
-            </Text>
+            {renderRewardDesc(
+              'rewards.refer_friend_desc',
+              'Share your code with friends. {{reward}} as soon as they make their first payment or top-up.',
+              'rewards.refer_friend_reward',
+              'Earn 10 DZY',
+              { color: '#B45309' }
+            )}
 
             {/* Referral Code Box */}
             <View style={styles.referralCodeBox}>
@@ -553,63 +576,161 @@ export default function RewardsScreen() {
                 <Ionicons
                   name={copiedCode ? 'checkmark-circle' : 'copy-outline'}
                   size={15}
-                  color={copiedCode ? '#FFFFFF' : '#1A2840'}
-                  style={{ marginRight: 4 }}
+                  color={copiedCode ? '#FFFFFF' : '#FFC759'}
+                  style={{ marginRight: 5 }}
                 />
-                <Text style={[styles.copyBtnText, copiedCode && { color: '#FFFFFF' }]}>
+                <Text style={styles.copyBtnText}>
                   {copiedCode ? t('rewards.code_copied', 'Copied!') : t('rewards.btn_copy_code', 'Copy')}
                 </Text>
               </TouchableOpacity>
             </View>
 
             {/* Action Button: Share */}
-            <TouchableOpacity
-              style={styles.primaryActionBtn}
+            <GradientCta
+              colors={['#FFE3A3', '#FFC759', '#F7B23B']}
+              glowColor="#F59E0B"
+              icon="paper-plane"
+              iconColor="#B45309"
+              label={t('rewards.btn_share_invite', 'Share Invite Link')}
               onPress={handleShareInvite}
-              activeOpacity={0.85}
-            >
-              <Ionicons name="paper-plane-outline" size={17} color="#1A2840" style={{ marginRight: 6 }} />
-              <Text style={styles.primaryActionBtnText}>
-                {t('rewards.btn_share_invite', 'Share Invite Link')}
-              </Text>
-            </TouchableOpacity>
+            />
           </View>
 
-          {/* Program Card 3: Merchant Settlement Bonus */}
-          <View style={styles.programCard}>
-            <View style={styles.programCardHeader}>
-              <View style={[styles.programIconWrap, { backgroundColor: '#E0E7FF' }]}>
-                <Ionicons name="wallet-outline" size={22} color="#4F46E5" />
-              </View>
-              <View style={{ flex: 1, marginLeft: 12, minWidth: 0 }}>
-                <View style={styles.badgeRow}>
-                  <View style={[styles.miniBadge, { backgroundColor: '#E0E7FF' }]}>
-                    <Text style={[styles.miniBadgeText, { color: '#3730A3' }]}>
-                      {t('rewards.merchant_settle_badge', 'For Business Owners')}
-                    </Text>
-                  </View>
-                </View>
-                <Text style={styles.programTitle} numberOfLines={1}>
-                  {t('rewards.merchant_settle_title', 'Merchant Settlement Bonus')}
+          {/* Section: Merchant Settlement Bonus (same presentation as Cashback) */}
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleRow}>
+              <Text style={styles.sectionTitle}>
+                {t('rewards.merchant_settle_title', 'Merchant Settlement Bonus')}
+              </Text>
+              <View style={[styles.sectionTag, styles.sectionTagMerchant]}>
+                <Text style={[styles.sectionTagText, { color: '#3730A3' }]}>
+                  {t('rewards.merchant_settle_badge_pill', 'Up to 3% Bonus')}
                 </Text>
               </View>
             </View>
-
-            <Text style={styles.programDesc}>
+            <Text style={styles.sectionSubtitle}>
               {t(
-                'rewards.merchant_settle_desc',
-                'Merchants who settle sales in DZY receive a 3% volume bonus, 2% for Stablecoins, and 1% for Mobile Money.'
+                'rewards.merchant_settle_sub',
+                'For business owners: earn a DZY volume bonus on every sale you settle through DizzitUp'
               )}
             </Text>
           </View>
 
+          <View style={styles.cashbackTableCard}>
+            {/* Row 1: Settlement in DZY (Highlighted) */}
+            <View style={[styles.tableRow, styles.tableRowFeatured]}>
+              <View style={[styles.methodIconWrap, { backgroundColor: '#FEF3C7' }]}>
+                <Ionicons name="flash" size={18} color="#D97706" />
+              </View>
+              <View style={styles.methodInfoWrap}>
+                <View style={styles.methodTitleRow}>
+                  <Text style={styles.methodTitle}>
+                    {t('rewards.merchant_rate_dzy_title', 'Settlement in DZY')}
+                  </Text>
+                  <View style={styles.bestRateBadge}>
+                    <Text style={styles.bestRateBadgeText}>
+                      {t('rewards.rate_dzy_badge', 'Best Rate')}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={styles.methodSubtext} numberOfLines={1}>
+                  {t('rewards.merchant_rate_dzy_sub', 'Highest volume bonus on your sales')}
+                </Text>
+              </View>
+              <View style={styles.ratePillWrap}>
+                <View style={[styles.ratePill, styles.ratePillFeatured]}>
+                  <Text style={styles.ratePillTextFeatured}>3%</Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.tableRowDivider} />
+
+            {/* Row 2: Settlement in Stablecoins */}
+            <View style={styles.tableRow}>
+              <View style={[styles.methodIconWrap, { backgroundColor: '#DBEAFE' }]}>
+                <Ionicons name="cube-outline" size={18} color="#2563EB" />
+              </View>
+              <View style={styles.methodInfoWrap}>
+                <View style={styles.methodTitleRow}>
+                  <Text style={styles.methodTitle}>
+                    {t('rewards.merchant_rate_stablecoins_title', 'Settlement in Stablecoins')}
+                  </Text>
+                  <View style={[styles.methodCategoryBadge, { backgroundColor: '#EFF6FF' }]}>
+                    <Text style={[styles.methodCategoryBadgeText, { color: '#1D4ED8' }]}>
+                      {t('rewards.rate_stablecoins_badge', 'Crypto')}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={styles.methodSubtext} numberOfLines={1}>
+                  {t('rewards.rate_stablecoins_sub', 'USDC & USDT payments')}
+                </Text>
+              </View>
+              <View style={styles.ratePillWrap}>
+                <View style={[styles.ratePill, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}>
+                  <Text style={[styles.ratePillText, { color: '#1D4ED8' }]}>2%</Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.tableRowDivider} />
+
+            {/* Row 3: Settlement in Mobile Money */}
+            <View style={styles.tableRow}>
+              <View style={[styles.methodIconWrap, { backgroundColor: '#DCFCE7' }]}>
+                <Ionicons name="phone-portrait-outline" size={18} color="#10B981" />
+              </View>
+              <View style={styles.methodInfoWrap}>
+                <View style={styles.methodTitleRow}>
+                  <Text style={styles.methodTitle}>
+                    {t('rewards.merchant_rate_momo_title', 'Settlement in Mobile Money')}
+                  </Text>
+                  <View style={[styles.methodCategoryBadge, { backgroundColor: '#F0FDF4' }]}>
+                    <Text style={[styles.methodCategoryBadgeText, { color: '#047857' }]}>
+                      {t('rewards.rate_momo_badge', 'Mobile Money')}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={styles.methodSubtext} numberOfLines={1}>
+                  {t('rewards.rate_momo_sub', 'Wave, Orange Money, MTN, Moov & more')}
+                </Text>
+              </View>
+              <View style={styles.ratePillWrap}>
+                <View style={[styles.ratePill, { backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }]}>
+                  <Text style={[styles.ratePillText, { color: '#047857' }]}>1%</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Coverage footer note */}
+            <View style={[styles.tableCoverageBox, styles.tableCoverageBoxMerchant]}>
+              <Ionicons name="storefront-outline" size={15} color="#3730A3" style={{ marginRight: 6 }} />
+              <Text style={[styles.tableCoverageText, { color: '#3730A3' }]}>
+                {t(
+                  'rewards.merchant_settle_coverage_note',
+                  'The bonus is calculated on the sales volume you settle through DizzitUp.'
+                )}
+              </Text>
+            </View>
+          </View>
+
           {/* Section 3: Transparent Token Roadmap (Pre-TGE Guide) */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              {t('rewards.roadmap_title', 'DZY Token Roadmap')}
-            </Text>
+            <View style={styles.sectionTitleRow}>
+              <Text style={styles.sectionTitle}>
+                {t('rewards.roadmap_title', 'DZY Token Roadmap')}
+              </Text>
+              <View style={[styles.sectionTag, styles.sectionTagChain]}>
+                <Text style={[styles.sectionTagText, { color: '#6D28D9' }]}>
+                  {t('rewards.roadmap_chain_tag', 'Polygon ERC-20')}
+                </Text>
+              </View>
+            </View>
             <Text style={styles.sectionSubtitle}>
-              {t('rewards.roadmap_sub', 'Transparent, simple, and community-first')}
+              {t(
+                'rewards.roadmap_sub',
+                'A Polygon ERC-20 standard token. Transparent, simple, and community-first'
+              )}
             </Text>
           </View>
 
@@ -651,7 +772,7 @@ export default function RewardsScreen() {
                 <Text style={styles.stepDesc}>
                   {t(
                     'rewards.step2_desc',
-                    'Official smart contract mint on Polygon ERC-20 (target Q4 2026). Your off-chain rewards convert 1:1 on-chain.'
+                    'Official smart contract mint on Polygon ERC-20 (target: Q4-26 / Q1-27). Your off-chain rewards convert 1:1 on-chain.'
                   )}
                 </Text>
               </View>
@@ -726,6 +847,7 @@ export default function RewardsScreen() {
                 </TouchableOpacity>
               </View>
 
+              <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
               <Text style={styles.modalTitle}>
                 {t('rewards.faq_title', 'About DZY Rewards')}
               </Text>
@@ -740,6 +862,9 @@ export default function RewardsScreen() {
               <View style={styles.modalHighlightRow}>
                 <View style={styles.modalDot} />
                 <Text style={styles.modalHighlightText}>
+                  <Text style={styles.modalLabelText}>
+                    {t('rewards.faq_pre_tge_label', 'Pre-TGE:')}{' '}
+                  </Text>
                   {t('rewards.faq_item_1', '1 DZY = $0.10 USD (10 DZY = $1.00 USD).')}
                 </Text>
               </View>
@@ -774,6 +899,17 @@ export default function RewardsScreen() {
                 </Text>
               </View>
 
+              <View style={styles.modalHighlightRow}>
+                <View style={[styles.modalDot, { backgroundColor: '#7C3AED' }]} />
+                <Text style={styles.modalHighlightText}>
+                  <Text style={[styles.modalLabelText, { color: '#6D28D9' }]}>
+                    {t('rewards.faq_merchants_label', 'For Merchants:')}{' '}
+                  </Text>
+                  {t('rewards.faq_item_5', 'Earn up to a 3% bonus for selling on DizzitUp.')}
+                </Text>
+              </View>
+              </ScrollView>
+
               <TouchableOpacity
                 style={styles.modalDismissBtn}
                 onPress={() => setShowHelpModal(false)}
@@ -791,7 +927,113 @@ export default function RewardsScreen() {
   );
 }
 
+/**
+ * Premium gradient CTA used by the referral cards.
+ * Gradient fill + glossy top sheen, frosted icon chip, dark arrow chip, coloured glow, press-scale feedback.
+ */
+function GradientCta({ colors, glowColor, icon, iconColor, label, onPress }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={({ pressed }) => [
+        styles.ctaOuter,
+        { shadowColor: glowColor },
+        pressed && styles.ctaPressed,
+      ]}
+    >
+      <LinearGradient
+        colors={colors}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.ctaGradient}
+      >
+        {/* Glossy sheen on the top half */}
+        <LinearGradient
+          colors={['rgba(255,255,255,0.55)', 'rgba(255,255,255,0)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={styles.ctaSheen}
+          pointerEvents="none"
+        />
+
+        <View style={styles.ctaIconChip}>
+          <Ionicons name={icon} size={17} color={iconColor} />
+        </View>
+
+        <Text style={styles.ctaLabel} numberOfLines={1}>
+          {label}
+        </Text>
+
+        <View style={styles.ctaArrowChip}>
+          <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
+        </View>
+      </LinearGradient>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
+  /* Premium gradient CTA */
+  ctaOuter: {
+    borderRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
+    elevation: 6,
+    backgroundColor: 'transparent',
+  },
+  ctaPressed: {
+    transform: [{ scale: 0.97 }],
+    shadowOpacity: 0.2,
+    elevation: 3,
+  },
+  ctaGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: isSmallScreen ? 52 : 56,
+    paddingLeft: 7,
+    paddingRight: 7,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.6)',
+    overflow: 'hidden',
+  },
+  ctaSheen: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '55%',
+  },
+  ctaIconChip: {
+    width: isSmallScreen ? 38 : 42,
+    height: isSmallScreen ? 38 : 42,
+    borderRadius: 13,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  ctaLabel: {
+    flex: 1,
+    textAlign: 'center',
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: isSmallScreen ? 14 : 15,
+    color: '#0F172A',
+    letterSpacing: 0.2,
+    marginHorizontal: 8,
+  },
+  ctaArrowChip: {
+    width: isSmallScreen ? 38 : 42,
+    height: isSmallScreen ? 38 : 42,
+    borderRadius: 13,
+    backgroundColor: '#0F172A',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   safeArea: {
     flex: 1,
     backgroundColor: '#FFFFFF',
@@ -1308,21 +1550,24 @@ const styles = StyleSheet.create({
   copyBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#CBD5E1',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
+    backgroundColor: '#1A2840',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 12,
+    shadowColor: '#1A2840',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
   },
   copyBtnSuccess: {
     backgroundColor: '#10B981',
-    borderColor: '#10B981',
+    shadowColor: '#10B981',
   },
   copyBtnText: {
-    fontFamily: 'SpaceGrotesk_600SemiBold',
+    fontFamily: 'SpaceGrotesk_700Bold',
     fontSize: 12,
-    color: '#1A2840',
+    color: '#FFFFFF',
   },
   primaryActionBtn: {
     flexDirection: 'row',
@@ -1340,7 +1585,26 @@ const styles = StyleSheet.create({
   primaryActionBtnText: {
     fontFamily: 'SpaceGrotesk_700Bold',
     fontSize: isSmallScreen ? 13 : 14,
-    color: '#1A2840',
+    color: '#0F172A',
+  },
+  purpleActionBtn: {
+    backgroundColor: '#A78BFA',
+    shadowColor: '#7C3AED',
+  },
+  rewardHighlight: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+  },
+  sectionTagMerchant: {
+    backgroundColor: '#EEF2FF',
+    borderColor: '#C7D2FE',
+  },
+  sectionTagChain: {
+    backgroundColor: '#F5F3FF',
+    borderColor: '#DDD6FE',
+  },
+  tableCoverageBoxMerchant: {
+    backgroundColor: '#EEF2FF',
+    borderColor: '#E0E7FF',
   },
   outlineActionBtn: {
     flexDirection: 'row',
@@ -1524,6 +1788,13 @@ const styles = StyleSheet.create({
     fontSize: isSmallScreen ? 12 : 13,
     color: '#1E293B',
     lineHeight: isSmallScreen ? 17 : 19,
+  },
+  modalLabelText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    color: '#B45309',
+  },
+  modalScroll: {
+    maxHeight: isShortScreen ? 380 : 480,
   },
   modalDismissBtn: {
     backgroundColor: '#20365B',

@@ -63,7 +63,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
 
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('HomeScreen')}>
             <Ionicons name="chevron-back" size={22} color="#1A2840" />
           </TouchableOpacity>
           <Text style={styles.pageTitle} numberOfLines={1}>{t('withdrawFunds.titleToMobileMoney', 'Withdraw to Mobile Money')}</Text>

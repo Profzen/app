@@ -79,10 +79,14 @@ export const SocialLogins = ({ variant = 'row' }) => {
             });
             navigation.navigate('HomeScreen');
           } else if (errorDescription) {
+            let errorMsg = decodeURIComponent(errorDescription.replace(/\+/g, ' '));
+            if (errorMsg.toLowerCase().includes('already registered')) {
+              errorMsg = t('auth.socialEmailExists', 'This email is already registered. Please enter your password to log in.');
+            }
             setToastInfo({
               visible: true,
               title: t('auth.loginFailed', 'Login Error'),
-              message: decodeURIComponent(errorDescription.replace(/\+/g, ' ')),
+              message: errorMsg,
               type: 'error'
             });
           }
