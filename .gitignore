@@ -69,7 +69,7 @@ memoire.md*
 
 # AI / Debug Files
 debug*.log
-*.png
+/*.png
 CLAUDE.md
 AGENTS.md
 update-*.js
