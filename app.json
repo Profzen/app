@@ -42,8 +42,6 @@
         {
           "android": {
             "minSdkVersion": 24,
-            "compileSdkVersion": 36,
-            "targetSdkVersion": 36,
             "enableMinifyInReleaseBuilds": false,
             "extraMavenRepos": [
               "https://jitpack.io"
