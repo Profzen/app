@@ -107,7 +107,8 @@ export const transactionService = {
           ? tx.timestamp.getTime() 
           : (tx.timestamp || tx.createdAt || Date.now());
         const key = (tx.txHash || tx.id || ts).toString().toLowerCase();
-        if (!uniqueMap.has(key)) {
+        const existing = uniqueMap.get(key);
+        if (!existing || (existing.source !== "wallet" && tx.source === "wallet")) {
           uniqueMap.set(key, tx);
         }
       });
