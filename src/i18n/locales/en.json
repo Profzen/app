@@ -523,7 +523,12 @@
     "passwordsNotMatch": "Passwords do not match",
     "noPinSet": "No PIN is set.",
     "createPin": "Create a PIN",
-    "createPinDesc": "Please set a 6-digit PIN to secure your transactions."
+    "createPinDesc": "Please set a 6-digit PIN to secure your transactions.",
+    "typeRetail": "Retail / Physical Goods",
+    "typeHospitality": "Hospitality / Rentals (BNB, Hotels)",
+    "typeService": "Professional Services (Consulting, Events)",
+    "businessType": "Business Type",
+    "selectBusinessType": "Select your primary offering"
   },
   "common": {
     "selectOption": "Select an option",
@@ -2081,7 +2086,11 @@
     "partnerPlatform": "DizzitUp Partner",
     "visitShop": "Store",
     "defaultDesc": "Product guaranteed and verified by our DizzitUp partner merchant network.",
-    "chatOpenedDesc": "A conversation has been opened with the seller."
+    "chatOpenedDesc": "A conversation has been opened with the seller.",
+    "nights": "Nights",
+    "months": "Months",
+    "days": "Days",
+    "hours": "Hours"
   },
   "merchant": {
     "portal": "Merchant Portal",
@@ -4736,7 +4745,9 @@
     "securityDesc": "Your funds are protected in escrow until physical delivery is confirmed.",
     "article": "item",
     "articles": "items",
-    "escrowDeployed": "Escrow contract verified on {{network}}"
+    "escrowDeployed": "Escrow contract verified on {{network}}",
+    "securityDescRental": "Your funds are protected until your arrival (Check-in).",
+    "securityDescService": "Your funds are protected until the service is completed."
   },
   "orderConfirmation": {
     "storeAddress": "Store address",
@@ -4808,7 +4819,9 @@
     "gotIt": "Understood, continue",
     "reviewOrder": "Review order",
     "simulateOrder": "Simulate order receipt",
-    "buyerProtectionNotice": "This protection is for you, the Buyer, and your Beneficiary in {{country}}."
+    "buyerProtectionNotice": "This protection is for you, the Buyer, and your Beneficiary in {{country}}.",
+    "buyerWarningRental": "⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the host ONLY upon check-in.",
+    "buyerWarningService": "⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the provider ONLY after the service is fully rendered."
   },
   "share": {
     "title": "Share via",

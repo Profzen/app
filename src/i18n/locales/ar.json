@@ -523,7 +523,12 @@
     "passwordsNotMatch": "كلمات المرور غير متطابقة",
     "noPinSet": "لم يتم تعيين رمز PIN.",
     "createPin": "إنشاء رمز PIN",
-    "createPinDesc": "يرجى تعيين رمز PIN مكون من 6 أرقام لتأمين معاملاتك."
+    "createPinDesc": "يرجى تعيين رمز PIN مكون من 6 أرقام لتأمين معاملاتك.",
+    "typeRetail": "Retail / Physical Goods",
+    "typeHospitality": "Hospitality / Rentals (BNB, Hotels)",
+    "typeService": "Professional Services (Consulting, Events)",
+    "businessType": "Business Type",
+    "selectBusinessType": "Select your primary offering"
   },
   "rating": {
     "enjoyingApp": "هل تستمتع باستخدام DizzitUp؟",
@@ -1338,7 +1343,11 @@
     "partnerPlatform": "شريك DizzitUp",
     "visitShop": "المتجر",
     "defaultDesc": "منتج مضمون ومتحقق منه من قبل شبكة التجار الشركاء في DizzitUp.",
-    "chatOpenedDesc": "تم فتح محادثة مع البائع."
+    "chatOpenedDesc": "تم فتح محادثة مع البائع.",
+    "nights": "Nights",
+    "months": "Months",
+    "days": "Days",
+    "hours": "Hours"
   },
   "merchant": {
     "portal": "بوابة التاجر",
@@ -4534,7 +4543,9 @@
     "securityDesc": "أموالك محمية في حساب الضمان حتى تأكيد الاستلام الفعلي.",
     "article": "عنصر",
     "articles": "عناصر",
-    "escrowDeployed": "عقد الضمان معتمد على {{network}}"
+    "escrowDeployed": "عقد الضمان معتمد على {{network}}",
+    "securityDescRental": "Your funds are protected until your arrival (Check-in).",
+    "securityDescService": "Your funds are protected until the service is completed."
   },
   "orderConfirmation": {
     "storeAddress": "عنوان المتجر",
@@ -4606,7 +4617,9 @@
     "gotIt": "مفهوم، متابعة",
     "reviewOrder": "مراجعة الطلب",
     "simulateOrder": "محاكاة إيصال الطلب",
-    "buyerProtectionNotice": "هذه الحماية مخصصة لك، المشتري، وللمستفيد الخاص بك في {{country}}."
+    "buyerProtectionNotice": "هذه الحماية مخصصة لك، المشتري، وللمستفيد الخاص بك في {{country}}.",
+    "buyerWarningRental": "⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the host ONLY upon check-in.",
+    "buyerWarningService": "⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the provider ONLY after the service is fully rendered."
   },
   "share": {
     "title": "مشاركة عبر",

@@ -676,7 +676,7 @@ export default function EditBeneficiaryScreen({ route }) {
         
         {/* Country Picker Modal */}
         <Modal visible={showCountryPicker} animationType="slide" transparent={true}>
-          <View style={styles.modalOverlay}>
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>{t('beneficiary.edit.country', 'Country')}</Text>
@@ -715,12 +715,12 @@ export default function EditBeneficiaryScreen({ route }) {
                 )}
               />
             </View>
-          </View>
+          </KeyboardAvoidingView>
         </Modal>
 
         {/* City Picker Modal */}
         <Modal visible={showCityPicker} animationType="slide" transparent={true}>
-          <View style={styles.modalOverlay}>
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>{t('beneficiary.edit.city', 'City')}</Text>
@@ -777,7 +777,7 @@ export default function EditBeneficiaryScreen({ route }) {
                 </TouchableOpacity>
               )}
             </View>
-          </View>
+          </KeyboardAvoidingView>
         </Modal>
 
         {/* No Crypto Wallet Linked Modal */}

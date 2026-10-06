@@ -106,7 +106,7 @@ export const transactionService = {
         const ts = tx.timestamp instanceof Date && !isNaN(tx.timestamp.getTime()) 
           ? tx.timestamp.getTime() 
           : (tx.timestamp || tx.createdAt || Date.now());
-        const key = (tx.id || tx.txHash || ts).toString().toLowerCase();
+        const key = (tx.txHash || tx.id || ts).toString().toLowerCase();
         if (!uniqueMap.has(key)) {
           uniqueMap.set(key, tx);
         }

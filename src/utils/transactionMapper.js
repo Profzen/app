@@ -95,7 +95,7 @@ const mapWalletTx = (tx, currentUserId) => {
     timestamp: new Date(tx.timestamp || tx.createdAt),
     toFrom: toFrom,
     merchant: meta.merchantName || meta.serviceProvider || (type === "PAYMENT" ? "Merchant" : ""),
-    country: meta.countryCode || (tx.chain === "polygon" ? "" : ""), 
+    country: meta.countryCode || "", 
     chain: tx.chain || "Polygon",
     source: "wallet",
     txHash: rawHash,
@@ -161,10 +161,34 @@ const mapMarketplaceTx = (tx, currentUserId) => {
   const rawCountry = merchantData?.country || meta.items?.[0]?.merchantCountry || meta.items?.[0]?.country || "Global";
   const countryCode = getCountryCode(rawCountry);
 
-  return {
-    id: tx.id,
-    type: isMerchant ? TRANSACTION_TYPES.SALE : TRANSACTION_TYPES.BUY,
-    status: tx.is_completed ? "COMPLETED" : "PENDING",
+    // Incoming funds recorded by a webhook: show as a receive, not a purchase
+    if (tx.transaction_type === "crypto_topup" || tx.transaction_type === "fiat_topup") {
+      const isCrypto = tx.transaction_type === "crypto_topup";
+      const hash = isCrypto ? (meta.provider_transaction_id || null) : null;
+      const token = meta.currency === "USDT0" ? "USDT" : (meta.currency || "USDC");
+      return {
+        id: tx.id,
+        type: TRANSACTION_TYPES.RECEIVE,
+        status: tx.is_completed ? "COMPLETED" : "PENDING",
+        amount: tx.transaction_value_usdc,
+        currency: token,
+        timestamp: new Date(tx.transaction_date || tx.created_at),
+        toFrom: isCrypto ? "External Wallet" : "Wallet top-up",
+        merchant: "",
+        country: null,
+        chain: isCrypto ? (meta.network || "On-chain") : "Off-chain",
+        source: "marketplace",
+        txHash: hash ? hash.toLowerCase() : null,
+        metadata: tx,
+      };
+    }
+
+    let txType = isMerchant ? TRANSACTION_TYPES.SALE : TRANSACTION_TYPES.BUY;
+
+    return {
+      id: tx.id,
+      type: txType,
+      status: tx.is_completed ? "COMPLETED" : "PENDING",
     amount: tx.transaction_value_usdc,
     currency: "USDC",
     timestamp: new Date(tx.transaction_date || tx.created_at),

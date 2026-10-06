@@ -80,6 +80,35 @@ export default function OrderConfirmationScreen({ route }) {
     );
   }
 
+  const isRental = orderData.items.every(item => {
+    const title = String(item.name || '').toLowerCase();
+    const offeringType = String(item.product?.offering_type || item.offering_type || item.product?.metadata?.offering_type || item.metadata?.offering_type || '').toLowerCase();
+    const serviceModel = String(item.product?.service_model || item.service_model || item.product?.metadata?.service_model || item.metadata?.service_model || '').toLowerCase();
+    
+    if (offeringType === 'service' && (serviceModel.includes('rental') || serviceModel.includes('booking'))) {
+      return true;
+    }
+    // Strict fallback: ONLY if not explicitly a physical good, and only for very specific hospitality phrases
+    if (offeringType !== 'physical_good') {
+      if (/\b(luxury suite|hotel room|airbnb|b&b|guest house|apartment rental)\b/.test(title)) return true;
+    }
+    return false;
+  });
+
+  const isService = orderData.items.every(item => {
+    const title = String(item.name || '').toLowerCase();
+    const offeringType = String(item.product?.offering_type || item.offering_type || item.product?.metadata?.offering_type || item.metadata?.offering_type || '').toLowerCase();
+    const serviceModel = String(item.product?.service_model || item.service_model || item.product?.metadata?.service_model || item.metadata?.service_model || '').toLowerCase();
+    
+    if (offeringType === 'service' || offeringType === 'digital_product' || serviceModel.includes('service')) {
+      return true;
+    }
+    // Strict fallback: ONLY if not explicitly a physical good, check for service-like keywords
+    if (offeringType !== 'physical_good') {
+      if (/\b(training|event|class|course|consulting|workshop|ticket|webinar)\b/.test(title)) return true;
+    }
+    return false;
+  });
   const rawCurrency = orderData?.currency || orderData?.items?.[0]?.currency || 'XOF';
   // Banking / orchestration gateways require ISO-4217 code (XOF, USD, EUR, NGN, etc.)
   const apiCurrency = rawCurrency === 'FCFA' ? 'XOF' : rawCurrency;
@@ -356,7 +385,11 @@ export default function OrderConfirmationScreen({ route }) {
             <Text style={styles.pinCodeText}>{escrowPin}</Text>
           </View>
           <Text style={styles.escrowPinDesc}>
-            {t('orderConfirmation.escrowPinBuyerWarning', '⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the courier / Shop Manager only after physical delivery and inspection of your items.')}
+            {isRental
+              ? t('orderConfirmation.escrowPinBuyerWarningRental', '⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the host ONLY upon check-in.')
+              : isService
+              ? t('orderConfirmation.escrowPinBuyerWarningService', '⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the provider ONLY after the service is fully rendered.')
+              : t('orderConfirmation.escrowPinBuyerWarning', '⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the courier / Shop Manager only after physical delivery and inspection of your items.')}
           </Text>
           <Text style={styles.escrowPinNotice}>
             {t('escrow.buyerProtectionNotice', { country: recipientCountryName, defaultValue: `This protection is for you, the Buyer, and your Beneficiary in ${recipientCountryName}.` })}
@@ -609,7 +642,11 @@ export default function OrderConfirmationScreen({ route }) {
               <Text style={styles.escrowPinLabel}>{t('escrow.yourPin', 'Your Secret Delivery PIN Code')}</Text>
               <Text style={styles.escrowPinNumber}>{escrowPin}</Text>
               <Text style={styles.escrowModalBuyerNotice}>
-                {t('escrow.buyerWarning', '⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the courier / Shop Manager only after physical delivery and inspection of your items.')}
+                {isRental
+                  ? t('escrow.buyerWarningRental', '⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the host ONLY upon check-in.')
+                  : isService
+                  ? t('escrow.buyerWarningService', '⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the provider ONLY after the service is fully rendered.')
+                  : t('escrow.buyerWarning', '⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the courier / Shop Manager only after physical delivery and inspection of your items.')}
               </Text>
               <Text style={[styles.escrowModalBuyerNotice, { marginTop: 8, color: '#0369A1' }]}>
                 {t('escrow.buyerProtectionNotice', { country: recipientCountryName, defaultValue: `This protection is for you, the Buyer, and your Beneficiary in ${recipientCountryName}.` })}

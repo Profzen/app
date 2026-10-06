@@ -115,6 +115,8 @@ export default function OrderVerificationScreen({ route }) {
         quantity: directOrder.quantity || 1,
         image: getProductCoverImage(directOrder.product),
         category: directOrder.product.category || 'Marketplace',
+        offering_type: directOrder.product?.offering_type,
+        service_model: directOrder.product?.service_model,
         merchantId: directOrder.shop?.id || directOrder.product?.merchant_id || null,
         merchantName:
           directOrder.shop?.shop_name ||
@@ -490,6 +492,8 @@ export default function OrderVerificationScreen({ route }) {
         currency: displayCurrency,
         quantity: i.quantity,
         image: i.image,
+        offering_type: i.product?.offering_type || i.offering_type || i.product?.metadata?.offering_type || i.metadata?.offering_type,
+        service_model: i.product?.service_model || i.service_model || i.product?.metadata?.service_model || i.metadata?.service_model,
       })),
       deliveryOption,
       deliveryFee,
@@ -1258,7 +1262,13 @@ export default function OrderVerificationScreen({ route }) {
           <Ionicons name="shield-checkmark-outline" size={20} color="#10B981" style={{ marginRight: 8 }} />
           <View style={{ flex: 1 }}>
             <Text style={styles.securityTitle}>{t('orderVerification.securePaymentTitle', 'Paiement sous Séquestre Escrow')}</Text>
-            <Text style={styles.securityDesc}>{t('orderVerification.securityDesc', 'Vos fonds sont protégés jusqu\'à confirmation de livraison.')}</Text>
+            <Text style={styles.securityDesc}>
+              {items.every(item => (item.product?.offering_type || item.offering_type) === 'service' && (item.product?.service_model || item.service_model) === 'rental_booking')
+                ? t('orderVerification.securityDescRental', 'Vos fonds sont protégés jusqu\'à votre arrivée (Check-in).')
+                : items.every(item => (item.product?.offering_type || item.offering_type) === 'service' || (item.product?.offering_type || item.offering_type) === 'digital_product')
+                ? t('orderVerification.securityDescService', 'Vos fonds sont protégés jusqu\'à la réalisation du service.')
+                : t('orderVerification.securityDesc', 'Vos fonds sont protégés jusqu\'à confirmation de livraison.')}
+            </Text>
           </View>
         </View>
         <TouchableOpacity style={styles.btnContinue} onPress={handleProceedToConfirmation}>

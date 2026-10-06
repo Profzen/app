@@ -192,14 +192,22 @@ export default function ProductDetailsScreen({ route }) {
 
   const handleAddToCart = () => {
     if (!canPurchase) return;
-    setPendingAction('cart');
-    setWarningModalVisible(true);
+    if (!product.offering_type || product.offering_type === 'physical_good') {
+      setPendingAction('cart');
+      setWarningModalVisible(true);
+    } else {
+      executeAddToCart();
+    }
   };
 
   const handleBuyNow = () => {
     if (!canPurchase) return;
-    setPendingAction('buy');
-    setWarningModalVisible(true);
+    if (!product.offering_type || product.offering_type === 'physical_good') {
+      setPendingAction('buy');
+      setWarningModalVisible(true);
+    } else {
+      executeBuyNow();
+    }
   };
 
   const handleWarningContinue = () => {
@@ -417,7 +425,13 @@ export default function ProductDetailsScreen({ route }) {
 
             {/* Quantity Selector */}
             <View style={styles.qtyContainer}>
-              <Text style={styles.qtyLabel}>{t('orderVerification.qty', 'Quantité')}</Text>
+              <Text style={styles.qtyLabel}>
+                {product?.pricing_model === 'per_night' ? t('product.nights', 'Nuits') :
+                 product?.pricing_model === 'per_month' ? t('product.months', 'Mois') :
+                 product?.pricing_model === 'per_day' ? t('product.days', 'Jours') :
+                 product?.pricing_model === 'per_hour' ? t('product.hours', 'Heures') :
+                 t('orderVerification.qty', 'Quantité')}
+              </Text>
               <View style={styles.qtyControls}>
                 <TouchableOpacity
                   style={styles.qtyBtn}

@@ -28,8 +28,15 @@ export default function MerchantRegistrationScreen() {
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [country, setCountry] = useState('');
+  const [businessType, setBusinessType] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '', type: 'success' });
+
+  const businessTypeOptions = useMemo(() => [
+    { value: 'retail', label: t('auth.typeRetail', 'Retail / Physical Goods') },
+    { value: 'hospitality', label: t('auth.typeHospitality', 'Hospitality / Rentals (BNB, Hotels)') },
+    { value: 'service', label: t('auth.typeService', 'Professional Services (Consulting, Events)') }
+  ], [t]);
 
   const countryOptions = useMemo(() => {
     return ALL_COUNTRIES.map((c) => ({
@@ -60,7 +67,7 @@ export default function MerchantRegistrationScreen() {
   };
 
   const handleRegister = async () => {
-    if (!businessName || !email || !password || !firstName || !lastName || !country || !phone || strength < 2) {
+    if (!businessName || !email || !password || !firstName || !lastName || !country || !phone || !businessType || strength < 2) {
       setToastInfo({ visible: true, title: t('common.error', 'Error'), message: t('auth.fillRequiredFields', 'Please fill all required fields correctly.'), type: 'error' });
       return;
     }
@@ -82,7 +89,8 @@ export default function MerchantRegistrationScreen() {
             first_name: firstName,
             last_name: lastName,
             phone: phone,
-            country: country
+            country: country,
+            business_type: businessType
           }
         }
       });
@@ -208,6 +216,22 @@ export default function MerchantRegistrationScreen() {
             value={businessName}
             onChangeText={setBusinessName}
             iconLeft={<Ionicons name="briefcase-outline" size={20} color={theme.colors.primary} />}
+          />
+
+          <Text style={{ fontFamily: 'Inter_500Medium', fontSize: 14, color: theme.colors.textSecondary, marginBottom: 8 }}>
+            {t('auth.businessType', 'Business Type')}
+          </Text>
+          <AppSelect
+            value={businessType}
+            options={businessTypeOptions}
+            onChange={(val) => setBusinessType(val)}
+            title={t('auth.businessType', 'Business Type')}
+            placeholder={t('auth.selectBusinessType', 'Select your primary offering')}
+            style={{ marginBottom: 16, backgroundColor: theme.colors.surface, borderColor: '#E2E8F0', borderWidth: 1, borderRadius: 12 }}
+            textStyle={{ fontFamily: 'Inter_400Regular', fontSize: 16, color: theme.colors.textPrimary }}
+            renderLeading={() => (
+              <Ionicons name="storefront-outline" size={18} color="#6B7280" />
+            )}
           />
 
           <DizzitInput

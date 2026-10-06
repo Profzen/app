@@ -570,7 +570,12 @@
     "passwordsNotMatch": "የይለፍ ቃሎች አይዛመዱም",
     "noPinSet": "ምንም ፒን አልተዋቀረም።",
     "createPin": "ፒን ይፍጠሩ",
-    "createPinDesc": "እባክዎ ግብይቶችዎን ደህንነቱ የተጠበቀ ለማድረግ ባለ 6 አሃዝ ፒን ያዘጋጁ።"
+    "createPinDesc": "እባክዎ ግብይቶችዎን ደህንነቱ የተጠበቀ ለማድረግ ባለ 6 አሃዝ ፒን ያዘጋጁ።",
+    "typeRetail": "Retail / Physical Goods",
+    "typeHospitality": "Hospitality / Rentals (BNB, Hotels)",
+    "typeService": "Professional Services (Consulting, Events)",
+    "businessType": "Business Type",
+    "selectBusinessType": "Select your primary offering"
   },
   "common": {
     "selectOption": "አማራጭ ይምረጡ",
@@ -2048,7 +2053,11 @@
     "partnerPlatform": "DizzitUp አጋር",
     "visitShop": "ሱቅ",
     "defaultDesc": "ምርቱ በDizzitUp አጋር ነጋዴዎች አውታረ መረብ የተረጋገጠ እና ዋስትና የተሰጠው ነው።",
-    "chatOpenedDesc": "ከሻጩ ጋር ውይይት ተጀምሯል።"
+    "chatOpenedDesc": "ከሻጩ ጋር ውይይት ተጀምሯል።",
+    "nights": "Nights",
+    "months": "Months",
+    "days": "Days",
+    "hours": "Hours"
   },
   "merchant": {
     "portal": "የነጋዴ መግቢያ",
@@ -4434,7 +4443,9 @@
     "securityDesc": "ገንዘብዎ ማድረስ እስኪረጋገጥ ድረስ በኤስክሮው የተጠበቀ ነው።",
     "article": "እቃ",
     "articles": "እቃዎች",
-    "escrowDeployed": "በ{{network}} ላይ የተረጋገጠ የኤስክሮው ውል"
+    "escrowDeployed": "በ{{network}} ላይ የተረጋገጠ የኤስክሮው ውል",
+    "securityDescRental": "Your funds are protected until your arrival (Check-in).",
+    "securityDescService": "Your funds are protected until the service is completed."
   },
   "orderConfirmation": {
     "storeAddress": "የመደብሩ አድራሻ",
@@ -4506,7 +4517,9 @@
     "gotIt": "ተረድቻለሁ፣ ቀጥል",
     "reviewOrder": "ትዕዛዝ ይገምግሙ",
     "simulateOrder": "የትዕዛዝ ደረሰኝ አስመስለው ይመልከቱ",
-    "buyerProtectionNotice": "ይህ ጥበቃ ለእርስዎ፣ ለገዢው እና በ {{country}} ላለው ተጠቃሚዎ ነው።"
+    "buyerProtectionNotice": "ይህ ጥበቃ ለእርስዎ፣ ለገዢው እና በ {{country}} ላለው ተጠቃሚዎ ነው።",
+    "buyerWarningRental": "⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the host ONLY upon check-in.",
+    "buyerWarningService": "⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the provider ONLY after the service is fully rendered."
   },
   "share": {
     "title": "አጋራ በ",

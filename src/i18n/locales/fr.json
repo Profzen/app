@@ -522,7 +522,12 @@
     "passwordsNotMatch": "Les mots de passe ne correspondent pas",
     "noPinSet": "Aucun code PIN configuré.",
     "createPin": "Créer un code PIN",
-    "createPinDesc": "Veuillez configurer un code PIN à 6 chiffres pour sécuriser vos transactions."
+    "createPinDesc": "Veuillez configurer un code PIN à 6 chiffres pour sécuriser vos transactions.",
+    "typeRetail": "Détail / Biens Physiques",
+    "typeHospitality": "Hôtellerie / Locations (BNB, Hôtels)",
+    "typeService": "Services Professionnels (Consulting, Événements)",
+    "businessType": "Type d'Entreprise",
+    "selectBusinessType": "Sélectionnez votre offre principale"
   },
   "common": {
     "selectOption": "Sélectionnez une option",
@@ -2084,7 +2089,11 @@
     "partnerPlatform": "Partenaire DizzitUp",
     "visitShop": "Boutique",
     "defaultDesc": "Produit garanti et vérifié par notre réseau de commerçants partenaires DizzitUp.",
-    "chatOpenedDesc": "Une conversation a été ouverte avec le vendeur."
+    "chatOpenedDesc": "Une conversation a été ouverte avec le vendeur.",
+    "nights": "Nuits",
+    "months": "Mois",
+    "days": "Jours",
+    "hours": "Heures"
   },
   "merchant": {
     "portal": "Portail Marchand",
@@ -4784,7 +4793,9 @@
     "securityDesc": "Vos fonds sont protégés en séquestre jusqu'à confirmation de livraison.",
     "article": "article",
     "articles": "articles",
-    "escrowDeployed": "Séquestre Escrow vérifié sur {{network}}"
+    "escrowDeployed": "Séquestre Escrow vérifié sur {{network}}",
+    "securityDescRental": "Vos fonds sont protégés jusqu'à votre arrivée (Check-in).",
+    "securityDescService": "Vos fonds sont protégés jusqu'à la réalisation du service."
   },
   "orderConfirmation": {
     "storeAddress": "Adresse de la boutique",
@@ -4856,7 +4867,9 @@
     "gotIt": "Compris, continuer",
     "reviewOrder": "Vérifier la commande",
     "simulateOrder": "Simuler le reçu de commande",
-    "buyerProtectionNotice": "Cette protection est pour vous, l'Acheteur, et votre Bénéficiaire en {{country}}."
+    "buyerProtectionNotice": "Cette protection est pour vous, l'Acheteur, et votre Bénéficiaire en {{country}}.",
+    "buyerWarningRental": "⚠️ Ce code est pour l'Acheteur. Gardez-le strictement secret ! Ne le donnez à personne sauf à votre Bénéficiaire, ou à l'hôte UNIQUEMENT lors de l'enregistrement.",
+    "buyerWarningService": "⚠️ Ce code est pour l'Acheteur. Gardez-le strictement secret ! Ne le donnez à personne sauf à votre Bénéficiaire, ou au prestataire UNIQUEMENT après que le service soit entièrement rendu."
   },
   "share": {
     "title": "Partager via",

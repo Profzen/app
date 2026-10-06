@@ -185,7 +185,7 @@ export default function TransactionHistoryScreen() {
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.pageTitle}>{t('common.wallet.personal_history', 'Historique des Transactions')}</Text>
+          <Text style={styles.pageTitle}>{user?.role === 'merchant' ? t('common.wallet.business_history', 'Business Transaction History') : t('common.wallet.personal_history', 'Personal Transaction History')}</Text>
           <View style={styles.headerRight}>
             <TouchableOpacity style={styles.iconBtnSmall} onPress={() => navigation.navigate('ContactUsScreen')}>
               <Ionicons name="help" size={18} color="#1A2840" />

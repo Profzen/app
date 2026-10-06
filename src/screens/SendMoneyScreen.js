@@ -1,7 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform, StatusBar, ActivityIndicator, Modal, Share } from 'react-native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform, StatusBar, ActivityIndicator, Modal, Share, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import AppSelect from '../components/AppSelect';
@@ -9,7 +9,7 @@ import AppToast from '../components/AppToast';
 import BottomNavBar from '../components/BottomNavBar';
 import CryptoIcon from '../components/CryptoIcon';
 import { useApp } from '../context/AppContext';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { isSmallScreen } from '../utils/responsive';
 import { useWallet, EVMWallet, SolanaWallet } from '@crossmint/client-sdk-react-native-ui';
@@ -311,8 +311,9 @@ export default function SendMoneyScreen() {
   };
 
   // Fetch saved beneficiaries from Supabase
-  useEffect(() => {
-    const fetchBeneficiaries = async () => {
+  useFocusEffect(
+    useCallback(() => {
+      const fetchBeneficiaries = async () => {
       if (!session?.user?.id) return;
       try {
         const { data, error } = await supabase.from('beneficiaries').select('*').eq('user_id', session.user.id);
@@ -346,9 +347,10 @@ export default function SendMoneyScreen() {
       } catch (err) {
         console.error('Error fetching beneficiaries:', err);
       }
-    };
-    fetchBeneficiaries();
-  }, [session, user?.role, user?.walletAddress, initialRecipientName]);
+      };
+      fetchBeneficiaries();
+    }, [session, user?.role, user?.walletAddress, initialRecipientName])
+  );
 
   useEffect(() => {
     const fetchApiRecipients = async () => {
@@ -904,8 +906,10 @@ export default function SendMoneyScreen() {
           </View>
         </View>
 
-        <ScrollView style={styles.mainScroll} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-          
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <ScrollView style={styles.mainScroll} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+            
+
           {/* Main White Form Card - Compact */}
           <View style={styles.formCard}>
             
@@ -941,50 +945,52 @@ export default function SendMoneyScreen() {
                 {/* Recipient Dropdown List Box */}
                 {isDropdownVisible && (
                   <View style={styles.dropdownListBox}>
-                    <View style={{ paddingVertical: 4 }}>
-                      {isSearchingApi && <ActivityIndicator color="#0F172A" style={{ marginVertical: 8 }} />}
-                    
-                    {/* Item 0: Add permanent beneficiary */}
-                    <TouchableOpacity 
-                      style={styles.addPermanentItem}
-                      onPress={() => navigation.navigate('EditBeneficiaryScreen')}
-                      activeOpacity={0.8}
-                    >
-                      <View style={styles.addPermanentIconBox}>
-                        <Ionicons name="person-add-outline" size={16} color="#D97706" />
-                      </View>
-                      <View style={styles.recipientTextWrap}>
-                        <Text style={styles.addPermanentTitle}>{t('common.wallet.add_new_beneficiary', 'Add permanent beneficiary')}</Text>
-                        <Text style={styles.addPermanentSubtitle}>{t('contacts.add_permanent_sub', 'Add to saved permanent contacts')}</Text>
-                      </View>
-                    </TouchableOpacity>
-
-                    {/* Recipient List Items */}
-                    {filteredRecipients.map((item) => (
+                    <ScrollView style={{ maxHeight: 260 }} nestedScrollEnabled={true} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={true}>
+                      <View style={{ paddingVertical: 4 }}>
+                        {isSearchingApi && <ActivityIndicator color="#0F172A" style={{ marginVertical: 8 }} />}
+                      
+                      {/* Item 0: Add permanent beneficiary */}
                       <TouchableOpacity 
-                        key={item.id}
-                        style={styles.dropdownItemRow}
-                        onPress={() => handleSelectRecipient(item)}
+                        style={styles.addPermanentItem}
+                        onPress={() => navigation.navigate('EditBeneficiaryScreen')}
                         activeOpacity={0.8}
                       >
-                        <View style={styles.dropdownAvatarCircle}>
-                          <Ionicons name="person-outline" size={16} color="#94A3B8" />
+                        <View style={styles.addPermanentIconBox}>
+                          <Ionicons name="person-add-outline" size={16} color="#D97706" />
                         </View>
                         <View style={styles.recipientTextWrap}>
-                          <Text style={styles.dropdownRecipientName}>{item.name}</Text>
-                          <View style={styles.tagAddressRow}>
-                            <View style={styles.tagBadge}>
-                              <Text style={styles.tagBadgeText}>{item.tag}</Text>
-                            </View>
-                            <Text style={styles.dropdownAddressText} numberOfLines={1} ellipsizeMode="middle">
-                              {item.address}
-                            </Text>
-                          </View>
+                          <Text style={styles.addPermanentTitle}>{t('common.wallet.add_new_beneficiary', 'Add permanent beneficiary')}</Text>
+                          <Text style={styles.addPermanentSubtitle}>{t('contacts.add_permanent_sub', 'Add to saved permanent contacts')}</Text>
                         </View>
                       </TouchableOpacity>
-                    ))}
+
+                      {/* Recipient List Items */}
+                      {filteredRecipients.map((item) => (
+                        <TouchableOpacity 
+                          key={item.id}
+                          style={styles.dropdownItemRow}
+                          onPress={() => handleSelectRecipient(item)}
+                          activeOpacity={0.8}
+                        >
+                          <View style={styles.dropdownAvatarCircle}>
+                            <Ionicons name="person-outline" size={16} color="#94A3B8" />
+                          </View>
+                          <View style={styles.recipientTextWrap}>
+                            <Text style={styles.dropdownRecipientName}>{item.name}</Text>
+                            <View style={styles.tagAddressRow}>
+                              <View style={styles.tagBadge}>
+                                <Text style={styles.tagBadgeText}>{item.tag}</Text>
+                              </View>
+                              <Text style={styles.dropdownAddressText} numberOfLines={1} ellipsizeMode="middle">
+                                {item.address}
+                              </Text>
+                            </View>
+                          </View>
+                        </TouchableOpacity>
+                      ))}
+                      </View>
+                    </ScrollView>
                   </View>
-                </View>
                 )}
               </View>
             ) : (
@@ -1120,7 +1126,8 @@ export default function SendMoneyScreen() {
           </View>
 
           <View style={{ height: 30 }} />
-        </ScrollView>
+          </ScrollView>
+        </KeyboardAvoidingView>
 
         <BottomNavBar />
         {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
@@ -1390,12 +1397,12 @@ const styles = StyleSheet.create({
   dropdownAddressText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 10, color: '#94A3B8' },
 
   /* Selected Recipient Card (Compact) */
-  recipientCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 14, padding: 10, marginBottom: 10, overflow: 'hidden' },
-  userAvatarCircle: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#EFF6FF', borderWidth: 1, borderColor: '#DBEAFE', justifyContent: 'center', alignItems: 'center', marginRight: 10, flexShrink: 0 },
-  recipientInfoWrap: { flex: 1, minWidth: 0, marginRight: 6, justifyContent: 'center' },
-  recipientName: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#0F172A', marginBottom: 1 },
+  recipientCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 14, paddingVertical: 12, paddingHorizontal: 14, marginBottom: 10, overflow: 'hidden' },
+  userAvatarCircle: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#EFF6FF', borderWidth: 1, borderColor: '#DBEAFE', justifyContent: 'center', alignItems: 'center', marginRight: 12, flexShrink: 0 },
+  recipientInfoWrap: { flex: 1, minWidth: 0, paddingRight: 36, justifyContent: 'center' },
+  recipientName: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#0F172A', marginBottom: 2 },
   recipientAddress: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#64748B' },
-  clearRecipientBtn: { width: 26, height: 26, borderRadius: 13, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center', flexShrink: 0 },
+  clearRecipientBtn: { position: 'absolute', right: 12, width: 28, height: 28, borderRadius: 14, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center', elevation: 2, zIndex: 10 },
   
   /* Amount Section (Compact) */
   amountHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, marginTop: 4 },
