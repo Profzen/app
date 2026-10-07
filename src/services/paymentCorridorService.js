@@ -215,7 +215,6 @@ export function getPaymentRailEligibility(countryCode, flow = 'checkout', lang =
 export const MAJOR_AFRICAN_ECONOMIES_ORDER = [
   'NG', // Nigeria
   'ZA', // South Africa
-  'EG', // Egypt
   'DZ', // Algeria
   'ET', // Ethiopia
   'KE', // Kenya

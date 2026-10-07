@@ -28,10 +28,10 @@ export default function PaymentSuccessScreen({ route }) {
   const displayAmount = tx.amount
     ? `${Number(tx.amount).toLocaleString(language === 'en' ? 'en-US' : 'fr-FR')} ${tx.currency || 'FCFA'}`
     : (tx.amountCrypto || '');
-  const recipientName = tx.recipientName || tx.recipient || user?.name || user?.email || '';
-  const recipientSub = tx.recipientAddress || tx.phone || (user?.city ? `${user.city}, ${user.country || ''}` : '');
   const serviceTitle = tx.title || t('paymentSuccess.marketplacePurchase', 'Achat Marketplace');
   const merchantName = tx.merchantName || t('paymentSuccess.partnerMerchant', 'Commerçant Partenaire');
+  const recipientName = tx.recipientName || tx.recipient || merchantName || user?.name || user?.email || '';
+  const recipientSub = tx.recipientAddress || tx.phone || (user?.city ? `${user.city}, ${user.country || ''}` : '');
   const paymentMethodName = tx.paymentMethod || 'DZY Wallet';
   const dateFormatted = tx.date
     ? new Date(tx.date).toLocaleDateString(language === 'en' ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
