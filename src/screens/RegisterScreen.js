@@ -113,7 +113,9 @@ export default function RegisterScreen({ route }) {
             first_name: firstName,
             last_name: lastName,
             phone: phone,
-            country: country
+            country: country,
+            signup_platform: Platform.OS,
+            signup_app_version: Constants?.expoConfig?.version || '1.0.0'
           }
         }
       });
