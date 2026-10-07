@@ -9,6 +9,7 @@ import BottomNavBar from '../components/BottomNavBar';
 import { useApp } from '../context/AppContext';
 import { generateAndShareStatement } from '../utils/pdfGenerator';
 import { calculateTransactionStats, getActiveCurrencies } from '../utils/statisticsHelper';
+import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
 
 export default function TransactionHistoryScreen() {
   const navigation = useNavigation();
@@ -16,9 +17,11 @@ export default function TransactionHistoryScreen() {
   const [activeTab, setActiveTab] = useState('historique');
   const [filterType, setFilterType] = useState('ALL');
   const [isFilterVisible, setIsFilterVisible] = useState(false);
-  const [selectedCurrency, setSelectedCurrency] = useState('DZY');
+  const [selectedCurrency, setSelectedCurrency] = useState('ALL');
 
-  const activeCurrencies = getActiveCurrencies(transactions);
+  const userCountry = user?.country || user?.country_code || user?.residenceCountry || '';
+  const userLocalFiat = getCountryCurrencyInfo(userCountry)?.currency || 'EUR';
+  const activeCurrencies = getActiveCurrencies(transactions, userLocalFiat);
   const stats = calculateTransactionStats(transactions, selectedCurrency, t);
 
   const getFilteredTransactions = () => {

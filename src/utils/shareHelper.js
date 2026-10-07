@@ -85,3 +85,44 @@ export const handleUserInviteShare = (user, contact = null) => {
     console.log('Share invitation cancelled or error:', error);
   }
 };
+
+export const shareTransactionSuccess = async ({ caption, cardUri, dialogTitle = 'Share DizzitUp Transaction' }) => {
+  try {
+    if (cardUri && Platform.OS !== 'web') {
+      try {
+        const Sharing = require('expo-sharing');
+        const isAvailable = await Sharing.isAvailableAsync();
+        if (isAvailable) {
+          await Sharing.shareAsync(cardUri, {
+            mimeType: cardUri.endsWith('.pdf') ? 'application/pdf' : 'image/png',
+            dialogTitle,
+          });
+          return true;
+        }
+      } catch (shareErr) {
+        console.warn('expo-sharing error, falling back to Share.share:', shareErr);
+      }
+    }
+
+    if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.share) {
+      await navigator.share({
+        title: dialogTitle,
+        text: caption,
+        url: 'https://dizzitup.com/',
+      });
+      return true;
+    }
+
+    await Share.share({
+      title: dialogTitle,
+      message: caption,
+      url: cardUri || 'https://dizzitup.com/',
+    }, {
+      dialogTitle,
+    });
+    return true;
+  } catch (error) {
+    console.warn('Share error:', error);
+    return false;
+  }
+};

@@ -109,10 +109,57 @@ export default function ContactsScreen() {
       return;
     }
     setIsLoading(true);
+
+    // Fetch incoming sponsor records or transactions to dynamically flag sponsors
+    const sponsorMatches = new Set();
+    try {
+      const { data: incomingTxs } = await supabase
+        .from('transactions')
+        .select('sponsor_user_id, sender_address, metadata')
+        .eq('beneficiary_user_id', currentUserId);
+      if (incomingTxs && incomingTxs.length > 0) {
+        incomingTxs.forEach(tx => {
+          if (tx.sponsor_user_id) sponsorMatches.add(String(tx.sponsor_user_id).toLowerCase());
+          if (tx.sender_address) sponsorMatches.add(String(tx.sender_address).toLowerCase());
+          if (tx.metadata?.sender_phone) sponsorMatches.add(String(tx.metadata.sender_phone).toLowerCase());
+          if (tx.metadata?.sender_email) sponsorMatches.add(String(tx.metadata.sender_email).toLowerCase());
+          if (tx.metadata?.sender_name) sponsorMatches.add(String(tx.metadata.sender_name).toLowerCase());
+        });
+      }
+    } catch (e) {
+      // Graceful fallback
+    }
+
     const { success, data } = await contactService.getBeneficiaries(currentUserId);
     if (success && data && data.length > 0) {
       const formatted = data.map(b => {
         const fullCountry = getFullCountryName(b.country || b.country_name || b.country_code);
+        const bName = (b.full_name || `${b.first_name || ''} ${b.last_name || ''}`.trim() || '').toLowerCase();
+        const bEmail = (b.email || '').toLowerCase();
+        const bPhone = (b.phone || b.phone_number || '').trim();
+        const bEvm = (b.evm_address || '').toLowerCase();
+        const bSol = (b.solana_address || '').toLowerCase();
+
+        const hasSponsoredUser = Boolean(
+          sponsorMatches.has(String(b.id).toLowerCase()) ||
+          sponsorMatches.has(String(b.user_id).toLowerCase()) ||
+          (bEmail && sponsorMatches.has(bEmail)) ||
+          (bPhone && sponsorMatches.has(bPhone)) ||
+          (bEvm && sponsorMatches.has(bEvm)) ||
+          (bSol && sponsorMatches.has(bSol)) ||
+          (bName && sponsorMatches.has(bName))
+        );
+
+        const isSponsor = Boolean(
+          b.is_sponsor === true ||
+          b.isSponsor === true ||
+          b.sponsor === 'Yes' ||
+          b.sponsor === true ||
+          String(b.relationship || '').toLowerCase() === 'sponsor' ||
+          String(b.relation || '').toLowerCase() === 'sponsor' ||
+          hasSponsoredUser
+        );
+
         return {
           ...b,
           id: b.id,
@@ -130,7 +177,7 @@ export default function ContactsScreen() {
           address: b.evm_address || b.solana_address || b.phone || b.email,
           flag: getFlagEmoji(b.country_code),
           isBeneficiary: true,
-          isSponsor: false,
+          isSponsor,
           image: b.avatar_url || null,
           raw_data: b
         };

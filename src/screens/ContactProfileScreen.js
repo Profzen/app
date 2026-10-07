@@ -41,6 +41,18 @@ export default function ContactProfileScreen({ route }) {
     Linking.openURL(url).catch(() => AppToast.showError(t('common.link_open_error', 'Cannot open link')));
   };
 
+  const isRegisteredUser = Boolean(
+    contact.is_registered === true ||
+    contact.is_user === true ||
+    contact.verified === true ||
+    contact.evm_address ||
+    contact.solana_address ||
+    contact.raw_data?.evm_address ||
+    contact.raw_data?.solana_address ||
+    contact.tag === 'DizzitUp' ||
+    contact.isBeneficiary === true
+  );
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -126,14 +138,21 @@ export default function ContactProfileScreen({ route }) {
 
             {/* Card 4: Invite */}
             <TouchableOpacity 
-              style={styles.quickCard} 
-              onPress={() => handleUserInviteShare(user)}
-              activeOpacity={0.75}
+              style={[styles.quickCard, isRegisteredUser && styles.quickCardDisabled]} 
+              onPress={() => {
+                if (!isRegisteredUser) {
+                  handleUserInviteShare(user);
+                }
+              }}
+              activeOpacity={isRegisteredUser ? 1 : 0.75}
+              disabled={isRegisteredUser}
             >
-              <View style={styles.quickCardIconBox}>
-                <Ionicons name="person-add-outline" size={26} color="#8B5CF6" />
+              <View style={[styles.quickCardIconBox, isRegisteredUser && { backgroundColor: '#F1F5F9' }]}>
+                <Ionicons name="person-add-outline" size={26} color={isRegisteredUser ? "#94A3B8" : "#8B5CF6"} />
               </View>
-              <Text style={styles.quickCardText}>{t('contacts.action_invite', 'Invite')}</Text>
+              <Text style={[styles.quickCardText, isRegisteredUser && { color: '#94A3B8' }]}>
+                {isRegisteredUser ? t('contacts.already_user', 'Already\nUser') : t('contacts.action_invite', 'Invite')}
+              </Text>
             </TouchableOpacity>
 
           </View>
@@ -345,6 +364,7 @@ const styles = StyleSheet.create({
   tabTextActive: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#1A2840' },
   quickActionsGrid: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, marginBottom: 16 },
   quickCard: { flex: 1, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F0F2F5', borderRadius: 16, paddingVertical: 12, paddingHorizontal: 4, alignItems: 'center', justifyContent: 'center' },
+  quickCardDisabled: { opacity: 0.5, backgroundColor: '#F8FAFC', borderColor: '#E2E8F0' },
   quickCardIconBox: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', marginBottom: 6 },
   goldenCoinsStack: { width: 24, height: 20, position: 'relative' },
   miniCoin: { width: 14, height: 11, borderRadius: 5, backgroundColor: '#FFC759', borderWidth: 1.5, borderColor: '#D97706', position: 'absolute' },

@@ -1,7 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform, StatusBar, ActivityIndicator, Modal, Share, KeyboardAvoidingView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform, StatusBar, ActivityIndicator, Modal, Share, KeyboardAvoidingView, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import AppSelect from '../components/AppSelect';
@@ -310,51 +310,60 @@ export default function SendMoneyScreen() {
     }
   };
 
+  const formatRecipientDisplay = (rec) => {
+    if (!rec) return '';
+    const name = rec.name || rec.first_name || '';
+    const country = rec.country || rec.country_name || (rec.country_code ? String(rec.country_code).toUpperCase() : '');
+    return country ? `${name} (${country})` : name;
+  };
+
   // Fetch saved beneficiaries from Supabase
   useFocusEffect(
     useCallback(() => {
       const fetchBeneficiaries = async () => {
-      if (!session?.user?.id) return;
-      try {
-        const { data, error } = await supabase.from('beneficiaries').select('*').eq('user_id', session.user.id);
-        if (data) {
-          const formatted = data.map(b => ({
-            id: b.id,
-            name: `${b.first_name || ''} ${b.last_name || ''}`.trim(),
-            tag: b.relationship || t('contacts.relation.friend', 'BENEFICIARY'),
-            address: b.evm_address || b.solana_address || b.phone || b.email,
-            evm_address: b.evm_address,
-            solana_address: b.solana_address,
-            avatar_url: b.avatar_url,
-            phone: b.phone || b.phone_number,
-            email: b.email,
-            country: b.country || b.country_name,
-            country_code: b.country_code || b.country_code_iso,
-            country_iso: b.country_iso || b.country_code_iso,
-          }));
-          
-          const combined = [];
-          if (user?.role === 'merchant') {
-            combined.push({ id: 'self', name: 'My Account', tag: 'SELF', address: user?.walletAddress || 'My Account' });
+        const targetUserId = user?.id || session?.user?.id || user?.user_id;
+        if (!targetUserId) return;
+        try {
+          const { data, error } = await supabase.from('beneficiaries').select('*').eq('user_id', targetUserId);
+          if (data) {
+            const formatted = data.map(b => ({
+              id: b.id,
+              name: `${b.first_name || ''} ${b.last_name || ''}`.trim(),
+              tag: b.relationship || t('contacts.relation.friend', 'BENEFICIARY'),
+              address: b.evm_address || b.solana_address || b.phone || b.email,
+              evm_address: b.evm_address,
+              solana_address: b.solana_address,
+              avatar_url: b.avatar_url,
+              phone: b.phone || b.phone_number,
+              email: b.email,
+              country: b.country || b.country_name,
+              country_code: b.country_code || b.country_code_iso,
+              country_iso: b.country_iso || b.country_code_iso,
+            }));
+            
+            const combined = [];
+            if (user?.role === 'merchant') {
+              combined.push({ id: 'self', name: 'My Account', tag: 'SELF', address: user?.walletAddress || 'My Account' });
+            }
+            setSavedBeneficiaries([...combined, ...formatted]);
+            
+            if (initialRecipientName) {
+              const initialMatch = [...combined, ...formatted].find(r => (r.name || '').toLowerCase() === initialRecipientName.toLowerCase());
+              if (initialMatch) setSelectedRecipient(initialMatch);
+            }
           }
-          setSavedBeneficiaries([...combined, ...formatted]);
-          
-          if (initialRecipientName) {
-            const initialMatch = [...combined, ...formatted].find(r => r.name.toLowerCase() === initialRecipientName.toLowerCase());
-            if (initialMatch) setSelectedRecipient(initialMatch);
-          }
+        } catch (err) {
+          console.error('Error fetching beneficiaries:', err);
         }
-      } catch (err) {
-        console.error('Error fetching beneficiaries:', err);
-      }
       };
       fetchBeneficiaries();
-    }, [session, user?.role, user?.walletAddress, initialRecipientName])
+    }, [session, user?.id, user?.role, user?.walletAddress, initialRecipientName])
   );
 
   useEffect(() => {
     const fetchApiRecipients = async () => {
-      if (searchQuery.length > 5 && !isNaN(searchQuery.replace(/[^0-9]/g, ''))) {
+      const cleanDigits = searchQuery.replace(/[^0-9]/g, '');
+      if (cleanDigits.length > 5) {
         setIsSearchingApi(true);
         try {
           let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
@@ -388,13 +397,20 @@ export default function SendMoneyScreen() {
         setApiRecipients([]);
       }
     };
-    const timeout = setTimeout(fetchApiRecipients, 500);
+    const timeout = setTimeout(fetchApiRecipients, 400);
     return () => clearTimeout(timeout);
   }, [searchQuery, session]);
 
   const filteredRecipients = [...apiRecipients, ...savedBeneficiaries].filter(r => {
-    const q = searchQuery.toLowerCase();
-    return r.name.toLowerCase().includes(q) || (r.address && r.address.toLowerCase().includes(q)) || (r.tag && r.tag.toLowerCase().includes(q));
+    if (!r) return false;
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase().trim();
+    const nameStr = (r.name || '').toLowerCase();
+    const addrStr = (r.address || '').toLowerCase();
+    const phoneStr = (r.phone || '').toLowerCase();
+    const tagStr = (r.tag || '').toLowerCase();
+    const countryStr = (r.country || '').toLowerCase();
+    return nameStr.includes(q) || addrStr.includes(q) || phoneStr.includes(q) || tagStr.includes(q) || countryStr.includes(q);
   });
 
   const handleSelectRecipient = (item) => {
@@ -523,7 +539,8 @@ export default function SendMoneyScreen() {
                     amount,
                     token,
                     chain: blockchain,
-                    recipient: selectedRecipient ? selectedRecipient.name : searchQuery,
+                    recipient: selectedRecipient ? formatRecipientDisplay(selectedRecipient) : searchQuery,
+                    recipientCountry: selectedRecipient?.country || selectedRecipient?.country_code || '',
                     hash: txId,
                     explorerUrl: txId?.startsWith('0x') ? `https://polygonscan.com/tx/${txId}` : null,
                     pivotScreen: route.params?.pivotScreen,
@@ -560,7 +577,8 @@ export default function SendMoneyScreen() {
         amount,
         token,
         chain: blockchain,
-        recipient: selectedRecipient ? selectedRecipient.name : searchQuery,
+        recipient: selectedRecipient ? formatRecipientDisplay(selectedRecipient) : searchQuery,
+        recipientCountry: selectedRecipient?.country || selectedRecipient?.country_code || '',
         hash: finalTxHash,
         explorerUrl: finalExplorerUrl,
         pivotScreen: route.params?.pivotScreen,
@@ -643,7 +661,8 @@ export default function SendMoneyScreen() {
             amount,
             token,
             chain: blockchain,
-            recipient: selectedRecipient ? selectedRecipient.name : searchQuery,
+            recipient: selectedRecipient ? formatRecipientDisplay(selectedRecipient) : searchQuery,
+            recipientCountry: selectedRecipient?.country || selectedRecipient?.country_code || '',
             hash: confirmedHash,
             explorerUrl: confirmedExplorerUrl,
             pivotScreen: route.params?.pivotScreen,
@@ -711,7 +730,8 @@ export default function SendMoneyScreen() {
             amount,
             token,
             chain: blockchain,
-            recipient: selectedRecipient ? selectedRecipient.name : searchQuery,
+            recipient: selectedRecipient ? formatRecipientDisplay(selectedRecipient) : searchQuery,
+            recipientCountry: selectedRecipient?.country || selectedRecipient?.country_code || '',
             hash: confirmedHash,
             explorerUrl: confirmedExplorerUrl,
             pivotScreen: route.params?.pivotScreen,
@@ -841,7 +861,8 @@ export default function SendMoneyScreen() {
             amount,
             token,
             chain: blockchain,
-            recipient: selectedRecipient ? selectedRecipient.name : searchQuery,
+            recipient: selectedRecipient ? formatRecipientDisplay(selectedRecipient) : searchQuery,
+            recipientCountry: selectedRecipient?.country || selectedRecipient?.country_code || '',
             hash: confirmedHash,
             explorerUrl: confirmedExplorerUrl,
             pivotScreen: route.params?.pivotScreen,
@@ -906,7 +927,7 @@ export default function SendMoneyScreen() {
           </View>
         </View>
 
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
           <ScrollView style={styles.mainScroll} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
             
 
@@ -976,7 +997,7 @@ export default function SendMoneyScreen() {
                             <Ionicons name="person-outline" size={16} color="#94A3B8" />
                           </View>
                           <View style={styles.recipientTextWrap}>
-                            <Text style={styles.dropdownRecipientName}>{item.name}</Text>
+                            <Text style={styles.dropdownRecipientName}>{formatRecipientDisplay(item)}</Text>
                             <View style={styles.tagAddressRow}>
                               <View style={styles.tagBadge}>
                                 <Text style={styles.tagBadgeText}>{item.tag}</Text>
@@ -1002,7 +1023,7 @@ export default function SendMoneyScreen() {
                 
                 <View style={styles.recipientInfoWrap}>
                   <Text style={styles.recipientName} numberOfLines={1} ellipsizeMode="tail">
-                    {selectedRecipient.name}
+                    {formatRecipientDisplay(selectedRecipient)}
                   </Text>
                   <Text style={styles.recipientAddress} numberOfLines={1} ellipsizeMode="middle">
                     {selectedRecipient.address && selectedRecipient.address.length > 20
@@ -1105,8 +1126,12 @@ export default function SendMoneyScreen() {
               <TextInput
                 style={styles.amountInput}
                 value={amount}
-                onChangeText={setAmount}
-                keyboardType="numeric"
+                onChangeText={(val) => {
+                  setAmount(val.replace(/,/g, '.'));
+                }}
+                keyboardType="decimal-pad"
+                returnKeyType="done"
+                onSubmitEditing={Keyboard.dismiss}
                 placeholder="0"
                 placeholderTextColor="#94A3B8"
               />
@@ -1351,7 +1376,7 @@ const styles = StyleSheet.create({
   iconBtn: { width: 36, height: 36, borderRadius: 10, borderWidth: 1, borderColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', marginLeft: 6, position: 'relative', backgroundColor: '#FFFFFF' },
   notificationDot: { position: 'absolute', top: 6, right: 6, width: 6, height: 6, borderRadius: 3, backgroundColor: '#FFC759' },
   mainScroll: { flex: 1 },
-  scrollContent: { paddingHorizontal: isSmallScreen ? 12 : 16, paddingTop: 8, paddingBottom: 60, maxWidth: 500, width: '100%', alignSelf: 'center' },
+  scrollContent: { paddingHorizontal: isSmallScreen ? 12 : 16, paddingTop: 8, paddingBottom: 160, maxWidth: 500, width: '100%', alignSelf: 'center' },
   formCard: { backgroundColor: '#FFFFFF', borderRadius: 20, borderWidth: 1, borderColor: '#F1F5F9', padding: isSmallScreen ? 12 : 14, boxShadow: '0px 4px 10px #0F172A', maxWidth: 500, width: '100%', alignSelf: 'center' },
   fieldLabel: { fontFamily: 'Inter_700Bold', fontSize: 10, color: '#64748B', letterSpacing: 0.5, marginBottom: 5, marginTop: 8, textTransform: 'uppercase' },
   fieldLabelNoMargin: { fontFamily: 'Inter_700Bold', fontSize: 11, color: '#64748B' },

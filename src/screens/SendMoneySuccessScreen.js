@@ -20,6 +20,7 @@ export default function SendMoneySuccessScreen() {
     token = '',
     chain = '',
     recipient = '',
+    recipientCountry = '',
     hash = '',
     explorerUrl = null,
   } = route.params || {};
@@ -133,6 +134,7 @@ export default function SendMoneySuccessScreen() {
                     amount,
                     token,
                     recipientName: recipient,
+                    recipientCountry: recipientCountry || (recipient.includes('(') ? recipient.match(/\((.*?)\)/)?.[1] : ''),
                     txHash: hash,
                     date: nowDate,
                     actionKey: 'actionSent',
