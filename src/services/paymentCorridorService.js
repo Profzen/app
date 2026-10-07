@@ -114,10 +114,10 @@ export function getPaymentRailEligibility(countryCode, flow = 'checkout', lang =
   const isFr = lang === 'fr';
   const isPt = lang === 'pt';
   const localizedCountryName = isFr ? meta.name : (meta.nameEn || meta.name);
-  const licensedNetworkStr = isFr 
-    ? 'Réseau Partenaire Agréé' 
-    : isPt 
-      ? 'Rede Parceira Autorizada' 
+  const licensedNetworkStr = isFr
+    ? 'Réseau Partenaire Agréé'
+    : isPt
+      ? 'Rede Parceira Autorizada'
       : 'Licensed Partner Network';
 
   // 1. CRYPTO / STABLECOINS: Always 100% supported worldwide
@@ -156,9 +156,9 @@ export function getPaymentRailEligibility(countryCode, flow = 'checkout', lang =
     providers: momoProviders,
     reason: momoSupported
       ? (isFr ? `Disponible (${meta.momoNetworks.join(', ')})` : `Available (${meta.momoNetworks.join(', ')})`)
-      : (isFr 
-          ? `Indisponible pour ${localizedCountryName}. Actif dans 20 pays d'Afrique Subsaharienne.`
-          : `Not available in ${localizedCountryName}. Available in 20 Sub-Saharan African countries.`),
+      : (isFr
+        ? `Indisponible pour ${localizedCountryName}. Actif dans 20 pays d'Afrique Subsaharienne.`
+        : `Not available in ${localizedCountryName}. Available in 20 Sub-Saharan African countries.`),
   };
 
   // 4. BANK TRANSFER / PAYOUT (Flow-aware)
@@ -190,8 +190,8 @@ export function getPaymentRailEligibility(countryCode, flow = 'checkout', lang =
   const bank = {
     enabled: bankSupported,
     provider: bankProvider,
-    badge: bankProvider === 'ecobank' 
-      ? 'Ecobank (Gratuit)' 
+    badge: bankProvider === 'ecobank'
+      ? 'Ecobank (Gratuit)'
       : bankProvider === 'sepa'
         ? 'SEPA Wire'
         : (isFr ? 'Virement Bancaire' : 'Bank Transfer'),
@@ -211,11 +211,10 @@ export function getPaymentRailEligibility(countryCode, flow = 'checkout', lang =
   };
 }
 
-// Priority order: major African economies listed first as requested by Solofo
+// Priority order: major African economies listed first 
 export const MAJOR_AFRICAN_ECONOMIES_ORDER = [
   'NG', // Nigeria
   'ZA', // South Africa
-  'DZ', // Algeria
   'ET', // Ethiopia
   'KE', // Kenya
   'CD', // DR Congo
