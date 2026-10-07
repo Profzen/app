@@ -10,6 +10,7 @@ import PriceDisplay from '../components/PriceDisplay';
 import PhysicalGoodsWarningModal from '../components/PhysicalGoodsWarningModal';
 import { useApp } from '../context/AppContext';
 import { convertCurrencyAmount } from '../utils/countryCurrencyUtils';
+import { ALL_COUNTRIES } from '../utils/countriesData';
 import { buyGoodsApi } from '../services/buyGoodsApi';
 import { getProductMedia, isVideoUrl } from '../utils/productMedia';
 
@@ -145,9 +146,18 @@ export default function ProductDetailsScreen({ route }) {
     ? `${Number(standardDeliveryFee).toLocaleString(numLocale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ${displayCurrency}`
     : t('orderVerification.free', 'Gratuit');
 
-  const merchantName = shop?.shop_name || shop?.name || product?.merchant?.shop_name || product?.merchant?.name || t('paymentSuccess.partnerMerchant', 'Partner Merchant');
+  const merchantName = shop?.shop_name || shop?.name || product?.merchant?.shop_name || product?.merchant?.name || product?.merchant_name || t('paymentSuccess.partnerMerchant', 'Partner Merchant');
   const merchantInitial = (merchantName || 'DZ').slice(0, 2).toUpperCase();
-  const merchantLogo = shop?.shop_logo_url || shop?.logoUrl || shop?.raw?.shop_logo_url || product?.merchant?.shop_logo_url || product?.merchant?.logoUrl || product?.merchant_logo;
+  const merchantLogo = shop?.shop_logo_url || shop?.logoUrl || shop?.raw?.shop_logo_url || product?.merchant?.shop_logo_url || product?.merchant?.logoUrl || product?.merchant_logo || product?.merchant?.logo;
+  const merchantCity = shop?.city || shop?.shop_city || product?.merchant?.city || product?.merchant?.shop_city || product?.city || '';
+  const merchantCountryRaw = shop?.country || shop?.shop_country || product?.merchant?.country || product?.merchant?.shop_country || product?.country || '';
+
+  const matchedCountry = ALL_COUNTRIES.find(c => 
+    c.code.toLowerCase() === String(merchantCountryRaw).toLowerCase() || 
+    c.name.toLowerCase() === String(merchantCountryRaw).toLowerCase()
+  );
+  const merchantFlag = matchedCountry?.flag || (merchantCountryRaw && String(merchantCountryRaw).length === 2 ? String(merchantCountryRaw).toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)) : '🌍');
+  const merchantCountryName = matchedCountry?.name || merchantCountryRaw;
 
   const executeAddToCart = (force = false) => {
     const res = addToCart(product, quantity, shop, force);
@@ -385,6 +395,31 @@ export default function ProductDetailsScreen({ route }) {
                 <Text style={styles.categoryBadgeText}>{product.category || product.desc1}</Text>
               </View>
             )}
+
+            {/* Merchant Identity & Location (Solofo request: Merchant name, logo, city, country with flag) */}
+            <TouchableOpacity 
+              style={styles.merchantHeaderCard}
+              onPress={() => navigation.navigate('ShopDetailsScreen', { shop: shop || { id: product?.merchant_id, name: merchantName } })}
+              activeOpacity={0.8}
+            >
+              <View style={styles.merchantHeaderLogoWrap}>
+                {merchantLogo ? (
+                  <Image source={{ uri: merchantLogo }} style={styles.merchantHeaderLogoImg} resizeMode="cover" />
+                ) : (
+                  <Text style={styles.merchantHeaderMonogram}>{merchantInitial}</Text>
+                )}
+              </View>
+              <View style={styles.merchantHeaderTextWrap}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Text style={styles.merchantHeaderNameText} numberOfLines={1}>{merchantName}</Text>
+                  <Ionicons name="checkmark-circle" size={13} color="#3B82F6" style={{ marginLeft: 3 }} />
+                </View>
+                <Text style={styles.merchantHeaderLocationText} numberOfLines={1}>
+                  {merchantFlag} {merchantCity ? `${merchantCity}, ` : ''}{merchantCountryName || t('common.global', 'International')}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={14} color="#94A3B8" style={{ marginLeft: 'auto' }} />
+            </TouchableOpacity>
             
             <Text style={styles.productTitle}>{product.name}</Text>
             
@@ -675,6 +710,12 @@ export default function ProductDetailsScreen({ route }) {
               <View style={styles.vendorNameRow}>
                 <Text style={styles.vendorName} numberOfLines={1}>{merchantName}</Text>
                 <Ionicons name="checkmark-circle" size={16} color="#3B82F6" style={{marginLeft: 4}} />
+              </View>
+              <View style={styles.vendorLocationRow}>
+                <Ionicons name="location-outline" size={13} color="#64748B" style={{marginRight: 3}} />
+                <Text style={styles.vendorLocationText} numberOfLines={1}>
+                  {merchantFlag} {merchantCity ? `${merchantCity}, ` : ''}{merchantCountryName || t('common.global', 'International')}
+                </Text>
               </View>
               <View style={styles.vendorCategoryBadge}>
                 <Text style={styles.vendorCategoryText}>{t('product.verifiedPartner', 'Verified Merchant')}</Text>
@@ -1236,13 +1277,68 @@ const styles = StyleSheet.create({
     color: '#1A2840',
     letterSpacing: 0.5,
   },
+  merchantHeaderCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    marginTop: 6,
+    marginBottom: 6,
+  },
+  merchantHeaderLogoWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#FFB800',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    marginRight: 8,
+  },
+  merchantHeaderLogoImg: {
+    width: '100%',
+    height: '100%',
+  },
+  merchantHeaderMonogram: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 11,
+    color: '#1A2840',
+  },
+  merchantHeaderTextWrap: {
+    flex: 1,
+  },
+  merchantHeaderNameText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 12,
+    color: '#1A2840',
+  },
+  merchantHeaderLocationText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 1,
+  },
   vendorContent: {
     flex: 1,
   },
   vendorNameRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 2,
+  },
+  vendorLocationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 4,
+  },
+  vendorLocationText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 11,
+    color: '#64748B',
   },
   vendorName: {
     fontFamily: 'Inter_700Bold',

@@ -60,20 +60,20 @@ export const COUNTRY_METADATA = {
   CM: { name: 'Cameroun', nameEn: 'Cameroon', flag: '🇨🇲', currency: 'XAF', dialCode: '+237', momoNetworks: ['MTN', 'Orange'] },
   GA: { name: 'Gabon', nameEn: 'Gabon', flag: '🇬🇦', currency: 'XAF', dialCode: '+241', momoNetworks: ['Airtel', 'Moov'] },
   CG: { name: 'Congo Brazzaville', nameEn: 'Congo Brazzaville', flag: '🇨🇬', currency: 'XAF', dialCode: '+242', momoNetworks: ['MTN', 'Airtel'] },
-  CD: { name: 'RD Congo', nameEn: 'DR Congo', flag: '🇨🇩', currency: 'CDF', dialCode: '+243', momoNetworks: ['Vodacom (M-Pesa)', 'Airtel', 'Orange'] },
+  CD: { name: 'RD Congo', nameEn: 'DR Congo', flag: '🇨🇩', currency: 'CDF', dialCode: '+243', momoNetworks: ['Vodacom', 'Airtel', 'Orange'] },
   CF: { name: 'Centrafrique', nameEn: 'Central African Republic', flag: '🇨🇫', currency: 'XAF', dialCode: '+236', momoNetworks: ['Orange Money', 'Telecel'] },
   TD: { name: 'Tchad', nameEn: 'Chad', flag: '🇹🇩', currency: 'XAF', dialCode: '+235', momoNetworks: ['Airtel', 'Moov'] },
   GN: { name: 'Guinée', nameEn: 'Guinea', flag: '🇬🇳', currency: 'GNF', dialCode: '+224', momoNetworks: ['Orange', 'MTN'] },
   GH: { name: 'Ghana', nameEn: 'Ghana', flag: '🇬🇭', currency: 'GHS', dialCode: '+233', momoNetworks: ['MTN', 'Telecel', 'AirtelTigo'] },
-  KE: { name: 'Kenya', nameEn: 'Kenya', flag: '🇰🇪', currency: 'KES', dialCode: '+254', momoNetworks: ['Safaricom (M-Pesa)', 'Airtel'] },
+  KE: { name: 'Kenya', nameEn: 'Kenya', flag: '🇰🇪', currency: 'KES', dialCode: '+254', momoNetworks: ['Safaricom', 'Airtel'] },
   NG: { name: 'Nigeria', nameEn: 'Nigeria', flag: '🇳🇬', currency: 'NGN', dialCode: '+234', momoNetworks: ['OPay', 'Palmpay', 'Bank Transfer'] },
   RW: { name: 'Rwanda', nameEn: 'Rwanda', flag: '🇷🇼', currency: 'RWF', dialCode: '+250', momoNetworks: ['MTN', 'Airtel'] },
   UG: { name: 'Ouganda', nameEn: 'Uganda', flag: '🇺🇬', currency: 'UGX', dialCode: '+256', momoNetworks: ['MTN', 'Airtel'] },
   ZM: { name: 'Zambie', nameEn: 'Zambia', flag: '🇿🇲', currency: 'ZMW', dialCode: '+260', momoNetworks: ['MTN', 'Airtel', 'Zamtel'] },
-  TZ: { name: 'Tanzanie', nameEn: 'Tanzania', flag: '🇹🇿', currency: 'TZS', dialCode: '+255', momoNetworks: ['Vodacom (M-Pesa)', 'Tigo Pesa', 'Airtel', 'Halopesa'] },
-  ZA: { name: 'Afrique du Sud', nameEn: 'South Africa', flag: '🇿🇦', currency: 'ZAR', dialCode: '+27', momoNetworks: ['Vodacom (VodaPay)', 'MTN MoMo', 'EFT Instant Banks'] },
+  TZ: { name: 'Tanzanie', nameEn: 'Tanzania', flag: '🇹🇿', currency: 'TZS', dialCode: '+255', momoNetworks: ['Vodacom', 'Airtel', 'Tigo', 'Halopesa'] },
+  ZA: { name: 'Afrique du Sud', nameEn: 'South Africa', flag: '🇿🇦', currency: 'ZAR', dialCode: '+27', momoNetworks: ['Vodacom', 'MTN', 'EFT Instant Banks'] },
   SL: { name: 'Sierra Leone', nameEn: 'Sierra Leone', flag: '🇸🇱', currency: 'SLE', dialCode: '+232', momoNetworks: ['Orange Money'] },
-  ET: { name: 'Éthiopie', nameEn: 'Ethiopia', flag: '🇪🇹', currency: 'ETB', dialCode: '+251', momoNetworks: ['Virement bancaire (CBE, Dashen)'] },
+  ET: { name: 'Éthiopie', nameEn: 'Ethiopia', flag: '🇪🇹', currency: 'ETB', dialCode: '+251', momoNetworks: ['Ethio Telecom (Telebirr)', 'CBE', 'Dashen Bank'] },
   // Common non-MoMo regions
   MA: { name: 'Maroc', nameEn: 'Morocco', flag: '🇲🇦', currency: 'MAD', dialCode: '+212', momoNetworks: [] },
   DZ: { name: 'Algérie', nameEn: 'Algeria', flag: '🇩🇿', currency: 'DZD', dialCode: '+213', momoNetworks: [] },
@@ -211,6 +211,37 @@ export function getPaymentRailEligibility(countryCode, flow = 'checkout', lang =
   };
 }
 
+// Priority order: major African economies listed first as requested by Solofo
+export const MAJOR_AFRICAN_ECONOMIES_ORDER = [
+  'NG', // Nigeria
+  'ZA', // South Africa
+  'EG', // Egypt
+  'DZ', // Algeria
+  'ET', // Ethiopia
+  'KE', // Kenya
+  'CD', // DR Congo
+  'GH', // Ghana
+  'TZ', // Tanzania
+  'CI', // Côte d'Ivoire
+  'CM', // Cameroon
+  'UG', // Uganda
+  'SN', // Senegal
+  'RW', // Rwanda
+  'ZM', // Zambia
+  'GA', // Gabon
+  'BJ', // Benin
+  'BF', // Burkina Faso
+  'ML', // Mali
+  'TG', // Togo
+  'NE', // Niger
+  'GN', // Guinea
+  'SL', // Sierra Leone
+  'CG', // Congo
+  'CF', // Central African Republic
+  'TD', // Chad
+  'GW', // Guinea-Bissau
+];
+
 /**
  * Returns array of all supported African MoMo countries for country selector modal
  */
@@ -225,7 +256,14 @@ export function getSupportedMoMoCountries(lang = 'en') {
       currency: meta?.currency || 'XOF',
       networks: meta?.momoNetworks || [],
     };
-  }).sort((a, b) => a.name.localeCompare(b.name));
+  }).sort((a, b) => {
+    const indexA = MAJOR_AFRICAN_ECONOMIES_ORDER.indexOf(a.code);
+    const indexB = MAJOR_AFRICAN_ECONOMIES_ORDER.indexOf(b.code);
+    const rankA = indexA !== -1 ? indexA : 999;
+    const rankB = indexB !== -1 ? indexB : 999;
+    if (rankA !== rankB) return rankA - rankB;
+    return a.name.localeCompare(b.name);
+  });
 }
 
 export default {
