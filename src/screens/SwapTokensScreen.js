@@ -35,6 +35,7 @@ export default function SwapTokensScreen() {
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [infoMsg, setInfoMsg] = useState(null);
 
   const [txStatus, setTxStatus] = useState(null);
   const [activeTxHash, setActiveTxHash] = useState(null);
@@ -61,6 +62,7 @@ export default function SwapTokensScreen() {
   const getQuote = async () => {
     setQuoteLoading(true);
     setError(null);
+    setInfoMsg(null);
     try {
       const data = await swapService.getQuote(fromToken, toToken, fromAmount, fromChain, toChain, session?.access_token);
       if (data && data.toAmount) {
@@ -130,6 +132,7 @@ export default function SwapTokensScreen() {
 
     setLoading(true);
     setError(null);
+    setInfoMsg(null);
 
     try {
       const res = await swapService.executeSwap(fromToken, toToken, fromAmount, fromChain, toChain, session?.access_token);
@@ -204,7 +207,17 @@ export default function SwapTokensScreen() {
       console.log("Authorize error", e);
       setIsAuthorizing(false);
       
-      const errMsg = String(e.message || e);
+      let errMsg = String(e.message || e);
+      
+      // Try to parse JSON errors so it doesn't look ugly
+      try {
+        const parsed = JSON.parse(e.message);
+        if (parsed && parsed.message) {
+          errMsg = parsed.message;
+        }
+      } catch (err) {
+        // Not JSON, leave as is
+      }
       
       // Handle already approved errors gracefully
       if (errMsg.includes("Already has the required number of approvals")) {
@@ -212,14 +225,15 @@ export default function SwapTokensScreen() {
         return;
       }
       
-      // If the user simply closed the popup or rejected it, don't show a big error
+      // If the user simply closed the popup or rejected it, show a friendly info message
       if (errMsg.includes("AuthRejectedError") || errMsg.includes("Authentication was rejected")) {
+        setInfoMsg("Authorization was cancelled.");
         setTxStatus(null);
         return;
       }
       
-      // Show error beautifully in the main UI instead of a legacy OS popup
-      setError("Authorization Failed: " + errMsg);
+      // Show error beautifully in the main UI
+      setError(errMsg);
       setTxStatus(null); // Close the modal so they can see the error
     }
   };
@@ -257,6 +271,13 @@ export default function SwapTokensScreen() {
             <View style={styles.errorBox}>
               <Ionicons name="alert-circle" size={18} color="#FF6B6B" />
               <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
+
+          {infoMsg && (
+            <View style={styles.infoBox}>
+              <Ionicons name="information-circle" size={18} color="#FFC759" />
+              <Text style={styles.infoText}>{infoMsg}</Text>
             </View>
           )}
 
@@ -471,13 +492,30 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#FCA5A5',
+    borderColor: '#FECACA',
     marginBottom: 16,
   },
   errorText: {
     fontFamily: 'Inter_500Medium',
     fontSize: 13,
     color: '#DC2626',
+    marginLeft: 8,
+    flex: 1,
+  },
+  infoBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 16,
+  },
+  infoText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 13,
+    color: '#20365B',
     marginLeft: 8,
     flex: 1,
   },
@@ -717,23 +755,23 @@ const styles = StyleSheet.create({
   /* Modal Styles */
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+    backgroundColor: 'rgba(26, 40, 64, 0.85)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
   },
   modalContent: {
-    backgroundColor: '#1E293B',
+    backgroundColor: '#FFFFFF',
     borderRadius: 24,
     padding: 24,
     width: '100%',
     maxWidth: 360,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: '#FFC759',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: '#1A2840',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.15,
     shadowRadius: 20,
     elevation: 10,
   },
@@ -741,30 +779,26 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 20,
-    backgroundColor: '#0F172A',
+    backgroundColor: '#FAFAFA',
     borderWidth: 1,
-    borderColor: '#38BDF8',
+    borderColor: '#F1F5F9',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
-    shadowColor: '#38BDF8',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
   },
   modalTitle: {
     fontFamily: 'Inter_700Bold',
     fontSize: 18,
-    color: '#F8FAFC',
+    color: '#20365B',
     textTransform: 'uppercase',
     marginBottom: 20,
     textAlign: 'center',
     letterSpacing: 0.5,
   },
   modalInfoBox: {
-    backgroundColor: '#0F172A',
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: '#E2E8F0',
     borderRadius: 16,
     padding: 16,
     width: '100%',
@@ -773,27 +807,29 @@ const styles = StyleSheet.create({
   modalInfoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E293B',
+    backgroundColor: '#FFFFFF',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
   modalInfoText: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 13,
-    color: '#E2E8F0',
+    color: '#20365B',
     marginLeft: 8,
   },
   modalInfoHint: {
     fontFamily: 'Inter_400Regular',
     fontSize: 12,
-    color: '#94A3B8',
+    color: '#878FA4',
     lineHeight: 18,
     textAlign: 'center',
   },
   authBtn: {
-    backgroundColor: '#38BDF8',
+    backgroundColor: '#1A2840',
     width: '100%',
     height: 50,
     borderRadius: 14,
@@ -801,21 +837,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
-    shadowColor: '#38BDF8',
+    shadowColor: '#1A2840',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 4,
   },
   authBtnDisabled: {
-    backgroundColor: '#475569',
+    backgroundColor: '#E2E8F0',
     shadowOpacity: 0,
     elevation: 0,
   },
   authBtnText: {
     fontFamily: 'Inter_700Bold',
     fontSize: 14,
-    color: '#0F172A',
+    color: '#FFC759',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -825,7 +861,7 @@ const styles = StyleSheet.create({
   dismissBtnText: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 12,
-    color: '#64748B',
+    color: '#878FA4',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   }
