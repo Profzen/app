@@ -22,7 +22,7 @@ const tokenOptions = ['USDC', 'USDT', 'POL', 'WBTC', 'WETH', 'ETH', 'SOL', 'BNB'
 export default function SwapTokensScreen() {
   const navigation = useNavigation();
 
-  const { wallet: crossmintWallet } = useWallet();
+  const { wallet: crossmintWallet, getWallet } = useWallet();
   const { user, session, refreshUser, t } = useApp();
 
   const [fromChain, setFromChain] = useState('polygon');
@@ -176,9 +176,17 @@ export default function SwapTokensScreen() {
     if (sdkPromptOpen) return; // Crossmint prompt already open
     try {
       setIsAuthorizing(true);
-      if (!crossmintWallet) throw new Error('Crossmint wallet not connected');
+      
+      const chainName = fromChain === 'solana' ? 'solana' : 'polygon';
+      let activeWallet = null;
+      if (typeof getWallet === 'function') {
+        activeWallet = await getWallet({ chain: chainName });
+      } else if (crossmintWallet) {
+        activeWallet = chainName === 'solana' ? SolanaWallet.from(crossmintWallet) : EVMWallet.from(crossmintWallet);
+      }
 
-      const activeWallet = fromChain === 'solana' ? SolanaWallet.from(crossmintWallet) : EVMWallet.from(crossmintWallet);
+      if (!activeWallet) throw new Error('Crossmint wallet not connected');
+
       const emailToUse = signerEmail || user?.email;
 
       await activeWallet.useSigner({ type: 'email', email: emailToUse });
@@ -286,7 +294,7 @@ export default function SwapTokensScreen() {
                     ref={amountInputRef}
                     style={styles.amountInput}
                     value={fromAmount}
-                    onChangeText={setFromAmount}
+                    onChangeText={(val) => setFromAmount(val.replace(/,/g, '.'))}
                     keyboardType="decimal-pad"
                     placeholder="0.00"
                     placeholderTextColor="#94A3B8"

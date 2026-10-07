@@ -13,6 +13,7 @@ import { FooterTerms } from '../components/FooterTerms';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../services/supabaseClient';
+import Constants from 'expo-constants';
 import { isSmallScreen, isShortScreen } from '../utils/responsive';
 import AppSelect from '../components/AppSelect';
 import { ALL_COUNTRIES } from '../utils/countriesData';
@@ -90,7 +91,9 @@ export default function MerchantRegistrationScreen() {
             last_name: lastName,
             phone: phone,
             country: country,
-            business_type: businessType
+            business_type: businessType,
+            signup_platform: Platform.OS,
+            signup_app_version: Constants?.expoConfig?.version || '1.0.0'
           }
         }
       });
