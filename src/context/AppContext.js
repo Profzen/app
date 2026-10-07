@@ -359,7 +359,10 @@ export function AppProvider({ children }) {
           console.log("calling sync-buygoods for email:", sessionObj.user.email);
           const syncRes = await fetch(`${DIZZY_URL}/auth/sync-buygoods`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              ...(sessionObj?.access_token ? { 'Authorization': `Bearer ${sessionObj.access_token}` } : {})
+            },
             body: JSON.stringify({
               email: sessionObj.user.email,
               supabaseUserId: sessionObj.user.id,
@@ -394,7 +397,10 @@ export function AppProvider({ children }) {
             console.log("calling sync-crossmint for biz_" + fetchedMerchantProfile.id);
             const bizSyncRes = await fetch(`${DIZZY_URL}/auth/sync-crossmint`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 
+              'Content-Type': 'application/json',
+              ...(sessionObj?.access_token ? { 'Authorization': `Bearer ${sessionObj.access_token}` } : {})
+            },
               body: JSON.stringify({
                 supabaseUserId: 'biz_' + fetchedMerchantProfile.id,
                 email: sessionObj.user.email,
