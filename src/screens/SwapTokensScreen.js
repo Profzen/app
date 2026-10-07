@@ -190,7 +190,7 @@ export default function SwapTokensScreen() {
       const emailToUse = signerEmail || user?.email;
 
       await activeWallet.useSigner({ type: 'email', email: emailToUse });
-      // Hide our modal while Crossmint's OTP prompt is shown (two stacked modals flicker on Android)
+      // Hide our modal while Crossmint's OTP prompt is shown
       setSdkPromptOpen(true);
       try {
         await activeWallet.approve({ transactionId: activeTxHash });
@@ -200,14 +200,27 @@ export default function SwapTokensScreen() {
 
       pollTransactionStatus(activeTxHash);
     } catch (e) {
-      console.error("Authorize error", e);
+      // Use console.log instead of console.error to prevent giant red toasts in dev mode
+      console.log("Authorize error", e);
       setIsAuthorizing(false);
-
-      // Handle already approved errors
-      const errMsg = String(e);
+      
+      const errMsg = String(e.message || e);
+      
+      // Handle already approved errors gracefully
       if (errMsg.includes("Already has the required number of approvals")) {
         pollTransactionStatus(activeTxHash);
+        return;
       }
+      
+      // If the user simply closed the popup or rejected it, don't show a big error
+      if (errMsg.includes("AuthRejectedError") || errMsg.includes("Authentication was rejected")) {
+        setTxStatus(null);
+        return;
+      }
+      
+      // Show error beautifully in the main UI instead of a legacy OS popup
+      setError("Authorization Failed: " + errMsg);
+      setTxStatus(null); // Close the modal so they can see the error
     }
   };
 
@@ -228,14 +241,13 @@ export default function SwapTokensScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-back" size={24} color="#1A2840" />
+            <Ionicons name="chevron-back" size={20} color="#E2E8F0" />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <Text style={styles.pageTitle}>{t('common.wallet.swap_ui.swap_tokens', 'Swap Tokens')}</Text>
-            <Text style={styles.pageSubtitle}>{t('common.wallet.swap_ui.swap_subtitle', 'Exchange tokens instantly')}</Text>
           </View>
           <View style={styles.headerRightIcons}>
-            <View style={{ width: 44 }} />
+            <View style={{ width: 40 }} />
           </View>
         </View>
 
@@ -243,7 +255,7 @@ export default function SwapTokensScreen() {
 
           {error && (
             <View style={styles.errorBox}>
-              <Ionicons name="alert-circle" size={20} color="#DC2626" />
+              <Ionicons name="alert-circle" size={18} color="#FF6B6B" />
               <Text style={styles.errorText}>{error}</Text>
             </View>
           )}
@@ -251,24 +263,24 @@ export default function SwapTokensScreen() {
           {/* Chain Selectors */}
           <View style={styles.chainRow}>
             <View style={styles.chainCol}>
-              <Text style={styles.inputLabel}>{t('common.wallet.swap_ui.from_chain', 'From Chain')}</Text>
-              <AppSelect value={fromChain} options={chainOptions} onChange={setFromChain} title={t('common.wallet.swap_ui.from_chain')} style={styles.chainSelector} textStyle={styles.chainName} chevronColor="#20365B" />
+              <Text style={styles.inputLabel}>{t('common.wallet.swap_ui.from_chain', 'From Network')}</Text>
+              <AppSelect value={fromChain} options={chainOptions} onChange={setFromChain} title={t('common.wallet.swap_ui.from_chain')} style={styles.chainSelector} textStyle={styles.chainName} chevronColor="#64748B" />
             </View>
-            <View style={{ width: 16 }} />
+            <View style={{ width: 12 }} />
             <View style={styles.chainCol}>
-              <Text style={styles.inputLabel}>{t('common.wallet.swap_ui.to_chain', 'To Chain')}</Text>
-              <AppSelect value={toChain} options={chainOptions} onChange={setToChain} title={t('common.wallet.swap_ui.to_chain')} style={styles.chainSelector} textStyle={styles.chainName} chevronColor="#20365B" />
+              <Text style={styles.inputLabel}>{t('common.wallet.swap_ui.to_chain', 'To Network')}</Text>
+              <AppSelect value={toChain} options={chainOptions} onChange={setToChain} title={t('common.wallet.swap_ui.to_chain')} style={styles.chainSelector} textStyle={styles.chainName} chevronColor="#64748B" />
             </View>
           </View>
 
           {/* DZY Banner */}
           <View style={styles.dzyBanner}>
             <View style={styles.dzyBannerHeader}>
-              <Ionicons name="rocket-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
-              <Text style={styles.dzyBannerTitle}>{t('common.wallet.swap_ui.dzy_coming_soon', 'DZY Token Coming Soon!')}</Text>
+              <Ionicons name="flash-outline" size={16} color="#4ADE80" style={{ marginRight: 6 }} />
+              <Text style={styles.dzyBannerTitle}>ZERO-FEE SWAPS COMING</Text>
             </View>
             <Text style={styles.dzyBannerText}>
-              {t('common.wallet.swap_ui.dzy_launch_desc', { date: 'Q2 2027' })}
+              Hold DZY token in Q2 2027 to unlock feeless trading.
             </Text>
           </View>
 
@@ -278,17 +290,16 @@ export default function SwapTokensScreen() {
             {/* From Input */}
             <View style={styles.inputBox}>
               <View style={styles.inputBoxHeader}>
-                <Text style={styles.inputLabel}>{t('common.wallet.swap_ui.from_token', 'From Token')}</Text>
+                <Text style={styles.inputLabel}>PAY</Text>
                 <View style={styles.balanceInfo}>
-                  <Ionicons name="wallet-outline" size={14} color="#D97706" style={{ marginRight: 4 }} />
-                  <Text style={styles.balanceValue}>{Number(availableBalance).toFixed(4)} {fromToken}</Text>
-                  <TouchableOpacity onPress={() => setFromAmount(availableBalance.toString())}>
-                    <Text style={styles.maxText}>{t('common.wallet.swap_ui.max', 'MAX')}</Text>
+                  <Text style={styles.balanceValue}>{Number(availableBalance).toFixed(4)}</Text>
+                  <TouchableOpacity onPress={() => setFromAmount(availableBalance.toString())} style={styles.maxBadge}>
+                    <Text style={styles.maxText}>MAX</Text>
                   </TouchableOpacity>
                 </View>
               </View>
               <View style={styles.inputRow}>
-                <AppSelect value={fromToken} options={tokenOptions} onChange={setFromToken} title={t('common.wallet.swap_ui.from_token')} style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option.value} size={24} style={{ marginRight: 6 }} />} />
+                <AppSelect value={fromToken} options={tokenOptions} onChange={setFromToken} title={t('common.wallet.swap_ui.from_token')} style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option.value} size={20} style={{ marginRight: 6 }} />} />
                 <TouchableOpacity activeOpacity={1} style={[styles.amountInputContainer, isFocused && styles.amountInputContainerFocused]} onPress={() => amountInputRef.current?.focus()}>
                   <TextInput
                     ref={amountInputRef}
@@ -296,8 +307,8 @@ export default function SwapTokensScreen() {
                     value={fromAmount}
                     onChangeText={(val) => setFromAmount(val.replace(/,/g, '.'))}
                     keyboardType="decimal-pad"
-                    placeholder="0.00"
-                    placeholderTextColor="#94A3B8"
+                    placeholder="0.0"
+                    placeholderTextColor="#475569"
                     allowFontScaling={false}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
@@ -309,32 +320,29 @@ export default function SwapTokensScreen() {
             {/* Swap Button */}
             <View style={styles.swapBtnWrapper}>
               <TouchableOpacity style={styles.swapBtn} onPress={swapSides}>
-                <Ionicons name="swap-vertical" size={20} color="#1A2840" />
+                <Ionicons name="swap-vertical" size={18} color="#38BDF8" />
               </TouchableOpacity>
             </View>
 
             {/* To Input */}
             <View style={styles.inputBox}>
               <View style={styles.inputBoxHeader}>
-                <Text style={styles.inputLabel}>{t('common.wallet.swap_ui.to_token_estimated', 'To Token (Estimated)')}</Text>
+                <Text style={styles.inputLabel}>RECEIVE</Text>
                 {quoteLoading && (
                   <View style={styles.quoteLoadingBadge}>
-                    <ActivityIndicator size="small" color="#D97706" style={{ marginRight: 6, transform: [{ scale: 0.8 }] }} />
-                    <Text style={styles.quoteLoadingText}>
-                      {t('common.wallet.swap_ui.fetching_rate', 'Fetching best rate...')}
-                    </Text>
+                    <ActivityIndicator size="small" color="#38BDF8" style={{ transform: [{ scale: 0.6 }] }} />
                   </View>
                 )}
               </View>
               <View style={styles.inputRow}>
-                <AppSelect value={toToken} options={tokenOptions} onChange={setToToken} title={t('common.wallet.swap_ui.to_chain')} style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option.value} size={24} style={{ marginRight: 6 }} />} />
+                <AppSelect value={toToken} options={tokenOptions} onChange={setToToken} title={t('common.wallet.swap_ui.to_chain')} style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option.value} size={20} style={{ marginRight: 6 }} />} />
                 <View style={[styles.amountInputContainer, styles.amountInputContainerDisabled]}>
                   <TextInput
-                    style={[styles.amountInput, { color: '#878FA4' }]}
+                    style={[styles.amountInput, { color: '#94A3B8' }]}
                     value={toAmount}
                     editable={false}
-                    placeholder="0.00"
-                    placeholderTextColor="#94A3B8"
+                    placeholder="0.0"
+                    placeholderTextColor="#475569"
                     allowFontScaling={false}
                   />
                 </View>
@@ -349,33 +357,37 @@ export default function SwapTokensScreen() {
             onPress={handleSwap}
             disabled={loading || !fromAmount}
           >
-            {loading && <ActivityIndicator color={loading ? "#1A2840" : "#FFF"} style={{ marginRight: 8 }} />}
-            {!loading && <Ionicons name="swap-horizontal" size={18} color={(!fromAmount || loading) ? '#94A3B8' : '#FFC759'} style={{ marginRight: 8 }} />}
-            <Text style={[styles.btnActionText, (!fromAmount || loading) && { color: '#94A3B8' }]}>
-              {loading ? t('common.wallet.swap_ui.executing_swap', 'EXECUTING SWAP...') : t('common.wallet.swap_ui.swap_btn', 'SWAP TOKENS NOW')}
+            {loading ? (
+              <ActivityIndicator color="#0F172A" style={{ marginRight: 8 }} />
+            ) : (
+              <Ionicons name="flash" size={16} color="#0F172A" style={{ marginRight: 6 }} />
+            )}
+            <Text style={styles.btnActionText}>
+              {loading ? 'PROCESSING...' : 'EXECUTE SWAP'}
             </Text>
           </TouchableOpacity>
 
         </ScrollView>
       </View>
 
-      {/* Signature Required Modal */}
+      {/* Modern, Compact Signature Modal */}
       <Modal visible={txStatus === 'awaiting-approval' && !sdkPromptOpen} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
+            
             <View style={styles.modalHeaderIcon}>
-              <Ionicons name="lock-closed" size={28} color="#EA580C" />
+              <Ionicons name="finger-print" size={24} color="#38BDF8" />
             </View>
-            <Text style={styles.modalTitle}>{t('common.wallet.swap_ui.signature_required', 'Signature Required')}</Text>
-            <Text style={styles.modalSubtitle}>{t('common.wallet.swap_ui.crossmint_action_needed', 'Crossmint Action Needed')}</Text>
-
+            
+            <Text style={styles.modalTitle}>Signature Required</Text>
+            
             <View style={styles.modalInfoBox}>
-              <Text style={styles.modalInfoTextBold}>{t('common.wallet.swap_ui.verification_request', 'A verification request has been deployed to your profile.')}</Text>
-              <View style={styles.emailBadge}>
-                <Text style={styles.emailBadgeText}>{t('common.wallet.swap_ui.check_email', '📧 Check Email:')} {signerEmail}</Text>
+              <View style={styles.modalInfoRow}>
+                <Ionicons name="mail" size={14} color="#94A3B8" />
+                <Text style={styles.modalInfoText}>{signerEmail}</Text>
               </View>
-              <Text style={[styles.modalInfoText, { fontSize: 16, color: '#071D54', fontWeight: 'bold' }]}>
-                {t('sendMoney.wait_for_popup', 'Your DZYwallet verification code will be sent to email, please wait to receive the code')}
+              <Text style={styles.modalInfoHint}>
+                A secure approval request was deployed. Click below and check your email for the OTP to authorize the smart contract.
               </Text>
             </View>
 
@@ -384,15 +396,16 @@ export default function SwapTokensScreen() {
               onPress={handleAuthorize}
               disabled={isAuthorizing}
             >
-              {isAuthorizing ? <ActivityIndicator color="#FFF" /> : <Ionicons name="lock-closed" size={20} color="#FFF" style={{ marginRight: 8 }} />}
+              {isAuthorizing ? <ActivityIndicator color="#0F172A" size="small" /> : <Ionicons name="key" size={16} color="#0F172A" style={{ marginRight: 6 }} />}
               <Text style={styles.authBtnText}>
-                {isAuthorizing ? t('common.wallet.swap_ui.authorizing', 'Authorizing...') : t('common.wallet.swap_ui.authorize_swap', 'Authorize Swap Release')}
+                {isAuthorizing ? 'VERIFYING...' : 'AUTHORIZE'}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => setTxStatus(null)} style={styles.dismissBtn}>
-              <Text style={styles.dismissBtnText}>{t('common.wallet.swap_ui.dismiss_banner', 'Dismiss Banner')}</Text>
+              <Text style={styles.dismissBtnText}>CANCEL</Text>
             </TouchableOpacity>
+            
           </View>
         </View>
       </Modal>
@@ -704,111 +717,105 @@ const styles = StyleSheet.create({
   /* Modal Styles */
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(32, 54, 91, 0.7)',
+    backgroundColor: 'rgba(15, 23, 42, 0.85)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 24,
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 32,
+    backgroundColor: '#1E293B',
+    borderRadius: 24,
     padding: 24,
     width: '100%',
-    maxWidth: 400,
+    maxWidth: 360,
     borderWidth: 1,
-    borderColor: '#FFC759',
+    borderColor: '#334155',
     alignItems: 'center',
-    shadowColor: '#20365B',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.3,
     shadowRadius: 20,
     elevation: 10,
   },
   modalHeaderIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 24,
-    backgroundColor: '#FAFAFA',
+    width: 56,
+    height: 56,
+    borderRadius: 20,
+    backgroundColor: '#0F172A',
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: '#38BDF8',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
+    shadowColor: '#38BDF8',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
   },
   modalTitle: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 20,
-    color: '#20365B',
-    textTransform: 'uppercase',
-    marginBottom: 4,
-    textAlign: 'center',
-  },
-  modalSubtitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 12,
-    color: '#FFC759',
+    fontSize: 18,
+    color: '#F8FAFC',
     textTransform: 'uppercase',
     marginBottom: 20,
     textAlign: 'center',
+    letterSpacing: 0.5,
   },
   modalInfoBox: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#0F172A',
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: '#334155',
     borderRadius: 16,
     padding: 16,
     width: '100%',
     marginBottom: 24,
   },
-  modalInfoTextBold: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-    color: '#20365B',
+  modalInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1E293B',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
     marginBottom: 12,
-  },
-  emailBadge: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
-  },
-  emailBadgeText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 13,
-    color: '#0E0E0E',
   },
   modalInfoText: {
-    fontFamily: 'Inter_500Medium',
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 13,
+    color: '#E2E8F0',
+    marginLeft: 8,
+  },
+  modalInfoHint: {
+    fontFamily: 'Inter_400Regular',
     fontSize: 12,
-    color: '#878FA4',
+    color: '#94A3B8',
     lineHeight: 18,
+    textAlign: 'center',
   },
   authBtn: {
-    backgroundColor: '#20365B',
+    backgroundColor: '#38BDF8',
     width: '100%',
-    height: 56,
-    borderRadius: 16,
+    height: 50,
+    borderRadius: 14,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
-    shadowColor: '#20365B',
+    marginBottom: 12,
+    shadowColor: '#38BDF8',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 4,
   },
   authBtnDisabled: {
-    backgroundColor: '#B9B9B9',
+    backgroundColor: '#475569',
     shadowOpacity: 0,
     elevation: 0,
   },
   authBtnText: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 16,
-    color: '#FFFFFF',
+    fontSize: 14,
+    color: '#0F172A',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -816,9 +823,10 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   dismissBtnText: {
-    fontFamily: 'Inter_700Bold',
+    fontFamily: 'Inter_600SemiBold',
     fontSize: 12,
-    color: '#94A3B8',
+    color: '#64748B',
     textTransform: 'uppercase',
+    letterSpacing: 0.5,
   }
 });
