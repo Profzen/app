@@ -30,7 +30,7 @@ export default function PaymentSuccessScreen({ route }) {
     : (tx.amountCrypto || '');
   const serviceTitle = tx.title || t('paymentSuccess.marketplacePurchase', 'Achat Marketplace');
   const merchantName = tx.merchantName || t('paymentSuccess.partnerMerchant', 'Commerçant Partenaire');
-  const recipientName = tx.recipientName || tx.recipient || merchantName || user?.name || user?.email || '';
+  const recipientName = tx.merchantName ? merchantName : (tx.recipientName || tx.recipient || user?.name || user?.email || '');
   const recipientSub = tx.recipientAddress || tx.phone || (user?.city ? `${user.city}, ${user.country || ''}` : '');
   const paymentMethodName = tx.paymentMethod || 'DZY Wallet';
   const dateFormatted = tx.date
