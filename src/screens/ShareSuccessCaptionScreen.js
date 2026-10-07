@@ -87,13 +87,27 @@ export default function ShareSuccessCaptionScreen() {
 
   const isWithdraw = actionKey === 'actionWithdrawn' || (actionType && actionType.toLowerCase().includes('cash'));
 
-  // Clean, modern, professional social message (no emoji clutter, clean link)
-  const generateDefaultCaption = () => {
-    const cleanRecipient = rawRecipientName?.replace(/\s*\(.*?\)/g, '').trim() || rawRecipientName;
-    if (isWithdraw) {
-      return `Successfully cashed out ${amount} ${token} to ${cleanRecipient} with @DizzitUp. Instant, borderless, and without middlemen.\n\nhttps://dizzitup.com`;
+  const formatRecipientCaptionName = () => {
+    if (!rawRecipientName) return 'Recipient';
+    // If it already has (Country), preserve it completely
+    if (rawRecipientName.includes('(') && rawRecipientName.includes(')')) {
+      return rawRecipientName.trim();
     }
-    return `Successfully sent ${amount} ${token} to ${cleanRecipient} with @DizzitUp. Fast, borderless, and secure on Polygon.\n\nhttps://dizzitup.com`;
+    const firstName = rawRecipientName.split(' ')[0].trim();
+    const countryName = matchedRecipientCountry?.name || (rawRecipientCountry && rawRecipientCountry !== 'GLOBAL' && rawRecipientCountry !== 'TG' ? rawRecipientCountry : '');
+    if (countryName) {
+      return `${firstName} (${countryName})`;
+    }
+    return firstName;
+  };
+
+  // Clean, modern, professional social message (preserves Country and clean link)
+  const generateDefaultCaption = () => {
+    const formattedRecipient = formatRecipientCaptionName();
+    if (isWithdraw) {
+      return `Successfully cashed out ${amount} ${token} to ${formattedRecipient} with @DizzitUp. Instant, borderless, and without middlemen.\n\nhttps://dizzitup.com`;
+    }
+    return `Successfully sent ${amount} ${token} to ${formattedRecipient} with @DizzitUp. Fast, borderless, and secure on Polygon.\n\nhttps://dizzitup.com`;
   };
 
   const [captionText, setCaptionText] = useState(generateDefaultCaption);
@@ -102,19 +116,128 @@ export default function ShareSuccessCaptionScreen() {
 
   const handleShare = async () => {
     try {
-      if (Platform.OS === 'web' && navigator.share) {
-        await navigator.share({
-          title: t('shareSuccess.shareModalTitle', 'Partager mon succès DizzitUp'),
-          text: captionText,
-          url: 'https://dizzitup.com/',
-        });
-      } else {
-        await Share.share({
-          title: t('shareSuccess.shareModalTitle', 'Partager mon succès DizzitUp'),
-          message: captionText,
-          url: 'https://dizzitup.com/',
-        });
+      const cardUri = route.params?.cardImageUri || route.params?.cardUri;
+      let sharedWithFile = false;
+
+      // On native mobile, try sharing the visual file if available or generated
+      if (Platform.OS !== 'web') {
+        let fileToShare = cardUri;
+        
+        // If no file passed, generate a high quality visual receipt card document
+        if (!fileToShare) {
+          try {
+            const Print = require('expo-print');
+            const FileSystem = require('expo-file-system/legacy');
+            const formattedRecipient = formatRecipientCaptionName();
+            const html = `
+              <!DOCTYPE html>
+              <html>
+                <head>
+                  <meta charset="utf-8" />
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                  <style>
+                    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #0F172A; margin: 0; padding: 24px; display: flex; justify-content: center; align-items: center; min-height: 90vh; }
+                    .card { background: linear-gradient(135deg, #20365B 0%, #111D33 100%); border-radius: 20px; padding: 28px; width: 100%; max-width: 420px; box-sizing: border-box; color: #FFFFFF; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+                    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+                    .brand { font-size: 24px; font-weight: 800; }
+                    .brand span { color: #FFC759; }
+                    .tagline { font-size: 11px; color: #94A3B8; font-weight: 600; letter-spacing: 0.5px; }
+                    .tagline span { color: #FFC759; }
+                    .status-pill { display: inline-flex; align-items: center; background: rgba(16, 185, 129, 0.15); color: #34D399; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-bottom: 14px; border: 1px solid rgba(16, 185, 129, 0.3); }
+                    .action { font-size: 14px; color: #FFC759; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+                    .amount { font-size: 36px; font-weight: 800; color: #FFFFFF; margin: 4px 0 16px 0; }
+                    .amount span { color: #FFC759; }
+                    .inset { background: rgba(0, 0, 0, 0.3); border-radius: 14px; padding: 16px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.08); }
+                    .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 13px; }
+                    .row:last-child { margin-bottom: 0; }
+                    .label { color: #94A3B8; }
+                    .value { font-weight: 700; color: #FFFFFF; }
+                    .footer { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 14px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #94A3B8; }
+                    .footer-url { color: #FFC759; font-weight: 700; text-decoration: none; }
+                  </style>
+                </head>
+                <body>
+                  <div class="card">
+                    <div class="header">
+                      <div class="brand">Dizzit<span>Up</span></div>
+                      <div class="tagline">#NoBorder<span>NoMiddleman</span></div>
+                    </div>
+                    <div class="status-pill">&#10003; Transaction Confirmed</div>
+                    <div class="action">${resolvedAction}</div>
+                    <div class="amount">${amount} <span>${token}</span></div>
+                    <div class="inset">
+                      <div class="row">
+                        <span class="label">From</span>
+                        <span class="value">${displaySenderName} ${senderFlag}</span>
+                      </div>
+                      <div class="row">
+                        <span class="label">To</span>
+                        <span class="value">${formattedRecipient} ${recipientFlag}</span>
+                      </div>
+                      <div class="row">
+                        <span class="label">Network</span>
+                        <span class="value">${network}</span>
+                      </div>
+                      <div class="row">
+                        <span class="label">Date</span>
+                        <span class="value">${formatShortDate(date) || new Date().toLocaleDateString()}</span>
+                      </div>
+                      <div class="row">
+                        <span class="label">TX ID</span>
+                        <span class="value">${shortTxHash || 'Verified'}</span>
+                      </div>
+                    </div>
+                    <div class="footer">
+                      <span>Secured on blockchains</span>
+                      <span class="footer-url">dizzitup.com</span>
+                    </div>
+                  </div>
+                </body>
+              </html>
+            `;
+            const { base64 } = await Print.printToFileAsync({ html, margins: { top: 20, bottom: 20, left: 20, right: 20 }, base64: true });
+            const fileName = `DizzitUp_Success_${Date.now()}.pdf`;
+            const targetUri = FileSystem.documentDirectory + fileName;
+            await FileSystem.writeAsStringAsync(targetUri, base64, { encoding: FileSystem.EncodingType.Base64 });
+            fileToShare = targetUri;
+          } catch (genErr) {
+            console.warn('Could not generate receipt PDF:', genErr);
+          }
+        }
+
+        if (fileToShare) {
+          try {
+            const Sharing = require('expo-sharing');
+            if (await Sharing.isAvailableAsync()) {
+              await Sharing.shareAsync(fileToShare, {
+                mimeType: fileToShare.endsWith('.pdf') ? 'application/pdf' : 'image/png',
+                dialogTitle: t('shareSuccess.shareModalTitle', 'Partager mon succès DizzitUp'),
+              });
+              sharedWithFile = true;
+            }
+          } catch (shareErr) {
+            console.warn('expo-sharing error:', shareErr);
+          }
+        }
       }
+
+      // If file share wasn't used or succeeded, fall back to standard Share / Web Share
+      if (!sharedWithFile) {
+        if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.share) {
+          await navigator.share({
+            title: t('shareSuccess.shareModalTitle', 'Partager mon succès DizzitUp'),
+            text: captionText,
+            url: 'https://dizzitup.com/',
+          });
+        } else {
+          await Share.share({
+            title: t('shareSuccess.shareModalTitle', 'Partager mon succès DizzitUp'),
+            message: captionText,
+            url: 'https://dizzitup.com/',
+          });
+        }
+      }
+
       setToast({
         title: t('shareSuccess.toastShareSuccessTitle', 'Félicitations !'),
         message: t('shareSuccess.toastShareSuccessMsg', 'Succès partagé ! 1 DZY a été crédité sur votre compte.')

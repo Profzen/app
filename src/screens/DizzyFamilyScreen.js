@@ -46,26 +46,17 @@ export default function DizzyFamilyScreen() {
           {/* Hero Loyalty Card */}
           <View style={styles.heroCard}>
             <View style={styles.heroHeader}>
-              <View style={styles.goldBadge}>
-                <Ionicons name="trophy" size={14} color="#1A2840" />
-                <Text style={styles.goldBadgeText}>GOLD MEMBER</Text>
+              <View style={styles.familyBadge}>
+                <Ionicons name="star" size={14} color="#1A2840" />
+                <Text style={styles.familyBadgeText}>DIZZYFAMILY</Text>
               </View>
               <Image source={require('../../assets/brand/dizzitup_logo_cercle.png')} style={{ width: 34, height: 34 }} resizeMode="contain" />
             </View>
 
-            <Text style={styles.pointsNumber}>4,850 <Text style={{ fontSize: 16 }}>DZY</Text></Text>
+            <Text style={styles.pointsNumber}>
+              {new Intl.NumberFormat('en-US').format(Number(user?.rewardsDZY || user?.balanceDZY || user?.points || 0))} <Text style={{ fontSize: 16 }}>DZY</Text>
+            </Text>
             <Text style={styles.pointsLabel}>{t('dizzyFamily.points_label', 'Points de fidélité accumulés')}</Text>
-
-            {/* Tier Progress Bar */}
-            <View style={styles.progressContainer}>
-              <View style={styles.progressBarBackground}>
-                <View style={[styles.progressBarFill, { width: '75%' }]} />
-              </View>
-              <View style={styles.progressLabels}>
-                <Text style={styles.progressText}>{t('dizzyFamily.gold_level', 'Niveau Gold')}</Text>
-                <Text style={styles.progressTextNext}>Platinum (5 000 DZY)</Text>
-              </View>
-            </View>
           </View>
 
           {/* Referral Code Box */}
@@ -108,7 +99,7 @@ export default function DizzyFamilyScreen() {
           </View>
 
           {/* Member Benefits */}
-          <Text style={styles.sectionHeader}>{t('dizzyFamily.gold_perks', 'AVANTAGES DIZZYFAMILY GOLD')}</Text>
+          <Text style={styles.sectionHeader}>{t('dizzyFamily.perks', 'AVANTAGES DIZZYFAMILY')}</Text>
           <View style={styles.card}>
             <View style={styles.benefitRow}>
               <View style={[styles.benefitIcon, { backgroundColor: '#EFF6FF' }]}>
@@ -174,16 +165,10 @@ const styles = StyleSheet.create({
   pageSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#6B7280', marginTop: 2 },
   heroCard: { backgroundColor: '#1A2840', borderRadius: 20, padding: 20, marginBottom: 16 },
   heroHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-  goldBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFC759', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  goldBadgeText: { fontFamily: 'Inter_700Bold', fontSize: 11, color: '#1A2840', marginLeft: 4 },
+  familyBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFC759', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+  familyBadgeText: { fontFamily: 'Inter_700Bold', fontSize: 11, color: '#1A2840', marginLeft: 4, letterSpacing: 0.5 },
   pointsNumber: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 32, color: '#FFFFFF' },
-  pointsLabel: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#9CA3AF', marginTop: 2, marginBottom: 16 },
-  progressContainer: { marginTop: 4 },
-  progressBarBackground: { height: 8, backgroundColor: '#374151', borderRadius: 4, overflow: 'hidden' },
-  progressBarFill: { height: 8, backgroundColor: '#FFC759', borderRadius: 4 },
-  progressLabels: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 },
-  progressText: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#FFC759' },
-  progressTextNext: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#9CA3AF' },
+  pointsLabel: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#9CA3AF', marginTop: 2, marginBottom: 4 },
   sectionHeader: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#9CA3AF', letterSpacing: 0.8, marginTop: 10, marginBottom: 8, marginLeft: 4 },
   referralCard: { backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#F0F2F5', padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
   referralLeft: { flex: 1 },

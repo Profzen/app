@@ -7,7 +7,7 @@
  * @param {Function} t - The i18n translation function
  * @returns {Object} Aggregated stats (totalIn, totalOut, typeBreakdown)
  */
-export const calculateTransactionStats = (transactions, targetCurrency = 'DZY', t) => {
+export const calculateTransactionStats = (transactions, targetCurrency = 'ALL', t) => {
   if (!transactions || transactions.length === 0) {
     return {
       totalIn: 0,
@@ -34,8 +34,8 @@ export const calculateTransactionStats = (transactions, targetCurrency = 'DZY', 
     else if (tx.symbol) txCurrency = tx.symbol.toUpperCase();
     else if (tx.asset) txCurrency = tx.asset.toUpperCase();
 
-    // Only process transactions matching the target currency
-    if (txCurrency !== targetCurrency.toUpperCase()) return;
+    // Only filter by currency if not 'ALL'
+    if (targetCurrency !== 'ALL' && txCurrency !== targetCurrency.toUpperCase()) return;
 
     // Parse amount
     const amount = parseFloat(tx.amount || tx.amount_dzy || tx.value || 0);
@@ -117,24 +117,35 @@ export const calculateTransactionStats = (transactions, targetCurrency = 'DZY', 
  * Extracts a unique list of all valid currencies the user has transacted in.
  * Filters out spam/airdrop tokens (e.g. WWW.BAIRDROP.CO).
  */
-export const getActiveCurrencies = (transactions) => {
-  if (!transactions || transactions.length === 0) return ['DZY'];
-  
+export const getActiveCurrencies = (transactions, userLocalFiat) => {
   const currencies = new Set();
-  transactions.forEach(tx => {
-    let curr = '';
-    if (tx.currency) curr = tx.currency.toUpperCase();
-    else if (tx.token) curr = tx.token.toUpperCase();
-    else if (tx.symbol) curr = tx.symbol.toUpperCase();
-    else if (tx.asset) curr = tx.asset.toUpperCase();
-    
-    // Filter out obvious spam tokens (URLs, long strings, weird characters)
-    if (curr && curr.length <= 8 && !curr.includes('.') && !curr.includes('WWW') && !curr.includes('HTTP')) {
-      currencies.add(curr);
-    }
-  });
+  
+  // Mandatory base filters requested by product
+  currencies.add('ALL');
+  currencies.add('DZY');
 
-  const arr = Array.from(currencies);
-  if (arr.length === 0) return ['DZY'];
-  return arr;
+  // Add user's local FIAT if available
+  if (userLocalFiat && typeof userLocalFiat === 'string' && userLocalFiat.trim().length > 0) {
+    const cleanFiat = userLocalFiat.toUpperCase().trim();
+    if (cleanFiat.length <= 5 && !cleanFiat.includes('.') && cleanFiat !== 'DZY') {
+      currencies.add(cleanFiat);
+    }
+  }
+
+  if (Array.isArray(transactions) && transactions.length > 0) {
+    transactions.forEach(tx => {
+      let curr = '';
+      if (tx.currency) curr = tx.currency.toUpperCase();
+      else if (tx.token) curr = tx.token.toUpperCase();
+      else if (tx.symbol) curr = tx.symbol.toUpperCase();
+      else if (tx.asset) curr = tx.asset.toUpperCase();
+      
+      // Filter out obvious spam tokens (URLs, long strings, weird characters)
+      if (curr && curr.length <= 8 && !curr.includes('.') && !curr.includes('WWW') && !curr.includes('HTTP')) {
+        currencies.add(curr);
+      }
+    });
+  }
+
+  return Array.from(currencies);
 };
