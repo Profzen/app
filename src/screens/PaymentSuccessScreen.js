@@ -213,17 +213,21 @@ export default function PaymentSuccessScreen({ route }) {
           <TouchableOpacity
             style={styles.shareCtaCard}
             onPress={() => {
+              const finalRecipient = tx.merchantName || merchantName || tx.title || serviceTitle || t('paymentSuccess.partnerMerchant', 'Partner Merchant');
               navigation.navigate('ShareSuccessPlatformScreen', {
                 transactionData: {
                   type: 'payment',
                   amount: tx.amount ? String(tx.amount) : '',
                   token: tx.currency || 'FCFA',
-                  recipientName: recipientName || merchantName,
+                  recipientName: finalRecipient,
+                  merchantName: tx.merchantName || merchantName,
+                  serviceTitle: serviceTitle,
                   recipientCountry: recipientCountryName || user?.country || '',
                   recipientFlag: recipientFlag,
                   date: dateFormatted,
                   txHash: txRef,
-                  actionKey: 'actionSent',
+                  actionKey: 'actionPaid',
+                  actionType: `Paid for ${tx.merchantName || merchantName || serviceTitle || 'service'}`,
                 },
               });
             }}

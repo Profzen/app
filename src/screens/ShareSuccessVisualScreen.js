@@ -36,17 +36,20 @@ export default function ShareSuccessVisualScreen() {
   const senderFlag = transactionData.senderFlag || matchedSenderCountry?.flag || '🇫🇷';
 
   // Anonymize recipient
-  const rawRecipientName = transactionData.recipientName || 'Bénéficiaire';
+  const rawRecipientName = transactionData.recipientName || transactionData.merchantName || transactionData.serviceTitle || 'Bénéficiaire';
   const displayRecipientName = rawRecipientName.split(' ')[0];
   const rawRecipientCountry = transactionData.recipientCountry || 'TG';
   const matchedRecipientCountry = ALL_COUNTRIES.find(c => c.name.toLowerCase() === rawRecipientCountry.toLowerCase() || c.code.toLowerCase() === rawRecipientCountry.toLowerCase());
   const recipientFlag = transactionData.recipientFlag || matchedRecipientCountry?.flag || '🇹🇬';
 
+  const isPayment = transactionData?.type === 'payment' || actionKey === 'actionPaid' || !!transactionData?.merchantName || !!transactionData?.serviceTitle;
 
   // Resolve action label: prefer key-based i18n, fall back to raw string
-  const resolvedAction = actionKey
-    ? t(`shareSuccess.${actionKey}`, actionType || 'transferred')
-    : (actionType || t('shareSuccess.actionSent', 'sent funds'));
+  const resolvedAction = isPayment
+    ? (transactionData.actionType || (transactionData.merchantName ? `Paid for ${transactionData.merchantName}` : (transactionData.serviceTitle ? `Paid for ${transactionData.serviceTitle}` : t('shareSuccess.actionPaid', 'Paid for service'))))
+    : actionKey
+      ? t(`shareSuccess.${actionKey}`, actionType || 'transferred')
+      : (actionType || t('shareSuccess.actionSent', 'sent funds'));
 
   const [toast, setToast] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -175,7 +178,7 @@ export default function ShareSuccessVisualScreen() {
           </View>
 
           <View style={styles.userCol}>
-            <Text style={styles.userLabel}>{t('shareSuccess.to', 'To')}</Text>
+            <Text style={styles.userLabel}>{isPayment ? t('shareSuccess.paidTo', 'Paid to') : t('shareSuccess.to', 'To')}</Text>
             <View style={[styles.userAvatarWrap, styles.userAvatarShielded, opLogo && { backgroundColor: '#FFFFFF', padding: 2 }]}>
               {opLogo ? (
                 <Image source={opLogo} style={[styles.avatarImg, { borderRadius: 16 }]} resizeMode="contain" />
@@ -187,7 +190,7 @@ export default function ShareSuccessVisualScreen() {
                 </Text>
               )}
             </View>
-            <Text style={styles.userName} numberOfLines={1}>{displayRecipientName} {recipientFlag}</Text>
+            <Text style={styles.userName} numberOfLines={1}>{(isPayment && transactionData?.merchantName ? transactionData.merchantName : displayRecipientName)} {recipientFlag}</Text>
           </View>
         </View>
 

@@ -57,7 +57,7 @@ export const shareShopLink = async (shopCode = 'SHOP2026') => {
 };
 
 export const handleUserInviteShare = (user, contact = null) => {
-  const code = user?.id ? `DZY-${user.id.substring(0, 6).toUpperCase()}` : 'DZY500';
+  const code = user?.referralCode || user?.referral_code || (user?.id ? `DZY-${user.id.substring(0, 6).toUpperCase()}` : 'DZY500');
   const inviteUrl = `https://dizzitup.com/invite?ref=${code}`;
   const recipientGreeting = contact?.name ? `Hello ${contact.name}, ` : '';
   const message = `${recipientGreeting}Join me on DizzitUp to support wisely your family in Africa by covering their needs while developing local economy. Buy goods, Pay bills, Invest in local businesses. Use my referral code ${code} to earn rewards: ${inviteUrl}`;

@@ -27,9 +27,20 @@ export const ALL_MOMO_CORRIDORS = Array.from(
   new Set([...KKIAPAY_CORRIDORS, ...KOTANIPAY_CORRIDORS, ...IZICHANGE_OFFRAMP_CORRIDORS])
 );
 
-// Dedicated Off-ramp Corridors matching DizzyWallet MOMO_PROVIDERS registry
+// Dedicated Off-ramp Corridors matching DizzyWallet MOMO_PROVIDERS registry (EG removed - no standard MoMo)
 export const OFFRAMP_MOMO_CORRIDORS = [
-  'BJ', 'CM', 'CG', 'CD', 'EG', 'ET', 'GA', 'GH', 'CI', 'KE', 'MW', 'RW', 'SN', 'TZ', 'TG', 'UG', 'ZM'
+  'BJ', 'CM', 'CG', 'CD', 'ET', 'GA', 'GH', 'CI', 'KE', 'MW', 'RW', 'SN', 'TZ', 'TG', 'UG', 'ZM'
+];
+
+// Priority African Mobile Money operators requested by product
+export const PRIORITY_MOMO_OPERATORS = [
+  'Safaricom',
+  'MTN',
+  'Airtel',
+  'Orange',
+  'Vodacom',
+  'Moov',
+  'Wave'
 ];
 
 export const OFFRAMP_BANK_CORRIDORS = [

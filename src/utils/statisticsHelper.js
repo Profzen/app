@@ -66,8 +66,8 @@ export const calculateTransactionStats = (transactions, targetCurrency = 'ALL', 
       } else if (tType === 'BUY' || tType === 'BUY_GOODS' || tType === 'SALE') {
         categoryName = t ? t('stats.category.shopping', 'Shopping') : 'Shopping';
         icon = 'bag-handle-outline';
-        color = '#F59E0B';
-        bgColor = '#FFFBEB';
+        color = '#EF4444';
+        bgColor = '#FEF2F2';
       } else if (tType === 'PAY' || tType === 'PAY_BILLS') {
         categoryName = t ? t('stats.category.utilities', 'Utilities & Bills') : 'Utilities & Bills';
         icon = 'flash-outline';
@@ -113,9 +113,37 @@ export const calculateTransactionStats = (transactions, targetCurrency = 'ALL', 
   };
 };
 
+const APPROVED_TOKENS = new Set([
+  'ALL', 'DZY', 'USDC', 'USDT', 'EURC', 'BTC', 'ETH', 'MATIC', 'POL', 'BNB', 'SOL'
+]);
+
+const RECOGNIZED_FIATS = new Set([
+  'XOF', 'XAF', 'USD', 'EUR', 'GBP', 'NGN', 'KES', 'GHS', 'ZAR', 'MGA', 'TZS', 'UGX', 'RWF', 'ZMW', 'CAD', 'MAD', 'EGP'
+]);
+
+/**
+ * Validates a currency ticker against approved assets, recognized fiats, and spam patterns.
+ * Explicitly rejects tokens with numbers interspersed (e.g. U1SD1C1, USDC2) or spam URLs.
+ */
+export const isValidCurrencyTicker = (ticker) => {
+  if (!ticker || typeof ticker !== 'string') return false;
+  const upper = ticker.toUpperCase().trim();
+  if (APPROVED_TOKENS.has(upper) || RECOGNIZED_FIATS.has(upper)) return true;
+
+  // Filter out any token with numbers in ticker (e.g. U1SD1C1)
+  if (/\d/.test(upper)) return false;
+
+  // Filter out spam indicators, URLs, dots, non-letters
+  if (upper.length < 2 || upper.length > 5) return false;
+  if (/[^A-Z]/.test(upper)) return false;
+  if (upper.includes('WWW') || upper.includes('HTTP') || upper.includes('AIRDROP')) return false;
+
+  return true;
+};
+
 /**
  * Extracts a unique list of all valid currencies the user has transacted in.
- * Filters out spam/airdrop tokens (e.g. WWW.BAIRDROP.CO).
+ * Filters out spam/airdrop tokens (e.g. WWW.BAIRDROP.CO, U1SD1C1).
  */
 export const getActiveCurrencies = (transactions, userLocalFiat) => {
   const currencies = new Set();
@@ -124,10 +152,10 @@ export const getActiveCurrencies = (transactions, userLocalFiat) => {
   currencies.add('ALL');
   currencies.add('DZY');
 
-  // Add user's local FIAT if available
+  // Add user's local FIAT if valid
   if (userLocalFiat && typeof userLocalFiat === 'string' && userLocalFiat.trim().length > 0) {
     const cleanFiat = userLocalFiat.toUpperCase().trim();
-    if (cleanFiat.length <= 5 && !cleanFiat.includes('.') && cleanFiat !== 'DZY') {
+    if (isValidCurrencyTicker(cleanFiat) && cleanFiat !== 'DZY') {
       currencies.add(cleanFiat);
     }
   }
@@ -140,9 +168,9 @@ export const getActiveCurrencies = (transactions, userLocalFiat) => {
       else if (tx.symbol) curr = tx.symbol.toUpperCase();
       else if (tx.asset) curr = tx.asset.toUpperCase();
       
-      // Filter out obvious spam tokens (URLs, long strings, weird characters)
-      if (curr && curr.length <= 8 && !curr.includes('.') && !curr.includes('WWW') && !curr.includes('HTTP')) {
-        currencies.add(curr);
+      const cleanCurr = curr.trim();
+      if (isValidCurrencyTicker(cleanCurr)) {
+        currencies.add(cleanCurr);
       }
     });
   }
