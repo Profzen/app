@@ -1184,7 +1184,8 @@ export default function SendMoneyScreen() {
                   style={modalStyles.primaryBtn}
                   onPress={async () => {
                     const recipientName = missingWalletItem?.name || '';
-                    const inviteMsg = `Join me on DizzitUp to easily receive funds and manage your payments: https://dizzitup.com/invite`;
+                    const inviteUrl = user?.referralCode ? `https://dizzitup.com/invite?ref=${user.referralCode}` : 'https://dizzitup.com/invite';
+                    const inviteMsg = `Join me on DizzitUp to easily receive funds and manage your payments: ${inviteUrl}`;
                     try {
                       await Share.share({ message: inviteMsg });
                       setMissingWalletItem(null);

@@ -808,7 +808,8 @@ export default function EditBeneficiaryScreen({ route }) {
                 <TouchableOpacity
                   style={{ backgroundColor: '#0052FF', borderRadius: 12, paddingVertical: 14, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', marginBottom: 12 }}
                   onPress={async () => {
-                    const inviteMsg = t('wallet.invite_msg', 'Join me on DizzitUp to easily receive funds and manage your payments: https://dizzitup.com/invite');
+                    const inviteUrl = user?.referralCode ? `https://dizzitup.com/invite?ref=${user.referralCode}` : 'https://dizzitup.com/invite';
+                    const inviteMsg = t('wallet.invite_msg', `Join me on DizzitUp to easily receive funds and manage your payments: ${inviteUrl}`);
                     try {
                       await Share.share({ message: inviteMsg });
                       setShowNoWalletModal(false);

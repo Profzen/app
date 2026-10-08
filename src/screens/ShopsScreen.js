@@ -46,7 +46,7 @@ export default function ShopsScreen() {
 
   useEffect(() => {
     const loadMerchants = async () => {
-      const data = await fetchMerchants(query);
+      const data = await fetchMerchants();
       const catsSet = new Set();
 
       const mapped = data.map((m, i) => {
@@ -108,9 +108,9 @@ export default function ShopsScreen() {
 
     const timeoutId = setTimeout(() => {
       loadMerchants();
-    }, 400);
+    }, 100);
     return () => clearTimeout(timeoutId);
-  }, [query, fetchMerchants, t]);
+  }, [fetchMerchants, t]);
 
   let filteredShops = shopsList.filter((shop) => {
     const shopCat = (shop.allCategories || shop.category || '').toLowerCase();
@@ -158,7 +158,7 @@ export default function ShopsScreen() {
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     // Passing the current query to refetch
-    fetchMerchants(query).then(() => {
+    fetchMerchants().then(() => {
       // The useEffect will actually handle setting the list when fetchMerchants resolves,
       // but we can toggle this state quickly here.
       setRefreshing(false);
