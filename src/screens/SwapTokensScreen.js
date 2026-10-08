@@ -32,6 +32,7 @@ export default function SwapTokensScreen() {
   const [fromToken, setFromToken] = useState('USDC');
   const [toToken, setToToken] = useState('USDT');
 
+  const [quote, setQuote] = useState(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -66,8 +67,11 @@ export default function SwapTokensScreen() {
     try {
       const data = await swapService.getQuote(fromToken, toToken, fromAmount, fromChain, toChain, session?.access_token);
       if (data && data.toAmount) {
+        setQuote(data);
         // Simple decimal formatting for UI. Backend usually returns raw or formatted depending on logic.
         setToAmount(Number(data.toAmount).toFixed(6).replace(/\.?0+$/, ''));
+      } else {
+        setQuote(null);
       }
     } catch (e) {
       console.log('Quote error', e);
@@ -372,6 +376,28 @@ export default function SwapTokensScreen() {
 
           </View>
 
+          {/* Quote Info */}
+          {quote && !quoteLoading && (
+            <View style={styles.quoteInfoBox}>
+              <View style={styles.quoteRow}>
+                <Text style={styles.quoteLabel}>You receive about</Text>
+                <Text style={styles.quoteValue}>{toAmount} {toToken}</Text>
+              </View>
+              <View style={styles.quoteRow}>
+                <Text style={styles.quoteLabel}>At least (guaranteed)</Text>
+                <Text style={styles.quoteValue}>{quote.toAmountMin ? Number(quote.toAmountMin).toFixed(6).replace(/\.?0+$/, '') : toAmount} {toToken}</Text>
+              </View>
+              <View style={styles.quoteRow}>
+                <Text style={styles.quoteLabel}>Fees (bridge + network)</Text>
+                <Text style={styles.quoteValue}>${quote.totalFeesUSD || "0.00"}</Text>
+              </View>
+              <View style={styles.quoteRow}>
+                <Text style={styles.quoteLabel}>Provider</Text>
+                <Text style={styles.quoteValue}>{quote.provider}</Text>
+              </View>
+            </View>
+          )}
+
           {/* Action Button */}
           <TouchableOpacity
             style={[styles.btnAction, loading && styles.btnActionDisabled]}
@@ -621,6 +647,29 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     fontSize: 11,
     color: '#D97706',
+  },
+  quoteInfoBox: {
+    backgroundColor: '#EEF2FF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#E0E7FF',
+  },
+  quoteRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  quoteLabel: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 13,
+    color: '#475569',
+  },
+  quoteValue: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 13,
+    color: '#0F172A',
   },
   balanceInfo: {
     flexDirection: 'row',
