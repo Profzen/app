@@ -4437,7 +4437,7 @@
     "insufficientBalanceShort": "رصيد {{coin}} غير كافٍ",
     "insufficientBalanceDesc": "رصيد {{coin}} غير كافٍ. المطلوب: {{needed}}، المتاح: {{bal}}",
     "topUpWallet": "شحن DZYwallet",
-    "externalWallets": "محفظة Web3 خارجية",
+    "externalWallets": "محفظة Web3 خارجية / رمز الاستجابة السريعة",
     "externalWalletsSub": "MetaMask، Coinbase، Trust Wallet، Binance",
     "selectWallet": "المحافظ الشائعة",
     "cryptoInvoiceNotice": "فاتورة فورية مع رمز QR وعنوان لـ USDT و USDC و BTC و ETH. متوافقة مع أي محفظة Web3.",

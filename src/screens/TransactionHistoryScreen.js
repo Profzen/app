@@ -380,7 +380,14 @@ export default function TransactionHistoryScreen() {
                     <Text style={styles.volumeLabel}>{t('stats.total_in', 'Total In')}</Text>
                   </View>
                   <View style={styles.volumeAmountContainer}>
-                    <Text style={[styles.volumeAmount, { color: '#FFFFFF' }]}>{formatAmount(stats.totalIn)}</Text>
+                    <Text 
+                      style={[styles.volumeAmount, { color: '#FFFFFF', flexShrink: 1 }]}
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.5}
+                    >
+                      {formatAmount(stats.totalIn)}
+                    </Text>
                     <Text style={styles.volumeCurrency}>{selectedCurrency}</Text>
                   </View>
                 </LinearGradient>
@@ -397,7 +404,14 @@ export default function TransactionHistoryScreen() {
                     <Text style={[styles.volumeLabel, { color: '#1A2840' }]}>{t('stats.total_out', 'Total Out')}</Text>
                   </View>
                   <View style={styles.volumeAmountContainer}>
-                    <Text style={[styles.volumeAmount, { color: '#1A2840' }]}>{formatAmount(stats.totalOut)}</Text>
+                    <Text 
+                      style={[styles.volumeAmount, { color: '#1A2840', flexShrink: 1 }]}
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.5}
+                    >
+                      {formatAmount(stats.totalOut)}
+                    </Text>
                     <Text style={[styles.volumeCurrency, { color: 'rgba(26, 40, 64, 0.7)' }]}>{selectedCurrency}</Text>
                   </View>
                 </LinearGradient>

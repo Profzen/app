@@ -4639,7 +4639,7 @@
     "insufficientBalanceShort": "Insufficient {{coin}} Balance",
     "insufficientBalanceDesc": "Insufficient {{coin}} balance. Required: {{needed}}, Available: {{bal}}",
     "topUpWallet": "Top-Up DZYwallet",
-    "externalWallets": "External Web3 Wallet",
+    "externalWallets": "External Web3 Wallet / QR code",
     "externalWalletsSub": "MetaMask, Coinbase, Trust Wallet, Binance",
     "selectWallet": "POPULAR WALLETS",
     "cryptoInvoiceNotice": "Instant invoice with QR code and address for USDT, USDC, BTC, and ETH. Compatible with any Web3 wallet.",

@@ -4337,7 +4337,7 @@
     "insufficientBalanceShort": "በቂ {{coin}} የለም",
     "insufficientBalanceDesc": "በቂ የ{{coin}} ቀሪ ሂሳብ የለም። የሚያስፈልገው፡ {{needed}}፣ ያለው፡ {{bal}}",
     "topUpWallet": "DZYwallet ይሙሉ",
-    "externalWallets": "ውጫዊ Web3 ዋሌት",
+    "externalWallets": "ውጫዊ Web3 ዋሌት / QR code",
     "externalWalletsSub": "MetaMask፣ Coinbase፣ Trust Wallet፣ Binance",
     "selectWallet": "ታዋቂ ዋሌቶች",
     "cryptoInvoiceNotice": "ፈጣን ደረሰኝ በQR ኮድ እና አድራሻ ለUSDT, USDC, BTC እና ETH። ከማንኛውም Web3 ዋሌት ጋር የሚሰራ።",

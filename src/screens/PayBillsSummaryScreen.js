@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Dimensions,
   Modal,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,6 +26,8 @@ import { ALL_COUNTRIES } from '../utils/countriesData';
 import { isSmallScreen } from '../utils/responsive';
 import { PinConfirmationModal } from '../components/PinConfirmationModal';
 import { useRef } from 'react';
+import QRCode from 'qrcode';
+import Svg, { Rect } from 'react-native-svg';
 
 const { width } = Dimensions.get('window');
 const isSmallDevice = isSmallScreen || width <= 380;
@@ -48,6 +51,10 @@ export default function PayBillsSummaryScreen() {
 
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const pinResolveRef = useRef(null);
+  
+  const [cryptoQrModalVisible, setCryptoQrModalVisible] = useState(false);
+  const [cryptoQrPayload, setCryptoQrPayload] = useState(null);
+  const [cryptoInvoiceUrl, setCryptoInvoiceUrl] = useState('');
 
   const requestPinAuth = () => {
     return new Promise((resolve) => {
@@ -766,8 +773,10 @@ export default function PayBillsSummaryScreen() {
         }
 
         if (data.url) {
-          await WebBrowser.openBrowserAsync(data.url);
-          AppToast.showSuccess(t('paybillsSummary.cryptoOpened', 'Crypto invoice opened. Complete payment in your wallet.'));
+          const qrData = QRCode.create(data.url, { errorCorrectionLevel: 'H' });
+          setCryptoQrPayload(qrData);
+          setCryptoInvoiceUrl(data.url);
+          setCryptoQrModalVisible(true);
         } else {
           throw new Error(data.error || 'Payment gateway returned invalid response');
         }
@@ -1325,6 +1334,81 @@ export default function PayBillsSummaryScreen() {
           </TouchableOpacity>
         </SafeAreaView>
 
+        {/* Crypto QR Code Modal */}
+        <Modal
+          visible={cryptoQrModalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setCryptoQrModalVisible(false)}
+        >
+          <View style={styles.qrModalOverlay}>
+            <View style={styles.qrModalContainer}>
+              <View style={styles.qrModalHeader}>
+                <Text style={styles.qrModalTitle}>{t('paybillsSummary.scanToPay', 'Scan to Pay')}</Text>
+                <TouchableOpacity onPress={() => setCryptoQrModalVisible(false)} style={styles.qrModalCloseBtn}>
+                  <Ionicons name="close" size={24} color="#64748B" />
+                </TouchableOpacity>
+              </View>
+              
+              <Text style={styles.qrModalSub}>
+                {t('paybillsSummary.scanInstructions', 'Scan this QR code with your external wallet to complete the payment.')}
+              </Text>
+              
+              <View style={styles.cryptoQrCodeWrapper}>
+                {cryptoQrPayload && (
+                  <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
+                    <Svg width={220} height={220} viewBox={`0 0 ${cryptoQrPayload.modules.size} ${cryptoQrPayload.modules.size}`}>
+                      <Rect width={cryptoQrPayload.modules.size} height={cryptoQrPayload.modules.size} fill="#FFFFFF" />
+                      {Array.from(cryptoQrPayload.modules.data).map((cell, index) =>
+                        cell ? (
+                          <Rect
+                            key={index}
+                            x={index % cryptoQrPayload.modules.size}
+                            y={Math.floor(index / cryptoQrPayload.modules.size)}
+                            width="1"
+                            height="1"
+                            fill="#20365B"
+                            rx="0.25"
+                            ry="0.25"
+                          />
+                        ) : null
+                      )}
+                    </Svg>
+                    <View style={{
+                      position: 'absolute',
+                      backgroundColor: '#FFFFFF',
+                      padding: 4,
+                      borderRadius: 12,
+                      elevation: 4,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.2,
+                      shadowRadius: 3,
+                    }}>
+                      <Image 
+                        source={require('../../assets/brand/finalLogo_512x512.png')} 
+                        style={{ width: 44, height: 44, borderRadius: 8 }}
+                        resizeMode="contain"
+                      />
+                    </View>
+                  </View>
+                )}
+              </View>
+
+              <TouchableOpacity 
+                style={styles.qrPayManuallyBtn}
+                onPress={() => {
+                  setCryptoQrModalVisible(false);
+                  WebBrowser.openBrowserAsync(cryptoInvoiceUrl);
+                }}
+              >
+                <Ionicons name="open-outline" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+                <Text style={styles.qrPayManuallyText}>{t('paybillsSummary.payManually', 'Pay manually')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
         <PinConfirmationModal
           visible={pinModalVisible}
           onSuccess={handlePinSuccess}
@@ -1718,11 +1802,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 12,
+    flex: 1,
   },
   payButtonText: {
-    fontSize: isSmallDevice ? 13 : 13.5,
+    fontSize: isSmallDevice ? 12 : 13.5,
     fontWeight: '800',
     color: '#20365B',
+    flexShrink: 1,
+    textAlign: 'center',
   },
   ecobankTag: {
     backgroundColor: '#EBF3FF',
@@ -1894,12 +1981,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    height: 36,
-    borderRadius: 8,
+    height: 38,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginTop: 4,
   },
   topUpCtaText: {
     color: '#FFFFFF',
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: 'Inter_700Bold',
   },
   modalSafeArea: {
@@ -2273,5 +2362,66 @@ const styles = StyleSheet.create({
     color: '#E2E8F0',
     fontFamily: 'Inter_500Medium',
     textAlign: 'center',
+  },
+  qrModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  qrModalContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    width: '100%',
+    padding: 24,
+    alignItems: 'center',
+  },
+  qrModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: 12,
+  },
+  qrModalTitle: {
+    fontSize: 18,
+    fontFamily: 'Inter_700Bold',
+    color: '#0F172A',
+  },
+  qrModalCloseBtn: {
+    padding: 4,
+  },
+  qrModalSub: {
+    fontSize: 14,
+    fontFamily: 'Inter_400Regular',
+    color: '#475569',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  cryptoQrCodeWrapper: {
+    padding: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  qrPayManuallyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#4F46E5',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    width: '100%',
+  },
+  qrPayManuallyText: {
+    fontSize: 15,
+    fontFamily: 'Inter_600SemiBold',
+    color: '#FFFFFF',
   },
 });

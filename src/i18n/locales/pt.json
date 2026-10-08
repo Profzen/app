@@ -4411,7 +4411,7 @@
     "insufficientBalanceShort": "Saldo insuficiente em {{coin}}",
     "insufficientBalanceDesc": "Saldo de {{coin}} insuficiente. Necessário: {{needed}}, Disponível: {{bal}}",
     "topUpWallet": "Recarregar DZYwallet",
-    "externalWallets": "Carteira Web3 Externa",
+    "externalWallets": "Carteira Web3 Externa / QR code",
     "externalWalletsSub": "MetaMask, Coinbase, Trust Wallet, Binance",
     "selectWallet": "CARTEIRAS POPULARES",
     "cryptoInvoiceNotice": "Fatura instantânea com código QR e endereço para USDT, USDC, BTC e ETH. Compatível com qualquer carteira Web3.",
