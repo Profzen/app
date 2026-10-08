@@ -11,6 +11,7 @@ import AppToast from '../components/AppToast';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { useApp } from '../context/AppContext';
 import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
+import { ALL_COUNTRIES } from '../utils/countriesData';
 
 const { width } = Dimensions.get('window');
 
@@ -112,15 +113,31 @@ export default function ShopsScreen() {
     return () => clearTimeout(timeoutId);
   }, [fetchMerchants, t]);
 
+  const normalizeText = (str) => 
+    (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+
   let filteredShops = shopsList.filter((shop) => {
-    const shopCat = (shop.allCategories || shop.category || '').toLowerCase();
-    const q = query.trim().toLowerCase();
-    
-    // Better search accuracy: match name, location, country, or category
+    const shopCat = normalizeText(shop.allCategories || shop.category || '');
+    const q = normalizeText(query);
+
+    // Resolve shop country name & ISO code
+    const rawCountry = shop.country || '';
+    const matchedCountry = ALL_COUNTRIES.find(
+      (c) => c.code.toLowerCase() === rawCountry.toLowerCase() || c.name.toLowerCase() === rawCountry.toLowerCase()
+    );
+    const countryName = normalizeText(matchedCountry?.name || rawCountry);
+    const countryCode = normalizeText(matchedCountry?.code || rawCountry);
+    const shopName = normalizeText(shop.name);
+    const shopLocation = normalizeText(shop.location);
+    const shopCity = normalizeText(shop.raw?.city_village || shop.raw?.city || '');
+
+    // Better search accuracy: match name, location, city, country name, country code, or category
     const matchQuery = !q || 
-      shop.name.toLowerCase().includes(q) || 
-      (shop.location && shop.location.toLowerCase().includes(q)) ||
-      (shop.country && shop.country.toLowerCase().includes(q)) ||
+      shopName.includes(q) || 
+      shopLocation.includes(q) ||
+      shopCity.includes(q) ||
+      countryName.includes(q) ||
+      countryCode === q ||
       shopCat.includes(q);
 
     let matchFilter = false;

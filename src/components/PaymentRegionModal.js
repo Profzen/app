@@ -76,7 +76,7 @@ export default function PaymentRegionModal({
               <Text style={styles.infoNoticeText}>
                 {t(
                   'paymentRails.momoNoticeDesc',
-                  'Le Mobile Money nécessite un opérateur africain partenaire (Safaricom, MTN, Airtel, Orange, Ethio Telecom, Vodacom...). Si vous détenez un numéro mobile de l’un des pays ci-dessous, sélectionnez-le pour activer ce moyen.'
+                  'Le Mobile Money nécessite un opérateur africain partenaire (Safaricom, MTN, Airtel, Orange, Vodacom, Moov, Wave...). Si vous détenez un numéro mobile de l’un des pays ci-dessous, sélectionnez-le pour activer ce moyen.'
                 )}
               </Text>
             </View>

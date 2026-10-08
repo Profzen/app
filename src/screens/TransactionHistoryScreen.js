@@ -65,7 +65,7 @@ export default function TransactionHistoryScreen() {
     const typeUpper = (type || '').toUpperCase();
     if (typeUpper === 'SEND') return <Ionicons name="arrow-up-circle" size={20} color="#EF4444" />;
     if (typeUpper === 'RECEIVE') return <Ionicons name="arrow-down-circle" size={20} color="#10B981" />;
-    if (typeUpper === 'BUY') return <Ionicons name="cart" size={20} color="#F59E0B" />;
+    if (typeUpper === 'BUY') return <Ionicons name="cart" size={20} color="#EF4444" />;
     if (typeUpper === 'TOP_UP' || typeUpper === 'TOP-UP') return <Ionicons name="phone-portrait" size={20} color="#34D399" />;
     if (typeUpper === 'SWAP') return <Ionicons name="swap-vertical" size={20} color="#8B5CF6" />;
     if (typeUpper === 'STAKE') return <Ionicons name="server" size={20} color="#3B82F6" />;

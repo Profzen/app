@@ -1034,7 +1034,7 @@ export default function PayBillsSummaryScreen() {
               <View style={styles.methodInfo}>
                 <View style={styles.methodTitleRow}>
                   <Text style={styles.methodTitle} numberOfLines={1} ellipsizeMode="tail">
-                    {t('paybillsSummary.externalWallets', 'External Web3 Wallet')}
+                    {t('paybillsSummary.externalWallets', 'External Web3 Wallet / QR code')}
                   </Text>
                   <View style={styles.web3Tag}>
                     <Text style={styles.web3TagText}>{t('paybillsSummary.popularBadge', 'Popular')}</Text>
@@ -1353,6 +1353,26 @@ export default function PayBillsSummaryScreen() {
               <Text style={styles.qrModalSub}>
                 {t('paybillsSummary.scanInstructions', 'Scan this QR code with your external wallet to complete the payment.')}
               </Text>
+              
+              <View style={{
+                backgroundColor: '#F8FAFC',
+                borderRadius: 12,
+                paddingVertical: 8,
+                paddingHorizontal: 16,
+                marginBottom: 16,
+                borderWidth: 1,
+                borderColor: '#E2E8F0',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <Text style={{ fontFamily: 'Inter_500Medium', fontSize: 13, color: '#64748B', marginRight: 6 }}>
+                  {t('paybillsSummary.totalDue', 'Total due :')}
+                </Text>
+                <Text style={{ fontFamily: 'SpaceGrotesk_700Bold', fontSize: 16, color: '#20365B' }}>
+                  {totalCost} {currency}
+                </Text>
+              </View>
               
               <View style={styles.cryptoQrCodeWrapper}>
                 {cryptoQrPayload && (

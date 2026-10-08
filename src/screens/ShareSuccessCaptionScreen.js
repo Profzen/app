@@ -36,16 +36,19 @@ export default function ShareSuccessCaptionScreen() {
   const senderFlag = transactionData.senderFlag || matchedSenderCountry?.flag || '🇫🇷';
 
   // Anonymize recipient
-  const rawRecipientName = transactionData.recipientName || 'Bénéficiaire';
+  const rawRecipientName = transactionData.recipientName || transactionData.merchantName || transactionData.serviceTitle || 'Bénéficiaire';
   const displayRecipientName = rawRecipientName.split(' ')[0];
   const rawRecipientCountry = transactionData.recipientCountry || 'TG';
   const matchedRecipientCountry = ALL_COUNTRIES.find(c => c.name.toLowerCase() === rawRecipientCountry.toLowerCase() || c.code.toLowerCase() === rawRecipientCountry.toLowerCase());
   const recipientFlag = transactionData.recipientFlag || matchedRecipientCountry?.flag || '🇹🇬';
 
+  const isPayment = transactionData?.type === 'payment' || actionKey === 'actionPaid' || !!transactionData?.merchantName || !!transactionData?.serviceTitle;
 
-  const resolvedAction = actionKey
-    ? t(`shareSuccess.${actionKey}`, actionType || 'transferred')
-    : (actionType || t('shareSuccess.actionSent', 'sent funds'));
+  const resolvedAction = isPayment
+    ? (transactionData.actionType || (transactionData.merchantName ? `Paid for ${transactionData.merchantName}` : (transactionData.serviceTitle ? `Paid for ${transactionData.serviceTitle}` : t('shareSuccess.actionPaid', 'Paid for service'))))
+    : actionKey
+      ? t(`shareSuccess.${actionKey}`, actionType || 'transferred')
+      : (actionType || t('shareSuccess.actionSent', 'sent funds'));
 
   const shortTxHash = txHash && txHash.length > 18
     ? `${txHash.slice(0, 7)}...${txHash.slice(-5)}`
@@ -106,6 +109,10 @@ export default function ShareSuccessCaptionScreen() {
     const formattedRecipient = formatRecipientCaptionName();
     if (isWithdraw) {
       return `Successfully cashed out ${amount} ${token} to ${formattedRecipient} with @DizzitUp. Instant, borderless, and without middlemen.\n\nhttps://dizzitup.com`;
+    }
+    if (isPayment) {
+      const targetEntity = transactionData.merchantName || transactionData.serviceTitle || formattedRecipient;
+      return `Successfully paid for ${targetEntity} (${amount} ${token}) with @DizzitUp. Instant, borderless, and without middlemen.\n\nhttps://dizzitup.com`;
     }
     return `Successfully sent ${amount} ${token} to ${formattedRecipient} with @DizzitUp. Fast, borderless, and secure on Polygon.\n\nhttps://dizzitup.com`;
   };
@@ -171,8 +178,8 @@ export default function ShareSuccessCaptionScreen() {
                         <span class="value">${displaySenderName} ${senderFlag}</span>
                       </div>
                       <div class="row">
-                        <span class="label">To</span>
-                        <span class="value">${formattedRecipient} ${recipientFlag}</span>
+                        <span class="label">${isPayment ? 'Paid to' : 'To'}</span>
+                        <span class="value">${isPayment ? (transactionData.merchantName || transactionData.serviceTitle || formattedRecipient) : formattedRecipient} ${recipientFlag}</span>
                       </div>
                       <div class="row">
                         <span class="label">Network</span>
