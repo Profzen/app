@@ -1,8 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { theme } from '../theme/theme';
+import { useApp } from '../context/AppContext';
 
 export const Stepper = ({ currentStep = 1 }) => {
+  const { t } = useApp();
+
   return (
     <View style={styles.stepperContainer}>
       {/* Step 1 */}
@@ -10,7 +13,7 @@ export const Stepper = ({ currentStep = 1 }) => {
         <View style={[styles.stepCircle, currentStep >= 1 && styles.stepActive]}>
           <Text style={[styles.stepText, currentStep >= 1 && styles.stepTextActive]}>1</Text>
         </View>
-        <Text style={[styles.stepLabel, currentStep >= 1 && styles.stepLabelActive]}>Informations</Text>
+        <Text style={[styles.stepLabel, currentStep >= 1 && styles.stepLabelActive]}>{t('stepper.information', 'Information')}</Text>
       </View>
       
       <View style={[styles.stepLine, currentStep >= 2 && styles.stepLineActive]} />
@@ -20,7 +23,7 @@ export const Stepper = ({ currentStep = 1 }) => {
         <View style={[styles.stepCircle, currentStep >= 2 && styles.stepActive]}>
           <Text style={[styles.stepText, currentStep >= 2 && styles.stepTextActive]}>2</Text>
         </View>
-        <Text style={[styles.stepLabel, currentStep >= 2 && styles.stepLabelActive]}>Vérification</Text>
+        <Text style={[styles.stepLabel, currentStep >= 2 && styles.stepLabelActive]}>{t('stepper.verification', 'Verification')}</Text>
       </View>
       
       <View style={[styles.stepLine, currentStep >= 3 && styles.stepLineActive]} />
@@ -30,7 +33,8 @@ export const Stepper = ({ currentStep = 1 }) => {
         <View style={[styles.stepCircle, currentStep >= 3 && styles.stepActive]}>
           <Text style={[styles.stepText, currentStep >= 3 && styles.stepTextActive]}>3</Text>
         </View>
-        <Text style={[styles.stepLabel, currentStep >= 3 && styles.stepLabelActive]}>Sécurisation</Text>
+        <Text style={[styles.stepLabel, currentStep >= 3 && styles.stepLabelActive]}>{t('stepper.security', 'Security')}</Text>
+
       </View>
     </View>
   );

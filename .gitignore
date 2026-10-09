@@ -71,7 +71,13 @@ memoire.md*
 debug*.log
 /*.png
 CLAUDE.md
+.claude
 AGENTS.md
 update-*.js
 test-*.js
 check-*.js
+compare-locales.js
+find-french.js
+french-report.txt
+locales-report.txt
+restore-today.js

@@ -39,8 +39,7 @@ export default function BusinessAccountScreen() {
 
   const handleLogout = async () => {
     setInfoModalVisible(false);
-    await logout();
-    navigation.reset({ index: 0, routes: [{ name: 'LoginScreen' }] });
+    await logout(navigation);
   };
 
   const handleGoToBusinessHome = () => {

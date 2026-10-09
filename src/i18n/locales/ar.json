@@ -528,7 +528,11 @@
     "typeHospitality": "Hospitality / Rentals (BNB, Hotels)",
     "typeService": "Professional Services (Consulting, Events)",
     "businessType": "Business Type",
-    "selectBusinessType": "Select your primary offering"
+    "selectBusinessType": "Select your primary offering",
+    "enterNewPinTitle": "أدخل رقم التعريف الشخصي الجديد",
+    "enterNewPinDesc": "أدخل رقم التعريف الشخصي الجديد المكون من 6 أرقام.",
+    "verifyCurrentPin": "التحقق من رقم التعريف الشخصي الحالي",
+    "enterCurrentPin": "أدخل رقم التعريف الشخصي الحالي للمتابعة."
   },
   "rating": {
     "enjoyingApp": "هل تستمتع باستخدام DizzitUp؟",
@@ -3734,6 +3738,12 @@
     "personal_type": "الشخصي"
   },
   "pos": {
+    "camera_permission": "نحتاج إلى إذنك لاستخدام الكاميرا",
+    "grant_permission": "منح الإذن",
+    "scan_success": "تم مسح العميل بنجاح",
+    "scan_customer": "مسح العميل",
+    "align_qr": "قم بمحاذاة رمز الاستجابة السريعة داخل الإطار",
+    "scan_again": "مسح مرة أخرى",
     "cashier": "أمين الصندوق",
     "pos_title": "نقطة البيع (POS/ATM)",
     "cash_desks": "مكاتب النقد",
@@ -3826,7 +3836,12 @@
     "pushNotificationsDesc": "تلقي تنبيهات للمدفوعات والطلبات",
     "selectCurrency": "اختر عملة العرض",
     "comingSoon": "قريباً",
-    "comingSoonMsg": "ستكون ميزة تغيير كلمة المرور متاحة في التحديث القادم."
+    "comingSoonMsg": "ستكون ميزة تغيير كلمة المرور متاحة في التحديث القادم.",
+    "changePin": "تغيير رقم التعريف الشخصي",
+    "changePinDesc": "قم بتحديث رقم التعريف الشخصي للمعاملة",
+    "setPin": "تعيين رقم التعريف الشخصي",
+    "setPinDesc": "قم بتعيين رقم تعريف شخصي لمعاملات آمنة",
+    "pinUpdated": "تم تحديث رقم التعريف الشخصي بنجاح"
   },
   "receiveFunds": {
     "title": "استلام الأموال",
@@ -3967,6 +3982,10 @@
   "qaReferToastTitle": "إحالة متجر",
   "qaReferToastMessage": "نموذج الإحالة جاهز.",
   "contacts": {
+    "view_profile": "عرض الملف الشخصي",
+    "matches_count": "تم العثور على",
+    "no_matching_contact": "لا توجد جهات اتصال تبدأ بـ",
+    "view_all_results": "عرض الكل",
     "quick_actions": "إجراءات سريعة",
     "quick_action_1": {
       "title": "دفع وشراء\nالأساسيات",
@@ -4112,6 +4131,8 @@
     }
   },
   "topup": {
+    "select_country": "اختر البلد",
+    "select_token": "اختر الرمز",
     "title": "شحن المحفظة",
     "select_method": "اختر طريقة الدفع",
     "mobile_money": "الدفع عبر الهاتف المحمول",
@@ -4742,6 +4763,7 @@
     "step4Msg": "التحقق من حساب الضمان الذكي..."
   },
   "paymentSuccess": {
+    "backToContact": "العودة إلى ملف جهة الاتصال",
     "title": "تم الدفع بنجاح!",
     "subtitle": "تمت معالجة دفعتك بنجاح.",
     "secure": "معاملة آمنة 100%",
@@ -5093,6 +5115,10 @@
     "highPerformance": "أداء عالٍ"
   },
   "shareSuccess": {
+    "copiedTitle": "تم نسخ الرسالة!",
+    "copiedDesc": "جاهز للمشاركة.",
+    "resetTitle": "تم إعادة تعيين الرسالة",
+    "resetDesc": "تم استعادة النص الأصلي.",
     "title": "شارك نجاحي",
     "subtitle": "اختر أين تريد نشر بطاقة DizzitUp الخاصة بك",
     "stepSocialNetwork": "شبكة التواصل",
@@ -5240,7 +5266,21 @@
     "taskSavedMessage": "تمت إضافتها إلى قائمة مهامك.",
     "actionsToComplete": "إجراءات للإكمال",
     "progressLabel": "تقدمك",
-    "completed": "مكتملة"
+    "completed": "مكتملة",
+    "todo1Title": "شراء هدية لعبدو",
+    "categoryPayment": "دفع",
+    "dueToday": "اليوم",
+    "todo2Title": "شحن المحفظة",
+    "categoryWallet": "محفظة",
+    "dueThisWeek": "هذا الأسبوع",
+    "todo3Title": "إكمال ملفي الشخصي",
+    "categorySecurity": "أمان",
+    "dueBeforeFriday": "قبل الجمعة",
+    "todo4Title": "إنشاء متجر DZYStore الخاص بي",
+    "categoryBusiness": "أعمال",
+    "dueThisMonth": "هذا الشهر",
+    "categoryPersonal": "شخصي",
+    "dueToPlan": "للتخطيط"
   },
   "dashboard": {
     "dzy_card_promo": "بطاقتك Visa بالدولار الأمريكي للشراء والسفر في أي مكان في العالم.",
@@ -5501,6 +5541,7 @@
     "helpNote": "إذا لم يكن مقدم الخدمة أو نوع الفاتورة مدعوماً، فقد يعني ذلك أننا لا نعمل معهم حالياً. يعمل فريقنا باستمرار على توسيع التغطية."
   },
   "cart": {
+    "continueShopping": "مواصلة التسوق",
     "title": "سلة التسوق",
     "emptyTitle": "سلة التسوق فارغة",
     "emptyDesc": "سلتك لا تحتوي على أي منتجات حالياً.",
@@ -5551,6 +5592,7 @@
     "sortNewest": "أحدث المنتجات"
   },
   "paymentRails": {
+    "withdrawRegionLabel": "بلد استلام الأموال:",
     "regionModalTitle": "منطقة الدفع بالهاتف المحمول (Mobile Money)",
     "regionModalSub": "المنطقة المكتشفة حالياً:",
     "momoNoticeTitle": "لماذا خيار Mobile Money معطل باللون الرمادي؟",
@@ -5629,5 +5671,22 @@
   "shop.info.website": "الموقع الإلكتروني",
   "shop.info.social_media_title": "وسائل التواصل والاتصال",
   "common.open": "فتح",
-  "common.visit": "زيارة"
+  "common.visit": "زيارة",
+  "stepper.information": "معلومات",
+  "stepper.verification": "التحقق",
+  "stepper.security": "الأمان",
+  "countries.BJ": "بنين",
+  "countries.CI": "ساحل العاج",
+  "countries.SN": "السنغال",
+  "topup.ecosystem_token": "رمز النظام البيئي",
+  "topup.corridor_notice_desc": "أموال الهاتف المحمول المحلية لا تعمل في {{country}}. يمكنك شحن رصيد في أي ممر شريك مدعوم (بنين، توغو، مدغشقر، السنغال...) أو الدفع بالبطاقة/العملات المشفرة.",
+  "topup.pay_with_card_or_crypto": "الدفع بالبطاقة أو العملات المشفرة بدلاً من ذلك",
+  "topup.operator": "المشغل",
+  "paymentRails.licensedNetwork": "شبكة شركاء مرخصة",
+  "paymentRails.securePayment": "دفع آمن",
+  "paymentRails.momoAvailable": "متاح ({{operators}})",
+  "paymentRails.momoUnavailableRegion": "غير متوفر في {{country}}. نشط في 20 دولة في أفريقيا جنوب الصحراء الكبرى.",
+  "paymentRails.bankAvailable": "التحويل المصرفي متاح في {{country}}",
+  "paymentRails.bankUnavailable": "التحويل المصرفي غير متوفر في {{country}}",
+  "withdrawFunds.titleToMobileMoney": "سحب الأموال إلى Mobile Money"
 }

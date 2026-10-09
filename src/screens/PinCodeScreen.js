@@ -19,7 +19,7 @@ const STEPS = (t) => [
 ];
 
 export default function PinCodeScreen() {
-  const { t } = useApp();
+  const { t, user } = useApp();
   const navigation = useNavigation();
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
@@ -45,7 +45,8 @@ export default function PinCodeScreen() {
     setIsLoading(true);
     try {
       if (Platform.OS !== 'web') {
-        await SecureStore.setItemAsync('user_pin', pin);
+        const pinKey = user?.id ? `user_pin_${user?.id}` : 'user_pin';
+        await SecureStore.setItemAsync(pinKey, pin);
         
         // Ask if they want to enable Biometrics
         const hasHardware = await LocalAuthentication.hasHardwareAsync();
@@ -68,7 +69,8 @@ export default function PinCodeScreen() {
 
   const handleEnableBiometrics = async () => {
     setShowBioPrompt(false);
-    await SecureStore.setItemAsync('use_biometrics', 'true');
+    const bioKey = user?.id ? `use_biometrics_${user?.id}` : 'use_biometrics';
+    await SecureStore.setItemAsync(bioKey, 'true');
     finishSetup();
   };
 

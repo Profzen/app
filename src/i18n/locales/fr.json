@@ -527,7 +527,11 @@
     "typeHospitality": "Hôtellerie / Locations (BNB, Hôtels)",
     "typeService": "Services Professionnels (Consulting, Événements)",
     "businessType": "Type d'Entreprise",
-    "selectBusinessType": "Sélectionnez votre offre principale"
+    "selectBusinessType": "Sélectionnez votre offre principale",
+    "enterNewPinTitle": "Entrez le nouveau code PIN",
+    "enterNewPinDesc": "Entrez votre nouveau code PIN à 6 chiffres.",
+    "verifyCurrentPin": "Vérifier le code PIN actuel",
+    "enterCurrentPin": "Entrez votre code PIN actuel pour continuer."
   },
   "common": {
     "selectOption": "Sélectionnez une option",
@@ -3990,7 +3994,12 @@
     "pushNotificationsDesc": "Recevoir des alertes pour les paiements et commandes",
     "selectCurrency": "Sélectionner la devise d'affichage",
     "comingSoon": "Bientôt disponible",
-    "comingSoonMsg": "La modification du mot de passe sera disponible dans la prochaine mise à jour."
+    "comingSoonMsg": "La modification du mot de passe sera disponible dans la prochaine mise à jour.",
+    "changePin": "Changer le code PIN",
+    "changePinDesc": "Mettre à jour votre code PIN de transaction",
+    "setPin": "Définir le code PIN",
+    "setPinDesc": "Définir un code PIN pour des transactions sécurisées",
+    "pinUpdated": "Code PIN mis à jour avec succès"
   },
   "receiveFunds": {
     "title": "Recevoir fonds",
@@ -4368,7 +4377,9 @@
     "select_token_title": "Sélectionner le token à acheter",
     "phone_placeholder": "ex: 90 12 34 56",
     "search_operator": "Rechercher un opérateur...",
-    "search_country": "Rechercher un pays ou indicatif..."
+    "search_country": "Rechercher un pays ou indicatif...",
+    "select_country": "Sélectionner le pays",
+    "select_token": "Sélectionner le token"
   },
   "localExchange": {
     "title": "Scanner & Encaisser",
@@ -5034,7 +5045,8 @@
     "escrowPinNote": "Donnez ce code secret à 4 chiffres au livreur ou gérant de boutique UNIQUEMENT après réception et vérification physique de vos articles.",
     "fundsEscrowed": "Vos fonds sont sécurisés par un contrat intelligent d’escrow on-chain.",
     "cryptoDebited": "Montant Crypto débité",
-    "orderRef": "Réf Commande"
+    "orderRef": "Réf Commande",
+    "backToContact": "Retour au profil du contact"
   },
   "serviceCheckout": {
     "initPayment": "Initialisation du paiement sécurisé...",
@@ -5493,7 +5505,21 @@
     "taskSavedMessage": "Elle a été ajoutée à votre To-do list.",
     "actionsToComplete": "actions à réaliser",
     "progressLabel": "Votre progression",
-    "completed": "terminées"
+    "completed": "terminées",
+    "todo1Title": "Acheter un cadeau pour Abdou",
+    "categoryPayment": "Paiement",
+    "dueToday": "Aujourd'hui",
+    "todo2Title": "Recharger le portefeuille",
+    "categoryWallet": "Portefeuille",
+    "dueThisWeek": "Cette semaine",
+    "todo3Title": "Compléter mon profil",
+    "categorySecurity": "Sécurité",
+    "dueBeforeFriday": "Avant vendredi",
+    "todo4Title": "Créer ma boutique DZYStore",
+    "categoryBusiness": "Business",
+    "dueThisMonth": "Ce mois-ci",
+    "categoryPersonal": "Personnel",
+    "dueToPlan": "À planifier"
   },
   "copied_title": "{{label}} copié !",
   "dashboard": {
@@ -5850,5 +5876,22 @@
   "shop.info.website": "Site web",
   "shop.info.social_media_title": "Réseaux sociaux & Contact",
   "common.open": "Ouvrir",
-  "common.visit": "Visiter"
+  "common.visit": "Visiter",
+  "stepper.information": "Informations",
+  "stepper.verification": "Vérification",
+  "stepper.security": "Sécurisation",
+  "countries.BJ": "Bénin",
+  "countries.CI": "Côte d'Ivoire",
+  "countries.SN": "Sénégal",
+  "topup.ecosystem_token": "Token écosystème",
+  "topup.corridor_notice_desc": "Le Mobile Money local n'opère pas en {{country}}. Vous pouvez recharger une SIM dans un pays partenaire ci-dessous (Bénin, Togo, Madagascar, Sénégal...) ou utiliser la Carte Bancaire / Crypto.",
+  "topup.pay_with_card_or_crypto": "Payer par Carte ou Crypto plutôt",
+  "topup.operator": "Opérateur",
+  "paymentRails.licensedNetwork": "Réseau Partenaire Agréé",
+  "paymentRails.securePayment": "Paiement Sécurisé",
+  "paymentRails.momoAvailable": "Disponible ({{operators}})",
+  "paymentRails.momoUnavailableRegion": "Indisponible pour {{country}}. Actif dans 20 pays d'Afrique Subsaharienne.",
+  "paymentRails.bankAvailable": "Virement bancaire disponible en {{country}}",
+  "paymentRails.bankUnavailable": "Virement local indisponible pour {{country}}",
+  "withdrawFunds.titleToMobileMoney": "Retirer des fonds vers Mobile Money"
 }

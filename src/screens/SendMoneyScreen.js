@@ -378,7 +378,7 @@ export default function SendMoneyScreen() {
               id: m.id,
               name: m.name,
               tag: 'DizzitUp',
-              address: m.phone || m.evm_address || 'Utilisateur',
+              address: m.phone || m.evm_address || '',
               evm_address: m.evm_address,
               solana_address: m.solana_address,
               phone: m.phone || m.phone_number,

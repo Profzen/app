@@ -20,44 +20,44 @@ export default function TodoListScreen() {
       { 
         id: '1', 
         titleKey: 'todoList.todo1Title', 
-        defaultTitle: 'Acheter un cadeau pour Abdou', 
+        defaultTitle: 'Buy a gift for Abdou', 
         categoryKey: 'todoList.categoryPayment', 
-        defaultCategory: 'Paiement', 
+        defaultCategory: 'Payment', 
         dueKey: 'todoList.dueToday', 
-        defaultDue: "Aujourd'hui", 
+        defaultDue: "Today", 
         done: false, 
         icon: 'bag-handle-outline', 
         color: '#8B5CF6',
         actionRoute: 'ExploreGiftCardsScreen',
-        actionLabel: 'Acheter'
+        actionLabel: 'Buy'
       },
       { 
         id: '2', 
         titleKey: 'todoList.todo2Title', 
-        defaultTitle: 'Recharger le portefeuille', 
+        defaultTitle: 'Top up wallet', 
         categoryKey: 'todoList.categoryWallet', 
-        defaultCategory: 'Portefeuille', 
+        defaultCategory: 'Wallet', 
         dueKey: 'todoList.dueThisWeek', 
-        defaultDue: 'Cette semaine', 
+        defaultDue: 'This week', 
         done: hasFunds, 
         icon: 'wallet-outline', 
         color: '#EF4444',
         actionRoute: 'TopUpScreen',
-        actionLabel: 'Recharger'
+        actionLabel: 'Top up'
       },
       { 
         id: '3', 
         titleKey: 'todoList.todo3Title', 
-        defaultTitle: 'Compléter mon profil', 
+        defaultTitle: 'Complete my profile', 
         categoryKey: 'todoList.categorySecurity', 
-        defaultCategory: 'Sécurité', 
+        defaultCategory: 'Security', 
         dueKey: 'todoList.dueBeforeFriday', 
-        defaultDue: 'Avant vendredi', 
+        defaultDue: 'Before Friday', 
         done: isProfileComplete, 
         icon: 'shield-checkmark-outline', 
         color: '#3B82F6',
         actionRoute: 'AccountSettingsScreen',
-        actionLabel: 'Compléter'
+        actionLabel: 'Complete'
       },
     ];
 
@@ -66,16 +66,16 @@ export default function TodoListScreen() {
       list.push({ 
         id: '4', 
         titleKey: 'todoList.todo4Title', 
-        defaultTitle: 'Créer ma boutique DZYStore', 
+        defaultTitle: 'Create my DZYStore', 
         categoryKey: 'todoList.categoryBusiness', 
         defaultCategory: 'Business', 
         dueKey: 'todoList.dueThisMonth', 
-        defaultDue: 'Ce mois-ci', 
+        defaultDue: 'This month', 
         done: false, 
         icon: 'storefront-outline', 
         color: '#F59E0B',
         actionUrl: 'https://dizzitup.com/merchant-login-registration?mode=signup',
-        actionLabel: 'Créer'
+        actionLabel: 'Create'
       });
     }
 
@@ -95,9 +95,9 @@ export default function TodoListScreen() {
       id: Date.now().toString(), 
       title: title.trim(), 
       categoryKey: 'todoList.categoryPersonal',
-      defaultCategory: 'Personnel', 
+      defaultCategory: 'Personal', 
       dueKey: 'todoList.dueToPlan',
-      defaultDue: 'À planifier', 
+      defaultDue: 'To plan', 
       done: false, 
       icon: 'checkmark-circle-outline', 
       color: '#10B981',
@@ -128,10 +128,10 @@ export default function TodoListScreen() {
             <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
           <View style={{flex:1}}>
-            <Text style={styles.title}>{t('todoList.title', 'Ma To-do list')}</Text>
-            <Text style={styles.subtitle}>{pending} {t('todoList.actionsToComplete', 'actions à réaliser')}</Text>
+            <Text style={styles.title}>{t('todoList.title', 'My To-do list')}</Text>
+            <Text style={styles.subtitle}>{pending} {t('todoList.actionsToComplete', 'actions to complete')}</Text>
           </View>
-          <TouchableOpacity style={styles.addHeader} onPress={() => setShowForm(true)} accessibilityLabel="Créer une tâche">
+          <TouchableOpacity style={styles.addHeader} onPress={() => setShowForm(true)} accessibilityLabel="Create a task">
             <Ionicons name="add" size={24} color="#1A2840" />
           </TouchableOpacity>
         </View>
@@ -139,8 +139,8 @@ export default function TodoListScreen() {
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.summary}>
             <View>
-              <Text style={styles.summaryLabel}>{t('todoList.progressLabel', 'Votre progression')}</Text>
-              <Text style={styles.summaryValue}>{allTodos.length - pending}/{allTodos.length} {t('todoList.completed', 'terminées')}</Text>
+              <Text style={styles.summaryLabel}>{t('todoList.progressLabel', 'Your progress')}</Text>
+              <Text style={styles.summaryValue}>{allTodos.length - pending}/{allTodos.length} {t('todoList.completed', 'completed')}</Text>
             </View>
             <View style={styles.progress}>
               <View style={[styles.progressFill, {width: `${allTodos.length ? ((allTodos.length-pending)/allTodos.length)*100 : 0}%`}]} />
@@ -149,27 +149,27 @@ export default function TodoListScreen() {
 
           {showForm && (
             <View style={styles.form}>
-              <Text style={styles.formTitle}>{t('todoList.newTask', 'Nouvelle tâche')}</Text>
+              <Text style={styles.formTitle}>{t('todoList.newTask', 'New task')}</Text>
               <TextInput 
                 style={styles.input} 
-                placeholder={t('todoList.placeholder', 'Que souhaitez-vous faire ?')} 
+                placeholder={t('todoList.placeholder', 'What do you want to do?')} 
                 value={title} 
                 onChangeText={setTitle} 
                 autoFocus 
               />
               <View style={styles.formActions}>
                 <TouchableOpacity style={styles.cancel} onPress={() => setShowForm(false)}>
-                  <Text style={styles.cancelText}>{t('todoList.cancel', 'Annuler')}</Text>
+                  <Text style={styles.cancelText}>{t('todoList.cancel', 'Cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.save, !title.trim() && {opacity: 0.45}]} onPress={addTodo} disabled={!title.trim()}>
                   <Ionicons name="save-outline" size={18} color="#1A2840" />
-                  <Text style={styles.saveText}>{t('todoList.save', 'Sauvegarder')}</Text>
+                  <Text style={styles.saveText}>{t('todoList.save', 'Save')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
           )}
 
-          <Text style={styles.sectionTitle}>{t('todoList.allTasks', 'Toutes les tâches')}</Text>
+          <Text style={styles.sectionTitle}>{t('todoList.allTasks', 'All tasks')}</Text>
           {allTodos.map((todo) => {
             const displayTitle = todo.titleKey ? t(todo.titleKey, todo.defaultTitle) : todo.title;
             const displayCat = todo.categoryKey ? t(todo.categoryKey, todo.defaultCategory) : todo.category;
@@ -194,7 +194,7 @@ export default function TodoListScreen() {
                   </View>
                 ) : (
                   <View style={styles.actionBtnContainer}>
-                    <Text style={styles.actionBtnText}>{todo.actionLabel || 'Ouvrir'}</Text>
+                    <Text style={styles.actionBtnText}>{todo.actionLabel || 'Open'}</Text>
                     <Ionicons name="chevron-forward" size={16} color="#0052FF" />
                   </View>
                 )}
@@ -203,15 +203,15 @@ export default function TodoListScreen() {
           })}
           <TouchableOpacity style={styles.createBtn} onPress={() => setShowForm(true)}>
             <Ionicons name="add-circle-outline" size={21} color="#1A2840" />
-            <Text style={styles.createText}>{t('todoList.createNewTask', 'Créer une nouvelle tâche')}</Text>
+            <Text style={styles.createText}>{t('todoList.createNewTask', 'Create a new task')}</Text>
           </TouchableOpacity>
         </ScrollView>
 
         <BottomNavBar activeTab="Home" />
         <AppToast 
           visible={toast} 
-          title={t('todoList.taskSavedTitle', 'Tâche sauvegardée')} 
-          message={t('todoList.taskSavedMessage', 'Elle a été ajoutée à votre To-do list.')} 
+          title={t('todoList.taskSavedTitle', 'Task saved')} 
+          message={t('todoList.taskSavedMessage', 'It has been added to your To-do list.')} 
           onClose={() => setToast(false)} 
         />
       </View>

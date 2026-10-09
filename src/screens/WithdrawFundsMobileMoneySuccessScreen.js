@@ -278,7 +278,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
                   recipientName: `${providerName} (${recipientContact})`,
                   recipientCountry: countryName,
                   recipientFlag: meta.flag || '🌍',
-                  senderName: `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.username || 'Utilisateur',
+                  senderName: `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.username || '',
                   senderCountry: countryName,
                   senderFlag: meta.flag || '🌍',
                   senderAvatar: user?.avatar?.uri || null,

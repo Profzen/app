@@ -427,7 +427,7 @@ export default function CashRegisterScreen() {
                 <Text style={styles.infoModalTitle}>{t('pos.event_ticket_scanner', 'Scanner de billets')}</Text>
               </View>
               <Text style={styles.infoModalText}>
-                {t('pos.info_modal_desc', "Cette fonctionnalit� permet de scanner le QR code d'un client (ex. un ticket d'�v�nement) pour valider son entr�e ou traiter une demande sp�ciale. Cliquez sur 'Autoriser la cam�ra' pour commencer.")}
+                {t('pos.info_modal_desc', "This feature allows you to scan a customer's QR code (e.g. an event ticket) to validate entry or process a special request. Click 'Authorize Camera' to begin.")}
               </Text>
               <TouchableOpacity style={styles.infoModalBtn} onPress={() => setInfoModalVisible(false)}>
                 <Text style={styles.infoModalBtnText}>{t('pos.close', 'Fermer')}</Text>

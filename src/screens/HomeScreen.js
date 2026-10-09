@@ -308,10 +308,34 @@ export default function HomeScreen() {
                 </View>
               </View>
               <View style={styles.userTextCol}>
-                <Text style={styles.greetingText} numberOfLines={1}>{t('greetingHello', 'Bonjour,')}</Text>
-                <Text style={styles.nameText} numberOfLines={1} ellipsizeMode="tail">
-                  {isUserLoading && !user?.name ? '...' : (user?.name || 'Utilisateur').split(' ')[0]}
-                </Text>
+                {(() => {
+                  let displayName = user?.firstName || (user?.name ? user.name.split(' ')[0] : '');
+                  if (displayName.toLowerCase() === 'utilisateur' || displayName.toLowerCase() === 'user') {
+                    displayName = '';
+                  }
+
+                  if (isUserLoading && !displayName) {
+                    return (
+                      <>
+                        <Text style={styles.greetingText} numberOfLines={1}>{t('greetingHello', 'Hello,')}</Text>
+                        <Text style={styles.nameText} numberOfLines={1}>...</Text>
+                      </>
+                    );
+                  }
+
+                  const finalName = displayName;
+
+                  return (
+                    <>
+                      <Text style={styles.greetingText} numberOfLines={1}>{t('greetingHello', 'Hello,')}</Text>
+                      {!!finalName && (
+                        <Text style={styles.nameText} numberOfLines={1} ellipsizeMode="tail">
+                          {finalName}
+                        </Text>
+                      )}
+                    </>
+                  );
+                })()}
               </View>
             </TouchableOpacity>
             <View style={styles.headerIcons}>

@@ -27,25 +27,43 @@ export default function AboutDizzitUpScreen() {
   useEffect(() => {
     const fetchReleaseNotes = async () => {
       try {
-        let { data, error } = await supabase
+        const buildNum = Number(appBuildNumber);
+        const hasValidBuild = !isNaN(buildNum) && appBuildNumber !== '—';
+        const col = Platform.OS === 'ios' ? 'ios_build' : 'android_build';
+
+        let query = supabase
           .from('app_releases')
           .select('new_features, fixes, updated_at')
           .eq('platform', 'all')
           .eq('language', language.split('-')[0])
-          .eq('status', 'published')
-          .maybeSingle();
+          .neq('status', 'draft')
+          .order(col, { ascending: false })
+          .limit(1);
+
+        if (hasValidBuild) {
+          query = query.lte(col, buildNum);
+        }
+
+        let { data, error } = await query.maybeSingle();
 
         if (error) throw error;
 
         // Fall back to English if the current language has no release-note entry
         if (!data) {
-          const fallback = await supabase
+          let fallbackQuery = supabase
             .from('app_releases')
             .select('new_features, fixes, updated_at')
             .eq('platform', 'all')
             .eq('language', 'en')
-            .eq('status', 'published')
-            .maybeSingle();
+            .neq('status', 'draft')
+            .order(col, { ascending: false })
+            .limit(1);
+
+          if (hasValidBuild) {
+            fallbackQuery = fallbackQuery.lte(col, buildNum);
+          }
+
+          const fallback = await fallbackQuery.maybeSingle();
 
           if (fallback.error) throw fallback.error;
           data = fallback.data;

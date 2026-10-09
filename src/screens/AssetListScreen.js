@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, StatusBar, LayoutAnimation, Image, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, StatusBar, LayoutAnimation, Image, Linking, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -56,8 +56,17 @@ import * as Clipboard from 'expo-clipboard';
 
 export default function AssetListScreen() {
   const navigation = useNavigation();
-  const { t, user, language } = useApp();
+  const { t, user, language, refreshUser } = useApp();
   const [expandedTokens, setExpandedTokens] = useState({});
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    if (refreshUser) {
+      await refreshUser();
+    }
+    setRefreshing(false);
+  };
 
   const copyToClipboard = async (text) => {
     await Clipboard.setStringAsync(text);
@@ -165,7 +174,11 @@ export default function AssetListScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollView} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.primary]} tintColor={theme.colors.primary} />}
+      >
         
         {/* Wallet Addresses Section */}
         <View style={styles.addressesContainer}>

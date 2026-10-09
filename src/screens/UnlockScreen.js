@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Platform, KeyboardAvoidingView, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,9 +14,11 @@ import * as Application from 'expo-application';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function UnlockScreen() {
-  const { t, setIsAppLocked, logout } = useApp();
+  const { t, setIsAppLocked, logout, user } = useApp();
+  const navigation = useNavigation();
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
+  const [wrongAttempts, setWrongAttempts] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [hasBiometrics, setHasBiometrics] = useState(false);
 
@@ -24,7 +27,8 @@ export default function UnlockScreen() {
     const checkBiometrics = async () => {
       try {
         if (Platform.OS === 'web') return;
-        const useBio = await SecureStore.getItemAsync('use_biometrics');
+        const bioKey = user?.id ? `use_biometrics_${user?.id}` : 'use_biometrics';
+        const useBio = await SecureStore.getItemAsync(bioKey);
         if (useBio === 'true') {
           setHasBiometrics(true);
           triggerBiometrics();
@@ -58,11 +62,18 @@ export default function UnlockScreen() {
     setError('');
 
     try {
-      const storedPin = await SecureStore.getItemAsync('user_pin');
+      const pinKey = user?.id ? `user_pin_${user?.id}` : 'user_pin';
+      const storedPin = await SecureStore.getItemAsync(pinKey);
       if (pin === storedPin) {
         setIsAppLocked(false);
       } else {
-        setError(t('auth.incorrectPin', 'Code PIN incorrect.'));
+        const attempts = wrongAttempts + 1;
+        if (attempts >= 5) {
+          await handleLogout();
+          return;
+        }
+        setWrongAttempts(attempts);
+        setError(t('auth.incorrectPin', 'Code PIN incorrect.') + ` (${attempts}/5)`);
         setPin('');
       }
     } catch (e) {
@@ -74,7 +85,7 @@ export default function UnlockScreen() {
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await logout(navigation);
       setIsAppLocked(false);
     } catch (e) {
       console.log('Error during logout:', e);

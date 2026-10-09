@@ -575,7 +575,11 @@
     "typeHospitality": "Hospitality / Rentals (BNB, Hotels)",
     "typeService": "Professional Services (Consulting, Events)",
     "businessType": "Business Type",
-    "selectBusinessType": "Select your primary offering"
+    "selectBusinessType": "Select your primary offering",
+    "enterNewPinTitle": "አዲስ ፒን ያስገቡ",
+    "enterNewPinDesc": "አዲሱን የ 6 አሃዝ ፒንዎን ያስገቡ።",
+    "verifyCurrentPin": "የአሁኑን ፒን ያረጋግጡ",
+    "enterCurrentPin": "ለመቀጠል የአሁኑን ፒንዎን ያስገቡ።"
   },
   "common": {
     "selectOption": "አማራጭ ይምረጡ",
@@ -3701,6 +3705,12 @@
     "personal_type": "የግል"
   },
   "pos": {
+    "camera_permission": "ካሜራውን ለመጠቀም ፈቃድዎ ያስፈልገናል",
+    "grant_permission": "ፈቃድ ስጥ",
+    "scan_success": "ደንበኛ በተሳካ ሁኔታ ተቃኝቷል",
+    "scan_customer": "ደንበኛ ቃኝ",
+    "align_qr": "የQR ኮዱን በክፈፉ ውስጥ አስተካክል",
+    "scan_again": "እንደገና ቃኝ",
     "cashier": "ገንዘብ ተቀባይ",
     "pos_title": "የሽያጭ ነጥብ (POS/ATM)",
     "cash_desks": "የገንዘብ ጠረጴዛዎች",
@@ -3793,7 +3803,12 @@
     "pushNotificationsDesc": "ለክፍያዎች እና ትዕዛዞች ማንቂያዎችን ይቀበሉ",
     "selectCurrency": "የማሳያ ምንዛሬ ይምረጡ",
     "comingSoon": "በቅርቡ ይደርሳል",
-    "comingSoonMsg": "የይለፍ ቃል መቀየር በሚቀጥለው ዝማኔ ላይ ይገኛል።"
+    "comingSoonMsg": "የይለፍ ቃል መቀየር በሚቀጥለው ዝማኔ ላይ ይገኛል።",
+    "changePin": "ፒን ይቀይሩ",
+    "changePinDesc": "የግብይት ፒንዎን ያዘምኑ",
+    "setPin": "ፒን ያዘጋጁ",
+    "setPinDesc": "ለአስተማማኝ ግብይቶች ፒን ያዘጋጁ",
+    "pinUpdated": "ፒን በተሳካ ሁኔታ ዘምኗል"
   },
   "receiveFunds": {
     "title": "ገንዘብ ተቀበል",
@@ -3934,6 +3949,10 @@
   "qaReferToastTitle": "ሱቅ ያመልክቱ",
   "qaReferToastMessage": "የማመልከቻ ቅጽ ዝግጁ ነው።",
   "contacts": {
+    "view_profile": "መገለጫ ይመልከቱ",
+    "matches_count": "ተገኝቷል",
+    "no_matching_contact": "በዚህ የሚጀምር ምንም ዕውቂያ የለም",
+    "view_all_results": "ሁሉንም አሳይ",
     "quick_actions": "ፈጣን እርምጃዎች",
     "quick_action_1": {
       "title": "ይክፈሉ እና\nአስፈላጊዎችን ይግዙ",
@@ -4642,6 +4661,7 @@
     "step4Msg": "የኤስክሮው ዋስትናን በማረጋገጥ ላይ..."
   },
   "paymentSuccess": {
+    "backToContact": "ወደ ዕውቂያ መገለጫ ተመለስ",
     "title": "ክፍያው በተሳካ ሁኔታ ተጠናቋል!",
     "subtitle": "ክፍያዎ በተሳካ ሁኔታ ተፈጽሟል።",
     "secure": "100% ደህንነቱ የተጠበቀ ግብይት",
@@ -4993,6 +5013,10 @@
     "highPerformance": "ከፍተኛ አፈጻጸም"
   },
   "shareSuccess": {
+    "copiedTitle": "መልዕክት ተቀድቷል!",
+    "copiedDesc": "ለማጋራት ዝግጁ ነው።",
+    "resetTitle": "መልዕክት ዳግም ተጀምሯል",
+    "resetDesc": "ዋናው ጽሑፍ ተመልሷል።",
     "title": "ስኬቴን አጋራ",
     "subtitle": "የእርስዎን DizzitUp ካርድ የት ማተም እንደሚፈልጉ ይምረጡ",
     "stepSocialNetwork": "ማህበራዊ አውታረ መረብ",
@@ -5140,9 +5164,25 @@
     "taskSavedMessage": "ወደ ስራ ዝርዝርዎ ተጨምሯል።",
     "actionsToComplete": "የሚጠናቀቁ ተግባራት",
     "progressLabel": "የእርስዎ እድገት",
-    "completed": "ተጠናቋል"
+    "completed": "ተጠናቋል",
+    "todo1Title": "ለአብዱ ስጦታ ይግዙ",
+    "categoryPayment": "ክፍያ",
+    "dueToday": "ዛሬ",
+    "todo2Title": "ዋሌት ይሙሉ",
+    "categoryWallet": "ዋሌት",
+    "dueThisWeek": "በዚህ ሳምንት",
+    "todo3Title": "ፕሮፋይሌን ያጠናቅቁ",
+    "categorySecurity": "ደህንነት",
+    "dueBeforeFriday": "ከአርብ በፊት",
+    "todo4Title": "የእኔን DZYStore ይፍጠሩ",
+    "categoryBusiness": "ንግድ",
+    "dueThisMonth": "በዚህ ወር",
+    "categoryPersonal": "የግል",
+    "dueToPlan": "ለማቀድ"
   },
   "topup": {
+    "select_country": "ሀገር ይምረጡ",
+    "select_token": "ቶከን ይምረጡ",
     "title": "ቦርሳ ይሙሉ",
     "select_method": "የክፍያ ዘዴዎን ይምረጡ",
     "mobile_money": "ሞባይል ገንዘብ",
@@ -5493,6 +5533,7 @@
     "helpNote": "የእርስዎ ተጠቃሚ አቅራቢ ወይም የፍጆታ ዓይነት የማይደገፍ ከሆነ፣ በአሁኑ ጊዜ ከእነሱ ጋር አንሰራም ማለት ሊሆን ይችላል። ቡድናችን ሽፋን ለማስፋት ዘወትር እየሰራ ነው።"
   },
   "cart": {
+    "continueShopping": "ግብይትዎን ይቀጥሉ",
     "title": "ጋሪ",
     "emptyTitle": "ባዶ ጋሪ",
     "emptyDesc": "የእርስዎ ጋሪ እስካሁን ምንም ዕቃ አልያዘም።",
@@ -5543,6 +5584,7 @@
     "sortNewest": "አዳዲስ ምርቶች"
   },
   "paymentRails": {
+    "withdrawRegionLabel": "የገንዘብ መቀበያ ሀገር:",
     "regionModalTitle": "የሞባይል ገንዘብ የክፍያ ክልል",
     "regionModalSub": "አሁን የተገኘበት፡",
     "momoNoticeTitle": "ሞባይል ገንዘብ ለምን ተሰናክሏል?",
@@ -5621,5 +5663,22 @@
   "shop.info.website": "ድር ጣቢያ",
   "shop.info.social_media_title": "ማህበራዊ ሚዲያ እና እውቂያ",
   "common.open": "ክፈት",
-  "common.visit": "ይጎብኙ"
+  "common.visit": "ይጎብኙ",
+  "stepper.information": "መረጃ",
+  "stepper.verification": "ማረጋገጫ",
+  "stepper.security": "ደህንነት",
+  "countries.BJ": "ቤኒን",
+  "countries.CI": "አይቮሪ ኮስት",
+  "countries.SN": "ሴኔጋል",
+  "topup.ecosystem_token": "የስነ-ምህዳር ማስመሰያ",
+  "topup.corridor_notice_desc": "የአካባቢው የሞባይል ገንዘብ በ {{country}} ውስጥ አይሰራም። በማንኛውም የትብብር ክልል ውስጥ ቁጥር መሙላት ይችላሉ (ቤኒን፣ ቶጎ፣ ማዳጋስካር፣ ሴኔጋል...) ወይም በካርድ/ክሪፕቶ ይክፈሉ።",
+  "topup.pay_with_card_or_crypto": "በካርድ ወይም በክሪፕቶ ይክፈሉ",
+  "topup.operator": "አንቀሳቃሽ",
+  "paymentRails.licensedNetwork": "ፈቃድ ያለው አጋር አውታረ መረብ",
+  "paymentRails.securePayment": "ደህንነቱ የተጠበቀ ክፍያ",
+  "paymentRails.momoAvailable": "ይገኛል ({{operators}})",
+  "paymentRails.momoUnavailableRegion": "ለ {{country}} አይገኝም። ከሰሃራ በታች ባሉ 20 የአፍሪካ ሀገራት ውስጥ ንቁ።",
+  "paymentRails.bankAvailable": "የባንክ ማስተላለፍ በ {{country}} ውስጥ ይገኛል",
+  "paymentRails.bankUnavailable": "የባንክ ማስተላለፍ በ {{country}} ውስጥ አይገኝም",
+  "withdrawFunds.titleToMobileMoney": "ወደ ሞባይል ገንዘብ ገንዘብ ማውጣት"
 }

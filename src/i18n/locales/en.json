@@ -528,7 +528,11 @@
     "typeHospitality": "Hospitality / Rentals (BNB, Hotels)",
     "typeService": "Professional Services (Consulting, Events)",
     "businessType": "Business Type",
-    "selectBusinessType": "Select your primary offering"
+    "selectBusinessType": "Select your primary offering",
+    "enterNewPinTitle": "Enter new PIN",
+    "enterNewPinDesc": "Enter your new 6-digit PIN.",
+    "verifyCurrentPin": "Verify Current PIN",
+    "enterCurrentPin": "Enter your current PIN to continue."
   },
   "common": {
     "selectOption": "Select an option",
@@ -3850,6 +3854,12 @@
     "personal_type": "Personal"
   },
   "pos": {
+    "camera_permission": "We need your permission to use the camera",
+    "grant_permission": "Grant permission",
+    "scan_success": "Customer successfully scanned",
+    "scan_customer": "Scan customer",
+    "align_qr": "Align the QR code within the frame",
+    "scan_again": "Scan again",
     "cashier": "Cashier",
     "pos_title": "Point of Sale (POS/ATM)",
     "cash_desks": "Cash Desks (POS/ATM)",
@@ -3942,7 +3952,12 @@
     "pushNotificationsDesc": "Receive alerts for payments and orders",
     "selectCurrency": "Select Display Currency",
     "comingSoon": "Coming Soon",
-    "comingSoonMsg": "Change password functionality will be available in the next update."
+    "comingSoonMsg": "Change password functionality will be available in the next update.",
+    "changePin": "Change PIN",
+    "changePinDesc": "Update your transaction PIN",
+    "setPin": "Set PIN",
+    "setPinDesc": "Set a PIN for secure transactions",
+    "pinUpdated": "PIN successfully updated"
   },
   "receiveFunds": {
     "title": "Receive funds",
@@ -4083,6 +4098,10 @@
   "qaReferToastTitle": "Refer a store",
   "qaReferToastMessage": "Referral form ready.",
   "contacts": {
+    "view_profile": "View Profile",
+    "matches_count": "found",
+    "no_matching_contact": "No contacts starting with",
+    "view_all_results": "View all",
     "quick_actions": "Quick actions",
     "quick_action_1": {
       "title": "Pay &\nbuy essentials",
@@ -4231,6 +4250,8 @@
     }
   },
   "topup": {
+    "select_country": "Select country",
+    "select_token": "Select token",
     "title": "Top Up Wallet",
     "select_method": "Select your payment method",
     "mobile_money": "Mobile Money",
@@ -4944,6 +4965,7 @@
     "step4Msg": "Validating smart contract escrow..."
   },
   "paymentSuccess": {
+    "backToContact": "Back to contact profile",
     "title": "Payment Successful!",
     "subtitle": "Your payment was processed successfully.",
     "secure": "100% Secure Transaction",
@@ -5295,6 +5317,10 @@
     "highPerformance": "High performance"
   },
   "shareSuccess": {
+    "copiedTitle": "Message copied!",
+    "copiedDesc": "Ready to be shared.",
+    "resetTitle": "Message reset",
+    "resetDesc": "Original text restored.",
     "title": "Share my success",
     "subtitle": "Choose where to publish your DizzitUp card",
     "stepSocialNetwork": "Social network",
@@ -5445,7 +5471,21 @@
     "taskSavedMessage": "It has been added to your To-do list.",
     "actionsToComplete": "actions to complete",
     "progressLabel": "Your progress",
-    "completed": "completed"
+    "completed": "completed",
+    "todo1Title": "Buy a gift for Abdou",
+    "categoryPayment": "Payment",
+    "dueToday": "Today",
+    "todo2Title": "Top up wallet",
+    "categoryWallet": "Wallet",
+    "dueThisWeek": "This week",
+    "todo3Title": "Complete my profile",
+    "categorySecurity": "Security",
+    "dueBeforeFriday": "Before Friday",
+    "todo4Title": "Create my DZYStore",
+    "categoryBusiness": "Business",
+    "dueThisMonth": "This month",
+    "categoryPersonal": "Personal",
+    "dueToPlan": "To plan"
   },
   "dashboard": {
     "dzy_card_promo": "Your Visa card in USD to buy and travel anywhere in the world.",
@@ -5683,6 +5723,7 @@
     "helpNote": "If your beneficiary's provider or utility type is not supported, it may mean we currently do not work with them. Our team is constantly expanding coverage to provide you with the best connectivity services."
   },
   "cart": {
+    "continueShopping": "Continue shopping",
     "title": "Cart",
     "emptyTitle": "Empty cart",
     "emptyDesc": "Your cart contains no items for now.",
@@ -5733,6 +5774,7 @@
     "sortNewest": "Newest arrivals"
   },
   "paymentRails": {
+    "withdrawRegionLabel": "Country of fund reception:",
     "regionModalTitle": "Mobile Money Payment Region",
     "regionModalSub": "Currently detected:",
     "momoNoticeTitle": "Why is Mobile Money grayed out?",
@@ -5811,5 +5853,22 @@
   "shop.info.website": "Website",
   "shop.info.social_media_title": "Social Media & Contact",
   "common.open": "Open",
-  "common.visit": "Visit"
+  "common.visit": "Visit",
+  "stepper.information": "Information",
+  "stepper.verification": "Verification",
+  "stepper.security": "Security",
+  "countries.BJ": "Benin",
+  "countries.CI": "Ivory Coast",
+  "countries.SN": "Senegal",
+  "topup.ecosystem_token": "Ecosystem token",
+  "topup.corridor_notice_desc": "Local Mobile Money is not operating in {{country}}. You can recharge a number in any supported partner corridor (Benin, Togo, Madagascar, Senegal...) or top up instantly via Card/Crypto.",
+  "topup.pay_with_card_or_crypto": "Pay with Card or Crypto instead",
+  "topup.operator": "Operator",
+  "paymentRails.licensedNetwork": "Licensed Partner Network",
+  "paymentRails.securePayment": "Secure Payment",
+  "paymentRails.momoAvailable": "Available ({{operators}})",
+  "paymentRails.momoUnavailableRegion": "Not available in {{country}}. Available in 20 Sub-Saharan African countries.",
+  "paymentRails.bankAvailable": "Bank transfer available in {{country}}",
+  "paymentRails.bankUnavailable": "Bank transfer unavailable in {{country}}",
+  "withdrawFunds.titleToMobileMoney": "Withdraw funds to Mobile Money"
 }

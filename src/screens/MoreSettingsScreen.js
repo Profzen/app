@@ -84,7 +84,7 @@ export default function MoreSettingsScreen() {
               )}
             </View>
             <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>{user?.name || user?.merchantProfile?.shop_name || 'Utilisateur'}</Text>
+              <Text style={styles.profileName}>{user?.name || user?.merchantProfile?.shop_name || ''}</Text>
               <Text style={styles.profileEmail}>{user?.email || 'email@example.com'}</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
@@ -135,7 +135,7 @@ export default function MoreSettingsScreen() {
           )}
 
           {/* Log out Button */}
-          <TouchableOpacity style={styles.logoutButton} onPress={async () => { await logout(); navigation.reset({ index: 0, routes: [{ name: 'LoginScreen' }] }); }} accessibilityLabel="Log out">
+          <TouchableOpacity style={styles.logoutButton} onPress={async () => { await logout(navigation); }} accessibilityLabel="Log out">
             <Ionicons name="log-out-outline" size={20} color="#EF4444" style={{ marginRight: 8 }} />
             <Text style={styles.logoutText}>{t('btnLogOut', 'Log out')}</Text>
           </TouchableOpacity>

@@ -12,6 +12,7 @@ import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../services/supabaseClient';
 import { notificationService } from '../services/notificationService';
+import { PinConfirmationModal } from '../components/PinConfirmationModal';
 
 const getCurrencyFlag = (currencyCode) => {
   const map = {
@@ -49,6 +50,14 @@ export default function AccountSettingsScreen() {
   const [isBiometricSupported, setIsBiometricSupported] = useState(false);
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [hasPin, setHasPin] = useState(false);
+  const [isPinModalVisible, setIsPinModalVisible] = useState(false);
+
+  const checkPinState = async () => {
+    const pinKey = user?.id ? `user_pin_${user?.id}` : 'user_pin';
+    const storedPin = await SecureStore.getItemAsync(pinKey);
+    setHasPin(!!storedPin);
+  };
 
   useEffect(() => {
     (async () => {
@@ -56,9 +65,12 @@ export default function AccountSettingsScreen() {
       setIsBiometricSupported(compatible);
       
       if (compatible) {
-        const enabled = await SecureStore.getItemAsync('use_biometrics');
+        const bioKey = user?.id ? `use_biometrics_${user?.id}` : 'use_biometrics';
+        const enabled = await SecureStore.getItemAsync(bioKey);
         setIsBiometricEnabled(enabled === 'true');
       }
+      
+      checkPinState();
     })();
     
     // Fetch dynamic currencies from Supabase
@@ -84,6 +96,7 @@ export default function AccountSettingsScreen() {
   };
 
   const toggleBiometric = async (value) => {
+    const bioKey = user?.id ? `use_biometrics_${user?.id}` : 'use_biometrics';
     if (value) {
       // Trying to enable: Verify identity first
       try {
@@ -94,7 +107,7 @@ export default function AccountSettingsScreen() {
         
         if (result.success) {
           setIsBiometricEnabled(true);
-          await SecureStore.setItemAsync('use_biometrics', 'true');
+          await SecureStore.setItemAsync(bioKey, 'true');
           setToast({ title: "Success", message: "Biometric authentication enabled" });
         } else {
           setIsBiometricEnabled(false);
@@ -106,7 +119,7 @@ export default function AccountSettingsScreen() {
     } else {
       // Disable
       setIsBiometricEnabled(false);
-      await SecureStore.setItemAsync('use_biometrics', 'false');
+      await SecureStore.setItemAsync(bioKey, 'false');
     }
   };
 
@@ -217,6 +230,29 @@ export default function AccountSettingsScreen() {
                 />
               </View>
             )}
+
+            {/* Transaction PIN */}
+            <TouchableOpacity
+              style={[styles.settingRow, styles.settingDivider]}
+              onPress={() => setIsPinModalVisible(true)}
+            >
+              <View style={[styles.settingIcon, { backgroundColor: '#F3E8FF' }]}>
+                <Ionicons name="keypad-outline" size={22} color="#9333EA" />
+              </View>
+              <View style={styles.settingText}>
+                <Text style={styles.settingTitle}>
+                  {hasPin 
+                    ? t('settings.changePin', 'Change PIN') 
+                    : t('settings.setPin', 'Set PIN')}
+                </Text>
+                <Text style={styles.settingDescription}>
+                  {hasPin 
+                    ? t('settings.changePinDesc', 'Update your transaction PIN') 
+                    : t('settings.setPinDesc', 'Set a PIN for secure transactions')}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            </TouchableOpacity>
 
             {/* Delete Account */}
             <TouchableOpacity style={styles.settingRow} onPress={() => setDeleteModalVisible(true)}>
@@ -329,6 +365,17 @@ export default function AccountSettingsScreen() {
           </View>
         </Modal>
 
+        <PinConfirmationModal
+          visible={isPinModalVisible}
+          isChangeMode={hasPin}
+          isSettingsContext={true}
+          onCancel={() => setIsPinModalVisible(false)}
+          onSuccess={() => {
+            setIsPinModalVisible(false);
+            checkPinState();
+            setToast({ title: t('common.success', 'Success'), message: t('settings.pinUpdated', 'PIN successfully updated') });
+          }}
+        />
       </View>
     </SafeAreaView>
   );

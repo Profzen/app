@@ -18,6 +18,7 @@ import * as Application from 'expo-application';
 import { isSmallScreen, isShortScreen } from '../utils/responsive';
 import AppSelect from '../components/AppSelect';
 import { ALL_COUNTRIES } from '../utils/countriesData';
+import { parsePhoneNumberWithError, AsYouType, isValidPhoneNumber } from 'libphonenumber-js';
 
 export default function RegisterScreen({ route }) {
   const navigation = useNavigation();
@@ -31,8 +32,17 @@ export default function RegisterScreen({ route }) {
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [country, setCountry] = useState('');
+  const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '', type: 'success' });
+
+  const handlePhoneChange = (val) => {
+    const selectedCountryCode = ALL_COUNTRIES.find(c => c.name === country)?.code || 'FR';
+    const formatter = new AsYouType(selectedCountryCode);
+    const formatted = formatter.input(val.replace(/[^0-9\s-+]/g, ''));
+    setPhone(formatted);
+    if (errors.phone) setErrors(prev => ({ ...prev, phone: null }));
+  };
 
   const countryOptions = useMemo(() => {
     return ALL_COUNTRIES.map((c) => ({
@@ -86,8 +96,43 @@ export default function RegisterScreen({ route }) {
   };
 
   const handleRegister = async () => {
-    if (!email || !password || !confirmPassword || !firstName || !lastName || !country || !phone || strength < 2) return;
+    console.log('[REGISTER] pressed');
+    console.log('[REGISTER] check email:', !!email);
+    console.log('[REGISTER] check password:', !!password);
+    console.log('[REGISTER] check confirmPassword:', !!confirmPassword);
+    console.log('[REGISTER] check firstName:', !!firstName);
+    console.log('[REGISTER] check lastName:', !!lastName);
+    console.log('[REGISTER] check country:', !!country);
+    console.log('[REGISTER] check phone:', !!phone);
+    console.log('[REGISTER] check strength:', strength >= 2);
+
+    const newErrors = {};
+    if (!firstName) newErrors.firstName = t('auth.errorRequired', 'Required');
+    if (!lastName) newErrors.lastName = t('auth.errorRequired', 'Required');
+    if (!email) newErrors.email = t('auth.errorRequired', 'Required');
+    if (!country) newErrors.country = t('auth.errorRequired', 'Required');
+    if (!password) newErrors.password = t('auth.errorRequired', 'Required');
+    if (!confirmPassword) newErrors.confirmPassword = t('auth.errorRequired', 'Required');
+    if (strength < 2) newErrors.password = t('auth.pwdWeak', 'Password is too weak');
+
+    const selectedCountryCode = ALL_COUNTRIES.find(c => c.name === country)?.code || 'FR';
+    if (!phone) {
+       newErrors.phone = t('auth.errorRequired', 'Required');
+    } else {
+       const isPhoneValid = isValidPhoneNumber(phone, selectedCountryCode);
+       if (!isPhoneValid) {
+         newErrors.phone = t('auth.errorInvalidPhone', 'Invalid phone number');
+       }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      console.log('[REGISTER] validation failed with errors:', Object.keys(newErrors));
+      return;
+    }
+    setErrors({});
     
+    console.log('[REGISTER] password match check:', password === confirmPassword);
     if (password !== confirmPassword) {
       setToastInfo({ visible: true, title: t('common.error', 'Error'), message: t('auth.passwordsNotMatch', 'Passwords do not match'), type: 'error' });
       return;
@@ -96,13 +141,16 @@ export default function RegisterScreen({ route }) {
     setIsLoading(true);
 
     try {
-      // Basic Supabase signup
-      // If emailOrPhone is a phone number, Supabase requires it in E.164 format via signUp({ phone: ... })
-      // For simplicity here we assume email, but in a robust system we'd detect phone vs email.
-      const isPhone = /^\+?[0-9]{7,15}$/.test(email);
+      const credentials = { email, password };
+      
+      let e164Phone = phone;
+      try {
+        const selectedCountryCode = ALL_COUNTRIES.find(c => c.name === country)?.code || 'FR';
+        const pn = parsePhoneNumberWithError(phone, selectedCountryCode);
+        e164Phone = pn.number;
+      } catch(e) {}
 
-      const credentials = isPhone ? { phone: email, password } : { email, password };
-
+      console.log('[REGISTER] calling signUp');
       const { data, error } = await supabase.auth.signUp({
         ...credentials,
         options: {
@@ -112,7 +160,7 @@ export default function RegisterScreen({ route }) {
             referral_code: parrain || null,
             first_name: firstName,
             last_name: lastName,
-            phone: phone,
+            phone: e164Phone,
             country: country,
             signup_platform: Platform.OS,
             signup_app_version: Constants?.expoConfig?.version || '1.0.0'
@@ -121,11 +169,15 @@ export default function RegisterScreen({ route }) {
       });
 
       if (error) {
+        console.log('[REGISTER] signUp result: error ->', error.message);
         throw error;
       }
+      
+      console.log('[REGISTER] signUp result: success');
 
       // If the email already exists, Supabase returns the user but with empty identities (for security)
       if (data?.user && data.user.identities && data.user.identities.length === 0) {
+        console.log('[REGISTER] identity check failed (email already exists)');
         // Try to fetch the provider they originally signed up with
         const { data: provider, error: rpcError } = await supabase.rpc('get_auth_provider', { lookup_email: email });
         
@@ -148,6 +200,7 @@ export default function RegisterScreen({ route }) {
       setTimeout(() => navigation.navigate('VerificationScreen', { emailOrPhone: email }), 900);
 
     } catch (error) {
+       console.log('[REGISTER] caught error:', error.message);
        setToastInfo({ visible: true, title: t('common.error', 'Error'), message: error.message, type: 'error' });
     } finally {
        setIsLoading(false);
@@ -198,33 +251,28 @@ export default function RegisterScreen({ route }) {
             label={t('personalAccount.firstName', 'First Name')}
             placeholder={t('personalAccount.firstName', 'First Name')}
             value={firstName}
-            onChangeText={setFirstName}
+            onChangeText={(val) => { setFirstName(val); if(errors.firstName) setErrors(prev => ({...prev, firstName: null})); }}
             iconLeft={<Ionicons name="person-outline" size={18} color="#64748B" />}
           />
+          {errors.firstName && <Text style={{ color: theme.colors.error, fontSize: 12, marginTop: -8, marginBottom: 8, marginLeft: 4 }}>{errors.firstName}</Text>}
+          
           <DizzitInput
             label={t('personalAccount.lastName', 'Last Name')}
             placeholder={t('personalAccount.lastName', 'Last Name')}
             value={lastName}
-            onChangeText={setLastName}
+            onChangeText={(val) => { setLastName(val); if(errors.lastName) setErrors(prev => ({...prev, lastName: null})); }}
             iconLeft={<Ionicons name="person-outline" size={18} color="#64748B" />}
           />
-          <DizzitInput
-            label={t('personalAccount.phone', 'Phone Number')}
-            placeholder={t('personalAccount.phone', 'Phone Number')}
-            value={phone}
-            onChangeText={setPhone}
-            iconLeft={<Ionicons name="call-outline" size={18} color="#64748B" />}
-            keyboardType="phone-pad"
-          />
+          {errors.lastName && <Text style={{ color: theme.colors.error, fontSize: 12, marginTop: -8, marginBottom: 8, marginLeft: 4 }}>{errors.lastName}</Text>}
           
           <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 14, color: theme.colors.primary, marginBottom: 6 }}>
             {t('personalAccount.country', 'Country of Residence')}
           </Text>
-          <View style={{ marginBottom: 16, padding: 1.5, borderRadius: 12, backgroundColor: '#E2E8F0' }}>
+          <View style={{ marginBottom: errors.country ? 8 : 16, padding: 1.5, borderRadius: 12, backgroundColor: '#E2E8F0' }}>
             <AppSelect
               value={country}
               options={countryOptions}
-              onChange={(val) => setCountry(val)}
+              onChange={(val) => { setCountry(val); if(errors.country) setErrors(prev => ({...prev, country: null})); }}
               title={t('personalAccount.country', 'Country of Residence')}
               placeholder={t('personalAccount.selectCountry', 'Select your country')}
               searchPlaceholder={t('personalAccount.searchCountry', 'Search country')}
@@ -239,32 +287,46 @@ export default function RegisterScreen({ route }) {
               )}
             />
           </View>
+          {errors.country && <Text style={{ color: theme.colors.error, fontSize: 12, marginTop: -8, marginBottom: 8, marginLeft: 4 }}>{errors.country}</Text>}
 
           <DizzitInput
-            label={t('auth.enterEmailOrPhone', 'Enter your email or phone number')}
-            placeholder={t('auth.enterEmailOrPhonePlaceholder', 'Enter your email or phone number')}
+            label={t('personalAccount.phone', 'Phone Number')}
+            placeholder={t('personalAccount.phone', 'Phone Number')}
+            value={phone}
+            onChangeText={handlePhoneChange}
+            iconLeft={<Ionicons name="call-outline" size={18} color="#64748B" />}
+            keyboardType="phone-pad"
+          />
+          {errors.phone && <Text style={{ color: theme.colors.error, fontSize: 12, marginTop: -8, marginBottom: 8, marginLeft: 4 }}>{errors.phone}</Text>}
+
+          <DizzitInput
+            label={t('auth.email', 'Email')}
+            placeholder={t('auth.emailPlaceholder', 'Enter your email')}
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(val) => { setEmail(val); if(errors.email) setErrors(prev => ({...prev, email: null})); }}
             iconLeft={<Ionicons name="mail-outline" size={18} color="#64748B" />}
           />
+          {errors.email && <Text style={{ color: theme.colors.error, fontSize: 12, marginTop: -8, marginBottom: 8, marginLeft: 4 }}>{errors.email}</Text>}
           
           <DizzitInput
             label={t('auth.password', 'Create your password')}
             placeholder={t('auth.enterPassword', 'Create your password')}
             isPassword
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(val) => { setPassword(val); if(errors.password) setErrors(prev => ({...prev, password: null})); }}
             iconLeft={<Ionicons name="lock-closed-outline" size={18} color="#64748B" />}
           />
+          {errors.password && <Text style={{ color: theme.colors.error, fontSize: 12, marginTop: -8, marginBottom: 8, marginLeft: 4 }}>{errors.password}</Text>}
           
           <DizzitInput
             label={t('auth.confirmPassword', 'Confirm Password')}
             placeholder={t('auth.confirmPasswordPlaceholder', 'Confirm your password')}
             isPassword
             value={confirmPassword}
-            onChangeText={setConfirmPassword}
+            onChangeText={(val) => { setConfirmPassword(val); if(errors.confirmPassword) setErrors(prev => ({...prev, confirmPassword: null})); }}
             iconLeft={<Ionicons name="shield-checkmark-outline" size={18} color="#64748B" />}
           />
+          {errors.confirmPassword && <Text style={{ color: theme.colors.error, fontSize: 12, marginTop: -8, marginBottom: 8, marginLeft: 4 }}>{errors.confirmPassword}</Text>}
 
           {/* Password Strength */}
           <View style={styles.strengthContainer}>
@@ -292,20 +354,19 @@ export default function RegisterScreen({ route }) {
           <SecurityBanner />
 
           <DizzitButton 
-            title={t('btnContinue', 'Continuer')}
+            title={t('btnContinue', 'Continue')}
             icon={<Ionicons name="arrow-forward" size={20} color={theme.colors.textPrimary} />} 
             style={{marginTop: theme.spacing.sm}}
             onPress={handleRegister}
             isLoading={isLoading}
-            disabled={!email || !password || !confirmPassword || strength < 2}
           />
         </View>
 
         {/* Social Logins */}
         <SocialLogins />
 
-        {/* Merchant Link */}
-        <View style={styles.merchantLinkContainer}>
+        {/* Merchant Link (temporarily disabled) */}
+        {/* <View style={styles.merchantLinkContainer}>
           <View style={styles.merchantPromoBox}>
             <View style={styles.merchantPromoIcon}>
               <Ionicons name="storefront-outline" size={20} color={theme.colors.accent} />
@@ -318,7 +379,7 @@ export default function RegisterScreen({ route }) {
               <Text style={styles.merchantPromoButtonText}>{t('auth.registerMerchant', 'Register')}</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </View> */}
 
         {/* Footer */}
         <FooterTerms />

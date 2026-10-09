@@ -12,6 +12,7 @@ import { LanguageSelector } from '../components/LanguageSelector';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../services/supabaseClient';
+import * as SecureStore from 'expo-secure-store';
 
 import Constants from 'expo-constants';
 import * as Application from 'expo-application';
@@ -58,14 +59,21 @@ export default function LoginScreen() {
         }
 
         console.log("✅ Supabase login successful", data.user.id);
+        
+        const storedPin = await SecureStore.getItemAsync(`user_pin_${data.user.id}`);
+        setIsLoading(false);
+        if (!storedPin) {
+          navigation.navigate('PinCodeScreen');
+        } else {
+          navigation.navigate('HomeScreen');
+        }
       } else {
         console.log("ℹ️ Mode démo/mock actif (Supabase non configuré en local).");
+        setIsLoading(false);
+        navigation.navigate('HomeScreen');
       }
-
-      setIsLoading(false);
-      navigation.navigate('HomeScreen');
     } catch (error) {
-      console.warn("⚠️ Connexion Supabase échouée (" + error.message + ")");
+      console.warn("[AUTH] Supabase login failed: " + error.message);
       setIsLoading(false);
       setErrorMessage(t('login.error_failed', 'Échec de connexion : ') + error.message);
     }

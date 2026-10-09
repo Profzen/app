@@ -11,6 +11,7 @@ import { SocialLogins } from '../components/SocialLogins';
 import { FooterTerms } from '../components/FooterTerms';
 import { OtpInput } from '../components/OtpInput';
 import { useApp } from '../context/AppContext';
+import { supabase } from '../services/supabaseClient';
 
 export default function VerificationScreen() {
   const navigation = useNavigation();
@@ -21,6 +22,7 @@ export default function VerificationScreen() {
   const [timeLeft, setTimeLeft] = useState(45);
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
+  const [verifyError, setVerifyError] = useState('');
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -36,28 +38,49 @@ export default function VerificationScreen() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
     setIsResending(true);
-    // Simulate API call to resend OTP
-    setTimeout(() => {
+    setVerifyError('');
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: displayedEmail
+      });
+      if (error) {
+        setVerifyError(error.message);
+      } else {
+        setTimeLeft(45);
+        alert(t('verificationStep.newCodeSent', 'New code sent'));
+      }
+    } catch (err) {
+      setVerifyError(err.message);
+    } finally {
       setIsResending(false);
-      setTimeLeft(45);
-      alert(t('verificationStep.newCodeSent', 'New code sent (Simulated)'));
-    }, 1000);
+    }
   };
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     if (code.length < 6) return;
-    
     setIsLoading(true);
-    // Simulate API call to verify OTP
-    const payload = { code };
-    console.log("Submitting OTP payload:", payload);
+    setVerifyError('');
     
-    setTimeout(() => {
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email: displayedEmail,
+        token: code,
+        type: 'signup'
+      });
+
+      if (error) {
+        setVerifyError(error.message);
+      } else {
+        navigation.navigate('SecureAccountScreen');
+      }
+    } catch (err) {
+      setVerifyError(err.message);
+    } finally {
       setIsLoading(false);
-      navigation.navigate('SecureAccountScreen');
-    }, 1500);
+    }
   };
 
   // Custom icon for Security Banner (The D coin)
@@ -116,7 +139,8 @@ export default function VerificationScreen() {
 
           <Text style={styles.sectionSubtitle}>{t('verificationStep.enter6Digit', 'Enter the 6-digit code')}</Text>
           
-          <OtpInput length={6} value={code} onChange={setCode} />
+          <OtpInput length={6} value={code} onChange={(val) => { setCode(val); setVerifyError(''); }} />
+          {!!verifyError && <Text style={{ color: theme.colors.error, fontSize: 14, marginTop: 12, marginBottom: 4, fontFamily: theme.typography.fontFamily.medium, textAlign: 'center' }}>{verifyError}</Text>}
 
           {/* Timer */}
           <TouchableOpacity 

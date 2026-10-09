@@ -11,32 +11,48 @@ import { FooterTerms } from '../components/FooterTerms';
 import { OtpInput } from '../components/OtpInput';
 import { BiometricsCard } from '../components/BiometricsCard';
 import { useApp } from '../context/AppContext';
+import { supabase } from '../services/supabaseClient';
+import * as SecureStore from 'expo-secure-store';
 
 export default function SecureAccountScreen() {
   const navigation = useNavigation();
-  const { t } = useApp();
+  const { t, user } = useApp();
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [biometricsEnabled, setBiometricsEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSetupSecurity = () => {
+  const handleSetupSecurity = async () => {
     if (pin.length < 6 || confirmPin !== pin) return;
     
     setIsLoading(true);
-    // Simulate API call to save PIN and security preferences
-    const payload = {
-      pin: pin,
-      biometricsEnabled: biometricsEnabled
-    };
     
-    console.log("Submitting security payload:", payload);
-    
-    setTimeout(() => {
+    try {
+      let currentUserId = user?.id;
+      
+      if (!currentUserId) {
+        const { data: { session } } = await supabase.auth.getSession();
+        currentUserId = session?.user?.id;
+      }
+      
+      if (Platform.OS !== 'web' && currentUserId) {
+        const pinKey = `user_pin_${currentUserId}`;
+        await SecureStore.setItemAsync(pinKey, pin);
+        
+        const bioKey = `use_biometrics_${currentUserId}`;
+        if (biometricsEnabled) {
+          await SecureStore.setItemAsync(bioKey, 'true');
+        } else {
+          await SecureStore.deleteItemAsync(bioKey);
+        }
+      }
+      
       setIsLoading(false);
-      // Navigate to Dashboard / Home
       navigation.navigate('SuccessScreen');
-    }, 1500);
+    } catch (error) {
+      console.error('Error saving security settings:', error);
+      setIsLoading(false);
+    }
   };
 
   return (

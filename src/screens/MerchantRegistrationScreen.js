@@ -48,6 +48,8 @@ export default function MerchantRegistrationScreen() {
     }));
   }, []);
 
+  const MERCHANT_SIGNUP_ENABLED = false;
+
   const getPasswordStrength = (pass) => {
     if (!pass) return 0;
     let score = 0;
@@ -164,130 +166,139 @@ export default function MerchantRegistrationScreen() {
           </Text>
         </View>
 
-        {/* Stepper */}
-        <Stepper currentStep={1} />
+        {/* Stepper and Form */}
+        {MERCHANT_SIGNUP_ENABLED ? (
+          <>
+            <Stepper currentStep={1} />
 
-        {/* Form */}
-        <View style={styles.formContainer}>
-          <DizzitInput
-            label={t('personalAccount.firstName', 'First Name')}
-            placeholder={t('personalAccount.firstName', 'First Name')}
-            value={firstName}
-            onChangeText={setFirstName}
-            iconLeft={<Ionicons name="person-outline" size={20} color={theme.colors.primary} />}
-          />
-          <DizzitInput
-            label={t('personalAccount.lastName', 'Last Name')}
-            placeholder={t('personalAccount.lastName', 'Last Name')}
-            value={lastName}
-            onChangeText={setLastName}
-            iconLeft={<Ionicons name="person-outline" size={20} color={theme.colors.primary} />}
-          />
-          <DizzitInput
-            label={t('personalAccount.phone', 'Phone Number')}
-            placeholder={t('personalAccount.phone', 'Phone Number')}
-            value={phone}
-            onChangeText={setPhone}
-            iconLeft={<Ionicons name="call-outline" size={20} color={theme.colors.primary} />}
-            keyboardType="phone-pad"
-          />
-          
-          <Text style={{ fontFamily: 'Inter_500Medium', fontSize: 14, color: theme.colors.textSecondary, marginBottom: 8 }}>
-            {t('personalAccount.country', 'Country of Residence')}
-          </Text>
-          <AppSelect
-            value={country}
-            options={countryOptions}
-            onChange={(val) => setCountry(val)}
-            title={t('personalAccount.country', 'Country of Residence')}
-            placeholder={t('personalAccount.selectCountry', 'Select your country')}
-            searchPlaceholder={t('personalAccount.searchCountry', 'Search country')}
-            style={{ marginBottom: 16, backgroundColor: theme.colors.surface, borderColor: '#E2E8F0', borderWidth: 1, borderRadius: 12 }}
-            textStyle={{ fontFamily: 'Inter_400Regular', fontSize: 16, color: theme.colors.textPrimary }}
-            renderLeading={(sel) => (
-              sel?.flagUrl ? (
-                <Image source={{ uri: sel.flagUrl }} style={{ width: 24, height: 16, borderRadius: 2 }} />
-              ) : (
-                <Ionicons name="flag-outline" size={18} color="#6B7280" />
-              )
-            )}
-          />
+            <View style={styles.formContainer}>
+              <DizzitInput
+                label={t('personalAccount.firstName', 'First Name')}
+                placeholder={t('personalAccount.firstName', 'First Name')}
+                value={firstName}
+                onChangeText={setFirstName}
+                iconLeft={<Ionicons name="person-outline" size={20} color={theme.colors.primary} />}
+              />
+              <DizzitInput
+                label={t('personalAccount.lastName', 'Last Name')}
+                placeholder={t('personalAccount.lastName', 'Last Name')}
+                value={lastName}
+                onChangeText={setLastName}
+                iconLeft={<Ionicons name="person-outline" size={20} color={theme.colors.primary} />}
+              />
+              <DizzitInput
+                label={t('personalAccount.phone', 'Phone Number')}
+                placeholder={t('personalAccount.phone', 'Phone Number')}
+                value={phone}
+                onChangeText={setPhone}
+                iconLeft={<Ionicons name="call-outline" size={20} color={theme.colors.primary} />}
+                keyboardType="phone-pad"
+              />
+              
+              <Text style={{ fontFamily: 'Inter_500Medium', fontSize: 14, color: theme.colors.textSecondary, marginBottom: 8 }}>
+                {t('personalAccount.country', 'Country of Residence')}
+              </Text>
+              <AppSelect
+                value={country}
+                options={countryOptions}
+                onChange={(val) => setCountry(val)}
+                title={t('personalAccount.country', 'Country of Residence')}
+                placeholder={t('personalAccount.selectCountry', 'Select your country')}
+                searchPlaceholder={t('personalAccount.searchCountry', 'Search country')}
+                style={{ marginBottom: 16, backgroundColor: theme.colors.surface, borderColor: '#E2E8F0', borderWidth: 1, borderRadius: 12 }}
+                textStyle={{ fontFamily: 'Inter_400Regular', fontSize: 16, color: theme.colors.textPrimary }}
+                renderLeading={(sel) => (
+                  sel?.flagUrl ? (
+                    <Image source={{ uri: sel.flagUrl }} style={{ width: 24, height: 16, borderRadius: 2 }} />
+                  ) : (
+                    <Ionicons name="flag-outline" size={18} color="#6B7280" />
+                  )
+                )}
+              />
 
-          <DizzitInput
-            label={t('auth.businessName', 'Business Name')}
-            placeholder={t('auth.businessNamePlaceholder', 'Enter your business or shop name')}
-            value={businessName}
-            onChangeText={setBusinessName}
-            iconLeft={<Ionicons name="briefcase-outline" size={20} color={theme.colors.primary} />}
-          />
+              <DizzitInput
+                label={t('auth.businessName', 'Business Name')}
+                placeholder={t('auth.businessNamePlaceholder', 'Enter your business or shop name')}
+                value={businessName}
+                onChangeText={setBusinessName}
+                iconLeft={<Ionicons name="briefcase-outline" size={20} color={theme.colors.primary} />}
+              />
 
-          <Text style={{ fontFamily: 'Inter_500Medium', fontSize: 14, color: theme.colors.textSecondary, marginBottom: 8 }}>
-            {t('auth.businessType', 'Business Type')}
-          </Text>
-          <AppSelect
-            value={businessType}
-            options={businessTypeOptions}
-            onChange={(val) => setBusinessType(val)}
-            title={t('auth.businessType', 'Business Type')}
-            placeholder={t('auth.selectBusinessType', 'Select your primary offering')}
-            style={{ marginBottom: 16, backgroundColor: theme.colors.surface, borderColor: '#E2E8F0', borderWidth: 1, borderRadius: 12 }}
-            textStyle={{ fontFamily: 'Inter_400Regular', fontSize: 16, color: theme.colors.textPrimary }}
-            renderLeading={() => (
-              <Ionicons name="storefront-outline" size={18} color="#6B7280" />
-            )}
-          />
+              <Text style={{ fontFamily: 'Inter_500Medium', fontSize: 14, color: theme.colors.textSecondary, marginBottom: 8 }}>
+                {t('auth.businessType', 'Business Type')}
+              </Text>
+              <AppSelect
+                value={businessType}
+                options={businessTypeOptions}
+                onChange={(val) => setBusinessType(val)}
+                title={t('auth.businessType', 'Business Type')}
+                placeholder={t('auth.selectBusinessType', 'Select your primary offering')}
+                style={{ marginBottom: 16, backgroundColor: theme.colors.surface, borderColor: '#E2E8F0', borderWidth: 1, borderRadius: 12 }}
+                textStyle={{ fontFamily: 'Inter_400Regular', fontSize: 16, color: theme.colors.textPrimary }}
+                renderLeading={() => (
+                  <Ionicons name="storefront-outline" size={18} color="#6B7280" />
+                )}
+              />
 
-          <DizzitInput
-            label={t('auth.enterEmailOrPhone', 'Enter your email or phone number')}
-            placeholder={t('auth.enterEmailOrPhonePlaceholder', 'Enter your email or phone number')}
-            value={email}
-            onChangeText={setEmail}
-            iconLeft={<Ionicons name="mail-outline" size={20} color={theme.colors.primary} />}
-          />
-          
-          <DizzitInput
-            label={t('auth.password', 'Create your password')}
-            placeholder={t('auth.enterPassword', 'Create your password')}
-            isPassword
-            value={password}
-            onChangeText={setPassword}
-            iconLeft={<Ionicons name="lock-closed-outline" size={20} color={theme.colors.primary} />}
-          />
-          
-          {/* Password Strength */}
-          <View style={styles.strengthContainer}>
-            <View style={styles.strengthBarContainer}>
-              <View style={[styles.strengthBar, {backgroundColor: getBarColor(0)}]} />
-              <View style={[styles.strengthBar, {backgroundColor: getBarColor(1)}]} />
-              <View style={[styles.strengthBar, {backgroundColor: getBarColor(2)}]} />
+              <DizzitInput
+                label={t('auth.enterEmailOrPhone', 'Enter your email or phone number')}
+                placeholder={t('auth.enterEmailOrPhonePlaceholder', 'Enter your email or phone number')}
+                value={email}
+                onChangeText={setEmail}
+                iconLeft={<Ionicons name="mail-outline" size={20} color={theme.colors.primary} />}
+              />
+              
+              <DizzitInput
+                label={t('auth.password', 'Create your password')}
+                placeholder={t('auth.enterPassword', 'Create your password')}
+                isPassword
+                value={password}
+                onChangeText={setPassword}
+                iconLeft={<Ionicons name="lock-closed-outline" size={20} color={theme.colors.primary} />}
+              />
+              
+              {/* Password Strength */}
+              <View style={styles.strengthContainer}>
+                <View style={styles.strengthBarContainer}>
+                  <View style={[styles.strengthBar, {backgroundColor: getBarColor(0)}]} />
+                  <View style={[styles.strengthBar, {backgroundColor: getBarColor(1)}]} />
+                  <View style={[styles.strengthBar, {backgroundColor: getBarColor(2)}]} />
+                </View>
+                <View style={styles.strengthLabels}>
+                  <Text style={[styles.strengthLabel, strength === 1 && {color: theme.colors.error}]}>{t('auth.pwdWeak', 'Weak')}</Text>
+                  <Text style={[styles.strengthLabel, strength === 2 && {color: theme.colors.warning}]}>{t('auth.pwdMedium', 'Medium')}</Text>
+                  <Text style={[styles.strengthLabel, strength === 3 && {color: theme.colors.success}]}>{t('auth.pwdStrong', 'Strong')}</Text>
+                </View>
+              </View>
+
+              <DizzitInput
+                label={t('auth.referralCodeLabel', 'Enter referral code (optional)')}
+                placeholder={t('auth.referralCodePlaceholder', 'Enter referral code if you have one')}
+                value={parrain}
+                onChangeText={setParrain}
+                iconLeft={<Ionicons name="people-outline" size={20} color={theme.colors.primary} />}
+              />
+
+              {/* Security Banner */}
+              <SecurityBanner />
+
+              <DizzitButton 
+                title={t('btnContinue', 'Continuer')}
+                icon={<Ionicons name="arrow-forward" size={20} color={theme.colors.textPrimary} />} 
+                style={{marginTop: theme.spacing.sm}}
+                onPress={handleRegister}
+                isLoading={isLoading}
+                disabled={!businessName || !email || !password || strength < 2}
+              />
             </View>
-            <View style={styles.strengthLabels}>
-              <Text style={[styles.strengthLabel, strength === 1 && {color: theme.colors.error}]}>{t('auth.pwdWeak', 'Weak')}</Text>
-              <Text style={[styles.strengthLabel, strength === 2 && {color: theme.colors.warning}]}>{t('auth.pwdMedium', 'Medium')}</Text>
-              <Text style={[styles.strengthLabel, strength === 3 && {color: theme.colors.success}]}>{t('auth.pwdStrong', 'Strong')}</Text>
-            </View>
+          </>
+        ) : (
+          <View style={[styles.formContainer, { alignItems: 'center', padding: 24, marginTop: 40 }]}>
+            <Text style={{ textAlign: 'center', fontSize: 16, color: theme.colors.textPrimary, fontFamily: 'Inter_500Medium' }}>
+              Business accounts: please register on dizzitup.com
+            </Text>
           </View>
-
-          <DizzitInput
-            label={t('auth.referralCodeLabel', 'Enter referral code (optional)')}
-            placeholder={t('auth.referralCodePlaceholder', 'Enter referral code if you have one')}
-            value={parrain}
-            onChangeText={setParrain}
-            iconLeft={<Ionicons name="people-outline" size={20} color={theme.colors.primary} />}
-          />
-
-          {/* Security Banner */}
-          <SecurityBanner />
-
-          <DizzitButton 
-            title={t('btnContinue', 'Continuer')}
-            icon={<Ionicons name="arrow-forward" size={20} color={theme.colors.textPrimary} />} 
-            style={{marginTop: theme.spacing.sm}}
-            onPress={handleRegister}
-            isLoading={isLoading}
-            disabled={!businessName || !email || !password || strength < 2}
-          />
-        </View>
+        )}
 
         {/* Normal User Link */}
         <View style={styles.merchantLinkContainer}>

@@ -21,7 +21,7 @@ const AppContext = createContext();
 
 export function AppProvider({ children }) {
   const [user, setUser] = useState({
-    name: 'Utilisateur',
+    name: '',
     email: '',
     avatar: null,
     balanceDZY: 0,
@@ -235,29 +235,9 @@ export function AppProvider({ children }) {
     fetchSettings();
   }, []);
 
-  useEffect(() => {
-    const checkLockState = async () => {
-      try {
-        if (Platform.OS !== 'web') {
-          // Add a 2-second timeout to prevent the app from getting stuck on Android if SecureStore hangs
-          const storedPin = await Promise.race([
-            SecureStore.getItemAsync('user_pin'),
-            new Promise((resolve) => setTimeout(() => resolve(null), 2000))
-          ]);
-          if (storedPin) {
-            setIsAppLocked(true);
-          }
-        }
-      } catch (error) {
-        console.log("Error checking secure store:", error);
-      } finally {
-        setIsCheckingLock(false);
-      }
-    };
-    checkLockState();
-  }, []);
+  // We now defer lock checking until we get the session, see getSession() below.
 
-  const syncUser = async (sessionObj) => {
+  const syncUser = async (sessionObj, trigger = 'UNKNOWN') => {
     setSession(sessionObj);
     setIsUserLoading(true);
       if (sessionObj?.user) {
@@ -302,6 +282,19 @@ export function AppProvider({ children }) {
             .single();
 
           if (profile) {
+            try {
+              const deviceTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+              if (deviceTimeZone && profile.timezone !== deviceTimeZone) {
+                supabase.from('user_profiles').update({ timezone: deviceTimeZone }).eq('id', sessionObj.user.id)
+                  .then(({ error }) => {
+                    if (error) console.warn('[AppContext] Failed to update timezone:', error);
+                    else console.log('[AppContext] Timezone updated to', deviceTimeZone);
+                  });
+              }
+            } catch (tzErr) {
+              console.warn('[AppContext] Timezone detection failed:', tzErr);
+            }
+
             if (profile.role) fetchedRole = profile.role;
             
             // OPTION 1: Smart Routing. We do NOT block merchants. 
@@ -356,6 +349,83 @@ export function AppProvider({ children }) {
             DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
           }
 
+          const executeWalletSync = async (phase) => {
+            try {
+              // [WALLET-SYNC] Personal users only: ensure authoritative smart wallet exists
+              console.log(`[WALLET-SYNC][${phase}] started, trigger: ${trigger}, role: ${fetchedRole}`);
+              if (fetchedRole !== 'merchant' && (!fetchedEvmAddress || !fetchedSolanaAddress)) {
+                console.log(`[WALLET-SYNC][${phase}] Missing fields: evm=${!fetchedEvmAddress}, sol=${!fetchedSolanaAddress}`);
+                
+                let hostName = 'unknown';
+                try { hostName = new URL(DIZZY_URL).host; } catch(e){}
+                console.log(`[WALLET-SYNC][${phase}] DIZZY_URL host: ${hostName}`);
+
+                const syncSmartRes = await fetch(`${DIZZY_URL}/wallet/sync-smart-address`, {
+                  method: 'GET',
+                  headers: { 
+                    'Content-Type': 'application/json',
+                    ...(sessionObj?.access_token ? { 'Authorization': `Bearer ${sessionObj.access_token}` } : {})
+                  }
+                });
+                
+                console.log(`[WALLET-SYNC][${phase}] HTTP status of sync-smart-address: ${syncSmartRes.status}`);
+
+                if (syncSmartRes.ok) {
+                  const smartData = await syncSmartRes.json();
+                  const newEvm = (smartData.evmAddress || smartData.address || '').trim();
+                  const newSol = (smartData.solanaAddress || '').trim();
+                  
+                  console.log(`[WALLET-SYNC][${phase}] fields returned: evm=${!!newEvm}, sol=${!!newSol}`);
+
+                  const updates = {};
+                  if (!fetchedEvmAddress && newEvm) updates.evm_wallet_address = newEvm;
+                  if (!fetchedSolanaAddress && newSol) updates.solana_wallet_address = newSol;
+
+                  if (Object.keys(updates).length > 0) {
+                    let query = supabase.from('user_profiles').update(updates).eq('id', sessionObj.user.id);
+                    if (updates.evm_wallet_address) query = query.is('evm_wallet_address', null);
+                    if (updates.solana_wallet_address) query = query.is('solana_wallet_address', null);
+                    
+                    const { data: updatedData, error: updateError } = await query.select('id');
+                    
+                    if (!updateError) {
+                      const count = updatedData ? updatedData.length : 0;
+                      console.log(`[WALLET-SYNC][${phase}] update result: rows updated=${count}`);
+                      if (count === 0) {
+                        console.log(`[WALLET-SYNC][${phase}] Warning: 0 rows updated (profile might not exist yet or field was already set).`);
+                      }
+                    } else {
+                      console.warn(`[WALLET-SYNC][${phase}] update result: error=${updateError.message}`);
+                    }
+                  } else {
+                    console.log(`[WALLET-SYNC][${phase}] update result: no valid new addresses to update.`);
+                  }
+
+                  // Always update local state with fetched addresses
+                  if (newEvm && !fetchedEvmAddress) fetchedEvmAddress = newEvm;
+                  if (newSol && !fetchedSolanaAddress) fetchedSolanaAddress = newSol;
+                  
+                  if (newEvm || newSol) {
+                    setUser(prev => ({
+                      ...prev,
+                      ...(newEvm && !prev.evmAddress ? { evmAddress: newEvm } : {}),
+                      ...(newSol && !prev.solanaAddress ? { solanaAddress: newSol } : {})
+                    }));
+                  }
+                } else {
+                  console.warn(`[WALLET-SYNC][${phase}] fetch failed with status:`, syncSmartRes.status);
+                }
+              } else {
+                if (fetchedRole === 'merchant') console.log(`[WALLET-SYNC][${phase}] skipped (role is merchant)`);
+                else console.log(`[WALLET-SYNC][${phase}] skipped (addresses already present)`);
+              }
+            } catch (err) {
+              console.warn(`[WALLET-SYNC][${phase}] Network or parsing error:`, err);
+            }
+          };
+
+          await executeWalletSync('PRE');
+
           console.log("calling sync-buygoods for email:", sessionObj.user.email);
           const syncRes = await fetch(`${DIZZY_URL}/auth/sync-buygoods`, {
             method: 'POST',
@@ -391,6 +461,9 @@ export function AppProvider({ children }) {
           } else {
             console.log("sync-buygoods failed with status:", syncRes.status);
           }
+
+          // Run wallet sync again in case sync-buygoods just created the wallets
+          await executeWalletSync('POST');
 
           console.log("fetchedRole:", fetchedRole, "merchantProfile:", !!fetchedMerchantProfile);
           if (fetchedRole === 'merchant' && fetchedMerchantProfile && fetchedMerchantProfile.id) {
@@ -625,28 +698,81 @@ export function AppProvider({ children }) {
 
   const refreshUser = async () => {
     if (session) {
-      await syncUser(session);
+      await syncUser(session, 'MANUAL_REFRESH');
     } else {
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       if (currentSession) {
-        await syncUser(currentSession);
+        await syncUser(currentSession, 'MANUAL_REFRESH');
       }
     }
   };
 
   useEffect(() => {
     let lastToken = null;
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      try {
+        if (Platform.OS !== 'web' && session?.user?.id) {
+          const userId = session.user.id;
+          
+          // MIGRATION: user_pin
+          const oldPin = await Promise.race([
+             SecureStore.getItemAsync('user_pin'),
+             new Promise((resolve) => setTimeout(() => resolve(null), 2000))
+          ]);
+          if (oldPin) {
+             const newPinKey = `user_pin_${userId}`;
+             const newPin = await SecureStore.getItemAsync(newPinKey);
+             if (!newPin) {
+                await SecureStore.setItemAsync(newPinKey, oldPin);
+             }
+             await SecureStore.deleteItemAsync('user_pin');
+          }
+
+          // MIGRATION: use_biometrics
+          const oldBio = await Promise.race([
+             SecureStore.getItemAsync('use_biometrics'),
+             new Promise((resolve) => setTimeout(() => resolve(null), 2000))
+          ]);
+          if (oldBio) {
+             const newBioKey = `use_biometrics_${userId}`;
+             const newBio = await SecureStore.getItemAsync(newBioKey);
+             if (!newBio) {
+                await SecureStore.setItemAsync(newBioKey, oldBio);
+             }
+             await SecureStore.deleteItemAsync('use_biometrics');
+          }
+
+          const pinKey = `user_pin_${userId}`;
+          const storedPin = await Promise.race([
+            SecureStore.getItemAsync(pinKey),
+            new Promise((resolve) => setTimeout(() => resolve(null), 2000))
+          ]);
+          if (storedPin) {
+            setIsAppLocked(true);
+          }
+        }
+      } catch (error) {
+        console.log("Error checking secure store:", error);
+      } finally {
+        setIsCheckingLock(false);
+      }
+
       if (session?.access_token !== lastToken) {
         lastToken = session?.access_token;
-        syncUser(session);
+        syncUser(session, 'INITIAL_SESSION');
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (_event === 'SIGNED_OUT') {
+        lastToken = null;
+        return;
+      }
       if (session?.access_token !== lastToken) {
         lastToken = session?.access_token;
-        syncUser(session);
+        if (session) {
+          syncUser(session, _event);
+        }
       }
     });
 
@@ -1018,23 +1144,23 @@ export function AppProvider({ children }) {
     }
   };
 
-  const logout = async () => {
+  const logout = async (navigation) => {
     try {
-      await SecureStore.deleteItemAsync('user_pin');
-      await SecureStore.deleteItemAsync('use_biometrics');
-      await AsyncStorage.removeItem('@dizzitup_cached_user');
-      setUser({
-        name: 'Utilisateur',
-        email: '',
-        avatar: null,
-        balanceDZY: 0,
-        allBalances: {},
-        currency: 'DZY',
-        role: 'user',
-        country: '',
-      });
-      setSession(null);
       await supabase.auth.signOut();
+      
+      // Do not delete user_pin from SecureStore, as it is per-user now.
+      // But we clear the cached user.
+      await AsyncStorage.removeItem('@dizzitup_cached_user');
+      setUser(null);
+      setSession(null);
+      setIsAppLocked(false);
+      
+      if (navigation && navigation.reset) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'LoginScreen' }],
+        });
+      }
     } catch (e) {
       console.log('Error during logout:', e);
     }

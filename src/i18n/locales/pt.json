@@ -528,7 +528,11 @@
     "typeHospitality": "Hospitality / Rentals (BNB, Hotels)",
     "typeService": "Professional Services (Consulting, Events)",
     "businessType": "Business Type",
-    "selectBusinessType": "Select your primary offering"
+    "selectBusinessType": "Select your primary offering",
+    "enterNewPinTitle": "Insira o novo PIN",
+    "enterNewPinDesc": "Insira o seu novo PIN de 6 dígitos.",
+    "verifyCurrentPin": "Verificar PIN atual",
+    "enterCurrentPin": "Insira o seu PIN atual para continuar."
   },
   "common": {
     "selectOption": "Selecione uma opção",
@@ -3683,6 +3687,12 @@
     "personal_type": "Pessoal"
   },
   "pos": {
+    "camera_permission": "Precisamos da sua permissão para usar a câmera",
+    "grant_permission": "Conceder permissão",
+    "scan_success": "Cliente escaneado com sucesso",
+    "scan_customer": "Escanear cliente",
+    "align_qr": "Alinhe o código QR dentro do quadro",
+    "scan_again": "Escanear novamente",
     "cashier": "Caixa",
     "pos_title": "Ponto de Venda (PDV/ATM)",
     "cash_desks": "Caixas (PDV/ATM)",
@@ -3775,7 +3785,12 @@
     "pushNotificationsDesc": "Receba alertas sobre pagamentos e pedidos",
     "selectCurrency": "Selecionar Moeda de Exibição",
     "comingSoon": "Em breve",
-    "comingSoonMsg": "A funcionalidade de alteração de palavra-passe estará disponível na próxima atualização."
+    "comingSoonMsg": "A funcionalidade de alteração de palavra-passe estará disponível na próxima atualização.",
+    "changePin": "Mudar PIN",
+    "changePinDesc": "Atualize o seu PIN de transação",
+    "setPin": "Definir PIN",
+    "setPinDesc": "Defina um PIN para transações seguras",
+    "pinUpdated": "PIN atualizado com sucesso"
   },
   "receiveFunds": {
     "title": "Receber fundos",
@@ -3916,6 +3931,10 @@
   "qaReferToastTitle": "Indicar uma loja",
   "qaReferToastMessage": "Formulário de indicação pronto.",
   "contacts": {
+    "view_profile": "Ver Perfil",
+    "matches_count": "encontrado(s)",
+    "no_matching_contact": "Nenhum contato começa com",
+    "view_all_results": "Ver todos",
     "quick_actions": "Ações rápidas",
     "quick_action_1": {
       "title": "Pagar &\ncomprar essenciais",
@@ -4061,6 +4080,8 @@
     }
   },
   "topup": {
+    "select_country": "Selecione o país",
+    "select_token": "Selecione o token",
     "title": "Recarregar Carteira",
     "select_method": "Selecione seu método de pagamento",
     "mobile_money": "Mobile Money",
@@ -4716,6 +4737,7 @@
     "step4Msg": "Validando custódia escrow..."
   },
   "paymentSuccess": {
+    "backToContact": "Voltar ao perfil do contato",
     "title": "Pagamento Concluído com Sucesso!",
     "subtitle": "O seu pagamento foi efetuado com sucesso.",
     "secure": "Transação 100% Segura",
@@ -5067,6 +5089,10 @@
     "highPerformance": "Alto desempenho"
   },
   "shareSuccess": {
+    "copiedTitle": "Mensagem copiada!",
+    "copiedDesc": "Pronto para ser compartilhado.",
+    "resetTitle": "Mensagem redefinida",
+    "resetDesc": "Texto original restaurado.",
     "title": "Compartilhar meu sucesso",
     "subtitle": "Escolha onde publicar seu cartão DizzitUp",
     "stepSocialNetwork": "Rede social",
@@ -5213,7 +5239,21 @@
     "taskSavedMessage": "Foi adicionada à sua lista de tarefas.",
     "actionsToComplete": "ações para concluir",
     "progressLabel": "O seu progresso",
-    "completed": "concluídas"
+    "completed": "concluídas",
+    "todo1Title": "Comprar um presente para Abdou",
+    "categoryPayment": "Pagamento",
+    "dueToday": "Hoje",
+    "todo2Title": "Recarregar a carteira",
+    "categoryWallet": "Carteira",
+    "dueThisWeek": "Esta semana",
+    "todo3Title": "Completar meu perfil",
+    "categorySecurity": "Segurança",
+    "dueBeforeFriday": "Antes de sexta-feira",
+    "todo4Title": "Criar minha DZYStore",
+    "categoryBusiness": "Negócios",
+    "dueThisMonth": "Este mês",
+    "categoryPersonal": "Pessoal",
+    "dueToPlan": "A planejar"
   },
   "dashboard": {
     "dzy_card_promo": "Seu cartão Visa em USD para comprar e viajar em qualquer lugar do mundo.",
@@ -5474,6 +5514,7 @@
     "helpNote": "Se o provedor ou tipo de serviço do seu beneficiário não for compatível, pode ser que ainda não trabalhemos com ele. Nossa equipe está constantemente expandindo a cobertura."
   },
   "cart": {
+    "continueShopping": "Continuar comprando",
     "title": "Carrinho",
     "emptyTitle": "Carrinho vazio",
     "emptyDesc": "O seu carrinho não tem artigos de momento.",
@@ -5524,6 +5565,7 @@
     "sortNewest": "Mais recentes"
   },
   "paymentRails": {
+    "withdrawRegionLabel": "País de recepção de fundos:",
     "regionModalTitle": "Região de Pagamento Mobile Money",
     "regionModalSub": "Detectado atualmente:",
     "momoNoticeTitle": "Por que o Mobile Money está desativado?",
@@ -5602,5 +5644,22 @@
   "shop.info.website": "Site web",
   "shop.info.social_media_title": "Redes sociais e contato",
   "common.open": "Abrir",
-  "common.visit": "Visitar"
+  "common.visit": "Visitar",
+  "stepper.information": "Informação",
+  "stepper.verification": "Verificação",
+  "stepper.security": "Segurança",
+  "countries.BJ": "Benin",
+  "countries.CI": "Costa do Marfim",
+  "countries.SN": "Senegal",
+  "topup.ecosystem_token": "Token do ecossistema",
+  "topup.corridor_notice_desc": "O Mobile Money local não opera em {{country}}. Você pode recarregar um número em qualquer corredor parceiro suportado (Benin, Togo, Madagascar, Senegal...) ou via Cartão/Cripto.",
+  "topup.pay_with_card_or_crypto": "Pagar com Cartão ou Cripto",
+  "topup.operator": "Operador",
+  "paymentRails.licensedNetwork": "Rede Parceira Autorizada",
+  "paymentRails.securePayment": "Pagamento Seguro",
+  "paymentRails.momoAvailable": "Disponível ({{operators}})",
+  "paymentRails.momoUnavailableRegion": "Indisponível para {{country}}. Ativo em 20 países da África Subsaariana.",
+  "paymentRails.bankAvailable": "Transferência bancária disponível em {{country}}",
+  "paymentRails.bankUnavailable": "Transferência bancária indisponível para {{country}}",
+  "withdrawFunds.titleToMobileMoney": "Levantar fundos para Mobile Money"
 }
