@@ -688,6 +688,7 @@ export default function SendMoneyScreen() {
         clearInterval(interval);
         setIsAuthorizing(false);
         setTxStatus(null);
+        setErrorMessage(t('sendMoney.polling_timeout', 'Transaction is taking longer than expected. Please check your transaction history.'));
       }
     }, 8000); // 8-second interval prevents 429 rate-limiting
     pollIntervalRef.current = interval;
