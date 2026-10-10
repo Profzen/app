@@ -818,7 +818,7 @@ export default function ShopDetailsScreen({ route }) {
                   </View>
                   <View style={styles.channelInfo}>
                     <Text style={styles.channelName}>DZYstore Web</Text>
-                    <Text style={styles.channelHandle} numberOfLines={1}>dizzitup.com/stores/{shopSlug}</Text>
+                    <Text style={styles.channelHandle} numberOfLines={1}>{publicStoreUrl.replace(/^https?:\/\//, '')}</Text>
                   </View>
                   <View style={[styles.channelActionBtn, { backgroundColor: '#1A2840', borderColor: '#1A2840' }]}>
                     <Ionicons name="copy-outline" size={11} color="#FFFFFF" style={{ marginRight: 3 }} />

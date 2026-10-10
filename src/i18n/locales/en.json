@@ -5472,7 +5472,7 @@
     "actionsToComplete": "actions to complete",
     "progressLabel": "Your progress",
     "completed": "completed",
-    "todo1Title": "Buy a gift for Abdou",
+    "todo1Title": "Buy a gift card",
     "categoryPayment": "Payment",
     "dueToday": "Today",
     "todo2Title": "Top up wallet",
@@ -5485,7 +5485,8 @@
     "categoryBusiness": "Business",
     "dueThisMonth": "This month",
     "categoryPersonal": "Personal",
-    "dueToPlan": "To plan"
+    "dueToPlan": "To plan",
+    "someone": "someone"
   },
   "dashboard": {
     "dzy_card_promo": "Your Visa card in USD to buy and travel anywhere in the world.",

@@ -5240,7 +5240,7 @@
     "actionsToComplete": "ações para concluir",
     "progressLabel": "O seu progresso",
     "completed": "concluídas",
-    "todo1Title": "Comprar um presente para Abdou",
+    "todo1Title": "Comprar um cartão-presente",
     "categoryPayment": "Pagamento",
     "dueToday": "Hoje",
     "todo2Title": "Recarregar a carteira",
@@ -5253,7 +5253,8 @@
     "categoryBusiness": "Negócios",
     "dueThisMonth": "Este mês",
     "categoryPersonal": "Pessoal",
-    "dueToPlan": "A planejar"
+    "dueToPlan": "A planejar",
+    "someone": "alguém"
   },
   "dashboard": {
     "dzy_card_promo": "Seu cartão Visa em USD para comprar e viajar em qualquer lugar do mundo.",

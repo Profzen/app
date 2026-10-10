@@ -5267,7 +5267,7 @@
     "actionsToComplete": "إجراءات للإكمال",
     "progressLabel": "تقدمك",
     "completed": "مكتملة",
-    "todo1Title": "شراء هدية لعبدو",
+    "todo1Title": "شراء بطاقة هدايا",
     "categoryPayment": "دفع",
     "dueToday": "اليوم",
     "todo2Title": "شحن المحفظة",
@@ -5280,7 +5280,8 @@
     "categoryBusiness": "أعمال",
     "dueThisMonth": "هذا الشهر",
     "categoryPersonal": "شخصي",
-    "dueToPlan": "للتخطيط"
+    "dueToPlan": "للتخطيط",
+    "someone": "شخص ما"
   },
   "dashboard": {
     "dzy_card_promo": "بطاقتك Visa بالدولار الأمريكي للشراء والسفر في أي مكان في العالم.",

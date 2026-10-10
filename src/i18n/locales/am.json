@@ -5165,7 +5165,7 @@
     "actionsToComplete": "የሚጠናቀቁ ተግባራት",
     "progressLabel": "የእርስዎ እድገት",
     "completed": "ተጠናቋል",
-    "todo1Title": "ለአብዱ ስጦታ ይግዙ",
+    "todo1Title": "የስጦታ ካርድ ይግዙ",
     "categoryPayment": "ክፍያ",
     "dueToday": "ዛሬ",
     "todo2Title": "ዋሌት ይሙሉ",
@@ -5178,7 +5178,8 @@
     "categoryBusiness": "ንግድ",
     "dueThisMonth": "በዚህ ወር",
     "categoryPersonal": "የግል",
-    "dueToPlan": "ለማቀድ"
+    "dueToPlan": "ለማቀድ",
+    "someone": "አንድ ሰው"
   },
   "topup": {
     "select_country": "ሀገር ይምረጡ",

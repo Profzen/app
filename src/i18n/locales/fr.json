@@ -5506,7 +5506,7 @@
     "actionsToComplete": "actions à réaliser",
     "progressLabel": "Votre progression",
     "completed": "terminées",
-    "todo1Title": "Acheter un cadeau pour Abdou",
+    "todo1Title": "Acheter une carte cadeau",
     "categoryPayment": "Paiement",
     "dueToday": "Aujourd'hui",
     "todo2Title": "Recharger le portefeuille",
@@ -5519,7 +5519,8 @@
     "categoryBusiness": "Business",
     "dueThisMonth": "Ce mois-ci",
     "categoryPersonal": "Personnel",
-    "dueToPlan": "À planifier"
+    "dueToPlan": "À planifier",
+    "someone": "quelqu'un"
   },
   "copied_title": "{{label}} copié !",
   "dashboard": {

@@ -222,7 +222,9 @@ export default function ShopProductsScreen({ route }) {
   const shareShop = async () => {
     const shopName = shop.name || shop.shop_name || shop.raw?.shop_name || 'Boutique DizzitUp';
     const shopSlug = shop.slug || shop.id || 'boutique';
-    const shopUrl = `https://dizzitup.com/stores/${shopSlug}`;
+    const countrySlug = (shop.country || shop.raw?.country || 'global').toLowerCase().replace(/\s+/g, '-');
+    const citySlug = (shop.city_village || shop.raw?.city_village || shop.city || 'city').toLowerCase().replace(/\s+/g, '-');
+    const shopUrl = `https://dizzitup.com/DZYstore/${countrySlug}/${citySlug}/${shopSlug}`;
     try {
       await Share.share({
         title: shopName,

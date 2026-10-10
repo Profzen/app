@@ -24,7 +24,7 @@ export const PinConfirmationModal = ({ visible, onSuccess, onCancel, amount, tok
   const bioTriggered = useRef(false);
 
   useEffect(() => {
-    if (visible) {
+    if (visible && user?.id) {
       setPin('');
       setFirstPin('');
       setSetupStep(0);
@@ -36,11 +36,12 @@ export const PinConfirmationModal = ({ visible, onSuccess, onCancel, amount, tok
       checkPinState();
       checkBiometrics();
     }
-  }, [visible]);
+  }, [visible, user?.id]);
 
   const checkPinState = async () => {
     try {
-      const pinKey = user?.id ? `user_pin_${user?.id}` : 'user_pin';
+      if (!user?.id) return;
+      const pinKey = `user_pin_${user.id}`;
       const stored = await SecureStore.getItemAsync(pinKey);
       setIsSetupMode(!stored);
     } catch (e) {

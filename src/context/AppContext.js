@@ -651,6 +651,7 @@ export function AppProvider({ children }) {
           role: fetchedRole,
           id: sessionObj.user.id,
           email: sessionObj.user.email,
+          app_metadata: sessionObj.user.app_metadata,
           country: fetchedCountry,
           city: fetchedCity,
           phone: fetchedPhone,
@@ -1154,6 +1155,9 @@ export function AppProvider({ children }) {
       setUser(null);
       setSession(null);
       setIsAppLocked(false);
+      setTransactions([]);
+      setCart([]);
+      setFavorites([]);
       
       if (navigation && navigation.reset) {
         navigation.reset({

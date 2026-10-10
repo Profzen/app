@@ -19,8 +19,8 @@ export default function TodoListScreen() {
     const list = [
       { 
         id: '1', 
-        titleKey: 'todoList.todo1Title', 
-        defaultTitle: 'Buy a gift for Abdou', 
+        titleKey: 'todoList.todo1Title',
+        defaultTitle: 'Buy a gift card', 
         categoryKey: 'todoList.categoryPayment', 
         defaultCategory: 'Payment', 
         dueKey: 'todoList.dueToday', 
