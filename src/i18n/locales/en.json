@@ -701,6 +701,8 @@
     "success": "Success",
     "wallet": {
       "title": "Wallet",
+      "solana_send_coming_soon_title": "Coming soon",
+      "solana_send_coming_soon": "Sending on Solana is coming soon. You can already receive and swap on Solana.",
       "send_funds": "Send Funds",
       "receive_funds": "Receive Funds",
       "send_receive": "Send/Receive",
@@ -939,7 +941,10 @@
         "failed": "Transaction failed",
         "fetching_rate": "Fetching best rate...",
         "swap_btn": "SWAP TOKENS NOW",
-        "authorizing": "Authorizing..."
+        "authorizing": "Authorizing...",
+        "quote_failed": "Could not get a quote. Please try again.",
+        "dzy_banner_soon": "Coming soon: hold DZY to unlock feeless trading.",
+        "status_timeout": "Still processing. Check your wallet history in a few minutes."
       },
       "topup": {
         "choose_method": "Choose Your Payment Method",
@@ -3673,8 +3678,8 @@
         "button": "Complete"
       },
       "merchant_dashboard": {
-        "title": "Access your Business\nDashboard",
-        "button": "Access"
+        "title": "Manage your business account",
+        "button": "Manage"
       },
       "create_store": {
         "title": "Create your DZYStore\nand start selling",
@@ -4124,6 +4129,7 @@
       "subtitle": "Invite friends and\nearn $5 DZY"
     },
     "my_beneficiaries": "My beneficiaries",
+    "add_contact": "Add contact",
     "manage_contacts": "Contacts",
     "filter_nearby": "Nearby",
     "filter_favorites": "Favorite countries",

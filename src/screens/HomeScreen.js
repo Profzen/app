@@ -229,22 +229,23 @@ export default function HomeScreen() {
       icon: 'warning-outline',
       iconColor: '#EF4444',
       iconBgColor: '#FEF2F2',
-      title: t('home.todos.low_balance.title', 'Solde faible,\nrechargez votre compte'),
-      buttonText: t('home.todos.low_balance.button', 'Recharger'),
+      title: t('home.todos.low_balance.title', 'Low balance,\ntop up your account'),
+      buttonText: t('home.todos.low_balance.button', 'Top up'),
       buttonColor: '#EF4444',
       buttonBgColor: '#FEF2F2',
       route: 'TopUpScreen'
     });
   }
 
-  if (!user?.firstName || !user?.lastName || !user?.phone) {
+  const isMobileNumberMissing = !user?.mobile_number || user?.mobile_number === 'N/A' || user?.mobile_number.trim() === '';
+  if (!user?.firstName || !user?.lastName || isMobileNumberMissing) {
     TODO_LIST.push({
       id: '3',
       icon: 'shield-checkmark-outline',
       iconColor: '#3B82F6',
       iconBgColor: '#EFF6FF',
-      title: t('home.todos.complete_profile.title', 'Complétez votre profil\npour plus de sécurité'),
-      buttonText: t('home.todos.complete_profile.button', 'Compléter'),
+      title: t('home.todos.complete_profile.title', 'Complete your profile\nfor better security'),
+      buttonText: t('home.todos.complete_profile.button', 'Complete'),
       buttonColor: '#3B82F6',
       buttonBgColor: '#EFF6FF',
       route: user?.role === 'merchant' ? 'BusinessAccountScreen' : 'PersonalAccountScreen'
@@ -258,8 +259,8 @@ export default function HomeScreen() {
         icon: 'storefront-outline',
         iconColor: '#8B5CF6',
         iconBgColor: '#F5F3FF',
-        title: t('home.todos.merchant_dashboard.title', 'Accéder à votre\nTableau de bord Pro'),
-        buttonText: t('home.todos.merchant_dashboard.button', 'Accéder'),
+        title: t('home.todos.merchant_dashboard.title', 'Manage your business account'),
+        buttonText: t('home.todos.merchant_dashboard.button', 'Manage'),
         buttonColor: '#8B5CF6',
         buttonBgColor: '#F5F3FF',
         route: 'BusinessAccountScreen'

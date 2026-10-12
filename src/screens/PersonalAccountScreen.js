@@ -9,7 +9,7 @@ import AppToast from '../components/AppToast';
 import { ALL_COUNTRIES } from '../utils/countriesData';
 import { useApp } from '../context/AppContext';
 import Avatar from '../components/Avatar';
-
+import { parsePhoneNumberWithError } from 'libphonenumber-js';
 // Maps the saved profile value (country name or ISO code) to the canonical country name; unknown values are kept as-is
 const resolveCountryName = (raw) => {
   const value = (raw || '').toString().trim();
@@ -27,7 +27,7 @@ export default function PersonalAccountScreen() {
   // Form State
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
-  const [phone, setPhone] = useState(user?.phone || '');
+  const [phone, setPhone] = useState(user?.mobile_number || user?.phone || '');
   const [country, setCountry] = useState(resolveCountryName(user?.country));
   const [city, setCity] = useState(user?.city || '');
   const [isSaving, setIsSaving] = useState(false);
@@ -51,7 +51,7 @@ export default function PersonalAccountScreen() {
     if (user) {
       setName(user.name || '');
       setEmail(user.email || '');
-      setPhone(user.phone || '');
+      setPhone(user.mobile_number || user.phone || '');
       setCountry(resolveCountryName(user.country));
       setCity(user.city || '');
     }
@@ -62,40 +62,102 @@ export default function PersonalAccountScreen() {
     else navigation.navigate('MoreSettingsScreen');
   };
 
+  // const handleSave = async () => {
+  //   if (!phone || phone.trim() === '' || phone === 'N/A') {
+  //     setToast({
+  //       title: t('common.error', 'Error'),
+  //       message: t('auth.invalid_phone', 'Invalid phone number'),
+  //       type: 'error'
+  //     });
+  //     return;
+  //   }
+
+  //   let parsedPhone = '';
+  //   try {
+  //     const phoneNumberObj = parsePhoneNumberWithError(phone);
+  //     if (!phoneNumberObj.isValid()) {
+  //       throw new Error('Invalid format');
+  //     }
+  //     parsedPhone = phoneNumberObj.number; // E.164 format
+  //   } catch (e) {
+  //     setToast({
+  //       title: t('common.error', 'Error'),
+  //       message: t('auth.invalid_phone', 'Invalid phone number'),
+  //       type: 'error'
+  //     });
+  //     return;
+  //   }
+
+  //   setIsSaving(true);
+  //   const first_name = name.split(' ')[0] || '';
+  //   const last_name = name.split(' ').slice(1).join(' ') || '';
+
+  //   const result = await updateUserProfile({
+  //       first_name,
+  //       last_name,
+  //       mobile_number: parsedPhone,
+  //       country_of_residence: country,
+  //       city_of_residence: city
+  //   });
+
+  //   setIsSaving(false);
+
+  //   if (result.success) {
+  //     setToast({ 
+  //       title: t('personalAccount.saveSuccess', 'Profile Updated'), 
+  //       message: t('personalAccount.saveSuccessMsg', 'Your details have been saved.'),
+  //       type: 'success'
+  //     });
+  //   } else {
+  //     setToast({ 
+  //       title: t('personalAccount.saveError', 'Update Error'), 
+  //       message: result.error || t('personalAccount.saveErrorMsg', 'Could not update profile.'),
+  //       type: 'error'
+  //     });
+  //   }
+  // };
   const handleSave = async () => {
+    // Phone is optional: an empty phone is allowed, so the user can still update name, country or city.
+    // If a phone is typed, it must be valid, and it is saved in E.164 (example: +22870383854).
+    const rawPhone = (phone || '').trim();
+    let parsedPhone = null;
+    if (rawPhone !== '' && rawPhone !== 'N/A') {
+      try {
+        const phoneNumberObj = parsePhoneNumberWithError(rawPhone);
+        if (!phoneNumberObj.isValid()) { throw new Error('Invalid format'); }
+        parsedPhone = phoneNumberObj.number; // E.164
+      } catch (e) {
+        setToast({
+          title: t('common.error', 'Error'),
+          message: t('common.errors.invalidPhoneCountry', 'Please enter a valid phone number for the selected country'),
+          type: 'error',
+        });
+        return;
+      }
+    }
+
     setIsSaving(true);
     const first_name = name.split(' ')[0] || '';
     const last_name = name.split(' ').slice(1).join(' ') || '';
-    
     const result = await updateUserProfile({
-        first_name,
-        last_name,
-        mobile_number: phone,
-        country_of_residence: country,
-        city_of_residence: city
+      first_name,
+      last_name,
+      mobile_number: parsedPhone,
+      country_of_residence: country,
+      city_of_residence: city,
     });
-    
     setIsSaving(false);
-    
+
     if (result.success) {
-      setToast({ 
-        title: t('personalAccount.saveSuccess', 'Profile Updated'), 
-        message: t('personalAccount.saveSuccessMsg', 'Your details have been saved.'),
-        type: 'success'
-      });
+      setToast({ title: t('personalAccount.saveSuccess', 'Profile Updated'), message: t('personalAccount.saveSuccessMsg', 'Your details have been saved.'), type: 'success' });
     } else {
-      setToast({ 
-        title: t('personalAccount.saveError', 'Update Error'), 
-        message: result.error || t('personalAccount.saveErrorMsg', 'Could not update profile.'),
-        type: 'error'
-      });
+      setToast({ title: t('personalAccount.saveError', 'Update Error'), message: result.error || t('personalAccount.saveErrorMsg', 'Could not update profile.'), type: 'error' });
     }
   };
-
   return (
     <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView 
-        style={styles.container} 
+      <KeyboardAvoidingView
+        style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -140,7 +202,7 @@ export default function PersonalAccountScreen() {
               <Text style={styles.fieldLabel}>{t('personalAccount.emailAddress', 'Email Address')}</Text>
               <View style={styles.inputWrap}>
                 <Ionicons name="mail-outline" size={18} color="#6B7280" style={styles.inputIcon} />
-                <TextInput style={[styles.input, {color: '#9CA3AF'}]} value={email} editable={false} keyboardType="email-address" autoCapitalize="none" />
+                <TextInput style={[styles.input, { color: '#9CA3AF' }]} value={email} editable={false} keyboardType="email-address" autoCapitalize="none" />
               </View>
             </View>
 
@@ -201,9 +263,9 @@ export default function PersonalAccountScreen() {
           </View>
 
           {/* Save Button */}
-          <TouchableOpacity 
-            style={[styles.saveButton, isSaving && { opacity: 0.7 }]} 
-            onPress={handleSave} 
+          <TouchableOpacity
+            style={[styles.saveButton, isSaving && { opacity: 0.7 }]}
+            onPress={handleSave}
             disabled={isSaving}
           >
             {isSaving ? (
@@ -224,7 +286,8 @@ export default function PersonalAccountScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#FAFAFC',
+  safeArea: {
+    flex: 1, backgroundColor: '#FAFAFC',
     paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 14,
   },
   container: { flex: 1, backgroundColor: '#FAFAFC' },

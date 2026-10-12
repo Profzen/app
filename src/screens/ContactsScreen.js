@@ -649,9 +649,9 @@ export default function ContactsScreen() {
             {/* Mes bénéficiaires */}
             <View style={styles.sectionHeaderRow}>
               <Text style={styles.sectionTitleSticky}>{t('contacts.my_beneficiaries', 'Mes bénéficiaires')}</Text>
-              <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => navigation.navigate('EditBeneficiaryScreen')}>
-                <Text style={styles.showLessText}>{t('contacts.manage_contacts', 'Gérer contacts')}</Text>
-                <Ionicons name="arrow-forward" size={14} color="#3B82F6" style={{ marginLeft: 4 }} />
+              <TouchableOpacity style={styles.addContactBtn} onPress={() => navigation.navigate('EditBeneficiaryScreen')}>
+                <Ionicons name="add" size={16} color="#3B82F6" style={{ marginRight: 2 }} />
+                <Text style={styles.addContactText}>{t('contacts.add_contact', 'Add contact')}</Text>
               </TouchableOpacity>
             </View>
 
@@ -1181,7 +1181,8 @@ const styles = StyleSheet.create({
   sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 16, marginBottom: 12 },
   sectionTitleSticky: { fontFamily: 'Inter_700Bold', fontSize: 16, color: '#1A2840', paddingHorizontal: 16 },
   stickyHeaderContainer: { backgroundColor: '#FAFAFA', paddingTop: 8, paddingBottom: 4, borderBottomWidth: 1, borderBottomColor: '#E2E8F0', zIndex: 10 },
-  showLessText: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#3B82F6' },
+  addContactBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(59, 130, 246, 0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16 },
+  addContactText: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#3B82F6' },
   filtersScroll: { paddingHorizontal: 16, marginBottom: 12 },
   filterChipActive: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0A1128', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, marginRight: 8 },
   filterChipTextActive: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#FFFFFF' },

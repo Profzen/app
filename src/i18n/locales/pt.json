@@ -684,6 +684,8 @@
     "wallet": {
       "networks_count": "Redes",
       "title": "Carteira",
+      "solana_send_coming_soon_title": "Em breve",
+      "solana_send_coming_soon": "O envio na Solana chegará em breve. Você já pode receber e trocar na Solana.",
       "send_funds": "Enviar Fundos",
       "receive_funds": "Receber Fundos",
       "send_receive": "Enviar/Receber",
@@ -890,7 +892,10 @@
         "failed": "Transação falhou",
         "fetching_rate": "Buscando a melhor taxa...",
         "swap_btn": "TROCAR TOKENS AGORA",
-        "authorizing": "Autorizando..."
+        "authorizing": "Autorizando...",
+        "quote_failed": "Não foi possível obter uma cotação. Tente novamente.",
+        "dzy_banner_soon": "Em breve: tenha DZY para negociar sem taxas.",
+        "status_timeout": "Ainda em processamento. Verifique o histórico da sua carteira em alguns minutos."
       },
       "topup": {
         "choose_method": "Escolha seu Método de Pagamento",
@@ -3506,8 +3511,8 @@
         "button": "Completar"
       },
       "merchant_dashboard": {
-        "title": "Acesse seu\nPainel de Negócios",
-        "button": "Acessar"
+        "title": "Gerencie sua conta comercial",
+        "button": "Gerenciar"
       },
       "create_store": {
         "title": "Crie sua DZYStore\ne comece a vender",
@@ -3957,6 +3962,7 @@
       "subtitle": "Convide amigos e\nganhe $5 DZY"
     },
     "my_beneficiaries": "Meus beneficiários",
+    "add_contact": "Adicionar contato",
     "manage_contacts": "Contatos",
     "filter_nearby": "Perto",
     "filter_favorites": "Países favoritos",

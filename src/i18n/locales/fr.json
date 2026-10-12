@@ -597,6 +597,8 @@
     },
     "wallet": {
       "title": "Portefeuille",
+      "solana_send_coming_soon_title": "Bientôt disponible",
+      "solana_send_coming_soon": "L’envoi sur Solana arrive bientôt. Vous pouvez déjà recevoir et échanger sur Solana.",
       "send_funds": "Envoyer des fonds",
       "receive_funds": "Recevoir des fonds",
       "send_funds_subtitle": "Envoyez des stablecoins à n'importe quelle adresse ou bénéficiaire",
@@ -835,7 +837,10 @@
         "failed": "Transaction échouée",
         "fetching_rate": "Recherche du meilleur taux...",
         "swap_btn": "ÉCHANGER LES JETONS",
-        "authorizing": "Autorisation..."
+        "authorizing": "Autorisation...",
+        "quote_failed": "Impossible d’obtenir un devis. Veuillez réessayer.",
+        "dzy_banner_soon": "Bientôt : détenez des DZY pour échanger sans frais.",
+        "status_timeout": "Traitement en cours. Consultez l’historique de votre portefeuille dans quelques minutes."
       },
       "topup": {
         "choose_method": "Choisissez votre mode de paiement",
@@ -3721,8 +3726,8 @@
         "button": "Compléter"
       },
       "merchant_dashboard": {
-        "title": "Accéder à votre\nTableau de bord Pro",
-        "button": "Accéder"
+        "title": "Gérer votre compte professionnel",
+        "button": "Gérer"
       },
       "create_store": {
         "title": "Créez votre DZYStore\net commencez à vendre",
@@ -4162,6 +4167,7 @@
       "subtitle": "Invitez vos amis et\ngagnez $5 en DZY"
     },
     "my_beneficiaries": "Mes bénéficiaires",
+    "add_contact": "Ajouter un contact",
     "manage_contacts": "Contacts",
     "filter_nearby": "À proximité",
     "filter_favorites": "De mes pays préférés",

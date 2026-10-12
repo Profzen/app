@@ -731,6 +731,8 @@
     "wallet": {
       "networks_count": "አውታረ መረቦች",
       "title": "ዋሌት",
+      "solana_send_coming_soon_title": "በቅርቡ",
+      "solana_send_coming_soon": "በሶላና ላይ መላክ በቅርቡ ይመጣል። በሶላና ላይ መቀበል እና መለዋወጥ አሁን ይችላሉ።",
       "send_funds": "ገንዘብ ላክ",
       "receive_funds": "ገንዘብ ተቀበል",
       "send_receive": "ላክ/ተቀበል",
@@ -937,7 +939,10 @@
         "failed": "ግብይቱ አልተሳካም",
         "fetching_rate": "ምርጥ ዋጋ እየተፈለገ ነው...",
         "swap_btn": "ቶከኖቹን አሁን ቀይር",
-        "authorizing": "እየፈቀደ ነው..."
+        "authorizing": "እየፈቀደ ነው...",
+        "quote_failed": "ዋጋ ማግኘት አልተቻለም። እባክዎ እንደገና ይሞክሩ።",
+        "dzy_banner_soon": "በቅርቡ፦ ያለ ክፍያ ለመገበያየት DZY ይያዙ።",
+        "status_timeout": "አሁንም በሂደት ላይ ነው። ከጥቂት ደቂቃዎች በኋላ የቦርሳዎን ታሪክ ይመልከቱ።"
       },
       "topup": {
         "choose_method": "የመክፈያ ዘዴዎን ይምረጡ",
@@ -3524,8 +3529,8 @@
         "button": "ያጠናቅቁ"
       },
       "merchant_dashboard": {
-        "title": "የንግድ ዳሽቦርድዎን\nይድረሱ",
-        "button": "ይድረሱ"
+        "title": "የንግድ መለያዎን ያስተዳድሩ",
+        "button": "ያስተዳድሩ"
       },
       "create_store": {
         "title": "DZYStoreዎን ይፍጠሩ\nእና መሸጥ ይጀምሩ",
@@ -3975,6 +3980,7 @@
       "subtitle": "ጓደኞችን ይጋብዙ እና\n$5 DZY ያግኙ"
     },
     "my_beneficiaries": "የእኔ ተቀባዮች",
+    "add_contact": "እውቂያ ያክሉ",
     "manage_contacts": "እውቂያዎች",
     "filter_nearby": "በአቅራቢያ",
     "filter_favorites": "ተወዳጅ ሀገሮች",

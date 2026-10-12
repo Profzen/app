@@ -44,7 +44,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
     ? quote.finalFiatAmountReceived.toLocaleString(language)
     : formattedAmount;
   const tokenAmount = quote.totalTokenDebit ? quote.totalTokenDebit.toFixed(2) : '0.00';
-  const recipientContact = user?.phone || 'N/A';
+  const recipientContact = user?.mobile_number || 'N/A';
 
   const displayDate = new Date(timestamp).toLocaleDateString(language, {
     day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'

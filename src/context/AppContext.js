@@ -655,6 +655,7 @@ export function AppProvider({ children }) {
           country: fetchedCountry,
           city: fetchedCity,
           phone: fetchedPhone,
+          mobile_number: fetchedPhone,
           avatar: fetchedAvatar ? { uri: fetchedAvatar } : null,
           balanceDZY: primaryBalances.DZY ?? (primaryTotalUsd * 10),
           balanceUSDT: primaryBalances.USDT,
@@ -1005,6 +1006,7 @@ export function AppProvider({ children }) {
           country: payload.country_of_residence !== undefined ? payload.country_of_residence : prev.country,
           city: payload.city_of_residence !== undefined ? payload.city_of_residence : prev.city,
           phone: payload.mobile_number !== undefined ? payload.mobile_number : prev.phone,
+          mobile_number: payload.mobile_number !== undefined ? payload.mobile_number : prev.mobile_number,
         };
       });
       return { success: true, data };

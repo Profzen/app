@@ -4,6 +4,7 @@ import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/nativ
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Platform, StatusBar, ActivityIndicator, Modal, Share, KeyboardAvoidingView, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
+import { parsePhoneNumberWithError } from 'libphonenumber-js';
 import AppSelect from '../components/AppSelect';
 import AppToast from '../components/AppToast';
 import BottomNavBar from '../components/BottomNavBar';
@@ -366,10 +367,20 @@ export default function SendMoneyScreen() {
       if (cleanDigits.length > 5) {
         setIsSearchingApi(true);
         try {
+          let queryPhone = searchQuery;
+          try {
+            const phoneNumberObj = parsePhoneNumberWithError(searchQuery);
+            if (phoneNumberObj && phoneNumberObj.isValid()) {
+              queryPhone = phoneNumberObj.number;
+            }
+          } catch (err) {
+            // Ignore error and fall back to raw query string
+          }
+
           let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
           if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
           
-          const res = await fetch(`${DIZZY_URL}/wallet/lookup-by-phone?phone=${encodeURIComponent(searchQuery)}`, {
+          const res = await fetch(`${DIZZY_URL}/wallet/lookup-by-phone?phone=${encodeURIComponent(queryPhone)}`, {
             headers: { 'Authorization': `Bearer ${session?.access_token}` }
           });
           const data = await res.json();
@@ -454,6 +465,15 @@ export default function SendMoneyScreen() {
     }
     if (!toAddress || toAddress.includes('...')) {
       setToast({ title: t('wallet.invalid_address', 'Invalid address'), message: t('wallet.invalid_address_message', 'Please select a valid recipient.') });
+      return;
+    }
+
+    // Sending on Solana is not built yet: tell the user before asking for the PIN
+    if ((blockchain || 'polygon').toLowerCase() === 'solana') {
+      setToast({
+        title: t('common.wallet.solana_send_coming_soon_title', 'Coming soon'),
+        message: t('common.wallet.solana_send_coming_soon', 'Sending on Solana is coming soon. You can already receive and swap on Solana.'),
+      });
       return;
     }
 

@@ -17,7 +17,14 @@ const chainOptions = [
   { value: 'solana', label: 'Solana', isCrypto: true, cryptoSymbol: 'Solana' },
   { value: 'bsc', label: 'BNB Chain', isCrypto: true, cryptoSymbol: 'BNB' },
 ];
-const tokenOptions = ['USDC', 'USDT', 'POL', 'WBTC', 'WETH', 'ETH', 'SOL', 'BNB', 'DAI'].map((value) => ({ value, label: value }));
+
+const tokensByChain = {
+  polygon: ['USDC', 'USDT', 'POL', 'WETH'],
+  ethereum: ['USDC', 'USDT', 'WETH', 'WBTC'],
+  base: ['USDC', 'WETH'],
+  bsc: ['USDC', 'USDT', 'DAI'],
+  solana: ['USDC', 'USDT', 'SOL'],
+};
 
 export default function SwapTokensScreen() {
   const navigation = useNavigation();
@@ -45,8 +52,25 @@ export default function SwapTokensScreen() {
   const [sdkPromptOpen, setSdkPromptOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const amountInputRef = React.useRef(null);
+  const pollIntervalRef = React.useRef(null);
 
-  const availableBalance = user?.rawBalances?.find((b) => (b.currency || b.token || b.symbol) === fromToken && (b.chain === fromChain || !b.chain))?.balance || user?.allBalances?.[fromToken] || 0;
+  // Keep toChain in sync with fromChain (just in case it drifts)
+  useEffect(() => {
+    if (toChain !== fromChain) {
+      setToChain(fromChain);
+    }
+  }, [fromChain]);
+
+  // Cleanup polling interval on unmount
+  useEffect(() => {
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
+    };
+  }, []);
+
+  const availableBalance = user?.rawBalances?.find((b) => (b.currency || b.token || b.symbol) === fromToken && (b.chain === fromChain || !b.chain))?.balance || 0;
 
   // Debounced quote fetching
   useEffect(() => {
@@ -72,9 +96,12 @@ export default function SwapTokensScreen() {
         setToAmount(Number(data.toAmount).toFixed(6).replace(/\.?0+$/, ''));
       } else {
         setQuote(null);
+        setError(t('common.wallet.swap_ui.quote_failed', 'Could not get a quote. Please try again.'));
       }
     } catch (e) {
       console.log('Quote error', e);
+      setQuote(null);
+      setError(t('common.wallet.swap_ui.quote_failed', 'Could not get a quote. Please try again.'));
     } finally {
       setQuoteLoading(false);
     }
@@ -85,7 +112,11 @@ export default function SwapTokensScreen() {
     let attempts = 0;
     const maxAttempts = 30;
 
-    const interval = setInterval(async () => {
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+    }
+
+    pollIntervalRef.current = setInterval(async () => {
       attempts++;
       try {
         const data = await swapService.checkTransactionStatus(txId, session?.access_token);
@@ -93,7 +124,7 @@ export default function SwapTokensScreen() {
         setTxStatus(crossStatus);
 
         if (data.status === 'COMPLETED') {
-          clearInterval(interval);
+          clearInterval(pollIntervalRef.current);
 
           if (data.type === 'APPROVAL') {
             // If it was an approval, immediately trigger the swap execute
@@ -110,7 +141,7 @@ export default function SwapTokensScreen() {
         }
 
         if (crossStatus === 'failed') {
-          clearInterval(interval);
+          clearInterval(pollIntervalRef.current);
           setError(t('common.wallet.swap_ui.failed', 'Transaction failed'));
           setLoading(false);
           setIsAuthorizing(false);
@@ -121,9 +152,10 @@ export default function SwapTokensScreen() {
       }
 
       if (attempts >= maxAttempts) {
-        clearInterval(interval);
+        clearInterval(pollIntervalRef.current);
         setLoading(false);
         setIsAuthorizing(false);
+        setInfoMsg(t('common.wallet.swap_ui.status_timeout', 'Still processing. Check your wallet history in a few minutes.'));
       }
     }, 5000);
   };
@@ -285,16 +317,27 @@ export default function SwapTokensScreen() {
             </View>
           )}
 
-          {/* Chain Selectors */}
+          {/* Chain Selector */}
           <View style={styles.chainRow}>
-            <View style={styles.chainCol}>
-              <Text style={styles.inputLabel}>{t('common.wallet.swap_ui.from_chain', 'From Network')}</Text>
-              <AppSelect value={fromChain} options={chainOptions} onChange={setFromChain} title={t('common.wallet.swap_ui.from_chain')} style={styles.chainSelector} textStyle={styles.chainName} chevronColor="#64748B" />
-            </View>
-            <View style={{ width: 12 }} />
-            <View style={styles.chainCol}>
-              <Text style={styles.inputLabel}>{t('common.wallet.swap_ui.to_chain', 'To Network')}</Text>
-              <AppSelect value={toChain} options={chainOptions} onChange={setToChain} title={t('common.wallet.swap_ui.to_chain')} style={styles.chainSelector} textStyle={styles.chainName} chevronColor="#64748B" />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.inputLabel}>{t('common.wallet.swap_ui.from_chain', 'Network')}</Text>
+              <AppSelect 
+                value={fromChain} 
+                options={chainOptions} 
+                onChange={(val) => {
+                  setFromChain(val);
+                  setToChain(val);
+                  const chainTokens = tokensByChain[val] || [];
+                  if (!chainTokens.includes(fromToken) || !chainTokens.includes(toToken) || fromToken === toToken) {
+                    setFromToken(chainTokens[0] || 'USDC');
+                    setToToken(chainTokens[1] || chainTokens[0] || 'USDT');
+                  }
+                }} 
+                title={t('common.wallet.swap_ui.from_chain', 'Network')} 
+                style={styles.chainSelector} 
+                textStyle={styles.chainName} 
+                chevronColor="#64748B" 
+              />
             </View>
           </View>
 
@@ -305,7 +348,7 @@ export default function SwapTokensScreen() {
               <Text style={styles.dzyBannerTitle}>ZERO-FEE SWAPS COMING</Text>
             </View>
             <Text style={styles.dzyBannerText}>
-              Hold DZY token in Q2 2027 to unlock feeless trading.
+              {t('common.wallet.swap_ui.dzy_banner_soon', 'Coming soon: hold DZY to unlock feeless trading.')}
             </Text>
           </View>
 
@@ -324,7 +367,7 @@ export default function SwapTokensScreen() {
                 </View>
               </View>
               <View style={styles.inputRow}>
-                <AppSelect value={fromToken} options={tokenOptions} onChange={setFromToken} title={t('common.wallet.swap_ui.from_token')} style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option.value} size={20} style={{ marginRight: 6 }} />} />
+                <AppSelect value={fromToken} options={(tokensByChain[fromChain] || []).map((value) => ({ value, label: value }))} onChange={setFromToken} title={t('common.wallet.swap_ui.from_token', 'From Token')} style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option.value} size={20} style={{ marginRight: 6 }} />} />
                 <TouchableOpacity activeOpacity={1} style={[styles.amountInputContainer, isFocused && styles.amountInputContainerFocused]} onPress={() => amountInputRef.current?.focus()}>
                   <TextInput
                     ref={amountInputRef}
@@ -360,7 +403,7 @@ export default function SwapTokensScreen() {
                 )}
               </View>
               <View style={styles.inputRow}>
-                <AppSelect value={toToken} options={tokenOptions} onChange={setToToken} title={t('common.wallet.swap_ui.to_chain')} style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option.value} size={20} style={{ marginRight: 6 }} />} />
+                <AppSelect value={toToken} options={(tokensByChain[toChain] || []).map((value) => ({ value, label: value }))} onChange={setToToken} title={t('common.wallet.swap_ui.to_token', 'To Token')} style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option.value} size={20} style={{ marginRight: 6 }} />} />
                 <View style={[styles.amountInputContainer, styles.amountInputContainerDisabled]}>
                   <TextInput
                     style={[styles.amountInput, { color: '#94A3B8' }]}
@@ -389,7 +432,15 @@ export default function SwapTokensScreen() {
               </View>
               <View style={styles.quoteRow}>
                 <Text style={styles.quoteLabel}>Fees (bridge + network)</Text>
-                <Text style={styles.quoteValue}>${quote.totalFeesUSD || "0.00"}</Text>
+                <Text style={styles.quoteValue}>
+                  {(() => {
+                    const feeStr = quote.totalFeesUSD;
+                    if (!feeStr) return "$0.00";
+                    const feeNum = parseFloat(feeStr);
+                    if (feeNum > 0 && feeNum < 0.01) return "< $0.01";
+                    return `$${(isNaN(feeNum) ? 0 : feeNum).toFixed(2)}`;
+                  })()}
+                </Text>
               </View>
               <View style={styles.quoteRow}>
                 <Text style={styles.quoteLabel}>Provider</Text>

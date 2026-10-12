@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, ScrollView, 
-  Platform, LayoutAnimation, Animated, Easing, Dimensions
+  Platform, LayoutAnimation, Animated, Easing, Dimensions, Linking
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -166,6 +166,11 @@ export default function NotificationsScreen() {
           style={[styles.notificationCard, !item.is_read && styles.unreadCard]}
           onPress={() => {
             if (!item.is_read) handleMarkAsRead(item.id);
+            // Open the receipt on the block explorer (Polygonscan / Solana Explorer) when the notification has one
+            const url = item.action_url || item.metadata?.explorer_link;
+            if (url && url.startsWith('https://')) {
+              Linking.openURL(url).catch(() => {});
+            }
           }}
         >
           <View style={[styles.iconContainer, { backgroundColor: bg }]}>

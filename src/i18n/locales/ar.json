@@ -2216,6 +2216,8 @@
     "wallet": {
       "networks_count": "الشبكات",
       "title": "المحفظة",
+      "solana_send_coming_soon_title": "قريبًا",
+      "solana_send_coming_soon": "الإرسال على شبكة سولانا قريبًا. يمكنك بالفعل الاستلام والمبادلة على سولانا.",
       "send_funds": "إرسال أموال",
       "receive_funds": "استلام أموال",
       "send_receive": "إرسال/استلام",
@@ -2422,7 +2424,10 @@
         "failed": "فشلت المعاملة",
         "fetching_rate": "جارٍ البحث عن أفضل سعر...",
         "swap_btn": "تبادل الرموز الآن",
-        "authorizing": "جارٍ التفويض..."
+        "authorizing": "جارٍ التفويض...",
+        "quote_failed": "تعذر الحصول على عرض سعر. يرجى المحاولة مرة أخرى.",
+        "dzy_banner_soon": "قريبًا: احتفظ برموز DZY لتداول بدون رسوم.",
+        "status_timeout": "لا تزال المعاملة قيد المعالجة. تحقق من سجل محفظتك بعد بضع دقائق."
       },
       "topup": {
         "choose_method": "اختر طريقة الدفع",
@@ -3557,8 +3562,8 @@
         "button": "إكمال"
       },
       "merchant_dashboard": {
-        "title": "الوصول إلى\nلوحة التحكم التجارية",
-        "button": "دخول"
+        "title": "إدارة حساب عملك",
+        "button": "إدارة"
       },
       "create_store": {
         "title": "أنشئ DZYStore الخاصة بك\nوابدأ البيع",
@@ -4008,6 +4013,7 @@
       "subtitle": "قم بدعوة الأصدقاء و\nاربح 5$ DZY"
     },
     "my_beneficiaries": "المستفيدين",
+    "add_contact": "إضافة جهة اتصال",
     "manage_contacts": "جهات الاتصال",
     "filter_nearby": "قريب",
     "filter_favorites": "البلدان المفضلة",
