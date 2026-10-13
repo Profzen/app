@@ -1,3 +1,4 @@
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 export const ALL_COUNTRIES = [
   {
     "code": "AF",
@@ -681,7 +682,7 @@ export const ALL_COUNTRIES = [
     "code": "KZ",
     "name": "Kazakhstan",
     "flag": "🇰🇿",
-    "dial": "+76"
+    "dial": "+7"
   },
   {
     "code": "KE",
@@ -1089,7 +1090,7 @@ export const ALL_COUNTRIES = [
     "code": "RU",
     "name": "Russia",
     "flag": "🇷🇺",
-    "dial": "+73"
+    "dial": "+7"
   },
   {
     "code": "RW",
@@ -1275,7 +1276,7 @@ export const ALL_COUNTRIES = [
     "code": "SJ",
     "name": "Svalbard and Jan Mayen",
     "flag": "🇸🇯",
-    "dial": "+4779"
+    "dial": "+47"
   },
   {
     "code": "SE",
@@ -1413,13 +1414,13 @@ export const ALL_COUNTRIES = [
     "code": "US",
     "name": "United States",
     "flag": "🇺🇸",
-    "dial": "+1201"
+    "dial": "+1"
   },
   {
     "code": "UM",
     "name": "United States Minor Outlying Islands",
     "flag": "🇺🇲",
-    "dial": "+268"
+    "dial": "+1"
   },
   {
     "code": "VI",
@@ -1449,7 +1450,7 @@ export const ALL_COUNTRIES = [
     "code": "VA",
     "name": "Vatican City",
     "flag": "🇻🇦",
-    "dial": "+3906698"
+    "dial": "+39"
   },
   {
     "code": "VE",
@@ -1473,7 +1474,7 @@ export const ALL_COUNTRIES = [
     "code": "EH",
     "name": "Western Sahara",
     "flag": "🇪🇭",
-    "dial": "+2125288"
+    "dial": "+212"
   },
   {
     "code": "YE",
@@ -1497,6 +1498,70 @@ export const ALL_COUNTRIES = [
     "code": "AX",
     "name": "Åland Islands",
     "flag": "🇦🇽",
-    "dial": "+35818"
+    "dial": "+358"
   }
 ];
+
+let displayNamesCache = {};
+
+export function getCountryName(code, lang) {
+  try {
+    if (typeof Intl !== 'undefined' && Intl.DisplayNames) {
+      if (!displayNamesCache[lang]) {
+        displayNamesCache[lang] = new Intl.DisplayNames([lang], { type: 'region' });
+      }
+      const name = displayNamesCache[lang].of(code);
+      if (name && name !== code) {
+        return name;
+      }
+    }
+  } catch (e) {
+    // Fall through
+  }
+  const fallback = ALL_COUNTRIES.find(c => c.code === code);
+  return fallback ? fallback.name : code;
+}
+
+// const normalizeStr = (str) => {
+//   if (!str) return '';
+//   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+// };
+
+// Safer version:
+const normalizeStr = (str) => {
+  if (!str) return '';
+  try {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  } catch (e) {
+    return String(str).toLowerCase();
+  }
+};
+
+export function countryMatches(country, query, lang) {
+  if (!query) return true;
+  const q = normalizeStr(query);
+  const localName = normalizeStr(getCountryName(country.code, lang));
+  const engName = normalizeStr(country.name);
+  const code = normalizeStr(country.code);
+  // return localName.includes(q) || engName.includes(q) || code.includes(q);
+  return localName.includes(q) || engName.includes(q) || code === q;
+}
+
+
+export function guessCountryByPhone(phone) {
+  if (!phone || typeof phone !== 'string' || !phone.startsWith('+')) return null;
+  try {
+    const parsed = parsePhoneNumberFromString(phone);
+    if (parsed && parsed.country) {
+      const found = ALL_COUNTRIES.find(c => c.code === parsed.country);
+      if (found) return found;
+    }
+  } catch (e) {}
+
+  const cleaned = phone.replace(/\s+/g, '');
+  if (cleaned === '+1') {
+    return ALL_COUNTRIES.find(c => c.code === 'US') || null;
+  }
+  const sorted = [...ALL_COUNTRIES].filter(c => c.dial).sort((a, b) => b.dial.length - a.dial.length);
+  return sorted.find(c => cleaned === c.dial || cleaned.startsWith(c.dial)) || null;
+}

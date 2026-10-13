@@ -16,7 +16,8 @@ import { supabase } from '../services/supabaseClient';
 import Constants from 'expo-constants';
 import { isSmallScreen, isShortScreen } from '../utils/responsive';
 import AppSelect from '../components/AppSelect';
-import { ALL_COUNTRIES } from '../utils/countriesData';
+import { ALL_COUNTRIES, getCountryName, guessCountryByPhone } from '../utils/countriesData';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 
 export default function MerchantRegistrationScreen() {
   const navigation = useNavigation();
@@ -29,6 +30,28 @@ export default function MerchantRegistrationScreen() {
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [country, setCountry] = useState('');
+
+  const handlePhoneChange = (val) => {
+    if (val && val.startsWith('+') && !country) {
+      try {
+        const phoneNumberObj = parsePhoneNumberFromString(val);
+        if (phoneNumberObj && phoneNumberObj.country) {
+          const matched = ALL_COUNTRIES.find(c => c.code === phoneNumberObj.country);
+          if (matched) {
+            setCountry(matched.name);
+          }
+        }
+      } catch (e) {}
+
+      if (!country) {
+        const guessed = guessCountryByPhone(val);
+        if (guessed) {
+          setCountry(guessed.name);
+        }
+      }
+    }
+    setPhone(val);
+  };
   const [businessType, setBusinessType] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '', type: 'success' });
@@ -42,11 +65,11 @@ export default function MerchantRegistrationScreen() {
   const countryOptions = useMemo(() => {
     return ALL_COUNTRIES.map((c) => ({
       value: c.name,
-      label: c.name,
+      label: getCountryName(c.code, language),
       subtitle: c.dial,
       flagUrl: `https://flagcdn.com/w40/${c.code.toLowerCase()}.png`,
-    }));
-  }, []);
+    })).sort((a, b) => a.label.localeCompare(b.label));
+  }, [language]);
 
   const MERCHANT_SIGNUP_ENABLED = false;
 
@@ -190,7 +213,7 @@ export default function MerchantRegistrationScreen() {
                 label={t('personalAccount.phone', 'Phone Number')}
                 placeholder={t('personalAccount.phone', 'Phone Number')}
                 value={phone}
-                onChangeText={setPhone}
+                onChangeText={handlePhoneChange}
                 iconLeft={<Ionicons name="call-outline" size={20} color={theme.colors.primary} />}
                 keyboardType="phone-pad"
               />
@@ -201,7 +224,17 @@ export default function MerchantRegistrationScreen() {
               <AppSelect
                 value={country}
                 options={countryOptions}
-                onChange={(val) => setCountry(val)}
+                onChange={(val) => {
+                  const prevDial = ALL_COUNTRIES.find(c => c.name === country)?.dial || '';
+                  setCountry(val);
+                  // Only pre-fill the dial code while the phone is still empty (or only holds the previous dial code).
+                  // Never rewrite a number the user typed: country of residence and phone country can differ (diaspora).
+                  const dial = ALL_COUNTRIES.find(c => c.name === val)?.dial || '';
+                  const current = (phone || '').trim();
+                  if (dial && (current === '' || current === '+' || (prevDial && current === prevDial))) {
+                    setPhone(dial);
+                  }
+                }}
                 title={t('personalAccount.country', 'Country of Residence')}
                 placeholder={t('personalAccount.selectCountry', 'Select your country')}
                 searchPlaceholder={t('personalAccount.searchCountry', 'Search country')}

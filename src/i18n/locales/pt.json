@@ -3612,7 +3612,11 @@
     "terms": "Termos de Serviço",
     "privacy": "Política de Privacidade e Dados",
     "licenses": "Licenças e Conformidade Regulatória",
-    "communityTitle": "JUNTE-SE À COMUNIDADE"
+    "communityTitle": "JUNTE-SE À COMUNIDADE",
+    "copy": "Copiar",
+    "copyAll": "Copiar tudo",
+    "copied": "Copiado",
+    "copiedDesc": "Texto copiado para a área de transferência."
   },
   "contactSupport": {
     "title": "Contacte-nos",

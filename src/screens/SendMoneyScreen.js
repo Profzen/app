@@ -54,20 +54,22 @@ export default function SendMoneyScreen() {
     });
   };
 
+  // On iOS a new modal cannot open while the PIN modal is still closing (the next modal would never show
+  // and the screen would look frozen). Wait for the PIN modal to finish closing before continuing.
+  const PIN_CLOSE_DELAY_MS = Platform.OS === 'ios' ? 500 : 0;
+
   const handlePinSuccess = () => {
     setPinModalVisible(false);
-    if (pinResolveRef.current) {
-      pinResolveRef.current(true);
-      pinResolveRef.current = null;
-    }
+    const resolve = pinResolveRef.current;
+    pinResolveRef.current = null;
+    if (resolve) setTimeout(() => resolve(true), PIN_CLOSE_DELAY_MS);
   };
 
   const handlePinCancel = () => {
     setPinModalVisible(false);
-    if (pinResolveRef.current) {
-      pinResolveRef.current(false);
-      pinResolveRef.current = null;
-    }
+    const resolve = pinResolveRef.current;
+    pinResolveRef.current = null;
+    if (resolve) setTimeout(() => resolve(false), PIN_CLOSE_DELAY_MS);
   };
   const { session, user, t, refreshTransactions, refreshUser, hasUnreadNotifications } = useApp();
   const { wallet: crossmintWallet, getWallet } = useWallet();

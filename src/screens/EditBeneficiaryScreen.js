@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, KeyboardAvoidingView, ActivityIndicator, Modal, FlatList, TextInput, Image, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,9 +8,10 @@ import { DizzitButton } from '../components/DizzitButton';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import contactService from '../services/contactService';
+import { ALL_COUNTRIES, getCountryName, countryMatches, guessCountryByPhone } from '../utils/countriesData';
 import { smsService } from '../services/smsService';
 import { supabase } from '../services/supabaseClient';
-import { isValidPhoneNumber } from 'libphonenumber-js';
+import { parsePhoneNumberFromString, isValidPhoneNumber } from 'libphonenumber-js';
 
 const AVATARS = [
   { id: 'avatar_1', emoji: '👩' },
@@ -51,8 +52,8 @@ const getUniversalFlag = (emoji, code) => {
 
 export default function EditBeneficiaryScreen({ route }) {
   const navigation = useNavigation();
-  const { session, user, t } = useApp();
-  
+  const { session, user, t, language } = useApp();
+
   const isEditing = route.params?.isEditing || false;
   const beneficiary = route.params?.beneficiary || {};
 
@@ -89,7 +90,7 @@ export default function EditBeneficiaryScreen({ route }) {
   const [countries, setCountries] = useState([]);
   const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [countrySearch, setCountrySearch] = useState('');
-  
+
   const [cities, setCities] = useState([]);
   const [citySearch, setCitySearch] = useState('');
   const [showCityPicker, setShowCityPicker] = useState(false);
@@ -146,6 +147,35 @@ export default function EditBeneficiaryScreen({ route }) {
   }, [formData.country]);
 
   const handleInputChange = (field, value) => {
+    if (field === 'phone') {
+      setFormData(prev => {
+        let newCountry = prev.country;
+        let newCountryCode = prev.country_code;
+        if (value && value.startsWith('+') && !prev.country) {
+          try {
+            const phoneNumberObj = parsePhoneNumberFromString(value);
+            if (phoneNumberObj && phoneNumberObj.country) {
+              const matched = countries.find(c => c.code === phoneNumberObj.country) || ALL_COUNTRIES.find(c => c.code === phoneNumberObj.country);
+              if (matched) {
+                newCountry = matched.name;
+                newCountryCode = matched.code;
+              }
+            }
+          } catch (e) { }
+
+          if (!newCountry) {
+            const guessed = guessCountryByPhone(value);
+            if (guessed) {
+              const matched = countries.find(c => c.code === guessed.code) || guessed;
+              newCountry = matched.name;
+              newCountryCode = matched.code;
+            }
+          }
+        }
+        return { ...prev, phone: value, country: newCountry, country_code: newCountryCode };
+      });
+      return;
+    }
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -153,7 +183,17 @@ export default function EditBeneficiaryScreen({ route }) {
     setIsSyncing(true);
     try {
       const token = session?.access_token;
-      const phoneToSend = phone.startsWith('+') ? phone : `+${phone.replace(/^0+/, '')}`;
+      // const phoneToSend = phone.startsWith('+') ? phone : `+${phone.replace(/^0+/, '')}`;
+      // Send the phone in E.164 (same format as saved profiles) so the lookup can match.
+      // Uses the country chosen in the form for local numbers; falls back to the previous behavior if it cannot be parsed.
+      let phoneToSend = phone.startsWith('+') ? phone : `+${phone.replace(/^0+/, '')}`;
+      try {
+        const raw = (phone || '').trim();
+        const parsed = raw.startsWith('+')
+          ? parsePhoneNumberFromString(raw)
+          : (formData?.country_code ? parsePhoneNumberFromString(raw, String(formData.country_code).toUpperCase()) : undefined);
+        if (parsed && parsed.isValid()) phoneToSend = parsed.number;
+      } catch (e) { }
       const rawWalletApi = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'https://wallet.dizzitup.com/api';
       const walletBase = rawWalletApi.replace(/\/wallet\/?$/, '').replace(/\/api\/?$/, '') + '/api/wallet';
 
@@ -258,7 +298,7 @@ export default function EditBeneficiaryScreen({ route }) {
       AppToast.showError(t('beneficiary.edit.save_req_name', "Name is required"));
       return;
     }
-    
+
     if (!formData.phone) {
       AppToast.showError(t('beneficiary.form.phoneNumberRequired', "Phone number is required"));
       return;
@@ -266,9 +306,9 @@ export default function EditBeneficiaryScreen({ route }) {
 
     const selectedCountry = countries.find(c => c.name === formData.country || c.code === formData.country_code);
     const countryCode = selectedCountry ? selectedCountry.code : (formData.country_code || (formData.country && formData.country.length === 2 ? formData.country.toUpperCase() : 'US'));
-    
+
     const cleanPhone = formData.phone.trim();
-    
+
     let phoneValid = isValidPhoneNumber(cleanPhone, countryCode);
     if (!phoneValid && cleanPhone.startsWith('+')) {
       phoneValid = isValidPhoneNumber(cleanPhone);
@@ -300,7 +340,7 @@ export default function EditBeneficiaryScreen({ route }) {
       AppToast.showError(t('beneficiary.edit.save_req_name', "Name is required"));
       return;
     }
-    
+
     if (!formData.phone) {
       AppToast.showError(t('beneficiary.form.phoneNumberRequired', "Phone number is required"));
       return;
@@ -308,9 +348,9 @@ export default function EditBeneficiaryScreen({ route }) {
 
     const selectedCountry = countries.find(c => c.name === formData.country || c.code === formData.country_code);
     const countryCode = selectedCountry ? selectedCountry.code : (formData.country_code || (formData.country && formData.country.length === 2 ? formData.country.toUpperCase() : 'US'));
-    
+
     const cleanPhone = formData.phone.trim();
-    
+
     let phoneValid = isValidPhoneNumber(cleanPhone, countryCode);
     if (!phoneValid && cleanPhone.startsWith('+')) {
       phoneValid = isValidPhoneNumber(cleanPhone);
@@ -376,12 +416,19 @@ export default function EditBeneficiaryScreen({ route }) {
     return getUniversalFlag(c.flag_emoji, c.code);
   };
 
-  const filteredCountries = countrySearch 
-    ? countries.filter(c => c.name.toLowerCase().includes(countrySearch.toLowerCase())) 
-    : countries;
+  const filteredCountries = useMemo(() => {
+    const list = [...countries];
+    const lang = language;
+    if (!countrySearch) {
+      return list.sort((a, b) => getCountryName(a.code, lang).localeCompare(getCountryName(b.code, lang)));
+    }
+    return list
+      .filter(c => countryMatches(c, countrySearch, lang))
+      .sort((a, b) => getCountryName(a.code, lang).localeCompare(getCountryName(b.code, lang)));
+  }, [countries, countrySearch, language]);
 
-  const filteredCities = citySearch 
-    ? cities.filter(c => c.toLowerCase().includes(citySearch.toLowerCase())) 
+  const filteredCities = citySearch
+    ? cities.filter(c => c.toLowerCase().includes(citySearch.toLowerCase()))
     : cities;
 
   return (
@@ -517,7 +564,7 @@ export default function EditBeneficiaryScreen({ route }) {
                     <Text style={styles.label}>{t('beneficiary.edit.country', 'Country')}</Text>
                     <TouchableOpacity style={styles.pickerButton} onPress={() => setShowCountryPicker(true)}>
                       <Text style={formData.country ? styles.pickerButtonText : styles.pickerButtonPlaceholder} numberOfLines={1}>
-                        {formData.country ? `${getCountryFlag(formData.country)} ${formData.country}` : 'Ex: Togo'}
+                        {formData.country ? `${getCountryFlag(formData.country)} ${getCountryName(formData.country_code || countries.find(c => c.name === formData.country)?.code, language)}` : 'Ex: Togo'}
                       </Text>
                       <Ionicons name="chevron-down" size={20} color="#64748B" />
                     </TouchableOpacity>
@@ -673,7 +720,7 @@ export default function EditBeneficiaryScreen({ route }) {
         </View>
 
         {/* Modals */}
-        
+
         {/* Country Picker Modal */}
         <Modal visible={showCountryPicker} animationType="slide" transparent={true}>
           <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
@@ -700,16 +747,30 @@ export default function EditBeneficiaryScreen({ route }) {
                   <TouchableOpacity
                     style={styles.modalItem}
                     onPress={() => {
-                      setFormData(prev => ({
-                        ...prev,
-                        country: item.name,
-                        country_code: item.code,
-                        city: ''
-                      }));
+                      setFormData(prev => {
+                        const prevDial = prev.country_code
+                          ? (ALL_COUNTRIES.find(c => c.code === prev.country_code)?.dial || '')
+                          : (prev.country ? (ALL_COUNTRIES.find(c => c.name === prev.country)?.dial || '') : '');
+                        // Only pre-fill the dial code while the phone is still empty (or only holds the previous dial code).
+                        // Never rewrite a number the user typed: country of residence and phone country can differ (diaspora).
+                        const dial = ALL_COUNTRIES.find(c => c.code === item.code)?.dial || '';
+                        const current = (prev.phone || '').trim();
+                        let newPhone = prev.phone;
+                        if (dial && (current === '' || current === '+' || (prevDial && current === prevDial))) {
+                          newPhone = dial;
+                        }
+                        return {
+                          ...prev,
+                          country: item.name,
+                          country_code: item.code,
+                          city: '',
+                          phone: newPhone
+                        };
+                      });
                       setShowCountryPicker(false);
                     }}
                   >
-                    <Text style={styles.modalItemText}>{getUniversalFlag(item.flag_emoji, item.code)} {item.name}</Text>
+                    <Text style={styles.modalItemText}>{getUniversalFlag(item.flag_emoji, item.code)} {getCountryName(item.code, language)}</Text>
                     {formData.country === item.name && <Ionicons name="checkmark" size={20} color="#0052FF" />}
                   </TouchableOpacity>
                 )}
@@ -728,7 +789,7 @@ export default function EditBeneficiaryScreen({ route }) {
                   <Ionicons name="close" size={24} color="#1A2840" />
                 </TouchableOpacity>
               </View>
-              
+
               <TextInput
                 style={styles.citySearchInput}
                 placeholder={t('common.search', 'Search...')}
@@ -887,7 +948,7 @@ export default function EditBeneficiaryScreen({ route }) {
                   >
                     <View>
                       <Text style={{ fontFamily: 'Inter_600SemiBold', color: '#1A2840' }}>{item.email || t('beneficiary.form.userWithoutEmail', 'User without email')}</Text>
-                      <Text style={{ fontSize: 12, color: '#94A3B8', marginTop: 4 }}>EVM: {item.evm_address ? `${item.evm_address.substring(0,6)}...${item.evm_address.slice(-4)}` : 'N/A'}</Text>
+                      <Text style={{ fontSize: 12, color: '#94A3B8', marginTop: 4 }}>EVM: {item.evm_address ? `${item.evm_address.substring(0, 6)}...${item.evm_address.slice(-4)}` : 'N/A'}</Text>
                     </View>
                     <Ionicons name="chevron-forward" size={20} color="#CBD5E1" />
                   </TouchableOpacity>

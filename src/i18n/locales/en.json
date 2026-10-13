@@ -3779,7 +3779,11 @@
     "terms": "Terms of Service",
     "privacy": "Privacy & Data Policy",
     "licenses": "Licenses & Regulatory Compliance",
-    "communityTitle": "JOIN THE COMMUNITY"
+    "communityTitle": "JOIN THE COMMUNITY",
+    "copy": "Copy",
+    "copyAll": "Copy all",
+    "copied": "Copied",
+    "copiedDesc": "Text copied to clipboard."
   },
   "contactSupport": {
     "title": "Contact Us",

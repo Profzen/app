@@ -449,13 +449,31 @@ export function AppProvider({ children }) {
               fetchedCrossmintJWT = syncData.crossmintJWT;
             }
             if (syncData.user) {
-              // Only use sync-buygoods address as fallback — do NOT overwrite the user's
-              // primary dizzy-wallet address (from Supabase evm_wallet_address)
-              if (!fetchedEvmAddress) {
-                fetchedEvmAddress = syncData.user.evmAddress || syncData.user.walletAddress || '';
+              // Only use sync-buygoods addresses as fallback: never overwrite addresses already on the profile.
+              const syncEvm = (syncData.user.evmAddress || syncData.user.walletAddress || '').trim();
+              const syncSol = (syncData.user.solanaAddress || '').trim();
+              const profileUpdates = {};
+              if (!fetchedEvmAddress && syncEvm) {
+                fetchedEvmAddress = syncEvm;
+                profileUpdates.evm_wallet_address = syncEvm;
               }
-              if (!fetchedSolanaAddress) {
-                fetchedSolanaAddress = syncData.user.solanaAddress || '';
+              if (!fetchedSolanaAddress && syncSol) {
+                fetchedSolanaAddress = syncSol;
+                profileUpdates.solana_wallet_address = syncSol;
+              }
+
+              // Save them to the profile now. Otherwise a new user's profile stays empty:
+              // PRE ran before the wallets existed, and POST is skipped because the addresses are now set above.
+              if (fetchedRole !== 'merchant' && Object.keys(profileUpdates).length > 0) {
+                let q = supabase.from('user_profiles').update(profileUpdates).eq('id', sessionObj.user.id);
+                if (profileUpdates.evm_wallet_address) q = q.is('evm_wallet_address', null);
+                if (profileUpdates.solana_wallet_address) q = q.is('solana_wallet_address', null);
+                const { data: upd, error: updErr } = await q.select('id');
+                if (updErr) {
+                  console.warn(`[WALLET-SYNC][BUYGOODS] profile update error: ${updErr.message}`);
+                } else {
+                  console.log(`[WALLET-SYNC][BUYGOODS] profile rows updated=${upd ? upd.length : 0}`);
+                }
               }
             }
           } else {

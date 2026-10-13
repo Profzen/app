@@ -7,11 +7,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 import AppToast from '../components/AppToast';
 import AppSelect from '../components/AppSelect';
-import { ALL_COUNTRIES } from '../utils/countriesData';
+import { ALL_COUNTRIES, getCountryName } from '../utils/countriesData';
 
 export default function ReferBusinessScreen() {
   const navigation = useNavigation();
-  const { user, t } = useApp();
+  const { user, t, language } = useApp();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -28,11 +28,11 @@ export default function ReferBusinessScreen() {
   const countryOptions = useMemo(() => {
     return ALL_COUNTRIES.map((c) => ({
       value: c.name,
-      label: c.name,
+      label: getCountryName(c.code, language),
       subtitle: c.dial,
       flagUrl: `https://flagcdn.com/w40/${c.code.toLowerCase()}.png`
-    }));
-  }, []);
+    })).sort((a, b) => a.label.localeCompare(b.label));
+  }, [language]);
 
   const [business, setBusiness] = useState({
     name: "",

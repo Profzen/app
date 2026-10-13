@@ -3827,7 +3827,11 @@
     "terms": "Conditions Générales d'Utilisation",
     "privacy": "Politique de Confidentialité & Données",
     "licenses": "Licences & Conformité Réglementaire",
-    "communityTitle": "REJOIGNEZ LA COMMUNAUTÉ"
+    "communityTitle": "REJOIGNEZ LA COMMUNAUTÉ",
+    "copy": "Copier",
+    "copyAll": "Tout copier",
+    "copied": "Copié",
+    "copiedDesc": "Texte copié dans le presse-papiers."
   },
   "contactSupport": {
     "title": "Contactez-nous",

@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import * as WebBrowser from 'expo-web-browser';
 import Constants from 'expo-constants';
 import * as Application from 'expo-application';
+import * as Clipboard from 'expo-clipboard';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
@@ -23,6 +24,55 @@ export default function AboutDizzitUpScreen() {
 
   const currentYear = new Date().getFullYear();
   const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+  const copyToClipboard = async (text) => {
+    await Clipboard.setStringAsync(text);
+    setToast({ title: t('aboutApp.copied', 'Copied'), message: t('aboutApp.copiedDesc', 'Text copied to clipboard.') });
+  };
+
+  const getReleaseNotesText = () => {
+    let text = t('aboutApp.buildSectionTitle', 'CURRENT BUILD & RELEASE NOTES') + '\n\n';
+    text += t('aboutApp.newFeaturesTitle', 'NEW FEATURES') + '\n';
+    if (releaseNotes.features.length > 0) {
+      releaseNotes.features.forEach(f => text += `- ${f}\n`);
+    } else {
+      text += `- ${t('aboutApp.noFeatures', 'No new feature notes available.')}\n`;
+    }
+    text += '\n' + t('aboutApp.implementedFixesTitle', 'IMPLEMENTED FIXES') + '\n';
+    if (releaseNotes.fixes.length > 0) {
+      releaseNotes.fixes.forEach(f => text += `- ${f}\n`);
+    } else {
+      text += `- ${t('aboutApp.noFixes', 'No bug fixes available.')}\n`;
+    }
+    return text.trim();
+  };
+
+  const getWarningText = () => {
+    return `${t('aboutApp.generalWarningTitle', 'GENERAL WARNING')}\n${t('aboutApp.generalWarningText', 'Beta Test Version: This build is strictly intended for internal validation, TestFlight, and Google Play beta testers. Financial, mobile money, and blockchain operations may interact with test corridors. Please report any unexpected behavior to the team.')}`;
+  };
+
+  const getMissionText = () => {
+    return `${t('aboutApp.missionTitle', 'OUR MISSION')}\n\n${t('aboutApp.missionText', 'At DizzitUp, our mission is to break down financial borders and drive economic empowerment across Africa and the globe. We provide a seamless, Web3-powered ecosystem that bridges everyday commerce with the power of stablecoins (USDT, USDC, EURC) and our native reward token (DZY). By democratizing access to instant, borderless, and low-fee financial services, we empower individuals, diaspora communities, and merchants to build wealth and transact with ultimate freedom, security, and trust.')}`;
+  };
+
+  const getOverviewText = () => {
+    return `${t('aboutApp.overviewTitle', 'APP OVERVIEW & SERVICES')}\n\n${t('aboutApp.worldwideTitle', 'FOR EVERYONE (BUYERS, MERCHANTS & BUSINESSES WORLDWIDE)')}\n- ${t('aboutApp.featBuyGoods', 'Buy goods & essentials locally and cross-border')}\n- ${t('aboutApp.featPayBills', 'Pay bills (Electricity, Water, Internet, Tuition)')}\n- ${t('aboutApp.featRecharge', 'Recharge mobile airtime & data bundles')}\n- ${t('aboutApp.featOnRamp', 'Buy / On-ramp / Top-up USD & EUR stablecoins (Visa, Mastercard & Mobile Money)')}\n- ${t('aboutApp.featOffRamp', 'Sell / Off-ramp / Cash-out USD & EUR stablecoins to local African money (Mobile Money or Bank account)')}\n- ${t('aboutApp.featSendReceive', 'Send & receive worldwide USD & EUR stablecoins instantly')}\n\n${t('aboutApp.africaBizTitle', 'FOR BUSINESSES & MERCHANTS IN AFRICA')}\n- ${t('aboutApp.bizSellGlobal', 'Sell products & services globally to the diaspora')}\n- ${t('aboutApp.bizInvoice', 'Invoice customers and send instant Pay links')}\n- ${t('aboutApp.bizSettle', 'Settle and get paid in USD, EUR stablecoins or local African money (Mobile Money or Bank account)')}`;
+  };
+
+  const getLegalText = () => {
+    return `${t('aboutApp.legalTitle', 'LEGAL INFORMATION & WEBSITES')}\n- ${t('aboutApp.website', 'Official DizzitUp Website (dizzitup.com)')}\n- ${t('aboutApp.youtubeTeaser', 'Official YouTube Channel & App Teaser')}\n- ${t('aboutApp.terms', 'Terms of Service')}\n- ${t('aboutApp.privacy', 'Privacy & Data Policy')}\n- ${t('aboutApp.licenses', 'Licenses & Regulatory Compliance')}`;
+  };
+
+  const copyAllText = () => {
+    const allText = [
+      getReleaseNotesText(),
+      getWarningText(),
+      getMissionText(),
+      getOverviewText(),
+      getLegalText()
+    ].join('\n\n');
+    copyToClipboard(allText);
+  };
 
   useEffect(() => {
     const fetchReleaseNotes = async () => {
@@ -139,6 +189,10 @@ export default function AboutDizzitUpScreen() {
               <Text style={styles.pageTitle}>{t('aboutApp.title', 'About DizzitUp')}</Text>
               <Text style={styles.pageSubtitle}>{t('aboutApp.subtitle', 'About our mission & company')}</Text>
             </View>
+            <TouchableOpacity onPress={copyAllText} style={styles.copyAllBtn}>
+              <Ionicons name="copy" size={18} color="#0052FF" />
+              <Text style={styles.copyAllBtnText}>{t('aboutApp.copyAll', 'Copy all')}</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Logo & Brand Header */}
@@ -153,7 +207,13 @@ export default function AboutDizzitUpScreen() {
           </View>
 
           {/* Current Build Information & Release Notes */}
-          <Text style={styles.sectionHeader}>{t('aboutApp.buildSectionTitle', 'CURRENT BUILD & RELEASE NOTES')}</Text>
+          <View style={styles.sectionHeaderContainer}>
+            <Text style={styles.sectionHeader}>{t('aboutApp.buildSectionTitle', 'CURRENT BUILD & RELEASE NOTES')}</Text>
+            <TouchableOpacity onPress={() => copyToClipboard(getReleaseNotesText())} style={styles.copyBtn}>
+              <Ionicons name="copy-outline" size={14} color="#6B7280" />
+              <Text style={styles.copyBtnText}>{t('aboutApp.copy', 'Copy')}</Text>
+            </TouchableOpacity>
+          </View>
           <View style={styles.buildCard}>
             {/* Build Meta Header */}
             <View style={styles.buildMetaRow}>
@@ -243,6 +303,11 @@ export default function AboutDizzitUpScreen() {
               <View style={styles.warningHeader}>
                 <Ionicons name="warning-outline" size={15} color="#D97706" style={{ marginRight: 6 }} />
                 <Text style={styles.warningTitle} selectable={true}>{t('aboutApp.generalWarningTitle', 'GENERAL WARNING')}</Text>
+                <View style={{ flex: 1 }} />
+                <TouchableOpacity onPress={() => copyToClipboard(getWarningText())} style={styles.copyBtnSmall}>
+                  <Ionicons name="copy-outline" size={12} color="#D97706" />
+                  <Text style={[styles.copyBtnText, { color: '#D97706' }]}>{t('aboutApp.copy', 'Copy')}</Text>
+                </TouchableOpacity>
               </View>
               <Text style={styles.warningText} selectable={true}>
                 {t('aboutApp.generalWarningText', 'Beta Test Version: This build is strictly intended for internal validation, TestFlight, and Google Play beta testers. Financial, mobile money, and blockchain operations may interact with test corridors. Please report any unexpected behavior to the team.')}
@@ -251,7 +316,13 @@ export default function AboutDizzitUpScreen() {
           </View>
 
           {/* Mission Statement */}
-          <Text style={styles.sectionHeader}>{t('aboutApp.missionTitle', 'OUR MISSION')}</Text>
+          <View style={styles.sectionHeaderContainer}>
+            <Text style={styles.sectionHeader}>{t('aboutApp.missionTitle', 'OUR MISSION')}</Text>
+            <TouchableOpacity onPress={() => copyToClipboard(getMissionText())} style={styles.copyBtn}>
+              <Ionicons name="copy-outline" size={14} color="#6B7280" />
+              <Text style={styles.copyBtnText}>{t('aboutApp.copy', 'Copy')}</Text>
+            </TouchableOpacity>
+          </View>
           <View style={styles.card}>
             <Text style={styles.missionText} selectable={true}>
               {t('aboutApp.missionText', 'At DizzitUp, our mission is to break down financial borders and drive economic empowerment across Africa and the globe. We provide a seamless, Web3-powered ecosystem that bridges everyday commerce with the power of stablecoins (USDT, USDC, EURC) and our native reward token (DZY). By democratizing access to instant, borderless, and low-fee financial services, we empower individuals, diaspora communities, and merchants to build wealth and transact with ultimate freedom, security, and trust.')}
@@ -259,7 +330,13 @@ export default function AboutDizzitUpScreen() {
           </View>
 
           {/* App Overview & Core Capabilities */}
-          <Text style={styles.sectionHeader}>{t('aboutApp.overviewTitle', 'APP OVERVIEW & SERVICES')}</Text>
+          <View style={styles.sectionHeaderContainer}>
+            <Text style={styles.sectionHeader}>{t('aboutApp.overviewTitle', 'APP OVERVIEW & SERVICES')}</Text>
+            <TouchableOpacity onPress={() => copyToClipboard(getOverviewText())} style={styles.copyBtn}>
+              <Ionicons name="copy-outline" size={14} color="#6B7280" />
+              <Text style={styles.copyBtnText}>{t('aboutApp.copy', 'Copy')}</Text>
+            </TouchableOpacity>
+          </View>
           <View style={styles.card}>
             <Text style={styles.featureCategoryTitle}>
               {t('aboutApp.worldwideTitle', 'FOR EVERYONE (BUYERS, MERCHANTS & BUSINESSES WORLDWIDE)')}
@@ -309,7 +386,13 @@ export default function AboutDizzitUpScreen() {
           </View>
 
           {/* Information Links */}
-          <Text style={styles.sectionHeader}>{t('aboutApp.legalTitle', 'LEGAL INFORMATION & WEBSITES')}</Text>
+          <View style={styles.sectionHeaderContainer}>
+            <Text style={styles.sectionHeader}>{t('aboutApp.legalTitle', 'LEGAL INFORMATION & WEBSITES')}</Text>
+            <TouchableOpacity onPress={() => copyToClipboard(getLegalText())} style={styles.copyBtn}>
+              <Ionicons name="copy-outline" size={14} color="#6B7280" />
+              <Text style={styles.copyBtnText}>{t('aboutApp.copy', 'Copy')}</Text>
+            </TouchableOpacity>
+          </View>
           <View style={styles.card}>
             <TouchableOpacity style={styles.linkRow} onPress={() => openLink('Site Web', 'https://dizzitup.com')}>
               <Ionicons name="globe-outline" size={20} color="#3B82F6" style={styles.linkIcon} />
@@ -351,7 +434,9 @@ export default function AboutDizzitUpScreen() {
           </View>
 
           {/* Social Networks */}
-          <Text style={styles.sectionHeader}>{t('aboutApp.communityTitle', 'JOIN THE COMMUNITY')}</Text>
+          <View style={styles.sectionHeaderContainer}>
+            <Text style={styles.sectionHeader}>{t('aboutApp.communityTitle', 'JOIN THE COMMUNITY')}</Text>
+          </View>
           <View style={styles.socialRow}>
             <TouchableOpacity style={styles.socialBtn} onPress={() => openLink('X / Twitter', 'x.com/dizzitup')}>
               <Ionicons name="logo-twitter" size={22} color="#1DA1F2" />
@@ -406,7 +491,13 @@ const styles = StyleSheet.create({
   statusBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#ECFDF5', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   statusDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#10B981', marginRight: 6 },
   statusText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#059669' },
-  sectionHeader: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#9CA3AF', letterSpacing: 0.8, marginTop: 10, marginBottom: 8, marginLeft: 4 },
+  sectionHeaderContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, marginBottom: 8, paddingHorizontal: 4 },
+  sectionHeader: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#9CA3AF', letterSpacing: 0.8 },
+  copyBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, backgroundColor: '#E2E8F0' },
+  copyBtnSmall: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, backgroundColor: 'rgba(217, 119, 6, 0.1)' },
+  copyBtnText: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#475569', marginLeft: 4 },
+  copyAllBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, backgroundColor: '#E0E7FF' },
+  copyAllBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#0052FF', marginLeft: 4 },
   card: { backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#F0F2F5', paddingHorizontal: 16, paddingVertical: 14, marginBottom: 14 },
   missionText: { fontFamily: 'Inter_400Regular', fontSize: 14, lineHeight: 22, color: '#4B5563' },
   linkRow: { flexDirection: 'row', alignItems: 'center', minHeight: 48, paddingVertical: 8 },

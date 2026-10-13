@@ -21,7 +21,7 @@ import { shareInviteLink, shareShopLink } from '../utils/shareHelper';
 import { useApp } from '../context/AppContext';
 import contactService from '../services/contactService';
 import { getFullCountryName } from '../utils/countryCurrencyUtils';
-import { ALL_COUNTRIES } from '../utils/countriesData';
+import { ALL_COUNTRIES, getCountryName, countryMatches } from '../utils/countriesData';
 
 const getFlagEmoji = (countryCode) => {
   if (!countryCode || countryCode.length !== 2) return '🌍';
@@ -41,7 +41,7 @@ const formatRelation = (rel, t) => {
 
 export default function PayBillsScreen() {
   const navigation = useNavigation();
-  const { t, session, user } = useApp();
+  const { t, session, user, language } = useApp();
   const userRefCode = user?.referralCode || (user?.id ? `DZY-${user.id.substring(0, 6).toUpperCase()}` : 'DZY500');
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -65,14 +65,13 @@ export default function PayBillsScreen() {
 
   // Filter 250+ countries in real time
   const filteredCountries = useMemo(() => {
-    if (!countrySearchQuery.trim()) return ALL_COUNTRIES;
-    const q = countrySearchQuery.toLowerCase().trim();
-    return ALL_COUNTRIES.filter(c => 
-      c.name.toLowerCase().includes(q) || 
-      c.code.toLowerCase().includes(q) || 
-      c.dial.includes(q)
-    );
-  }, [countrySearchQuery]);
+    const list = [...ALL_COUNTRIES];
+    if (!countrySearchQuery.trim()) {
+      return list.sort((a, b) => getCountryName(a.code, language).localeCompare(getCountryName(b.code, language)));
+    }
+    return list.filter(c => countryMatches(c, countrySearchQuery, language))
+      .sort((a, b) => getCountryName(a.code, language).localeCompare(getCountryName(b.code, language)));
+  }, [countrySearchQuery, language]);
 
   // Fetch real beneficiaries from Supabase (production data)
   useEffect(() => {

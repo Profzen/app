@@ -3663,7 +3663,11 @@
     "terms": "شروط الخدمة",
     "privacy": "سياسة الخصوصية والبيانات",
     "licenses": "التراخيص والامتثال التنظيمي",
-    "communityTitle": "انضم إلى المجتمع"
+    "communityTitle": "انضم إلى المجتمع",
+    "copy": "نسخ",
+    "copyAll": "نسخ الكل",
+    "copied": "تم النسخ",
+    "copiedDesc": "تم نسخ النص إلى الحافظة."
   },
   "contactSupport": {
     "title": "اتصل بنا",

@@ -3630,7 +3630,11 @@
     "terms": "የአገልግሎት ውሎች",
     "privacy": "የግላዊነት እና የውሂብ ፖሊሲ",
     "licenses": "ፈቃዶች እና የቁጥጥር ተገዢነት",
-    "communityTitle": "ማህበረሰቡን ይቀላቀሉ"
+    "communityTitle": "ማህበረሰቡን ይቀላቀሉ",
+    "copy": "ቅዳ",
+    "copyAll": "ሁሉንም ቅዳ",
+    "copied": "ተቀድቷል",
+    "copiedDesc": "ጽሑፍ ወደ ቅንጥብ ሰሌዳ ተቀድቷል።"
   },
   "contactSupport": {
     "title": "ያግኙን",

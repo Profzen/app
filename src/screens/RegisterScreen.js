@@ -17,8 +17,8 @@ import Constants from 'expo-constants';
 import * as Application from 'expo-application';
 import { isSmallScreen, isShortScreen } from '../utils/responsive';
 import AppSelect from '../components/AppSelect';
-import { ALL_COUNTRIES } from '../utils/countriesData';
-import { parsePhoneNumberWithError, AsYouType, isValidPhoneNumber } from 'libphonenumber-js';
+import { ALL_COUNTRIES, getCountryName, guessCountryByPhone } from '../utils/countriesData';
+import { parsePhoneNumberFromString, parsePhoneNumberWithError, AsYouType, isValidPhoneNumber } from 'libphonenumber-js';
 
 export default function RegisterScreen({ route }) {
   const navigation = useNavigation();
@@ -37,7 +37,30 @@ export default function RegisterScreen({ route }) {
   const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '', type: 'success' });
 
   const handlePhoneChange = (val) => {
-    const selectedCountryCode = ALL_COUNTRIES.find(c => c.name === country)?.code || 'FR';
+    let currentCountry = country;
+    if (val.startsWith('+') && !country) {
+      try {
+        const phoneNumberObj = parsePhoneNumberFromString(val);
+        if (phoneNumberObj && phoneNumberObj.country) {
+          const matched = ALL_COUNTRIES.find(c => c.code === phoneNumberObj.country);
+          if (matched) {
+            currentCountry = matched.name;
+            setCountry(matched.name);
+            if (errors.country) setErrors(prev => ({ ...prev, country: null }));
+          }
+        }
+      } catch (e) {}
+
+      if (!currentCountry) {
+        const guessed = guessCountryByPhone(val);
+        if (guessed) {
+          currentCountry = guessed.name;
+          setCountry(guessed.name);
+          if (errors.country) setErrors(prev => ({ ...prev, country: null }));
+        }
+      }
+    }
+    const selectedCountryCode = ALL_COUNTRIES.find(c => c.name === currentCountry)?.code || 'FR';
     const formatter = new AsYouType(selectedCountryCode);
     const formatted = formatter.input(val.replace(/[^0-9\s-+]/g, ''));
     setPhone(formatted);
@@ -47,11 +70,11 @@ export default function RegisterScreen({ route }) {
   const countryOptions = useMemo(() => {
     return ALL_COUNTRIES.map((c) => ({
       value: c.name,
-      label: c.name,
+      label: getCountryName(c.code, language),
       subtitle: c.dial,
       flagUrl: `https://flagcdn.com/w40/${c.code.toLowerCase()}.png`,
-    }));
-  }, []);
+    })).sort((a, b) => a.label.localeCompare(b.label));
+  }, [language]);
 
   useEffect(() => {
     const incomingRef = route?.params?.ref || route?.params?.parrain || route?.params?.referral_code;
@@ -272,7 +295,19 @@ export default function RegisterScreen({ route }) {
             <AppSelect
               value={country}
               options={countryOptions}
-              onChange={(val) => { setCountry(val); if(errors.country) setErrors(prev => ({...prev, country: null})); }}
+              onChange={(val) => {
+                const prevDial = ALL_COUNTRIES.find(c => c.name === country)?.dial || '';
+                setCountry(val);
+                if (errors.country) setErrors(prev => ({ ...prev, country: null }));
+                // Only pre-fill the dial code while the phone is still empty (or only holds the previous dial code).
+                // Never rewrite a number the user typed: country of residence and phone country can differ (diaspora).
+                const dial = ALL_COUNTRIES.find(c => c.name === val)?.dial || '';
+                const current = (phone || '').trim();
+                if (dial && (current === '' || current === '+' || (prevDial && current === prevDial))) {
+                  setPhone(dial);
+                  if (errors.phone) setErrors(prev => ({ ...prev, phone: null }));
+                }
+              }}
               title={t('personalAccount.country', 'Country of Residence')}
               placeholder={t('personalAccount.selectCountry', 'Select your country')}
               searchPlaceholder={t('personalAccount.searchCountry', 'Search country')}

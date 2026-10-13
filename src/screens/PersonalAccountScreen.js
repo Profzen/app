@@ -6,10 +6,10 @@ import { useNavigation } from '@react-navigation/native';
 import BottomNavBar from '../components/BottomNavBar';
 import AppSelect from '../components/AppSelect';
 import AppToast from '../components/AppToast';
-import { ALL_COUNTRIES } from '../utils/countriesData';
+import { ALL_COUNTRIES, getCountryName, guessCountryByPhone } from '../utils/countriesData';
 import { useApp } from '../context/AppContext';
 import Avatar from '../components/Avatar';
-import { parsePhoneNumberWithError } from 'libphonenumber-js';
+import { parsePhoneNumberFromString, parsePhoneNumberWithError } from 'libphonenumber-js';
 // Maps the saved profile value (country name or ISO code) to the canonical country name; unknown values are kept as-is
 const resolveCountryName = (raw) => {
   const value = (raw || '').toString().trim();
@@ -32,19 +32,42 @@ export default function PersonalAccountScreen() {
   const [city, setCity] = useState(user?.city || '');
   const [isSaving, setIsSaving] = useState(false);
 
+  const handlePhoneChange = (val) => {
+    if (val && val.startsWith('+') && !country) {
+      try {
+        const phoneNumberObj = parsePhoneNumberFromString(val);
+        if (phoneNumberObj && phoneNumberObj.country) {
+          const matched = ALL_COUNTRIES.find(c => c.code === phoneNumberObj.country);
+          if (matched) {
+            setCountry(matched.name);
+          }
+        }
+      } catch (e) {}
+
+      if (!country) {
+        const guessed = guessCountryByPhone(val);
+        if (guessed) {
+          setCountry(guessed.name);
+        }
+      }
+    }
+    setPhone(val);
+  };
+
   const countryOptions = useMemo(() => {
     const list = ALL_COUNTRIES.map((c) => ({
       value: c.name,
-      label: c.name,
+      label: getCountryName(c.code, language),
       subtitle: c.dial,
       flagUrl: `https://flagcdn.com/w40/${c.code.toLowerCase()}.png`,
     }));
+    list.sort((a, b) => a.label.localeCompare(b.label));
     // Keep a saved value that is not in the list so it is never silently lost
     if (country && !list.some((o) => o.value === country)) {
       list.unshift({ value: country, label: country });
     }
     return list;
-  }, [country]);
+  }, [country, language]);
 
   useEffect(() => {
     // When the user context finally loads/updates, sync the local form state
@@ -210,7 +233,7 @@ export default function PersonalAccountScreen() {
               <Text style={styles.fieldLabel}>{t('personalAccount.phoneNumber', 'Phone Number')}</Text>
               <View style={styles.inputWrap}>
                 <Ionicons name="call-outline" size={18} color="#6B7280" style={styles.inputIcon} />
-                <TextInput style={styles.input} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+                <TextInput style={styles.input} value={phone} onChangeText={handlePhoneChange} keyboardType="phone-pad" />
               </View>
             </View>
 
@@ -219,7 +242,17 @@ export default function PersonalAccountScreen() {
               <AppSelect
                 value={country}
                 options={countryOptions}
-                onChange={(val) => setCountry(val)}
+                onChange={(val) => {
+                  const prevDial = ALL_COUNTRIES.find(c => c.name === country)?.dial || '';
+                  setCountry(val);
+                  // Only pre-fill the dial code while the phone is still empty (or only holds the previous dial code).
+                  // Never rewrite a number the user typed: country of residence and phone country can differ (diaspora).
+                  const dial = ALL_COUNTRIES.find(c => c.name === val)?.dial || '';
+                  const current = (phone || '').trim();
+                  if (dial && (current === '' || current === '+' || (prevDial && current === prevDial))) {
+                    setPhone(dial);
+                  }
+                }}
                 title={t('personalAccount.country', 'Country of Residence')}
                 placeholder={t('personalAccount.selectCountry', 'Select your country')}
                 searchPlaceholder={t('personalAccount.searchCountry', 'Search country')}
