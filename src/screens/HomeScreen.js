@@ -30,7 +30,8 @@ const SERVICE_ROUTES = {
 
 export default function HomeScreen() {
   const navigation = useNavigation();
-  const { language, toggleLanguage, t, user, isUserLoading, detectedCountry, refreshUser, hasUnreadNotifications } = useApp();
+  const { language, toggleLanguage, t, user, isUserLoading, detectedCountry, refreshUser, hasUnreadNotifications, session } = useApp();
+  const isAccountLoading = !user?.id || (session?.user?.id && user?.id !== session.user.id);
   const [isBannerVisible, setIsBannerVisible] = useState(true);
   const [activeSlide, setActiveSlide] = useState(0);
   const [walletBalances, setWalletBalances] = useState({});
@@ -300,16 +301,25 @@ export default function HomeScreen() {
               onPress={() => navigation.navigate(user?.role === 'merchant' ? 'BusinessAccountScreen' : 'PersonalAccountScreen')}
               activeOpacity={0.7}
             >
-              <View style={[styles.avatarRing, user?.role === 'merchant' ? styles.merchantRing : styles.userRing]}>
+              <View style={[styles.avatarRing, (!isAccountLoading && user?.role === 'merchant') ? styles.merchantRing : styles.userRing]}>
                 <View style={styles.avatarWrapper}>
                   <Ionicons name="person" size={20} color="#FFFFFF" />
-                  {user?.avatar ? (
+                  {!isAccountLoading && user?.avatar ? (
                     <Image source={typeof user.avatar === 'string' ? { uri: user.avatar } : user.avatar} style={styles.avatarImage} />
                   ) : null}
                 </View>
               </View>
               <View style={styles.userTextCol}>
                 {(() => {
+                  if (isAccountLoading) {
+                    return (
+                      <>
+                        <Text style={styles.greetingText} numberOfLines={1}>{t('greetingHello', 'Hello,')}</Text>
+                        <Text style={styles.nameText} numberOfLines={1}>...</Text>
+                      </>
+                    );
+                  }
+
                   let displayName = user?.firstName || (user?.name ? user.name.split(' ')[0] : '');
                   if (displayName.toLowerCase() === 'utilisateur' || displayName.toLowerCase() === 'user') {
                     displayName = '';
@@ -501,7 +511,7 @@ export default function HomeScreen() {
             )}
           </View>
 
-          {isUserLoading && !user?.id ? (
+          {isAccountLoading ? (
             <View style={{ height: 180, marginHorizontal: isSmallScreen ? 14 : 20, marginTop: 8, marginBottom: 8, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center', borderRadius: 20, borderWidth: 1, borderColor: '#E2E8F0' }}>
               <ActivityIndicator size="large" color="#FFC759" />
             </View>
@@ -529,7 +539,7 @@ export default function HomeScreen() {
             </View>
           )}
 
-          {isUserLoading && !user?.id ? (
+          {isAccountLoading ? (
             <View style={[styles.todoCard, { height: 160, justifyContent: 'center', alignItems: 'center' }]}>
               <ActivityIndicator size="small" color="#94A3B8" />
             </View>

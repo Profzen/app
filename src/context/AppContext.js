@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useCallback, useEffect } from 'react';
+import React, { createContext, useState, useContext, useCallback, useEffect, useRef } from 'react';
 import { Platform, Linking } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -20,6 +20,8 @@ import { notificationService } from '../services/notificationService';
 const AppContext = createContext();
 
 export function AppProvider({ children }) {
+  const currentUserIdRef = useRef(null);
+  const loadedUserIdRef = useRef(null);
   const [user, setUser] = useState({
     name: '',
     email: '',
@@ -33,6 +35,29 @@ export function AppProvider({ children }) {
   
   const [session, setSession] = useState(null);
   const [isUserLoading, setIsUserLoading] = useState(true);
+  const [cart, setCart] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [isTransactionsLoading, setIsTransactionsLoading] = useState(false);
+  const [contacts, setContacts] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const [accountMode, setAccountMode] = useState('personal');
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
+
+  const resetUserScopedState = useCallback((clearUserIdRef = true) => {
+    if (clearUserIdRef) {
+      currentUserIdRef.current = null;
+    }
+    loadedUserIdRef.current = null;
+    setUser(null);
+    setTransactions([]);
+    setContacts([]);
+    setFavorites([]);
+    setCart([]);
+    setAccountMode('personal');
+    setHasUnreadNotifications(false);
+    AsyncStorage.removeItem('@dizzitup_cached_user').catch(() => {});
+    AsyncStorage.removeItem('@dizzitup_cart').catch(() => {});
+  }, []);
 
   // Instant Stale-While-Revalidate: load cached user immediately on mount
   useEffect(() => {
@@ -42,8 +67,14 @@ export function AppProvider({ children }) {
         if (cached) {
           const parsed = JSON.parse(cached);
           if (parsed && (parsed.id || parsed.name)) {
-            setUser(prev => ({ ...prev, ...parsed }));
-            setIsUserLoading(false);
+            // Only hydrate if no different session user has already claimed the state
+            if (!currentUserIdRef.current || currentUserIdRef.current === parsed.id) {
+              loadedUserIdRef.current = parsed.id || null;
+              setUser(prev => ({ ...(prev || {}), ...parsed }));
+              setIsUserLoading(false);
+            } else {
+              AsyncStorage.removeItem('@dizzitup_cached_user').catch(() => {});
+            }
           }
         }
       } catch (err) {
@@ -185,12 +216,8 @@ export function AppProvider({ children }) {
     if (fresh) setDetectedCountry(fresh);
   };
 
-  const [cart, setCart] = useState([]);
-  const [transactions, setTransactions] = useState([]);
-  const [isTransactionsLoading, setIsTransactionsLoading] = useState(false);
   const [isAppLocked, setIsAppLocked] = useState(false);
   const [isCheckingLock, setIsCheckingLock] = useState(true);
-  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
 
   // Cart Hydration
   useEffect(() => {
@@ -238,41 +265,51 @@ export function AppProvider({ children }) {
   // We now defer lock checking until we get the session, see getSession() below.
 
   const syncUser = async (sessionObj, trigger = 'UNKNOWN') => {
+    const incomingUserId = sessionObj?.user?.id || null;
+    currentUserIdRef.current = incomingUserId;
     setSession(sessionObj);
     setIsUserLoading(true);
-      if (sessionObj?.user) {
-        let fetchedName = sessionObj.user.user_metadata?.full_name || sessionObj.user.email.split('@')[0];
-        let fetchedFirstName = '';
-        let fetchedLastName = '';
-        let fetchedRole = 'user';
-        let fetchedCountry = '';
-        let fetchedCity = '';
-        let fetchedPhone = '';
-        let fetchedAvatar = null;
-        let fetchedMerchantProfile = null;
-        let fetchedEvmAddress = '';
-        let fetchedSolanaAddress = '';
-        let fetchedBusinessEvmAddress = '';
-        let fetchedBusinessSolanaAddress = '';
-        let fetchedDizzyToken = '';
-        let fetchedBusinessDizzyToken = '';
-        let fetchedCrossmintJWT = '';
-        let fetchedBusinessCrossmintJWT = '';
-        let newBalances = { DZY: 0 };
-        let businessBalances = { DZY: 0 };
-        let totalUsdValue = 0;
-        let rawBalancesArray = [];
-        let businessRawBalancesArray = [];
-        let businessTotalUsdValue = 0;
-        
-        // 0. Fetch Contacts asynchronously (don't await)
-        if (contactService?.getBeneficiaries) {
-          contactService.getBeneficiaries(sessionObj.user.id).then(res => {
-            if (res && res.success && Array.isArray(res.data)) {
-              setContacts(res.data);
-            }
-          }).catch(err => console.log('Error fetching beneficiaries:', err));
-        }
+
+    if (sessionObj?.user) {
+      // If a session arrives whose user.id is different from the currently loaded or cached user,
+      // reset user-scoped state and wipe cached data of the previous user immediately.
+      const currentActiveId = loadedUserIdRef.current || user?.id;
+      if (currentActiveId && currentActiveId !== incomingUserId) {
+        resetUserScopedState(false);
+      }
+
+      let fetchedName = sessionObj.user.user_metadata?.full_name || sessionObj.user.email.split('@')[0];
+      let fetchedFirstName = '';
+      let fetchedLastName = '';
+      let fetchedRole = 'user';
+      let fetchedCountry = '';
+      let fetchedCity = '';
+      let fetchedPhone = '';
+      let fetchedAvatar = null;
+      let fetchedMerchantProfile = null;
+      let fetchedEvmAddress = '';
+      let fetchedSolanaAddress = '';
+      let fetchedBusinessEvmAddress = '';
+      let fetchedBusinessSolanaAddress = '';
+      let fetchedDizzyToken = '';
+      let fetchedBusinessDizzyToken = '';
+      let fetchedCrossmintJWT = '';
+      let fetchedBusinessCrossmintJWT = '';
+      let newBalances = { DZY: 0 };
+      let businessBalances = { DZY: 0 };
+      let totalUsdValue = 0;
+      let rawBalancesArray = [];
+      let businessRawBalancesArray = [];
+      let businessTotalUsdValue = 0;
+      
+      // 0. Fetch Contacts asynchronously (don't await)
+      if (contactService?.getBeneficiaries) {
+        contactService.getBeneficiaries(sessionObj.user.id).then(res => {
+          if (currentUserIdRef.current === sessionObj.user.id && res && res.success && Array.isArray(res.data)) {
+            setContacts(res.data);
+          }
+        }).catch(err => console.log('Error fetching beneficiaries:', err));
+      }
         
         try {
           const { data: profile } = await supabase
@@ -406,11 +443,16 @@ export function AppProvider({ children }) {
                   if (newSol && !fetchedSolanaAddress) fetchedSolanaAddress = newSol;
                   
                   if (newEvm || newSol) {
-                    setUser(prev => ({
-                      ...prev,
-                      ...(newEvm && !prev.evmAddress ? { evmAddress: newEvm } : {}),
-                      ...(newSol && !prev.solanaAddress ? { solanaAddress: newSol } : {})
-                    }));
+                    if (currentUserIdRef.current === sessionObj.user.id) {
+                      setUser(prev => {
+                        if (!prev) return prev;
+                        return {
+                          ...prev,
+                          ...(newEvm && !prev.evmAddress ? { evmAddress: newEvm } : {}),
+                          ...(newSol && !prev.solanaAddress ? { solanaAddress: newSol } : {})
+                        };
+                      });
+                    }
                   }
                 } else {
                   console.warn(`[WALLET-SYNC][${phase}] fetch failed with status:`, syncSmartRes.status);
@@ -633,11 +675,15 @@ export function AppProvider({ children }) {
             try {
               setIsTransactionsLoading(true);
               const txs = await transactionService.fetchUnifiedTransactions(sessionObj.user.id, fetchedDizzyToken);
-              setTransactions(txs);
+              if (currentUserIdRef.current === sessionObj.user.id) {
+                setTransactions(txs);
+              }
             } catch (e) {
               console.log("Transaction fetch failed:", e);
             } finally {
-              setIsTransactionsLoading(false);
+              if (currentUserIdRef.current === sessionObj.user.id) {
+                setIsTransactionsLoading(false);
+              }
             }
           };
 
@@ -697,15 +743,20 @@ export function AppProvider({ children }) {
           businessRawBalances: businessRawBalancesArray,
           businessTotalUsdValue: businessTotalUsdValue
         };
-        setUser(fullUserData);
-        AsyncStorage.setItem('@dizzitup_cached_user', JSON.stringify(fullUserData)).catch(() => {});
-        
 
+        if (currentUserIdRef.current !== sessionObj.user.id) {
+          console.log('[syncUser] Dropping stale sync result for user:', sessionObj.user.id);
+          return;
+        }
+
+        setUser(fullUserData);
+        loadedUserIdRef.current = fullUserData.id;
+        AsyncStorage.setItem('@dizzitup_cached_user', JSON.stringify(fullUserData)).catch(() => {});
 
         // Auto-register and sync Expo Push Token to user_profiles table in Supabase
-        if (sessionObj.user.id) {
+        if (sessionObj.user.id && currentUserIdRef.current === sessionObj.user.id) {
           notificationService.registerForPushNotificationsAsync().then(token => {
-            if (token) {
+            if (token && currentUserIdRef.current === sessionObj.user.id) {
               notificationService.syncPushTokenToSupabase(sessionObj.user.id, token);
             }
           }).catch(err => console.log('Auto push registration error:', err));
@@ -713,7 +764,9 @@ export function AppProvider({ children }) {
       } else {
         setContacts([]);
       }
-      setIsUserLoading(false);
+      if (currentUserIdRef.current === sessionObj?.user?.id) {
+        setIsUserLoading(false);
+      }
     };
 
   const refreshUser = async () => {
@@ -786,6 +839,9 @@ export function AppProvider({ children }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (_event === 'SIGNED_OUT') {
         lastToken = null;
+        setSession(null);
+        setIsUserLoading(false);
+        resetUserScopedState(true);
         return;
       }
       if (session?.access_token !== lastToken) {
@@ -835,9 +891,6 @@ export function AppProvider({ children }) {
   }, []);
 
   const [shops, setShops] = useState([]);
-  const [contacts, setContacts] = useState([]);
-  // Favorites keys: "product:<id>" / "merchant:<id>" (shared user_favorites table, same as the website)
-  const [favorites, setFavorites] = useState([]);
   const favoritesUserId = session?.user?.id || user?.id || null;
 
   // Load favorites for the logged-in account: cached copy first (instant), then the database
@@ -850,10 +903,11 @@ export function AppProvider({ children }) {
       try {
         const cached = await AsyncStorage.getItem(cacheKey);
         const parsed = cached ? JSON.parse(cached) : null;
-        if (!cancelled && Array.isArray(parsed)) setFavorites(parsed);
+        if (!cancelled && Array.isArray(parsed) && currentUserIdRef.current === favoritesUserId) setFavorites(parsed);
       } catch (e) {}
       const rows = await buyGoodsApi.getUserFavorites(favoritesUserId, session?.access_token);
       if (cancelled || !Array.isArray(rows)) return; // network failure: keep cache
+      if (currentUserIdRef.current !== favoritesUserId) return;
       const keys = rows.map((r) => `${r.target_type}:${r.target_id}`);
       setFavorites(keys);
       AsyncStorage.setItem(cacheKey, JSON.stringify(keys)).catch(() => {});
@@ -870,7 +924,6 @@ export function AppProvider({ children }) {
     }).catch(() => {});
   }, []);
 
-  const [accountMode, setAccountMode] = useState('personal');
   const [hideBalance, setHideBalance] = useState(false);
   const [language, setLanguage] = useState('en'); // Default to English for international & tester consistency ('en' | 'fr' | 'pt' | 'am' | 'ar')
 
@@ -997,36 +1050,40 @@ export function AppProvider({ children }) {
 
   const updateUserProfile = async (payload) => {
     if (!user?.id) return { success: false, error: "Not logged in" };
+    const targetUserId = user.id;
     try {
       const { data, error } = await supabase
         .from('user_profiles')
         .update(payload)
-        .eq('id', user.id)
+        .eq('id', targetUserId)
         .select()
         .single();
         
       if (error) throw error;
       
       // Update local state smoothly
-      setUser(prev => {
-        const newFirst = payload.first_name !== undefined ? payload.first_name : prev.firstName;
-        const newLast = payload.last_name !== undefined ? payload.last_name : prev.lastName;
-        let newName = prev.name;
-        if (payload.first_name !== undefined || payload.last_name !== undefined) {
-          newName = `${newFirst || ''} ${newLast || ''}`.trim();
-        }
+      if (currentUserIdRef.current === targetUserId) {
+        setUser(prev => {
+          if (!prev) return prev;
+          const newFirst = payload.first_name !== undefined ? payload.first_name : prev.firstName;
+          const newLast = payload.last_name !== undefined ? payload.last_name : prev.lastName;
+          let newName = prev.name;
+          if (payload.first_name !== undefined || payload.last_name !== undefined) {
+            newName = `${newFirst || ''} ${newLast || ''}`.trim();
+          }
 
-        return {
-          ...prev,
-          firstName: newFirst,
-          lastName: newLast,
-          name: newName,
-          country: payload.country_of_residence !== undefined ? payload.country_of_residence : prev.country,
-          city: payload.city_of_residence !== undefined ? payload.city_of_residence : prev.city,
-          phone: payload.mobile_number !== undefined ? payload.mobile_number : prev.phone,
-          mobile_number: payload.mobile_number !== undefined ? payload.mobile_number : prev.mobile_number,
-        };
-      });
+          return {
+            ...prev,
+            firstName: newFirst,
+            lastName: newLast,
+            name: newName,
+            country: payload.country_of_residence !== undefined ? payload.country_of_residence : prev.country,
+            city: payload.city_of_residence !== undefined ? payload.city_of_residence : prev.city,
+            phone: payload.mobile_number !== undefined ? payload.mobile_number : prev.phone,
+            mobile_number: payload.mobile_number !== undefined ? payload.mobile_number : prev.mobile_number,
+          };
+        });
+      }
       return { success: true, data };
     } catch (e) {
       console.log("Update profile error:", e);
@@ -1143,25 +1200,33 @@ export function AppProvider({ children }) {
   } : null;
 
   const updateBalance = (amountDZY) => {
-    setUser(prev => ({
-      ...prev,
-      balanceDZY: prev.balanceDZY + amountDZY
-    }));
+    setUser(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        balanceDZY: (prev.balanceDZY || 0) + amountDZY
+      };
+    });
   };
 
   const toggleHideBalance = () => setHideBalance(prev => !prev);
 
   const refreshTransactions = async () => {
     if (!session?.user?.id) return;
+    const targetUserId = session.user.id;
     try {
       setIsTransactionsLoading(true);
       const tokenToUse = user?.dizzyToken || session?.access_token;
-      const txs = await transactionService.fetchUnifiedTransactions(session.user.id, tokenToUse);
-      setTransactions(txs);
+      const txs = await transactionService.fetchUnifiedTransactions(targetUserId, tokenToUse);
+      if (currentUserIdRef.current === targetUserId) {
+        setTransactions(txs);
+      }
     } catch (e) {
       console.log("Manual transaction refresh failed:", e);
     } finally {
-      setIsTransactionsLoading(false);
+      if (currentUserIdRef.current === targetUserId) {
+        setIsTransactionsLoading(false);
+      }
     }
   };
 
@@ -1172,12 +1237,18 @@ export function AppProvider({ children }) {
       // Do not delete user_pin from SecureStore, as it is per-user now.
       // But we clear the cached user.
       await AsyncStorage.removeItem('@dizzitup_cached_user');
+      await AsyncStorage.removeItem('@dizzitup_cart').catch(() => {});
+      currentUserIdRef.current = null;
+      loadedUserIdRef.current = null;
       setUser(null);
       setSession(null);
       setIsAppLocked(false);
       setTransactions([]);
-      setCart([]);
+      setContacts([]);
       setFavorites([]);
+      setCart([]);
+      setAccountMode('personal');
+      setHasUnreadNotifications(false);
       
       if (navigation && navigation.reset) {
         navigation.reset({
