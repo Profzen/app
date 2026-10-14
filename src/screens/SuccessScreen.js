@@ -14,9 +14,9 @@ export default function SuccessScreen(props) {
 
   const params = route.params || {};
   
-  const title = props.title || params.title || t('auth.successTitle', 'Félicitations !');
-  const subtitle = props.subtitle || params.subtitle || t('auth.successSubtitle', 'Votre compte a été créé avec succès.');
-  const buttonText = props.buttonText || params.buttonText || t('auth.loginAction', 'Se connecter');
+  const title = props.title || params.title || t('auth.successTitle', "Congratulations!");
+  const subtitle = props.subtitle || params.subtitle || t('auth.successSubtitle', "Your account has been successfully created.");
+  const buttonText = props.buttonText || params.buttonText || t('auth.loginAction', "Log in");
   const customIcon = props.customIcon || params.customIcon;
   const onButtonPress = props.onButtonPress || params.onButtonPress;
 

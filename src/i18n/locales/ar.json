@@ -4396,7 +4396,7 @@
   "tabSwap": "تبديل",
   "tabMore": "المزيد",
   "shopsBannerReferTitle": "قم بإحالة متجر\nواربح ",
-  "shopsBannerReferAmount": "10$ في DZY",
+  "shopsBannerReferAmount": "{{amount}} DZY",
   "shopsBannerReferSub": "قم بالتوصية بنشاط تجاري\nواربح مكافآت.",
   "shopsBannerReferBtn": "إحالة الآن",
   "shopsFilterFood": "الأغذية والبقالة",

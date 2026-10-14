@@ -31,7 +31,7 @@ export default function ShareProfileScreen() {
   );
   const copy = async () => {
     await Clipboard.setStringAsync(shareText);
-    setToast({ title: t('common.copied', 'Copied'), message: t('shareProfile.copied', 'Profile details copied to clipboard.'), type: 'success' });
+    setToast({ title: t('common.copied', "Link copied"), message: t('shareProfile.copied', 'Profile details copied to clipboard.'), type: 'success' });
   };
   return (
     <SafeAreaView style={styles.safeArea}>

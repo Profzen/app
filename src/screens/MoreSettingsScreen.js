@@ -22,13 +22,13 @@ export default function MoreSettingsScreen() {
   const appBuildNumber = Application.nativeBuildVersion || '—';
 
   const SETTINGS = [
-    { id: 'account', title: t('settings.general', 'Account Settings'), description: t('settings.account_desc', 'Gérer les préférences et la sécurité de votre compte'), icon: 'person-outline', color: '#3B82F6', background: '#EFF6FF', route: 'AccountSettingsScreen' },
-    ...(user?.role !== 'merchant' ? [{ id: 'personal', title: t('settings.personal', 'Personal Account'), description: t('settings.personal_desc', 'Gérer vos informations personnelles et vérification'), icon: 'person-outline', color: '#10B981', background: '#ECFDF5', route: 'PersonalAccountScreen' }] : []),
-    ...(user?.role === 'merchant' ? [{ id: 'business', title: t('settings.business', 'Business Account'), description: t('settings.business_desc', 'Gérer votre profil marchand et préférences'), icon: 'storefront-outline', color: '#8B5CF6', background: '#F5F3FF', route: 'BusinessAccountScreen' }] : []),
-    { id: 'assistant', title: t('askAminata.title', 'Ask Aminata'), description: t('settings.assistant_desc', "Obtenez de l'aide auprès de notre assistant virtuel"), icon: 'help-circle-outline', color: '#F59E0B', background: '#FFFBEB', route: 'AskAminataScreen' },
-    { id: 'loyalty', title: t('dizzyFamily.title', 'DizzyFamily Program'), description: t('settings.loyalty_desc', "Gagnez des récompenses et profitez d'avantages exclusifs"), icon: 'gift-outline', color: '#EF4444', background: '#FEF2F2', route: 'DizzyFamilyScreen' },
-    { id: 'about', title: t('aboutApp.title', 'About DizzitUp'), description: t('settings.about_desc', 'Learn more, mission & release notes'), icon: 'information-circle-outline', color: '#3B82F6', background: '#EFF6FF', route: 'AboutDizzitUpScreen', badge: `Build ${appBuildNumber}` },
-    { id: 'contact', title: t('contactSupport.title', 'Contact Us'), description: t('settings.contact_desc', "Entrez en contact avec notre équipe d'assistance"), icon: 'headset-outline', color: '#10B981', background: '#ECFDF5', route: 'ContactUsScreen' },
+    { id: 'account', title: t('settings.general', 'Account Settings'), description: t('settings.account_desc', "Manage your account preferences and security"), icon: 'person-outline', color: '#3B82F6', background: '#EFF6FF', route: 'AccountSettingsScreen' },
+    ...(user?.role !== 'merchant' ? [{ id: 'personal', title: t('settings.personal', 'Personal Account'), description: t('settings.personal_desc', "Manage your personal information and verification"), icon: 'person-outline', color: '#10B981', background: '#ECFDF5', route: 'PersonalAccountScreen' }] : []),
+    ...(user?.role === 'merchant' ? [{ id: 'business', title: t('settings.business', 'Business Account'), description: t('settings.business_desc', "Manage your merchant profile and preferences"), icon: 'storefront-outline', color: '#8B5CF6', background: '#F5F3FF', route: 'BusinessAccountScreen' }] : []),
+    { id: 'assistant', title: t('askAminata.title', 'Ask Aminata'), description: t('settings.assistant_desc', "Get help from our virtual assistant"), icon: 'help-circle-outline', color: '#F59E0B', background: '#FFFBEB', route: 'AskAminataScreen' },
+    { id: 'loyalty', title: t('dizzyFamily.title', 'DizzyFamily Program'), description: t('settings.loyalty_desc', "Earn rewards and enjoy exclusive benefits"), icon: 'gift-outline', color: '#EF4444', background: '#FEF2F2', route: 'DizzyFamilyScreen' },
+    { id: 'about', title: t('aboutApp.title', 'About DizzitUp'), description: t('settings.about_desc', "Learn more about us and our mission"), icon: 'information-circle-outline', color: '#3B82F6', background: '#EFF6FF', route: 'AboutDizzitUpScreen', badge: `Build ${appBuildNumber}` },
+    { id: 'contact', title: t('contactSupport.title', 'Contact Us'), description: t('settings.contact_desc', "Get in touch with our support team"), icon: 'headset-outline', color: '#10B981', background: '#ECFDF5', route: 'ContactUsScreen' },
   ];
 
   const handleBack = () => {

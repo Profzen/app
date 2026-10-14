@@ -62,7 +62,7 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
           else setLocalMenuOpen(false);
         }}>
           <TouchableOpacity activeOpacity={1} style={styles.shortcutMenu} onPress={(e) => e.stopPropagation()}>
-            <Text style={styles.shortcutTitle}>{t('quickActionsTitle', 'Actions rapides')}</Text>
+            <Text style={styles.shortcutTitle}>{t('quickActionsTitle', "Quick actions")}</Text>
             <View style={styles.quickActionsGrid}>
               {QUICK_ACTIONS.map((action) => (
                 <TouchableOpacity key={action.id} style={styles.actionGridItem} onPress={() => closeAndNavigate(action)}>
@@ -81,7 +81,7 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
         {/* Home */}
         <NavItem
           icon="home"
-          label={t('tabHome', 'Accueil')}
+          label={t('tabHome', "Home")}
           isActive={activeTabLower === 'home' || activeTabLower === 'accueil'}
           onPress={handleHomePress}
         />
@@ -119,7 +119,7 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
         {/* Shops */}
         <NavItem
           icon="storefront-outline"
-          label={t('tabShops', 'Boutique')}
+          label={t('tabShops', "Shop")}
           isActive={['shops', 'shop', 'boutique', 'boutiques'].includes(activeTabLower)}
           onPress={() => navigation.navigate('ShopsScreen')}
         />
@@ -127,7 +127,7 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
         {/* Wallet / Assets */}
         <NavItem
           icon="wallet-outline"
-          label={t('tabWallet', 'Portefeuille')}
+          label={t('tabWallet', "Wallet")}
           isActive={['wallet', 'portefeuille', 'assets'].includes(activeTabLower)}
           onPress={() => navigation.navigate('AssetListScreen')}
         />

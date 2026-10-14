@@ -50,9 +50,9 @@ export default function SendMoneySuccessScreen() {
     if (!hash) return;
     try {
       await Clipboard.setStringAsync(hash);
-      setToast({ title: t('common.copied', 'Copied!'), message: t('sendMoney.addressCopied', 'Address copied to clipboard!') });
+      setToast({ title: t('common.copied', "Link copied"), message: t('sendMoney.addressCopied', 'Address copied to clipboard!') });
     } catch (err) {
-      setToast({ title: t('common.copied', 'Copied!'), message: t('sendMoney.addressCopied', 'Address copied to clipboard!') });
+      setToast({ title: t('common.copied', "Link copied"), message: t('sendMoney.addressCopied', 'Address copied to clipboard!') });
     }
   };
 
@@ -159,10 +159,10 @@ export default function SendMoneySuccessScreen() {
               <View style={styles.shareTextWrap}>
                 <Text style={styles.shareCtaTitle}>{t('shareSuccess.title', 'Share my success')}</Text>
                 <Text style={styles.shareCtaSub1}>
-                  <Text style={styles.goldText}>{t('shareSuccess.rewardTitle', 'Earn 1 DZY by tagging @DizzitUp')}</Text>
+                  <Text style={styles.goldText}>{t('shareSuccess.rewardTitle', "Share your success and earn 1 DZY")}</Text>
                 </Text>
                 <Text style={styles.shareCtaSub2}>
-                  {t('shareSuccess.rewardSub', 'Publish a customized DizzitUp card of this transaction')}
+                  {t('shareSuccess.rewardSub', "Post your DizzitUp card and tag @DizzitUp")}
                 </Text>
               </View>
 

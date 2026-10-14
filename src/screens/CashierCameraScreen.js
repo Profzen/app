@@ -32,9 +32,9 @@ export default function CashierCameraScreen() {
           </TouchableOpacity>
         </View>
         <View style={styles.permissionContainer}>
-          <Text style={styles.permissionText}>{t('pos.camera_permission', 'Nous avons besoin de votre permission pour utiliser la caméra')}</Text>
+          <Text style={styles.permissionText}>{t('pos.camera_permission', "We need your permission to use the camera")}</Text>
           <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
-            <Text style={styles.permissionButtonText}>{t('pos.grant_permission', 'Accorder la permission')}</Text>
+            <Text style={styles.permissionButtonText}>{t('pos.grant_permission', "Grant permission")}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -48,7 +48,7 @@ export default function CashierCameraScreen() {
       if (parsedData && parsedData.type === 'user_payment') {
         // Handle the scanned payment data
         Alert.alert(
-          t('pos.scan_success', 'Client Scanné avec succès'),
+          t('pos.scan_success', "Customer successfully scanned"),
           t('pos.process_payment', `Redirection vers l'encaissement de ${parsedData.amount} ${parsedData.currency}`),
           [{ text: 'OK', onPress: () => navigation.navigate('CashierSuccessScreen', { paymentData: parsedData }) }]
         );
@@ -66,7 +66,7 @@ export default function CashierCameraScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Ionicons name="close" size={24} color="#FFF" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('pos.scan_customer', 'Scanner le Client')}</Text>
+        <Text style={styles.headerTitle}>{t('pos.scan_customer', "Scan customer")}</Text>
         <View style={{ width: 40 }} />
       </View>
       
@@ -81,14 +81,14 @@ export default function CashierCameraScreen() {
         />
         <View style={styles.overlay}>
           <View style={styles.scanBox} />
-          <Text style={styles.overlayText}>{t('pos.align_qr', 'Alignez le QR code dans le cadre')}</Text>
+          <Text style={styles.overlayText}>{t('pos.align_qr', "Align the QR code within the frame")}</Text>
         </View>
       </View>
 
       {scanned && (
         <View style={styles.footer}>
           <TouchableOpacity style={styles.rescanButton} onPress={() => setScanned(false)}>
-            <Text style={styles.rescanText}>{t('pos.scan_again', 'Scanner à nouveau')}</Text>
+            <Text style={styles.rescanText}>{t('pos.scan_again', "Scan again")}</Text>
           </TouchableOpacity>
         </View>
       )}

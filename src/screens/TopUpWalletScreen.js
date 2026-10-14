@@ -137,11 +137,11 @@ export default function TopUpWalletScreen() {
               </View>
               <View style={styles.featureItem}>
                 <Ionicons name="time-outline" size={16} color="#1A2840" style={{marginRight: 8}} />
-                <Text style={styles.featureText}>{t('topUpWallet.instantTransactions', 'Instant\ntransactions')}</Text>
+                <Text style={styles.featureText}>{t('topUpWallet.instantTransactions', "Instant\ntransactions")}</Text>
               </View>
               <View style={styles.featureItem}>
                 <Ionicons name="globe-outline" size={16} color="#1A2840" style={{marginRight: 8}} />
-                <Text style={styles.featureText}>{t('topUpWallet.availableEverywhere', 'Available\neverywhere')}</Text>
+                <Text style={styles.featureText}>{t('topUpWallet.availableEverywhere', "Available\neverywhere")}</Text>
               </View>
             </View>
           </TouchableOpacity>

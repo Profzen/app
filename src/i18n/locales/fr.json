@@ -4637,7 +4637,7 @@
   "langSwitchedToastTitle": "Langue modifiée",
   "langSwitchedToastMessage": "L'application est maintenant en Français",
   "shopsBannerReferTitle": "Référencez un commerce\net gagnez ",
-  "shopsBannerReferAmount": " en DZY",
+  "shopsBannerReferAmount": "{{amount}} DZY",
   "shopsBannerReferSub": "Recommandez un business\net gagnez des récompenses.",
   "shopsBannerReferBtn": "Référencer",
   "shopsFilterFood": "Alimentation & Épicerie",
@@ -5915,5 +5915,8 @@
   "invoicePayLink.title": "Facture et DZYpaylink",
   "invoicePayLink.subtitle": "Créez et partagez une demande de paiement simple.",
   "invoicePayLink.generate": "Générer le lien de paiement",
-  "invoicePayLink.fullDashboard": "Ouvrir le tableau de bord des factures"
+  "invoicePayLink.fullDashboard": "Ouvrir le tableau de bord des factures",
+  "contacts.results_plural": "résultats",
+  "shop.dzyAccepted": "DZY accepté",
+  "topup.corridor_notice_title": "Corridors Mobile Money partenaires"
 }

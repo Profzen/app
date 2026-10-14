@@ -80,7 +80,7 @@ export const PinConfirmationModal = ({ visible, onSuccess, onCancel, amount, tok
 
   const triggerBiometrics = async () => {
     try {
-      let prompt = t('auth.secureDizzitUp', 'Verify to authorize');
+      let prompt = t('auth.secureDizzitUp', "Secure DizzitUp");
       if (amount && tokenName) {
         prompt = t('sendMoney.biometricPrompt', 'Authorize Transfer of {{amount}} {{token}}', { amount, token: tokenName });
       }
@@ -246,10 +246,10 @@ export const PinConfirmationModal = ({ visible, onSuccess, onCancel, amount, tok
   
   if (isSetupMode) {
     if (setupStep === 0) {
-      displayTitle = isChangeMode ? t('auth.enterNewPinTitle', 'Enter new PIN') : t('auth.createPinTitle', 'Create a PIN code');
-      displaySubtitle = isChangeMode ? t('auth.enterNewPinDesc', 'Enter your new 6-digit PIN.') : t('auth.createPinDesc', 'Please configure a 6-digit PIN to secure your transactions.');
+      displayTitle = isChangeMode ? t('auth.enterNewPinTitle', 'Enter new PIN') : t('auth.createPinTitle', "Create your PIN code");
+      displaySubtitle = isChangeMode ? t('auth.enterNewPinDesc', 'Enter your new 6-digit PIN.') : t('auth.createPinDesc', "Please set a 6-digit PIN to secure your transactions.");
     } else if (setupStep === 1) {
-      displayTitle = t('auth.confirmPinTitle', 'Confirm your PIN');
+      displayTitle = t('auth.confirmPinTitle', "Confirm your PIN code");
       displaySubtitle = t('auth.confirmPinDesc', 'Please enter your 6-digit PIN again.');
     } else if (setupStep === 2) {
       displayTitle = t('auth.verifyPasswordTitle', 'Verify Password');
@@ -264,7 +264,7 @@ export const PinConfirmationModal = ({ visible, onSuccess, onCancel, amount, tok
       displaySubtitle = subtitle || t('auth.enterCurrentPin', 'Enter your current PIN to continue.');
     } else {
       displayTitle = title || t('auth.secureDizzitUp', 'Secure DizzitUp');
-      displaySubtitle = subtitle || t('auth.enterPinToUnlock', 'Enter your PIN to unlock.');
+      displaySubtitle = subtitle || t('auth.enterPinToUnlock', "Enter your 6-digit PIN to authorize.");
     }
   }
 
@@ -299,7 +299,7 @@ export const PinConfirmationModal = ({ visible, onSuccess, onCancel, amount, tok
           <View style={styles.formContainer}>
             {setupStep === 2 || setupStep === 3 ? (
               <DizzitInput
-                placeholder={setupStep === 3 ? t('auth.code', '6-digit code') : t('auth.password', 'Password')}
+                placeholder={setupStep === 3 ? t('auth.code', "Code") : t('auth.password', 'Password')}
                 value={password}
                 onChangeText={(text) => {
                   setPassword(text);
@@ -340,7 +340,7 @@ export const PinConfirmationModal = ({ visible, onSuccess, onCancel, amount, tok
                 <Text style={[
                   styles.nextButtonText,
                   ((setupStep === 2 || setupStep === 3) ? !password : pin.length < 6) && styles.nextButtonTextDisabled
-                ]}>{setupStep === 0 ? t('common.next', 'NEXT') : t('common.confirm', 'CONFIRM')}</Text>
+                ]}>{setupStep === 0 ? t('common.next', 'NEXT') : t('common.confirm', "Confirm")}</Text>
               )}
             </TouchableOpacity>
           </View>

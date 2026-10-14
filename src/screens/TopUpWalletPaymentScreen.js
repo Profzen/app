@@ -87,7 +87,7 @@ export default function TopUpWalletPaymentScreen() {
           {/* Titles */}
           <Text style={styles.mainTitle}>{t('topUpWallet.paymentInProgressTitle', 'Payment in progress')}</Text>
           <Text style={styles.mainSubtitle}>
-            {t('topUpWallet.paymentInProgressSubtitle', 'We are processing your payment securely.\nPlease do not leave this page.')}
+            {t('topUpWallet.paymentInProgressSubtitle', "We are processing your payment securely.\nPlease do not leave this page.")}
           </Text>
 
           {/* Horizontal Flow Diagram */}

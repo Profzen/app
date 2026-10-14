@@ -332,7 +332,7 @@ export default function SendMoneyScreen() {
             const formatted = data.map(b => ({
               id: b.id,
               name: `${b.first_name || ''} ${b.last_name || ''}`.trim(),
-              tag: b.relationship || t('contacts.relation.friend', 'BENEFICIARY'),
+              tag: b.relationship || t('contacts.relation.friend', "Friend"),
               address: b.evm_address || b.solana_address || b.phone || b.email,
               evm_address: b.evm_address,
               solana_address: b.solana_address,
@@ -442,7 +442,7 @@ export default function SendMoneyScreen() {
 
   const handleSend = async () => {
     if (!amount || parseFloat(amount) <= 0) {
-      setToast({ title: t('wallet.invalid_amount', 'Invalid amount'), message: t('common.wallet.amount_greater_zero', 'Please enter an amount greater than 0.') });
+      setToast({ title: t('wallet.invalid_amount', 'Invalid amount'), message: t('common.wallet.amount_greater_zero', "Amount must be greater than zero") });
       return;
     }
 
@@ -852,7 +852,7 @@ export default function SendMoneyScreen() {
           return;
         }
 
-        setApprovalMessage(t('sendMoney.approval_confirmed', 'Approval submitted! Finalizing transfer...'));
+        setApprovalMessage(t('sendMoney.approval_confirmed', "Approval confirmed! Finalizing transfer..."));
         pollTransactionStatus(activeTxHash, authToken, walletBase);
         return;
       }
@@ -901,7 +901,7 @@ export default function SendMoneyScreen() {
 
       // 4. Still awaiting approval - prompt the user to input the code or click the email link
       setIsAuthorizing(false);
-      setApprovalMessage(t('sendMoney.enter_code_or_email_prompt', 'Please enter the 6-digit code received in your email or tap the link in the email sent to approve.'));
+      setApprovalMessage(t('sendMoney.enter_code_or_email_prompt', "Please enter the 6-digit code received in your email or tap the link in the email to approve."));
       pollTransactionStatus(activeTxHash, authToken, walletBase);
     } catch (e) {
       console.error("[SendMoneyScreen] Authorize error:", e);
@@ -958,7 +958,7 @@ export default function SendMoneyScreen() {
           <View style={styles.formCard}>
             
             {/* Section 1: Recipient Address (Search & Dropdown vs Picked Card) */}
-            <Text style={styles.fieldLabel}>{t('pos.recipient_address_caps', 'RECIPIENT ADDRESS / BENEFICIARY')}</Text>
+            <Text style={styles.fieldLabel}>{t('pos.recipient_address_caps', "RECIPIENT ADDRESS")}</Text>
 
             {(!selectedRecipient || isSearchingRecipient) ? (
               <View style={styles.searchSectionWrapper}>
@@ -967,7 +967,7 @@ export default function SendMoneyScreen() {
                   <Ionicons name="search-outline" size={18} color="#F59E0B" style={{ marginRight: 6 }} />
                   <TextInput
                     style={styles.searchInputField}
-                    placeholder={t('common.wallet.search_beneficiary', 'Search by name, phone or address...')}
+                    placeholder={t('common.wallet.search_beneficiary', "Search by name or phone...")}
                     placeholderTextColor="#94A3B8"
                     value={searchQuery}
                     onChangeText={setSearchQuery}
@@ -1004,7 +1004,7 @@ export default function SendMoneyScreen() {
                         </View>
                         <View style={styles.recipientTextWrap}>
                           <Text style={styles.addPermanentTitle}>{t('common.wallet.add_new_beneficiary', 'Add permanent beneficiary')}</Text>
-                          <Text style={styles.addPermanentSubtitle}>{t('contacts.add_permanent_sub', 'Add to saved permanent contacts')}</Text>
+                          <Text style={styles.addPermanentSubtitle}>{t('contacts.add_permanent_sub', "Add to permanent records")}</Text>
                         </View>
                       </TouchableOpacity>
 
@@ -1102,7 +1102,7 @@ export default function SendMoneyScreen() {
                 value={blockchain}
                 options={blockchainOptions}
                 onChange={(val) => setBlockchain(val)}
-                title={t('common.wallet.select_chain', 'Select Network')}
+                title={t('common.wallet.select_chain', "Select Blockchain")}
                 style={styles.compactAppSelect}
                 textStyle={styles.compactSelectText}
               />
@@ -1198,7 +1198,7 @@ export default function SendMoneyScreen() {
               </Text>
               
               <Text style={modalStyles.desc}>
-                {t('wallet.no_crypto_wallet_desc', '{{name}} has not linked a crypto wallet on DizzitUp yet. How would you like to proceed?', { name: missingWalletItem?.name || '' })}
+                {t('wallet.no_crypto_wallet_desc', "{{name}} does not have a DizzitUp wallet yet. But you should still keep them as a beneficiary because they can use Buy Goods, Pay Bills, Top-up, etc. Please enter their address manually if they have one, or send them an invite to join DizzitUp!", { name: missingWalletItem?.name || '' })}
               </Text>
 
               <View style={modalStyles.btnCol}>

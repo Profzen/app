@@ -14,14 +14,14 @@ export const SocialLogins = ({ variant = 'row' }) => {
   const navigation = useNavigation();
   const { language, t } = useApp();
   const [toastInfo, setToastInfo] = useState({ visible: false, title: '', message: '', type: 'info' });
-  const dividerText = t('auth.orContinueWith', 'or continue with');
+  const dividerText = t('auth.orContinueWith', "Or continue with");
 
   const handleSocialLogin = async (providerName) => {
     if (providerName === 'X') {
       setToastInfo({
         visible: true,
-        title: t('common.comingSoon', 'Coming soon'),
-        message: t('auth.socialLoginComingSoon', `Logging in with ${providerName} is not available yet.`).replace('{{provider}}', providerName),
+        title: t('common.comingSoon', "Coming Soon"),
+        message: t('auth.socialLoginComingSoon', "Logging in with {{provider}} will be available soon.").replace('{{provider}}', providerName),
         type: 'info'
       });
       return;
@@ -85,7 +85,7 @@ export const SocialLogins = ({ variant = 'row' }) => {
             }
             setToastInfo({
               visible: true,
-              title: t('auth.loginFailed', 'Login Error'),
+              title: t('auth.loginFailed', "Login failed"),
               message: errorMsg,
               type: 'error'
             });
@@ -95,7 +95,7 @@ export const SocialLogins = ({ variant = 'row' }) => {
     } catch (error) {
       setToastInfo({
         visible: true,
-        title: t('auth.loginFailed', 'Login Error'),
+        title: t('auth.loginFailed', "Login failed"),
         message: error.message,
         type: 'error'
       });

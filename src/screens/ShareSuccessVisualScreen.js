@@ -36,7 +36,7 @@ export default function ShareSuccessVisualScreen() {
   const senderFlag = transactionData.senderFlag || matchedSenderCountry?.flag || '🇫🇷';
 
   // Anonymize recipient
-  const rawRecipientName = transactionData.recipientName || transactionData.merchantName || transactionData.serviceTitle || 'Bénéficiaire';
+  const rawRecipientName = transactionData.recipientName || transactionData.merchantName || transactionData.serviceTitle || 'Beneficiary';
   const displayRecipientName = rawRecipientName.split(' ')[0];
   const rawRecipientCountry = transactionData.recipientCountry || 'TG';
   const matchedRecipientCountry = ALL_COUNTRIES.find(c => c.name.toLowerCase() === rawRecipientCountry.toLowerCase() || c.code.toLowerCase() === rawRecipientCountry.toLowerCase());
@@ -49,7 +49,7 @@ export default function ShareSuccessVisualScreen() {
     ? (transactionData.actionType || (transactionData.merchantName ? `Paid for ${transactionData.merchantName}` : (transactionData.serviceTitle ? `Paid for ${transactionData.serviceTitle}` : t('shareSuccess.actionPaid', 'Paid for service'))))
     : actionKey
       ? t(`shareSuccess.${actionKey}`, actionType || 'transferred')
-      : (actionType || t('shareSuccess.actionSent', 'sent funds'));
+      : (actionType || t('shareSuccess.actionSent', "I sent funds"));
 
   const [toast, setToast] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -221,7 +221,7 @@ export default function ShareSuccessVisualScreen() {
           <View style={[styles.metaCol, { flex: 1.2 }]}>
             <View style={styles.metaIconRow}>
               <Ionicons name="pricetag-outline" size={12} color="#94A3B8" style={{ marginRight: 3 }} />
-              <Text style={styles.metaLabel} numberOfLines={1}>{t('shareSuccess.txId', 'TX ID')}</Text>
+              <Text style={styles.metaLabel} numberOfLines={1}>{t('shareSuccess.txId', "Transaction ID")}</Text>
             </View>
             <View style={styles.hashCopyRow}>
               <Text style={[styles.metaValue, { flex: 1, flexShrink: 1 }]} numberOfLines={1} ellipsizeMode="tail">{shortTxHash}</Text>

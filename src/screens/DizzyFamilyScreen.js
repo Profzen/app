@@ -23,8 +23,8 @@ export default function DizzyFamilyScreen() {
 
   const handleCopyCode = () => {
     setToast({ 
-      title: t('dizzyFamily.code_copied', 'Code copié'), 
-      message: `${t('dizzyFamily.code_copied_msg', 'Le code de parrainage a été copié.')} (${referralCode})`
+      title: t('dizzyFamily.code_copied', "Code copied"),
+      message: `${t('dizzyFamily.code_copied_msg', "The referral code has been copied.")} (${referralCode})`
     });
   };
 
@@ -39,7 +39,7 @@ export default function DizzyFamilyScreen() {
             </TouchableOpacity>
             <View style={styles.headerTitleContainer}>
               <Text style={styles.pageTitle}>{t('dizzyFamily', 'DizzyFamily Program')}</Text>
-              <Text style={styles.pageSubtitle}>{t('dizzyFamily.subtitle', 'Programme de fidélité & avantages exclusifs')}</Text>
+              <Text style={styles.pageSubtitle}>{t('dizzyFamily.subtitle', "Loyalty program & exclusive perks")}</Text>
             </View>
           </View>
 
@@ -56,14 +56,14 @@ export default function DizzyFamilyScreen() {
             <Text style={styles.pointsNumber}>
               {new Intl.NumberFormat('en-US').format(Number(user?.rewardsDZY || user?.balanceDZY || user?.points || 0))} <Text style={{ fontSize: 16 }}>DZY</Text>
             </Text>
-            <Text style={styles.pointsLabel}>{t('dizzyFamily.points_label', 'Points de fidélité accumulés')}</Text>
+            <Text style={styles.pointsLabel}>{t('dizzyFamily.points_label', "Accumulated loyalty points")}</Text>
           </View>
 
           {/* Referral Code Box */}
-          <Text style={styles.sectionHeader}>{t('dizzyFamily.your_referral_code', 'VOTRE CODE DE PARRAINAGE')}</Text>
+          <Text style={styles.sectionHeader}>{t('dizzyFamily.your_referral_code', "YOUR REFERRAL CODE")}</Text>
           <View style={styles.referralCard}>
             <View style={styles.referralLeft}>
-              <Text style={styles.referralLabel}>{t('dizzyFamily.unique_code', 'Code unique :')}</Text>
+              <Text style={styles.referralLabel}>{t('dizzyFamily.unique_code', "Unique code:")}</Text>
               <Text style={styles.referralCode}>{referralCode}</Text>
             </View>
             <View style={styles.referralActionButtons}>
@@ -79,22 +79,22 @@ export default function DizzyFamilyScreen() {
           </View>
 
           {/* Referral Stats */}
-          <Text style={styles.sectionHeader}>{t('dizzyFamily.your_statistics', 'VOS STATISTIQUES')}</Text>
+          <Text style={styles.sectionHeader}>{t('dizzyFamily.your_statistics', "YOUR STATISTICS")}</Text>
           <View style={styles.statsRow}>
             <View style={styles.statBox}>
               <Ionicons name="people-outline" size={22} color="#3B82F6" />
               <Text style={styles.statNumber}>12</Text>
-              <Text style={styles.statLabel}>{t('dizzyFamily.invited_referrals', 'Filleuls invités')}</Text>
+              <Text style={styles.statLabel}>{t('dizzyFamily.invited_referrals', "Invited Referrals")}</Text>
             </View>
             <View style={styles.statBox}>
               <Ionicons name="cash-outline" size={22} color="#10B981" />
               <Text style={styles.statNumber}>$60</Text>
-              <Text style={styles.statLabel}>{t('dizzyFamily.earned_in_dzy', 'Gagnés en DZY')}</Text>
+              <Text style={styles.statLabel}>{t('dizzyFamily.earned_in_dzy', "Earned in DZY")}</Text>
             </View>
             <View style={styles.statBox}>
               <Ionicons name="flash-outline" size={22} color="#F59E0B" />
               <Text style={styles.statNumber}>5%</Text>
-              <Text style={styles.statLabel}>{t('dizzyFamily.active_cashback', 'Cashback Actif')}</Text>
+              <Text style={styles.statLabel}>{t('dizzyFamily.active_cashback', "Active Cashback")}</Text>
             </View>
           </View>
 
@@ -106,8 +106,8 @@ export default function DizzyFamilyScreen() {
                 <Ionicons name="star-outline" size={20} color="#3B82F6" />
               </View>
               <View style={styles.benefitText}>
-                <Text style={styles.benefitTitle}>{t('dizzyFamily.benefit_1_title', 'Bonus de Cashback +2%')}</Text>
-                <Text style={styles.benefitDesc}>{t('dizzyFamily.benefit_1_desc', 'Sur tous vos achats boutiques et paiements')}</Text>
+                <Text style={styles.benefitTitle}>{t('dizzyFamily.benefit_1_title', "Cashback Bonus +2%")}</Text>
+                <Text style={styles.benefitDesc}>{t('dizzyFamily.benefit_1_desc', "On all shop purchases and bill payments")}</Text>
               </View>
             </View>
 
@@ -118,8 +118,8 @@ export default function DizzyFamilyScreen() {
                 <Ionicons name="swap-horizontal-outline" size={20} color="#10B981" />
               </View>
               <View style={styles.benefitText}>
-                <Text style={styles.benefitTitle}>{t('dizzyFamily.benefit_2_title', 'Swaps sans frais réseau')}</Text>
-                <Text style={styles.benefitDesc}>{t('dizzyFamily.benefit_2_desc', 'Échanges DZY / Stablecoins illimités')}</Text>
+                <Text style={styles.benefitTitle}>{t('dizzyFamily.benefit_2_title', "Zero Network Fee Swaps")}</Text>
+                <Text style={styles.benefitDesc}>{t('dizzyFamily.benefit_2_desc', "Unlimited DZY / Stablecoins exchanges")}</Text>
               </View>
             </View>
 
@@ -130,8 +130,8 @@ export default function DizzyFamilyScreen() {
                 <Ionicons name="headset-outline" size={20} color="#F59E0B" />
               </View>
               <View style={styles.benefitText}>
-                <Text style={styles.benefitTitle}>{t('dizzyFamily.benefit_3_title', 'Support VIP Prioritaire')}</Text>
-                <Text style={styles.benefitDesc}>{t('dizzyFamily.benefit_3_desc', 'Assistance dédiée via Aminata AI & conseillers')}</Text>
+                <Text style={styles.benefitTitle}>{t('dizzyFamily.benefit_3_title', "Priority VIP Support")}</Text>
+                <Text style={styles.benefitDesc}>{t('dizzyFamily.benefit_3_desc', "Dedicated assistance via Aminata AI & advisors")}</Text>
               </View>
             </View>
           </View>
@@ -139,7 +139,7 @@ export default function DizzyFamilyScreen() {
           {/* Action Link to Rewards */}
           <TouchableOpacity style={styles.rewardsLinkBtn} onPress={() => navigation.navigate('RewardsScreen')}>
             <Ionicons name="gift-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
-            <Text style={styles.rewardsLinkBtnText}>{t('dizzyFamily.view_rewards_dashboard', 'Voir le tableau de bord Rewards')}</Text>
+            <Text style={styles.rewardsLinkBtnText}>{t('dizzyFamily.view_rewards_dashboard', "View Rewards Dashboard")}</Text>
           </TouchableOpacity>
 
           <View style={{ height: 30 }} />

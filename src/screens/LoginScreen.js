@@ -75,7 +75,7 @@ export default function LoginScreen() {
     } catch (error) {
       console.warn("[AUTH] Supabase login failed: " + error.message);
       setIsLoading(false);
-      setErrorMessage(t('login.error_failed', 'Échec de connexion : ') + error.message);
+      setErrorMessage(t('login.error_failed', "Login failed: ") + error.message);
     }
   };
 
@@ -95,7 +95,7 @@ export default function LoginScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={styles.headerTitle}>{t('auth.login', 'Connexion')}</Text>
+            <Text style={styles.headerTitle}>{t('auth.login', "Log in")}</Text>
             <View style={styles.buildBadgeHeader}>
               <Text style={styles.buildBadgeHeaderText}>Build {appBuildNumber}</Text>
             </View>
@@ -152,8 +152,8 @@ export default function LoginScreen() {
           {/* Input Fields */}
           {activeTab === 'email' ? (
             <DizzitInput 
-              label={t('login.email_label', 'Email Address')}
-              placeholder={t('login.email_placeholder', 'name@example.com')}
+              label={t('login.email_label', "Email address")}
+              placeholder={t('login.email_placeholder', "Enter your email address")}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -162,8 +162,8 @@ export default function LoginScreen() {
             />
           ) : (
             <DizzitInput 
-              label={t('login.phone_label', 'Phone Number')}
-              placeholder={t('login.phone_placeholder', '+33 6 12 34 56 78')}
+              label={t('login.phone_label', "Phone number")}
+              placeholder={t('login.phone_placeholder', "Enter your phone number")}
               value={email} // Reusing field for phone
               onChangeText={setEmail}
               keyboardType="phone-pad"
@@ -173,7 +173,7 @@ export default function LoginScreen() {
 
           <DizzitInput 
             label={t('login.password_label', 'Password')}
-            placeholder={t('login.password_placeholder', '••••••••')}
+            placeholder={t('login.password_placeholder', "Enter your password")}
             value={password}
             onChangeText={setPassword}
             isPassword
@@ -214,13 +214,13 @@ export default function LoginScreen() {
 
         {/* Signup Link */}
         <View style={styles.signupContainer}>
-          <Text style={styles.signupText}>{t('auth.dontHaveAccount', "Vous n'avez pas de compte ?")}</Text>
+          <Text style={styles.signupText}>{t('auth.dontHaveAccount', "Don't have an account?")}</Text>
           <TouchableOpacity 
             style={styles.signupButtonSmooth}
             onPress={() => navigation.navigate('RegisterScreen')}
             activeOpacity={0.8}
           >
-            <Text style={styles.signupButtonText}>{t('auth.signUp', "S'inscrire")}</Text>
+            <Text style={styles.signupButtonText}>{t('auth.signUp', "Sign Up")}</Text>
           </TouchableOpacity>
         </View>
 

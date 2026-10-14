@@ -12,9 +12,9 @@ import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 
 const STEPS = (t) => [
-  { label: t('auth.email', 'E-mail') },
+  { label: t('auth.email', "Email") },
   { label: t('auth.code', 'Code') },
-  { label: t('auth.reset', 'Réinitialiser') },
+  { label: t('auth.reset', "Reset") },
 ];
 
 export default function ResetPasswordEmailScreen() {
@@ -28,7 +28,7 @@ export default function ResetPasswordEmailScreen() {
   const handleNext = async () => {
     // Basic validation
     if (!email.trim() || !email.includes('@')) {
-      setError(t('auth.registration.errors.invalidEmail', 'Veuillez entrer une adresse e-mail valide.'));
+      setError(t('auth.registration.errors.invalidEmail', "Invalid email"));
       return;
     }
     setError('');
@@ -41,11 +41,11 @@ export default function ResetPasswordEmailScreen() {
       if (error) {
         setError(error.message);
       } else {
-        setToastInfo({ visible: true, title: t('common.success', 'Success'), message: t('auth.resetSent', 'Code de vérification envoyé à ' + email), type: 'success' });
+        setToastInfo({ visible: true, title: t('common.success', 'Success'), message: t('auth.resetSent', "Password reset email sent! Check your inbox." + email), type: 'success' });
         setTimeout(() => navigation.navigate('ResetPasswordCodeScreen', { email }), 1200);
       }
     } catch (err) {
-      setError(t('common.error', 'Une erreur est survenue.'));
+      setError(t('common.error', "Error"));
     } finally {
       setIsLoading(false);
     }
@@ -66,15 +66,15 @@ export default function ResetPasswordEmailScreen() {
             {/* Header */}
             <View style={styles.header}>
               <HeaderBackButton onPress={() => navigation.goBack()} />
-              <Text style={styles.headerTitle}>{t('auth.resetPasswordTitle', 'Réinitialiser le mot de passe')}</Text>
+              <Text style={styles.headerTitle}>{t('auth.resetPasswordTitle', "Reset Password")}</Text>
               <View style={styles.placeholderBox} />
             </View>
 
             {/* Title Section */}
             <View style={styles.titleSection}>
-              <Text style={styles.mainTitle}>{t('auth.email', 'E-mail')}</Text>
+              <Text style={styles.mainTitle}>{t('auth.email', "Email")}</Text>
               <Text style={styles.subtitle}>
-                {t('auth.enterEmailReset', 'Entrez votre adresse e-mail. Un code de vérification vous sera envoyé.')}
+                {t('auth.enterEmailReset', "Enter your email address. A verification code will be sent to you.")}
               </Text>
             </View>
 
@@ -85,7 +85,7 @@ export default function ResetPasswordEmailScreen() {
             <View style={styles.formContainer}>
               <DizzitInput
                 icon="mail-outline"
-                placeholder={t('auth.email', 'E-mail')}
+                placeholder={t('auth.email', "Email")}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 value={email}
@@ -100,7 +100,7 @@ export default function ResetPasswordEmailScreen() {
             {/* Button */}
             <View style={styles.buttonContainer}>
               <DizzitButton
-                title={t('common.next', 'SUIVANT')}
+                title={t('common.next', "NEXT")}
                 onPress={handleNext}
                 isLoading={isLoading}
               />

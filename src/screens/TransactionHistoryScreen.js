@@ -216,7 +216,7 @@ export default function TransactionHistoryScreen() {
             >
               <View style={styles.tabContent}>
                 <Ionicons name="time-outline" size={18} color={activeTab === 'historique' ? '#FFB800' : '#64748B'} style={{marginRight: 6}} />
-                <Text style={[styles.tabText, activeTab === 'historique' && styles.tabTextActive]}>{t('common.tabs.history', 'HISTORIQUE').toUpperCase()}</Text>
+                <Text style={[styles.tabText, activeTab === 'historique' && styles.tabTextActive]}>{t('common.tabs.history', "HISTORY").toUpperCase()}</Text>
               </View>
               {activeTab === 'historique' && <View style={styles.tabIndicator} />}
             </TouchableOpacity>
@@ -227,7 +227,7 @@ export default function TransactionHistoryScreen() {
             >
               <View style={styles.tabContent}>
                 <Ionicons name="stats-chart-outline" size={18} color={activeTab === 'statistiques' ? '#FFB800' : '#64748B'} style={{marginRight: 6}} />
-                <Text style={[styles.tabText, activeTab === 'statistiques' && styles.tabTextActive]}>{t('common.tabs.statistics', 'STATISTIQUES').toUpperCase()}</Text>
+                <Text style={[styles.tabText, activeTab === 'statistiques' && styles.tabTextActive]}>{t('common.tabs.statistics', "STATISTICS").toUpperCase()}</Text>
               </View>
               {activeTab === 'statistiques' && <View style={styles.tabIndicator} />}
             </TouchableOpacity>
@@ -238,13 +238,13 @@ export default function TransactionHistoryScreen() {
           <View style={styles.mainCard}>
             
             <LinearGradient colors={['#2B4C7E', '#20365B']} start={{x: 0, y: 0}} end={{x: 1, y: 1}} style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>{user.role === 'merchant' ? t('common.wallet.business_history', 'Historique Pro') : t('common.wallet.personal_history', 'Historique Personnel')}</Text>
-              <Text style={styles.cardSubtitle}>{t('common.wallet.total_transactions', '{{count}} transactions au total').replace('{{count}}', filteredTransactions.length)}</Text>
+              <Text style={styles.cardTitle}>{user.role === 'merchant' ? t('common.wallet.business_history', "Business Transaction History") : t('common.wallet.personal_history', "Personal Transaction History")}</Text>
+              <Text style={styles.cardSubtitle}>{t('common.wallet.total_transactions', "{{count}} total transactions").replace('{{count}}', filteredTransactions.length)}</Text>
               
               <View style={styles.cardControls}>
                 <TouchableOpacity style={styles.releveBtn} onPress={handleDownloadStatement}>
                   <Ionicons name="download-outline" size={18} color="#1A2840" style={{marginRight: 6}} />
-                  <Text style={styles.releveBtnText}>{t('common.wallet.statement', 'RELEVÉ')}</Text>
+                  <Text style={styles.releveBtnText}>{t('common.wallet.statement', "Statement")}</Text>
                 </TouchableOpacity>
               </View>
             </LinearGradient>
@@ -260,13 +260,13 @@ export default function TransactionHistoryScreen() {
                       </View>
                     </View>
                   </View>
-                  <Text style={styles.emptyTitle}>{t('common.wallet.no_transactions', 'Aucune transaction')}</Text>
+                  <Text style={styles.emptyTitle}>{t('common.wallet.no_transactions', "No transactions yet")}</Text>
                   <Text style={styles.emptySubtitle}>
-                    {t('common.wallet.history_will_appear', 'Votre historique apparaîtra ici\ndès que vous effectuerez des transactions.')}
+                    {t('common.wallet.history_will_appear', "Your transaction history will appear here")}
                   </Text>
                   <TouchableOpacity style={styles.btnAction} onPress={() => navigation.navigate('HomeScreen')}>
                     <Ionicons name="swap-horizontal" size={20} color="#1A2840" style={{marginRight: 8}} />
-                    <Text style={styles.btnActionText}>{t('common.actions.make_transaction', 'Effectuer une transaction')}</Text>
+                    <Text style={styles.btnActionText}>{t('common.actions.make_transaction', "Make a transaction")}</Text>
                   </TouchableOpacity>
                 </View>
               ) : (
@@ -292,7 +292,7 @@ export default function TransactionHistoryScreen() {
                         
                         <View style={styles.txBody}>
                           <View style={styles.txDetailsLeft}>
-                            <Text style={styles.txToFromLabel}>{t('common.wallet.to_from', 'Vers / De')}</Text>
+                            <Text style={styles.txToFromLabel}>{t('common.wallet.to_from', "To / From")}</Text>
                             {formatToFrom(tx)}
                             {!!tx.merchant && tx.type !== 'SEND' && (
                               <Text style={styles.txMerchant}>{tx.merchant}</Text>
@@ -470,7 +470,7 @@ export default function TransactionHistoryScreen() {
               <Ionicons name="information" size={16} color="#1A2840" />
             </View>
             <Text style={styles.infoText}>
-              {t('common.wallet.download_info', 'Vous pouvez télécharger votre relevé mensuel au format PDF.')}
+              {t('common.wallet.download_info', "You can download your monthly statement in PDF format.")}
             </Text>
           </View>
           )}
@@ -485,28 +485,28 @@ export default function TransactionHistoryScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.bottomSheet}>
             <View style={styles.sheetHeader}>
-              <Text style={styles.sheetTitle}>{t('common.wallet.filter_title', 'Filtres')}</Text>
+              <Text style={styles.sheetTitle}>{t('common.wallet.filter_title', "Filters")}</Text>
               <TouchableOpacity onPress={() => setIsFilterVisible(false)} style={styles.closeBtn}>
                 <Ionicons name="close" size={24} color="#1A2840" />
               </TouchableOpacity>
             </View>
-            <Text style={styles.sheetSubtitle}>{t('common.wallet.filter_subtitle', 'Affinez la liste des transactions')}</Text>
+            <Text style={styles.sheetSubtitle}>{t('common.wallet.filter_subtitle', "Refine transaction list")}</Text>
 
             <View style={styles.sheetSectionTitleRow}>
               <Ionicons name="receipt-outline" size={18} color="#1A2840" />
-              <Text style={styles.sheetSectionTitle}>{t('common.wallet.filter_tx_type', 'Type de transaction')}</Text>
+              <Text style={styles.sheetSectionTitle}>{t('common.wallet.filter_tx_type', "Transaction type")}</Text>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} style={styles.filterList}>
               {[
-                { key: 'ALL', label: t('common.wallet.filter_all', 'Toutes les transactions'), icon: null },
-                { key: 'PAY_BILLS', label: t('common.wallet.filter_pay_bills', 'Paiement de factures'), sub: 'Éducation, Santé, Électricité, Prestations...', icon: 'receipt-outline', color: '#60A5FA' },
-                { key: 'TOP_UP', label: t('common.wallet.filter_mobile_topup', 'Recharge téléphonique'), icon: 'phone-portrait-outline', color: '#34D399' },
-                { key: 'BUY_VOUCHERS', label: t('common.wallet.filter_vouchers', "Achat de bons d'achat"), sub: 'Gift Cards, Vouchers', icon: 'card-outline', color: '#F59E0B' },
-                { key: 'BUY_GOODS', label: t('common.wallet.filter_goods', 'Achat de produits physiques'), icon: 'bag-outline', color: '#A78BFA' },
-                { key: 'WALLET_TOP_UP', label: t('common.wallet.filter_wallet_topup', 'Recharge du portefeuille DZYWallet'), icon: 'wallet-outline', color: '#60A5FA' },
-                { key: 'SEND', label: t('common.wallet.filter_send', 'Envoi de fonds'), icon: 'arrow-up-outline', color: '#34D399' },
-                { key: 'RECEIVE', label: t('common.wallet.filter_receive', 'Réception de fonds'), icon: 'arrow-down-outline', color: '#34D399' },
+                { key: 'ALL', label: t('common.wallet.filter_all', "All transactions"), icon: null },
+                { key: 'PAY_BILLS', label: t('common.wallet.filter_pay_bills', "Bill payment (Education, Health, Electricity...)"), sub: 'Éducation, Santé, Électricité, Prestations...', icon: 'receipt-outline', color: '#60A5FA' },
+                { key: 'TOP_UP', label: t('common.wallet.filter_mobile_topup', "Mobile top-up"), icon: 'phone-portrait-outline', color: '#34D399' },
+                { key: 'BUY_VOUCHERS', label: t('common.wallet.filter_vouchers', "Buy vouchers (Gift cards, Vouchers)"), sub: 'Gift Cards, Vouchers', icon: 'card-outline', color: '#F59E0B' },
+                { key: 'BUY_GOODS', label: t('common.wallet.filter_goods', "Buy physical goods"), icon: 'bag-outline', color: '#A78BFA' },
+                { key: 'WALLET_TOP_UP', label: t('common.wallet.filter_wallet_topup', "DZYWallet top-up"), icon: 'wallet-outline', color: '#60A5FA' },
+                { key: 'SEND', label: t('common.wallet.filter_send', "Send funds"), icon: 'arrow-up-outline', color: '#34D399' },
+                { key: 'RECEIVE', label: t('common.wallet.filter_receive', "Receive funds"), icon: 'arrow-down-outline', color: '#34D399' },
               ].map((opt) => (
                 <TouchableOpacity 
                   key={opt.key} 
@@ -534,11 +534,11 @@ export default function TransactionHistoryScreen() {
             <View style={styles.sheetActions}>
               <TouchableOpacity style={styles.applyBtn} onPress={() => setIsFilterVisible(false)}>
                 <Ionicons name="funnel-outline" size={18} color="#FFFFFF" style={{marginRight: 6}} />
-                <Text style={styles.applyBtnText}>{t('common.wallet.apply_filters', 'Appliquer les filtres')}</Text>
+                <Text style={styles.applyBtnText}>{t('common.wallet.apply_filters', "Apply filters")}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.resetBtn} onPress={() => setFilterType('ALL')}>
                 <Ionicons name="refresh-outline" size={18} color="#1A2840" style={{marginRight: 6}} />
-                <Text style={styles.resetBtnText}>{t('common.wallet.reset_filters', 'Réinitialiser')}</Text>
+                <Text style={styles.resetBtnText}>{t('common.wallet.reset_filters', "Reset")}</Text>
               </TouchableOpacity>
             </View>
           </View>

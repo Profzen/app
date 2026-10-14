@@ -4294,7 +4294,7 @@
   "tabSwap": "መለዋወጫ",
   "tabMore": "ተጨማሪ",
   "shopsBannerReferTitle": "መደብር ያመልክቱ\nእና ያግኙ ",
-  "shopsBannerReferAmount": " በDZY",
+  "shopsBannerReferAmount": "{{amount}} DZY",
   "shopsBannerReferSub": "ንግድ ይጠቁሙ\nእና ሽልማቶችን ያግኙ።",
   "shopsBannerReferBtn": "አሁን ያመልክቱ",
   "shopsFilterFood": "ምግብ እና ሸቀጣ ሸቀጥ",

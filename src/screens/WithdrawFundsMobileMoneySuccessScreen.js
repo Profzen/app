@@ -66,7 +66,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('HomeScreen')}>
             <Ionicons name="chevron-back" size={22} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.pageTitle} numberOfLines={1}>{t('withdrawFunds.titleToMobileMoney', 'Withdraw to Mobile Money')}</Text>
+          <Text style={styles.pageTitle} numberOfLines={1}>{t('withdrawFunds.titleToMobileMoney', "Withdraw funds to Mobile Money")}</Text>
           <TouchableOpacity style={styles.iconBtn}>
             <Ionicons name="headset-outline" size={22} color="#1A2840" />
           </TouchableOpacity>
@@ -89,7 +89,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
           {/* Titles */}
           <Text style={styles.stepOverTitleSuccess}>{t('withdrawFunds.step5Of5', 'Step 5/5')}</Text>
           <Text style={styles.mainTitle}>{t('withdrawFunds.successTitle', 'Withdrawal successful!')}</Text>
-          <Text style={styles.mainSubtitle}>{t('withdrawFunds.successSubtitle', 'Your withdrawal has been completed successfully.')}</Text>
+          <Text style={styles.mainSubtitle}>{t('withdrawFunds.successSubtitle', "Your withdrawal was processed successfully.")}</Text>
 
           {/* Main Success Card */}
           <View style={styles.successCardContainer}>
@@ -261,7 +261,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
           <View style={styles.successBannerBottom}>
             <Ionicons name="shield-checkmark-outline" size={20} color="#10B981" style={{marginRight: 10}} />
             <Text style={styles.successBannerText}>
-              {t('withdrawFunds.fundsAvailableNotice', 'You will receive a notification as soon as the funds are available on your account.')}
+              {t('withdrawFunds.fundsAvailableNotice', "You will receive a notification as soon as the funds are available on your Mobile Money account.")}
             </Text>
           </View>
 
@@ -304,10 +304,10 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
                 <Text style={styles.shareCtaTitle}>{t('shareSuccess.title', 'Share my success')}</Text>
                 <View style={styles.rewardBadge}>
                   <Ionicons name="gift-outline" size={11} color="#071D54" style={{marginRight: 3}} />
-                  <Text style={styles.rewardBadgeText}>{t('shareSuccess.rewardTitle', 'Earn 1 DZY by tagging @DizzitUp')}</Text>
+                  <Text style={styles.rewardBadgeText}>{t('shareSuccess.rewardTitle', "Share your success and earn 1 DZY")}</Text>
                 </View>
                 <Text style={styles.shareCtaSub2}>
-                  {t('shareSuccess.rewardSub', 'Publish a customized DizzitUp card of this transaction')}
+                  {t('shareSuccess.rewardSub', "Post your DizzitUp card and tag @DizzitUp")}
                 </Text>
               </View>
 

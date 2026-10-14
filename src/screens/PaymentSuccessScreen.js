@@ -28,8 +28,8 @@ export default function PaymentSuccessScreen({ route }) {
   const displayAmount = tx.amount
     ? `${Number(tx.amount).toLocaleString(language === 'en' ? 'en-US' : 'fr-FR')} ${tx.currency || 'FCFA'}`
     : (tx.amountCrypto || '');
-  const serviceTitle = tx.title || t('paymentSuccess.marketplacePurchase', 'Achat Marketplace');
-  const merchantName = tx.merchantName || t('paymentSuccess.partnerMerchant', 'Commerçant Partenaire');
+  const serviceTitle = tx.title || t('paymentSuccess.marketplacePurchase', "Marketplace Purchase");
+  const merchantName = tx.merchantName || t('paymentSuccess.partnerMerchant', "Partner Merchant");
   const recipientName = tx.merchantName ? merchantName : (tx.recipientName || tx.recipient || user?.name || user?.email || '');
   const recipientSub = tx.recipientAddress || tx.phone || (user?.city ? `${user.city}, ${user.country || ''}` : '');
   const paymentMethodName = tx.paymentMethod || 'DZY Wallet';
@@ -48,12 +48,12 @@ export default function PaymentSuccessScreen({ route }) {
     try {
       await Share.share({
         title: t('paymentSuccess.shareTitle', 'DizzitUp Receipt'),
-        message: `${serviceTitle} • ${displayAmount} • ${t('paymentSuccess.orderRef', 'Réf')}: ${txRef}${tx.escrowPin ? ` • PIN: ${tx.escrowPin}` : ''}`
+        message: `${serviceTitle} • ${displayAmount} • ${t('paymentSuccess.orderRef', "Order Ref")}: ${txRef}${tx.escrowPin ? ` • PIN: ${tx.escrowPin}` : ''}`
       });
     } finally {
       setToast({
-        title: t('paymentSuccess.receiptSharedTitle', 'Reçu partagé'),
-        message: t('paymentSuccess.receiptSharedDesc', 'Lien de partage prêt.')
+        title: t('paymentSuccess.receiptSharedTitle', "Receipt shared"),
+        message: t('paymentSuccess.receiptSharedDesc', "Share sheet prepared.")
       });
     }
   };
@@ -61,8 +61,8 @@ export default function PaymentSuccessScreen({ route }) {
   const copyTransaction = async () => {
     await Clipboard.setStringAsync(txRef);
     setToast({
-      title: t('paymentSuccess.txCopiedTitle', 'Réf copiée'),
-      message: t('paymentSuccess.txCopiedDesc', 'Référence copiée dans le presse-papier.'),
+      title: t('paymentSuccess.txCopiedTitle', "Transaction ID copied"),
+      message: t('paymentSuccess.txCopiedDesc', "Reference copied to clipboard."),
     });
   };
 
@@ -75,7 +75,7 @@ export default function PaymentSuccessScreen({ route }) {
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('HomeScreen')}>
             <Ionicons name="home-outline" size={22} color="#1A2840" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconBtn} onPress={shareReceipt} accessibilityLabel={t('paymentSuccess.receiptSharedTitle', 'Share receipt')}>
+          <TouchableOpacity style={styles.iconBtn} onPress={shareReceipt} accessibilityLabel={t('paymentSuccess.receiptSharedTitle', "Receipt shared")}>
             <Ionicons name="share-outline" size={22} color="#1A2840" />
           </TouchableOpacity>
         </View>
@@ -90,16 +90,16 @@ export default function PaymentSuccessScreen({ route }) {
               </View>
             </View>
 
-            <Text style={styles.successTitle}>{t('paymentSuccess.title', 'Paiement Réussi !')}</Text>
+            <Text style={styles.successTitle}>{t('paymentSuccess.title', "Payment Successful!")}</Text>
             <Text style={styles.successSub}>
               {tx.escrowPin
-                ? t('paymentSuccess.fundsEscrowed', 'Your funds are secured under an on-chain Smart Contract.')
-                : t('paymentSuccess.subtitle', 'Votre paiement a été validé avec succès.')}
+                ? t('paymentSuccess.fundsEscrowed', "Your funds are secured by an on-chain escrow smart contract.")
+                : t('paymentSuccess.subtitle', "Your payment was processed successfully.")}
             </Text>
 
             <View style={styles.secureBadge}>
               <Ionicons name="shield-checkmark-outline" size={14} color="#10B981" />
-              <Text style={styles.secureText}>{t('paymentSuccess.secure', '100% Sécurisé par Smart Contract Escrow')}</Text>
+              <Text style={styles.secureText}>{t('paymentSuccess.secure', "100% Secure Transaction")}</Text>
             </View>
           </View>
 
@@ -108,7 +108,7 @@ export default function PaymentSuccessScreen({ route }) {
             <View style={styles.escrowSuccessCard}>
               <View style={styles.escrowSuccessHeader}>
                 <Ionicons name="key" size={18} color="#FFB800" />
-                <Text style={styles.escrowSuccessTitle}>{t('paymentSuccess.escrowPinTitle', 'Votre Code Secret de Livraison')}</Text>
+                <Text style={styles.escrowSuccessTitle}>{t('paymentSuccess.escrowPinTitle', "Your Secret Delivery Code")}</Text>
               </View>
               <View style={styles.escrowPinDisplay}>
                 <Text style={styles.escrowPinText}>{tx.escrowPin}</Text>
@@ -136,7 +136,7 @@ export default function PaymentSuccessScreen({ route }) {
                 </View>
               </View>
               <View style={styles.statusBadge}>
-                <Text style={styles.statusText}>{t('paymentSuccess.statusSuccess', 'Validé')}</Text>
+                <Text style={styles.statusText}>{t('paymentSuccess.statusSuccess', "Success")}</Text>
               </View>
             </View>
 
@@ -156,12 +156,12 @@ export default function PaymentSuccessScreen({ route }) {
 
             {/* Detailed Info Rows */}
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>{t('paymentSuccess.dateTime', 'Date & Heure')}</Text>
+              <Text style={styles.detailLabel}>{t('paymentSuccess.dateTime', "Date & Time")}</Text>
               <Text style={styles.detailValue}>{dateFormatted}</Text>
             </View>
 
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>{t('paymentSuccess.paymentMethod', 'Moyen de paiement')}</Text>
+              <Text style={styles.detailLabel}>{t('paymentSuccess.paymentMethod', "Payment Method")}</Text>
               <View style={styles.paymentMethod}>
                 <Text style={styles.detailValueBold}>{paymentMethodName}</Text>
               </View>
@@ -169,18 +169,18 @@ export default function PaymentSuccessScreen({ route }) {
 
             {!!tx.amountCrypto && (
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>{t('paymentSuccess.cryptoDebited', 'Montant Crypto débité')}</Text>
+                <Text style={styles.detailLabel}>{t('paymentSuccess.cryptoDebited', "Crypto amount debited")}</Text>
                 <Text style={styles.detailValue}>{tx.amountCrypto}</Text>
               </View>
             )}
 
             <View style={[styles.detailRow, styles.totalRow]}>
-              <Text style={styles.detailLabel}>{t('paymentSuccess.totalPaid', 'Total réglé')}</Text>
+              <Text style={styles.detailLabel}>{t('paymentSuccess.totalPaid', "Total Paid")}</Text>
               <Text style={styles.totalValue}>{displayAmount}</Text>
             </View>
 
             <View style={[styles.detailRow, { marginBottom: 0 }]}>
-              <Text style={styles.detailLabel}>{t('paymentSuccess.orderRef', 'Réf Commande')}</Text>
+              <Text style={styles.detailLabel}>{t('paymentSuccess.orderRef', "Order Ref")}</Text>
               <View style={styles.txNumberRow}>
                 <Text style={styles.txNumberValue}>{txRef}</Text>
                 <TouchableOpacity style={{ marginLeft: 8 }} onPress={copyTransaction}>
@@ -203,7 +203,7 @@ export default function PaymentSuccessScreen({ route }) {
               <Text style={styles.rewardTitle}>{t('paymentSuccess.cashbackWon', { amount: '2.50', defaultValue: 'You earned {{amount}} DZY in Cashback!' })}</Text>
               <Text style={styles.rewardSub}>{t('paymentSuccess.cashbackCredited', 'This reward has been credited to your DZYWallet.')}</Text>
               <TouchableOpacity style={styles.rewardLink} onPress={() => navigation.navigate('RewardsScreen')}>
-                <Text style={styles.rewardLinkText}>{t('paymentSuccess.viewRewards', 'View my Rewards')}</Text>
+                <Text style={styles.rewardLinkText}>{t('paymentSuccess.viewRewards', "View My Rewards")}</Text>
                 <Ionicons name="arrow-forward" size={14} color="#1A2840" />
               </TouchableOpacity>
             </View>
@@ -268,20 +268,20 @@ export default function PaymentSuccessScreen({ route }) {
               >
                 <Ionicons name="person-circle-outline" size={20} color="#071D54" style={{ marginRight: 8 }} />
                 <Text style={styles.pivotContactBtnText}>
-                  {t('paymentSuccess.backToContact', 'Retour au profil du contact')}
+                  {t('paymentSuccess.backToContact', "Back to contact profile")}
                 </Text>
               </TouchableOpacity>
             )}
 
             <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation.navigate('TransactionHistoryScreen')}>
               <Ionicons name="receipt-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
-              <Text style={styles.primaryBtnText}>{t('paymentSuccess.viewReceipt', 'View receipt')}</Text>
+              <Text style={styles.primaryBtnText}>{t('paymentSuccess.viewReceipt', "View Receipt")}</Text>
             </TouchableOpacity>
 
             <View style={styles.secondaryBtnRow}>
               <TouchableOpacity style={styles.secondaryBtn} onPress={() => navigation.navigate('ShopsScreen')}>
                 <Ionicons name="refresh-outline" size={20} color="#1A2840" style={{ marginRight: 6 }} />
-                <Text style={styles.secondaryBtnText}>{t('paymentSuccess.makeAnotherPayment', 'Make another payment')}</Text>
+                <Text style={styles.secondaryBtnText}>{t('paymentSuccess.makeAnotherPayment', "Make Another Payment")}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.secondaryBtn} onPress={() => navigation.navigate('HomeScreen')}>
                 <Ionicons name="home-outline" size={20} color="#1A2840" style={{ marginRight: 6 }} />

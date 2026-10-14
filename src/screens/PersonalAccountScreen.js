@@ -199,7 +199,7 @@ export default function PersonalAccountScreen() {
           <View style={styles.profileHeaderCard}>
             <View style={styles.avatarWrap}>
               <Avatar image={user?.avatar_url || user?.avatar} name={name || user?.email} size={70} style={styles.avatarImage} />
-              <TouchableOpacity style={styles.editAvatarBtn} onPress={() => setToast({ title: t('personalAccount.title', 'Profile Photo'), message: 'Sélecteur de photo ouvert', type: 'info' })}>
+              <TouchableOpacity style={styles.editAvatarBtn} onPress={() => setToast({ title: t('personalAccount.title', "Personal Account"), message: 'Sélecteur de photo ouvert', type: 'info' })}>
                 <Ionicons name="camera" size={14} color="#1A2840" />
               </TouchableOpacity>
             </View>
@@ -222,7 +222,7 @@ export default function PersonalAccountScreen() {
               <Text style={styles.fieldLabel}>{t('personalAccount.fullName', 'Full Name')}</Text>
               <View style={styles.inputWrap}>
                 <Ionicons name="person-outline" size={18} color="#6B7280" style={styles.inputIcon} />
-                <TextInput style={styles.input} value={name} onChangeText={setName} placeholder={t('personalAccount.fullName', 'Name')} />
+                <TextInput style={styles.input} value={name} onChangeText={setName} placeholder={t('personalAccount.fullName', "Full Name")} />
               </View>
             </View>
 
@@ -292,7 +292,7 @@ export default function PersonalAccountScreen() {
               </View>
               <View style={styles.docText}>
                 <Text style={styles.docTitle}>{t('personalAccount.idCard', 'National ID / Passport')}</Text>
-                <Text style={styles.docDesc}>{t('personalAccount.docVerified', 'Document verified')} 12 Fév 2026</Text>
+                <Text style={styles.docDesc}>{t('personalAccount.docVerified', 'Document verified')} Feb 12, 2026</Text>
               </View>
               <View style={styles.statusVerifiedChip}>
                 <Text style={styles.statusVerifiedText}>{t('personalAccount.verified', 'Verified')}</Text>

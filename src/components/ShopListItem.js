@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../theme/theme';
+import { useApp } from '../context/AppContext';
 
 export default function ShopListItem({ icon, name, category, location, distance, rating, reviews, bgColor, iconColor, onPress }) {
+  const { t } = useApp();
   return (
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.leftContent}>
@@ -26,7 +28,7 @@ export default function ShopListItem({ icon, name, category, location, distance,
       
       <View style={styles.rightContent}>
         <View style={styles.dzyBadge}>
-          <Text style={styles.dzyText}>DZY accepté</Text>
+          <Text style={styles.dzyText}>{t('shop.dzyAccepted', 'DZY accepted')}</Text>
         </View>
         <View style={styles.ratingRow}>
           <Ionicons name="star" size={12} color="#FFC759" />

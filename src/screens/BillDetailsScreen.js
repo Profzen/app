@@ -367,7 +367,7 @@ export default function BillDetailsScreen() {
                 activeOpacity={0.7}
               >
                 <Ionicons name="arrow-back" size={16} color="#1A2840" style={{ marginRight: 8 }} />
-                <Text style={styles.btnBackText}>{t('common.back', 'Back to Services')}</Text>
+                <Text style={styles.btnBackText}>{t('common.back', "Back")}</Text>
               </TouchableOpacity>
             </SafeAreaView>
           </>
@@ -516,7 +516,7 @@ export default function BillDetailsScreen() {
                 <View style={styles.infoBox}>
                   <Ionicons name="information-circle" size={20} color="#0284C7" style={{ marginRight: 10, marginTop: 1 }} />
                   <Text style={styles.infoBoxText}>
-                    {t('billDetails.conversionNote', `Please enter the amount in ${currency}. This will be dynamically converted during the final checkout step.`)}
+                    {t('billDetails.conversionNote', "Please enter the amount in local currency. This will be dynamically converted during the final checkout step.")}
                   </Text>
                 </View>
 
@@ -586,7 +586,7 @@ export default function BillDetailsScreen() {
                           {biller.name}
                         </Text>
                         <Text style={styles.billerOptionLimits}>
-                          {t('billDetails.limit', 'Limit')}: {biller.minAmount.toLocaleString()} - {biller.maxAmount.toLocaleString()} {biller.currency}
+                          {t('billDetails.limit', "LIMIT")}: {biller.minAmount.toLocaleString()} - {biller.maxAmount.toLocaleString()} {biller.currency}
                         </Text>
                       </View>
                       {isSelected && <Ionicons name="checkmark-circle" size={20} color="#071D54" />}

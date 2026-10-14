@@ -31,7 +31,7 @@ export default function InvoicePayLinkScreen() {
     setGenerated({ amount: numeric.toFixed(2), currency, description: description.trim(), url });
   };
   const shareMessage = generated ? t('invoicePayLink.shareMessage', 'Payment request: {{amount}} {{currency}} — {{description}} {{url}}', { amount: generated.amount, currency: generated.currency, description: generated.description || t('invoicePayLink.defaultDescription', 'Invoice'), url: generated.url }) : '';
-  const copyLink = async () => { await Clipboard.setStringAsync(generated.url); setToast({ title: t('common.copied', 'Copied'), message: t('invoicePayLink.copied', 'Payment link copied.'), type: 'success' }); };
+  const copyLink = async () => { await Clipboard.setStringAsync(generated.url); setToast({ title: t('common.copied', "Link copied"), message: t('invoicePayLink.copied', 'Payment link copied.'), type: 'success' }); };
 
   return (
     <SafeAreaView style={styles.safeArea}>

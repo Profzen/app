@@ -47,7 +47,7 @@ export default function TopUpWalletDetailsScreen() {
       setIsLoading(true);
       setError(null);
       if (!session?.access_token) {
-        throw new Error(t('topup.login_required', 'Login required'));
+        throw new Error(t('topup.login_required', "Please log in to continue."));
       }
       
       const userEmail = user?.email || session?.user?.email;

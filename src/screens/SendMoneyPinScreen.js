@@ -63,7 +63,7 @@ export default function SendMoneyPinScreen() {
           <View style={styles.content}>
             <Text style={styles.pageTitle}>{t('sendMoney.enterPin', 'Enter your PIN code')}</Text>
             <Text style={styles.pageSubtitle}>
-              {t('sendMoney.enterPinDesc', 'Enter your 6-digit PIN code to\nconfirm this transaction.')}
+              {t('sendMoney.enterPinDesc', "Enter your 6-digit PIN code to\nconfirm this transaction.")}
             </Text>
 
             {/* PIN Input Boxes */}

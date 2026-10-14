@@ -28,7 +28,7 @@ export const LanguageSelector = ({ variant = 'default' }) => {
         { value: 'am', label: 'አማርኛ', flagUrl: 'https://flagcdn.com/w40/et.png' },
       ]}
       onChange={(val) => setLanguage && setLanguage(val)}
-      title={t('langSwitchedToastTitle', 'Changer la langue')}
+      title={t('langSwitchedToastTitle', "Language Updated")}
       renderCustomTrigger={({ setOpen }) => (
         <TouchableOpacity 
           style={[styles.languageSelector, variant === 'dark' && styles.languageSelectorDark]} 

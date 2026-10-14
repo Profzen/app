@@ -31,17 +31,17 @@ export default function ContactActionSheet({ contact, visible, onClose, onNaviga
              <Text style={styles.sheetNameLg}>{contact.name}</Text>
              <Text style={styles.sheetLocationLg}>{contact.flag} {contact.location}</Text>
              <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#3B82F6', marginTop: 4 }}>
-               {t('contacts.view_profile', 'Voir la fiche contact')} ➔
+               {t('contacts.view_profile', "View Profile")} ➔
              </Text>
           </TouchableOpacity>
 
           <View style={styles.sheetActionsGrid}>
-            <SheetGridAction icon="arrow-up-outline" label={t('contacts.action_send', 'Envoyer')} color="#10B981" bgColor="#ECFDF5" onPress={() => { onClose(); onNavigate('SendMoneyScreen'); }} />
-            <SheetGridAction icon="cash-outline" label={t('contacts.action_request', 'Demander')} color="#F59E0B" bgColor="#FFF7E6" onPress={() => { onClose(); onNavigate('ReceiveFundsV2Screen'); }} />
-            <SheetGridAction icon="bag-handle-outline" label={t('contacts.action_pay', 'Payer')} color="#3B82F6" bgColor="#EFF6FF" onPress={() => { onClose(); onNavigate('ChooseServiceScreen'); }} />
+            <SheetGridAction icon="arrow-up-outline" label={t('contacts.action_send', "Send")} color="#10B981" bgColor="#ECFDF5" onPress={() => { onClose(); onNavigate('SendMoneyScreen'); }} />
+            <SheetGridAction icon="cash-outline" label={t('contacts.action_request', "Request")} color="#F59E0B" bgColor="#FFF7E6" onPress={() => { onClose(); onNavigate('ReceiveFundsV2Screen'); }} />
+            <SheetGridAction icon="bag-handle-outline" label={t('contacts.action_pay', "Pay")} color="#3B82F6" bgColor="#EFF6FF" onPress={() => { onClose(); onNavigate('ChooseServiceScreen'); }} />
             <SheetGridAction 
               icon="person-add-outline" 
-              label={t('contacts.action_invite', 'Inviter')} 
+              label={t('contacts.action_invite', "Invite")}
               color="#8B5CF6" 
               bgColor="#F5F3FF" 
               onPress={() => {
@@ -54,10 +54,10 @@ export default function ContactActionSheet({ contact, visible, onClose, onNaviga
           </View>
 
           <View style={styles.sheetListGroup}>
-             <SheetListAction icon="person-circle-outline" label={t('contacts.view_profile', 'Voir la fiche profil')} color="#3B82F6" bgColor="#EFF6FF" onPress={() => { onClose(); onNavigate('ContactProfileScreen'); }} />
-             <SheetListAction icon="star" label={t('contacts.action_add_favorite', 'Ajouter aux favoris')} color="#F59E0B" bgColor="#FEF3C7" onPress={() => { onClose(); onFavorite(contact); }} />
-             <SheetListAction icon="pencil" label={t('contacts.action_edit', 'Modifier le contact')} color="#3B82F6" bgColor="#EFF6FF" onPress={() => { onClose(); onNavigate('EditBeneficiaryScreen', { isEditing: true, beneficiary: contact }); }} />
-             <SheetListAction icon="trash" label={t('contacts.action_delete', 'Supprimer le contact')} color="#EF4444" bgColor="#FEF2F2" onPress={() => { onClose(); onDelete(contact.id); }} />
+             <SheetListAction icon="person-circle-outline" label={t('contacts.view_profile', "View Profile")} color="#3B82F6" bgColor="#EFF6FF" onPress={() => { onClose(); onNavigate('ContactProfileScreen'); }} />
+             <SheetListAction icon="star" label={t('contacts.action_add_favorite', "Add to favorites")} color="#F59E0B" bgColor="#FEF3C7" onPress={() => { onClose(); onFavorite(contact); }} />
+             <SheetListAction icon="pencil" label={t('contacts.action_edit', "Edit contact")} color="#3B82F6" bgColor="#EFF6FF" onPress={() => { onClose(); onNavigate('EditBeneficiaryScreen', { isEditing: true, beneficiary: contact }); }} />
+             <SheetListAction icon="trash" label={t('contacts.action_delete', "Delete contact")} color="#EF4444" bgColor="#FEF2F2" onPress={() => { onClose(); onDelete(contact.id); }} />
           </View>
         </View>
       </View>

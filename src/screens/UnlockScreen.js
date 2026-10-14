@@ -43,8 +43,8 @@ export default function UnlockScreen() {
   const triggerBiometrics = async () => {
     try {
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: t('auth.secureDizzitUp', 'Déverrouiller DizzitUp'),
-        fallbackLabel: t('auth.pinCode', 'Utiliser le code PIN'),
+        promptMessage: t('auth.secureDizzitUp', "Secure DizzitUp"),
+        fallbackLabel: t('auth.pinCode', "Use PIN Code"),
         disableDeviceFallback: true,
       });
       
@@ -73,11 +73,11 @@ export default function UnlockScreen() {
           return;
         }
         setWrongAttempts(attempts);
-        setError(t('auth.incorrectPin', 'Code PIN incorrect.') + ` (${attempts}/5)`);
+        setError(t('auth.incorrectPin', "Incorrect PIN code.") + ` (${attempts}/5)`);
         setPin('');
       }
     } catch (e) {
-      setError(t('auth.verificationError', 'Erreur lors de la vérification.'));
+      setError(t('auth.verificationError', "Verification error."));
     } finally {
       setIsLoading(false);
     }
@@ -107,8 +107,8 @@ export default function UnlockScreen() {
             <View style={styles.shieldIconContainer}>
               <Ionicons name="lock-closed" size={32} color="#1A2840" />
             </View>
-            <Text style={styles.mainTitle}>{t('auth.secureDizzitUp', 'DizzitUp Sécurisé')}</Text>
-            <Text style={styles.subtitle}>{t('auth.enterPinToUnlock', 'Entrez votre code PIN pour déverrouiller.')}</Text>
+            <Text style={styles.mainTitle}>{t('auth.secureDizzitUp', "Secure DizzitUp")}</Text>
+            <Text style={styles.subtitle}>{t('auth.enterPinToUnlock', "Enter your 6-digit PIN to authorize.")}</Text>
           </View>
 
           {/* Form */}
@@ -151,7 +151,7 @@ export default function UnlockScreen() {
                   <Text style={[
                     styles.nextButtonText,
                     { color: pin.length < 6 ? '#9CA3AF' : '#20365B', fontWeight: '900', letterSpacing: 1.5 },
-                  ]}>{t('common.unlock', 'DÉVERROUILLER')}</Text>
+                  ]}>{t('common.unlock', "UNLOCK")}</Text>
                 )}
               </LinearGradient>
             </TouchableOpacity>
@@ -172,7 +172,7 @@ export default function UnlockScreen() {
           )}
 
           <TouchableOpacity onPress={handleLogout} style={styles.logoutContainer}>
-            <Text style={styles.logoutText}>{t('auth.forgotPinLogout', 'Oublié ? Se déconnecter')}</Text>
+            <Text style={styles.logoutText}>{t('auth.forgotPinLogout', "Forgot? Log out")}</Text>
           </TouchableOpacity>
 
           <View style={styles.versionFooter}>

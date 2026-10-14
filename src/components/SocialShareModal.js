@@ -52,7 +52,7 @@ export default function SocialShareModal({
   const handleCopyLink = async () => {
     await Clipboard.setStringAsync(fullText);
     setCopied(true);
-    showToastMsg(t('common.copied', 'Copied to clipboard!'));
+    showToastMsg(t('common.copied', "Link copied"));
     setTimeout(() => setCopied(false), 2000);
     onShareComplete?.('copy');
   };
@@ -244,7 +244,7 @@ export default function SocialShareModal({
             </Text>
             <TouchableOpacity style={styles.copyPill} onPress={handleCopyLink} activeOpacity={0.8}>
               <Ionicons name={copied ? 'checkmark' : 'copy-outline'} size={14} color="#071D54" style={{ marginRight: 4 }} />
-              <Text style={styles.copyPillText}>{copied ? t('common.copied', 'Copied!') : t('common.copy', 'Copy message')}</Text>
+              <Text style={styles.copyPillText}>{copied ? t('common.copied', "Link copied") : t('common.copy', 'Copy message')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -253,7 +253,7 @@ export default function SocialShareModal({
             <View style={styles.twilioBox}>
               <View style={styles.twilioHeader}>
                 <Ionicons name="chatbubbles-outline" size={16} color="#0284C7" style={{ marginRight: 6 }} />
-                <Text style={styles.twilioTitle}>{t('share.sendDirectSms', 'Direct SMS dispatch')}</Text>
+                <Text style={styles.twilioTitle}>{t('share.sendDirectSms', "Direct SMS Dispatch")}</Text>
               </View>
               <View style={styles.twilioInputRow}>
                 <TextInput

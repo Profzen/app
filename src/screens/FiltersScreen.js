@@ -16,7 +16,7 @@ export default function FiltersScreen() {
     { id: 'all', title: t('filters.allTransactions', 'All transactions') },
     { id: 'bills', title: t('filters.billPayment', 'Bill payment'), subtitle: t('filters.billPaymentSub', 'Education, Health, Electricity, Consulting...'), icon: 'receipt-outline', iconColor: '#3B82F6', iconBg: '#EFF6FF' },
     { id: 'phone', title: t('filters.phoneRecharge', 'Mobile recharge'), icon: 'phone-portrait-outline', iconColor: '#10B981', iconBg: '#ECFDF5' },
-    { id: 'vouchers', title: t('filters.vouchers', "Vouchers purchase"), subtitle: t('filters.vouchersSub', 'Gift Cards, Vouchers'), icon: 'card-outline', iconColor: '#F59E0B', iconBg: '#FFFBEB' },
+    { id: 'vouchers', title: t('filters.vouchers', "Gift cards & vouchers"), subtitle: t('filters.vouchersSub', 'Gift Cards, Vouchers'), icon: 'card-outline', iconColor: '#F59E0B', iconBg: '#FFFBEB' },
     { id: 'products', title: t('filters.physicalProducts', 'Physical goods purchase'), icon: 'bag-handle-outline', iconColor: '#8B5CF6', iconBg: '#F5F3FF' },
     { id: 'topup', title: t('filters.walletTopup', 'DZYWallet top-up'), icon: 'wallet-outline', iconColor: '#3B82F6', iconBg: '#EFF6FF' },
     { id: 'send', title: t('filters.sendFunds', 'Send funds'), icon: 'arrow-up-outline', iconColor: '#10B981', iconBg: '#ECFDF5', rotateIcon: '45deg' },
@@ -29,8 +29,8 @@ export default function FiltersScreen() {
 
   const transactionDirections = [
     { id: 'all', title: t('filters.all', 'All') },
-    { id: 'out', title: t('filters.outgoing', 'Outgoing (sent)'), icon: 'arrow-up-outline', iconColor: '#EF4444', iconBg: '#FEF2F2' },
-    { id: 'in', title: t('filters.incoming', 'Incoming (received)'), icon: 'arrow-down-outline', iconColor: '#10B981', iconBg: '#ECFDF5' },
+    { id: 'out', title: t('filters.outgoing', "Outgoing (Sent)"), icon: 'arrow-up-outline', iconColor: '#EF4444', iconBg: '#FEF2F2' },
+    { id: 'in', title: t('filters.incoming', "Incoming (Received)"), icon: 'arrow-down-outline', iconColor: '#10B981', iconBg: '#ECFDF5' },
     { id: 'internal', title: t('filters.internal', 'Internal DZYWallet'), icon: 'swap-horizontal-outline', iconColor: '#8B5CF6', iconBg: '#F5F3FF' },
   ];
 
@@ -112,7 +112,7 @@ export default function FiltersScreen() {
             <View style={styles.sectionIconBg}>
               <Ionicons name="swap-horizontal-outline" size={20} color="#1A2840" />
             </View>
-            <Text style={styles.sectionTitle}>{t('filters.direction', 'Transaction direction')}</Text>
+            <Text style={styles.sectionTitle}>{t('filters.direction', "Direction")}</Text>
           </View>
 
           <View style={styles.optionsCard}>
@@ -144,7 +144,7 @@ export default function FiltersScreen() {
             <View style={styles.sectionIconBg}>
               <Ionicons name="calendar-outline" size={20} color="#1A2840" />
             </View>
-            <Text style={styles.sectionTitle}>{t('filters.period', 'Time period')}</Text>
+            <Text style={styles.sectionTitle}>{t('filters.period', "Period")}</Text>
           </View>
 
           <View style={styles.optionsCard}>

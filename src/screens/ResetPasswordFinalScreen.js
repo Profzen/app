@@ -12,9 +12,9 @@ import AppToast from '../components/AppToast';
 import { supabase } from '../services/supabaseClient';
 
 const STEPS = (t) => [
-  { label: t('auth.email', 'E-mail') },
+  { label: t('auth.email', "Email") },
   { label: t('auth.code', 'Code') },
-  { label: t('auth.reset', 'Réinitialisation') },
+  { label: t('auth.reset', "Reset") },
 ];
 
 export default function ResetPasswordFinalScreen() {
@@ -32,7 +32,7 @@ export default function ResetPasswordFinalScreen() {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
       
-      setToastInfo({ visible: true, title: t('common.success', 'Success'), message: t('auth.passwordResetSuccess', 'Votre mot de passe a été réinitialisé avec succès !'), type: 'success' });
+      setToastInfo({ visible: true, title: t('common.success', 'Success'), message: t('auth.passwordResetSuccess', "Your password has been successfully reset!"), type: 'success' });
       setTimeout(() => navigation.navigate('LoginScreen'), 1500);
     } catch (err) {
       setToastInfo({ visible: true, title: t('common.error', 'Error'), message: err.message, type: 'error' });
@@ -48,9 +48,9 @@ export default function ResetPasswordFinalScreen() {
   // Real-time error logic
   let displayError = '';
   if (confirmPassword.length > 0 && password !== confirmPassword) {
-    displayError = t('auth.passwordsDoNotMatch', 'Les mots de passe ne correspondent pas.');
+    displayError = t('auth.passwordsDoNotMatch', "Passwords do not match.");
   } else if (password.length > 0 && password.length < 8) {
-    displayError = t('auth.passwordMinLength', 'Le mot de passe doit contenir au moins 8 caractères.');
+    displayError = t('auth.passwordMinLength', "Password must contain at least 8 characters.");
   }
 
   return (
@@ -67,15 +67,15 @@ export default function ResetPasswordFinalScreen() {
           {/* Header */}
           <View style={styles.header}>
             <HeaderBackButton onPress={() => navigation.goBack()} />
-            <Text style={styles.headerTitle}>{t('auth.resetPasswordTitle', 'Réinitialiser le mot de passe')}</Text>
+            <Text style={styles.headerTitle}>{t('auth.resetPasswordTitle', "Reset Password")}</Text>
             <View style={styles.placeholderBox} />
           </View>
 
           {/* Title Section */}
           <View style={styles.titleSection}>
-            <Text style={styles.mainTitle}>{t('auth.newPasswordTitle', 'Nouveau mot de passe')}</Text>
+            <Text style={styles.mainTitle}>{t('auth.newPasswordTitle', "New Password")}</Text>
             <Text style={styles.subtitle}>
-              {t('auth.enterNewPassword', 'Entrez un nouveau mot de passe pour vous connecter.')}
+              {t('auth.enterNewPassword', "Enter a new password to log in.")}
             </Text>
           </View>
 
@@ -86,7 +86,7 @@ export default function ResetPasswordFinalScreen() {
           <View style={styles.formContainer}>
             <DizzitInput
               iconLeft={<Ionicons name="lock-closed-outline" size={20} color={theme.colors.textSecondary} />}
-              placeholder={t('auth.newPasswordTitle', 'Nouveau mot de passe')}
+              placeholder={t('auth.newPasswordTitle', "New Password")}
               value={password}
               onChangeText={(text) => {
                 setPassword(text);
@@ -99,7 +99,7 @@ export default function ResetPasswordFinalScreen() {
             
             <DizzitInput
               iconLeft={<Ionicons name="lock-closed-outline" size={20} color={theme.colors.textSecondary} />}
-              placeholder={t('auth.confirmNewPassword', 'Confirmez le nouveau mot de passe')}
+              placeholder={t('auth.confirmNewPassword', "Confirm new password")}
               value={confirmPassword}
               onChangeText={(text) => {
                 setConfirmPassword(text);
@@ -112,7 +112,7 @@ export default function ResetPasswordFinalScreen() {
               <Text style={styles.errorText}>{displayError}</Text>
             ) : (
               <Text style={styles.hintText}>
-                {t('auth.passwordMinLength', 'Le mot de passe doit contenir au moins 8 caractères.')}
+                {t('auth.passwordMinLength', "Password must contain at least 8 characters.")}
               </Text>
             )}
           </View>
@@ -123,7 +123,7 @@ export default function ResetPasswordFinalScreen() {
               style={[styles.button, styles.buttonPrevious]}
               onPress={() => navigation.goBack()}
             >
-              <Text style={styles.buttonPreviousText}>{t('common.previous', 'PRÉCÉDENT')}</Text>
+              <Text style={styles.buttonPreviousText}>{t('common.previous', "PREVIOUS")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -142,7 +142,7 @@ export default function ResetPasswordFinalScreen() {
                   styles.buttonNextText,
                   isNextDisabled && styles.buttonNextTextDisabled
                 ]}>
-                  {t('common.next', 'SUIVANT')}
+                  {t('common.next', "NEXT")}
                 </Text>
               )}
             </TouchableOpacity>

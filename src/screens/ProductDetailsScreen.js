@@ -144,7 +144,7 @@ export default function ProductDetailsScreen({ route }) {
 
   const deliveryFeeFormatted = standardDeliveryFee > 0
     ? `${Number(standardDeliveryFee).toLocaleString(numLocale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ${displayCurrency}`
-    : t('orderVerification.free', 'Gratuit');
+    : t('orderVerification.free', "Free");
 
   const merchantName = shop?.shop_name || shop?.name || product?.merchant?.shop_name || product?.merchant?.name || product?.merchant_name || t('paymentSuccess.partnerMerchant', 'Partner Merchant');
   const merchantInitial = (merchantName || 'DZ').slice(0, 2).toUpperCase();
@@ -251,16 +251,16 @@ export default function ProductDetailsScreen({ route }) {
     const productUrl = `https://dizzitup.com/product/${product.id}`;
     try { 
       await Share.share({
-        title: t('shop.giftProductTitle', `Achetez-moi ceci : ${pName}`, { name: pName }), 
-        message: t('shop.giftProductMsg', `J'aimerais ce produit sur DizzitUp : ${pName} (${displayPrice}) chez ${sName}. Vous pouvez me l'offrir ici : ${productUrl}`, { name: pName, price: displayPrice, shop: sName, url: productUrl })
+        title: t('shop.giftProductTitle', "Buy this for me: {{name}}", { name: pName }),
+        message: t('shop.giftProductMsg', "I would love this on DizzitUp: {{name}} ({{price}}) from {{shop}}. You can buy it for me here: {{url}}", { name: pName, price: displayPrice, shop: sName, url: productUrl })
       }); 
       setToast({
-        title: t('shop.shareSuccessTitle', 'Lien cadeau prêt'), 
-        message: t('shop.shareSuccessDesc', 'Le lien du produit a été partagé avec succès.')
+        title: t('shop.shareSuccessTitle', "Gift link ready"),
+        message: t('shop.shareSuccessDesc', "The link is ready to be shared with friends and family.")
       }); 
     } catch {
       setToast({
-        title: t('shop.shareCopiedTitle', 'Lien copié'),
+        title: t('shop.shareCopiedTitle', "Link copied"),
         message: `${productUrl}`
       });
     }
@@ -282,8 +282,8 @@ export default function ProductDetailsScreen({ route }) {
                 navigation.navigate('OrderVerificationScreen');
               } else {
                 setToast({
-                  title: t('cart.emptyTitle', 'Panier vide'),
-                  message: t('cart.emptyDesc', 'Votre panier ne contient aucun article pour l\'instant.')
+                  title: t('cart.emptyTitle', "Empty cart"),
+                  message: t('cart.emptyDesc', "Your cart contains no items for now.")
                 });
               }
             }}
@@ -347,12 +347,12 @@ export default function ProductDetailsScreen({ route }) {
           </ScrollView>
 
           {media.length > 1 && safeMediaIndex > 0 && (
-            <TouchableOpacity style={[styles.galleryArrow, { left: 12 }]} onPress={() => goToMedia(safeMediaIndex - 1)} accessibilityLabel={t('common.previous', 'Previous')}>
+            <TouchableOpacity style={[styles.galleryArrow, { left: 12 }]} onPress={() => goToMedia(safeMediaIndex - 1)} accessibilityLabel={t('common.previous', "PREVIOUS")}>
               <Ionicons name="chevron-back" size={22} color="#1A2840" />
             </TouchableOpacity>
           )}
           {media.length > 1 && safeMediaIndex < media.length - 1 && (
-            <TouchableOpacity style={[styles.galleryArrow, { right: 12 }]} onPress={() => goToMedia(safeMediaIndex + 1)} accessibilityLabel={t('common.next', 'Next')}>
+            <TouchableOpacity style={[styles.galleryArrow, { right: 12 }]} onPress={() => goToMedia(safeMediaIndex + 1)} accessibilityLabel={t('common.next', "NEXT")}>
               <Ionicons name="chevron-forward" size={22} color="#1A2840" />
             </TouchableOpacity>
           )}
@@ -461,11 +461,11 @@ export default function ProductDetailsScreen({ route }) {
             {/* Quantity Selector */}
             <View style={styles.qtyContainer}>
               <Text style={styles.qtyLabel}>
-                {product?.pricing_model === 'per_night' ? t('product.nights', 'Nuits') :
-                 product?.pricing_model === 'per_month' ? t('product.months', 'Mois') :
-                 product?.pricing_model === 'per_day' ? t('product.days', 'Jours') :
-                 product?.pricing_model === 'per_hour' ? t('product.hours', 'Heures') :
-                 t('orderVerification.qty', 'Quantité')}
+                {product?.pricing_model === 'per_night' ? t('product.nights', "Nights") :
+                 product?.pricing_model === 'per_month' ? t('product.months', "Months") :
+                 product?.pricing_model === 'per_day' ? t('product.days', "Days") :
+                 product?.pricing_model === 'per_hour' ? t('product.hours', "Hours") :
+                 t('orderVerification.qty', "Qty")}
               </Text>
               <View style={styles.qtyControls}>
                 <TouchableOpacity
@@ -679,7 +679,7 @@ export default function ProductDetailsScreen({ route }) {
                 <Ionicons name="shield-checkmark-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
                 <View>
                   <Text style={styles.deliveryLabel}>{t('product.deliveryFees', 'Delivery fee')}</Text>
-                  <Text style={styles.deliveryValue}>{t('product.fromDeliveryFee', `From ${deliveryFeeFormatted}`, { fee: deliveryFeeFormatted })}</Text>
+                  <Text style={styles.deliveryValue}>{t('product.fromDeliveryFee', "From {{fee}}", { fee: deliveryFeeFormatted })}</Text>
                 </View>
               </View>
             </View>
@@ -718,7 +718,7 @@ export default function ProductDetailsScreen({ route }) {
                 </Text>
               </View>
               <View style={styles.vendorCategoryBadge}>
-                <Text style={styles.vendorCategoryText}>{t('product.verifiedPartner', 'Verified Merchant')}</Text>
+                <Text style={styles.vendorCategoryText}>{t('product.verifiedPartner', "Verified merchant")}</Text>
               </View>
               <Text style={styles.vendorSince}>{t('product.partnerPlatform', 'DizzitUp Partner')}</Text>
             </View>

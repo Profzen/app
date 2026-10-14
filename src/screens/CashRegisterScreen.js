@@ -142,10 +142,10 @@ export default function CashRegisterScreen() {
 
           <View style={styles.headerTitleWrap}>
             <Text style={styles.pageTitle}>
-              {activeTab === 'billets' ? t('pos.cashier', 'Caissier') : t('pos.pos_title', 'Point of Sale (POS/ATM)')}
+              {activeTab === 'billets' ? t('pos.cashier', "Cashier") : t('pos.pos_title', 'Point of Sale (POS/ATM)')}
             </Text>
             {activeTab === 'qr' && (
-              <Text style={styles.pageSubtitle}>{t('pos.cash_desks', 'Caisses (TPE/DAB)')}</Text>
+              <Text style={styles.pageSubtitle}>{t('pos.cash_desks', "Cash Desks (POS/ATM)")}</Text>
             )}
           </View>
 
@@ -173,7 +173,7 @@ export default function CashRegisterScreen() {
                 style={{ marginRight: 8 }}
               />
               <Text style={[styles.modeTabText, activeTab === 'qr' ? styles.modeTabTextActive : { color: '#FFFFFF' }]}>
-                {t('pos.receive_payment_multiline', 'Recevoir\nle paiement')}
+                {t('pos.receive_payment_multiline', "Receive\nPayment")}
               </Text>
             </TouchableOpacity>
 
@@ -192,7 +192,7 @@ export default function CashRegisterScreen() {
                 style={{ marginRight: 8 }}
               />
               <Text style={[styles.modeTabText, activeTab === 'billets' ? styles.modeTabTextActiveBillets : styles.modeTabText]}>
-                {t('pos.scan_tickets_multiline', 'Scanner les\nbillets')}
+                {t('pos.scan_tickets_multiline', "Scan\nTickets")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -207,7 +207,7 @@ export default function CashRegisterScreen() {
                   value={currency}
                   options={Object.keys(rates).sort().map((val) => ({ value: val, label: val, flagUrl: getFlagUrl(val) }))}
                   onChange={setCurrency}
-                  title={t('pos.choose_currency', 'Choisir la devise')}
+                  title={t('pos.choose_currency', "Choose Currency")}
                   renderCustomTrigger={({ setOpen }) => (
                     <TouchableOpacity
                       style={styles.currencySelectBtn}
@@ -256,7 +256,7 @@ export default function CashRegisterScreen() {
 
               {/* Amount Display */}
               <View style={styles.amountDisplayGroup}>
-                <Text style={styles.montantTitleText}>{t('pos.amount_to_pay', 'Montant à payer')}</Text>
+                <Text style={styles.montantTitleText}>{t('pos.amount_to_pay', "Amount to pay")}</Text>
                 <View style={styles.amountNumberRow}>
                   <Text
                     style={[
@@ -311,7 +311,7 @@ export default function CashRegisterScreen() {
                 activeOpacity={0.85}
               >
                 <Ionicons name="qr-code-outline" size={19} color="#1A2840" style={{ marginRight: 8 }} />
-                <Text style={styles.btnReceivePaymentText}>{t('pos.receive_payment', 'Recevoir le paiement')}</Text>
+                <Text style={styles.btnReceivePaymentText}>{t('pos.receive_payment', "Receive Payment")}</Text>
               </TouchableOpacity>
 
             </View>
@@ -322,9 +322,9 @@ export default function CashRegisterScreen() {
                 <Ionicons name="information-circle-outline" size={22} color="#FFFFFF" />
               </TouchableOpacity>
 
-              <Text style={styles.billetsTitle}>{t('pos.event_ticket_scanner', 'Scanner de billets d\'événements')}</Text>
+              <Text style={styles.billetsTitle}>{t('pos.event_ticket_scanner', "Event Ticket Scanner")}</Text>
               <Text style={styles.billetsSub}>
-                {t('pos.scan_tickets_desc', 'Scannez les codes QR des billets pour\nvalider leur entrée.')}
+                {t('pos.scan_tickets_desc', "Scan ticket QR codes to\nvalidate entry.")}
               </Text>
 
               {/* Scanner Graphic Area with Ticket Icon & Laser */}
@@ -343,7 +343,7 @@ export default function CashRegisterScreen() {
                         facing="back"
                         onBarcodeScanned={({ data }) => {
                           setIsCameraActive(false);
-                          showToast(`${t('pos.scanned_ticket', 'Billet scanné :')} ${data}`);
+                          showToast(`${t('pos.scanned_ticket', "Ticket scanned:")} ${data}`);
                         }}
                       />
                     ) : (
@@ -373,12 +373,12 @@ export default function CashRegisterScreen() {
                   activeOpacity={0.85}
                 >
                   <Ionicons name="camera-outline" size={22} color="#1A2840" style={{ marginRight: 8 }} />
-                  <Text style={styles.btnCameraText}>{t('pos.authorize_camera', 'Autoriser la caméra')}</Text>
+                  <Text style={styles.btnCameraText}>{t('pos.authorize_camera', "Authorize Camera")}</Text>
                 </TouchableOpacity>
 
                 <View style={styles.separatorRow}>
                   <View style={styles.separatorLine} />
-                  <Text style={styles.separatorText}>{t('pos.or', 'OU')}</Text>
+                  <Text style={styles.separatorText}>{t('pos.or', "OR")}</Text>
                   <View style={styles.separatorLine} />
                 </View>
 
@@ -391,13 +391,13 @@ export default function CashRegisterScreen() {
                       quality: 1,
                     });
                     if (!result.canceled) {
-                      showToast(t('pos.image_imported', 'Image importée avec succès!'));
+                      showToast(t('pos.image_imported', "Image imported successfully!"));
                     }
                   }}
                   activeOpacity={0.8}
                 >
                   <Ionicons name="image-outline" size={22} color="#FFFFFF" style={{ marginRight: 8 }} />
-                  <Text style={styles.btnImportText}>{t('pos.import_image', 'Importer une image')}</Text>
+                  <Text style={styles.btnImportText}>{t('pos.import_image', "Import Image")}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -424,13 +424,13 @@ export default function CashRegisterScreen() {
             <View style={styles.infoModalCard}>
               <View style={styles.infoModalHeader}>
                 <Ionicons name="information-circle" size={24} color="#3B82F6" />
-                <Text style={styles.infoModalTitle}>{t('pos.event_ticket_scanner', 'Scanner de billets')}</Text>
+                <Text style={styles.infoModalTitle}>{t('pos.event_ticket_scanner', "Event Ticket Scanner")}</Text>
               </View>
               <Text style={styles.infoModalText}>
                 {t('pos.info_modal_desc', "This feature allows you to scan a customer's QR code (e.g. an event ticket) to validate entry or process a special request. Click 'Authorize Camera' to begin.")}
               </Text>
               <TouchableOpacity style={styles.infoModalBtn} onPress={() => setInfoModalVisible(false)}>
-                <Text style={styles.infoModalBtnText}>{t('pos.close', 'Fermer')}</Text>
+                <Text style={styles.infoModalBtnText}>{t('pos.close', "Close")}</Text>
               </TouchableOpacity>
             </View>
           </View>

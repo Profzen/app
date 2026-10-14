@@ -226,9 +226,9 @@ export default function ContactsScreen() {
     const { success, error } = await contactService.deleteBeneficiary(id);
     if (success) {
       setContactItems((items) => items.filter((item) => item.id !== id));
-      setToast({ title: t('contacts.deleted', 'Contact supprimé'), message: t('contacts.deleted_desc', 'Le contact a été retiré avec succès.') });
+      setToast({ title: t('contacts.deleted', "Contact deleted"), message: t('contacts.deleted_desc', "Contact successfully deleted.") });
     } else {
-      setToast({ title: t('common.error', 'Erreur'), message: error || t('contacts.delete_error', 'Impossible de supprimer ce contact.') });
+      setToast({ title: t('common.error', "Error"), message: error || t('contacts.delete_error', "Cannot delete this contact.") });
     }
     setSelectedContact(null);
   };
@@ -376,8 +376,8 @@ export default function ContactsScreen() {
           <View style={{ zIndex: 100 }}>
             <Text style={styles.subtitle}>
               {nextScreen 
-                ? t('contacts.select_beneficiary_action', 'Sélectionnez un bénéficiaire pour continuer.')
-                : t('contacts.subtitle', "Soutenez vos bénéficiaires : envoyez de l'argent, payez des factures et achetez l'essentiel en Afrique.")}
+                ? t('contacts.select_beneficiary_action', "Select a beneficiary to continue.")
+                : t('contacts.subtitle', "Send Stablecoins to your beneficiaries across Africa.")}
             </Text>
 
             {/* Search and Autocomplete Section */}
@@ -514,7 +514,7 @@ export default function ContactsScreen() {
                     </View>
                     <View style={styles.dropdownCountBadge}>
                       <Text style={styles.dropdownCountText}>
-                        {allSuggestions.length} {t('contacts.matches_count', 'trouvé(s)')}
+                        {allSuggestions.length} {t('contacts.matches_count', "found")}
                       </Text>
                     </View>
                   </View>
@@ -523,7 +523,7 @@ export default function ContactsScreen() {
                     <View style={styles.dropdownEmptyRow}>
                       <Ionicons name="search-outline" size={18} color="#94A3B8" style={{ marginRight: 8 }} />
                       <Text style={styles.dropdownEmptyText}>
-                        {t('contacts.no_matching_contact', 'Aucun contact ne commence par')} "{searchQuery}"
+                        {t('contacts.no_matching_contact', "No contacts starting with")} "{searchQuery}"
                       </Text>
                     </View>
                   ) : (
@@ -585,7 +585,7 @@ export default function ContactsScreen() {
                       }}
                     >
                       <Text style={styles.dropdownFooterText}>
-                        {t('contacts.view_all_results', 'Voir tous les')} {allSuggestions.length} {t('contacts.results_plural', 'résultats')} ➔
+                        {t('contacts.view_all_results', "View all")} {allSuggestions.length} {t('contacts.results_plural', 'results')} ➔
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -598,17 +598,17 @@ export default function ContactsScreen() {
                 <View style={styles.activeActionBannerLeft}>
                   <Ionicons name="information-circle" size={24} color="#3B82F6" />
                   <View style={{ marginLeft: 12 }}>
-                    <Text style={styles.activeActionTitle}>{t('contacts.action_selected_title', 'Sélectionnez un bénéficiaire')}</Text>
-                    <Text style={styles.activeActionSub}>{t('contacts.action_selected_sub', 'Appuyez sur un contact ci-dessous pour continuer')}</Text>
+                    <Text style={styles.activeActionTitle}>{t('contacts.action_selected_title', "Select a beneficiary")}</Text>
+                    <Text style={styles.activeActionSub}>{t('contacts.action_selected_sub', "Tap a contact below to continue")}</Text>
                   </View>
                 </View>
                 <TouchableOpacity style={styles.cancelActionBtn} onPress={() => navigation.setParams({ nextScreen: undefined })}>
-                  <Text style={styles.cancelActionText}>{t('common.cancel', 'Annuler')}</Text>
+                  <Text style={styles.cancelActionText}>{t('common.cancel', "Cancel")}</Text>
                 </TouchableOpacity>
               </View>
             ) : (
               <>
-                <Text style={styles.sectionTitle}>{t('contacts.quick_actions', 'Actions rapides')}</Text>
+                <Text style={styles.sectionTitle}>{t('contacts.quick_actions', "Quick actions")}</Text>
                 <ScrollView 
                   horizontal 
                   showsHorizontalScrollIndicator={false} 
@@ -648,7 +648,7 @@ export default function ContactsScreen() {
           <View style={styles.stickyHeaderContainer}>
             {/* Mes bénéficiaires */}
             <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionTitleSticky}>{t('contacts.my_beneficiaries', 'Mes bénéficiaires')}</Text>
+              <Text style={styles.sectionTitleSticky}>{t('contacts.my_beneficiaries', "My beneficiaries")}</Text>
               <TouchableOpacity style={styles.addContactBtn} onPress={() => navigation.navigate('EditBeneficiaryScreen')}>
                 <Ionicons name="add" size={16} color="#3B82F6" style={{ marginRight: 2 }} />
                 <Text style={styles.addContactText}>{t('contacts.add_contact', 'Add contact')}</Text>
@@ -662,7 +662,7 @@ export default function ContactsScreen() {
                 onPress={() => setActiveFilter('all')}
               >
                 <Ionicons name="apps-outline" size={15} color={activeFilter === 'all' ? '#FFFFFF' : '#64748B'} style={{ marginRight: 6 }} />
-                <Text style={activeFilter === 'all' ? styles.filterChipTextActive : styles.filterChipText}>{t('common.all', 'Tous')}</Text>
+                <Text style={activeFilter === 'all' ? styles.filterChipTextActive : styles.filterChipText}>{t('common.all', "All")}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
@@ -670,7 +670,7 @@ export default function ContactsScreen() {
                 onPress={() => setActiveFilter('nearby')}
               >
                 <Ionicons name="location-outline" size={15} color={activeFilter === 'nearby' ? '#FFFFFF' : '#64748B'} style={{ marginRight: 6 }} />
-                <Text style={activeFilter === 'nearby' ? styles.filterChipTextActive : styles.filterChipText}>{t('contacts.filter_nearby', 'À proximité')}</Text>
+                <Text style={activeFilter === 'nearby' ? styles.filterChipTextActive : styles.filterChipText}>{t('contacts.filter_nearby', "Nearby")}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
@@ -678,7 +678,7 @@ export default function ContactsScreen() {
                 onPress={() => setActiveFilter('favorites')}
               >
                 <Ionicons name="heart-outline" size={15} color={activeFilter === 'favorites' ? '#FFFFFF' : '#64748B'} style={{ marginRight: 6 }} />
-                <Text style={activeFilter === 'favorites' ? styles.filterChipTextActive : styles.filterChipText}>{t('contacts.filter_favorites', 'De mes pays préférés')}</Text>
+                <Text style={activeFilter === 'favorites' ? styles.filterChipTextActive : styles.filterChipText}>{t('contacts.filter_favorites', "Favorite countries")}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
@@ -686,7 +686,7 @@ export default function ContactsScreen() {
                 onPress={() => setActiveFilter('africa')}
               >
                 <Ionicons name="earth-outline" size={15} color={activeFilter === 'africa' ? '#FFFFFF' : '#64748B'} style={{ marginRight: 6 }} />
-                <Text style={activeFilter === 'africa' ? styles.filterChipTextActive : styles.filterChipText}>{t('contacts.filter_africa', "De toute l'Afrique")}</Text>
+                <Text style={activeFilter === 'africa' ? styles.filterChipTextActive : styles.filterChipText}>{t('contacts.filter_africa', "All of Africa")}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
@@ -694,15 +694,15 @@ export default function ContactsScreen() {
                 onPress={() => setActiveFilter('world')}
               >
                 <Ionicons name="globe-outline" size={15} color={activeFilter === 'world' ? '#FFFFFF' : '#64748B'} style={{ marginRight: 6 }} />
-                <Text style={activeFilter === 'world' ? styles.filterChipTextActive : styles.filterChipText}>{t('contacts.filter_world', 'Du reste du monde')}</Text>
+                <Text style={activeFilter === 'world' ? styles.filterChipTextActive : styles.filterChipText}>{t('contacts.filter_world', "Rest of the world")}</Text>
               </TouchableOpacity>
             </ScrollView>
 
             {/* Contacts List Header */}
             <View style={styles.listHeaderRow}>
               <Text style={[styles.listHeaderText, { flex: 2 }]}>{t('contacts.col_contact', 'Contact')}</Text>
-              <Text style={[styles.listHeaderText, { flex: 1, textAlign: 'center' }]}>{t('contacts.col_beneficiary', 'Bénéficiaire')}</Text>
-              <Text style={[styles.listHeaderText, { flex: 1, textAlign: 'center' }]}>{t('contacts.col_sponsor', 'Parrain')}</Text>
+              <Text style={[styles.listHeaderText, { flex: 1, textAlign: 'center' }]}>{t('contacts.col_beneficiary', "Beneficiary")}</Text>
+              <Text style={[styles.listHeaderText, { flex: 1, textAlign: 'center' }]}>{t('contacts.col_sponsor', "Sponsor")}</Text>
               <View style={{ width: 34 }} />
             </View>
           </View>
@@ -727,7 +727,7 @@ export default function ContactsScreen() {
                   <View style={styles.rowBack}>
                     <TouchableOpacity style={styles.backRightBtn} onPress={() => setContactToDelete(contact)}>
                       <Ionicons name="trash-outline" size={24} color="#FFFFFF" />
-                      <Text style={styles.backRightBtnText}>{t('contacts.action_delete', 'Delete')}</Text>
+                      <Text style={styles.backRightBtnText}>{t('contacts.action_delete', "Delete contact")}</Text>
                     </TouchableOpacity>
                   </View>
                   <View style={{backgroundColor: '#FFFFFF'}}>
@@ -776,7 +776,7 @@ export default function ContactsScreen() {
           }}
           onFavorite={(contact) => {
             setSelectedContact(null);
-            setToast({ title: t('contacts.added_favorite', 'Ajouté aux favoris'), message: `${contact.name} ${t('contacts.added_favorite_desc', 'a été ajouté à vos favoris.')}` });
+            setToast({ title: t('contacts.added_favorite', "Added to favorites"), message: `${contact.name} ${t('contacts.added_favorite_desc', "has been added to your favorites.")}` });
           }}
         />
 
@@ -814,10 +814,10 @@ export default function ContactsScreen() {
               </TouchableOpacity>
               <View style={styles.inviteBannerLeft}>
                 <Text style={styles.inviteBannerTitle}>
-                  {t('home.inviteBannerTitle_1', "Invitez vos amis\net gagnez ")}<Text style={{color: '#3B82F6'}}>{t('home.inviteBannerTitle_2', "$5 en DZY")}</Text>
+                  {t('home.inviteBannerTitle_1', "Invite friends\nand earn ")}<Text style={{color: '#3B82F6'}}>{t('home.inviteBannerTitle_2', "$5 in DZY")}</Text>
                 </Text>
                 <Text style={styles.inviteBannerText}>
-                  {t('home.inviteBannerDesc', "Envoyez de l'argent, achetez, payez des factures et gagnez des récompenses ensemble.")}
+                  {t('home.inviteBannerDesc', "Send Stablecoins, shop, pay bills, and earn rewards together.")}
                 </Text>
                 <TouchableOpacity 
                   style={styles.inviteBtn} 
@@ -825,7 +825,7 @@ export default function ContactsScreen() {
                     handleUserInviteShare(session?.user);
                   }}
                 >
-                  <Text style={styles.inviteBtnText}>{t('home.btnInviteNow', "Inviter maintenant")}</Text>
+                  <Text style={styles.inviteBtnText}>{t('home.btnInviteNow', "Invite now")}</Text>
                 </TouchableOpacity>
               </View>
               <View style={styles.inviteBannerRight}>

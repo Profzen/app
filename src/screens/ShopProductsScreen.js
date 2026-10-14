@@ -207,36 +207,36 @@ export default function ShopProductsScreen({ route }) {
         comment,
       });
       setToast({
-        title: t('review.submitSuccessTitle', 'Avis publié !'),
-        message: t('review.submitSuccessMsg', 'Merci pour votre retour. Votre avis est maintenant synchronisé.'),
+        title: t('review.submitSuccessTitle', "Review published!"),
+        message: t('review.submitSuccessMsg', "Thank you for your feedback. Your review is now live."),
       });
       setReviewsRefreshKey((k) => k + 1);
     } catch (err) {
       setToast({
-        title: t('common.error', 'Erreur'),
-        message: t('review.submitError', 'Impossible de publier votre avis. Veuillez réessayer.'),
+        title: t('common.error', "Error"),
+        message: t('review.submitError', "Unable to publish your review. Please try again."),
       });
     }
   };
 
   const shareShop = async () => {
-    const shopName = shop.name || shop.shop_name || shop.raw?.shop_name || 'Boutique DizzitUp';
-    const shopSlug = shop.slug || shop.id || 'boutique';
+    const shopName = shop.name || shop.shop_name || shop.raw?.shop_name || 'DizzitUp Store';
+    const shopSlug = shop.slug || shop.id || 'store';
     const countrySlug = (shop.country || shop.raw?.country || 'global').toLowerCase().replace(/\s+/g, '-');
     const citySlug = (shop.city_village || shop.raw?.city_village || shop.city || 'city').toLowerCase().replace(/\s+/g, '-');
     const shopUrl = `https://dizzitup.com/DZYstore/${countrySlug}/${citySlug}/${shopSlug}`;
     try {
       await Share.share({
         title: shopName,
-        message: t('shop.giftRequestShopMsg', `Découvrez la boutique ${shopName} sur DizzitUp : ${shopUrl}`, { name: shopName, url: shopUrl })
+        message: t('shop.giftRequestShopMsg', "Gift me items from {{name}} on DizzitUp: {{url}}", { name: shopName, url: shopUrl })
       });
       setToast({
-        title: t('shop.shareSuccessTitle', 'Boutique partagée'),
-        message: t('shop.shareSuccessDesc', 'Le lien de la boutique a été partagé.')
+        title: t('shop.shareSuccessTitle', "Gift link ready"),
+        message: t('shop.shareSuccessDesc', "The link is ready to be shared with friends and family.")
       });
     } catch {
       setToast({
-        title: t('shop.shareCopiedTitle', 'Lien copié'),
+        title: t('shop.shareCopiedTitle', "Link copied"),
         message: `${shopUrl}`
       });
     }
@@ -247,20 +247,20 @@ export default function ShopProductsScreen({ route }) {
     const rawPrice = product.price || (product.variants?.[0]?.prices?.[0]?.amount || 0);
     const curr = product.currency || shop.currency || 'XOF';
     const pPrice = `${Number(rawPrice).toLocaleString()} ${curr}`;
-    const shopName = shop.name || shop.shop_name || shop.raw?.shop_name || 'Boutique DizzitUp';
+    const shopName = shop.name || shop.shop_name || shop.raw?.shop_name || 'DizzitUp Store';
     const productUrl = `https://dizzitup.com/product/${product.id}`;
     try {
       await Share.share({
-        title: t('shop.giftProductTitle', `Achetez-moi ceci : ${pName}`, { name: pName }),
-        message: t('shop.giftProductMsg', `J'aimerais ce produit sur DizzitUp : ${pName} (${pPrice}) chez ${shopName}. Vous pouvez me l'offrir ici : ${productUrl}`, { name: pName, price: pPrice, shop: shopName, url: productUrl })
+        title: t('shop.giftProductTitle', "Buy this for me: {{name}}", { name: pName }),
+        message: t('shop.giftProductMsg', "I would love this on DizzitUp: {{name}} ({{price}}) from {{shop}}. You can buy it for me here: {{url}}", { name: pName, price: pPrice, shop: shopName, url: productUrl })
       });
       setToast({
-        title: t('shop.shareSuccessTitle', 'Lien cadeau partagé'),
-        message: t('shop.shareSuccessDesc', 'Le lien du produit a été partagé.')
+        title: t('shop.shareSuccessTitle', "Gift link ready"),
+        message: t('shop.shareSuccessDesc', "The link is ready to be shared with friends and family.")
       });
     } catch {
       setToast({
-        title: t('shop.shareCopiedTitle', 'Lien copié'),
+        title: t('shop.shareCopiedTitle', "Link copied"),
         message: `${productUrl}`
       });
     }
@@ -282,7 +282,7 @@ export default function ShopProductsScreen({ route }) {
                 if (cartCount > 0) {
                   navigation.navigate('OrderVerificationScreen');
                 } else {
-                  setToast({ title: t('cart.emptyTitle', 'Panier vide'), message: t('cart.emptyDesc', 'Votre panier ne contient aucun article pour l\'instant.') });
+                  setToast({ title: t('cart.emptyTitle', "Empty cart"), message: t('cart.emptyDesc', "Your cart contains no items for now.") });
                 }
               }}
             >
@@ -323,7 +323,7 @@ export default function ShopProductsScreen({ route }) {
             </View>
             <View style={styles.condensedContent}>
               <View style={styles.shopNameRow}>
-                <Text style={styles.shopName}>{shop.name || shop.raw?.shop_name || shop.shop_name || t('shop.default_name', 'Boutique')}</Text>
+                <Text style={styles.shopName}>{shop.name || shop.raw?.shop_name || shop.shop_name || t('shop.default_name', "Shop")}</Text>
                 {(shop.is_verified || shop.verified) && <Ionicons name="checkmark-circle" size={16} color="#3B82F6" style={{marginLeft: 4}} />}
               </View>
               {/* Categories Pills List (Neat Wrapping List, No Horizontal Scroll) */}
@@ -337,7 +337,7 @@ export default function ShopProductsScreen({ route }) {
               <View style={styles.shopMetaRow}>
                 <Ionicons name="star" size={12} color="#F59E0B" />
                 <Text style={styles.ratingText}>{shop.rating || '5.0'}</Text>
-                <Text style={styles.reviewsText}>({shop.review_count || shop.reviews || t('shop.reviews.verifiedMerchant', 'Marchand vérifié')})</Text>
+                <Text style={styles.reviewsText}>({shop.review_count || shop.reviews || t('shop.reviews.verifiedMerchant', "Verified merchant")})</Text>
                 <Text style={styles.dotSeparator}>|</Text>
                 <Ionicons name="location-outline" size={12} color="#64748B" />
                 <Text style={styles.locationText}>{shop.location || [shop.raw?.city_village || shop.city_village || shop.city, shop.raw?.country || shop.country].filter(Boolean).join(', ')}</Text>
@@ -353,7 +353,7 @@ export default function ShopProductsScreen({ route }) {
 
           {/* Payment Methods */}
           <View style={styles.paymentMethodsCard}>
-            <Text style={styles.paymentMethodsTitle}>{t('shop.sections.accepted_payment_methods', 'Moyens de paiement acceptés')}</Text>
+            <Text style={styles.paymentMethodsTitle}>{t('shop.sections.accepted_payment_methods', "Accepted Payment Methods")}</Text>
             <View style={styles.paymentIconsRow}>
               <View style={styles.paymentItem}>
                 <View style={styles.tokenIconBg}><CryptoIcon symbol="USDT" size={36} /></View>
@@ -372,7 +372,7 @@ export default function ShopProductsScreen({ route }) {
                 <Text style={styles.tokenLabel}>DZY</Text>
               </View>
               <TouchableOpacity style={styles.paymentItem}>
-                <Text style={styles.plusLink}>{t('shop.categories.more', '+ Plus')}</Text>
+                <Text style={styles.plusLink}>{t('shop.categories.more', "+ More")}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -381,19 +381,19 @@ export default function ShopProductsScreen({ route }) {
           <View style={styles.tabsContainer}>
             <TouchableOpacity style={[styles.tab, activeTab === 'products' && styles.tabActive]} onPress={() => setActiveTab('products')}>
               <Ionicons name="bag-handle-outline" size={16} color={activeTab === 'products' ? '#FFB800' : '#94A3B8'} style={{marginRight: 6}} />
-              <Text style={activeTab === 'products' ? styles.tabTextActive : styles.tabTextInactive}>{t('shop.tabs.products', 'Produits')}</Text>
+              <Text style={activeTab === 'products' ? styles.tabTextActive : styles.tabTextInactive}>{t('shop.tabs.products', "Products")}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.tab, activeTab === 'reviews' && styles.tabActive]} onPress={() => setActiveTab('reviews')}>
               <Ionicons name="star-outline" size={16} color={activeTab === 'reviews' ? '#FFB800' : '#94A3B8'} style={{marginRight: 6}} />
-              <Text style={activeTab === 'reviews' ? styles.tabTextActive : styles.tabTextInactive}>{t('shop.tabs.reviews', 'Avis')}</Text>
+              <Text style={activeTab === 'reviews' ? styles.tabTextActive : styles.tabTextInactive}>{t('shop.tabs.reviews', "Reviews")}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.tab, activeTab === 'info' && styles.tabActive]} onPress={() => setActiveTab('info')}>
               <Ionicons name="information-circle-outline" size={16} color={activeTab === 'info' ? '#FFB800' : '#94A3B8'} style={{marginRight: 6}} />
-              <Text style={activeTab === 'info' ? styles.tabTextActive : styles.tabTextInactive}>{t('shop.tabs.info', 'Infos')}</Text>
+              <Text style={activeTab === 'info' ? styles.tabTextActive : styles.tabTextInactive}>{t('shop.tabs.info', "Info")}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.tab, activeTab === 'shop' && styles.tabActive]} onPress={() => setActiveTab('shop')}>
               <Ionicons name="storefront-outline" size={16} color={activeTab === 'shop' ? '#FFB800' : '#94A3B8'} style={{marginRight: 6}} />
-              <Text style={activeTab === 'shop' ? styles.tabTextActive : styles.tabTextInactive}>{t('shop.tabs.store', 'Boutique')}</Text>
+              <Text style={activeTab === 'shop' ? styles.tabTextActive : styles.tabTextInactive}>{t('shop.tabs.store', "Store")}</Text>
             </TouchableOpacity>
           </View>
 
@@ -420,7 +420,7 @@ export default function ShopProductsScreen({ route }) {
               <Ionicons name="search-outline" size={18} color="#94A3B8" style={{marginRight: 8}} />
               <TextInput 
                 style={styles.searchInput} 
-                placeholder={t('shop.products.search_placeholder', 'Rechercher un produit...')} 
+                placeholder={t('shop.products.search_placeholder', "Search a product...")}
                 placeholderTextColor="#94A3B8"
                 value={query}
                 onChangeText={setQuery}
@@ -437,7 +437,7 @@ export default function ShopProductsScreen({ route }) {
                 style={{marginRight: 6}} 
               />
               <Text style={[styles.btnFilterText, activeFilterCount > 0 && styles.btnFilterTextActive]}>
-                {activeFilterCount > 0 ? `${t('shop.products.filter', 'Filtrer')} (${activeFilterCount})` : t('shop.products.filter', 'Filtrer')}
+                {activeFilterCount > 0 ? `${t('shop.products.filter', "Filter")} (${activeFilterCount})` : t('shop.products.filter', "Filter")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -464,7 +464,7 @@ export default function ShopProductsScreen({ route }) {
             ) : filteredProducts.length === 0 ? (
               <View style={styles.emptyProducts}>
                 <Ionicons name="cube-outline" size={40} color="#94A3B8" />
-                <Text style={styles.emptyProductsText}>{t('shop.products.no_products_found', 'Aucun produit trouvé dans cette boutique.')}</Text>
+                <Text style={styles.emptyProductsText}>{t('shop.products.no_products_found', "No products found for this search.")}</Text>
               </View>
             ) : (
               filteredProducts.map((product) => (
@@ -497,7 +497,7 @@ export default function ShopProductsScreen({ route }) {
                         baseCurrency={product.currency || shop.currency || 'XOF'} 
                       />
                       <Text style={styles.productStock}>
-                        {(product.stock_quantity !== undefined && product.stock_quantity <= 0) ? t('outOfStock', 'Rupture') : (product.stock || t('shop.products.in_stock', 'En stock'))}
+                        {(product.stock_quantity !== undefined && product.stock_quantity <= 0) ? t('outOfStock', "Out of stock") : (product.stock || t('shop.products.in_stock', "In stock"))}
                       </Text>
                     </View>
                     
@@ -508,7 +508,7 @@ export default function ShopProductsScreen({ route }) {
                         onPress={() => navigation.navigate('ProductDetailsScreen', { product: product, shop: shop })}
                       >
                         <Ionicons name="cart-outline" size={13} color="#1A2840" style={{marginRight: 4}} />
-                        <Text style={[styles.btnBuyCardText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy', 'Acheter')}</Text>
+                        <Text style={[styles.btnBuyCardText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy', "Buy")}</Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity 
@@ -516,7 +516,7 @@ export default function ShopProductsScreen({ route }) {
                         onPress={() => shareProductGift(product)}
                       >
                         <Ionicons name="gift-outline" size={13} color="#1D4ED8" style={{marginRight: 4}} />
-                        <Text style={[styles.btnBuyMeCardText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy_me', 'Achetez-moi')}</Text>
+                        <Text style={[styles.btnBuyMeCardText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy_me', "Buy me")}</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -530,31 +530,31 @@ export default function ShopProductsScreen({ route }) {
             <View style={styles.featureItem}>
               <Ionicons name="shield-checkmark-outline" size={20} color="#3B82F6" style={{marginRight: 8}} />
               <View>
-                <Text style={styles.featureTitle}>{t('shop.features.secure_payment', 'Paiement sécurisé')}</Text>
-                <Text style={styles.featureSubtitle}>{t('shop.features.secure_100', '100% sécurisé par Escrow')}</Text>
+                <Text style={styles.featureTitle}>{t('shop.features.secure_payment', "Secure payment")}</Text>
+                <Text style={styles.featureSubtitle}>{t('shop.features.secure_100', "100% Escrow protected")}</Text>
               </View>
             </View>
             <View style={styles.featureItem}>
               <Ionicons name="bus-outline" size={20} color="#3B82F6" style={{marginRight: 8}} />
               <View>
-                <Text style={styles.featureTitle}>{t('shop.features.fast_delivery', 'Livraison rapide')}</Text>
+                <Text style={styles.featureTitle}>{t('shop.features.fast_delivery', "Fast delivery")}</Text>
                 <Text style={styles.featureSubtitle}>
-                  {shop.country ? `${t('shop.features.nationwide_delivery', 'Livraison')} • ${shop.country}` : t('shop.features.fast_delivery', 'Livraison rapide & suivie')}
+                  {shop.country ? `${t('shop.features.nationwide_delivery', "Reliable delivery")} • ${shop.country}` : t('shop.features.fast_delivery', "Fast delivery")}
                 </Text>
               </View>
             </View>
             <View style={styles.featureItem}>
               <Ionicons name="headset-outline" size={20} color="#3B82F6" style={{marginRight: 8}} />
               <View>
-                <Text style={styles.featureTitle}>{t('shop.features.support_24_7', 'Support 7j/7')}</Text>
-                <Text style={styles.featureSubtitle}>{t('shop.features.dedicated_support', 'Assistance dédiée')}</Text>
+                <Text style={styles.featureTitle}>{t('shop.features.support_24_7', "7/7 Support")}</Text>
+                <Text style={styles.featureSubtitle}>{t('shop.features.dedicated_support', "Dedicated assistance")}</Text>
               </View>
             </View>
             <View style={styles.featureItem}>
               <Ionicons name="checkmark-circle-outline" size={20} color="#3B82F6" style={{marginRight: 8}} />
               <View>
-                <Text style={styles.featureTitle}>{t('shop.features.verified_seller', 'Vendeur vérifié')}</Text>
-                <Text style={styles.featureSubtitle}>{t('shop.features.trusted_merchant', 'Marchand de confiance')}</Text>
+                <Text style={styles.featureTitle}>{t('shop.features.verified_seller', "Verified seller")}</Text>
+                <Text style={styles.featureSubtitle}>{t('shop.features.trusted_merchant', "Trusted partner merchant")}</Text>
               </View>
             </View>
           </ScrollView>
@@ -665,10 +665,10 @@ function ShopReviewsTabContent({ shop, shopName, onOpenWriteModal, reviewsRefres
       <View style={styles.reviewsHeaderRow}>
         <View style={{ flex: 1, marginRight: 8 }}>
           <Text style={styles.tabPageTitle}>
-            {t('shop.reviews.title', 'Avis clients')} ({totalReviews})
+            {t('shop.reviews.title', "Customer Reviews")} ({totalReviews})
           </Text>
           <Text style={styles.reviewsHeaderSub}>
-            {t('shop.reviews.sub', 'Avis authentifiés et vérifiés')}
+            {t('shop.reviews.sub', "Authenticated and verified reviews")}
           </Text>
         </View>
 
@@ -685,8 +685,8 @@ function ShopReviewsTabContent({ shop, shopName, onOpenWriteModal, reviewsRefres
           />
           <Text style={styles.btnWriteReviewText}>
             {myReview 
-              ? t('shop.reviews.editBtn', 'Modifier mon avis') 
-              : t('shop.reviews.writeBtn', 'Donner un avis')}
+              ? t('shop.reviews.editBtn', "Edit review")
+              : t('shop.reviews.writeBtn', "Write a review")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -707,11 +707,11 @@ function ShopReviewsTabContent({ shop, shopName, onOpenWriteModal, reviewsRefres
             ))}
           </View>
           <Text style={styles.ratingCountSub}>
-            {t('shop.reviews.basedOn', `Basé sur ${totalReviews} avis`, { count: totalReviews })}
+            {t('shop.reviews.basedOn', "Based on {{count}} reviews", { count: totalReviews })}
           </Text>
           <View style={styles.verifiedBuyersBadge}>
             <Ionicons name="shield-checkmark" size={12} color="#059669" style={{ marginRight: 4 }} />
-            <Text style={styles.verifiedBuyersBadgeText}>{t('shop.reviews.verifiedBuyers', '100% Vérifié')}</Text>
+            <Text style={styles.verifiedBuyersBadgeText}>{t('shop.reviews.verifiedBuyers', "100% Verified")}</Text>
           </View>
         </View>
 
@@ -736,7 +736,7 @@ function ShopReviewsTabContent({ shop, shopName, onOpenWriteModal, reviewsRefres
       <View style={styles.trustBanner}>
         <Ionicons name="shield-checkmark" size={18} color="#10B981" style={{ marginRight: 8 }} />
         <Text style={styles.trustBannerText}>
-          {t('shop.reviews.escrowGuarantee', 'Commandes sécurisées par contrat intelligent Escrow. Les avis sont authentifiés après confirmation de réception.')}
+          {t('shop.reviews.escrowGuarantee', "Orders protected by Escrow smart contract. Reviews are verified after delivery confirmation.")}
         </Text>
       </View>
 
@@ -750,14 +750,14 @@ function ShopReviewsTabContent({ shop, shopName, onOpenWriteModal, reviewsRefres
         <View style={styles.emptyReviewsCard}>
           <Ionicons name="chatbubbles-outline" size={36} color="#94A3B8" style={{ marginBottom: 8 }} />
           <Text style={styles.emptyReviewsTitle}>
-            {t('shop.reviews.beFirst', 'Soyez le premier à donner votre avis !')}
+            {t('shop.reviews.beFirst', "Be the first to leave a review!")}
           </Text>
           <Text style={styles.emptyReviewsSub}>
-            {t('shop.reviews.shareExperience', `Partagez votre expérience d'achat chez ${shopName}.`, { name: shopName })}
+            {t('shop.reviews.shareExperience', "Share your shopping experience at {{name}}.", { name: shopName })}
           </Text>
           <TouchableOpacity style={[styles.btnWriteReview, { marginTop: 12 }]} onPress={onOpenWriteModal} activeOpacity={0.85}>
             <Ionicons name="create-outline" size={15} color="#1A2840" style={{ marginRight: 5 }} />
-            <Text style={styles.btnWriteReviewText}>{t('shop.reviews.writeBtn', 'Donner un avis')}</Text>
+            <Text style={styles.btnWriteReviewText}>{t('shop.reviews.writeBtn', "Write a review")}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -767,12 +767,12 @@ function ShopReviewsTabContent({ shop, shopName, onOpenWriteModal, reviewsRefres
         <View style={styles.reviewsListContainer}>
           {/* Sorting Row */}
           <View style={styles.reviewsSortRow}>
-            <Text style={styles.reviewsSortLabel}>{t('shop.reviews.sort', 'Trier :')}</Text>
+            <Text style={styles.reviewsSortLabel}>{t('shop.reviews.sort', "Sort:")}</Text>
             <View style={styles.reviewsSortPills}>
               {[
-                { id: 'newest', label: t('shop.reviews.sortNewest', 'Plus récents') },
-                { id: 'highest', label: t('shop.reviews.sortHighest', 'Mieux notés') },
-                { id: 'lowest', label: t('shop.reviews.sortLowest', 'Moins bien notés') },
+                { id: 'newest', label: t('shop.reviews.sortNewest', "Newest") },
+                { id: 'highest', label: t('shop.reviews.sortHighest', "Highest rated") },
+                { id: 'lowest', label: t('shop.reviews.sortLowest', "Lowest rated") },
               ].map((s) => (
                 <TouchableOpacity
                   key={s.id}
@@ -801,7 +801,7 @@ function ShopReviewsTabContent({ shop, shopName, onOpenWriteModal, reviewsRefres
                     {rev.isVerifiedBuyer && (
                       <View style={styles.verifiedTag}>
                         <Ionicons name="checkmark-circle" size={11} color="#059669" style={{ marginRight: 2 }} />
-                        <Text style={styles.verifiedTagText}>{t('shop.reviews.verifiedBuyer', 'Acheteur vérifié')}</Text>
+                        <Text style={styles.verifiedTagText}>{t('shop.reviews.verifiedBuyer', "Verified Buyer")}</Text>
                       </View>
                     )}
                   </View>
@@ -835,7 +835,7 @@ function ShopReviewsTabContent({ shop, shopName, onOpenWriteModal, reviewsRefres
                     style={{ marginRight: 4 }}
                   />
                   <Text style={[styles.btnHelpfulText, votedMap[rev.id] && styles.btnHelpfulTextActive]}>
-                    {t('shop.reviews.helpful', 'Utile')} ({rev.helpfulVotes || 0})
+                    {t('shop.reviews.helpful', "Helpful")} ({rev.helpfulVotes || 0})
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -848,7 +848,7 @@ function ShopReviewsTabContent({ shop, shopName, onOpenWriteModal, reviewsRefres
 }
 
 function ShopTabContent({ tab, shop, onViewShop, onOpenWriteModal, reviewsRefreshTrigger, t, currentUser }) {
-  const shopName = shop.name || shop.shop_name || shop.raw?.shop_name || t('shop.default_name', 'Boutique');
+  const shopName = shop.name || shop.shop_name || shop.raw?.shop_name || t('shop.default_name', "Shop");
 
   if (tab === 'reviews') {
     return (
@@ -864,18 +864,18 @@ function ShopTabContent({ tab, shop, onViewShop, onOpenWriteModal, reviewsRefres
   }
 
   if (tab === 'info') {
-    const address = shop.shop_address || shop.street_name_number || shop.african_way_address || [shop.city_village || shop.raw?.city_village, shop.country || shop.raw?.country].filter(Boolean).join(', ') || t('shop.info.not_specified', 'Non spécifié');
-    const hours = shop.opening_hours || 'Lundi – Samedi, 08:00 – 20:00';
+    const address = shop.shop_address || shop.street_name_number || shop.african_way_address || [shop.city_village || shop.raw?.city_village, shop.country || shop.raw?.country].filter(Boolean).join(', ') || t('shop.info.not_specified', "Not specified");
+    const hours = shop.opening_hours || 'Monday – Saturday, 08:00 – 20:00';
     const deliveryText = Array.isArray(shop.delivery_modes) && shop.delivery_modes.length > 0 
-      ? shop.delivery_modes.map(m => m === 'picking' ? 'Retrait boutique' : (m === 'delivery' ? 'Livraison' : m)).join(', ') 
-      : t('shop.info.delivery_options', 'Livraison à domicile & retrait en boutique');
-    const verification = (shop.is_verified || shop.verified) ? t('shop.info.verified_merchant', 'Marchand vérifié par DizzitUp') : t('shop.info.partner_store', 'Boutique partenaire DizzitUp');
+      ? shop.delivery_modes.map(m => m === 'picking' ? 'Store pickup' : (m === 'delivery' ? 'Delivery' : m)).join(', ')
+      : t('shop.info.delivery_options', "Home delivery, store pickup & online services");
+    const verification = (shop.is_verified || shop.verified) ? t('shop.info.verified_merchant', "Verified merchant by DizzitUp") : t('shop.info.partner_store', "DizzitUp Partner Store");
 
     const infoItems = [
-      { icon: 'time-outline', title: t('shop.info.opening_hours', 'Horaires'), text: hours },
-      { icon: 'bus-outline', title: t('shop.info.delivery', 'Livraison & Retrait'), text: deliveryText },
-      { icon: 'location-outline', title: t('shop.info.address', 'Adresse'), text: address },
-      { icon: 'shield-checkmark-outline', title: 'Sécurité & Vérification', text: verification }
+      { icon: 'time-outline', title: t('shop.info.opening_hours', "Opening hours"), text: hours },
+      { icon: 'bus-outline', title: t('shop.info.delivery', "Pickup / Delivery"), text: deliveryText },
+      { icon: 'location-outline', title: t('shop.info.address', "Address"), text: address },
+      { icon: 'shield-checkmark-outline', title: 'Security & Verification', text: verification }
     ];
 
     if (shop.shop_email || shop.shop_mobile_number) {
@@ -888,7 +888,7 @@ function ShopTabContent({ tab, shop, onViewShop, onOpenWriteModal, reviewsRefres
 
     return (
       <View style={styles.tabPage}>
-        <Text style={styles.tabPageTitle}>{t('shop.info.practical_info', 'Informations pratiques')}</Text>
+        <Text style={styles.tabPageTitle}>{t('shop.info.practical_info', "Practical Information")}</Text>
         {infoItems.map((item) => (
           <View key={item.title} style={styles.infoRow}>
             <View style={styles.infoIcon}>
@@ -904,15 +904,15 @@ function ShopTabContent({ tab, shop, onViewShop, onOpenWriteModal, reviewsRefres
     );
   }
 
-  const aboutText = shop.description || shop.about || shop.shop_description || t('shop.default_about', 'Bienvenue sur la boutique officielle de {{name}} sur DizzitUp. Découvrez nos produits certifiés avec garantie de livraison par séquestre Escrow.', { name: shopName });
+  const aboutText = shop.description || shop.about || shop.shop_description || t('shop.default_about', "Welcome to {{name}}'s official store on DizzitUp. Discover genuine products backed by smart contract escrow protection.", { name: shopName });
 
   return (
     <View style={styles.tabPage}>
-      <Text style={styles.tabPageTitle}>{t('shop.sections.about_store', 'À propos de la boutique')}</Text>
+      <Text style={styles.tabPageTitle}>{t('shop.sections.about_store', "About the store")}</Text>
       <Text style={styles.tabPageText}>{aboutText}</Text>
       <TouchableOpacity style={styles.viewShopButton} onPress={onViewShop}>
         <Ionicons name="storefront-outline" size={19} color="#1A2840" />
-        <Text style={styles.viewShopButtonText}>{t('shop.actions.view_full_profile', 'Voir la fiche complète')}</Text>
+        <Text style={styles.viewShopButtonText}>{t('shop.actions.view_full_profile', "View full profile")}</Text>
       </TouchableOpacity>
     </View>
   );

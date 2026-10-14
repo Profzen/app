@@ -14,7 +14,7 @@ export const FeaturesBanner = () => {
           <Ionicons name="shield-checkmark-outline" size={22} color={theme.colors.primary} />
         </View>
         <Text style={styles.featureText}>
-          {t('features.secureMoney', "Support your families in Africa while securing the use of your funds")}
+          {t('features.secureMoney', "Support your family in Africa while securing your funds")}
         </Text>
       </View>
 
@@ -25,7 +25,7 @@ export const FeaturesBanner = () => {
           <Ionicons name="map-outline" size={22} color={theme.colors.primary} />
         </View>
         <Text style={styles.featureText}>
-          {t('features.allAfrica', "Across all Africa\n(54 countries)")}
+          {t('features.allAfrica', "Across all of Africa\n(54 countries)")}
         </Text>
       </View>
 
@@ -36,7 +36,7 @@ export const FeaturesBanner = () => {
           <Ionicons name="globe-outline" size={22} color={theme.colors.primary} />
         </View>
         <Text style={styles.featureText}>
-          {t('features.bestPrice', "Source products & services in Africa with top quality & rates")}
+          {t('features.bestPrice', "Source products and services in Africa at the best value")}
         </Text>
       </View>
     </View>

@@ -99,10 +99,10 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
   // ─── Off-ramp provider name from paymentCorridorService metadata ───
   const momoOperators = meta.momoNetworks || [];
   const providerName = selectedMethod === 'bank'
-    ? t('withdrawFunds.bankTransfer', 'Virement bancaire')
+    ? t('withdrawFunds.bankTransfer', "Bank transfer")
     : momoOperators.length > 0
       ? momoOperators.join(' / ') + ` (${countryName})`
-      : t('withdrawFunds.bankTransfer', 'Virement bancaire');
+      : t('withdrawFunds.bankTransfer', "Bank transfer");
 
   // ─── Live rate: 1 USD → local fiat ───
   const normalizedCurrency = currencyRateService.normalizeCurrency(effectiveCurrency);
@@ -266,7 +266,7 @@ export default function WithdrawFundsMobileMoneySummaryScreen() {
                   <Ionicons name="wallet" size={16} color="#1E3A8A" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.summaryLabel}>{t('withdrawFunds.walletDebited', 'Your DZYwallet is debited by')}</Text>
+                  <Text style={styles.summaryLabel}>{t('withdrawFunds.walletDebited', "Your DZYwallet will be debited")}</Text>
                   <Text style={styles.summaryValueBig}>{actualDebitTokenAmount} {token}</Text>
                   <Text style={styles.summaryRate}>
                     {t('withdrawFunds.exchangeRate', { token, rate: rateFormatted, curr: effectiveCurrency, defaultValue: `Rate: 1 ${token} = ${rateFormatted} ${effectiveCurrency}` })}

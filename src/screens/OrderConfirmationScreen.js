@@ -126,7 +126,7 @@ export default function OrderConfirmationScreen({ route }) {
       title: t('orderConfirmation.orderRefCopiedTitle', 'Reference Copied!'),
       message: t(
         'orderConfirmation.orderRefCopied',
-        `Order reference ${orderData.orderId} copied to clipboard.`,
+        "Order reference {{id}} copied to clipboard.",
         { id: orderData.orderId }
       ),
     });
@@ -142,7 +142,7 @@ export default function OrderConfirmationScreen({ route }) {
       title: t('orderConfirmation.pinCopiedTitle', 'PIN Code Copied!'),
       message: t(
         'orderConfirmation.pinCopied',
-        `Secret PIN code ${escrowPin} copied.`,
+        "Secret PIN code {{pin}} copied.",
         { pin: escrowPin }
       ),
     });
@@ -168,7 +168,7 @@ export default function OrderConfirmationScreen({ route }) {
         if (token === 'DZY' && (user?.balanceDZY || 0) < costDZY) {
           AppToast.showError(
             t('orderConfirmation.insufficientDZY', 'Your DZY balance is insufficient to complete this purchase.'),
-            t('common.error', 'Insufficient balance')
+            t('common.error', "Error")
           );
           setLoading(false);
           return;
@@ -215,8 +215,8 @@ export default function OrderConfirmationScreen({ route }) {
         setLoading(false);
 
         const orderTitle = orderData.items.length > 1
-          ? `${orderData.items[0].name} ${t('orderConfirmation.moreItems', `+ ${orderData.items.length - 1} autres`, { count: orderData.items.length - 1 })}`
-          : (orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', 'Commande DizzitUp'));
+          ? `${orderData.items[0].name} ${t('orderConfirmation.moreItems', "+ {{count}} more", { count: orderData.items.length - 1 })}`
+          : (orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', "Marketplace Purchase"));
 
         navigation.navigate('PaymentSuccessScreen', {
           transaction: {
@@ -308,7 +308,7 @@ export default function OrderConfirmationScreen({ route }) {
         setLoading(false);
         navigation.navigate('PaymentSuccessScreen', {
           transaction: {
-            title: orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', 'DizzitUp Order'),
+            title: orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', "Marketplace Purchase"),
             amount: orderData.totalAmount,
             currency: displayCurrency,
             paymentMethod: t('orderConfirmation.cardVisaMc', 'Bank Card (Visa/MC)'),
@@ -431,7 +431,7 @@ export default function OrderConfirmationScreen({ route }) {
                   {(Number(item.price) || 0).toLocaleString(numLocale)} {displayCurrency}
                 </Text>
                 <View style={styles.qtyBadge}>
-                  <Text style={styles.qtyBadgeText}>{t('orderConfirmation.qty', `Qty: ${item.quantity}`, { qty: item.quantity })}</Text>
+                  <Text style={styles.qtyBadgeText}>{t('orderConfirmation.qty', "Qty: {{qty}}", { qty: item.quantity })}</Text>
                 </View>
               </View>
             </View>
@@ -440,10 +440,10 @@ export default function OrderConfirmationScreen({ route }) {
 
         {/* Payment & Recipient Details */}
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>{t('orderConfirmation.paymentDetails', 'Payment & delivery details')}</Text>
+          <Text style={styles.sectionTitle}>{t('orderConfirmation.paymentDetails', "Payment details")}</Text>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('orderConfirmation.youPayWith', 'Payment method')}</Text>
+            <Text style={styles.detailLabel}>{t('orderConfirmation.youPayWith', "You pay with")}</Text>
             <View style={styles.detailValueRow}>
               {orderData.paymentRail === 'crypto' && (
                 <>
@@ -600,7 +600,7 @@ export default function OrderConfirmationScreen({ route }) {
                   setShowCyberSourceModal(false);
                   navigation.navigate('PaymentSuccessScreen', {
                     transaction: {
-                      title: orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', 'DizzitUp Order'),
+                      title: orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', "Marketplace Purchase"),
                       amount: orderData.totalAmount,
                       currency: displayCurrency,
                       orderId: orderData.orderId,
@@ -654,7 +654,7 @@ export default function OrderConfirmationScreen({ route }) {
             </View>
 
             <Text style={styles.escrowModalDesc}>
-              {t('escrow.modalDesc', 'Experience our exclusive On-Chain Escrow protocol — a world-first DizzitUp innovation.\n\nYour funds remain 100% safeguarded on-chain under smart contracts and are only released to the merchant after physical handover and inspection with your secret delivery PIN.\n\nLive on-chain settlements will be activated very soon!')}
+              {t('escrow.modalDesc', "Experience our exclusive On-Chain Escrow protocol — a world-first DizzitUp innovation.\n\nYour funds remain 100% safeguarded on-chain under smart contracts and are only released to the merchant after physical handover and inspection with your secret delivery PIN.\n\nLive on-chain settlements will be activated very soon!")}
             </Text>
 
             <TouchableOpacity
@@ -666,7 +666,7 @@ export default function OrderConfirmationScreen({ route }) {
               activeOpacity={0.85}
             >
               <Text style={styles.escrowModalPrimaryBtnText}>
-                {t('escrow.proceedToPayment', 'Understood, Proceed to Payment')}
+                {t('escrow.proceedToPayment', "Understood, proceed to payment")}
               </Text>
             </TouchableOpacity>
 
@@ -678,7 +678,7 @@ export default function OrderConfirmationScreen({ route }) {
               activeOpacity={0.7}
             >
               <Text style={styles.escrowModalSecondaryBtnText}>
-                {t('escrow.reviewOrder', 'Review Order')}
+                {t('escrow.reviewOrder', "Review order")}
               </Text>
             </TouchableOpacity>
           </View>

@@ -435,7 +435,7 @@ export default function ChooseServiceScreen() {
             <Ionicons name="search-outline" size={20} color="#9CA3AF" style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
-              placeholder={t('marketplace.searchPlaceholder', 'Search products, services...')}
+              placeholder={t('marketplace.searchPlaceholder', "Search products, services, remittance...")}
               placeholderTextColor="#9CA3AF"
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -517,7 +517,7 @@ export default function ChooseServiceScreen() {
                         </View>
                         <View style={styles.priceWrap}>
                           {item.isService ? (
-                            <Text style={styles.serviceSetNext}>{t('marketplace.amountSetNext', 'Amount set next')}</Text>
+                            <Text style={styles.serviceSetNext}>{t('marketplace.amountSetNext', "Amount set at next step")}</Text>
                           ) : (
                             <>
                               <Text style={styles.priceMain}>${item.price.toFixed(2)}</Text>

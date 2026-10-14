@@ -204,12 +204,12 @@ export default function RewardsScreen() {
                       </Text>
                       <View style={styles.proBadge}>
                         <Text style={styles.proBadgeText}>
-                          {t('rewards.pre_tge_badge', 'PRE-TGE')}
+                          {t('rewards.pre_tge_badge', "PRE-TGE REWARDS")}
                         </Text>
                       </View>
                     </View>
                     <Text style={styles.rateSubtitle} numberOfLines={1}>
-                      {t('rewards.token_valuation', '10 DZY = $1.00 USD (Polygon ERC-20)')}
+                      {t('rewards.token_valuation', "1 DZY = $0.10 USD (Polygon ERC-20)")}
                     </Text>
                   </View>
                 </View>

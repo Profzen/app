@@ -4370,7 +4370,7 @@
   "tabSwap": "Troca",
   "tabMore": "Mais",
   "shopsBannerReferTitle": "Indique uma loja\ne ganhe ",
-  "shopsBannerReferAmount": " em DZY",
+  "shopsBannerReferAmount": "{{amount}} DZY",
   "shopsBannerReferSub": "Recomende um negócio\ne ganhe recompensas.",
   "shopsBannerReferBtn": "Indicar",
   "shopsFilterFood": "Alimentos e Mercearia",

@@ -909,7 +909,7 @@ export default function PayBillsSummaryScreen() {
               <View style={styles.methodInfo}>
                 <View style={styles.methodTitleRow}>
                   <Text style={styles.methodTitle} numberOfLines={1} ellipsizeMode="tail">
-                    {t('paybillsSummary.dizzyWallet', 'DZYwallet')}
+                    {t('paybillsSummary.dizzyWallet', "DZYwallet (Stablecoins & DZY)")}
                   </Text>
                   <View style={styles.stablecoinTag}>
                     <Text style={styles.stablecoinTagText}>{t('paybillsSummary.instantBadge', 'Instant')}</Text>
@@ -1253,7 +1253,7 @@ export default function PayBillsSummaryScreen() {
               <View style={styles.errorAlertHeader}>
                 <Ionicons name="alert-circle" size={18} color="#DC2626" />
                 <Text style={styles.errorAlertTitle}>
-                  {t('paybillsSummary.errorNotice', 'Unable to Proceed')}
+                  {t('paybillsSummary.errorNotice', "Unable to proceed")}
                 </Text>
                 <TouchableOpacity onPress={() => setPaymentError(null)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                   <Ionicons name="close" size={16} color="#94A3B8" />
@@ -1314,19 +1314,19 @@ export default function PayBillsSummaryScreen() {
               <View style={styles.payButtonContent}>
                 <Ionicons name="add-circle" size={16} color="#20365B" style={{ marginRight: 6 }} />
                 <Text style={styles.payButtonText}>
-                  {t('paybillsSummary.topUpToPay', 'Top-Up to Pay')}
+                  {t('paybillsSummary.topUpToPay', "Top up your wallet to pay with DZYwallet")}
                 </Text>
               </View>
             ) : (
               <View style={styles.payButtonContent}>
                 <Text style={styles.payButtonText}>
                   {selectedMethod === 'wallet'
-                    ? `${t('paybillsSummary.confirmAndPay', 'Confirm')} • ${requiredDzyAmount.toFixed(2)} ${selectedDzyToken.toUpperCase()}`
+                    ? `${t('paybillsSummary.confirmAndPay', "Confirm & Pay")} • ${requiredDzyAmount.toFixed(2)} ${selectedDzyToken.toUpperCase()}`
                     : selectedMethod === 'crypto'
-                      ? `${t('paybillsSummary.payWithCrypto', 'Pay')} • ${totalCost} ${currency}`
+                      ? `${t('paybillsSummary.payWithCrypto', "Pay with Web3 Wallet")} • ${totalCost} ${currency}`
                       : selectedMethod === 'card'
-                        ? `${t('paybillsSummary.payWithCard', 'Pay')} • ${formattedFcfa} FCFA`
-                        : `${t('paybillsSummary.payWithMomo', 'Pay')} • ${totalCost} ${currency}`}
+                        ? `${t('paybillsSummary.payWithCard', "Pay with Card")} • ${formattedFcfa} FCFA`
+                        : `${t('paybillsSummary.payWithMomo', "Pay with Mobile Money")} • ${totalCost} ${currency}`}
                 </Text>
                 <Ionicons name="arrow-forward" size={16} color="#20365B" style={{ marginLeft: 6 }} />
               </View>

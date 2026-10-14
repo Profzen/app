@@ -12,9 +12,9 @@ import { supabase } from '../services/supabaseClient';
 import AppToast from '../components/AppToast';
 
 const STEPS = (t) => [
-  { label: t('auth.email', 'E-mail') },
+  { label: t('auth.email', "Email") },
   { label: t('auth.code', 'Code') },
-  { label: t('auth.reset', 'Réinitialiser') },
+  { label: t('auth.reset', "Reset") },
 ];
 
 export default function ResetPasswordCodeScreen() {
@@ -41,7 +41,7 @@ export default function ResetPasswordCodeScreen() {
       const { error } = await supabase.auth.verifyOtp({ email, token: code, type: 'recovery' });
       if (error) throw error;
       
-      setToastInfo({ visible: true, title: t('common.success', 'Success'), message: t('auth.codeValidated', 'Code validé avec succès !'), type: 'success' });
+      setToastInfo({ visible: true, title: t('common.success', 'Success'), message: t('auth.codeValidated', "Code validated successfully!"), type: 'success' });
       setTimeout(() => navigation.navigate('ResetPasswordFinalScreen'), 1500);
     } catch (err) {
       setToastInfo({ visible: true, title: t('common.error', 'Error'), message: err.message, type: 'error' });
@@ -55,7 +55,7 @@ export default function ResetPasswordCodeScreen() {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email);
       if (error) throw error;
-      setToastInfo({ visible: true, title: t('common.success', 'Success'), message: t('auth.resetSent', 'Nouveau code envoyé !'), type: 'success' });
+      setToastInfo({ visible: true, title: t('common.success', 'Success'), message: t('auth.resetSent', "Password reset email sent! Check your inbox."), type: 'success' });
     } catch (err) {
       setToastInfo({ visible: true, title: t('common.error', 'Error'), message: err.message, type: 'error' });
     }
@@ -77,13 +77,13 @@ export default function ResetPasswordCodeScreen() {
           {/* Header */}
           <View style={styles.header}>
             <HeaderBackButton onPress={() => navigation.goBack()} />
-            <Text style={styles.headerTitle}>{t('auth.resetPasswordTitle', 'Réinitialiser le mot de passe')}</Text>
+            <Text style={styles.headerTitle}>{t('auth.resetPasswordTitle', "Reset Password")}</Text>
             <View style={styles.placeholderBox} />
           </View>
 
           {/* Title Section */}
           <View style={styles.titleSection}>
-            <Text style={styles.mainTitle}>{t('auth.verificationCodeTitle', 'Code de vérification')}</Text>
+            <Text style={styles.mainTitle}>{t('auth.verificationCodeTitle', "Verification Code")}</Text>
             <Text style={styles.subtitle}>
               {t('auth.enterVerificationCode', { email: obfuscateEmail(email), defaultValue: `We sent a verification code to ${obfuscateEmail(email)}.` })}
             </Text>
@@ -103,7 +103,7 @@ export default function ResetPasswordCodeScreen() {
               style={[styles.button, styles.buttonPrevious]}
               onPress={() => navigation.goBack()}
             >
-              <Text style={styles.buttonPreviousText}>{t('common.previous', 'PRÉCÉDENT')}</Text>
+              <Text style={styles.buttonPreviousText}>{t('common.previous', "PREVIOUS")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -122,7 +122,7 @@ export default function ResetPasswordCodeScreen() {
                   styles.buttonNextText,
                   isNextDisabled && styles.buttonNextTextDisabled
                 ]}>
-                  {t('common.next', 'SUIVANT')}
+                  {t('common.next', "NEXT")}
                 </Text>
               )}
             </TouchableOpacity>
@@ -134,7 +134,7 @@ export default function ResetPasswordCodeScreen() {
             onPress={handleResend}
           >
             <Ionicons name="refresh" size={20} color="#1A2840" />
-            <Text style={styles.resendText}>{t('auth.resendCode', 'Renvoyer le code')}</Text>
+            <Text style={styles.resendText}>{t('auth.resendCode', "Resend Code")}</Text>
           </TouchableOpacity>
 
         </ScrollView>
