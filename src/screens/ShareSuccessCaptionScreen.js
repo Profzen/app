@@ -6,11 +6,27 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import * as Sharing from 'expo-sharing';
-import RNShare from 'react-native-share';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import { getOperatorLogo } from '../utils/operatorLogos';
 import { ALL_COUNTRIES } from '../utils/countriesData';
+
+// Safely resolve RNShare only when native module is linked in binary (e.g. custom dev client / production build)
+// In Expo Go, RNShare native TurboModule is not present, so we safely return null and fall back to expo-sharing
+const getRNShare = () => {
+  try {
+    const { NativeModules, TurboModuleRegistry } = require('react-native');
+    const hasNative = Boolean(
+      (TurboModuleRegistry?.get && TurboModuleRegistry.get('RNShare')) ||
+      NativeModules?.RNShare
+    );
+    if (!hasNative) return null;
+    const mod = require('react-native-share');
+    return mod?.default || mod;
+  } catch (e) {
+    return null;
+  }
+};
 
 export default function ShareSuccessCaptionScreen() {
   const navigation = useNavigation();
@@ -125,29 +141,32 @@ export default function ShareSuccessCaptionScreen() {
       await Clipboard.setStringAsync(captionText);
 
       if (Platform.OS !== 'web' && cardUri && !cardUri.endsWith('.pdf')) {
-        const socialByPlatform = {
-          facebook: RNShare.Social.FACEBOOK,
-          whatsapp: RNShare.Social.WHATSAPP,
-          twitter: RNShare.Social.TWITTER,
-          instagram: RNShare.Social.INSTAGRAM,
-          linkedin: RNShare.Social.LINKEDIN,
-          telegram: RNShare.Social.TELEGRAM,
-        };
-        const targetSocial = socialByPlatform[platform];
+        const RNShare = getRNShare();
+        if (RNShare?.Social && RNShare?.shareSingle) {
+          const socialByPlatform = {
+            facebook: RNShare.Social.FACEBOOK,
+            whatsapp: RNShare.Social.WHATSAPP,
+            twitter: RNShare.Social.TWITTER,
+            instagram: RNShare.Social.INSTAGRAM,
+            linkedin: RNShare.Social.LINKEDIN,
+            telegram: RNShare.Social.TELEGRAM,
+          };
+          const targetSocial = socialByPlatform[platform];
 
-        if (targetSocial) {
-          try {
-            await RNShare.shareSingle({
-              social: targetSocial,
-              url: cardUri,
-              type: 'image/png',
-              message: captionText,
-              title: t('shareSuccess.shareModalTitle', 'Share my DizzitUp success'),
-              useInternalStorage: true,
-            });
-            sharedWithFile = true;
-          } catch (shareErr) {
-            console.warn(`[ShareSuccess] Direct ${platform} share unavailable:`, shareErr);
+          if (targetSocial) {
+            try {
+              await RNShare.shareSingle({
+                social: targetSocial,
+                url: cardUri,
+                type: 'image/png',
+                message: captionText,
+                title: t('shareSuccess.shareModalTitle', 'Share my DizzitUp success'),
+                useInternalStorage: true,
+              });
+              sharedWithFile = true;
+            } catch (shareErr) {
+              console.warn(`[ShareSuccess] Direct ${platform} share unavailable:`, shareErr);
+            }
           }
         }
 
