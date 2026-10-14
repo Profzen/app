@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput, Share, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput, Share as NativeShare, Platform, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
+import * as Sharing from 'expo-sharing';
+import RNShare from 'react-native-share';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import { getOperatorLogo } from '../utils/operatorLogos';
@@ -41,6 +43,8 @@ export default function ShareSuccessCaptionScreen() {
   const rawRecipientCountry = transactionData.recipientCountry || 'TG';
   const matchedRecipientCountry = ALL_COUNTRIES.find(c => c.name.toLowerCase() === rawRecipientCountry.toLowerCase() || c.code.toLowerCase() === rawRecipientCountry.toLowerCase());
   const recipientFlag = transactionData.recipientFlag || matchedRecipientCountry?.flag || '🇹🇬';
+  const recipientCountryCode = (matchedRecipientCountry?.code || rawRecipientCountry || 'TG').toUpperCase();
+  const senderCountryCode = (matchedSenderCountry?.code || rawSenderCountry || '').toUpperCase();
 
   const isPayment = transactionData?.type === 'payment' || actionKey === 'actionPaid' || !!transactionData?.merchantName || !!transactionData?.serviceTitle;
 
@@ -92,16 +96,8 @@ export default function ShareSuccessCaptionScreen() {
 
   const formatRecipientCaptionName = () => {
     if (!rawRecipientName) return 'Recipient';
-    // If it already has (Country), preserve it completely
-    if (rawRecipientName.includes('(') && rawRecipientName.includes(')')) {
-      return rawRecipientName.trim();
-    }
     const firstName = rawRecipientName.split(' ')[0].trim();
-    const countryName = matchedRecipientCountry?.name || (rawRecipientCountry && rawRecipientCountry !== 'GLOBAL' && rawRecipientCountry !== 'TG' ? rawRecipientCountry : '');
-    if (countryName) {
-      return `${firstName} (${countryName})`;
-    }
-    return firstName;
+    return [firstName, recipientFlag, recipientCountryCode].filter(Boolean).join(' ');
   };
 
   // Clean, modern, professional social message (preserves Country and clean link)
@@ -126,28 +122,41 @@ export default function ShareSuccessCaptionScreen() {
       const cardUri = route.params?.cardImageUri || route.params?.cardUri;
       let sharedWithFile = false;
 
-      // On native mobile, try sharing the visual file if available or generated
-      if (Platform.OS !== 'web') {
-        let fileToShare = cardUri;
-        
-        // If no image file was passed, we skip generating a PDF because social media apps 
-        // like Facebook and X (Twitter) reject .pdf file attachments for posts. 
-        // By leaving fileToShare empty, we fall back to standard text and URL sharing below,
-        // which works perfectly for posting the user's custom caption to social networks.
+      await Clipboard.setStringAsync(captionText);
 
-        if (fileToShare && !fileToShare.endsWith('.pdf')) {
+      if (Platform.OS !== 'web' && cardUri && !cardUri.endsWith('.pdf')) {
+        const socialByPlatform = {
+          facebook: RNShare.Social.FACEBOOK,
+          whatsapp: RNShare.Social.WHATSAPP,
+          twitter: RNShare.Social.TWITTER,
+          instagram: RNShare.Social.INSTAGRAM,
+          linkedin: RNShare.Social.LINKEDIN,
+          telegram: RNShare.Social.TELEGRAM,
+        };
+        const targetSocial = socialByPlatform[platform];
+
+        if (targetSocial) {
           try {
-            const Sharing = require('expo-sharing');
-            if (await Sharing.isAvailableAsync()) {
-              await Sharing.shareAsync(fileToShare, {
-                mimeType: 'image/png',
-                dialogTitle: t('shareSuccess.shareModalTitle', "Share my DizzitUp success"),
-              });
-              sharedWithFile = true;
-            }
+            await RNShare.shareSingle({
+              social: targetSocial,
+              url: cardUri,
+              type: 'image/png',
+              message: captionText,
+              title: t('shareSuccess.shareModalTitle', 'Share my DizzitUp success'),
+              useInternalStorage: true,
+            });
+            sharedWithFile = true;
           } catch (shareErr) {
-            console.warn('expo-sharing error:', shareErr);
+            console.warn(`[ShareSuccess] Direct ${platform} share unavailable:`, shareErr);
           }
+        }
+
+        if (!sharedWithFile && await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(cardUri, {
+            mimeType: 'image/png',
+            dialogTitle: t('shareSuccess.shareModalTitle', 'Share my DizzitUp success'),
+          });
+          sharedWithFile = true;
         }
       }
 
@@ -160,7 +169,7 @@ export default function ShareSuccessCaptionScreen() {
             url: 'https://dizzitup.com/',
           });
         } else {
-          await Share.share({
+          await NativeShare.share({
             title: t('shareSuccess.shareModalTitle', "Share my DizzitUp success"),
             message: captionText,
             url: 'https://dizzitup.com/',
@@ -170,19 +179,16 @@ export default function ShareSuccessCaptionScreen() {
 
       setToast({
         title: t('shareSuccess.toastShareSuccessTitle', "Congratulations!"),
-        message: t('shareSuccess.toastShareSuccessMsg', "Success shared! 1 DZY has been credited to your account.")
+        message: t('shareSuccess.captionCopiedForPost', 'The visual was sent and the caption was copied. Paste it into your post and tag @DizzitUp.')
       });
       setTimeout(() => {
         navigation.navigate('RewardsScreen');
       }, 1500);
     } catch (error) {
       setToast({
-        title: t('shareSuccess.toastShareTitle', "Success shared"),
-        message: t('shareSuccess.toastShareMsg', "1 DZY credited to your Rewards!")
+        title: t('shareSuccess.shareFailedTitle', 'Sharing cancelled'),
+        message: t('shareSuccess.shareFailedMessage', 'Nothing was posted. You can try again when ready.')
       });
-      setTimeout(() => {
-        navigation.navigate('RewardsScreen');
-      }, 1500);
     }
   };
 
@@ -283,7 +289,7 @@ export default function ShareSuccessCaptionScreen() {
                       <Text style={styles.compactAvatarText}>{displaySenderName?.slice(0, 2).toUpperCase() || 'DZ'}</Text>
                     )}
                   </View>
-                  <Text style={styles.compactUserName} numberOfLines={1}>{displaySenderName} {senderFlag}</Text>
+                  <Text style={styles.compactUserName} numberOfLines={1}>{displaySenderName} {senderFlag} {senderCountryCode}</Text>
                 </View>
 
                 <Ionicons name="arrow-forward" size={13} color="rgba(255,255,255,0.7)" style={{ marginHorizontal: 6 }} />
@@ -299,7 +305,7 @@ export default function ShareSuccessCaptionScreen() {
                       <Text style={styles.compactAvatarText}>{displayRecipientName?.slice(0, 2).toUpperCase() || '?'}</Text>
                     )}
                   </View>
-                  <Text style={styles.compactUserName} numberOfLines={1}>{displayRecipientName} {recipientFlag}</Text>
+                  <Text style={styles.compactUserName} numberOfLines={1}>{displayRecipientName} {recipientFlag} {recipientCountryCode}</Text>
                 </View>
               </View>
             </View>

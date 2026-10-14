@@ -5895,5 +5895,10 @@
   "invoicePayLink.fullDashboard": "Open full invoice dashboard",
   "contacts.results_plural": "results",
   "shop.dzyAccepted": "DZY accepted",
-  "topup.corridor_notice_title": "Mobile Money Corridors"
+  "topup.corridor_notice_title": "Mobile Money Corridors",
+  "shareSuccess.captureErrorTitle": "Visual not ready",
+  "shareSuccess.captureErrorMessage": "The sharing image could not be generated. Please try again.",
+  "shareSuccess.captionCopiedForPost": "The visual was sent and the caption was copied. Paste it into your post and tag @DizzitUp.",
+  "shareSuccess.shareFailedTitle": "Sharing cancelled",
+  "shareSuccess.shareFailedMessage": "Nothing was posted. You can try again when ready."
 }

@@ -5918,5 +5918,10 @@
   "invoicePayLink.fullDashboard": "Ouvrir le tableau de bord des factures",
   "contacts.results_plural": "résultats",
   "shop.dzyAccepted": "DZY accepté",
-  "topup.corridor_notice_title": "Corridors Mobile Money partenaires"
+  "topup.corridor_notice_title": "Corridors Mobile Money partenaires",
+  "shareSuccess.captureErrorTitle": "Visuel indisponible",
+  "shareSuccess.captureErrorMessage": "L’image de partage n’a pas pu être générée. Veuillez réessayer.",
+  "shareSuccess.captionCopiedForPost": "Le visuel a été envoyé et la légende copiée. Collez-la dans votre publication et identifiez @DizzitUp.",
+  "shareSuccess.shareFailedTitle": "Partage annulé",
+  "shareSuccess.shareFailedMessage": "Aucun contenu n’a été publié. Vous pourrez réessayer lorsque vous serez prêt."
 }
