@@ -5373,7 +5373,7 @@
     "cashback_title": "Cashback em Todos os Pagamentos",
     "cashback_sub": "Ganhe DZY automaticamente sempre que pagar contas, recarregar saldo ou comprar",
     "rate_dzy_title": "Pagamento em DZY",
-    "rate_dzy_sub": "Maior taxa de cashback em todos os serviços",
+    "rate_dzy_sub": "Liquidação na sua conta bancária",
     "rate_dzy_badge": "Melhor Taxa",
     "rate_dzy_note": "Ativo no TGE",
     "rate_stablecoins_title": "Pagamento em Stablecoins",
@@ -5672,5 +5672,16 @@
   "paymentRails.momoUnavailableRegion": "Indisponível para {{country}}. Ativo em 20 países da África Subsaariana.",
   "paymentRails.bankAvailable": "Transferência bancária disponível em {{country}}",
   "paymentRails.bankUnavailable": "Transferência bancária indisponível para {{country}}",
-  "withdrawFunds.titleToMobileMoney": "Levantar fundos para Mobile Money"
+  "withdrawFunds.titleToMobileMoney": "Levantar fundos para Mobile Money",
+  "shareProfile.title": "Partilhar o meu perfil DizzitUp",
+  "shareProfile.subtitle": "Ajude as pessoas a identificá-lo antes de pagar ou enviar fundos.",
+  "shareProfile.scanHint": "Digitalize para abrir o link de convite DizzitUp verificado.",
+  "shareProfile.share": "Partilhar perfil",
+  "shareProfile.copy": "Copiar dados do perfil",
+  "shareProfile.copied": "Dados do perfil copiados.",
+  "shareProfile.privacy": "Partilhe este perfil apenas com pessoas de confiança. Nunca partilhe o seu PIN.",
+  "invoicePayLink.title": "Fatura e DZYpaylink",
+  "invoicePayLink.subtitle": "Crie e partilhe um pedido de pagamento simples.",
+  "invoicePayLink.generate": "Gerar link de pagamento",
+  "invoicePayLink.fullDashboard": "Abrir painel completo de faturas"
 }

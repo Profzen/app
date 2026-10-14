@@ -568,7 +568,7 @@ export default function OrderVerificationScreen({ route }) {
           <Ionicons name="arrow-back" size={24} color="#1A2840" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('orderVerification.title', 'Vérification de commande')}</Text>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('HelpCenterPage')}>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('ContactUsScreen')}>
           <Ionicons name="headset-outline" size={22} color="#1A2840" />
         </TouchableOpacity>
       </View>

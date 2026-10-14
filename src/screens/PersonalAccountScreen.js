@@ -210,6 +210,11 @@ export default function PersonalAccountScreen() {
             </View>
           </View>
 
+          <TouchableOpacity style={styles.shareProfileButton} onPress={() => navigation.navigate('ShareProfileScreen')}>
+            <Ionicons name="share-social-outline" size={19} color="#1A2840" />
+            <Text style={styles.shareProfileButtonText}>{t('shareProfile.title', 'Share my DizzitUp profile')}</Text>
+          </TouchableOpacity>
+
           {/* Form Section */}
           <Text style={styles.sectionHeader}>{t('personalAccount.accountDetails', 'ACCOUNT DETAILS')}</Text>
           <View style={styles.card}>
@@ -337,6 +342,8 @@ const styles = StyleSheet.create({
   profileNameText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#1A2840', marginBottom: 6 },
   kycBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#ECFDF5', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
   kycBadgeText: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#059669', marginLeft: 4 },
+  shareProfileButton: { height: 48, borderRadius: 14, borderWidth: 1, borderColor: '#F2C14E', backgroundColor: '#FFF9E8', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12 },
+  shareProfileButtonText: { fontFamily: 'Inter_700Bold', fontSize: 14, color: '#1A2840' },
   sectionHeader: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#9CA3AF', letterSpacing: 0.8, marginTop: 10, marginBottom: 8, marginLeft: 4 },
   card: { backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#F0F2F5', paddingHorizontal: 16, paddingVertical: 6, marginBottom: 16 },
   fieldRow: { marginVertical: 8 },

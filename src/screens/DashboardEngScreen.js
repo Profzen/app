@@ -266,7 +266,7 @@ export default function DashboardEngScreen() {
           <View style={styles.quickActionsGrid}>
             
             {/* 1: Invoice & Pay link */}
-            <TouchableOpacity style={styles.qActionCard}>
+            <TouchableOpacity style={styles.qActionCard} onPress={() => navigation.navigate('InvoicePayLinkScreen')}>
               <View style={[styles.qActionIconCircle, { backgroundColor: '#EFF6FF' }]}>
                 <Ionicons name="document-text-outline" size={22} color="#0052FF" />
               </View>

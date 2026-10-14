@@ -5591,7 +5591,7 @@
     "cashback_title": "Cashback on All Payments",
     "cashback_sub": "Earn DZY automatically every time you pay bills, top up mobile airtime, or shop",
     "rate_dzy_title": "Payment in DZY",
-    "rate_dzy_sub": "Highest cashback value across all services",
+    "rate_dzy_sub": "Settlement in your bank account",
     "rate_dzy_badge": "Best Rate",
     "rate_dzy_note": "Active at TGE",
     "rate_stablecoins_title": "Payment in Stablecoins",
@@ -5881,5 +5881,16 @@
   "paymentRails.momoUnavailableRegion": "Not available in {{country}}. Available in 20 Sub-Saharan African countries.",
   "paymentRails.bankAvailable": "Bank transfer available in {{country}}",
   "paymentRails.bankUnavailable": "Bank transfer unavailable in {{country}}",
-  "withdrawFunds.titleToMobileMoney": "Withdraw funds to Mobile Money"
+  "withdrawFunds.titleToMobileMoney": "Withdraw funds to Mobile Money",
+  "shareProfile.title": "Share my DizzitUp profile",
+  "shareProfile.subtitle": "Help people identify you before they pay or send funds.",
+  "shareProfile.scanHint": "Scan to open the verified DizzitUp invitation link.",
+  "shareProfile.share": "Share profile",
+  "shareProfile.copy": "Copy profile details",
+  "shareProfile.copied": "Profile details copied to clipboard.",
+  "shareProfile.privacy": "Only share this profile with people you trust. Never share your PIN or recovery information.",
+  "invoicePayLink.title": "Invoice & DZYpaylink",
+  "invoicePayLink.subtitle": "Create and share a simple payment request.",
+  "invoicePayLink.generate": "Generate payment link",
+  "invoicePayLink.fullDashboard": "Open full invoice dashboard"
 }

@@ -5392,7 +5392,7 @@
     "cashback_title": "በሁሉም ክፍያዎች ላይ የተመላሽ ገንዘብ",
     "cashback_sub": "ሂሳብ ሲከፍሉ፣ ስልክ ሲሞሉ ወይም ሲገዙ ወዲያውኑ DZY ያግኙ",
     "rate_dzy_title": "በ DZY ክፍያ መፈጸም",
-    "rate_dzy_sub": "በሁሉም አገልግሎቶች ላይ ከፍተኛው የተመላሽ ተመን",
+    "rate_dzy_sub": "ወደ ባንክ ሂሳብዎ ማስተላለፍ",
     "rate_dzy_badge": "ምርጥ ተመን",
     "rate_dzy_note": "በ TGE ጊዜ ገቢር ይሆናል",
     "rate_stablecoins_title": "በ Stablecoins ክፍያ",
@@ -5691,5 +5691,16 @@
   "paymentRails.momoUnavailableRegion": "ለ {{country}} አይገኝም። ከሰሃራ በታች ባሉ 20 የአፍሪካ ሀገራት ውስጥ ንቁ።",
   "paymentRails.bankAvailable": "የባንክ ማስተላለፍ በ {{country}} ውስጥ ይገኛል",
   "paymentRails.bankUnavailable": "የባንክ ማስተላለፍ በ {{country}} ውስጥ አይገኝም",
-  "withdrawFunds.titleToMobileMoney": "ወደ ሞባይል ገንዘብ ገንዘብ ማውጣት"
+  "withdrawFunds.titleToMobileMoney": "ወደ ሞባይል ገንዘብ ገንዘብ ማውጣት",
+  "shareProfile.title": "የDizzitUp መገለጫዬን አጋራ",
+  "shareProfile.subtitle": "ከመክፈላቸው ወይም ገንዘብ ከመላካቸው በፊት እንዲለዩዎት ያግዟቸው።",
+  "shareProfile.scanHint": "የተረጋገጠውን የDizzitUp ግብዣ አገናኝ ለመክፈት ይቃኙ።",
+  "shareProfile.share": "መገለጫ አጋራ",
+  "shareProfile.copy": "የመገለጫ መረጃ ቅዳ",
+  "shareProfile.copied": "የመገለጫ መረጃ ተቀድቷል።",
+  "shareProfile.privacy": "ይህን መገለጫ ከሚያምኗቸው ሰዎች ጋር ብቻ ያጋሩ። PINዎን አያጋሩ።",
+  "invoicePayLink.title": "ደረሰኝ እና DZYpaylink",
+  "invoicePayLink.subtitle": "ቀላል የክፍያ ጥያቄ ይፍጠሩ እና ያጋሩ።",
+  "invoicePayLink.generate": "የክፍያ አገናኝ ፍጠር",
+  "invoicePayLink.fullDashboard": "ሙሉ የደረሰኝ ዳሽቦርድ ክፈት"
 }

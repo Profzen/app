@@ -127,7 +127,7 @@ export default function PaymentInProgressScreen({ route }) {
           <Ionicons name="arrow-back" size={24} color="#1A2840" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('paymentInProgress.title', 'Paiement en cours')}</Text>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('HelpCenterPage')}>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('ContactUsScreen')}>
           <Ionicons name="headset-outline" size={22} color="#1A2840" />
         </TouchableOpacity>
       </View>

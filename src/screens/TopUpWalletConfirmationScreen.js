@@ -277,7 +277,7 @@ export default function TopUpWalletConfirmationScreen() {
             </TouchableOpacity>
           )}
 
-          <TouchableOpacity style={styles.btnPrimary} onPress={() => navigation.navigate('AssetsListScreen')}>
+          <TouchableOpacity style={styles.btnPrimary} onPress={() => navigation.navigate('AssetListScreen')}>
             <Ionicons name="wallet-outline" size={20} color="#1A2840" style={styles.btnIconLeft} />
             <Text style={styles.btnPrimaryText}>{t('topUpWallet.viewMyWallet', 'View my DZYwallet')}</Text>
             <Ionicons name="arrow-forward" size={20} color="#1A2840" style={styles.btnIconRight} />
