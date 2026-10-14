@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import ViewShot from 'react-native-view-shot';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import { getOperatorLogo } from '../utils/operatorLogos';
@@ -41,6 +42,8 @@ export default function ShareSuccessVisualScreen() {
   const rawRecipientCountry = transactionData.recipientCountry || 'TG';
   const matchedRecipientCountry = ALL_COUNTRIES.find(c => c.name.toLowerCase() === rawRecipientCountry.toLowerCase() || c.code.toLowerCase() === rawRecipientCountry.toLowerCase());
   const recipientFlag = transactionData.recipientFlag || matchedRecipientCountry?.flag || '🇹🇬';
+  const recipientCountryCode = (matchedRecipientCountry?.code || rawRecipientCountry || 'TG').toUpperCase();
+  const senderCountryCode = (matchedSenderCountry?.code || rawSenderCountry || '').toUpperCase();
 
   const isPayment = transactionData?.type === 'payment' || actionKey === 'actionPaid' || !!transactionData?.merchantName || !!transactionData?.serviceTitle;
 
@@ -54,6 +57,7 @@ export default function ShareSuccessVisualScreen() {
   const [toast, setToast] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [customStyleIndex, setCustomStyleIndex] = useState(0);
+  const cardShotRef = useRef(null);
 
   const cardBackgrounds = [
     ['#20365B', '#111D33'], // DizzitUp Navy
@@ -69,11 +73,26 @@ export default function ShareSuccessVisualScreen() {
     });
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
+    let cardImageUri = null;
+    if (Platform.OS !== 'web') {
+      try {
+        cardImageUri = await cardShotRef.current?.capture?.();
+        if (!cardImageUri) throw new Error('Card capture returned no file');
+      } catch (error) {
+        console.warn('[ShareSuccess] Unable to capture card:', error);
+        setToast({
+          title: t('shareSuccess.captureErrorTitle', 'Visual not ready'),
+          message: t('shareSuccess.captureErrorMessage', 'The sharing image could not be generated. Please try again.'),
+        });
+        return;
+      }
+    }
     navigation.navigate('ShareSuccessCaptionScreen', {
       platform,
       transactionData,
       cardStyle: cardBackgrounds[customStyleIndex],
+      cardImageUri,
     });
   };
 
@@ -170,7 +189,7 @@ export default function ShareSuccessVisualScreen() {
                 </Text>
               )}
             </View>
-            <Text style={styles.userName} numberOfLines={1}>{displaySenderName} {senderFlag}</Text>
+            <Text style={styles.userName} numberOfLines={1}>{displaySenderName} {senderFlag} {senderCountryCode}</Text>
           </View>
 
           <View style={styles.transferArrowCircle}>
@@ -190,7 +209,7 @@ export default function ShareSuccessVisualScreen() {
                 </Text>
               )}
             </View>
-            <Text style={styles.userName} numberOfLines={1}>{(isPayment && transactionData?.merchantName ? transactionData.merchantName : displayRecipientName)} {recipientFlag}</Text>
+            <Text style={styles.userName} numberOfLines={1}>{displayRecipientName} {recipientFlag} {recipientCountryCode}</Text>
           </View>
         </View>
 
@@ -285,14 +304,17 @@ export default function ShareSuccessVisualScreen() {
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
           {/* Main Visual Card */}
-          <LinearGradient
-            colors={cardBackgrounds[customStyleIndex]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.visualCard}
-          >
-            {renderCardContent()}
-          </LinearGradient>
+          <ViewShot ref={cardShotRef} options={{ format: 'png', quality: 1, result: 'tmpfile' }}>
+            <LinearGradient
+              colors={cardBackgrounds[customStyleIndex]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.visualCard}
+              collapsable={false}
+            >
+              {renderCardContent()}
+            </LinearGradient>
+          </ViewShot>
 
           {/* Control Buttons */}
           <View style={styles.controlsRow}>
