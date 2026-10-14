@@ -8,7 +8,7 @@ import { useApp } from '../context/AppContext';
 import AppSelect from '../components/AppSelect';
 import AppToast from '../components/AppToast';
 
-const CURRENCIES = ['USDC', 'USDT', 'EURC', 'DZY'].map((code) => ({ value: code, label: code }));
+const CURRENCIES = ['USDC', 'USDT', 'EURC'].map((code) => ({ value: code, label: code }));
 const slugify = (value) => String(value || 'global').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'global';
 
 export default function InvoicePayLinkScreen() {

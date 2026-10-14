@@ -29,8 +29,12 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
     }
   };
 
+  const isBusiness = accountMode === 'business';
+
   const QUICK_ACTIONS = [
-    { id: '1', icon: 'bag-handle-outline', color: '#3B82F6', bgColor: '#EFF6FF', label: t('actionBuyGoods', 'Buy goods'), route: 'ShopsScreen' },
+    isBusiness
+      ? { id: '1', icon: 'link-outline', color: '#0052FF', bgColor: '#EFF6FF', label: t('actionPayLink', 'Pay link'), route: 'InvoicePayLinkScreen' }
+      : { id: '1', icon: 'bag-handle-outline', color: '#3B82F6', bgColor: '#EFF6FF', label: t('actionBuyGoods', 'Buy goods'), route: 'ShopsScreen' },
     { id: '2', icon: 'document-text-outline', color: '#8B5CF6', bgColor: '#F5F3FF', label: t('actionPayBills', 'Pay bills'), route: 'PayBillsScreen' },
     { id: '3', icon: 'cart-outline', color: '#F59E0B', bgColor: '#FFFBEB', label: t('actionRequestMoney', 'Request money'), route: 'ReceiveFundsV2Screen' },
     { id: '4', icon: 'people-outline', color: '#10B981', bgColor: '#ECFDF5', label: t('actionSendMoney', 'Send money'), route: 'ContactsScreen', params: { nextScreen: 'SendMoneyScreen' } },
