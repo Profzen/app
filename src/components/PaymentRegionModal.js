@@ -55,10 +55,10 @@ export default function PaymentRegionModal({
           <View style={styles.header}>
             <View style={{ flex: 1 }}>
               <Text style={styles.title}>
-                {t('paymentRails.regionModalTitle', 'Région de paiement Mobile Money')}
+                {t('paymentRails.regionModalTitle', "Mobile Money Payment Region")}
               </Text>
               <Text style={styles.subtitle}>
-                {t('paymentRails.regionModalSub', 'Détecté actuellement :')} {currentMeta.flag} {currentCountryName}
+                {t('paymentRails.regionModalSub', "Currently detected:")} {currentMeta.flag} {currentCountryName}
               </Text>
             </View>
             <TouchableOpacity style={styles.closeBtn} onPress={onClose} activeOpacity={0.7}>
@@ -71,12 +71,12 @@ export default function PaymentRegionModal({
             <Ionicons name="information-circle" size={20} color="#3B82F6" style={{ marginRight: 8, marginTop: 2 }} />
             <View style={{ flex: 1 }}>
               <Text style={styles.infoNoticeTitle}>
-                {t('paymentRails.momoNoticeTitle', 'Pourquoi le Mobile Money est-il grisé ?')}
+                {t('paymentRails.momoNoticeTitle', "Why is Mobile Money grayed out?")}
               </Text>
               <Text style={styles.infoNoticeText}>
                 {t(
                   'paymentRails.momoNoticeDesc',
-                  'Le Mobile Money nécessite un opérateur africain partenaire (Safaricom, MTN, Airtel, Orange, Vodacom, Moov, Wave...). Si vous détenez un numéro mobile de l’un des pays ci-dessous, sélectionnez-le pour activer ce moyen.'
+                  "Mobile Money requires a partner African operator (Safaricom, MTN, Airtel, Orange, Vodacom, Moov, Wave). If you hold a mobile number from one of the covered countries below, select it to unlock this method."
                 )}
               </Text>
             </View>
@@ -87,7 +87,7 @@ export default function PaymentRegionModal({
             <Ionicons name="search-outline" size={16} color="#94A3B8" style={{ marginRight: 6 }} />
             <TextInput
               style={styles.searchInput}
-              placeholder={t('paymentRails.searchCountryPlaceholder', 'Rechercher un pays (ex: Sénégal, Kenya...)')}
+              placeholder={t('paymentRails.searchCountryPlaceholder', "Search a country (e.g. Senegal, Kenya...)")}
               placeholderTextColor="#94A3B8"
               value={search}
               onChangeText={setSearch}
@@ -102,7 +102,7 @@ export default function PaymentRegionModal({
           {/* Countries List */}
           <ScrollView style={styles.countriesScroll} showsVerticalScrollIndicator={false}>
             <Text style={styles.listSectionHeader}>
-              {t('paymentRails.availableCountriesHeader', '20 Pays Africains Supportés')} ({filteredCountries.length})
+              {t('paymentRails.availableCountriesHeader', "20 Supported African Countries")} ({filteredCountries.length})
             </Text>
 
             {filteredCountries.map((c) => {
@@ -150,7 +150,7 @@ export default function PaymentRegionModal({
               activeOpacity={0.8}
             >
               <Ionicons name="card-outline" size={16} color="#1A2840" style={{ marginRight: 6 }} />
-              <Text style={styles.btnAlternativeText}>{t('paymentRails.payWithCard', 'Payer par Carte')}</Text>
+              <Text style={styles.btnAlternativeText}>{t('paymentRails.payWithCard', "Pay with Card")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -162,7 +162,7 @@ export default function PaymentRegionModal({
               activeOpacity={0.8}
             >
               <Ionicons name="wallet-outline" size={16} color="#1D4ED8" style={{ marginRight: 6 }} />
-              <Text style={[styles.btnAlternativeText, { color: '#1D4ED8' }]}>{t('paymentRails.payWithCrypto', 'Payer en Crypto')}</Text>
+              <Text style={[styles.btnAlternativeText, { color: '#1D4ED8' }]}>{t('paymentRails.payWithCrypto', "Pay with Crypto")}</Text>
             </TouchableOpacity>
           </View>
         </View>

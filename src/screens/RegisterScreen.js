@@ -136,7 +136,7 @@ export default function RegisterScreen({ route }) {
     if (!country) newErrors.country = t('auth.errorRequired', 'Required');
     if (!password) newErrors.password = t('auth.errorRequired', 'Required');
     if (!confirmPassword) newErrors.confirmPassword = t('auth.errorRequired', 'Required');
-    if (strength < 2) newErrors.password = t('auth.pwdWeak', 'Password is too weak');
+    if (strength < 2) newErrors.password = t('auth.pwdWeak', "Weak");
 
     const selectedCountryCode = ALL_COUNTRIES.find(c => c.name === country)?.code || 'FR';
     if (!phone) {
@@ -219,7 +219,7 @@ export default function RegisterScreen({ route }) {
         }
       }
 
-      setToastInfo({ visible: true, title: t('common.success', 'Registration successful'), message: t('auth.registrationSuccessMsg', 'Your verification code is ready.'), type: 'success' });
+      setToastInfo({ visible: true, title: t('common.success', "Success"), message: t('auth.registrationSuccessMsg', 'Your verification code is ready.'), type: 'success' });
       setTimeout(() => navigation.navigate('VerificationScreen', { emailOrPhone: email }), 900);
 
     } catch (error) {
@@ -245,7 +245,7 @@ export default function RegisterScreen({ route }) {
             <Ionicons name="chevron-back" size={22} color={theme.colors.primary} />
           </TouchableOpacity>
           <View style={styles.loginLinkContainer}>
-            <Text style={styles.loginText}>{t('auth.alreadyHaveAccount', 'Already have an account? ')}</Text>
+            <Text style={styles.loginText}>{t('auth.alreadyHaveAccount', "Already have an account?")}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
               <Text style={styles.loginLink}>{t('auth.login', 'Log in')}</Text>
             </TouchableOpacity>
@@ -259,9 +259,9 @@ export default function RegisterScreen({ route }) {
             style={styles.logo} 
             resizeMode="contain"
           />
-          <Text style={styles.mainTitle}>{t('auth.createAccount', 'Create an account')}</Text>
+          <Text style={styles.mainTitle}>{t('auth.createAccount', "Create your account")}</Text>
           <Text style={styles.subTitle}>
-            {t('auth.signUpSubtitle', 'Join DizzitUp and access a complete\nfinancial and digital ecosystem.')}
+            {t('auth.signUpSubtitle', "Create your global account to instantly send stablecoins, cover family bills, buy goods, and empower African businesses.")}
           </Text>
         </View>
 
@@ -344,8 +344,8 @@ export default function RegisterScreen({ route }) {
           {errors.email && <Text style={{ color: theme.colors.error, fontSize: 12, marginTop: -8, marginBottom: 8, marginLeft: 4 }}>{errors.email}</Text>}
           
           <DizzitInput
-            label={t('auth.password', 'Create your password')}
-            placeholder={t('auth.enterPassword', 'Create your password')}
+            label={t('auth.password', "Password")}
+            placeholder={t('auth.enterPassword', "Enter your password")}
             isPassword
             value={password}
             onChangeText={(val) => { setPassword(val); if(errors.password) setErrors(prev => ({...prev, password: null})); }}

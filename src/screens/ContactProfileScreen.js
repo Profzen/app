@@ -34,7 +34,7 @@ export default function ContactProfileScreen({ route }) {
   const handleCopy = async (text, type) => {
     if (!text) return;
     await Clipboard.setStringAsync(text);
-    AppToast.showSuccess(t('common.copied', 'Copied!'));
+    AppToast.showSuccess(t('common.copied', "Link copied"));
   };
 
   const handleLink = (url) => {
@@ -121,7 +121,7 @@ export default function ContactProfileScreen({ route }) {
                   <View style={[styles.miniCoin, { top: 5, left: 8 }]} />
                 </View>
               </View>
-              <Text style={styles.quickCardText}>{t('contacts.quick_action_request_money', 'Request\nmoney')}</Text>
+              <Text style={styles.quickCardText}>{t('contacts.quick_action_request_money', "Request\nmoney")}</Text>
             </TouchableOpacity>
 
             {/* Card 3: Pay / Services */}
@@ -259,7 +259,7 @@ export default function ContactProfileScreen({ route }) {
                 <Ionicons name="people-outline" size={18} color="#6B7280" />
               </View>
               <View style={styles.infoTextGroup}>
-                <Text style={styles.infoLabel}>{t('beneficiary.edit.relation', 'Relationship')}</Text>
+                <Text style={styles.infoLabel}>{t('beneficiary.edit.relation', "Relation")}</Text>
                 <Text style={styles.infoValue}>{contact.relation || t('common.not_provided', 'Not provided')}</Text>
               </View>
               <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
@@ -329,7 +329,7 @@ export default function ContactProfileScreen({ route }) {
         onCancel={() => setOptionsModalVisible(false)}
         onConfirm={() => {
           setOptionsModalVisible(false);
-          AppToast.showInfo(t('common.comingSoon', 'Feature in progress'));
+          AppToast.showInfo(t('common.comingSoon', "Coming Soon"));
         }}
       />
     </SafeAreaView>

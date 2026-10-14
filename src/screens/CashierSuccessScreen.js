@@ -25,7 +25,7 @@ export default function CashierSuccessScreen() {
           <TouchableOpacity style={styles.iconSquareBtn} onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={20} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('pos.cash_desks', 'Caisse (TPE)')}</Text>
+          <Text style={styles.headerTitle}>{t('pos.cash_desks', "Cash Desks (POS/ATM)")}</Text>
           <TouchableOpacity style={styles.iconSquareBtn} onPress={() => navigation.navigate('AskAminataScreen')}>
             <Ionicons name="help-circle-outline" size={20} color="#1A2840" />
           </TouchableOpacity>
@@ -48,9 +48,9 @@ export default function CashierSuccessScreen() {
               </View>
             </View>
 
-            <Text style={styles.successTitleText}>{t('pos.payment_received_success', 'Paiement reçu avec succès !')}</Text>
+            <Text style={styles.successTitleText}>{t('pos.payment_received_success', "Payment received successfully!")}</Text>
             <Text style={styles.successSubtext}>
-              Le paiement a été confirmé.{'\n'}Merci.
+              Payment confirmed.{'\n'}Thank you.
             </Text>
           </View>
 
@@ -58,7 +58,7 @@ export default function CashierSuccessScreen() {
           <View style={styles.summaryCard}>
             {/* Left Column: Montant reçu */}
             <View style={styles.summaryLeftCol}>
-              <Text style={styles.summaryLabel}>{t('pos.amount_received', 'Montant reçu')}</Text>
+              <Text style={styles.summaryLabel}>{t('pos.amount_received', "Amount received")}</Text>
               <Text style={styles.amountMainGreen}>2 000</Text>
               <Text style={styles.amountCurrencyFcfa}>2000 FCFA</Text>
             </View>
@@ -67,14 +67,14 @@ export default function CashierSuccessScreen() {
 
             {/* Right Column: Vous avez reçu & Réseau */}
             <View style={styles.summaryRightCol}>
-              <Text style={styles.summaryLabel}>{t('pos.you_have_received', 'Vous avez reçu')}</Text>
+              <Text style={styles.summaryLabel}>{t('pos.you_have_received', "You have received")}</Text>
               <View style={styles.tokenPillBadge}>
                 <CryptoIcon symbol="USDT" size={20} />
                 <Text style={styles.tokenPillText}>USDT</Text>
               </View>
 
               <View style={styles.networkBox}>
-                <Text style={styles.networkLabel}>{t('pos.network', 'Réseau')}</Text>
+                <Text style={styles.networkLabel}>{t('pos.network', "Network")}</Text>
                 <View style={styles.networkValueRow}>
                   <CryptoIcon symbol="POL" size={16} />
                   <Text style={styles.networkNameText}>Polygon</Text>
@@ -85,7 +85,7 @@ export default function CashierSuccessScreen() {
 
           {/* Details Card */}
           <View style={styles.detailsCard}>
-            <Text style={styles.detailsCardTitle}>{t('pos.transaction_details', 'Détails de la transaction')}</Text>
+            <Text style={styles.detailsCardTitle}>{t('pos.transaction_details', "Transaction details")}</Text>
             
             {/* Row 1: Date et heure */}
             <View style={styles.detailRow}>
@@ -93,7 +93,7 @@ export default function CashierSuccessScreen() {
                 <View style={styles.detailIconBox}>
                   <Ionicons name="calendar-outline" size={16} color="#20365B" />
                 </View>
-                <Text style={styles.detailLabelText}>{t('pos.date_time', 'Date et heure')}</Text>
+                <Text style={styles.detailLabelText}>{t('pos.date_time', "Date and time")}</Text>
               </View>
               <Text style={styles.detailValueText}>{nowDate}</Text>
             </View>
@@ -106,7 +106,7 @@ export default function CashierSuccessScreen() {
                 <View style={styles.detailIconBox}>
                   <Ionicons name="pricetag-outline" size={16} color="#20365B" />
                 </View>
-                <Text style={styles.detailLabelText}>{t('pos.transaction_id', 'ID de transaction')}</Text>
+                <Text style={styles.detailLabelText}>{t('pos.transaction_id', "Transaction ID")}</Text>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={styles.detailValueText}>0x7a3f...e9b2c4d</Text>
@@ -124,9 +124,9 @@ export default function CashierSuccessScreen() {
                 <View style={styles.detailIconBox}>
                   <Ionicons name="wallet-outline" size={16} color="#20365B" />
                 </View>
-                <Text style={styles.detailLabelText}>{t('pos.payment_method', 'Méthode de paiement')}</Text>
+                <Text style={styles.detailLabelText}>{t('pos.payment_method', "Payment method")}</Text>
               </View>
-              <Text style={styles.detailValueText}>{t('pos.cash_desks', 'Caisse (TPE)')}</Text>
+              <Text style={styles.detailValueText}>{t('pos.cash_desks', "Cash Desks (POS/ATM)")}</Text>
             </View>
 
             <View style={styles.rowDivider} />
@@ -137,7 +137,7 @@ export default function CashierSuccessScreen() {
                 <View style={styles.detailIconBox}>
                   <Ionicons name="git-network-outline" size={16} color="#20365B" />
                 </View>
-                <Text style={styles.detailLabelText}>{t('pos.network', 'Réseau')}</Text>
+                <Text style={styles.detailLabelText}>{t('pos.network', "Network")}</Text>
               </View>
               <Text style={styles.detailValueText}>Polygon</Text>
             </View>
@@ -150,10 +150,10 @@ export default function CashierSuccessScreen() {
                 <View style={styles.detailIconBox}>
                   <Ionicons name="document-text-outline" size={16} color="#20365B" />
                 </View>
-                <Text style={styles.detailLabelText}>{t('pos.status', 'Statut')}</Text>
+                <Text style={styles.detailLabelText}>{t('pos.status', "Status")}</Text>
               </View>
               <View style={styles.statusPillGreen}>
-                <Text style={styles.statusPillTextGreen}>{t('pos.success_dot', 'Réussi •')}</Text>
+                <Text style={styles.statusPillTextGreen}>{t('pos.success_dot', "Successful •")}</Text>
               </View>
             </View>
           </View>
@@ -164,9 +164,9 @@ export default function CashierSuccessScreen() {
               <Ionicons name="shield-checkmark-outline" size={22} color="#10B981" />
             </View>
             <View style={styles.securityContentGroup}>
-              <Text style={styles.securityTitleText}>{t('pos.secure_transaction', 'Transaction sécurisée')}</Text>
+              <Text style={styles.securityTitleText}>{t('pos.secure_transaction', "Secure transaction")}</Text>
               <Text style={styles.securitySubtextText}>
-                Vos fonds sont protégés par un chiffrement{'\n'}de niveau bancaire et des partenaires de confiance.
+                Your funds are protected by bank-grade encryption{'\n'}and trusted partners.
               </Text>
             </View>
           </View>
@@ -182,7 +182,7 @@ export default function CashierSuccessScreen() {
                   token: 'USDT',
                   actionKey: 'actionReceived',
                   senderName: user?.name || '',
-                  recipientName: 'Caisse (TPE)',
+                  recipientName: 'Cash register (POS)',
                   date: nowDate,
                   txHash: '0x7a3f...e9b2c4d',
                 },
@@ -204,12 +204,12 @@ export default function CashierSuccessScreen() {
             </View>
 
             <View style={styles.shareTextWrap}>
-              <Text style={styles.shareCtaTitle}>Partager mon succès</Text>
+              <Text style={styles.shareCtaTitle}>Share my success</Text>
               <Text style={styles.shareCtaSub1}>
-                <Text style={styles.goldText}>Gagnez 1 DZY</Text> en identifiant <Text style={styles.goldText}>@DizzitUp</Text>
+                <Text style={styles.goldText}>Earn 1 DZY</Text> by tagging <Text style={styles.goldText}>@DizzitUp</Text>
               </Text>
               <Text style={styles.shareCtaSub2}>
-                Publiez une carte DizzitUp personnalisée de cette transaction
+                Publish a customized DizzitUp card for this transaction
               </Text>
             </View>
 
@@ -223,7 +223,7 @@ export default function CashierSuccessScreen() {
             activeOpacity={0.85}
           >
             <Ionicons name="receipt-outline" size={18} color="#1A2840" style={{ position: 'absolute', left: 16 }} />
-            <Text style={styles.btnVoirRecuText}>{t('pos.view_receipt', 'Voir le reçu')}</Text>
+            <Text style={styles.btnVoirRecuText}>{t('pos.view_receipt', "View receipt")}</Text>
             <Ionicons name="arrow-forward" size={18} color="#1A2840" style={{ position: 'absolute', right: 16 }} />
           </TouchableOpacity>
 
@@ -232,7 +232,7 @@ export default function CashierSuccessScreen() {
             onPress={() => navigation.navigate('CashierScanScreen')}
             activeOpacity={0.8}
           >
-            <Text style={styles.btnNouvelleTransactionText}>{t('pos.new_transaction', 'Nouvelle transaction')}</Text>
+            <Text style={styles.btnNouvelleTransactionText}>{t('pos.new_transaction', "New transaction")}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -240,7 +240,7 @@ export default function CashierSuccessScreen() {
             onPress={() => navigation.navigate('CashRegisterScreen')}
             activeOpacity={0.7}
           >
-            <Text style={styles.btnRetourCaisseText}>{t('pos.return_to_cashier', 'Retour à la caisse')}</Text>
+            <Text style={styles.btnRetourCaisseText}>{t('pos.return_to_cashier', "Return to cashier")}</Text>
           </TouchableOpacity>
 
           <View style={{ height: 20 }} />

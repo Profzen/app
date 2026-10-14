@@ -173,6 +173,11 @@ export default function BusinessAccountScreen() {
             </>
           )}
 
+          <TouchableOpacity style={styles.shareProfileButton} onPress={() => navigation.navigate('ShareProfileScreen')}>
+            <Ionicons name="share-social-outline" size={19} color="#1A2840" />
+            <Text style={styles.shareProfileButtonText}>{t('shareProfile.title', 'Share my DizzitUp profile')}</Text>
+          </TouchableOpacity>
+
           {/* Add / Create New Business Account Button */}
           <TouchableOpacity style={styles.addBizBtn} onPress={handleAddBusiness}>
             <Ionicons name="add-circle-outline" size={20} color="#FFC759" style={{ marginRight: 8 }} />
@@ -271,6 +276,8 @@ const styles = StyleSheet.create({
   primaryBizBtnText: { fontFamily: 'Inter_700Bold', fontSize: 14, color: '#1A2840' },
   addBizBtn: { height: 46, borderRadius: 14, backgroundColor: '#20365B', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
   addBizBtnText: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#FFFFFF' },
+  shareProfileButton: { height: 48, borderRadius: 14, borderWidth: 1, borderColor: '#F2C14E', backgroundColor: '#FFF9E8', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 10 },
+  shareProfileButtonText: { fontFamily: 'Inter_700Bold', fontSize: 14, color: '#1A2840' },
   categoryPillContainer: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 4, marginVertical: 2 },
   categoryPill: { backgroundColor: '#F0F2F5', paddingHorizontal: 6, paddingVertical: 3, borderRadius: 6, marginBottom: 2 },
   categoryPillText: { fontFamily: 'Inter_500Medium', fontSize: 10, color: '#475569' },

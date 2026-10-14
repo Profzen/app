@@ -227,7 +227,7 @@ export default function ContactHistoryScreen({ route }) {
                 </View>
                 <Text style={styles.emptyTitle}>{t('contacts.history.empty_title', 'No transactions yet')}</Text>
                 <Text style={styles.emptySubtitle}>
-                  {t('contacts.history.empty_subtitle', `Transactions with ${contact.name} will appear here.`)}
+                  {t('contacts.history.empty_subtitle', "Transactions with this contact will appear here.")}
                 </Text>
               </View>
             ) : (

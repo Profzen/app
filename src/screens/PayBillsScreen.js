@@ -329,7 +329,7 @@ export default function PayBillsScreen() {
 
               <TextInput
                 style={styles.inlinePhoneInput}
-                placeholder={t('payBills.phonePlaceholder', 'Phone number (e.g. 80 1234 5678)')}
+                placeholder={t('payBills.phonePlaceholder', "Ex: 90 12 34 56")}
                 placeholderTextColor="#94A3B8"
                 value={directPhone}
                 onChangeText={setDirectPhone}
@@ -361,7 +361,7 @@ export default function PayBillsScreen() {
               onPress={() => navigation.navigate('EditBeneficiaryScreen')}
             >
               <Ionicons name="person-add-outline" size={18} color="#D97706" style={{ marginBottom: 4 }} />
-              <Text style={{ color: '#D97706', fontSize: 11, fontFamily: 'Inter_600SemiBold', textAlign: 'center' }}>{t('contacts.add_beneficiary', 'Add Contact')}</Text>
+              <Text style={{ color: '#D97706', fontSize: 11, fontFamily: 'Inter_600SemiBold', textAlign: 'center' }}>{t('contacts.add_beneficiary', "Add a beneficiary")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -369,7 +369,7 @@ export default function PayBillsScreen() {
               onPress={() => shareInviteLink(userRefCode)}
             >
               <Ionicons name="paper-plane-outline" size={18} color="#3B82F6" style={{ marginBottom: 4 }} />
-              <Text style={{ color: '#3B82F6', fontSize: 11, fontFamily: 'Inter_600SemiBold', textAlign: 'center' }}>{t('home.btnInviteNow', 'Invite')}</Text>
+              <Text style={{ color: '#3B82F6', fontSize: 11, fontFamily: 'Inter_600SemiBold', textAlign: 'center' }}>{t('home.btnInviteNow', "Invite now")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -377,7 +377,7 @@ export default function PayBillsScreen() {
               onPress={() => navigation.navigate('ShopsScreen')}
             >
               <Ionicons name="storefront-outline" size={18} color="#8B5CF6" style={{ marginBottom: 4 }} />
-              <Text style={{ color: '#8B5CF6', fontSize: 11, fontFamily: 'Inter_600SemiBold', textAlign: 'center' }}>{t('home.btnReferNow', 'Refer Store')}</Text>
+              <Text style={{ color: '#8B5CF6', fontSize: 11, fontFamily: 'Inter_600SemiBold', textAlign: 'center' }}>{t('home.btnReferNow', "Refer now")}</Text>
             </TouchableOpacity>
           </View>
 
@@ -449,10 +449,10 @@ export default function PayBillsScreen() {
                 </View>
                 <View style={styles.promoTextContainer}>
                   <Text style={styles.promoTitle}>
-                    {t('home.inviteBannerTitle_1', 'Invite friends and earn')} $5 DZY
+                    {t('home.inviteBannerTitle_1', "Invite friends\nand earn ")} $5 DZY
                   </Text>
                   <Text style={styles.promoSubtitle}>
-                    {t('home.inviteBannerDesc', 'Share your link and earn rewards on their transactions.')}
+                    {t('home.inviteBannerDesc', "Send Stablecoins, shop, pay bills, and earn rewards together.")}
                   </Text>
                 </View>
               </View>

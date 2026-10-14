@@ -13,7 +13,7 @@ export default function AskAminataScreen() {
   const firstName = user?.name ? user.name.split(' ')[0] : (user?.merchantProfile?.shop_name || '');
   
   // Create greeting dynamically based on language and user name
-  const rawGreeting = t('askAminata.greeting', 'Hello {{name}}! 👋 I am Aminata, DizzitUp\'s AI assistant. How can I help you today?');
+  const rawGreeting = t('askAminata.greeting', "Hello David! 👋 I am Aminata, DizzitUp's AI assistant. How can I help you today?");
   const greeting = rawGreeting.replace(/David|ديفيد|ዳዊት|{{name}}/i, firstName ? `${firstName}` : '');
 
   const INITIAL_MESSAGES = [
@@ -103,7 +103,7 @@ export default function AskAminataScreen() {
       const replyMsg = {
         id: (Date.now() + 1).toString(),
         sender: 'aminata',
-        text: data.text || t('askAminata.errorGeneric', 'Sorry, I couldn\'t respond.'),
+        text: data.text || t('askAminata.errorGeneric', "Sorry, I couldn't respond."),
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, replyMsg]);

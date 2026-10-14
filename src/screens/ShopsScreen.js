@@ -17,10 +17,10 @@ const { width } = Dimensions.get('window');
 
 
 const getQuickActions = (t) => [
-  { id: '1', title: t('qaReferTitle', 'Refer a\nbusiness/Shop'), subtitle: t('qaReferSub', 'Share and\nsupport\ncommerce'), icon: 'add-outline', color: '#F59E0B', iconBg: '#FFFBEB' },
-  { id: '2', title: t('qaMyShopsTitle', 'My Shops'), subtitle: t('qaMyShopsSub', 'View shops I\ndeal with'), icon: 'bag-handle-outline', color: '#10B981', iconBg: '#ECFDF5' },
-  { id: '3', title: t('qaNearbyTitle', 'Nearby\nShops'), subtitle: t('qaNearbySub', 'Discover shops\nnear you'), icon: 'location-outline', color: '#20365B', iconBg: '#EFF6FF' },
-  { id: '4', title: t('qaNewShopsTitle', 'New\nShops'), subtitle: t('qaNewShopsSub', 'New Shops &\nBusinesses'), icon: 'storefront-outline', color: '#8B5CF6', iconBg: '#F5F3FF' },
+  { id: '1', title: t('qaReferTitle', "Refer a\nbusiness/Shop"), subtitle: t('qaReferSub', "Share and\nsupport\ncommerce"), icon: 'add-outline', color: '#F59E0B', iconBg: '#FFFBEB' },
+  { id: '2', title: t('qaMyShopsTitle', 'My Shops'), subtitle: t('qaMyShopsSub', "View shops I\ndeal with"), icon: 'bag-handle-outline', color: '#10B981', iconBg: '#ECFDF5' },
+  { id: '3', title: t('qaNearbyTitle', "Nearby\nShops"), subtitle: t('qaNearbySub', "Discover shops\nnear you"), icon: 'location-outline', color: '#20365B', iconBg: '#EFF6FF' },
+  { id: '4', title: t('qaNewShopsTitle', "New\nShops"), subtitle: t('qaNewShopsSub', "New Shops &\nBusinesses"), icon: 'storefront-outline', color: '#8B5CF6', iconBg: '#F5F3FF' },
 ];
 
 export default function ShopsScreen() {
@@ -29,11 +29,11 @@ export default function ShopsScreen() {
   const { loading, error, fetchMerchants } = useBuyGoods();
   const [shopsList, setShopsList] = useState([]);
   const categories = React.useMemo(() => [
-    { id: 'Tout', label: t('shopsFilterAll', 'Toutes les boutiques'), icon: 'apps', iconColor: '#FFC759' },
-    { id: 'Alimentation', label: t('shopsFilterFood', 'Alimentation & Épicerie'), icon: 'restaurant-outline', iconColor: '#FFC759' },
-    { id: 'Électronique', label: t('shopsFilterTech', 'Électronique & Tech'), icon: 'laptop-outline', iconColor: '#FFC759' },
-    { id: 'Mode', label: t('shopsFilterFashion', 'Mode & Beauté'), icon: 'shirt-outline', iconColor: '#FFC759' },
-    { id: 'Services', label: t('shopsFilterServices', 'Services & Pro'), icon: 'briefcase-outline', iconColor: '#FFC759' }
+    { id: 'Tout', label: t('shopsFilterAll', "All Shops"), icon: 'apps', iconColor: '#FFC759' },
+    { id: 'Alimentation', label: t('shopsFilterFood', "Food & Groceries"), icon: 'restaurant-outline', iconColor: '#FFC759' },
+    { id: 'Électronique', label: t('shopsFilterTech', "Electronics"), icon: 'laptop-outline', iconColor: '#FFC759' },
+    { id: 'Mode', label: t('shopsFilterFashion', "Fashion"), icon: 'shirt-outline', iconColor: '#FFC759' },
+    { id: 'Services', label: t('shopsFilterServices', "Services"), icon: 'briefcase-outline', iconColor: '#FFC759' }
   ], [t, language]);
   const [activeSubNav, setActiveSubNav] = useState('shops');
   const [query, setQuery] = useState('');
@@ -81,7 +81,7 @@ export default function ShopsScreen() {
 
         return {
           id: m.id || String(i),
-          name: m.shop_name || 'Boutique DizzitUp',
+          name: m.shop_name || 'DizzitUp Store',
           logoBg: '#1A2840',
           logoText: m.shop_name ? m.shop_name.substring(0, 3).toUpperCase() : 'DZY',
           logoUrl: m.shop_logo_url,
@@ -192,7 +192,7 @@ export default function ShopsScreen() {
     } else if (id === '3') {
       setActiveFilter('Tout');
       setActiveSubNav('nearby');
-      setToast({ title: t('qaNearbyToastTitle', 'Nearby'), message: t('qaNearbyToastMessage', 'Shops sorted by location.') });
+      setToast({ title: t('qaNearbyToastTitle', 'Nearby'), message: t('qaNearbyToastMessage', "Shops are sorted by your location.") });
     } else {
       setActiveFilter('Tout');
       setActiveSubNav('new');
@@ -246,7 +246,7 @@ export default function ShopsScreen() {
           {/* Index 0: Top non-sticky elements */}
           <View>
             <Text style={styles.mainTitle}>{t('shopsTitle', 'Shops')}</Text>
-            <Text style={styles.subtitle}>{t('shopsSubtitle', 'Discover, pay and support African businesses.')}</Text>
+            <Text style={styles.subtitle}>{t('shopsSubtitle', "Discover, pay, and support African businesses.")}</Text>
             <Text style={styles.acceptedTokensText}>
               <Text style={{ color: '#20365B' }}>{t('paymentCards', 'Cards')}</Text>  •  <Text style={{ color: '#20365B' }}>{t('paymentStablecoins', 'Stablecoins')}</Text>  •  <Text style={{ color: '#20365B' }}>{t('paymentMobileMoney', 'Mobile Money')}</Text>  {t('paymentAccepted', 'accepted')}
             </Text>
@@ -294,7 +294,7 @@ export default function ShopsScreen() {
           <View style={styles.stickyHeaderContainer}>
             {/* Mes shops & View Toggle */}
             <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionTitleSticky}>{activeSubNav === 'new' ? t('qaNewShopsTitle', 'New Shops').replace('\n', ' ') : t('qaMyShopsTitle', 'My Shops')}</Text>
+              <Text style={styles.sectionTitleSticky}>{activeSubNav === 'new' ? t('qaNewShopsTitle', "New\nShops").replace('\n', ' ') : t('qaMyShopsTitle', 'My Shops')}</Text>
 
               <View style={styles.viewToggleContainer}>
                 <TouchableOpacity
@@ -508,14 +508,14 @@ export default function ShopsScreen() {
               </TouchableOpacity>
               <View style={styles.inviteContent}>
                 <Text style={styles.inviteTitle}>
-                  {t('shopsBannerReferTitle', "Référencez un commerce\net gagnez ")}
-                  <Text style={{ color: '#10B981' }}>{t('shopsBannerReferAmount', `$${appSettings.refer_business_reward || 10} en DZY`)}</Text>
+                  {t('shopsBannerReferTitle', "Refer a Store\nand earn ")}
+                  <Text style={{ color: '#10B981' }}>{t('shopsBannerReferAmount', '{{amount}} DZY', { amount: appSettings.refer_business_reward || 10 })}</Text>
                 </Text>
                 <Text style={styles.inviteSubtitle}>
-                  {t('shopsBannerReferSub', "Recommandez un business\net gagnez des récompenses.")}
+                  {t('shopsBannerReferSub', "Refer a store or business\nand earn rewards.")}
                 </Text>
                 <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#10B981' }]} onPress={() => navigation.navigate('ReferBusinessScreen')}>
-                  <Text style={styles.inviteButtonText}>{t('shopsBannerReferBtn', 'Référencer')}</Text>
+                  <Text style={styles.inviteButtonText}>{t('shopsBannerReferBtn', "Refer now")}</Text>
                 </TouchableOpacity>
               </View>
               <View style={styles.storeGraphic}>

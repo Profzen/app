@@ -103,7 +103,7 @@ export default function OrderVerificationScreen({ route }) {
       ? {
         id: directOrder.product.id || 'direct_1',
         productId: directOrder.product.id,
-        name: directOrder.product.name || directOrder.product.title || t('product.notFound', 'Produit'),
+        name: directOrder.product.name || directOrder.product.title || t('product.notFound', "Product not found"),
         price:
           typeof directOrder.product.price === 'number'
             ? directOrder.product.price
@@ -122,7 +122,7 @@ export default function OrderVerificationScreen({ route }) {
           directOrder.shop?.shop_name ||
           directOrder.shop?.name ||
           directOrder.product?.merchant?.shop_name ||
-          t('paymentSuccess.partnerMerchant', 'Commerçant Partenaire'),
+          t('paymentSuccess.partnerMerchant', "Partner Merchant"),
         merchantCity: directOrder.shop?.city_village || directOrder.product?.merchant?.city_village || '',
         merchantCountry: directOrder.shop?.country || directOrder.product?.merchant?.country || '',
       }
@@ -238,7 +238,7 @@ export default function OrderVerificationScreen({ route }) {
     directOrder?.shop?.shop_name ||
     directOrder?.shop?.name ||
     items[0]?.merchantName ||
-    t('paymentSuccess.partnerMerchant', 'Commerçant Partenaire');
+    t('paymentSuccess.partnerMerchant', "Partner Merchant");
   const merchantInitial = (merchantName || 'DZ').slice(0, 2).toUpperCase();
   const merchantLogo =
     directOrder?.shop?.shop_logo_url ||
@@ -450,7 +450,7 @@ export default function OrderVerificationScreen({ route }) {
   const handleProceedToConfirmation = async () => {
     if (isSavingAddress) return;
     if (items.length === 0) {
-      AppToast.showError(t('cart.emptyDesc', 'Your cart is empty.'), t('common.error', 'Error'));
+      AppToast.showError(t('cart.emptyDesc', "Your cart contains no items for now."), t('common.error', 'Error'));
       return;
     }
 
@@ -540,20 +540,20 @@ export default function OrderVerificationScreen({ route }) {
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={24} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('orderVerification.title', 'Vérification de commande')}</Text>
+          <Text style={styles.headerTitle}>{t('orderVerification.title', "Order Verification")}</Text>
           <View style={{ width: 44 }} />
         </View>
         <View style={styles.emptyContainer}>
           <View style={styles.emptyIconCircle}>
             <Ionicons name="cart-outline" size={48} color="#94A3B8" />
           </View>
-          <Text style={styles.emptyTitle}>{t('cart.emptyTitle', 'Votre panier est vide')}</Text>
+          <Text style={styles.emptyTitle}>{t('cart.emptyTitle', "Empty cart")}</Text>
           <Text style={styles.emptySubtitle}>
-            {t('cart.emptyDesc', 'Ajoutez des articles depuis la boutique pour finaliser votre commande.')}
+            {t('cart.emptyDesc', "Your cart contains no items for now.")}
           </Text>
           <TouchableOpacity style={styles.btnExplore} onPress={() => navigation.goBack()}>
             <Ionicons name="storefront-outline" size={18} color="#1A2840" style={{ marginRight: 8 }} />
-            <Text style={styles.btnExploreText}>{t('cart.continueShopping', 'Continuer mes achats')}</Text>
+            <Text style={styles.btnExploreText}>{t('cart.continueShopping', "Continue shopping")}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -567,8 +567,8 @@ export default function OrderVerificationScreen({ route }) {
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#1A2840" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('orderVerification.title', 'Vérification de commande')}</Text>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('HelpCenterPage')}>
+        <Text style={styles.headerTitle}>{t('orderVerification.title', "Order Verification")}</Text>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('ContactUsScreen')}>
           <Ionicons name="headset-outline" size={22} color="#1A2840" />
         </TouchableOpacity>
       </View>
@@ -594,7 +594,7 @@ export default function OrderVerificationScreen({ route }) {
           </View>
           <View style={styles.itemCountBadge}>
             <Text style={styles.itemCountText}>
-              {items.length} {items.length > 1 ? t('orderVerification.articles', 'articles') : t('orderVerification.article', 'article')}
+              {items.length} {items.length > 1 ? t('orderVerification.articles', "items") : t('orderVerification.article', "item")}
             </Text>
           </View>
         </View>
@@ -650,7 +650,7 @@ export default function OrderVerificationScreen({ route }) {
             <View style={styles.iconCircle}>
               <Ionicons name="bus-outline" size={18} color="#3B82F6" />
             </View>
-            <Text style={styles.sectionLabel}>{t('orderVerification.deliveryOption', 'Mode de livraison')}</Text>
+            <Text style={styles.sectionLabel}>{t('orderVerification.deliveryOption', "Delivery mode")}</Text>
           </View>
 
           <View style={styles.deliveryOptionsRow}>
@@ -663,10 +663,10 @@ export default function OrderVerificationScreen({ route }) {
               </View>
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
-                  <Text style={styles.optionTitle}>{t('orderVerification.storePickup', 'En boutique')}</Text>
-                  <Text style={[styles.optionPrice, { color: '#10B981' }]}>{t('orderVerification.free', 'Gratuit')}</Text>
+                  <Text style={styles.optionTitle}>{t('orderVerification.storePickup', "Store Pickup")}</Text>
+                  <Text style={[styles.optionPrice, { color: '#10B981' }]}>{t('orderVerification.free', "Free")}</Text>
                 </View>
-                <Text style={styles.optionDesc}>{t('orderVerification.storePickupDesc', 'Retrait immédiat en boutique')}</Text>
+                <Text style={styles.optionDesc}>{t('orderVerification.storePickupDesc', "Pick up your order directly from the shop")}</Text>
               </View>
             </TouchableOpacity>
 
@@ -679,18 +679,18 @@ export default function OrderVerificationScreen({ route }) {
               </View>
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
-                  <Text style={styles.optionTitle}>{t('orderVerification.homeDelivery', 'À domicile')}</Text>
+                  <Text style={styles.optionTitle}>{t('orderVerification.homeDelivery', "Home Delivery")}</Text>
                   {standardDeliveryFee > 0 ? (
                     <Text style={styles.optionPrice}>
                       {standardDeliveryFee.toLocaleString(numLocale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} {displayCurrency}
                     </Text>
                   ) : (
                     <Text style={[styles.optionPrice, { color: '#10B981' }]}>
-                      {t('orderVerification.free', 'Gratuit')}
+                      {t('orderVerification.free', "Free")}
                     </Text>
                   )}
                 </View>
-                <Text style={styles.optionDesc}>{t('orderVerification.homeDeliveryDesc', 'Livraison sécurisée sous 24-48h')}</Text>
+                <Text style={styles.optionDesc}>{t('orderVerification.homeDeliveryDesc', "Secure delivery within 24-48h")}</Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -710,7 +710,7 @@ export default function OrderVerificationScreen({ route }) {
               <Text style={styles.sectionLabel}>
                 {deliveryOption === 'pickup'
                   ? t('orderVerification.pickupLocationTitle', 'Store pickup location')
-                  : t('orderVerification.deliveryAddress', 'Recipient & Address')}
+                  : t('orderVerification.deliveryAddress', "Delivery address")}
               </Text>
 
               {deliveryOption === 'pickup' ? (
@@ -738,7 +738,7 @@ export default function OrderVerificationScreen({ route }) {
             {deliveryOption === 'home' && (recipientName || recipientAddress || isEditingRecipient) && (
               <TouchableOpacity style={styles.btnModifier} onPress={() => setIsEditingRecipient(!isEditingRecipient)}>
                 <Text style={styles.btnModifierText}>
-                  {isEditingRecipient ? t('common.done', 'Done') : t('orderVerification.modify', 'Modify')}
+                  {isEditingRecipient ? t('common.done', 'Done') : t('orderVerification.modify', "Edit")}
                 </Text>
               </TouchableOpacity>
             )}
@@ -861,12 +861,12 @@ export default function OrderVerificationScreen({ route }) {
                 </>
               )}
 
-              <Text style={styles.formInputLabel}>{t('orderVerification.recipientNameLabel', "Recipient's full name")}</Text>
+              <Text style={styles.formInputLabel}>{t('orderVerification.recipientNameLabel', "Recipient full name")}</Text>
               <TextInput
                 style={styles.formInput}
                 value={recipientName}
                 onChangeText={(text) => { setRecipientName(text); setSelectedBeneficiaryId(null); }}
-                placeholder={t('orderVerification.namePlaceholder', 'Full name')}
+                placeholder={t('orderVerification.namePlaceholder', "e.g. John Doe")}
                 placeholderTextColor="#94A3B8"
               />
 
@@ -926,7 +926,7 @@ export default function OrderVerificationScreen({ route }) {
               <View style={styles.iconCircle}>
                 <Ionicons name="card-outline" size={18} color="#3B82F6" />
               </View>
-              <Text style={styles.sectionLabel}>{t('orderVerification.payWith', 'Moyen de paiement')}</Text>
+              <Text style={styles.sectionLabel}>{t('orderVerification.payWith', "Pay with")}</Text>
             </View>
             <TouchableOpacity
               style={styles.payerRegionPill}
@@ -1024,7 +1024,7 @@ export default function OrderVerificationScreen({ route }) {
                 <View style={styles.networkHeaderRow}>
                   <View style={styles.networkHeaderLeft}>
                     <Ionicons name="git-network-outline" size={15} color="#3B82F6" style={{ marginRight: 6 }} />
-                    <Text style={styles.networkLabel}>{t('orderVerification.blockchainNetwork', 'Réseau Blockchain')}</Text>
+                    <Text style={styles.networkLabel}>{t('orderVerification.blockchainNetwork', "Blockchain network")}</Text>
                   </View>
                   <View style={styles.networkActiveTag}>
                     <View style={styles.networkActiveDot} />
@@ -1094,7 +1094,7 @@ export default function OrderVerificationScreen({ route }) {
                 <View style={styles.networkNoticeRow}>
                   <Ionicons name="shield-checkmark" size={13} color="#10B981" style={{ marginRight: 5 }} />
                   <Text style={styles.networkNoticeText}>
-                    {t('orderVerification.escrowDeployed', `Escrow verified on ${network}`, { network })}
+                    {t('orderVerification.escrowDeployed', "Escrow contract verified on {{network}}", { network })}
                   </Text>
                 </View>
               </View>
@@ -1105,14 +1105,14 @@ export default function OrderVerificationScreen({ route }) {
                   <View style={{ flex: 1 }}>
                     <Text style={styles.balanceWarningTitle}>{t('orderVerification.insufficientBalanceTitle', 'Insufficient balance')}</Text>
                     <Text style={styles.balanceWarningText}>
-                      {t('orderVerification.insufficientBalanceDesc', `Your current balance is ${Number(userBalance).toLocaleString('en-US', { maximumFractionDigits: 4 })} ${selectedToken}. You can top up your account or choose another method.`, {
+                      {t('orderVerification.insufficientBalanceDesc', "Your current balance is {{balance}} {{token}}. You can top up your account or choose another payment method.", {
                         balance: Number(userBalance).toLocaleString('en-US', { maximumFractionDigits: 4 }),
                         token: selectedToken
                       })}
                     </Text>
                   </View>
                   <TouchableOpacity style={styles.btnTopUpMini} onPress={() => navigation.navigate('TopUpScreen')}>
-                    <Text style={styles.btnTopUpMiniText}>{t('orderVerification.topUpBtn', 'Top up')}</Text>
+                    <Text style={styles.btnTopUpMiniText}>{t('orderVerification.topUpBtn', "Top Up")}</Text>
                   </TouchableOpacity>
                 </View>
               )}
@@ -1133,7 +1133,7 @@ export default function OrderVerificationScreen({ route }) {
                 </View>
               </View>
               <Text style={styles.railDetailDesc}>
-                {t('orderVerification.cardDesc', 'Paiement direct et sécurisé par carte bancaire internationale via la passerelle Ecobank CyberSource. Aucun frais caché.')}
+                {t('orderVerification.cardDesc', "Direct and secure payment via international bank card through Ecobank CyberSource gateway. No hidden fees.")}
               </Text>
             </View>
           )}
@@ -1148,20 +1148,20 @@ export default function OrderVerificationScreen({ route }) {
                     <Text style={[styles.cardLogoText, { color: '#B45309' }]}>
                       {railEligibility.momo.operators.length > 0
                         ? railEligibility.momo.operators.slice(0, 3).join(', ')
-                        : t('orderVerification.momoInstant', 'MoMo Instantané')}
+                        : t('orderVerification.momoInstant', "Instant MoMo")}
                     </Text>
                   </View>
                   <View style={styles.verifiedBadgeRow}>
                     <Ionicons name="shield-checkmark" size={14} color="#10B981" />
                     <Text style={styles.verifiedBadgeText}>
-                      {railEligibility.momo.providers.join(' • ') || 'Sécurisé'}
+                      {railEligibility.momo.providers.join(' • ') || 'Secure'}
                     </Text>
                   </View>
                 </View>
                 <Text style={styles.railDetailDesc}>
                   {t(
                     'paymentRails.momoActiveDesc',
-                    `Payez instantanément avec ${railEligibility.momo.operators.join(', ')} en ${railEligibility.countryName}.`,
+                    "Pay instantly with {{operators}} in {{country}}.",
                     { operators: railEligibility.momo.operators.join(', '), country: railEligibility.countryName }
                   )}
                 </Text>
@@ -1177,7 +1177,7 @@ export default function OrderVerificationScreen({ route }) {
                   <View style={styles.disabledBadgeRow}>
                     <Ionicons name="lock-closed" size={15} color="#64748B" style={{ marginRight: 5 }} />
                     <Text style={styles.disabledBadgeText}>
-                      {t('paymentRails.unavailableInCountry', `Indisponible en/au ${railEligibility.countryName}`, {
+                      {t('paymentRails.unavailableInCountry', "Unavailable in {{country}}", {
                         country: railEligibility.countryName,
                       })}
                     </Text>
@@ -1187,7 +1187,7 @@ export default function OrderVerificationScreen({ route }) {
                     onPress={() => setRegionModalVisible(true)}
                   >
                     <Text style={styles.btnSwitchCountryMiniText}>
-                      {t('paymentRails.switchCountry', 'Changer de pays')}
+                      {t('paymentRails.switchCountry', "Change country")}
                     </Text>
                     <Ionicons name="chevron-forward" size={12} color="#1D4ED8" />
                   </TouchableOpacity>
@@ -1195,14 +1195,14 @@ export default function OrderVerificationScreen({ route }) {
                 <Text style={styles.railDisabledDesc}>
                   {t(
                     'paymentRails.momoUnavailableExplanation',
-                    `Le paiement Mobile Money n'est pas disponible pour ${railEligibility.countryName}. Il est actif dans 20 pays d'Afrique (Bénin, Côte d'Ivoire, Sénégal, Togo, Cameroun, Kenya...).`,
+                    "Mobile Money is not available for {{country}}. It is active in 20 African countries (Benin, Ivory Coast, Senegal, Togo, Kenya, Ghana...).",
                     { country: railEligibility.countryName }
                   )}
                 </Text>
                 <View style={styles.disabledAlternativeRow}>
                   <Ionicons name="arrow-forward-circle-outline" size={14} color="#10B981" style={{ marginRight: 4 }} />
                   <Text style={styles.disabledAlternativeText}>
-                    {t('paymentRails.suggestAlternative', 'Sélectionnez Carte Bancaire ou Crypto (USDC/USDT) ci-dessus.')}
+                    {t('paymentRails.suggestAlternative', "Please select Credit Card or Crypto (USDC/USDT) above.")}
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -1212,30 +1212,30 @@ export default function OrderVerificationScreen({ route }) {
 
         {/* Order Summary */}
         <View style={styles.summarySection}>
-          <Text style={styles.sectionLabel}>{t('orderVerification.orderSummary', 'Récapitulatif des coûts')}</Text>
+          <Text style={styles.sectionLabel}>{t('orderVerification.orderSummary', "Order summary")}</Text>
 
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>{t('orderVerification.subtotal', 'Sous-total articles')}</Text>
+            <Text style={styles.summaryLabel}>{t('orderVerification.subtotal', "Subtotal (Product)")}</Text>
             <Text style={styles.summaryValue}>{subtotal.toLocaleString(numLocale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} {displayCurrency}</Text>
           </View>
 
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>{t('orderVerification.delivery', 'Frais de livraison')}</Text>
+            <Text style={styles.summaryLabel}>{t('orderVerification.delivery', "Delivery")}</Text>
             <Text style={[styles.summaryValue, deliveryFee === 0 && { color: '#10B981', fontFamily: 'Inter_700Bold' }]}>
-              {deliveryFee > 0 ? `${deliveryFee.toLocaleString(numLocale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ${displayCurrency}` : t('orderVerification.free', 'Gratuit')}
+              {deliveryFee > 0 ? `${deliveryFee.toLocaleString(numLocale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ${displayCurrency}` : t('orderVerification.free', "Free")}
             </Text>
           </View>
 
           <View style={styles.summaryRow}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={styles.summaryLabel}>{t('orderVerification.networkFeeEst', 'Frais de plateforme / Réseau')}</Text>
+              <Text style={styles.summaryLabel}>{t('orderVerification.networkFeeEst', "Network / Platform fee")}</Text>
               <Ionicons name="information-circle-outline" size={14} color="#64748B" style={{ marginLeft: 4 }} />
             </View>
             <Text style={styles.summaryValue}>{platformFee.toLocaleString(numLocale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} {displayCurrency} (≈ 0.10 USDC)</Text>
           </View>
 
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>{t('orderVerification.youWillPay', 'Total à payer')}</Text>
+            <Text style={styles.totalLabel}>{t('orderVerification.youWillPay', "You will pay")}</Text>
             <View style={{ alignItems: 'flex-end' }}>
               <Text style={styles.totalValueMain}>
                 {paymentRail === 'crypto'
@@ -1261,18 +1261,18 @@ export default function OrderVerificationScreen({ route }) {
         <View style={styles.securityInfo}>
           <Ionicons name="shield-checkmark-outline" size={20} color="#10B981" style={{ marginRight: 8 }} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.securityTitle}>{t('orderVerification.securePaymentTitle', 'Paiement sous Séquestre Escrow')}</Text>
+            <Text style={styles.securityTitle}>{t('orderVerification.securePaymentTitle', "100% Secure payment")}</Text>
             <Text style={styles.securityDesc}>
               {items.every(item => (item.product?.offering_type || item.offering_type) === 'service' && (item.product?.service_model || item.service_model) === 'rental_booking')
-                ? t('orderVerification.securityDescRental', 'Vos fonds sont protégés jusqu\'à votre arrivée (Check-in).')
+                ? t('orderVerification.securityDescRental', "Your funds are protected until your arrival (Check-in).")
                 : items.every(item => (item.product?.offering_type || item.offering_type) === 'service' || (item.product?.offering_type || item.offering_type) === 'digital_product')
-                ? t('orderVerification.securityDescService', 'Vos fonds sont protégés jusqu\'à la réalisation du service.')
-                : t('orderVerification.securityDesc', 'Vos fonds sont protégés jusqu\'à confirmation de livraison.')}
+                ? t('orderVerification.securityDescService', "Your funds are protected until the service is completed.")
+                : t('orderVerification.securityDesc', "Your funds are protected in escrow until physical delivery is confirmed.")}
             </Text>
           </View>
         </View>
         <TouchableOpacity style={styles.btnContinue} onPress={handleProceedToConfirmation}>
-          <Text style={styles.btnContinueText}>{t('orderVerification.continueBtn', 'Continuer')}</Text>
+          <Text style={styles.btnContinueText}>{t('orderVerification.continueBtn', "Continue")}</Text>
           <Ionicons name="chevron-forward" size={18} color="#1A2840" />
         </TouchableOpacity>
 

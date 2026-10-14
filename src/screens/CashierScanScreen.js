@@ -22,7 +22,7 @@ export default function CashierScanScreen() {
           <TouchableOpacity style={styles.iconSquareBtn} onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={20} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('pos.cash_desks', 'Caisse (TPE)')}</Text>
+          <Text style={styles.headerTitle}>{t('pos.cash_desks', "Cash Desks (POS/ATM)")}</Text>
           <TouchableOpacity style={styles.iconSquareBtn} onPress={() => navigation.navigate('AskAminataScreen')}>
             <Ionicons name="help-circle-outline" size={20} color="#1A2840" />
           </TouchableOpacity>
@@ -32,9 +32,9 @@ export default function CashierScanScreen() {
           
           {/* Main Title & Subtitle Section */}
           <View style={styles.titleSection}>
-            <Text style={styles.mainTitle}>{t('pos.scan_to_pay', 'Scannez pour payer')}</Text>
+            <Text style={styles.mainTitle}>{t('pos.scan_to_pay', "Scan to pay")}</Text>
             <Text style={styles.subTitle}>
-              {t('pos.show_qr', "Montrez ce QR Code à votre client\npour qu'il effectue le paiement.")}
+              {t('pos.show_qr', "Show this QR Code to your customer\nto complete the payment.")}
             </Text>
           </View>
 
@@ -42,7 +42,7 @@ export default function CashierScanScreen() {
           <View style={styles.summaryCard}>
             {/* Left Column: Montant à recevoir */}
             <View style={styles.summaryLeftCol}>
-              <Text style={styles.summaryLabel}>{t('pos.amount_to_receive', 'Montant à recevoir')}</Text>
+              <Text style={styles.summaryLabel}>{t('pos.amount_to_receive', "Amount to receive")}</Text>
               <View style={styles.amountRow}>
                 <Text style={styles.amountMainText}>{amount}</Text>
                 <Text style={styles.amountCurrencyText}> {currency}</Text>
@@ -51,12 +51,12 @@ export default function CashierScanScreen() {
               <View style={styles.dividerLine} />
 
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabelText}>{t('pos.you_will_collect', 'Vous encaisserez : ')}</Text>
+                <Text style={styles.detailLabelText}>{t('pos.you_will_collect', "You will collect:")}</Text>
                 <Text style={styles.detailValueText}>{equivalent} {token}</Text>
               </View>
 
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabelText}>{t('pos.transaction_fees', 'Frais de transaction : ')}</Text>
+                <Text style={styles.detailLabelText}>{t('pos.transaction_fees', "Transaction fees:")}</Text>
                 <Text style={styles.detailValueText}>0.00 {token}</Text>
               </View>
             </View>
@@ -65,14 +65,14 @@ export default function CashierScanScreen() {
 
             {/* Right Column: Vous recevrez & Network */}
             <View style={styles.summaryRightCol}>
-              <Text style={styles.summaryLabel}>{t('pos.you_will_receive', 'Vous recevrez')}</Text>
+              <Text style={styles.summaryLabel}>{t('pos.you_will_receive', "You will receive")}</Text>
               <View style={styles.tokenPillBadge}>
                 <CryptoIcon symbol="USDT" size={20} />
                 <Text style={styles.tokenPillText}>USDT</Text>
               </View>
 
               <View style={styles.networkBox}>
-                <Text style={styles.networkLabel}>{t('pos.network', 'Réseau')}</Text>
+                <Text style={styles.networkLabel}>{t('pos.network', "Network")}</Text>
                 <View style={styles.networkValueRow}>
                   <CryptoIcon symbol="POL" size={16} />
                   <Text style={styles.networkNameText}>Polygon</Text>
@@ -99,7 +99,7 @@ export default function CashierScanScreen() {
               activeOpacity={0.7}
             >
               <Ionicons name="camera-outline" size={16} color="#20365B" style={{ marginRight: 6 }} />
-              <Text style={styles.refreshQrText}>{t('pos.scan_customer', 'Scanner le client')}</Text>
+              <Text style={styles.refreshQrText}>{t('pos.scan_customer', "Scan customer")}</Text>
             </TouchableOpacity>
           </View>
 
@@ -110,9 +110,9 @@ export default function CashierScanScreen() {
             </View>
 
             <View style={styles.statusContentGroup}>
-              <Text style={styles.statusTitle}>{t('pos.waiting_payment', 'En attente du paiement')}</Text>
+              <Text style={styles.statusTitle}>{t('pos.waiting_payment', "Waiting for payment")}</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Text style={styles.statusSubtext}>{t('pos.qr_expires_in', 'Le QR Code expirera dans ')}</Text>
+                <Text style={styles.statusSubtext}>{t('pos.qr_expires_in', "QR Code expires in")}</Text>
                 <Text style={styles.statusTimerText}>04:52</Text>
               </View>
             </View>
@@ -128,9 +128,9 @@ export default function CashierScanScreen() {
               <Ionicons name="shield-checkmark-outline" size={20} color="#D97706" />
             </View>
             <View style={styles.warningContentGroup}>
-              <Text style={styles.warningTitleText}>{t('pos.keep_app_open', 'Gardez l\'application ouverte')}</Text>
+              <Text style={styles.warningTitleText}>{t('pos.keep_app_open', "Keep the app open")}</Text>
               <Text style={styles.warningSubtextText}>
-                {t('pos.do_not_close', "Ne fermez pas cette page avant d'avoir\nreçu le paiement.")}
+                {t('pos.do_not_close', "Do not close this page until you\nhave received the payment.")}
               </Text>
             </View>
           </View>
@@ -142,7 +142,7 @@ export default function CashierScanScreen() {
             activeOpacity={0.8}
           >
             <Ionicons name="close-outline" size={18} color="#EF4444" style={{ marginRight: 6 }} />
-            <Text style={styles.btnCancelText}>{t('pos.cancel_transaction', 'Annuler la transaction')}</Text>
+            <Text style={styles.btnCancelText}>{t('pos.cancel_transaction', "Cancel transaction")}</Text>
           </TouchableOpacity>
 
           <View style={{ height: 20 }} />

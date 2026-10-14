@@ -23,7 +23,7 @@ export default function ReviewPaymentScreen() {
   const {
     transactionData = {
       beneficiaryName: 'Mama Kemi Adebayo',
-      beneficiaryRelation: 'Mère',
+      beneficiaryRelation: 'Mother',
       location: 'Lagos, Nigeria 🇳🇬',
       serviceTitle: 'Mobile Recharge',
       serviceSubtitle: 'MTN Nigeria',
@@ -203,7 +203,7 @@ export default function ReviewPaymentScreen() {
                 </View>
               </TouchableOpacity>
               <Text style={styles.mobileMoneySubtext}>
-                {t('reviewPayment.mobileMoneyNote', 'Available only in covered countries\nActual options may vary locally.')} <Ionicons name="information-circle-outline" size={12} color="#6B7280" />
+                {t('reviewPayment.mobileMoneyNote', "Available only in covered countries\nActual options may vary locally.")} <Ionicons name="information-circle-outline" size={12} color="#6B7280" />
               </Text>
             </View>
           </View>
@@ -228,7 +228,7 @@ export default function ReviewPaymentScreen() {
             <View style={styles.dashedLine} />
 
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>{t('orderConfirmation.amountToPay', 'Total to pay')}</Text>
+              <Text style={styles.totalLabel}>{t('orderConfirmation.amountToPay', "Amount to pay")}</Text>
               <Text style={styles.totalValue}>{totalAmount} {currency}</Text>
             </View>
           </View>

@@ -82,6 +82,8 @@ import PersonalAccountScreen from '../screens/PersonalAccountScreen';
 import ShareSuccessPlatformScreen from '../screens/ShareSuccessPlatformScreen';
 import ShareSuccessVisualScreen from '../screens/ShareSuccessVisualScreen';
 import ShareSuccessCaptionScreen from '../screens/ShareSuccessCaptionScreen';
+import ShareProfileScreen from '../screens/ShareProfileScreen';
+import InvoicePayLinkScreen from '../screens/InvoicePayLinkScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -105,6 +107,8 @@ export default function AppNavigator() {
       <Stack.Screen name="ShareSuccessPlatformScreen" component={ShareSuccessPlatformScreen} />
       <Stack.Screen name="ShareSuccessVisualScreen" component={ShareSuccessVisualScreen} />
       <Stack.Screen name="ShareSuccessCaptionScreen" component={ShareSuccessCaptionScreen} />
+      <Stack.Screen name="ShareProfileScreen" component={ShareProfileScreen} />
+      <Stack.Screen name="InvoicePayLinkScreen" component={InvoicePayLinkScreen} />
       <Stack.Screen name="AboutDizzitUpScreen" component={AboutDizzitUpScreen} />
       <Stack.Screen name="AccountSettingsScreen" component={AccountSettingsScreen} />
       <Stack.Screen name="AskAminataScreen" component={AskAminataScreen} />

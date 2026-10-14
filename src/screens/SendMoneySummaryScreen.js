@@ -107,7 +107,7 @@ export default function SendMoneySummaryScreen() {
               <View style={[styles.detailIconBox, {backgroundColor: '#FEF3C7'}]}>
                 <Ionicons name="shield-checkmark-outline" size={20} color="#1A2840" />
               </View>
-              <Text style={styles.totalLabel}>{t('orderConfirmation.amountToPay', 'Total to pay')}</Text>
+              <Text style={styles.totalLabel}>{t('orderConfirmation.amountToPay', "Amount to pay")}</Text>
             </View>
             <View style={styles.detailRight}>
               <Text style={styles.totalAmount}>4 012</Text>
@@ -120,7 +120,7 @@ export default function SendMoneySummaryScreen() {
         {/* Action Buttons */}
         <View style={styles.footer}>
           <TouchableOpacity style={styles.btnPrev} onPress={() => navigation.goBack()}>
-            <Text style={styles.btnPrevText}>{t('common.previous', 'Previous')}</Text>
+            <Text style={styles.btnPrevText}>{t('common.previous', "PREVIOUS")}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.btnNext} onPress={() => navigation.navigate('SendMoneySuccessScreen')}>
             <Text style={styles.btnNextText}>{t('common.confirm', 'Confirm')}</Text>

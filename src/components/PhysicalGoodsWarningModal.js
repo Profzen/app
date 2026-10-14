@@ -26,7 +26,7 @@ export default function PhysicalGoodsWarningModal({ visible, onClose, onContinue
           </Text>
           
           <Text style={styles.message}>
-            {t('buyGoods.unavailableMessage', "We are establishing a secure delivery network in {{country}} to ensure your loved ones receive authentic products from verified merchants.\n\nBuying physical goods is temporarily unavailable, but you can still browse the shops. In the meantime, you can continue to pay bills, top up airtime, buy gift cards, and send or receive funds.\n\nWe will notify you as soon as the service is fully rolled out.")
+            {t('buyGoods.unavailableMessage', "We are establishing a secure delivery network in {{country}} to ensure your loved ones receive authentic products from verified merchants.\n\nBuying physical goods is temporarily unavailable, but you can still browse the shops. In the meantime, you can continue to pay bills, recharge airtime, buy gift cards, and send or receive funds.\n\nWe will notify you as soon as the service is fully rolled out.")
               .split('{{country}}')
               .map((part, index, parts) => (
                 <React.Fragment key={index}>

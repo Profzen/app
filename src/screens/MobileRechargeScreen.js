@@ -285,11 +285,11 @@ export default function MobileRechargeScreen() {
         return;
       }
       if (minVal > 0 && finalAmount < minVal) {
-        AppToast.showError(t('mobileRecharge.minAmountError', `Minimum amount is ${minVal} ${senderCurrency}`, { minAmount: minVal, currency: senderCurrency }));
+        AppToast.showError(t('mobileRecharge.minAmountError', "Minimum amount is {{minAmount}} {{currency}}", { minAmount: minVal, currency: senderCurrency }));
         return;
       }
       if (maxVal > 0 && finalAmount > maxVal) {
-        AppToast.showError(t('mobileRecharge.maxAmountError', `Maximum amount is ${maxVal} ${senderCurrency}`, { maxAmount: maxVal, currency: senderCurrency }));
+        AppToast.showError(t('mobileRecharge.maxAmountError', "Maximum amount is {{maxAmount}} {{currency}}", { maxAmount: maxVal, currency: senderCurrency }));
         return;
       }
 
@@ -635,7 +635,7 @@ export default function MobileRechargeScreen() {
                         </View>
                         <View style={styles.rangeTextContainer}>
                           <Text style={styles.rangeCardLabel}>
-                            {t('mobileRecharge.availableRange', 'AVAILABLE RANGE')}
+                            {t('mobileRecharge.availableRange', "Available Range")}
                           </Text>
                           <Text style={styles.rangeCardValues}>
                             {minVal} {senderCurrency} <Text style={styles.rangeCardTo}>{t('mobileRecharge.rangeTo', 'to')}</Text> {maxVal} {senderCurrency}

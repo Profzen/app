@@ -152,7 +152,7 @@ export default function TodoListScreen() {
               <Text style={styles.formTitle}>{t('todoList.newTask', 'New task')}</Text>
               <TextInput 
                 style={styles.input} 
-                placeholder={t('todoList.placeholder', 'What do you want to do?')} 
+                placeholder={t('todoList.placeholder', "What would you like to do?")}
                 value={title} 
                 onChangeText={setTitle} 
                 autoFocus 

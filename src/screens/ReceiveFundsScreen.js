@@ -175,7 +175,7 @@ export default function ReceiveFundsScreen() {
                   <Ionicons name="scan-outline" size={20} color="#1A2840" style={{marginRight: 6}} />
                   <Text style={styles.qrTitle}>{t('receiveFunds.scanToPay', 'Scan to pay')}</Text>
                 </View>
-                <Text style={styles.qrSubtitle}>{t('receiveFunds.dedicatedAddress', 'Dedicated address for')} {selectedChain}</Text>
+                <Text style={styles.qrSubtitle}>{t('receiveFunds.dedicatedAddress', "This is your dedicated address for")} {selectedChain}</Text>
                 
                 <View style={styles.qrCodeWrapper}>
                   <Ionicons name="qr-code" size={140} color="#1A2840" />

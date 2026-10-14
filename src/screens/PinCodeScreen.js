@@ -14,8 +14,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { isSmallScreen, isShortScreen } from '../utils/responsive';
 
 const STEPS = (t) => [
-  { label: t('auth.profile', 'Profil') },
-  { label: t('auth.pinCode', 'Code PIN') },
+  { label: t('auth.profile', "Profile") },
+  { label: t('auth.pinCode', "Use PIN Code") },
 ];
 
 export default function PinCodeScreen() {
@@ -35,9 +35,9 @@ export default function PinCodeScreen() {
   let displayError = '';
   if (confirmPin.length > 0) {
     if (confirmPin.length === 6 && !doPinsMatch) {
-      displayError = t('auth.pinsDoNotMatch', 'Les codes PIN ne correspondent pas.');
+      displayError = t('auth.pinsDoNotMatch', "PIN codes do not match.");
     } else if (confirmPin.length < 6 && !pin.startsWith(confirmPin)) {
-      displayError = t('auth.pinsDoNotMatch', 'Les codes PIN ne correspondent pas.');
+      displayError = t('auth.pinsDoNotMatch', "PIN codes do not match.");
     }
   }
 
@@ -100,7 +100,7 @@ export default function PinCodeScreen() {
             <HeaderBackButton onPress={() => navigation.goBack()} />
             <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
               <Text style={styles.loginText}>
-                {t('auth.alreadyHaveAccount', 'Déjà un compte ?')} <Text style={styles.loginLink}>{t('auth.loginAction', 'Se connecter')}</Text>
+                {t('auth.alreadyHaveAccount', "Already have an account?")} <Text style={styles.loginLink}>{t('auth.loginAction', "Log in")}</Text>
               </Text>
             </TouchableOpacity>
           </View>
@@ -110,9 +110,9 @@ export default function PinCodeScreen() {
             <View style={styles.shieldIconContainer}>
               <Ionicons name="shield-checkmark-outline" size={24} color="#1A2840" />
             </View>
-            <Text style={styles.mainTitle}>{t('auth.pinCode', 'Code PIN')}</Text>
+            <Text style={styles.mainTitle}>{t('auth.pinCode', "Use PIN Code")}</Text>
             <Text style={styles.subtitle}>
-              {t('auth.setPinSubtitle', 'Définissez un code à 6 chiffres pour sécuriser votre compte.')}
+              {t('auth.setPinSubtitle', "Set a 6-digit code to secure your account.")}
             </Text>
           </View>
 
@@ -121,7 +121,7 @@ export default function PinCodeScreen() {
 
           {/* Form */}
           <View style={styles.formContainer}>
-            <Text style={styles.sectionTitle}>{t('auth.createPinTitle', 'Créez votre code PIN')}</Text>
+            <Text style={styles.sectionTitle}>{t('auth.createPinTitle', "Create your PIN code")}</Text>
             <DizzitInput
               placeholder="••••••"
               value={pin}
@@ -133,7 +133,7 @@ export default function PinCodeScreen() {
             
             <View style={{ height: 12 }} />
             
-            <Text style={styles.sectionTitle}>{t('auth.confirmPinTitle', 'Confirmez votre code PIN')}</Text>
+            <Text style={styles.sectionTitle}>{t('auth.confirmPinTitle', "Confirm your PIN code")}</Text>
             <DizzitInput
               placeholder="••••••"
               value={confirmPin}
@@ -154,7 +154,7 @@ export default function PinCodeScreen() {
               style={[styles.actionButton, styles.previousButton]}
               onPress={() => navigation.goBack()}
             >
-              <Text style={styles.previousButtonText}>{t('auth.back', 'RETOUR')}</Text>
+              <Text style={styles.previousButtonText}>{t('auth.back', "Back")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -172,7 +172,7 @@ export default function PinCodeScreen() {
                 <Text style={[
                   styles.nextButtonText,
                   isNextDisabled && styles.nextButtonTextDisabled
-                ]}>{t('auth.savePin', 'ENREGISTRER LE PIN')}</Text>
+                ]}>{t('auth.savePin', "Save PIN")}</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -191,22 +191,22 @@ export default function PinCodeScreen() {
             <View style={styles.modalIconContainer}>
               <Ionicons name="finger-print" size={32} color={theme.colors.accent} />
             </View>
-            <Text style={styles.modalTitle}>{t('auth.enableBiometricsTitle', 'Activer la biométrie')}</Text>
+            <Text style={styles.modalTitle}>{t('auth.enableBiometricsTitle', "Enable Biometrics")}</Text>
             <Text style={styles.modalText}>
-              {t('auth.enableBiometricsText', 'Voulez-vous utiliser Face ID / Touch ID pour vous connecter plus rapidement la prochaine fois ?')}
+              {t('auth.enableBiometricsText', "Do you want to use Face ID / Touch ID to log in faster next time?")}
             </Text>
             <View style={styles.modalButtons}>
               <TouchableOpacity 
                 style={[styles.modalBtn, styles.modalBtnCancel]} 
                 onPress={handleDeclineBiometrics}
               >
-                <Text style={styles.modalBtnCancelText}>{t('auth.later', 'Plus tard')}</Text>
+                <Text style={styles.modalBtnCancelText}>{t('auth.later', "Later")}</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[styles.modalBtn, styles.modalBtnConfirm]} 
                 onPress={handleEnableBiometrics}
               >
-                <Text style={styles.modalBtnConfirmText}>{t('auth.yesEnable', 'Oui, activer')}</Text>
+                <Text style={styles.modalBtnConfirmText}>{t('auth.yesEnable', "Yes, enable")}</Text>
               </TouchableOpacity>
             </View>
           </View>

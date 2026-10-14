@@ -11,12 +11,12 @@ import { useApp } from '../context/AppContext';
 import { getPaymentRailEligibility, COUNTRY_METADATA, ALL_MOMO_CORRIDORS } from '../services/paymentCorridorService';
 
 const countryOptions = [
-  { value: '+229', label: '🇧🇯  +229', subtitle: 'Bénin', flag: '🇧🇯', code: 'BJ' },
+  { value: '+229', label: '🇧🇯  +229', subtitle: 'Benin', flag: '🇧🇯', code: 'BJ' },
   { value: '+228', label: '🇹🇬  +228', subtitle: 'Togo', flag: '🇹🇬', code: 'TG' },
   { value: '+261', label: '🇲🇬  +261', subtitle: 'Madagascar', flag: '🇲🇬', code: 'MG' },
-  { value: '+225', label: '🇨🇮  +225', subtitle: 'Côte d\'Ivoire', flag: '🇨🇮', code: 'CI' },
-  { value: '+221', label: '🇸🇳  +221', subtitle: 'Sénégal', flag: '🇸🇳', code: 'SN' },
-  { value: '+237', label: '🇨🇲  +237', subtitle: 'Cameroun', flag: '🇨🇲', code: 'CM' },
+  { value: '+225', label: '🇨🇮  +225', subtitle: 'Ivory Coast', flag: '🇨🇮', code: 'CI' },
+  { value: '+221', label: '🇸🇳  +221', subtitle: 'Senegal', flag: '🇸🇳', code: 'SN' },
+  { value: '+237', label: '🇨🇲  +237', subtitle: 'Cameroon', flag: '🇨🇲', code: 'CM' },
   { value: '+233', label: '🇬🇭  +233', subtitle: 'Ghana', flag: '🇬🇭', code: 'GH' },
   { value: '+254', label: '🇰🇪  +254', subtitle: 'Kenya', flag: '🇰🇪', code: 'KE' },
   { value: '+234', label: '🇳🇬  +234', subtitle: 'Nigeria', flag: '🇳🇬', code: 'NG' },
@@ -26,57 +26,57 @@ const countryOptions = [
   { value: '+241', label: '🇬🇦  +241', subtitle: 'Gabon', flag: '🇬🇦', code: 'GA' },
   { value: '+243', label: '🇨🇩  +243', subtitle: 'RD Congo', flag: '🇨🇩', code: 'CD' },
   { value: '+250', label: '🇷🇼  +250', subtitle: 'Rwanda', flag: '🇷🇼', code: 'RW' },
-  { value: '+256', label: '🇺🇬  +256', subtitle: 'Ouganda', flag: '🇺🇬', code: 'UG' },
-  { value: '+260', label: '🇿🇲  +260', subtitle: 'Zambie', flag: '🇿🇲', code: 'ZM' },
-  { value: '+255', label: '🇹🇿  +255', subtitle: 'Tanzanie', flag: '🇹🇿', code: 'TZ' },
+  { value: '+256', label: '🇺🇬  +256', subtitle: 'Uganda', flag: '🇺🇬', code: 'UG' },
+  { value: '+260', label: '🇿🇲  +260', subtitle: 'Zambia', flag: '🇿🇲', code: 'ZM' },
+  { value: '+255', label: '🇹🇿  +255', subtitle: 'Tanzania', flag: '🇹🇿', code: 'TZ' },
 ];
 
 const operatorOptionsByCountry = {
   BJ: [
-    { value: 'mtn', label: 'MTN Mobile Money', subtitle: 'Recommandé' },
-    { value: 'moov', label: 'Moov Money', subtitle: 'Disponible' },
-    { value: 'celtiis', label: 'Celtiis Cash', subtitle: 'Disponible' },
+    { value: 'mtn', label: 'MTN Mobile Money', subtitle: 'Recommended' },
+    { value: 'moov', label: 'Moov Money', subtitle: 'Available' },
+    { value: 'celtiis', label: 'Celtiis Cash', subtitle: 'Available' },
   ],
   TG: [
-    { value: 'mixx', label: 'Mixx by Yas (T-Money)', subtitle: 'Recommandé' },
-    { value: 'moov', label: 'Moov Money (Flooz)', subtitle: 'Disponible' },
+    { value: 'mixx', label: 'Mixx by Yas (T-Money)', subtitle: 'Recommended' },
+    { value: 'moov', label: 'Moov Money (Flooz)', subtitle: 'Available' },
   ],
   MG: [
-    { value: 'mvola', label: 'MVola (Telma)', subtitle: 'Recommandé' },
-    { value: 'orange', label: 'Orange Money Madagascar', subtitle: 'Disponible' },
-    { value: 'airtel', label: 'Airtel Money Madagascar', subtitle: 'Disponible' },
+    { value: 'mvola', label: 'MVola (Telma)', subtitle: 'Recommended' },
+    { value: 'orange', label: 'Orange Money Madagascar', subtitle: 'Available' },
+    { value: 'airtel', label: 'Airtel Money Madagascar', subtitle: 'Available' },
   ],
   CI: [
-    { value: 'wave', label: 'Wave Côte d\'Ivoire', subtitle: 'Recommandé' },
-    { value: 'orange', label: 'Orange Money', subtitle: 'Disponible' },
-    { value: 'mtn', label: 'MTN Mobile Money', subtitle: 'Disponible' },
-    { value: 'moov', label: 'Moov Money', subtitle: 'Disponible' },
+    { value: 'wave', label: 'Wave Ivory Coast', subtitle: 'Recommended' },
+    { value: 'orange', label: 'Orange Money', subtitle: 'Available' },
+    { value: 'mtn', label: 'MTN Mobile Money', subtitle: 'Available' },
+    { value: 'moov', label: 'Moov Money', subtitle: 'Available' },
   ],
   SN: [
-    { value: 'wave', label: 'Wave Sénégal', subtitle: 'Recommandé' },
-    { value: 'orange', label: 'Orange Money', subtitle: 'Disponible' },
-    { value: 'free', label: 'Free Money', subtitle: 'Disponible' },
+    { value: 'wave', label: 'Wave Senegal', subtitle: 'Recommended' },
+    { value: 'orange', label: 'Orange Money', subtitle: 'Available' },
+    { value: 'free', label: 'Free Money', subtitle: 'Available' },
   ],
   CM: [
-    { value: 'mtn', label: 'MTN Mobile Money Cameroun', subtitle: 'Recommandé' },
-    { value: 'orange', label: 'Orange Money Cameroun', subtitle: 'Disponible' },
+    { value: 'mtn', label: 'MTN Mobile Money Cameroon', subtitle: 'Recommended' },
+    { value: 'orange', label: 'Orange Money Cameroon', subtitle: 'Available' },
   ],
   KE: [
-    { value: 'mpesa', label: 'Safaricom M-Pesa', subtitle: 'Recommandé' },
-    { value: 'airtel', label: 'Airtel Money Kenya', subtitle: 'Disponible' },
+    { value: 'mpesa', label: 'Safaricom M-Pesa', subtitle: 'Recommended' },
+    { value: 'airtel', label: 'Airtel Money Kenya', subtitle: 'Available' },
   ],
   GH: [
-    { value: 'mtn', label: 'MTN Mobile Money Ghana', subtitle: 'Recommandé' },
-    { value: 'telecel', label: 'Telecel Cash', subtitle: 'Disponible' },
-    { value: 'airteltigo', label: 'AirtelTigo Money', subtitle: 'Disponible' },
+    { value: 'mtn', label: 'MTN Mobile Money Ghana', subtitle: 'Recommended' },
+    { value: 'telecel', label: 'Telecel Cash', subtitle: 'Available' },
+    { value: 'airteltigo', label: 'AirtelTigo Money', subtitle: 'Available' },
   ],
   default: [
-    { value: 'mtn', label: 'MTN Mobile Money', subtitle: 'Disponible' },
-    { value: 'orange', label: 'Orange Money', subtitle: 'Disponible' },
-    { value: 'moov', label: 'Moov Money', subtitle: 'Disponible' },
-    { value: 'airtel', label: 'Airtel Money', subtitle: 'Disponible' },
-    { value: 'wave', label: 'Wave', subtitle: 'Disponible' },
-    { value: 'mpesa', label: 'M-Pesa', subtitle: 'Disponible' },
+    { value: 'mtn', label: 'MTN Mobile Money', subtitle: 'Available' },
+    { value: 'orange', label: 'Orange Money', subtitle: 'Available' },
+    { value: 'moov', label: 'Moov Money', subtitle: 'Available' },
+    { value: 'airtel', label: 'Airtel Money', subtitle: 'Available' },
+    { value: 'wave', label: 'Wave', subtitle: 'Available' },
+    { value: 'mpesa', label: 'M-Pesa', subtitle: 'Available' },
   ],
 };
 
@@ -84,7 +84,7 @@ const tokenOptions = [
   { value: 'USDC', label: 'USDC (USD Coin)', subtitle: 'Stablecoin 1:1 USD' },
   { value: 'USDT', label: 'USDT (Tether)', subtitle: 'Stablecoin 1:1 USD' },
   { value: 'EURC', label: 'EURC (Euro Coin)', subtitle: 'Stablecoin 1:1 EUR' },
-  { value: 'DZY', label: 'DZY (DizzitUp Token)', subtitle: 'Token écosystème' },
+  { value: 'DZY', label: 'DZY (DizzitUp Token)', subtitle: 'Ecosystem token' },
 ];
 
 export default function TopUpDetailsScreen({ route }) {
@@ -153,14 +153,10 @@ export default function TopUpDetailsScreen({ route }) {
               <Ionicons name="information-circle" size={22} color="#0284C7" style={{ marginRight: 10, marginTop: 2 }} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.corridorNoticeTitle}>
-                  {language === 'en' 
-                    ? `Mobile Money Corridors` 
-                    : `Corridors Mobile Money Partenaires`}
+                  {t('topup.corridor_notice_title', 'Mobile Money Corridors')}
                 </Text>
                 <Text style={styles.corridorNoticeDesc}>
-                  {language === 'en'
-                    ? `Local Mobile Money is not operating in ${localizedUserCountryName}. You can recharge a number in any supported partner corridor (Benin, Togo, Madagascar, Senegal...) or top up instantly via Card/Crypto.`
-                    : `Le Mobile Money local n'opère pas en ${localizedUserCountryName}. Vous pouvez recharger une SIM dans un pays partenaire ci-dessous (Bénin, Togo, Madagascar, Sénégal...) ou utiliser la Carte Bancaire / Crypto.`}
+                  {t('topup.corridor_notice_desc', 'Local Mobile Money is not operating in {{country}}. You can recharge a number in any supported partner corridor (Benin, Togo, Madagascar, Senegal...) or top up instantly via Card/Crypto.', { country: localizedUserCountryName })}
                 </Text>
                 <TouchableOpacity 
                   style={styles.corridorNoticeBtn}
@@ -168,7 +164,7 @@ export default function TopUpDetailsScreen({ route }) {
                   activeOpacity={0.7}
                 >
                   <Text style={styles.corridorNoticeBtnText}>
-                    {language === 'en' ? '💳 Pay with Card or Crypto instead' : '💳 Payer par Carte ou Crypto plutôt'}
+                    💳 {t('topup.pay_with_card_or_crypto', 'Pay with Card or Crypto instead')}
                   </Text>
                   <Ionicons name="arrow-forward" size={14} color="#0369A1" />
                 </TouchableOpacity>
@@ -187,7 +183,7 @@ export default function TopUpDetailsScreen({ route }) {
                 value={selectedCountry.value}
                 options={countryOptions}
                 onChange={handleCountryChange}
-                title={t('topup.select_country', 'Sélectionner le pays')}
+                title={t('topup.select_country', "Select country")}
                 renderCustomTrigger={({ setOpen }) => (
                   <TouchableOpacity style={styles.countrySelector} onPress={() => setOpen(true)} activeOpacity={0.7}>
                     <Text style={styles.countryFlag}>{selectedCountry.flag}</Text>
@@ -227,13 +223,13 @@ export default function TopUpDetailsScreen({ route }) {
               value={operator}
               options={currentOperators}
               onChange={(val) => setOperator(val)}
-              title={t('topup.select_operator', 'Sélectionner un opérateur')}
+              title={t('topup.select_operator', "Select Operator")}
               renderCustomTrigger={({ setOpen }) => (
                 <TouchableOpacity style={styles.dropdownContainer} onPress={() => setOpen(true)} activeOpacity={0.7}>
                   <View style={styles.operatorLogoMock}>
                     <Ionicons name="cellular" size={16} color="#FFF" />
                   </View>
-                  <Text style={styles.dropdownText}>{activeOperatorObj?.label || 'Opérateur'}</Text>
+                  <Text style={styles.dropdownText}>{activeOperatorObj?.label || 'Operator'}</Text>
                   <Ionicons name="chevron-down" size={20} color="#1A2840" />
                 </TouchableOpacity>
               )}
@@ -290,7 +286,7 @@ export default function TopUpDetailsScreen({ route }) {
                 value={token}
                 options={tokenOptions}
                 onChange={(val) => setToken(val)}
-                title={t('topup.select_token', 'Sélectionner le token')}
+                title={t('topup.select_token', "Select token")}
                 renderCustomTrigger={({ setOpen }) => (
                   <TouchableOpacity style={styles.dropdownContainer} onPress={() => setOpen(true)} activeOpacity={0.7}>
                     <CryptoIcon symbol={token} size={24} style={{marginRight: 8}} />

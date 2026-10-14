@@ -24,7 +24,7 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
     momoNetworks: []
   };
   const countryName = t(`country.${countryParam}`, meta.name || countryParam);
-  const providerName = selectedMethod === 'bank' ? t('withdrawFunds.bankTransfer', 'Virement bancaire') : ((meta.momoNetworks || [])[0] || 'Mobile Money') + (countryName ? ` (${countryName})` : '');
+  const providerName = selectedMethod === 'bank' ? t('withdrawFunds.bankTransfer', "Bank transfer") : ((meta.momoNetworks || [])[0] || 'Mobile Money') + (countryName ? ` (${countryName})` : '');
 
 
   useEffect(() => {
@@ -167,7 +167,7 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
           <Text style={styles.stepOverTitle}>{t('withdrawFunds.step4Of5', 'Step 4/5')}</Text>
           <Text style={styles.mainTitle}>{t('withdrawFunds.processingTitle', 'Withdrawal in progress')}</Text>
           <Text style={styles.mainSubtitle}>
-            {t('withdrawFunds.processingSubtitle', 'Your transaction is being processed.\nPlease do not leave this page.')}
+            {t('withdrawFunds.processingSubtitle', "Your transaction is being processed.\nPlease do not leave this page.")}
           </Text>
 
           {/* Main Card Container */}
@@ -247,9 +247,9 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
                   <Ionicons name="time-outline" size={24} color="#F59E0B" />
                 </View>
                 <View style={styles.statusHeaderTextContainer}>
-                  <Text style={styles.statusTitle}>{t('withdrawFunds.processingTitle', 'Processing...')}</Text>
+                  <Text style={styles.statusTitle}>{t('withdrawFunds.processingTitle', "Withdrawal in progress")}</Text>
                   <Text style={styles.statusDesc}>
-                    {t('withdrawFunds.waitMoments', 'Your withdrawal is being processed.\nPlease wait a few moments.')}
+                    {t('withdrawFunds.waitMoments', "Your withdrawal is being processed.\nPlease wait a few moments.")}
                   </Text>
                 </View>
               </View>
@@ -277,7 +277,7 @@ export default function WithdrawFundsMobileMoneyProcessingScreen() {
               <Ionicons name="information-circle" size={20} color="#475569" />
             </View>
             <Text style={styles.infoBannerText}>
-              {t('withdrawFunds.notificationNotice', 'You will receive a notification as soon as the withdrawal is finalized successfully.')}
+              {t('withdrawFunds.notificationNotice', "You will receive a notification as soon as the withdrawal is successfully finalized.")}
             </Text>
           </View>
 

@@ -45,7 +45,7 @@ export default function RewardsScreen() {
     (user?.id ? `DZY-${user.id.slice(0, 6).toUpperCase()}` : 'DZY-VIP');
 
   // Dynamic Rewards Balance from user profile / wallet (no mock value)
-  const totalRewardsDzy = Number(user?.rewardsDZY ?? user?.balanceDZY ?? 0) || 0;
+  const totalRewardsDzy = Number(user?.rewardsDZY ?? user?.rewards_dzy ?? 0) || 0;
 
   // Currency conversion setup
   const userCountryKey = (user?.country || '').toLowerCase().trim();
@@ -204,12 +204,12 @@ export default function RewardsScreen() {
                       </Text>
                       <View style={styles.proBadge}>
                         <Text style={styles.proBadgeText}>
-                          {t('rewards.pre_tge_badge', 'PRE-TGE')}
+                          {t('rewards.pre_tge_badge', "PRE-TGE REWARDS")}
                         </Text>
                       </View>
                     </View>
                     <Text style={styles.rateSubtitle} numberOfLines={1}>
-                      {t('rewards.token_valuation', '10 DZY = $1.00 USD (Polygon ERC-20)')}
+                      {t('rewards.token_valuation', "1 DZY = $0.10 USD (Polygon ERC-20)")}
                     </Text>
                   </View>
                 </View>
@@ -370,12 +370,12 @@ export default function RewardsScreen() {
                   </View>
                 </View>
                 <Text style={styles.methodSubtext} numberOfLines={1}>
-                  {t('rewards.rate_dzy_sub', 'Highest cashback value across all services')}
+                  {t('rewards.rate_dzy_sub', 'Settlement in your bank account')}
                 </Text>
               </View>
               <View style={styles.ratePillWrap}>
                 <View style={[styles.ratePill, styles.ratePillFeatured]}>
-                  <Text style={styles.ratePillTextFeatured}>5%</Text>
+                  <Text style={styles.ratePillTextFeatured}>0%</Text>
                 </View>
                 <Text style={styles.rateNoteText}>{t('rewards.rate_dzy_note', 'Active at TGE')}</Text>
               </View>

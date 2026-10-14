@@ -144,7 +144,7 @@ export default function MerchantRegistrationScreen() {
         }
       }
 
-      setToastInfo({ visible: true, title: t('common.success', 'Registration successful'), message: t('auth.registrationSuccessMsg', 'Your verification code is ready.'), type: 'success' });
+      setToastInfo({ visible: true, title: t('common.success', "Success"), message: t('auth.registrationSuccessMsg', 'Your verification code is ready.'), type: 'success' });
       setTimeout(() => navigation.navigate('VerificationScreen', { emailOrPhone: email }), 900);
 
     } catch (error) {
@@ -169,7 +169,7 @@ export default function MerchantRegistrationScreen() {
             <Ionicons name="chevron-back" size={22} color={theme.colors.primary} />
           </TouchableOpacity>
           <View style={styles.loginLinkContainer}>
-            <Text style={styles.loginText}>{t('auth.alreadyHaveAccount', 'Already have an account? ')}</Text>
+            <Text style={styles.loginText}>{t('auth.alreadyHaveAccount', "Already have an account?")}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
               <Text style={styles.loginLink}>{t('auth.login', 'Log in')}</Text>
             </TouchableOpacity>
@@ -282,8 +282,8 @@ export default function MerchantRegistrationScreen() {
               />
               
               <DizzitInput
-                label={t('auth.password', 'Create your password')}
-                placeholder={t('auth.enterPassword', 'Create your password')}
+                label={t('auth.password', "Password")}
+                placeholder={t('auth.enterPassword', "Enter your password")}
                 isPassword
                 value={password}
                 onChangeText={setPassword}
@@ -316,7 +316,7 @@ export default function MerchantRegistrationScreen() {
               <SecurityBanner />
 
               <DizzitButton 
-                title={t('btnContinue', 'Continuer')}
+                title={t('btnContinue', "Continue")}
                 icon={<Ionicons name="arrow-forward" size={20} color={theme.colors.textPrimary} />} 
                 style={{marginTop: theme.spacing.sm}}
                 onPress={handleRegister}

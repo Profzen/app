@@ -39,20 +39,20 @@ export default function WriteReviewModal({
   }, [visible, initialRating, initialComment]);
 
   const starLabels = {
-    1: t('review.rating1', '1/5 — Décevant'),
-    2: t('review.rating2', '2/5 — Passable'),
-    3: t('review.rating3', '3/5 — Bien'),
-    4: t('review.rating4', '4/5 — Très bien'),
-    5: t('review.rating5', '5/5 — Excellent !'),
+    1: t('review.rating1', "1/5 — Disappointing"),
+    2: t('review.rating2', "2/5 — Fair"),
+    3: t('review.rating3', "3/5 — Good"),
+    4: t('review.rating4', "4/5 — Very good"),
+    5: t('review.rating5', "5/5 — Excellent!"),
   };
 
   const exampleList = [
-    { key: 'fastDelivery', text: t('review.examples.fastDelivery', '⚡ Livraison ultra-rapide et soignée') },
-    { key: 'itemAsDescribed', text: t('review.examples.itemAsDescribed', '📦 Produit 100% conforme à la description') },
-    { key: 'responsiveSeller', text: t('review.examples.responsiveSeller', '🤝 Vendeur très réactif et professionnel') },
-    { key: 'greatExperience', text: t('review.examples.greatExperience', '⭐ Excellente expérience d\'achat') },
-    { key: 'secureEscrow', text: t('review.examples.secureEscrow', '🛡️ Achat en toute confiance avec protection Escrow') },
-    { key: 'recommend', text: t('review.examples.recommend', '💯 Je recommande vivement cette boutique !') },
+    { key: 'fastDelivery', text: t('review.examples.fastDelivery', "⚡ Ultra-fast and careful delivery") },
+    { key: 'itemAsDescribed', text: t('review.examples.itemAsDescribed', "📦 Product 100% matches description") },
+    { key: 'responsiveSeller', text: t('review.examples.responsiveSeller', "🤝 Very responsive and professional seller") },
+    { key: 'greatExperience', text: t('review.examples.greatExperience', "⭐ Excellent shopping experience") },
+    { key: 'secureEscrow', text: t('review.examples.secureEscrow', "🛡️ Trusted purchase with Escrow protection") },
+    { key: 'recommend', text: t('review.examples.recommend', "💯 Highly recommend this shop!") },
   ];
 
   const handleToggleSuggestion = (suggestionText) => {
@@ -101,11 +101,11 @@ export default function WriteReviewModal({
             <View style={{ flex: 1, paddingRight: 10 }}>
               <Text style={styles.title}>
                 {isEditing
-                  ? t('review.editReviewTitle', 'Modifier votre avis')
-                  : t('review.writeReviewTitle', 'Donner votre avis')}
+                  ? t('review.editReviewTitle', "Edit your review")
+                  : t('review.writeReviewTitle', "Write a review")}
               </Text>
               <Text style={styles.subtitle} numberOfLines={1}>
-                {shopName || 'Boutique DizzitUp'}
+                {shopName || 'DizzitUp Store'}
               </Text>
             </View>
             <TouchableOpacity style={styles.closeBtn} onPress={onClose} activeOpacity={0.7}>
@@ -120,7 +120,7 @@ export default function WriteReviewModal({
           >
             {/* Star Rating Picker */}
             <View style={styles.ratingSection}>
-              <Text style={styles.sectionLabel}>{t('review.selectRating', 'Votre note globale')}</Text>
+              <Text style={styles.sectionLabel}>{t('review.selectRating', "Your overall rating")}</Text>
               <View style={styles.starsRow}>
                 {[1, 2, 3, 4, 5].map((star) => (
                   <TouchableOpacity
@@ -145,7 +145,7 @@ export default function WriteReviewModal({
               <View style={styles.suggestionsHeader}>
                 <Ionicons name="sparkles" size={14} color="#F59E0B" style={{ marginRight: 6 }} />
                 <Text style={styles.suggestionsTitle}>
-                  {t('review.quickSuggestions', 'Suggestions rapides :')}
+                  {t('review.quickSuggestions', "Quick suggestions:")}
                 </Text>
               </View>
               <ScrollView
@@ -176,7 +176,7 @@ export default function WriteReviewModal({
 
             {/* Comment Text Input */}
             <View style={styles.commentSection}>
-              <Text style={styles.sectionLabel}>{t('review.commentLabel', 'Votre commentaire (optionnel)')}</Text>
+              <Text style={styles.sectionLabel}>{t('review.commentLabel', "Your review (optional)")}</Text>
               <TextInput
                 style={styles.commentInput}
                 multiline
@@ -184,7 +184,7 @@ export default function WriteReviewModal({
                 maxLength={500}
                 placeholder={t(
                   'review.commentPlaceholder',
-                  'Partagez votre expérience avec cette boutique (qualité des produits, rapidité de livraison, service client)...'
+                  "Share your experience with this shop (product quality, delivery speed, customer service)..."
                 )}
                 placeholderTextColor="#94A3B8"
                 value={comment}
@@ -198,7 +198,7 @@ export default function WriteReviewModal({
             <View style={styles.trustRow}>
               <Ionicons name="shield-checkmark" size={16} color="#10B981" style={{ marginRight: 6 }} />
               <Text style={styles.trustText}>
-                {t('review.trustNotice', 'Votre avis est synchronisé avec le marketplace DizzitUp.')}
+                {t('review.trustNotice', "Your review is synchronized with the DizzitUp marketplace.")}
               </Text>
             </View>
           </ScrollView>
@@ -211,7 +211,7 @@ export default function WriteReviewModal({
               disabled={submitting}
               activeOpacity={0.8}
             >
-              <Text style={styles.btnCancelText}>{t('common.cancel', 'Annuler')}</Text>
+              <Text style={styles.btnCancelText}>{t('common.cancel', "Cancel")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -232,8 +232,8 @@ export default function WriteReviewModal({
                   />
                   <Text style={styles.btnSubmitText}>
                     {isEditing
-                      ? t('review.updateBtn', 'Mettre à jour l\'avis')
-                      : t('review.submitBtn', 'Publier l\'avis')}
+                      ? t('review.updateBtn', "Update Review")
+                      : t('review.submitBtn', "Submit Review")}
                   </Text>
                 </>
               )}

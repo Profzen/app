@@ -227,7 +227,7 @@ export default function AssetListScreen() {
            <View style={styles.sectionIconWrapper}>
              <Ionicons name="trending-up" size={18} color="#FFC759" />
            </View>
-           <Text style={styles.sectionTitle}>{t('wallet.supportedTokens', 'Default supported / planned tokens list')}</Text>
+           <Text style={styles.sectionTitle}>{t('wallet.supportedTokens', "Supported tokens")}</Text>
         </View>
 
         {/* DZY Card Native Style */}

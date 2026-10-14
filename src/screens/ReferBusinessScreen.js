@@ -43,7 +43,7 @@ export default function ReferBusinessScreen() {
 
   const handleSubmit = async () => {
     if (!referrant.email || !business.name || !business.contactMobile) {
-      setToastConfig({ visible: true, title: t('errors.error', 'Error'), message: t('referBusiness.submitError', 'Please fill all required fields.'), type: 'error' });
+      setToastConfig({ visible: true, title: t('errors.error', 'Error'), message: t('referBusiness.submitError', "Failed to submit referral. Please try again."), type: 'error' });
       return;
     }
 
@@ -71,7 +71,7 @@ export default function ReferBusinessScreen() {
       setIsSuccess(true);
     } catch (error) {
       console.error("Error submitting referral:", error);
-      setToastConfig({ visible: true, title: t('errors.error', 'Error'), message: t('referBusiness.submitError', 'An error occurred during submission.'), type: 'error' });
+      setToastConfig({ visible: true, title: t('errors.error', 'Error'), message: t('referBusiness.submitError', "Failed to submit referral. Please try again."), type: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -84,9 +84,9 @@ export default function ReferBusinessScreen() {
           <View style={styles.successIconCircle}>
             <Ionicons name="checkmark" size={40} color="#10B981" />
           </View>
-          <Text style={styles.successTitle}>{t('referBusiness.successTitle', 'Thank you!')}</Text>
+          <Text style={styles.successTitle}>{t('referBusiness.successTitle', "Thank you for your referral!")}</Text>
           <Text style={styles.successDesc}>
-            {t('referBusiness.successMessage1', 'We have successfully received your referral.')} {business.name}
+            {t('referBusiness.successMessage1', "We have successfully received your referral. A confirmation email has been sent to")} {business.name}
           </Text>
           <TouchableOpacity style={styles.btnPrimary} onPress={() => navigation.goBack()}>
             <Text style={styles.btnPrimaryText}>{t('referBusiness.backToHome', "Back to Home")}</Text>
@@ -113,7 +113,7 @@ export default function ReferBusinessScreen() {
           <View style={styles.infoBanner}>
             <Ionicons name="information-circle" size={20} color="#F59E0B" style={{marginRight: 8}} />
             <Text style={styles.infoBannerText}>
-              {t('referBusiness.subtitle1', "Help us expand the DizzitUp ecosystem.")} {t('referBusiness.subtitle2', "Earn rewards")} {t('referBusiness.subtitle3', "when they successfully onboard!")}
+              {t('referBusiness.subtitle1', "Help us expand the DizzitUp ecosystem. Refer local businesses in Africa and earn")} {t('referBusiness.subtitle2', "DZY Rewards")} {t('referBusiness.subtitle3', "when they successfully onboard!")}
             </Text>
           </View>
 
@@ -121,12 +121,12 @@ export default function ReferBusinessScreen() {
             <Text style={styles.sectionTitle}>{t('referBusiness.yourInfo', 'Your Information')}</Text>
             
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>{t('referBusiness.firstName', 'First Name')}</Text>
+              <Text style={styles.inputLabel}>{t('referBusiness.firstName', "First Name *")}</Text>
               <TextInput style={styles.input} value={referrant.firstName} onChangeText={(t) => setReferrant({...referrant, firstName: t})} placeholder="First Name" placeholderTextColor="#94A3B8" />
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>{t('referBusiness.lastName', 'Last Name')}</Text>
+              <Text style={styles.inputLabel}>{t('referBusiness.lastName', "Last Name *")}</Text>
               <TextInput style={styles.input} value={referrant.lastName} onChangeText={(t) => setReferrant({...referrant, lastName: t})} placeholder="Last Name" placeholderTextColor="#94A3B8" />
             </View>
 
@@ -160,13 +160,13 @@ export default function ReferBusinessScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>{t('referBusiness.country', 'Country')}</Text>
+              <Text style={styles.inputLabel}>{t('referBusiness.country', "Country *")}</Text>
               <View style={{ padding: 1.5, borderRadius: 12, backgroundColor: '#E2E8F0' }}>
                 <AppSelect
                   value={business.country}
                   options={countryOptions}
                   onChange={(val) => setBusiness({...business, country: val})}
-                  title={t('referBusiness.country', 'Country')}
+                  title={t('referBusiness.country', "Country *")}
                   placeholder={t('personalAccount.selectCountry', 'Select your country')}
                   searchPlaceholder={t('personalAccount.searchCountry', 'Search country')}
                   style={{ backgroundColor: '#F8FAFC', borderRadius: 10.5, minHeight: 48, paddingHorizontal: 12, borderWidth: 0, margin: 0 }}

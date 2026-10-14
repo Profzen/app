@@ -142,7 +142,7 @@ export default function WithdrawFundsScreen() {
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()} accessibilityLabel="Retour">
             <Ionicons name="chevron-back" size={24} color="#1A2840" />
           </TouchableOpacity>
-          <Text style={styles.pageTitle}>{t('withdraw.title', 'Retirer des fonds')}</Text>
+          <Text style={styles.pageTitle}>{t('withdraw.title', "Withdraw funds")}</Text>
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('ContactUsScreen')} accessibilityLabel="Support">
             <Ionicons name="headset-outline" size={22} color="#1A2840" />
           </TouchableOpacity>
@@ -168,11 +168,11 @@ export default function WithdrawFundsScreen() {
               </View>
 
               {/* Titles */}
-              <Text style={styles.stepOverTitle}>{t('withdraw.step_1_of_5', 'Étape 1/5')}</Text>
+              <Text style={styles.stepOverTitle}>{t('withdraw.step_1_of_5', "Step 1/5")}</Text>
             </>
           )}
-          <Text style={styles.mainTitle}>{t('withdraw.choose_details_title', 'Choisissez les détails de votre retrait')}</Text>
-          <Text style={styles.mainSubtitle}>{t('withdraw.choose_details_desc', 'La devise de votre pays est fixée automatiquement. Choisissez le jeton à débiter.')}</Text>
+          <Text style={styles.mainTitle}>{t('withdraw.choose_details_title', "Choose your withdrawal details")}</Text>
+          <Text style={styles.mainSubtitle}>{t('withdraw.choose_details_desc', "Your local currency is set automatically. Choose the token to debit.")}</Text>
 
           {/* Main Card */}
           <View style={styles.mainCard}>
@@ -202,13 +202,13 @@ export default function WithdrawFundsScreen() {
                   <Ionicons name="alert-circle" size={16} color="#FFFFFF" />
                 </View>
                 <Text style={[styles.infoBannerText, { color: '#7F1D1D' }]}>
-                  {t('withdraw.exchange_rate_unavailable', 'Le taux de change actuel n\'est pas disponible. Veuillez réessayer plus tard.')}
+                  {t('withdraw.exchange_rate_unavailable', "Current exchange rate is not available. Please try again later.")}
                 </Text>
               </View>
             )}
             {/* Montant à retirer en monnaie locale */}
             <View style={styles.sectionHeaderBetween}>
-              <Text style={styles.sectionTitle}>{t('withdraw.amount_to_withdraw', 'Montant à retirer')}</Text>
+              <Text style={styles.sectionTitle}>{t('withdraw.amount_to_withdraw', "Amount to withdraw")}</Text>
               <View style={styles.detectedCountryBadge}>
                 <Image source={{ uri: `https://flagcdn.com/w40/${userCountryInfo.code}.png` }} style={styles.countryFlag} />
                 <Text style={styles.detectedCountryText}>{t(`country.${effectiveCountryKey}`, userCountryInfo.countryName || 'Afrique')} ({localCurrency})</Text>
@@ -275,8 +275,8 @@ export default function WithdrawFundsScreen() {
             <View style={styles.divider} />
 
             {/* Choisissez le jeton à débiter */}
-            <Text style={styles.sectionTitle}>{t('withdraw.select_token_to_debit', 'Choisissez le jeton à débiter')}</Text>
-            <Text style={styles.sectionSubInstruction}>{t('withdraw.select_token_desc', 'Sélectionnez parmi vos jetons disponibles :')}</Text>
+            <Text style={styles.sectionTitle}>{t('withdraw.select_token_to_debit', "Choose the token to debit")}</Text>
+            <Text style={styles.sectionSubInstruction}>{t('withdraw.select_token_desc', "Select from your available tokens:")}</Text>
             
             <View style={styles.gridContainer}>
               {tokens.map((token) => (
@@ -290,7 +290,7 @@ export default function WithdrawFundsScreen() {
                     {renderTokenIcon(token.id)}
                   </View>
                   <Text style={styles.itemName}>{token.name}</Text>
-                  <Text style={styles.itemSubText}>{t('common.wallet.balance', 'Solde')} : {token.balance}</Text>
+                  <Text style={styles.itemSubText}>{t('common.wallet.balance', "Balance")} : {token.balance}</Text>
                   
                   {selectedToken === token.id && (
                     <View style={styles.checkBadge}>
@@ -307,7 +307,7 @@ export default function WithdrawFundsScreen() {
                 <Ionicons name="shield-checkmark" size={16} color="#FFFFFF" />
               </View>
               <Text style={styles.infoBannerText}>
-                {t('withdraw.safety_notice', 'Conversion sécurisée garantie au meilleur taux de change vers votre monnaie locale.')}
+                {t('withdraw.safety_notice', "Guaranteed secure conversion at the best exchange rate to your local currency.")}
               </Text>
             </View>
 
@@ -324,7 +324,7 @@ export default function WithdrawFundsScreen() {
               countryCode: effectiveCountryKey,
             })}
           >
-            <Text style={styles.btnContinueText}>{t('btnContinue', 'Continuer')}</Text>
+            <Text style={styles.btnContinueText}>{t('btnContinue', "Continue")}</Text>
             <Ionicons name="arrow-forward" size={18} color="#1A2840" style={{ marginLeft: 8 }} />
           </TouchableOpacity>
 

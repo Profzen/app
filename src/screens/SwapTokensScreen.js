@@ -320,7 +320,7 @@ export default function SwapTokensScreen() {
           {/* Chain Selector */}
           <View style={styles.chainRow}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.inputLabel}>{t('common.wallet.swap_ui.from_chain', 'Network')}</Text>
+              <Text style={styles.inputLabel}>{t('common.wallet.swap_ui.from_chain', "From Chain")}</Text>
               <AppSelect 
                 value={fromChain} 
                 options={chainOptions} 
@@ -333,7 +333,7 @@ export default function SwapTokensScreen() {
                     setToToken(chainTokens[1] || chainTokens[0] || 'USDT');
                   }
                 }} 
-                title={t('common.wallet.swap_ui.from_chain', 'Network')} 
+                title={t('common.wallet.swap_ui.from_chain', "From Chain")}
                 style={styles.chainSelector} 
                 textStyle={styles.chainName} 
                 chevronColor="#64748B" 

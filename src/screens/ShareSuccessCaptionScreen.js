@@ -36,7 +36,7 @@ export default function ShareSuccessCaptionScreen() {
   const senderFlag = transactionData.senderFlag || matchedSenderCountry?.flag || '🇫🇷';
 
   // Anonymize recipient
-  const rawRecipientName = transactionData.recipientName || transactionData.merchantName || transactionData.serviceTitle || 'Bénéficiaire';
+  const rawRecipientName = transactionData.recipientName || transactionData.merchantName || transactionData.serviceTitle || 'Beneficiary';
   const displayRecipientName = rawRecipientName.split(' ')[0];
   const rawRecipientCountry = transactionData.recipientCountry || 'TG';
   const matchedRecipientCountry = ALL_COUNTRIES.find(c => c.name.toLowerCase() === rawRecipientCountry.toLowerCase() || c.code.toLowerCase() === rawRecipientCountry.toLowerCase());
@@ -48,7 +48,7 @@ export default function ShareSuccessCaptionScreen() {
     ? (transactionData.actionType || (transactionData.merchantName ? `Paid for ${transactionData.merchantName}` : (transactionData.serviceTitle ? `Paid for ${transactionData.serviceTitle}` : t('shareSuccess.actionPaid', 'Paid for service'))))
     : actionKey
       ? t(`shareSuccess.${actionKey}`, actionType || 'transferred')
-      : (actionType || t('shareSuccess.actionSent', 'sent funds'));
+      : (actionType || t('shareSuccess.actionSent', "I sent funds"));
 
   const shortTxHash = txHash && txHash.length > 18
     ? `${txHash.slice(0, 7)}...${txHash.slice(-5)}`
@@ -141,7 +141,7 @@ export default function ShareSuccessCaptionScreen() {
             if (await Sharing.isAvailableAsync()) {
               await Sharing.shareAsync(fileToShare, {
                 mimeType: 'image/png',
-                dialogTitle: t('shareSuccess.shareModalTitle', 'Partager mon succès DizzitUp'),
+                dialogTitle: t('shareSuccess.shareModalTitle', "Share my DizzitUp success"),
               });
               sharedWithFile = true;
             }
@@ -155,13 +155,13 @@ export default function ShareSuccessCaptionScreen() {
       if (!sharedWithFile) {
         if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.share) {
           await navigator.share({
-            title: t('shareSuccess.shareModalTitle', 'Partager mon succès DizzitUp'),
+            title: t('shareSuccess.shareModalTitle', "Share my DizzitUp success"),
             text: captionText,
             url: 'https://dizzitup.com/',
           });
         } else {
           await Share.share({
-            title: t('shareSuccess.shareModalTitle', 'Partager mon succès DizzitUp'),
+            title: t('shareSuccess.shareModalTitle', "Share my DizzitUp success"),
             message: captionText,
             url: 'https://dizzitup.com/',
           });
@@ -169,16 +169,16 @@ export default function ShareSuccessCaptionScreen() {
       }
 
       setToast({
-        title: t('shareSuccess.toastShareSuccessTitle', 'Félicitations !'),
-        message: t('shareSuccess.toastShareSuccessMsg', 'Succès partagé ! 1 DZY a été crédité sur votre compte.')
+        title: t('shareSuccess.toastShareSuccessTitle', "Congratulations!"),
+        message: t('shareSuccess.toastShareSuccessMsg', "Success shared! 1 DZY has been credited to your account.")
       });
       setTimeout(() => {
         navigation.navigate('RewardsScreen');
       }, 1500);
     } catch (error) {
       setToast({
-        title: t('shareSuccess.toastShareTitle', 'Succès partagé'),
-        message: t('shareSuccess.toastShareMsg', '1 DZY crédité dans vos Rewards !')
+        title: t('shareSuccess.toastShareTitle', "Success shared"),
+        message: t('shareSuccess.toastShareMsg', "1 DZY credited to your Rewards!")
       });
       setTimeout(() => {
         navigation.navigate('RewardsScreen');
@@ -189,16 +189,16 @@ export default function ShareSuccessCaptionScreen() {
   const copyCaption = async () => {
     await Clipboard.setStringAsync(captionText);
     setToast({
-      title: t('shareSuccess.copiedTitle', 'Message copié !'),
-      message: t('shareSuccess.copiedDesc', 'Prêt à être partagé.'),
+      title: t('shareSuccess.copiedTitle', "Message copied!"),
+      message: t('shareSuccess.copiedDesc', "Ready to be shared."),
     });
   };
 
   const resetCaption = () => {
     setCaptionText(generateDefaultCaption());
     setToast({
-      title: t('shareSuccess.resetTitle', 'Message réinitialisé'),
-      message: t('shareSuccess.resetDesc', 'Texte original restauré.'),
+      title: t('shareSuccess.resetTitle', "Message reset"),
+      message: t('shareSuccess.resetDesc', "Original text restored."),
     });
   };
 
@@ -219,7 +219,7 @@ export default function ShareSuccessCaptionScreen() {
           </TouchableOpacity>
 
           <View style={styles.headerTitleWrap}>
-            <Text style={styles.headerTitle}>{t('shareSuccess.writeMessage', 'Your message')}</Text>
+            <Text style={styles.headerTitle}>{t('shareSuccess.writeMessage', "Write your message")}</Text>
             <Text style={styles.headerStepBadge}>{t('shareSuccess.step3of3', 'Step 3 of 3')}</Text>
           </View>
           <View style={{ width: 38 }} />
@@ -371,7 +371,7 @@ export default function ShareSuccessCaptionScreen() {
           <View style={styles.bottomSecurityRow}>
             <Ionicons name="shield-checkmark-outline" size={14} color="#10B981" style={{ marginRight: 6 }} />
             <Text style={styles.bottomSecurityText}>
-              {t('shareSuccess.shareSecurityNote', 'Safe & encrypted. Earn 1 DZY reward upon sharing.')}
+              {t('shareSuccess.shareSecurityNote', "Share safely. Your data remains private.")}
             </Text>
           </View>
 

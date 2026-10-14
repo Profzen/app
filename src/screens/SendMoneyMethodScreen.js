@@ -129,14 +129,14 @@ export default function SendMoneyMethodScreen() {
         {/* Action Buttons */}
         <View style={styles.footer}>
           <TouchableOpacity style={styles.btnPrev} onPress={() => navigation.goBack()} activeOpacity={0.8}>
-            <Text style={styles.btnPrevText}>{t('common.previous', 'Previous')}</Text>
+            <Text style={styles.btnPrevText}>{t('common.previous', "PREVIOUS")}</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.btnNext} 
             onPress={() => navigation.navigate('SendMoneyPinScreen', { amount, currency, method: selectedMethod })}
             activeOpacity={0.88}
           >
-            <Text style={styles.btnNextText}>{t('common.next', 'Next')}</Text>
+            <Text style={styles.btnNextText}>{t('common.next', "NEXT")}</Text>
           </TouchableOpacity>
         </View>
 

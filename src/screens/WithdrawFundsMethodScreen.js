@@ -125,7 +125,7 @@ export default function WithdrawFundsMethodScreen() {
           {/* Destination Country Indicator & Switcher */}
           <View style={styles.countrySelectionRow}>
             <Text style={styles.countrySelectionLabel}>
-              {t('paymentRails.withdrawRegionLabel', 'Pays de réception des fonds :')}
+              {t('paymentRails.withdrawRegionLabel', "Country of fund reception:")}
             </Text>
             <TouchableOpacity
               style={[styles.countryPill, isBusinessCard && { opacity: 0.8 } ]}
@@ -256,7 +256,7 @@ export default function WithdrawFundsMethodScreen() {
                       <View style={[styles.badgeComingSoon, { backgroundColor: '#F8FAFC', borderColor: '#E2E8F0', borderWidth: 1, flexDirection: 'row', alignItems: 'center' }]}>
                         <Ionicons name="lock-closed" size={10} color="#64748B" style={{ marginRight: 4 }} />
                         <Text style={[styles.badgeComingSoonText, { color: '#64748B' }]}>
-                          {t('paymentRails.unavailableInCountry', `Unavailable in ${railEligibility.countryName}`, {
+                          {t('paymentRails.unavailableInCountry', "Unavailable in {{country}}", {
                             country: railEligibility.countryName,
                           })}
                         </Text>
@@ -293,7 +293,7 @@ export default function WithdrawFundsMethodScreen() {
                       <Text style={styles.cardTitle}>{t('withdrawFunds.mobileMoney', 'Mobile Money')}</Text>
                       <View style={[styles.badgeRecommended, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
                         <Text style={[styles.badgeRecommendedText, { color: '#065F46' }]}>
-                          {railEligibility.momo.operators.length > 0 ? railEligibility.momo.operators.slice(0, 2).join(', ') : 'Disponible'}
+                          {railEligibility.momo.operators.length > 0 ? railEligibility.momo.operators.slice(0, 2).join(', ') : 'Available'}
                         </Text>
                       </View>
                     </View>
@@ -310,7 +310,7 @@ export default function WithdrawFundsMethodScreen() {
                       <View style={styles.featureItem}>
                         <Ionicons name="checkmark-circle" size={14} color={selectedMethod === 'mobile' ? '#3B82F6' : '#64748B'} />
                         <Text style={styles.featureText}>
-                          {t('paymentRails.momoWithdrawAvailable', `Retrait instantané vers ${railEligibility.momo.operators.join(', ')}.`, {
+                          {t('paymentRails.momoWithdrawAvailable', "Instant withdrawal to {{operators}}.", {
                             operators: railEligibility.momo.operators.join(', ')
                           })}
                         </Text>
@@ -367,7 +367,7 @@ export default function WithdrawFundsMethodScreen() {
                       <View style={[styles.badgeComingSoon, { backgroundColor: '#F8FAFC', borderColor: '#E2E8F0', borderWidth: 1, flexDirection: 'row', alignItems: 'center' }]}>
                         <Ionicons name="lock-closed" size={10} color="#64748B" style={{ marginRight: 4 }} />
                         <Text style={[styles.badgeComingSoonText, { color: '#64748B' }]}>
-                          {t('paymentRails.unavailableInCountry', `Unavailable in ${railEligibility.countryName}`, {
+                          {t('paymentRails.unavailableInCountry', "Unavailable in {{country}}", {
                             country: railEligibility.countryName,
                           })}
                         </Text>
@@ -377,7 +377,7 @@ export default function WithdrawFundsMethodScreen() {
                     <Text style={styles.disabledCardSubtext}>
                       {t(
                         'paymentRails.momoWithdrawUnavailable',
-                        `Mobile Money withdrawal is not available in ${railEligibility.countryName}.`,
+                        "Mobile Money withdrawal is not available in {{country}}.",
                         { country: railEligibility.countryName }
                       )}
                     </Text>

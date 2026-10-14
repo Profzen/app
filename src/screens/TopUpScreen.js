@@ -204,7 +204,7 @@ export default function TopUpScreen() {
                     <View style={styles.disabledTopupBadge}>
                       <Ionicons name="lock-closed" size={10} color="#64748B" style={{ marginRight: 2 }} />
                       <Text style={styles.disabledTopupBadgeText}>
-                        {t('paymentRails.unavailableInCountry', `Unavailable in ${railEligibility.countryName}`, {
+                        {t('paymentRails.unavailableInCountry', "Unavailable in {{country}}", {
                           country: railEligibility.countryName,
                         })}
                       </Text>
@@ -213,7 +213,7 @@ export default function TopUpScreen() {
                   <Text style={styles.disabledTopupSubtext}>
                     {t(
                       'paymentRails.momoUnavailableExplanation',
-                      `Mobile Money is not available for ${railEligibility.countryName}. It is active in 20 African countries (Benin, Ivory Coast, Senegal, Togo, Kenya, Ghana...).`,
+                      "Mobile Money is not available for {{country}}. It is active in 20 African countries (Benin, Ivory Coast, Senegal, Togo, Kenya, Ghana...).",
                       { country: railEligibility.countryName }
                     )}
                   </Text>
@@ -260,17 +260,17 @@ export default function TopUpScreen() {
             <View style={styles.featuresRow}>
               <View style={styles.featureCol}>
                 <Ionicons name="shield-checkmark-outline" size={15} color="#0052FF" style={{ marginRight: 4 }} />
-                <Text style={styles.featureText}>{t('topup.features.secure', 'Sécurisé')}</Text>
+                <Text style={styles.featureText}>{t('topup.features.secure', "Secure")}</Text>
               </View>
 
               <View style={styles.featureCol}>
                 <Ionicons name="globe-outline" size={15} color="#0052FF" style={{ marginRight: 4 }} />
-                <Text style={styles.featureText}>{t('topup.features.availableEverywhere', 'Disponible partout')}</Text>
+                <Text style={styles.featureText}>{t('topup.features.availableEverywhere', "Available everywhere")}</Text>
               </View>
 
               <View style={styles.featureCol}>
                 <Ionicons name="lock-closed-outline" size={15} color="#0052FF" style={{ marginRight: 4 }} />
-                <Text style={styles.featureText}>{t('topup.features.reliableTransactions', 'Transactions fiables')}</Text>
+                <Text style={styles.featureText}>{t('topup.features.reliableTransactions', "Reliable transactions")}</Text>
               </View>
             </View>
           </TouchableOpacity>
@@ -283,7 +283,7 @@ export default function TopUpScreen() {
                 <Ionicons name="checkmark-circle" size={20} color="#10B981" />
               </View>
               <Text style={styles.infoBannerTextGreen}>
-                <Text style={{fontFamily: 'Inter_700Bold'}}>{t('topup.recommended', 'Recommended:')} </Text>
+                <Text style={{fontFamily: 'Inter_700Bold'}}>{t('topup.recommended', "Recommended")} </Text>
                 {t('topup.recommended_desc', 'For best experience in Africa, use Mobile Money on Polygon network')}
               </Text>
             </View>
@@ -297,7 +297,7 @@ export default function TopUpScreen() {
                 <Text style={{fontFamily: 'Inter_700Bold'}}>{t('paymentRails.notAvailableTitle', 'Mobile Money unavailable')} </Text>
                 {t(
                   'paymentRails.cardAlternativeNote',
-                  `Mobile Money is not yet available in ${railEligibility.countryName || topupCountry}. Use your Visa or Mastercard card to top up your account from anywhere in the world.`,
+                  "Mobile Money is not yet available in {{country}}. Use your Visa or Mastercard card to top up your account from anywhere in the world.",
                   { country: railEligibility.countryName || topupCountry }
                 )}
               </Text>
@@ -306,7 +306,7 @@ export default function TopUpScreen() {
 
           {/* Bottom Bar Continue Button */}
           <TouchableOpacity style={styles.btnContinue} onPress={handleContinue}>
-            <Text style={styles.btnContinueText}>{t('topup.continue', 'CONTINUER')}</Text>
+            <Text style={styles.btnContinueText}>{t('topup.continue', "Continue")}</Text>
             <Ionicons name="arrow-forward" size={18} color="#FFC759" />
           </TouchableOpacity>
 

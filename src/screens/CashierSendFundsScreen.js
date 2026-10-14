@@ -33,7 +33,7 @@ export default function CashierSendFundsScreen() {
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={24} color="#1A2840" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('pos.cashier', 'Caissier')}</Text>
+        <Text style={styles.headerTitle}>{t('pos.cashier', "Cashier")}</Text>
         <TouchableOpacity style={styles.iconBtn}>
           <Ionicons name="scan-outline" size={24} color="#1A2840" />
         </TouchableOpacity>
@@ -47,8 +47,8 @@ export default function CashierSendFundsScreen() {
             <Ionicons name="information" size={20} color="#FFFFFF" />
           </View>
           <View style={styles.validationContent}>
-            <Text style={styles.validationTitle}>{t('pos.validation_required', 'Validation requise')}</Text>
-            <Text style={styles.validationText}>{t('pos.validation_desc', "Veuillez patienter, transaction en cours d'approbation...")}</Text>
+            <Text style={styles.validationTitle}>{t('pos.validation_required', "Validation required")}</Text>
+            <Text style={styles.validationText}>{t('pos.validation_desc', "Please wait, transaction is being approved...")}</Text>
           </View>
         </View>
 
@@ -60,7 +60,7 @@ export default function CashierSendFundsScreen() {
             </View>
             <View>
               <Text style={styles.topUpTitle}>{t('pos.top_up_wallet', 'Top-up your DZYwallet')}</Text>
-              <Text style={styles.topUpLink}>{t('pos.fund_wallet', '+ Alimenter mon portefeuille')}</Text>
+              <Text style={styles.topUpLink}>{t('pos.fund_wallet', "+ Fund my wallet")}</Text>
             </View>
           </View>
           <Ionicons name="chevron-forward" size={20} color="#1A2840" />
@@ -73,27 +73,27 @@ export default function CashierSendFundsScreen() {
               <Ionicons name="paper-plane-outline" size={20} color="#1A2840" />
             </View>
             <View>
-              <Text style={styles.cardTitle}>{t('pos.send_funds_title', 'Envoyer des fonds')}</Text>
+              <Text style={styles.cardTitle}>{t('pos.send_funds_title', "Send Funds")}</Text>
               <View style={styles.secureBadge}>
                 <View style={styles.secureDot} />
-                <Text style={styles.secureText}>sécurisé</Text>
+                <Text style={styles.secureText}>{t('common.secure', 'Secure')}</Text>
               </View>
             </View>
           </View>
 
           {/* Form */}
           <View style={styles.formGroup}>
-            <Text style={styles.inputLabel}>SÉLECTIONNER LA BLOCKCHAIN</Text>
-            <AppSelect value={selectedNetwork} options={cashierNetworks} onChange={setSelectedNetwork} title="Sélectionner la blockchain" style={styles.dropdownInput} />
+            <Text style={styles.inputLabel}>SELECT BLOCKCHAIN</Text>
+            <AppSelect value={selectedNetwork} options={cashierNetworks} onChange={setSelectedNetwork} title="Select blockchain" style={styles.dropdownInput} />
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.inputLabel}>{t('pos.token_caps', 'JETON')}</Text>
-            <AppSelect value={selectedToken} options={cashierTokens} onChange={setSelectedToken} title="Sélectionner le jeton" style={styles.dropdownInput} renderLeading={(option) => <CryptoIcon symbol={option.value} size={25} style={{marginRight: 8}} />} />
+            <Text style={styles.inputLabel}>{t('pos.token_caps', "TOKEN")}</Text>
+            <AppSelect value={selectedToken} options={cashierTokens} onChange={setSelectedToken} title={t('topup.select_token', 'Select token')} style={styles.dropdownInput} renderLeading={(option) => <CryptoIcon symbol={option.value} size={25} style={{marginRight: 8}} />} />
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.inputLabel}>{t('pos.recipient_address_caps', 'ADRESSE DU DESTINATAIRE')}</Text>
+            <Text style={styles.inputLabel}>{t('pos.recipient_address_caps', "RECIPIENT ADDRESS")}</Text>
             {recipientVisible ? <View style={styles.contactCard}>
               <View style={styles.contactAvatar}><Text style={styles.contactAvatarText}>MB</Text></View>
               <View style={styles.contactInfo}>
@@ -103,13 +103,13 @@ export default function CashierSendFundsScreen() {
               <TouchableOpacity style={styles.clearBtn} onPress={() => setRecipientVisible(false)}>
                 <Ionicons name="close" size={16} color="#1A2840" />
               </TouchableOpacity>
-            </View> : <TouchableOpacity style={styles.contactInput} onPress={() => setRecipientVisible(true)}><Ionicons name="person-add-outline" size={20} color="#3B82F6" /><Text style={[styles.contactName,{marginLeft:10}]}>{t('pos.choose_recipient', 'Choisir un destinataire')}</Text></TouchableOpacity>}
+            </View> : <TouchableOpacity style={styles.contactInput} onPress={() => setRecipientVisible(true)}><Ionicons name="person-add-outline" size={20} color="#3B82F6" /><Text style={[styles.contactName,{marginLeft:10}]}>{t('pos.choose_recipient', "Choose a recipient")}</Text></TouchableOpacity>}
           </View>
 
           <View style={styles.formGroup}>
             <View style={styles.amountLabelRow}>
-              <Text style={styles.inputLabel}>{t('pos.amount_caps', 'MONTANT')}</Text>
-              <Text style={styles.availableText}>{t('pos.available', 'Disponible :')} {availableBalance} {selectedToken}</Text>
+              <Text style={styles.inputLabel}>{t('pos.amount_caps', "AMOUNT")}</Text>
+              <Text style={styles.availableText}>{t('pos.available', "Available:")} {availableBalance} {selectedToken}</Text>
             </View>
             <View style={styles.amountInputContainerError}>
               <TextInput 
@@ -126,15 +126,15 @@ export default function CashierSendFundsScreen() {
           {insufficient && <View style={styles.errorBanner}>
             <Ionicons name="warning-outline" size={20} color="#EF4444" style={{marginTop: 2, marginRight: 12}} />
             <View style={{flex: 1}}>
-              <Text style={styles.errorTitle}>{t('common.wallet.insufficient_balance', 'SOLDE INSUFFISANT')}</Text>
-              <Text style={styles.errorText}>{t('common.wallet.insufficient_balance_message', "Vous n'avez pas assez de fonds pour effectuer cette transaction. Veuillez réduire le montant ou déposer plus de fonds.")}</Text>
+              <Text style={styles.errorTitle}>{t('common.wallet.insufficient_balance', "Insufficient balance")}</Text>
+              <Text style={styles.errorText}>{t('common.wallet.insufficient_balance_message', "You do not have enough funds to complete this transaction. Please lower the amount or deposit more funds.")}</Text>
             </View>
           </View>}
 
           {/* Submit Button Disabled */}
           <TouchableOpacity style={[styles.btnSubmitDisabled, !insufficient && {backgroundColor:'#FFB800'}]} disabled={insufficient || !amount || !recipientVisible} onPress={() => navigation.navigate('SendMoneySuccessScreen')}>
             <Ionicons name="paper-plane-outline" size={18} color="#FFFFFF" style={{marginRight: 8}} />
-            <Text style={styles.btnSubmitDisabledText}>{t('common.wallet.send', 'Envoyer')} {selectedToken}</Text>
+            <Text style={styles.btnSubmitDisabledText}>{t('common.wallet.send', "Send")} {selectedToken}</Text>
           </TouchableOpacity>
 
         </View>

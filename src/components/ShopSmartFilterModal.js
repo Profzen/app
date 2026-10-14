@@ -77,8 +77,8 @@ export default function ShopSmartFilterModal({
     const currLabel = (currency === 'XOF' || currency === 'XAF') ? 'F CFA' : currency;
 
     return [
-      { id: 'all', label: t('filter.allPrices', 'Tous les prix'), min: null, max: null },
-      { id: 'low', label: `${t('filter.under', 'Moins de')} ${mid1.toLocaleString()} ${currLabel}`, min: 0, max: mid1 },
+      { id: 'all', label: t('filter.allPrices', "All prices"), min: null, max: null },
+      { id: 'low', label: `${t('filter.under', "Under")} ${mid1.toLocaleString()} ${currLabel}`, min: 0, max: mid1 },
       { id: 'mid', label: `${mid1.toLocaleString()} - ${mid2.toLocaleString()} ${currLabel}`, min: mid1, max: mid2 },
       { id: 'high', label: `${mid2.toLocaleString()} ${currLabel} +`, min: mid2, max: null },
     ];
@@ -158,11 +158,11 @@ export default function ShopSmartFilterModal({
   };
 
   const sortOptions = [
-    { id: 'featured', label: t('filter.sortFeatured', 'Recommandés (DizzitUp)'), icon: 'sparkles-outline' },
-    { id: 'price_asc', label: t('filter.sortPriceAsc', 'Prix : Ordre croissant'), icon: 'arrow-up-outline' },
-    { id: 'price_desc', label: t('filter.sortPriceDesc', 'Prix : Ordre décroissant'), icon: 'arrow-down-outline' },
-    { id: 'rating', label: t('filter.sortRating', 'Avis & popularité'), icon: 'star-outline' },
-    { id: 'newest', label: t('filter.sortNewest', 'Nouveautés'), icon: 'time-outline' },
+    { id: 'featured', label: t('filter.sortFeatured', "Featured (DizzitUp)"), icon: 'sparkles-outline' },
+    { id: 'price_asc', label: t('filter.sortPriceAsc', "Price: Low to high"), icon: 'arrow-up-outline' },
+    { id: 'price_desc', label: t('filter.sortPriceDesc', "Price: High to low"), icon: 'arrow-down-outline' },
+    { id: 'rating', label: t('filter.sortRating', "Rating & popularity"), icon: 'star-outline' },
+    { id: 'newest', label: t('filter.sortNewest', "Newest arrivals"), icon: 'time-outline' },
   ];
 
   return (
@@ -178,7 +178,7 @@ export default function ShopSmartFilterModal({
           <View style={styles.header}>
             <View style={styles.headerLeft}>
               <Ionicons name="options" size={20} color="#1A2840" style={{ marginRight: 8 }} />
-              <Text style={styles.title}>{t('filter.title', 'Filtres & Tri')}</Text>
+              <Text style={styles.title}>{t('filter.title', "Filters & Sorting")}</Text>
               {hasActiveFilters && (
                 <View style={styles.activeBadge}>
                   <Text style={styles.activeBadgeText}>•</Text>
@@ -189,7 +189,7 @@ export default function ShopSmartFilterModal({
             <View style={styles.headerRight}>
               {hasActiveFilters && (
                 <TouchableOpacity style={styles.resetBtn} onPress={handleReset}>
-                  <Text style={styles.resetBtnText}>{t('filter.reset', 'Réinitialiser')}</Text>
+                  <Text style={styles.resetBtnText}>{t('filter.reset', "Reset")}</Text>
                 </TouchableOpacity>
               )}
               <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
@@ -201,7 +201,7 @@ export default function ShopSmartFilterModal({
           <ScrollView style={styles.scrollArea} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
             {/* Section 1: Tri (Sort by) */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>{t('filter.sortBy', 'Trier par')}</Text>
+              <Text style={styles.sectionTitle}>{t('filter.sortBy', "Sort by")}</Text>
               <View style={styles.sortGrid}>
                 {sortOptions.map((opt) => {
                   const isSelected = sortBy === opt.id;
@@ -230,7 +230,7 @@ export default function ShopSmartFilterModal({
             {/* Section 2: Fourchette de Prix (Price Range) */}
             <View style={styles.section}>
               <View style={styles.sectionHeaderRow}>
-                <Text style={styles.sectionTitle}>{t('filter.price', 'Prix')}</Text>
+                <Text style={styles.sectionTitle}>{t('filter.price', "Price")}</Text>
                 <Text style={styles.sectionSubtitle}>
                   ({(currency === 'XOF' || currency === 'XAF') ? 'F CFA' : currency})
                 </Text>
@@ -297,10 +297,10 @@ export default function ShopSmartFilterModal({
             {availableCategories.length > 0 && (
               <View style={styles.section}>
                 <View style={styles.sectionHeaderRow}>
-                  <Text style={styles.sectionTitle}>{t('filter.categories', 'Catégories')}</Text>
+                  <Text style={styles.sectionTitle}>{t('filter.categories', "Categories")}</Text>
                   {selectedCategories.length > 0 && (
                     <Text style={styles.selectedCountBadge}>
-                      {selectedCategories.length} {t('filter.selected', 'sélectionnée(s)')}
+                      {selectedCategories.length} {t('filter.selected', "selected")}
                     </Text>
                   )}
                 </View>
@@ -330,8 +330,8 @@ export default function ShopSmartFilterModal({
             {/* Section 4: Disponibilité (In Stock Only Toggle) */}
             <View style={[styles.section, styles.switchSection]}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.sectionTitle}>{t('filter.inStockOnly', 'En stock uniquement')}</Text>
-                <Text style={styles.switchDesc}>{t('filter.inStockDesc', 'Afficher uniquement les articles immédiatement expédiables.')}</Text>
+                <Text style={styles.sectionTitle}>{t('filter.inStockOnly', "In stock only")}</Text>
+                <Text style={styles.switchDesc}>{t('filter.inStockDesc', "Show only items ready to ship immediately.")}</Text>
               </View>
               <Switch
                 value={inStockOnly}
@@ -346,13 +346,13 @@ export default function ShopSmartFilterModal({
           {/* Sticky Bottom Action Bar */}
           <View style={styles.footer}>
             <TouchableOpacity style={styles.btnCancel} onPress={onClose} activeOpacity={0.8}>
-              <Text style={styles.btnCancelText}>{t('common.cancel', 'Annuler')}</Text>
+              <Text style={styles.btnCancelText}>{t('common.cancel', "Cancel")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.btnApply} onPress={handleApply} activeOpacity={0.85}>
               <Ionicons name="checkmark-circle" size={18} color="#1A2840" style={{ marginRight: 6 }} />
               <Text style={styles.btnApplyText}>
-                {t('filter.applyWithCount', `Voir ${matchingCount} produit(s)`, { count: matchingCount })}
+                {t('filter.applyWithCount', "View {{count}} product(s)", { count: matchingCount })}
               </Text>
             </TouchableOpacity>
           </View>

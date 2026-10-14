@@ -90,7 +90,7 @@ export default function WalletCard({ balances, badgeTitle }) {
             <View>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={styles.badgeText}>
-                  {badgeTitle || (isBusinessCard ? t('wallet.business_wallet', 'BUSINESS WALLET') : 'TOTAL DZY INDEX')}
+                  {badgeTitle || (isBusinessCard ? t('wallet.business_wallet', "Business Wallet") : 'TOTAL DZY INDEX')}
                 </Text>
                 {isBusinessCard && (
                   <View style={{ backgroundColor: '#8B5CF6', borderRadius: 4, paddingHorizontal: 4, paddingVertical: 1, marginLeft: 6 }}>
@@ -164,7 +164,7 @@ export default function WalletCard({ balances, badgeTitle }) {
         <View style={styles.actionsContainer}>
           <ActionItem icon="paper-plane-outline" label={t('wallet.actions.send', 'Send')} onPress={() => navigation.navigate('SendMoneyScreen')} divider />
           
-          <ActionItem icon="server-outline" label={t('wallet.actions.my_assets', 'Assets')} onPress={() => navigation.navigate('AssetListScreen')} divider />
+          <ActionItem icon="server-outline" label={t('wallet.actions.my_assets', "My Assets")} onPress={() => navigation.navigate('AssetListScreen')} divider />
 
           <ActionItem icon="swap-horizontal-outline" label={t('wallet.actions.swap', 'Swap')} onPress={() => navigation.navigate('SwapTokensScreen')} divider />
           <ActionItem icon="time-outline" label={t('wallet.actions.history', 'History')} onPress={() => navigation.navigate('TransactionHistoryScreen')} divider />

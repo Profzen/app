@@ -108,7 +108,7 @@ export default function ShopDetailsScreen({ route }) {
   }, [initialShop.slug, initialShop.id]);
 
   const copyToClipboard = (label, text) => {
-    setToast({ title: t('copied_title', `${label} copié !`, { label }), message: `${text}` });
+    setToast({ title: t('copied_title', "{{label}} copied!", { label }), message: `${text}` });
   };
 
   const rawData = shop.raw || {};
@@ -259,24 +259,24 @@ export default function ShopDetailsScreen({ route }) {
 
   const hasAnySocial = Boolean(waUrl || tgUrl || fbUrl || igUrl || webUrl);
 
-  const shopName = shop.shop_name || shop.name || 'Boutique';
-  const shopSlug = shop.slug || shop.id || 'boutique';
+  const shopName = shop.shop_name || shop.name || 'Store';
+  const shopSlug = shop.slug || shop.id || 'store';
   const countrySlug = (shop.country || rawData.country || 'global').toLowerCase().replace(/\s+/g, '-');
   const citySlug = (shop.city_village || rawData.city_village || shop.city || 'city').toLowerCase().replace(/\s+/g, '-');
   const publicStoreUrl = `https://dizzitup.com/DZYstore/${countrySlug}/${citySlug}/${shopSlug}`;
   const shareText = `Check out ${shopName} on DizzitUp!`;
-  const shareMessage = t('shop.shareShopMsg', `Discover the ${shopName} store on DizzitUp: ${publicStoreUrl}`, { name: shopName, url: publicStoreUrl });
+  const shareMessage = t('shop.shareShopMsg', "Discover the {{name}} store on DizzitUp: {{url}}", { name: shopName, url: publicStoreUrl });
 
   const copyStoreLink = async () => {
     try {
       await Clipboard.setStringAsync(publicStoreUrl);
       setToast({
-        title: t('shop.shareCopiedTitle', 'Lien copié'),
+        title: t('shop.shareCopiedTitle', "Link copied"),
         message: t('store.linkCopied', 'Store link copied to clipboard!')
       });
     } catch {
       setToast({
-        title: t('shop.shareCopiedTitle', 'Lien copié'),
+        title: t('shop.shareCopiedTitle', "Link copied"),
         message: publicStoreUrl
       });
     }
@@ -289,12 +289,12 @@ export default function ShopDetailsScreen({ route }) {
         message: shareMessage
       });
       setToast({
-        title: t('shop.shareSuccessTitle', 'Boutique partagée'),
-        message: t('shop.shareSuccessDesc', 'Le partage a été préparé avec succès.')
+        title: t('shop.shareSuccessTitle', "Gift link ready"),
+        message: t('shop.shareSuccessDesc', "The link is ready to be shared with friends and family.")
       });
     } catch {
       setToast({
-        title: t('shop.shareCopiedTitle', 'Lien copié'),
+        title: t('shop.shareCopiedTitle', "Link copied"),
         message: publicStoreUrl
       });
     }
@@ -303,16 +303,16 @@ export default function ShopDetailsScreen({ route }) {
   const shareShopGiftRequest = async () => {
     try {
       await Share.share({
-        title: t('shop.giftRequestTitle', `Achetez-le moi sur DizzitUp : ${shopName}`, { name: shopName }),
-        message: t('shop.giftRequestShopMsg', `Offrez-moi des articles de la boutique ${shopName} sur DizzitUp : ${publicStoreUrl}`, { name: shopName, url: publicStoreUrl })
+        title: t('shop.giftRequestTitle', "Buy this for me on DizzitUp: {{name}}", { name: shopName }),
+        message: t('shop.giftRequestShopMsg', "Gift me items from {{name}} on DizzitUp: {{url}}", { name: shopName, url: publicStoreUrl })
       });
       setToast({
-        title: t('shop.shareSuccessTitle', 'Lien cadeau partagé'),
-        message: t('shop.shareSuccessDesc', 'Le lien de la boutique a été partagé.')
+        title: t('shop.shareSuccessTitle', "Gift link ready"),
+        message: t('shop.shareSuccessDesc', "The link is ready to be shared with friends and family.")
       });
     } catch {
       setToast({
-        title: t('shop.shareCopiedTitle', 'Lien copié'),
+        title: t('shop.shareCopiedTitle', "Link copied"),
         message: publicStoreUrl
       });
     }
@@ -321,20 +321,20 @@ export default function ShopDetailsScreen({ route }) {
   const shareProductGift = async (product) => {
     const pName = product.name || product.title || 'Produit';
     const pPrice = product.price ? `${product.price.toLocaleString('fr-FR')} ${product.currency || 'USD'}` : '';
-    const shopName = shop.shop_name || shop.name || 'Boutique DizzitUp';
+    const shopName = shop.shop_name || shop.name || 'DizzitUp Store';
     const productUrl = `https://dizzitup.com/product/${product.id}`;
     try {
       await Share.share({
-        title: t('shop.giftProductTitle', `Achetez-moi ceci : ${pName}`, { name: pName }),
-        message: t('shop.giftProductMsg', `J'aimerais ce produit sur DizzitUp : ${pName} (${pPrice}) chez ${shopName}. Vous pouvez me l'offrir ici : ${productUrl}`, { name: pName, price: pPrice, shop: shopName, url: productUrl })
+        title: t('shop.giftProductTitle', "Buy this for me: {{name}}", { name: pName }),
+        message: t('shop.giftProductMsg', "I would love this on DizzitUp: {{name}} ({{price}}) from {{shop}}. You can buy it for me here: {{url}}", { name: pName, price: pPrice, shop: shopName, url: productUrl })
       });
       setToast({
-        title: t('shop.shareSuccessTitle', 'Lien cadeau partagé'),
-        message: t('shop.shareSuccessDesc', 'Le lien du produit a été partagé.')
+        title: t('shop.shareSuccessTitle', "Gift link ready"),
+        message: t('shop.shareSuccessDesc', "The link is ready to be shared with friends and family.")
       });
     } catch {
       setToast({
-        title: t('shop.shareCopiedTitle', 'Lien copié'),
+        title: t('shop.shareCopiedTitle', "Link copied"),
         message: `${productUrl}`
       });
     }
@@ -356,7 +356,7 @@ export default function ShopDetailsScreen({ route }) {
                 if (cartCount > 0) {
                   navigation.navigate('OrderVerificationScreen');
                 } else {
-                  setToast({ title: t('cart.emptyTitle', 'Panier vide'), message: t('cart.emptyDesc', 'Votre panier ne contient aucun article pour l\'instant.') });
+                  setToast({ title: t('cart.emptyTitle', "Empty cart"), message: t('cart.emptyDesc', "Your cart contains no items for now.") });
                 }
               }}
             >
@@ -389,8 +389,8 @@ export default function ShopDetailsScreen({ route }) {
             {/* Cover Banner */}
             <View style={styles.coverBg}>
               <View style={styles.coverTextContent}>
-                <Text style={styles.coverTitle} numberOfLines={2}>{shop.shop_name || shop.name || t('shop.default_name', 'Boutique')}</Text>
-                <Text style={styles.coverSubtitle}>{t('shop.cover_subtitle', 'Tout ce dont vous\navez besoin, livré\nchez vous.')}</Text>
+                <Text style={styles.coverTitle} numberOfLines={2}>{shop.shop_name || shop.name || t('shop.default_name', "Shop")}</Text>
+                <Text style={styles.coverSubtitle}>{t('shop.cover_subtitle', "Everything you\nneed, delivered\nto you.")}</Text>
               </View>
               <Image
                 source={shop.shop_banner_url ? { uri: shop.shop_banner_url } : (shop.bannerUrl ? { uri: shop.bannerUrl } : require('../../assets/brand/store_default_banner.jpg'))}
@@ -425,7 +425,7 @@ export default function ShopDetailsScreen({ route }) {
           <View style={styles.shopInfoHeader}>
             <View style={[styles.shopNameRow, { flexWrap: 'wrap', gap: 6 }]}>
               <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 1 }}>
-                <Text style={[styles.shopName, { flexShrink: 1 }]} numberOfLines={2}>{shop.shop_name || shop.name || t('shop.default_name', 'Boutique')}</Text>
+                <Text style={[styles.shopName, { flexShrink: 1 }]} numberOfLines={2}>{shop.shop_name || shop.name || t('shop.default_name', "Shop")}</Text>
                 {(shop.is_verified || shop.verified) && <Ionicons name="checkmark-circle" size={18} color="#3B82F6" style={{ marginLeft: 6, flexShrink: 0 }} />}
               </View>
               <View style={[styles.flagCityBadge, { marginLeft: 0 }]}>
@@ -454,7 +454,7 @@ export default function ShopDetailsScreen({ route }) {
             <View style={styles.shopMetaRow}>
               <Ionicons name="star" size={13} color="#F59E0B" />
               <Text style={styles.ratingText}>{shop.rating || '5.0'}</Text>
-              <Text style={styles.reviewsText}>({shop.review_count || shop.reviews || t('shop.reviews.verifiedMerchant', 'Marchand vérifié')})</Text>
+              <Text style={styles.reviewsText}>({shop.review_count || shop.reviews || t('shop.reviews.verifiedMerchant', "Verified merchant")})</Text>
               <Text style={styles.dotSeparator}>•</Text>
 
               <TouchableOpacity
@@ -499,7 +499,7 @@ export default function ShopDetailsScreen({ route }) {
               <Ionicons name="flash-outline" size={18} color="#F59E0B" />
               <View style={{ marginLeft: 8 }}>
                 <Text style={styles.statNumber}>{shop.deliveryTime || '24-48h'}</Text>
-                <Text style={styles.statLabel}>{t('shop.info.delivery', 'Delivery')}</Text>
+                <Text style={styles.statLabel}>{t('shop.info.delivery', "Pickup / Delivery")}</Text>
               </View>
             </View>
           </View>
@@ -527,7 +527,7 @@ export default function ShopDetailsScreen({ route }) {
                 {/* WhatsApp */}
                 <TouchableOpacity
                   style={[styles.socialBrandBtn, { backgroundColor: waUrl ? '#25D366' : '#E5E7EB' }]}
-                  onPress={() => waUrl ? Linking.openURL(waUrl).catch(() => setToast({ title: 'WhatsApp', message: t('shop.social.error', 'Could not open WhatsApp') })) : setToast({ title: 'WhatsApp', message: t('shop.social.missing', 'This store does not have a WhatsApp number provided.') })}
+                  onPress={() => waUrl ? Linking.openURL(waUrl).catch(() => setToast({ title: 'WhatsApp', message: t('shop.social.error', "Could not open link") })) : setToast({ title: 'WhatsApp', message: t('shop.social.missing', 'This store does not have a WhatsApp number provided.') })}
                   activeOpacity={0.8}
                 >
                   <Ionicons name="logo-whatsapp" size={20} color={waUrl ? "#FFFFFF" : "#9CA3AF"} />
@@ -536,7 +536,7 @@ export default function ShopDetailsScreen({ route }) {
                 {/* Telegram */}
                 <TouchableOpacity
                   style={[styles.socialBrandBtn, { backgroundColor: tgUrl ? '#229ED9' : '#E5E7EB' }]}
-                  onPress={() => tgUrl ? Linking.openURL(tgUrl).catch(() => setToast({ title: 'Telegram', message: t('shop.social.error', 'Could not open Telegram') })) : setToast({ title: 'Telegram', message: t('shop.social.missing', 'This store does not have a Telegram account provided.') })}
+                  onPress={() => tgUrl ? Linking.openURL(tgUrl).catch(() => setToast({ title: 'Telegram', message: t('shop.social.error', "Could not open link") })) : setToast({ title: 'Telegram', message: t('shop.social.missing', 'This store does not have a Telegram account provided.') })}
                   activeOpacity={0.8}
                 >
                   <Ionicons name="paper-plane" size={18} color={tgUrl ? "#FFFFFF" : "#9CA3AF"} />
@@ -544,7 +544,7 @@ export default function ShopDetailsScreen({ route }) {
 
                 {/* Instagram */}
                 <TouchableOpacity
-                  onPress={() => igUrl ? Linking.openURL(igUrl).catch(() => setToast({ title: 'Instagram', message: t('shop.social.error', 'Could not open Instagram') })) : setToast({ title: 'Instagram', message: t('shop.social.missing', 'This store does not have an Instagram account provided.') })}
+                  onPress={() => igUrl ? Linking.openURL(igUrl).catch(() => setToast({ title: 'Instagram', message: t('shop.social.error', "Could not open link") })) : setToast({ title: 'Instagram', message: t('shop.social.missing', 'This store does not have an Instagram account provided.') })}
                   activeOpacity={0.8}
                 >
                   {igUrl ? (
@@ -566,7 +566,7 @@ export default function ShopDetailsScreen({ route }) {
                 {/* Facebook */}
                 <TouchableOpacity
                   style={[styles.socialBrandBtn, { backgroundColor: fbUrl ? '#1877F2' : '#E5E7EB' }]}
-                  onPress={() => fbUrl ? Linking.openURL(fbUrl).catch(() => setToast({ title: 'Facebook', message: t('shop.social.error', 'Could not open Facebook') })) : setToast({ title: 'Facebook', message: t('shop.social.missing', 'This store does not have a Facebook page provided.') })}
+                  onPress={() => fbUrl ? Linking.openURL(fbUrl).catch(() => setToast({ title: 'Facebook', message: t('shop.social.error', "Could not open link") })) : setToast({ title: 'Facebook', message: t('shop.social.missing', 'This store does not have a Facebook page provided.') })}
                   activeOpacity={0.8}
                 >
                   <Ionicons name="logo-facebook" size={20} color={fbUrl ? "#FFFFFF" : "#9CA3AF"} />
@@ -590,7 +590,7 @@ export default function ShopDetailsScreen({ route }) {
               style={styles.accordionHeader}
               onPress={() => setShopInfoExpanded(!shopInfoExpanded)}
             >
-              <Text style={styles.accordionTitle}>{t('shop.info.title', 'Informations sur la boutique')}</Text>
+              <Text style={styles.accordionTitle}>{t('shop.info.title', "Store information")}</Text>
               <Ionicons name={shopInfoExpanded ? "chevron-up" : "chevron-down"} size={20} color="#1A2840" />
             </TouchableOpacity>
             {shopInfoExpanded && (
@@ -599,25 +599,25 @@ export default function ShopDetailsScreen({ route }) {
                 <TouchableOpacity
                   style={styles.channelCard}
                   onPress={() => openInMaps(effectiveAddress)}
-                  activeOpacity={effectiveAddress !== t('shop.info.not_specified', 'Non spécifié') ? 0.7 : 1}
+                  activeOpacity={effectiveAddress !== t('shop.info.not_specified', "Not specified") ? 0.7 : 1}
                 >
                   <View style={[styles.channelIconBox, { backgroundColor: '#F1F5F9' }]}>
                     <Ionicons name="cube-outline" size={18} color="#1A2840" />
                   </View>
                   <View style={styles.channelInfo}>
-                    <Text style={styles.channelName}>{t('shop.info.address', 'Adresse')}</Text>
-                    <Text style={effectiveAddress !== t('shop.info.not_specified', 'Non spécifié') ? styles.channelHandle : styles.channelNotSpecified} numberOfLines={1}>
+                    <Text style={styles.channelName}>{t('shop.info.address', "Address")}</Text>
+                    <Text style={effectiveAddress !== t('shop.info.not_specified', "Not specified") ? styles.channelHandle : styles.channelNotSpecified} numberOfLines={1}>
                       {effectiveAddress}
                     </Text>
                   </View>
-                  {effectiveAddress !== t('shop.info.not_specified', 'Non spécifié') ? (
+                  {effectiveAddress !== t('shop.info.not_specified', "Not specified") ? (
                     <View style={[styles.channelActionBtn, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}>
-                      <Text style={[styles.channelActionText, { color: '#2563EB' }]}>{t('common.open', 'Ouvrir')}</Text>
+                      <Text style={[styles.channelActionText, { color: '#2563EB' }]}>{t('common.open', "Open")}</Text>
                       <Ionicons name="location-outline" size={12} color="#2563EB" style={{ marginLeft: 3 }} />
                     </View>
                   ) : (
                     <View style={styles.channelDisabledBadge}>
-                      <Text style={styles.channelDisabledText}>{t('shop.info.not_specified', 'Non spécifié')}</Text>
+                      <Text style={styles.channelDisabledText}>{t('shop.info.not_specified', "Not specified")}</Text>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -625,25 +625,25 @@ export default function ShopDetailsScreen({ route }) {
                 <TouchableOpacity
                   style={styles.channelCard}
                   onPress={() => openInMaps(effectiveLocation)}
-                  activeOpacity={effectiveLocation !== t('shop.info.not_specified', 'Non spécifié') ? 0.7 : 1}
+                  activeOpacity={effectiveLocation !== t('shop.info.not_specified', "Not specified") ? 0.7 : 1}
                 >
                   <View style={[styles.channelIconBox, { backgroundColor: '#EFF6FF' }]}>
                     <Ionicons name="location-outline" size={18} color="#2563EB" />
                   </View>
                   <View style={styles.channelInfo}>
-                    <Text style={styles.channelName}>{t('shop.info.location', 'Localisation')}</Text>
-                    <Text style={effectiveLocation !== t('shop.info.not_specified', 'Non spécifié') ? styles.channelHandle : styles.channelNotSpecified} numberOfLines={1}>
+                    <Text style={styles.channelName}>{t('shop.info.location', "Location")}</Text>
+                    <Text style={effectiveLocation !== t('shop.info.not_specified', "Not specified") ? styles.channelHandle : styles.channelNotSpecified} numberOfLines={1}>
                       {effectiveLocation}
                     </Text>
                   </View>
-                  {effectiveLocation !== t('shop.info.not_specified', 'Non spécifié') ? (
+                  {effectiveLocation !== t('shop.info.not_specified', "Not specified") ? (
                     <View style={[styles.channelActionBtn, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}>
-                      <Text style={[styles.channelActionText, { color: '#2563EB' }]}>{t('common.open', 'Ouvrir')}</Text>
+                      <Text style={[styles.channelActionText, { color: '#2563EB' }]}>{t('common.open', "Open")}</Text>
                       <Ionicons name="location-outline" size={12} color="#2563EB" style={{ marginLeft: 3 }} />
                     </View>
                   ) : (
                     <View style={styles.channelDisabledBadge}>
-                      <Text style={styles.channelDisabledText}>{t('shop.info.not_specified', 'Non spécifié')}</Text>
+                      <Text style={styles.channelDisabledText}>{t('shop.info.not_specified', "Not specified")}</Text>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -653,19 +653,19 @@ export default function ShopDetailsScreen({ route }) {
                     <Ionicons name="bus-outline" size={18} color="#1A2840" />
                   </View>
                   <View style={styles.channelInfo}>
-                    <Text style={styles.channelName}>{t('shop.info.delivery', 'Retrait / Livraison')}</Text>
+                    <Text style={styles.channelName}>{t('shop.info.delivery', "Pickup / Delivery")}</Text>
                     <Text style={styles.channelHandle}>
-                      {shop.deliveryTime || '24-48h'} • {t('shop.info.available', 'Disponible')}
+                      {shop.deliveryTime || '24-48h'} • {t('shop.info.available', "Available")}
                     </Text>
                   </View>
                   <View style={[styles.channelActionBtn, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
-                    <Text style={[styles.channelActionText, { color: '#059669' }]}>{t('shop.info.available', 'Dispo')}</Text>
+                    <Text style={[styles.channelActionText, { color: '#059669' }]}>{t('shop.info.available', "Available")}</Text>
                     <Ionicons name="checkmark-circle-outline" size={12} color="#059669" style={{ marginLeft: 3 }} />
                   </View>
                 </View>
 
                 {/* ── 2. Social Media & Direct Contact Section (Clickable Brand Cards, NO RAW URLS!) ── */}
-                <Text style={styles.sectionSubhead}>{t('shop.info.social_media_title', 'Réseaux sociaux & Contact')}</Text>
+                <Text style={styles.sectionSubhead}>{t('shop.info.social_media_title', "Social Media & Contact")}</Text>
 
                 {/* WhatsApp */}
                 <TouchableOpacity
@@ -679,17 +679,17 @@ export default function ShopDetailsScreen({ route }) {
                   <View style={styles.channelInfo}>
                     <Text style={styles.channelName}>{t('shop.info.whatsapp', 'WhatsApp')}</Text>
                     <Text style={waUrl ? styles.channelHandle : styles.channelNotSpecified} numberOfLines={1}>
-                      {waUrl ? (merchantWhatsapp || t('shop.info.contact_on_whatsapp', 'Discuter en direct')) : t('shop.info.not_specified', 'Non spécifié')}
+                      {waUrl ? (merchantWhatsapp || t('shop.info.contact_on_whatsapp', "Chat with merchant")) : t('shop.info.not_specified', "Not specified")}
                     </Text>
                   </View>
                   {waUrl ? (
                     <View style={[styles.channelActionBtn, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
-                      <Text style={[styles.channelActionText, { color: '#059669' }]}>{t('common.open', 'Ouvrir')}</Text>
+                      <Text style={[styles.channelActionText, { color: '#059669' }]}>{t('common.open', "Open")}</Text>
                       <Ionicons name="arrow-forward" size={11} color="#059669" style={{ marginLeft: 3 }} />
                     </View>
                   ) : (
                     <View style={styles.channelDisabledBadge}>
-                      <Text style={styles.channelDisabledText}>{t('shop.info.not_specified', 'Non spécifié')}</Text>
+                      <Text style={styles.channelDisabledText}>{t('shop.info.not_specified', "Not specified")}</Text>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -706,17 +706,17 @@ export default function ShopDetailsScreen({ route }) {
                   <View style={styles.channelInfo}>
                     <Text style={styles.channelName}>{t('shop.info.telegram', 'Telegram')}</Text>
                     <Text style={tgUrl ? styles.channelHandle : styles.channelNotSpecified} numberOfLines={1}>
-                      {tgUrl ? (tgHandle || t('shop.info.telegram', 'Telegram')) : t('shop.info.not_specified', 'Non spécifié')}
+                      {tgUrl ? (tgHandle || t('shop.info.telegram', 'Telegram')) : t('shop.info.not_specified', "Not specified")}
                     </Text>
                   </View>
                   {tgUrl ? (
                     <View style={[styles.channelActionBtn, { backgroundColor: '#F0F9FF', borderColor: '#BAE6FD' }]}>
-                      <Text style={[styles.channelActionText, { color: '#0284C7' }]}>{t('common.open', 'Ouvrir')}</Text>
+                      <Text style={[styles.channelActionText, { color: '#0284C7' }]}>{t('common.open', "Open")}</Text>
                       <Ionicons name="arrow-forward" size={11} color="#0284C7" style={{ marginLeft: 3 }} />
                     </View>
                   ) : (
                     <View style={styles.channelDisabledBadge}>
-                      <Text style={styles.channelDisabledText}>{t('shop.info.not_specified', 'Non spécifié')}</Text>
+                      <Text style={styles.channelDisabledText}>{t('shop.info.not_specified', "Not specified")}</Text>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -733,17 +733,17 @@ export default function ShopDetailsScreen({ route }) {
                   <View style={styles.channelInfo}>
                     <Text style={styles.channelName}>{t('shop.info.facebook', 'Facebook')}</Text>
                     <Text style={fbUrl ? styles.channelHandle : styles.channelNotSpecified} numberOfLines={1}>
-                      {fbUrl ? (fbHandle || t('shop.info.facebook', 'Page Facebook')) : t('shop.info.not_specified', 'Non spécifié')}
+                      {fbUrl ? (fbHandle || t('shop.info.facebook', "Facebook")) : t('shop.info.not_specified', "Not specified")}
                     </Text>
                   </View>
                   {fbUrl ? (
                     <View style={[styles.channelActionBtn, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}>
-                      <Text style={[styles.channelActionText, { color: '#1D4ED8' }]}>{t('common.open', 'Ouvrir')}</Text>
+                      <Text style={[styles.channelActionText, { color: '#1D4ED8' }]}>{t('common.open', "Open")}</Text>
                       <Ionicons name="arrow-forward" size={11} color="#1D4ED8" style={{ marginLeft: 3 }} />
                     </View>
                   ) : (
                     <View style={styles.channelDisabledBadge}>
-                      <Text style={styles.channelDisabledText}>{t('shop.info.not_specified', 'Non spécifié')}</Text>
+                      <Text style={styles.channelDisabledText}>{t('shop.info.not_specified', "Not specified")}</Text>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -765,17 +765,17 @@ export default function ShopDetailsScreen({ route }) {
                   <View style={styles.channelInfo}>
                     <Text style={styles.channelName}>{t('shop.info.instagram', 'Instagram')}</Text>
                     <Text style={igUrl ? styles.channelHandle : styles.channelNotSpecified} numberOfLines={1}>
-                      {igUrl ? (igHandle || t('shop.info.instagram', 'Profil Instagram')) : t('shop.info.not_specified', 'Non spécifié')}
+                      {igUrl ? (igHandle || t('shop.info.instagram', "Instagram")) : t('shop.info.not_specified', "Not specified")}
                     </Text>
                   </View>
                   {igUrl ? (
                     <View style={[styles.channelActionBtn, { backgroundColor: '#FDF2F8', borderColor: '#FBCFE8' }]}>
-                      <Text style={[styles.channelActionText, { color: '#BE185D' }]}>{t('common.open', 'Ouvrir')}</Text>
+                      <Text style={[styles.channelActionText, { color: '#BE185D' }]}>{t('common.open', "Open")}</Text>
                       <Ionicons name="arrow-forward" size={11} color="#BE185D" style={{ marginLeft: 3 }} />
                     </View>
                   ) : (
                     <View style={styles.channelDisabledBadge}>
-                      <Text style={styles.channelDisabledText}>{t('shop.info.not_specified', 'Non spécifié')}</Text>
+                      <Text style={styles.channelDisabledText}>{t('shop.info.not_specified', "Not specified")}</Text>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -790,19 +790,19 @@ export default function ShopDetailsScreen({ route }) {
                     <Ionicons name="globe-outline" size={20} color="#059669" />
                   </View>
                   <View style={styles.channelInfo}>
-                    <Text style={styles.channelName}>{t('shop.info.website', 'Site web')}</Text>
+                    <Text style={styles.channelName}>{t('shop.info.website', "Website")}</Text>
                     <Text style={webUrl ? styles.channelHandle : styles.channelNotSpecified} numberOfLines={1}>
-                      {webUrl ? (webHandle || t('shop.info.website', 'Visiter le site')) : t('shop.info.not_specified', 'Non spécifié')}
+                      {webUrl ? (webHandle || t('shop.info.website', "Website")) : t('shop.info.not_specified', "Not specified")}
                     </Text>
                   </View>
                   {webUrl ? (
                     <View style={[styles.channelActionBtn, { backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }]}>
-                      <Text style={[styles.channelActionText, { color: '#059669' }]}>{t('common.visit', 'Visiter')}</Text>
+                      <Text style={[styles.channelActionText, { color: '#059669' }]}>{t('common.visit', "Visit")}</Text>
                       <Ionicons name="arrow-forward" size={11} color="#059669" style={{ marginLeft: 3 }} />
                     </View>
                   ) : (
                     <View style={styles.channelDisabledBadge}>
-                      <Text style={styles.channelDisabledText}>{t('shop.info.not_specified', 'Non spécifié')}</Text>
+                      <Text style={styles.channelDisabledText}>{t('shop.info.not_specified', "Not specified")}</Text>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -822,7 +822,7 @@ export default function ShopDetailsScreen({ route }) {
                   </View>
                   <View style={[styles.channelActionBtn, { backgroundColor: '#1A2840', borderColor: '#1A2840' }]}>
                     <Ionicons name="copy-outline" size={11} color="#FFFFFF" style={{ marginRight: 3 }} />
-                    <Text style={[styles.channelActionText, { color: '#FFFFFF' }]}>{t('store.copyBtn', 'Copier')}</Text>
+                    <Text style={[styles.channelActionText, { color: '#FFFFFF' }]}>{t('store.copyBtn', "Copy")}</Text>
                   </View>
                 </TouchableOpacity>
 
@@ -837,13 +837,13 @@ export default function ShopDetailsScreen({ route }) {
                       <Ionicons name="share-social" size={18} color="#2563EB" />
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.shareBannerTitle}>{t('store.shareStoreTitle', 'Partager la boutique')}</Text>
-                      <Text style={styles.shareBannerSub} numberOfLines={1}>{t('shop.info.share_store_sub', 'Partager avec vos proches')}</Text>
+                      <Text style={styles.shareBannerTitle}>{t('store.shareStoreTitle', "Share Store")}</Text>
+                      <Text style={styles.shareBannerSub} numberOfLines={1}>{t('shop.info.share_store_sub', "Share store link via messages or social apps")}</Text>
                     </View>
                   </View>
                   <View style={styles.shareBannerBtn}>
                     <Ionicons name="share-social-outline" size={12} color="#FFFFFF" />
-                    <Text style={styles.shareBannerBtnText}>{t('shop.actions.share', 'Partager')}</Text>
+                    <Text style={styles.shareBannerBtnText}>{t('shop.actions.share', "Share")}</Text>
                   </View>
                 </TouchableOpacity>
               </View>
@@ -873,7 +873,7 @@ export default function ShopDetailsScreen({ route }) {
                   <Ionicons name="hardware-chip-outline" size={16} color="#8B5CF6" />
                   <View style={{ flex: 1, marginHorizontal: 8 }}>
                     <Text style={styles.infoTextSmall}>EVM wallet</Text>
-                    <Text style={styles.infoTextSub}>{shop.evm_wallet || t('shop.info.not_specified', 'Non spécifié')}</Text>
+                    <Text style={styles.infoTextSub}>{shop.evm_wallet || t('shop.info.not_specified', "Not specified")}</Text>
                   </View>
                   {shop.evm_wallet && <Ionicons name="copy-outline" size={14} color="#9CA3AF" />}
                 </TouchableOpacity>
@@ -881,7 +881,7 @@ export default function ShopDetailsScreen({ route }) {
                   <Ionicons name="server-outline" size={16} color="#10B981" />
                   <View style={{ flex: 1, marginHorizontal: 8 }}>
                     <Text style={styles.infoTextSmall}>Solana wallet</Text>
-                    <Text style={styles.infoTextSub}>{shop.solana_wallet || t('shop.info.not_specified', 'Non spécifié')}</Text>
+                    <Text style={styles.infoTextSub}>{shop.solana_wallet || t('shop.info.not_specified', "Not specified")}</Text>
                   </View>
                   {shop.solana_wallet && <Ionicons name="copy-outline" size={14} color="#9CA3AF" />}
                 </TouchableOpacity>
@@ -889,7 +889,7 @@ export default function ShopDetailsScreen({ route }) {
                   <Text style={{ fontSize: 14 }}>🇪🇺</Text>
                   <View style={{ flex: 1, marginHorizontal: 8 }}>
                     <Text style={styles.infoTextSmall}>{t('shop.payment.euro_iban', 'Euro IBAN Virtual account')}</Text>
-                    <Text style={styles.infoTextSub}>{shop.iban_euro || t('shop.info.not_specified', 'Non spécifié')}</Text>
+                    <Text style={styles.infoTextSub}>{shop.iban_euro || t('shop.info.not_specified', "Not specified")}</Text>
                   </View>
                   {shop.iban_euro && <Ionicons name="copy-outline" size={14} color="#9CA3AF" />}
                 </TouchableOpacity>
@@ -897,7 +897,7 @@ export default function ShopDetailsScreen({ route }) {
                   <Text style={{ fontSize: 14 }}>🇺🇸</Text>
                   <View style={{ flex: 1, marginHorizontal: 8 }}>
                     <Text style={styles.infoTextSmall}>{t('shop.payment.usd_account', 'USD Bank Virtual account')}</Text>
-                    <Text style={styles.infoTextSub}>{shop.usd_account || t('shop.info.not_specified', 'Non spécifié')}</Text>
+                    <Text style={styles.infoTextSub}>{shop.usd_account || t('shop.info.not_specified', "Not specified")}</Text>
                   </View>
                   {shop.usd_account && <Ionicons name="copy-outline" size={14} color="#9CA3AF" />}
                 </TouchableOpacity>
@@ -907,16 +907,16 @@ export default function ShopDetailsScreen({ route }) {
 
           {/* Produits populaires */}
           <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>{t('shop.sections.popular_products', 'Produits populaires')}</Text>
+            <Text style={styles.sectionTitle}>{t('shop.sections.popular_products', "Popular Products")}</Text>
             <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => navigation.navigate('ShopProductsScreen', { shop: shop })}>
-              <Text style={styles.showAllText}>{t('common.viewAll', 'View all')}</Text>
+              <Text style={styles.showAllText}>{t('common.viewAll', "View All")}</Text>
               <Ionicons name="arrow-forward" size={14} color="#3B82F6" style={{ marginLeft: 4 }} />
             </TouchableOpacity>
           </View>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.productsScroll}>
             {loading && <ActivityIndicator size="large" color="#3B82F6" style={{ margin: 20 }} />}
-            {!loading && products.length === 0 && <Text style={{ margin: 20, color: '#64748B' }}>{t('shop.products.no_products_found', 'Aucun produit trouvé.')}</Text>}
+            {!loading && products.length === 0 && <Text style={{ margin: 20, color: '#64748B' }}>{t('shop.products.no_products_found', "No products found for this search.")}</Text>}
             {products.map(product => (
               <View key={product.id} style={styles.productCard}>
                 {!isOwnShop && (
@@ -943,16 +943,16 @@ export default function ShopDetailsScreen({ route }) {
                     baseCurrency={product.currency || shop?.currency || 'XOF'} 
                     size="compact"
                   />
-                  <Text style={styles.productStock}>{product.stock_quantity > 0 || !product.stock_quantity ? t('shop.products.in_stock', 'En stock') : t('outOfStock', 'Rupture')}</Text>
+                  <Text style={styles.productStock}>{product.stock_quantity > 0 || !product.stock_quantity ? t('shop.products.in_stock', "In stock") : t('outOfStock', "Out of stock")}</Text>
                 </View>
 
                 <TouchableOpacity style={styles.btnBuySmall} onPress={() => navigation.navigate('ProductDetailsScreen', { product, shop })}>
-                  <Text style={styles.btnBuySmallText} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy', 'Acheter')}</Text>
+                  <Text style={styles.btnBuySmallText} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy', "Buy")}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.btnBuyMeSmall} onPress={() => shareProductGift(product)}>
                   <Ionicons name="gift-outline" size={11} color="#1A2840" style={{ marginRight: 3 }} />
-                  <Text style={[styles.btnBuyMeSmallText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy_me', 'Achetez-moi')}</Text>
+                  <Text style={[styles.btnBuyMeSmallText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy_me', "Buy me")}</Text>
                 </TouchableOpacity>
               </View>
             ))}
@@ -960,10 +960,10 @@ export default function ShopDetailsScreen({ route }) {
 
           {/* À propos de la boutique */}
           <View style={styles.aboutSection}>
-            <Text style={styles.sectionTitle}>{t('shop.sections.about_store', 'À propos de')} {shop.shop_name || shop.name || t('shop.default_name', 'la boutique')}</Text>
+            <Text style={styles.sectionTitle}>{t('shop.sections.about_store', "About the store")} {shop.shop_name || shop.name || t('shop.default_name', "Shop")}</Text>
             <View style={styles.aboutTextContainer}>
               <Text style={styles.aboutText} numberOfLines={aboutExpanded ? undefined : 3}>
-                {shop.description || shop.shop_description || `Bienvenue sur la boutique officielle de ${shop.shop_name || shop.name || 'ce marchand'}. Découvrez nos produits et services au meilleur prix.`}
+                {shop.description || shop.shop_description || `Welcome to the official store of ${shop.shop_name || shop.name || 'this merchant'}. Discover its products and services at the best price.`}
               </Text>
               <TouchableOpacity style={styles.aboutChevron} onPress={() => setAboutExpanded(!aboutExpanded)}>
                 <Ionicons name={aboutExpanded ? "chevron-up" : "chevron-down"} size={18} color="#1A2840" />

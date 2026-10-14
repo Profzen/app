@@ -199,7 +199,7 @@ export default function PersonalAccountScreen() {
           <View style={styles.profileHeaderCard}>
             <View style={styles.avatarWrap}>
               <Avatar image={user?.avatar_url || user?.avatar} name={name || user?.email} size={70} style={styles.avatarImage} />
-              <TouchableOpacity style={styles.editAvatarBtn} onPress={() => setToast({ title: t('personalAccount.title', 'Profile Photo'), message: 'Sélecteur de photo ouvert', type: 'info' })}>
+              <TouchableOpacity style={styles.editAvatarBtn} onPress={() => setToast({ title: t('personalAccount.title', "Personal Account"), message: 'Sélecteur de photo ouvert', type: 'info' })}>
                 <Ionicons name="camera" size={14} color="#1A2840" />
               </TouchableOpacity>
             </View>
@@ -210,6 +210,11 @@ export default function PersonalAccountScreen() {
             </View>
           </View>
 
+          <TouchableOpacity style={styles.shareProfileButton} onPress={() => navigation.navigate('ShareProfileScreen')}>
+            <Ionicons name="share-social-outline" size={19} color="#1A2840" />
+            <Text style={styles.shareProfileButtonText}>{t('shareProfile.title', 'Share my DizzitUp profile')}</Text>
+          </TouchableOpacity>
+
           {/* Form Section */}
           <Text style={styles.sectionHeader}>{t('personalAccount.accountDetails', 'ACCOUNT DETAILS')}</Text>
           <View style={styles.card}>
@@ -217,7 +222,7 @@ export default function PersonalAccountScreen() {
               <Text style={styles.fieldLabel}>{t('personalAccount.fullName', 'Full Name')}</Text>
               <View style={styles.inputWrap}>
                 <Ionicons name="person-outline" size={18} color="#6B7280" style={styles.inputIcon} />
-                <TextInput style={styles.input} value={name} onChangeText={setName} placeholder={t('personalAccount.fullName', 'Name')} />
+                <TextInput style={styles.input} value={name} onChangeText={setName} placeholder={t('personalAccount.fullName', "Full Name")} />
               </View>
             </View>
 
@@ -287,7 +292,7 @@ export default function PersonalAccountScreen() {
               </View>
               <View style={styles.docText}>
                 <Text style={styles.docTitle}>{t('personalAccount.idCard', 'National ID / Passport')}</Text>
-                <Text style={styles.docDesc}>{t('personalAccount.docVerified', 'Document verified')} 12 Fév 2026</Text>
+                <Text style={styles.docDesc}>{t('personalAccount.docVerified', 'Document verified')} Feb 12, 2026</Text>
               </View>
               <View style={styles.statusVerifiedChip}>
                 <Text style={styles.statusVerifiedText}>{t('personalAccount.verified', 'Verified')}</Text>
@@ -337,6 +342,8 @@ const styles = StyleSheet.create({
   profileNameText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#1A2840', marginBottom: 6 },
   kycBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#ECFDF5', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
   kycBadgeText: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#059669', marginLeft: 4 },
+  shareProfileButton: { height: 48, borderRadius: 14, borderWidth: 1, borderColor: '#F2C14E', backgroundColor: '#FFF9E8', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12 },
+  shareProfileButtonText: { fontFamily: 'Inter_700Bold', fontSize: 14, color: '#1A2840' },
   sectionHeader: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#9CA3AF', letterSpacing: 0.8, marginTop: 10, marginBottom: 8, marginLeft: 4 },
   card: { backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#F0F2F5', paddingHorizontal: 16, paddingVertical: 6, marginBottom: 16 },
   fieldRow: { marginVertical: 8 },

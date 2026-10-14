@@ -299,7 +299,7 @@ export default function ReceiveFundsV2Screen() {
       setCopied(true);
       setToast({
         title: t('receiveFunds.toastTitle', 'Address copied!'),
-        message: amount ? t('common.copied', 'Copied!') : t('receiveFunds.toastDesc', 'The address has been copied to the clipboard.'),
+        message: amount ? t('common.copied', "Link copied") : t('receiveFunds.toastDesc', 'The address has been copied to the clipboard.'),
       });
       setTimeout(() => setCopied(false), 2500);
     } catch {
@@ -379,7 +379,7 @@ export default function ReceiveFundsV2Screen() {
 
       setToast({
         title: t('receiveFunds.pushSentTitle', 'Mobile Money request sent!'),
-        message: res?.message || t('receiveFunds.pushSentDesc', `A USSD notification has been sent to ${fullPhoneNumber}. The payer must authorize with their Mobile Money PIN to transfer funds.`),
+        message: res?.message || t('receiveFunds.pushSentDesc', "A USSD prompt has been sent to {{phone}}. The payer must authorize with their PIN to complete the transfer."),
       });
       setPayerPhone('');
     } catch (err) {
@@ -747,9 +747,9 @@ export default function ReceiveFundsV2Screen() {
                     </Text>
                     <Text style={styles.networkChipSubtitle}>
                       {selectedChain === 'Polygon'
-                        ? t('receiveFunds.recommendedFast', 'Recommended • Fast & Lowest Fees')
+                        ? t('receiveFunds.recommendedFast', "Recommended • Fast and low fees")
                         : selectedChain === 'Solana'
-                        ? t('receiveFunds.crossmintSupported', 'Fast • Crossmint Supported')
+                        ? t('receiveFunds.crossmintSupported', "Fast • Supported by Crossmint")
                         : `${selectedChain} Network Node`}
                     </Text>
                   </View>
@@ -1079,7 +1079,7 @@ export default function ReceiveFundsV2Screen() {
                     {t('receiveFunds.networkModalTitle', 'Select Blockchain Network')}
                   </Text>
                   <Text style={styles.modalSubtitle}>
-                    {t('receiveFunds.networkModalSubtitle', 'Choose network to receive funds (Polygon is default)')}
+                    {t('receiveFunds.networkModalSubtitle', "Choose the network to receive funds (Polygon is default)")}
                   </Text>
                 </View>
                 <TouchableOpacity

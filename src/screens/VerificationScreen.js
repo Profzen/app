@@ -120,7 +120,7 @@ export default function VerificationScreen() {
           />
           <Text style={styles.mainTitle}>{t('verificationStep.verifyAccount', 'Verify your account')}</Text>
           <Text style={styles.subTitle}>
-            {t('verificationStep.almostThere', 'One more step to secure your account\nand enjoy DizzitUp.')}
+            {t('verificationStep.almostThere', "One more step to secure your account\nand enjoy DizzitUp.")}
           </Text>
         </View>
 
@@ -132,7 +132,7 @@ export default function VerificationScreen() {
           <Text style={styles.sectionTitle}>{t('verificationStep.verifyEmailPhone', 'Verify your email or phone')}</Text>
           
           <Text style={styles.verificationText}>
-            {t('verificationStep.codeSentTo', 'We sent a verification code to')}{'\n'}
+            {t('verificationStep.codeSentTo', "We sent a 6-digit verification code to")}{'\n'}
             <Text style={styles.emailText}>{displayedEmail}</Text>{'   '}
             <Text style={styles.modifyText} onPress={() => navigation.goBack()}>{t('common.edit', 'Edit')}</Text>
           </Text>

@@ -115,7 +115,7 @@ export default function TopUpWalletConfirmationScreen() {
           {/* Titles */}
           <Text style={styles.mainTitle}>{t('topUpWallet.paymentSuccessTitle', 'Payment successful!')}</Text>
           <Text style={styles.mainSubtitle}>
-            {t('topUpWallet.paymentSuccessSubtitle', 'Your top-up was completed successfully.\nThe crypto has been credited to your wallet.')}
+            {t('topUpWallet.paymentSuccessSubtitle', "Your top-up was completed successfully.\nThe crypto has been credited to your wallet.")}
           </Text>
 
           {/* Details Card */}
@@ -154,7 +154,7 @@ export default function TopUpWalletConfirmationScreen() {
                 <View style={styles.iconWrapper}>
                   <Ionicons name="time-outline" size={16} color="#3B82F6" />
                 </View>
-                <Text style={styles.detailLabel}>{t('paymentSuccess.dateTime', 'Date and time')}</Text>
+                <Text style={styles.detailLabel}>{t('paymentSuccess.dateTime', "Date & Time")}</Text>
               </View>
               <Text style={styles.detailValueBold}>{nowDate}</Text>
             </View>
@@ -252,7 +252,7 @@ export default function TopUpWalletConfirmationScreen() {
             </View>
 
             <View style={styles.shareTextWrap}>
-              <Text style={styles.shareCtaTitle}>{t('paymentSuccess.shareTitle', 'Share my success')}</Text>
+              <Text style={styles.shareCtaTitle}>{t('paymentSuccess.shareTitle', "DizzitUp Receipt")}</Text>
               <Text style={styles.shareCtaSub1}>
                 <Text style={styles.goldText}>{t('paymentSuccess.earnDzy', 'Earn 1 DZY')}</Text> {t('paymentSuccess.tagPrompt', 'by tagging @DizzitUp')}
               </Text>
@@ -277,7 +277,7 @@ export default function TopUpWalletConfirmationScreen() {
             </TouchableOpacity>
           )}
 
-          <TouchableOpacity style={styles.btnPrimary} onPress={() => navigation.navigate('AssetsListScreen')}>
+          <TouchableOpacity style={styles.btnPrimary} onPress={() => navigation.navigate('AssetListScreen')}>
             <Ionicons name="wallet-outline" size={20} color="#1A2840" style={styles.btnIconLeft} />
             <Text style={styles.btnPrimaryText}>{t('topUpWallet.viewMyWallet', 'View my DZYwallet')}</Text>
             <Ionicons name="arrow-forward" size={20} color="#1A2840" style={styles.btnIconRight} />

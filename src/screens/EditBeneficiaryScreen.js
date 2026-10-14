@@ -319,7 +319,7 @@ export default function EditBeneficiaryScreen({ route }) {
     }
 
     if (formData.email && !/^\S+@\S+\.\S+$/.test(formData.email)) {
-      AppToast.showError(t('beneficiary.form.errors.invalidEmail', "Invalid email address"));
+      AppToast.showError(t('beneficiary.form.errors.invalidEmail', "Invalid email"));
       return;
     }
 
@@ -361,7 +361,7 @@ export default function EditBeneficiaryScreen({ route }) {
     }
 
     if (formData.email && !/^\S+@\S+\.\S+$/.test(formData.email)) {
-      AppToast.showError(t('beneficiary.form.errors.invalidEmail', "Invalid email address"));
+      AppToast.showError(t('beneficiary.form.errors.invalidEmail', "Invalid email"));
       return;
     }
 
@@ -404,7 +404,7 @@ export default function EditBeneficiaryScreen({ route }) {
       }
     } catch (err) {
       console.error("Save error:", err);
-      AppToast.showError(err?.message || t('beneficiary.edit.save_error', "Error saving beneficiary"));
+      AppToast.showError(err?.message || t('beneficiary.edit.save_error', "Error saving"));
     } finally {
       setIsSaving(false);
     }
@@ -463,7 +463,7 @@ export default function EditBeneficiaryScreen({ route }) {
               <Text style={[styles.stepCircleText, currentStep === 1 && styles.stepCircleTextActive]}>1</Text>
             </View>
             <Text style={[styles.stepTabText, currentStep === 1 && styles.stepTabTextActive]} numberOfLines={1}>
-              {t('beneficiary.edit.personal_info', 'Contact Info')}
+              {t('beneficiary.edit.personal_info', "Personal Information")}
             </Text>
           </TouchableOpacity>
 
@@ -484,7 +484,7 @@ export default function EditBeneficiaryScreen({ route }) {
               <Text style={[styles.stepCircleText, currentStep === 2 && styles.stepCircleTextActive]}>2</Text>
             </View>
             <Text style={[styles.stepTabText, currentStep === 2 && styles.stepTabTextActive]} numberOfLines={1}>
-              {t('beneficiary.edit.banks_wallets', 'Wallets & Banks')}
+              {t('beneficiary.edit.banks_wallets', "Banks & Wallets")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -505,7 +505,7 @@ export default function EditBeneficiaryScreen({ route }) {
                         {t('beneficiary.edit.real_avatar', '✨ DizzitUp Account Photo')}
                       </Text>
                       <TouchableOpacity onPress={() => handleInputChange('avatar_url', '')} style={{ marginTop: 4 }}>
-                        <Text style={styles.resetAvatarText}>{t('common.remove', 'Use default emoji')}</Text>
+                        <Text style={styles.resetAvatarText}>{t('common.remove', "Remove")}</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -536,7 +536,7 @@ export default function EditBeneficiaryScreen({ route }) {
                   onChangeText={(text) => handleInputChange('last_name', text)}
                 />
 
-                <Text style={styles.label}>{t('beneficiary.edit.relation', 'Relationship')}</Text>
+                <Text style={styles.label}>{t('beneficiary.edit.relation', "Relation")}</Text>
                 <View style={styles.relationGrid}>
                   {WEB_RELATIONSHIPS.map((rel) => {
                     const isSelected = formData.relationship === rel.key;
@@ -670,7 +670,7 @@ export default function EditBeneficiaryScreen({ route }) {
                 />
 
                 <DizzitInput
-                  label={`${t('beneficiary.edit.evm_wallet', 'EVM Wallet (Polygon/BSC)')} (${t('common.optional', 'Optional')})`}
+                  label={`${t('beneficiary.edit.evm_wallet', "EVM Wallet")} (${t('common.optional', 'Optional')})`}
                   placeholder={t('beneficiary.edit.evm_wallet_placeholder', '0x...')}
                   value={formData.evm_address}
                   onChangeText={(text) => handleInputChange('evm_address', text)}
@@ -694,7 +694,7 @@ export default function EditBeneficiaryScreen({ route }) {
           {currentStep === 1 ? (
             <View style={styles.stepFooterSingle}>
               <DizzitButton
-                title={isSyncing ? t('common.loading', 'Checking...') : `${t('beneficiary.buttons.continue', 'Continue')} →`}
+                title={isSyncing ? t('common.loading', "Loading...") : `${t('beneficiary.buttons.continue', 'Continue')} →`}
                 onPress={handleProceedToStep2}
                 isLoading={isSyncing}
               />
@@ -706,7 +706,7 @@ export default function EditBeneficiaryScreen({ route }) {
                 onPress={() => setCurrentStep(1)}
               >
                 <Ionicons name="arrow-back" size={18} color="#20365B" />
-                <Text style={styles.backStepText}>{t('beneficiary.buttons.back', 'Back')}</Text>
+                <Text style={styles.backStepText}>{t('beneficiary.buttons.back', "Go Back")}</Text>
               </TouchableOpacity>
               <View style={{ flex: 1, marginLeft: 12 }}>
                 <DizzitButton
@@ -734,7 +734,7 @@ export default function EditBeneficiaryScreen({ route }) {
 
               <TextInput
                 style={styles.citySearchInput}
-                placeholder={t('common.search', 'Search...')}
+                placeholder={t('common.search', "Search")}
                 placeholderTextColor="#94A3B8"
                 value={countrySearch}
                 onChangeText={setCountrySearch}
@@ -792,7 +792,7 @@ export default function EditBeneficiaryScreen({ route }) {
 
               <TextInput
                 style={styles.citySearchInput}
-                placeholder={t('common.search', 'Search...')}
+                placeholder={t('common.search', "Search")}
                 placeholderTextColor="#94A3B8"
                 value={citySearch}
                 onChangeText={setCitySearch}
@@ -878,7 +878,7 @@ export default function EditBeneficiaryScreen({ route }) {
                       setCurrentStep(2);
                     } catch (e) {
                       console.warn(e);
-                      AppToast.showError(e.message || t('common.error', 'An error occurred'));
+                      AppToast.showError(e.message || t('common.error', "Error"));
                     }
                   }}
                 >

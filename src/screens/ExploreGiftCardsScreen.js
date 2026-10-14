@@ -258,12 +258,12 @@ export default function ExploreGiftCardsScreen() {
         }),
       });
       setToast({
-        title: t('shop.shareSuccessTitle', 'Gift Link Ready'),
+        title: t('shop.shareSuccessTitle', "Gift link ready"),
         message: t('giftCards.shareSuccessDesc', 'Gift card request link shared successfully.'),
       });
     } catch {
       setToast({
-        title: t('shop.shareCopiedTitle', 'Link Copied'),
+        title: t('shop.shareCopiedTitle', "Link copied"),
         message: shareUrl,
       });
     }

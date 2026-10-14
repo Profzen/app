@@ -230,7 +230,7 @@ export default function HomeScreen() {
       icon: 'warning-outline',
       iconColor: '#EF4444',
       iconBgColor: '#FEF2F2',
-      title: t('home.todos.low_balance.title', 'Low balance,\ntop up your account'),
+      title: t('home.todos.low_balance.title', "Low balance,\ntop up your account"),
       buttonText: t('home.todos.low_balance.button', 'Top up'),
       buttonColor: '#EF4444',
       buttonBgColor: '#FEF2F2',
@@ -245,7 +245,7 @@ export default function HomeScreen() {
       icon: 'shield-checkmark-outline',
       iconColor: '#3B82F6',
       iconBgColor: '#EFF6FF',
-      title: t('home.todos.complete_profile.title', 'Complete your profile\nfor better security'),
+      title: t('home.todos.complete_profile.title', "Complete your profile\nfor more security"),
       buttonText: t('home.todos.complete_profile.button', 'Complete'),
       buttonColor: '#3B82F6',
       buttonBgColor: '#EFF6FF',
@@ -577,10 +577,10 @@ export default function HomeScreen() {
                   <View style={styles.inviteContent}>
                     <Text style={styles.inviteTitle}>
                       {t('home.inviteBannerTitle_1', "Invite friends\nand earn ")}
-                      <Text style={{ color: '#3B82F6' }}>{t('home.inviteBannerAmount', "$5 in DZY")}</Text>
+                      <Text style={{ color: '#3B82F6' }}>{t('home.inviteBannerAmount', " in DZY")}</Text>
                     </Text>
                     <Text style={styles.inviteSubtitle}>
-                      {t('home.inviteBannerDesc', "Send funds, shop,\npay bills and earn rewards.")}
+                      {t('home.inviteBannerDesc', "Send Stablecoins, shop, pay bills, and earn rewards together.")}
                     </Text>
                     <TouchableOpacity 
                       style={[styles.inviteButton, { backgroundColor: '#071D54' }]} 
@@ -588,7 +588,7 @@ export default function HomeScreen() {
                         handleUserInviteShare(user);
                       }}
                     >
-                      <Text style={styles.inviteButtonText}>{t('home.btnInviteNow', 'Invite')}</Text>
+                      <Text style={styles.inviteButtonText}>{t('home.btnInviteNow', "Invite now")}</Text>
                     </TouchableOpacity>
                   </View>
                   <View style={styles.inviteGraphic}>
@@ -610,14 +610,14 @@ export default function HomeScreen() {
                   </TouchableOpacity>
                   <View style={styles.inviteContent}>
                     <Text style={styles.inviteTitle}>
-                      {t('home.referBannerTitle_1', "Refer a store\nand earn ")}
-                      <Text style={{ color: '#10B981' }}>{t('home.referBannerAmount', "$10 in DZY")}</Text>
+                      {t('home.referBannerTitle_1', "Refer a Store\nand earn ")}
+                      <Text style={{ color: '#10B981' }}>{t('home.referBannerAmount', " in DZY")}</Text>
                     </Text>
                     <Text style={styles.inviteSubtitle}>
-                      {t('home.referBannerDesc', "Recommend a business\nand earn rewards.")}
+                      {t('home.referBannerDesc', "Refer a business\nand earn rewards.")}
                     </Text>
                     <TouchableOpacity style={[styles.inviteButton, { backgroundColor: '#10B981' }]} onPress={() => navigation.navigate('ShopsScreen')}>
-                      <Text style={styles.inviteButtonText}>{t('home.btnReferNow', 'Refer')}</Text>
+                      <Text style={styles.inviteButtonText}>{t('home.btnReferNow', "Refer now")}</Text>
                     </TouchableOpacity>
                   </View>
                   <View style={styles.storeGraphic}>
@@ -723,9 +723,9 @@ export default function HomeScreen() {
               <Ionicons name="shield-checkmark-outline" size={22} color="#1A2840" />
             </View>
             <View style={styles.securityTextContent}>
-              <Text style={styles.securityTitle}>{t('securityBannerTitle', 'Sécurisé, simple et instantané')}</Text>
+              <Text style={styles.securityTitle}>{t('securityBannerTitle', "Secure, simple and instant")}</Text>
               <Text style={styles.securityDesc}>
-                {t('securityBannerDesc', 'Vos fonds et données sont protégés par le chiffrement réseau de classe entreprise.')}
+                {t('securityBannerDesc', "Your funds and data are protected by enterprise-grade network encryption.")}
               </Text>
             </View>
             <View style={styles.lockIconWrapper}>

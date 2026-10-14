@@ -31,10 +31,10 @@ export default function PaymentInProgressScreen({ route }) {
   const pollTimerRef = useRef(null);
 
   const getStatusMessage = () => {
-    if (confirmations >= 4) return t('paymentInProgress.step4Msg', 'Validation du séquestre escrow...');
-    if (confirmations === 3) return t('paymentInProgress.step3Msg', 'Traitement du débit par la banque partenaire...');
-    if (confirmations === 2) return t('paymentInProgress.step2Msg', 'Notification envoyée à l’opérateur...');
-    return t('paymentInProgress.waitingConfirm', 'Validation de la transaction auprès de la passerelle...');
+    if (confirmations >= 4) return t('paymentInProgress.step4Msg', "Validating smart contract escrow...");
+    if (confirmations === 3) return t('paymentInProgress.step3Msg', "Processing debit with partner gateway...");
+    if (confirmations === 2) return t('paymentInProgress.step2Msg', "Notification sent to operator...");
+    return t('paymentInProgress.waitingConfirm', "Waiting for network confirmations...");
   };
 
   const totalAmountVal = Number(orderData.totalAmount ?? orderData.amount ?? 0);
@@ -51,14 +51,14 @@ export default function PaymentInProgressScreen({ route }) {
     clearCart();
     navigation.replace('PaymentSuccessScreen', {
       transaction: {
-        title: orderData.items?.[0]?.name || t('paymentSuccess.marketplacePurchase', 'Commande DizzitUp'),
+        title: orderData.items?.[0]?.name || t('paymentSuccess.marketplacePurchase', "Marketplace Purchase"),
         amount: totalAmountVal,
         currency: orderCurrency,
         amountCrypto: orderData.selectedToken ? `${orderData.totalUSDC || orderData.amountCrypto || '0'} ${orderData.selectedToken}` : null,
         paymentMethod: orderData.paymentRail === 'momo' || orderData.paymentMethod === 'MOMO'
-          ? t('paymentInProgress.momoInstant', 'Mobile Money Instantané')
+          ? t('paymentInProgress.momoInstant', "Instant Mobile Money")
           : orderData.paymentRail === 'card' || orderData.paymentMethod === 'CARD'
-          ? t('paymentInProgress.cardVisaMc', 'Carte Bancaire (Visa/MC)')
+          ? t('paymentInProgress.cardVisaMc', "Bank Card (Visa/MC)")
           : orderData.paymentRail === 'dzy' || orderData.selectedToken === 'DZY'
           ? 'DZY Wallet'
           : `${orderData.selectedToken || 'USDC'} (${orderData.network || 'Polygon'})`,
@@ -68,7 +68,7 @@ export default function PaymentInProgressScreen({ route }) {
         recipientPhone: orderData.recipient?.phone || user?.phone || '',
         recipientAddress: orderData.recipient?.address || user?.city || '',
         recipientCountry: orderData.recipient?.country || user?.country || '',
-        merchantName: orderData.merchant?.name || t('paymentSuccess.partnerMerchant', 'Commerçant Partenaire'),
+        merchantName: orderData.merchant?.name || t('paymentSuccess.partnerMerchant', "Partner Merchant"),
         date: new Date().toISOString(),
       },
     });
@@ -126,8 +126,8 @@ export default function PaymentInProgressScreen({ route }) {
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#1A2840" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('paymentInProgress.title', 'Paiement en cours')}</Text>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('HelpCenterPage')}>
+        <Text style={styles.headerTitle}>{t('paymentInProgress.title', "Payment in Progress")}</Text>
+        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('ContactUsScreen')}>
           <Ionicons name="headset-outline" size={22} color="#1A2840" />
         </TouchableOpacity>
       </View>
@@ -138,14 +138,14 @@ export default function PaymentInProgressScreen({ route }) {
           <View style={styles.spinnerContainer}>
             <ActivityIndicator size="large" color="#FFB800" />
           </View>
-          <Text style={styles.statusTitle}>{t('paymentInProgress.title', 'Paiement en cours...')}</Text>
+          <Text style={styles.statusTitle}>{t('paymentInProgress.title', "Payment in Progress")}</Text>
           <Text style={styles.statusSubtitle}>
             {getStatusMessage()}
           </Text>
           <View style={styles.timerBadge}>
             <Ionicons name="time-outline" size={14} color="#64748B" />
             <Text style={styles.timerText}>
-              {t('paymentInProgress.elapsedTime', `Temps écoulé : ${formatTimer(elapsedSeconds)}`, {
+              {t('paymentInProgress.elapsedTime', "Elapsed time: {{time}}", {
                 time: formatTimer(elapsedSeconds)
               })}
             </Text>
@@ -162,7 +162,7 @@ export default function PaymentInProgressScreen({ route }) {
               </View>
             </View>
             <Text style={styles.stepTitleCompleted} numberOfLines={1}>{t('paymentInProgress.stepInitiation', 'Initiation')}</Text>
-            <Text style={styles.stepSubtitle} numberOfLines={1}>{t('paymentInProgress.stepValidated', 'Validée')}</Text>
+            <Text style={styles.stepSubtitle} numberOfLines={1}>{t('paymentInProgress.stepValidated', "Validated")}</Text>
           </View>
 
           <View style={[styles.stepLine, styles.stepLineCompleted]} />
@@ -175,7 +175,7 @@ export default function PaymentInProgressScreen({ route }) {
               </View>
             </View>
             <Text style={styles.stepTitleInProgress} numberOfLines={1}>{t('paymentInProgress.stepEscrow', 'Escrow')}</Text>
-            <Text style={styles.stepSubtitle} numberOfLines={1}>{t('paymentInProgress.stepSecuring', 'Sécurisation')}</Text>
+            <Text style={styles.stepSubtitle} numberOfLines={1}>{t('paymentInProgress.stepSecuring', "Securing funds")}</Text>
           </View>
 
           <View style={[styles.stepLine, confirmations >= 4 ? styles.stepLineCompleted : styles.stepLinePending]} />
@@ -185,20 +185,20 @@ export default function PaymentInProgressScreen({ route }) {
               <Ionicons name="storefront-outline" size={20} color={confirmations >= 4 ? '#F59E0B' : '#64748B'} />
             </View>
             <Text style={confirmations >= 4 ? styles.stepTitleInProgress : styles.stepTitlePending} numberOfLines={1}>
-              {orderData.merchant?.name ? orderData.merchant.name.slice(0, 10) : t('paymentInProgress.stepMerchant', 'Commerçant')}
+              {orderData.merchant?.name ? orderData.merchant.name.slice(0, 10) : t('paymentInProgress.stepMerchant', "Merchant")}
             </Text>
-            <Text style={styles.stepSubtitle} numberOfLines={1}>{t('paymentInProgress.stepPending', 'En attente')}</Text>
+            <Text style={styles.stepSubtitle} numberOfLines={1}>{t('paymentInProgress.stepPending', "Pending")}</Text>
           </View>
         </View>
 
         {/* Transaction Details Card */}
         <View style={styles.cardSection}>
-          <Text style={styles.cardTitle}>{t('paymentInProgress.txDetails', 'Détails de la transaction')}</Text>
+          <Text style={styles.cardTitle}>{t('paymentInProgress.txDetails', "Transaction details")}</Text>
 
           <View style={styles.detailRow}>
             <View style={styles.detailLabelRow}>
               <Ionicons name="scan-outline" size={16} color="#1A2840" style={{ marginRight: 8 }} />
-              <Text style={styles.detailLabel}>{t('paymentInProgress.youPay', 'Montant à régler')}</Text>
+              <Text style={styles.detailLabel}>{t('paymentInProgress.youPay', "You pay")}</Text>
             </View>
             <View style={styles.detailValueRow}>
               {orderData.selectedToken ? (
@@ -221,13 +221,13 @@ export default function PaymentInProgressScreen({ route }) {
           <View style={styles.detailRow}>
             <View style={styles.detailLabelRow}>
               <Ionicons name="card-outline" size={16} color="#1A2840" style={{ marginRight: 8 }} />
-              <Text style={styles.detailLabel}>{t('paymentInProgress.paymentMethod', 'Moyen de paiement')}</Text>
+              <Text style={styles.detailLabel}>{t('paymentInProgress.paymentMethod', "Payment method")}</Text>
             </View>
             <Text style={styles.detailValue}>
               {orderData.paymentRail === 'momo' || orderData.paymentMethod === 'MOMO'
-                ? t('paymentInProgress.momoInstant', 'Mobile Money Instantané')
+                ? t('paymentInProgress.momoInstant', "Instant Mobile Money")
                 : orderData.paymentRail === 'card' || orderData.paymentMethod === 'CARD'
-                ? t('paymentInProgress.cardVisaMc', 'Carte Bancaire (Visa/MC)')
+                ? t('paymentInProgress.cardVisaMc', "Bank Card (Visa/MC)")
                 : orderData.paymentRail === 'dzy' || orderData.selectedToken === 'DZY'
                 ? 'DZY Wallet'
                 : `${orderData.selectedToken || 'USDC'} (${orderData.network || 'Polygon'})`}
@@ -239,7 +239,7 @@ export default function PaymentInProgressScreen({ route }) {
           <View style={styles.detailRow}>
             <View style={styles.detailLabelRow}>
               <Ionicons name="document-text-outline" size={16} color="#1A2840" style={{ marginRight: 8 }} />
-              <Text style={styles.detailLabel}>{t('paymentInProgress.orderNumber', 'N° Commande')}</Text>
+              <Text style={styles.detailLabel}>{t('paymentInProgress.orderNumber', "Order No.")}</Text>
             </View>
             <Text style={styles.detailValue}>{orderId}</Text>
           </View>
@@ -249,13 +249,13 @@ export default function PaymentInProgressScreen({ route }) {
           <View style={styles.detailRow}>
             <View style={styles.detailLabelRow}>
               <Ionicons name="time-outline" size={16} color="#1A2840" style={{ marginRight: 8 }} />
-              <Text style={styles.detailLabel}>{t('paymentInProgress.status', 'Statut')}</Text>
+              <Text style={styles.detailLabel}>{t('paymentInProgress.status', "Status")}</Text>
             </View>
             <View style={styles.statusBadgeYellow}>
               <Text style={styles.statusBadgeTextYellow}>
                 {confirmations >= 3
-                  ? t('paymentInProgress.stepInValidation', 'En cours de validation')
-                  : t('paymentInProgress.stepPending', 'En attente')}
+                  ? t('paymentInProgress.stepInValidation', "In validation")
+                  : t('paymentInProgress.stepPending', "Pending")}
               </Text>
             </View>
           </View>
@@ -264,17 +264,17 @@ export default function PaymentInProgressScreen({ route }) {
         {/* Confirmation progress card */}
         <View style={styles.cardSection}>
           <View style={styles.blockchainHeader}>
-            <Text style={styles.cardTitle}>{t('paymentInProgress.secureConfirmation', 'Confirmation Sécurisée')}</Text>
+            <Text style={styles.cardTitle}>{t('paymentInProgress.secureConfirmation', "Secure Confirmation")}</Text>
             <View style={styles.networkBadge}>
               <Ionicons name="shield-checkmark" size={14} color="#10B981" />
-              <Text style={styles.networkBadgeText}>{t('paymentInProgress.escrowBadge', 'Escrow Séquestre')}</Text>
+              <Text style={styles.networkBadgeText}>{t('paymentInProgress.escrowBadge', "Smart Contract Escrow")}</Text>
             </View>
           </View>
 
           <View style={styles.progressHeader}>
-            <Text style={styles.progressLabel}>{t('paymentInProgress.validationSteps', 'Étapes de validation :')}</Text>
+            <Text style={styles.progressLabel}>{t('paymentInProgress.validationSteps', "Validation steps:")}</Text>
             <Text style={styles.progressValue}>
-              {t('paymentInProgress.stepCount', `Étape ${confirmations} / 4`, { current: confirmations, total: 4 })}
+              {t('paymentInProgress.stepCount', "Step {{current}} / {{total}}", { current: confirmations, total: 4 })}
             </Text>
           </View>
 
@@ -287,9 +287,9 @@ export default function PaymentInProgressScreen({ route }) {
         <View style={styles.securityBanner}>
           <Ionicons name="shield-checkmark-outline" size={22} color="#10B981" style={{ marginRight: 10 }} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.securityBannerTitle}>{t('paymentInProgress.fundsInEscrowTitle', 'Fonds sous Séquestre')}</Text>
+            <Text style={styles.securityBannerTitle}>{t('paymentInProgress.fundsInEscrowTitle', "Funds in Escrow")}</Text>
             <Text style={styles.securityBannerText}>
-              {t('paymentInProgress.fundsInEscrowDesc', 'Le montant ne sera remis au commerçant qu\'après que vous aurez transmis votre code PIN secret au livreur.')}
+              {t('paymentInProgress.fundsInEscrowDesc', "The amount will only be released to the merchant after you give your secret PIN code to the courier.")}
             </Text>
           </View>
         </View>
@@ -305,13 +305,13 @@ export default function PaymentInProgressScreen({ route }) {
           ) : (
             <>
               <Ionicons name="refresh-outline" size={18} color="#1A2840" style={{ marginRight: 8 }} />
-              <Text style={styles.btnRefreshText}>{t('paymentInProgress.checkStatusNow', 'Vérifier le statut maintenant')}</Text>
+              <Text style={styles.btnRefreshText}>{t('paymentInProgress.checkStatusNow', "Check status now")}</Text>
             </>
           )}
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.btnHome} onPress={() => navigation.navigate('HomeScreen')}>
-          <Text style={styles.btnHomeText}>{t('paymentInProgress.backToHome', 'Retour à l\'accueil')}</Text>
+          <Text style={styles.btnHomeText}>{t('paymentInProgress.backToHome', "Back to Home")}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

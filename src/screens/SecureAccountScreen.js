@@ -81,7 +81,7 @@ export default function SecureAccountScreen() {
           />
           <Text style={styles.mainTitle}>{t('verificationStep.secureTitle', 'Secure your account')}</Text>
           <Text style={styles.subTitle}>
-            {t('verificationStep.choosePinDesc', 'Choose a 6-digit PIN code to secure your transactions and access.')}
+            {t('verificationStep.choosePinDesc', "Choose a 6-digit PIN that you will use to log in.")}
           </Text>
         </View>
 
@@ -110,7 +110,7 @@ export default function SecureAccountScreen() {
               <Ionicons name="shield-checkmark-outline" size={20} color={theme.colors.textPrimary} />
             </View>
             <Text style={styles.instructionText}>
-              {t('verificationStep.confirmPinDesc', 'Enter your PIN code again to confirm it.')}
+              {t('verificationStep.confirmPinDesc', "Re-enter your PIN code to confirm.")}
             </Text>
           </View>
           

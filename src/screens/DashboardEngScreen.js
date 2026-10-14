@@ -59,7 +59,7 @@ export default function DashboardEngScreen() {
               }}
               activeOpacity={0.8}
             >
-              <Text style={[styles.modeTabText, activeTabMode === 'perso' && styles.modeTabTextActive]}>{t('dashboardEng.perso', 'Perso')}</Text>
+              <Text style={[styles.modeTabText, activeTabMode === 'perso' && styles.modeTabTextActive]}>{t('dashboardEng.perso', "Personal")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -228,10 +228,10 @@ export default function DashboardEngScreen() {
 
             <View style={styles.referCardContent}>
               <Text style={styles.referCardTitle}>
-                {t('dashboardEng.referTitle', 'Refer a Store or Business\nand earn')} <Text style={{ color: '#10B981' }}>$10 in DZY</Text>
+                {t('dashboardEng.referTitle', "Refer a Store or Business and earn")} <Text style={{ color: '#10B981' }}>$10 in DZY</Text>
               </Text>
               <Text style={styles.referCardSubtitle}>
-                {t('dashboardEng.referSubtitle', 'Refer a store or business\nand earn rewards.')}
+                {t('dashboardEng.referSubtitle', "Refer a store or business and earn rewards.")}
               </Text>
               <TouchableOpacity style={styles.btnReferNow}>
                 <Text style={styles.btnReferNowText}>{t('dashboardEng.referNow', 'Refer now')}</Text>
@@ -266,11 +266,11 @@ export default function DashboardEngScreen() {
           <View style={styles.quickActionsGrid}>
             
             {/* 1: Invoice & Pay link */}
-            <TouchableOpacity style={styles.qActionCard}>
+            <TouchableOpacity style={styles.qActionCard} onPress={() => navigation.navigate('InvoicePayLinkScreen')}>
               <View style={[styles.qActionIconCircle, { backgroundColor: '#EFF6FF' }]}>
                 <Ionicons name="document-text-outline" size={22} color="#0052FF" />
               </View>
-              <Text style={styles.qActionCardLabel}>{t('dashboardEng.invoicePayLink', 'Invoice &\nPay link')}</Text>
+              <Text style={styles.qActionCardLabel}>{t('dashboardEng.invoicePayLink', "Invoice &\nPay link")}</Text>
             </TouchableOpacity>
 
             {/* 2: Cash-in (POS) */}
@@ -278,7 +278,7 @@ export default function DashboardEngScreen() {
               <View style={[styles.qActionIconCircle, { backgroundColor: '#F3E8FF' }]}>
                 <Ionicons name="hardware-chip-outline" size={22} color="#8B5CF6" />
               </View>
-              <Text style={styles.qActionCardLabel}>{t('dashboardEng.cashInPos', 'Cash-in\n(POS)')}</Text>
+              <Text style={styles.qActionCardLabel}>{t('dashboardEng.cashInPos', "Cash-in\n(POS)")}</Text>
             </TouchableOpacity>
 
             {/* 3: Send & Request */}
@@ -286,7 +286,7 @@ export default function DashboardEngScreen() {
               <View style={[styles.qActionIconCircle, { backgroundColor: '#DCFCE7' }]}>
                 <Ionicons name="people-outline" size={22} color="#10B981" />
               </View>
-              <Text style={styles.qActionCardLabel}>{t('dashboardEng.sendRequest', 'Send &\nRequest')}</Text>
+              <Text style={styles.qActionCardLabel}>{t('dashboardEng.sendRequest', "Send &\nRequest")}</Text>
             </TouchableOpacity>
 
             {/* 4: Top-up DZYwallet */}
@@ -294,7 +294,7 @@ export default function DashboardEngScreen() {
               <View style={[styles.qActionIconCircle, { backgroundColor: '#DCFCE7' }]}>
                 <Ionicons name="add-circle-outline" size={22} color="#10B981" />
               </View>
-              <Text style={styles.qActionCardLabel}>{t('dashboardEng.topUpDzyWallet', 'Top-up\nDZYwallet')}</Text>
+              <Text style={styles.qActionCardLabel}>{t('dashboardEng.topUpDzyWallet', "Top-up\nDZYwallet")}</Text>
             </TouchableOpacity>
 
             {/* 5: Cash-out */}
@@ -310,7 +310,7 @@ export default function DashboardEngScreen() {
               <View style={[styles.qActionIconCircle, { backgroundColor: '#EFF6FF' }]}>
                 <Ionicons name="earth-outline" size={22} color="#0052FF" />
               </View>
-              <Text style={styles.qActionCardLabel}>{t('dashboardEng.sourceInAfrica', 'Source in\nAfrica')}</Text>
+              <Text style={styles.qActionCardLabel}>{t('dashboardEng.sourceInAfrica', "Source in\nAfrica")}</Text>
             </TouchableOpacity>
 
           </View>

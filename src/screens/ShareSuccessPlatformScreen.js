@@ -53,8 +53,8 @@ export default function ShareSuccessPlatformScreen() {
           </TouchableOpacity>
           
           <View style={styles.headerTitleWrap}>
-            <Text style={styles.headerTitle}>{t('shareSuccess.headerTitle', 'Partager mon succès')}</Text>
-            <Text style={styles.headerSubtitle}>{t('shareSuccess.headerSubtitle', 'Choisissez où publier votre carte DizzitUp')}</Text>
+            <Text style={styles.headerTitle}>{t('shareSuccess.headerTitle', "Share my success")}</Text>
+            <Text style={styles.headerSubtitle}>{t('shareSuccess.headerSubtitle', "Choose where to publish your DizzitUp card")}</Text>
           </View>
 
           <TouchableOpacity style={styles.helpBtn} onPress={() => navigation.navigate('AskAminataScreen')}>
@@ -70,7 +70,7 @@ export default function ShareSuccessPlatformScreen() {
               <View style={[styles.stepCircle, styles.stepCircleActive]}>
                 <Text style={styles.stepNumberActive}>1</Text>
               </View>
-              <Text style={[styles.stepText, styles.stepTextActive]}>{t('shareSuccess.stepSocial', 'Réseau social')}</Text>
+              <Text style={[styles.stepText, styles.stepTextActive]}>{t('shareSuccess.stepSocial', "Social network")}</Text>
             </View>
 
             <View style={[styles.stepLine, styles.stepLineActive]} />
@@ -79,7 +79,7 @@ export default function ShareSuccessPlatformScreen() {
               <View style={styles.stepCircle}>
                 <Text style={styles.stepNumber}>2</Text>
               </View>
-              <Text style={styles.stepText}>{t('shareSuccess.stepVisual', 'Visuel')}</Text>
+              <Text style={styles.stepText}>{t('shareSuccess.stepVisual', "Visual")}</Text>
             </View>
 
             <View style={styles.stepLine} />
@@ -88,7 +88,7 @@ export default function ShareSuccessPlatformScreen() {
               <View style={styles.stepCircle}>
                 <Text style={styles.stepNumber}>3</Text>
               </View>
-              <Text style={styles.stepText}>{t('shareSuccess.stepCaption', 'Légende')}</Text>
+              <Text style={styles.stepText}>{t('shareSuccess.stepCaption', "Caption")}</Text>
             </View>
           </View>
 
@@ -107,16 +107,16 @@ export default function ShareSuccessPlatformScreen() {
 
             <View style={styles.rewardTextWrap}>
               <Text style={styles.rewardTitle}>
-                {t('shareSuccess.rewardTitlePre', 'Partagez votre succès et gagnez')} <Text style={styles.goldText}>1 DZY</Text>
+                {t('shareSuccess.rewardTitlePre', "Share your success and earn")} <Text style={styles.goldText}>1 DZY</Text>
               </Text>
               <Text style={styles.rewardSub}>
-                {t('shareSuccess.rewardSub', 'Publiez votre carte DizzitUp et taguez @DizzitUp')}
+                {t('shareSuccess.rewardSub', "Post your DizzitUp card and tag @DizzitUp")}
               </Text>
             </View>
           </View>
 
           {/* Section Title */}
-          <Text style={styles.sectionTitle}>{t('shareSuccess.selectPlatform', 'Sélectionnez une plateforme')}</Text>
+          <Text style={styles.sectionTitle}>{t('shareSuccess.selectPlatform', "Select a platform")}</Text>
 
           {/* Platform Grid */}
           <View style={styles.gridContainer}>
@@ -153,7 +153,7 @@ export default function ShareSuccessPlatformScreen() {
               <Ionicons name="shield-outline" size={20} color="#3B82F6" />
             </View>
             <Text style={styles.infoTextPrivacy}>
-              {t('shareSuccess.privacyInfo', 'Le visuel généré masquera les informations sensibles du bénéficiaire. Son pays et son drapeau resteront visibles.')}
+              {t('shareSuccess.privacyInfo', "The generated visual will hide sensitive recipient details. Country and flag will remain visible.")}
             </Text>
           </View>
 
@@ -163,7 +163,7 @@ export default function ShareSuccessPlatformScreen() {
               <Ionicons name="link-outline" size={18} color="#D97706" />
             </View>
             <Text style={styles.infoTextReferral}>
-              {t('shareSuccess.referralInfo', "Lien d'invitation traçable inclus pour vos récompenses.")}
+              {t('shareSuccess.referralInfo', "Trackable referral link included for your rewards.")}
             </Text>
           </View>
 
@@ -173,7 +173,7 @@ export default function ShareSuccessPlatformScreen() {
             onPress={() => navigation.navigate('HomeScreen')}
             activeOpacity={0.8}
           >
-            <Text style={styles.btnSecondaryText}>{t('shareSuccess.later', 'Plus tard')}</Text>
+            <Text style={styles.btnSecondaryText}>{t('shareSuccess.later', "Later")}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -181,7 +181,7 @@ export default function ShareSuccessPlatformScreen() {
             onPress={handleContinue}
             activeOpacity={0.88}
           >
-            <Text style={styles.btnPrimaryText}>{t('shareSuccess.continue', 'Continuer')}</Text>
+            <Text style={styles.btnPrimaryText}>{t('shareSuccess.continue', "Continue")}</Text>
           </TouchableOpacity>
 
           <View style={{ height: 20 }} />
