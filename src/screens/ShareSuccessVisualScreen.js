@@ -36,16 +36,21 @@ export default function ShareSuccessVisualScreen() {
   const matchedSenderCountry = ALL_COUNTRIES.find(c => c.name.toLowerCase() === rawSenderCountry.toLowerCase() || c.code.toLowerCase() === rawSenderCountry.toLowerCase());
   const senderFlag = transactionData.senderFlag || matchedSenderCountry?.flag || '🇫🇷';
 
-  // Anonymize recipient
-  const rawRecipientName = transactionData.recipientName || transactionData.merchantName || transactionData.serviceTitle || 'Beneficiary';
-  const displayRecipientName = rawRecipientName.split(' ')[0];
+  // Keep public business names intact; anonymize person-to-person recipients.
+  const isPayment = transactionData?.type === 'payment' || actionKey === 'actionPaid' || !!transactionData?.merchantName || !!transactionData?.serviceTitle;
+  const rawRecipientName = isPayment
+    ? (transactionData.merchantName || transactionData.recipientName || transactionData.serviceTitle || 'Merchant')
+    : (transactionData.recipientName || 'Beneficiary');
+  const displayRecipientName = isPayment ? rawRecipientName : rawRecipientName.split(' ')[0];
   const rawRecipientCountry = transactionData.recipientCountry || 'TG';
   const matchedRecipientCountry = ALL_COUNTRIES.find(c => c.name.toLowerCase() === rawRecipientCountry.toLowerCase() || c.code.toLowerCase() === rawRecipientCountry.toLowerCase());
   const recipientFlag = transactionData.recipientFlag || matchedRecipientCountry?.flag || '🇹🇬';
   const recipientCountryCode = (matchedRecipientCountry?.code || rawRecipientCountry || 'TG').toUpperCase();
   const senderCountryCode = (matchedSenderCountry?.code || rawSenderCountry || '').toUpperCase();
 
-  const isPayment = transactionData?.type === 'payment' || actionKey === 'actionPaid' || !!transactionData?.merchantName || !!transactionData?.serviceTitle;
+  const recipientIdentity = isPayment
+    ? displayRecipientName
+    : [displayRecipientName, recipientFlag, recipientCountryCode].filter(Boolean).join(' ');
 
   // Resolve action label: prefer key-based i18n, fall back to raw string
   const resolvedAction = isPayment
@@ -209,7 +214,7 @@ export default function ShareSuccessVisualScreen() {
                 </Text>
               )}
             </View>
-            <Text style={styles.userName} numberOfLines={1}>{displayRecipientName} {recipientFlag} {recipientCountryCode}</Text>
+            <Text style={styles.userName} numberOfLines={1}>{recipientIdentity}</Text>
           </View>
         </View>
 
