@@ -16,6 +16,7 @@ import { isSmallScreen } from '../utils/responsive';
 import { useWallet, EVMWallet, SolanaWallet } from '@crossmint/client-sdk-react-native-ui';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { PinConfirmationModal } from '../components/PinConfirmationModal';
+import { getEstimatedNetworkFee } from '../config/networkFees';
 
 const BLOCKCHAINS = [
   { value: 'Polygon', label: 'Polygon', name: 'Polygon Network', isCrypto: true, cryptoSymbol: 'Polygon' },
@@ -25,13 +26,26 @@ const BLOCKCHAINS = [
   { value: 'Base', label: 'Base', name: 'Base Network', isCrypto: true, cryptoSymbol: 'Base' },
 ];
 
+const TOKENS_BY_CHAIN = {
+  polygon: ['USDC', 'USDT', 'POL', 'WPOL', 'WBTC', 'WETH'],
+  ethereum: ['USDC', 'USDT', 'EURC', 'ETH', 'WBTC', 'WETH', 'DAI', 'POL'],
+  base: ['USDC', 'EURC', 'ETH', 'WETH'],
+  bsc: ['BNB', 'USDC', 'USDT', 'DAI'],
+  solana: ['USDC', 'USDT', 'EURC', 'SOL'],
+};
+
 const CRYPTO_TOKENS = [
   { value: 'USDC', label: 'USDC', name: 'USD Coin', isCrypto: true, cryptoSymbol: 'USDC', subtitle: 'USD Coin (Stablecoin)' },
   { value: 'USDT', label: 'USDT', name: 'Tether USD', isCrypto: true, cryptoSymbol: 'USDT', subtitle: 'Tether USD (Stablecoin)' },
   { value: 'EURC', label: 'EURC', name: 'Euro Coin', isCrypto: true, cryptoSymbol: 'EURC', subtitle: 'EURC Stablecoin' },
-  { value: 'DZY', label: 'DZY', name: 'DizzitUp Token', isCrypto: true, cryptoSymbol: 'DZY', subtitle: 'DizzitUp Utility Token' },
   { value: 'ETH', label: 'ETH', name: 'Ethereum', isCrypto: true, cryptoSymbol: 'ETH', subtitle: 'Ethereum Native Token' },
-  { value: 'POL', label: 'POL', name: 'Polygon', isCrypto: true, cryptoSymbol: 'POL', subtitle: 'Polygon Native Token' },
+  { value: 'WETH', label: 'WETH', name: 'Wrapped Ether', isCrypto: true, cryptoSymbol: 'WETH', subtitle: 'Wrapped Ether' },
+  { value: 'POL', label: 'POL', name: 'Polygon (POL)', isCrypto: true, cryptoSymbol: 'POL', subtitle: 'Polygon Native Token' },
+  { value: 'WPOL', label: 'WPOL', name: 'Wrapped POL', isCrypto: true, cryptoSymbol: 'WPOL', subtitle: 'Wrapped POL Token' },
+  { value: 'WBTC', label: 'WBTC', name: 'Wrapped Bitcoin', isCrypto: true, cryptoSymbol: 'WBTC', subtitle: 'Wrapped Bitcoin' },
+  { value: 'BNB', label: 'BNB', name: 'BNB', isCrypto: true, cryptoSymbol: 'BNB', subtitle: 'BNB Native Token' },
+  { value: 'DAI', label: 'DAI', name: 'Dai Stablecoin', isCrypto: true, cryptoSymbol: 'DAI', subtitle: 'Dai Stablecoin' },
+  { value: 'SOL', label: 'SOL', name: 'Solana', isCrypto: true, cryptoSymbol: 'SOL', subtitle: 'Solana Native Token' },
 ];
 
 
@@ -39,7 +53,7 @@ const CRYPTO_TOKENS = [
 export default function SendMoneyScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  
+
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const [pinModalAmount, setPinModalAmount] = useState('');
   const [pinModalToken, setPinModalToken] = useState('');
@@ -133,11 +147,11 @@ export default function SendMoneyScreen() {
       setWalletBalances(effectiveRawBalances);
     }
   }, [effectiveRawBalances]);
-  
+
   // Recipient selection states
   const passedContact = route.params?.contact || route.params?.beneficiary;
   const initialRecipientName = route.params?.recipient || passedContact?.name || '';
-  
+
   const [selectedRecipient, setSelectedRecipient] = useState(() => {
     if (passedContact) {
       return {
@@ -177,47 +191,52 @@ export default function SendMoneyScreen() {
       setIsDropdownVisible(false);
     }
   }, [route.params?.contact, route.params?.beneficiary]);
-  
+
   const [amount, setAmount] = useState('1');
   const [toast, setToast] = useState(null);
   const [missingWalletItem, setMissingWalletItem] = useState(null);
 
   // Fetch real live wallet balances from dizzy-wallet using appropriate auth token
-  useEffect(() => {
+  const fetchLiveBalances = useCallback(async () => {
     const authToken = (isMerchant && user?.businessDizzyToken)
       ? user.businessDizzyToken
       : (user?.dizzyToken || session?.access_token);
 
     if (!authToken) return;
-    let cancelled = false;
-    const fetchBalances = async () => {
-      setBalancesLoading(true);
-      try {
-        let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
-        if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) {
-          DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
-        } else if (Platform.OS === 'ios' && DIZZY_URL.includes('10.0.2.2')) {
-          DIZZY_URL = DIZZY_URL.replace('10.0.2.2', 'localhost');
-        }
-        const res = await fetch(`${DIZZY_URL}/wallet/balance`, {
-          headers: { 'Authorization': `Bearer ${authToken}` },
-        });
-        const data = await res.json();
-        if (!cancelled && data) {
-          const list = Array.isArray(data) ? data : data.balances || [];
-          if (list.length > 0) {
-            setWalletBalances(list);
-          }
-        }
-      } catch (err) {
-        console.warn('[SendMoneyScreen] Error fetching balances:', err);
-      } finally {
-        if (!cancelled) setBalancesLoading(false);
+    setBalancesLoading(true);
+    try {
+      let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
+      if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) {
+        DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
+      } else if (Platform.OS === 'ios' && DIZZY_URL.includes('10.0.2.2')) {
+        DIZZY_URL = DIZZY_URL.replace('10.0.2.2', 'localhost');
       }
-    };
-    fetchBalances();
-    return () => { cancelled = true; };
+      const res = await fetch(`${DIZZY_URL}/wallet/balance`, {
+        headers: { 'Authorization': `Bearer ${authToken}` },
+      });
+      const data = await res.json();
+      if (data) {
+        const list = Array.isArray(data) ? data : data.balances || [];
+        if (list.length > 0) {
+          setWalletBalances(list);
+        }
+      }
+    } catch (err) {
+      console.warn('[SendMoneyScreen] Error fetching balances:', err);
+    } finally {
+      setBalancesLoading(false);
+    }
   }, [session?.access_token, user?.dizzyToken, user?.businessDizzyToken, isMerchant]);
+
+  useEffect(() => {
+    fetchLiveBalances();
+  }, [fetchLiveBalances]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchLiveBalances();
+    }, [fetchLiveBalances])
+  );
 
   // Balance helper: find balance matching token AND selected blockchain
   const getBalanceForToken = (symbol, network = blockchain) => {
@@ -231,14 +250,29 @@ export default function SendMoneyScreen() {
     const exactMatch = list.find(b => {
       const bSym = (b.token || b.symbol || b.currency || '').toUpperCase();
       const bChain = (b.chain || b.network || '').toLowerCase().replace(/\s+/g, '');
-      const chainMatches = !cleanChain || 
+      const chainMatches = !cleanChain ||
         bChain === cleanChain ||
         (cleanChain === 'polygon' && (bChain === 'matic' || bChain === 'polygon')) ||
         (cleanChain === 'bnbchain' && (bChain === 'bsc' || bChain === 'binance' || bChain === 'bnb' || bChain === 'bnbchain')) ||
         (cleanChain === 'ethereum' && (bChain === 'eth' || bChain === 'mainnet' || bChain === 'ethereum')) ||
         (cleanChain === 'solana' && (bChain === 'sol' || bChain === 'solana')) ||
         (cleanChain === 'base' && bChain === 'base');
-      return bSym === cleanSym && chainMatches;
+
+      // POL = native only, WPOL separate, ETH = native only, WETH separate
+      let symMatches = bSym === cleanSym;
+      if (cleanSym === 'POL') {
+        symMatches = bSym === 'POL' || (bSym === 'MATIC' && cleanChain === 'polygon');
+      } else if (cleanSym === 'WPOL') {
+        symMatches = bSym === 'WPOL' || (bSym === 'WMATIC' && cleanChain === 'polygon');
+      } else if (cleanSym === 'ETH') {
+        symMatches = bSym === 'ETH';
+      } else if (cleanSym === 'WETH') {
+        symMatches = bSym === 'WETH';
+      } else if (cleanSym === 'WBTC') {
+        symMatches = bSym === 'WBTC' || (bSym === 'BTC' && (cleanChain === 'polygon' || cleanChain === 'ethereum'));
+      }
+
+      return symMatches && chainMatches;
     });
 
     if (exactMatch && exactMatch.balance !== undefined) {
@@ -267,6 +301,36 @@ export default function SendMoneyScreen() {
   };
 
   const currentAvailableBalance = getBalanceForToken(token, blockchain);
+  const estimatedFee = getEstimatedNetworkFee(blockchain);
+  const currentUsdcBalance = getBalanceForToken('USDC', blockchain);
+  const numAmount = parseFloat(amount) || 0;
+
+  let sendValidationError = null;
+  if (numAmount > 0) {
+    if (token === 'USDC') {
+      if (numAmount > currentAvailableBalance) {
+        sendValidationError = t('common.wallet.not_enough_token', 'Not enough {{token}}. You have {{available}} {{token}}.', {
+          token,
+          available: currentAvailableBalance.toFixed(4),
+        });
+      } else if (numAmount + estimatedFee > currentUsdcBalance) {
+        sendValidationError = t('common.wallet.fee_usdc_needed', 'Network fee is paid in USDC. You need about {{fee}} USDC.', {
+          fee: estimatedFee,
+        });
+      }
+    } else {
+      if (numAmount > currentAvailableBalance) {
+        sendValidationError = t('common.wallet.not_enough_token', 'Not enough {{token}}. You have {{available}} {{token}}.', {
+          token,
+          available: currentAvailableBalance.toFixed(4),
+        });
+      } else if (currentUsdcBalance < estimatedFee) {
+        sendValidationError = t('common.wallet.fee_usdc_needed', 'Network fee is paid in USDC. You need about {{fee}} USDC.', {
+          fee: estimatedFee,
+        });
+      }
+    }
+  }
 
   // Auto-switch blockchain if current chain has 0 balance for the token, but another chain has funds
   useEffect(() => {
@@ -287,14 +351,28 @@ export default function SendMoneyScreen() {
     };
   });
 
+  // Filter tokens allowed on current blockchain
+  const cleanCurrentChain = (blockchain || '').toLowerCase().replace(/\s+/g, '');
+  const chainKey = (cleanCurrentChain === 'bnbchain' || cleanCurrentChain === 'bnb') ? 'bsc' : cleanCurrentChain;
+  const chainAllowedSymbols = TOKENS_BY_CHAIN[chainKey] || TOKENS_BY_CHAIN.polygon;
+  const tokensForChain = CRYPTO_TOKENS.filter(t => chainAllowedSymbols.includes(t.value)).map(t => {
+    if (t.value === 'POL' && chainKey === 'ethereum') {
+      return { ...t, name: 'POL (Ethereum)', label: 'POL (Ethereum)', subtitle: 'POL ERC-20 on Ethereum' };
+    }
+    return t;
+  });
+
   // Rule of provisioned tokens: only show tokens with positive balance if any exist
-  const positiveTokens = CRYPTO_TOKENS.filter(t => getBalanceForToken(t.value, blockchain) > 0);
-  const availableTokens = positiveTokens.length > 0 ? positiveTokens : CRYPTO_TOKENS;
+  const positiveTokens = tokensForChain.filter(t => getBalanceForToken(t.value, blockchain) > 0);
+  const availableTokens = positiveTokens.length > 0 ? positiveTokens : tokensForChain;
   const hasZeroBalance = currentAvailableBalance <= 0;
 
-  // Auto-select first positive token if current token has 0 balance and positive ones exist
+  // Auto-select first positive token if current token has 0 balance and positive ones exist,
+  // or first allowed token if current token is not valid on this chain
   useEffect(() => {
-    if (positiveTokens.length > 0 && !positiveTokens.some(pt => pt.value === token)) {
+    if (!chainAllowedSymbols.includes(token)) {
+      setToken(tokensForChain[0]?.value || 'USDC');
+    } else if (positiveTokens.length > 0 && !positiveTokens.some(pt => pt.value === token)) {
       setToken(positiveTokens[0].value);
     }
   }, [walletBalances, blockchain]);
@@ -343,13 +421,13 @@ export default function SendMoneyScreen() {
               country_code: b.country_code || b.country_code_iso,
               country_iso: b.country_iso || b.country_code_iso,
             }));
-            
+
             const combined = [];
             if (user?.role === 'merchant') {
               combined.push({ id: 'self', name: 'My Account', tag: 'SELF', address: user?.walletAddress || 'My Account' });
             }
             setSavedBeneficiaries([...combined, ...formatted]);
-            
+
             if (initialRecipientName) {
               const initialMatch = [...combined, ...formatted].find(r => (r.name || '').toLowerCase() === initialRecipientName.toLowerCase());
               if (initialMatch) setSelectedRecipient(initialMatch);
@@ -381,7 +459,7 @@ export default function SendMoneyScreen() {
 
           let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
           if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
-          
+
           const res = await fetch(`${DIZZY_URL}/wallet/lookup-by-phone?phone=${encodeURIComponent(queryPhone)}`, {
             headers: { 'Authorization': `Bearer ${session?.access_token}` }
           });
@@ -446,17 +524,25 @@ export default function SendMoneyScreen() {
       return;
     }
 
+    if (sendValidationError) {
+      setToast({
+        title: t('sendMoney.insufficientFunds', 'Insufficient Balance'),
+        message: sendValidationError,
+      });
+      return;
+    }
+
     if (parseFloat(amount) > currentAvailableBalance && currentAvailableBalance > 0) {
       setToast({
         title: t('sendMoney.insufficientFunds', 'Insufficient Balance'),
-        message: t('sendMoney.insufficientFundsDesc', 'You only have {{bal}} {{token}} available.', {
-          bal: currentAvailableBalance.toFixed(4),
+        message: t('common.wallet.not_enough_token', 'Not enough {{token}}. You have {{available}} {{token}}.', {
           token,
+          available: currentAvailableBalance.toFixed(4),
         }),
       });
       return;
     }
-    
+
     let toAddress = selectedRecipient ? (selectedRecipient.evm_address || selectedRecipient.solana_address || selectedRecipient.address) : searchQuery;
     if (toAddress === 'My Account') {
       toAddress = user?.walletAddress;
@@ -500,7 +586,7 @@ export default function SendMoneyScreen() {
       const senderFromAddress = isMerchant
         ? (user?.businessEvmAddress || user?.evmAddress || user?.walletAddress)
         : (user?.evmAddress || user?.walletAddress);
-      
+
       const payload = {
         toAddress,
         fromAddress: senderFromAddress,
@@ -523,9 +609,9 @@ export default function SendMoneyScreen() {
         },
         body: JSON.stringify(payload)
       });
-      
+
       const data = await res.json().catch(() => ({}));
-      
+
       if (!res.ok || !data.success) {
         if (data.status === 'requires-handshake' || data.crossmintStatus === 'awaiting-approval') {
           const txId = data.txId || data.txHash || data.id;
@@ -547,15 +633,16 @@ export default function SendMoneyScreen() {
                   if (actualSignerEmail) {
                     await activeWallet.useSigner({ type: 'email', email: actualSignerEmail });
                   }
-                  
+
                   // Allow user to read the security modal before native Crossmint SDK takes over
                   await new Promise(resolve => setTimeout(resolve, 3500));
-                  
+
                   const approved = await runSdkApproval(activeWallet, txId);
                   if (!approved) return; // another approval prompt is already handling this transfer
                   console.log('✅ [SendMoneyScreen] SDK approval completed successfully');
                   if (typeof refreshTransactions === 'function') refreshTransactions();
                   if (typeof refreshUser === 'function') refreshUser();
+                  fetchLiveBalances();
                   setTxStatus(null);
                   navigation.navigate('SendMoneySuccessScreen', {
                     amount,
@@ -581,12 +668,26 @@ export default function SendMoneyScreen() {
           }
           return;
         }
-        throw new Error(data.error || data.message || t('sendMoney.send_failed', 'Transaction failed'));
+
+        console.error('Send transaction API error response:', data);
+        const rawMsg = data.error || data.message || '';
+        const isRevert = /execution_reverted|reverted/i.test(rawMsg);
+        const isNoWallet = /no wallet found/i.test(rawMsg);
+        const mappedMsg = isRevert
+          ? t('common.wallet.transfer_reverted_message', 'This transfer could not be completed. Check your balance and try again.')
+          : isNoWallet
+            ? t('common.wallet.wallet_not_ready', 'Your wallet is not ready yet, please contact support.')
+            : (rawMsg || t('sendMoney.send_failed', 'Transaction failed'));
+        throw new Error(mappedMsg);
       }
 
       if (typeof refreshTransactions === 'function') {
         refreshTransactions();
       }
+      if (typeof refreshUser === 'function') {
+        refreshUser();
+      }
+      fetchLiveBalances();
 
       const finalTxHash = data.txHash || data.transactionId || data.transaction?.id || 'Transaction Confirmed';
       const finalExplorerUrl = data.explorerUrl || (
@@ -608,8 +709,16 @@ export default function SendMoneyScreen() {
       });
     } catch (e) {
       console.error('[SendMoneyScreen] Send error:', e);
-      setErrorMessage(e.message || t('sendMoney.send_failed', 'Transaction failed'));
-      setToast({ title: t('common.error', 'Error'), message: e.message });
+      const rawMsg = e.message || '';
+      const isRevert = /execution_reverted|reverted/i.test(rawMsg);
+      const isNoWallet = /no wallet found/i.test(rawMsg);
+      const mappedMsg = isRevert
+        ? t('common.wallet.transfer_reverted_message', 'This transfer could not be completed. Check your balance and try again.')
+        : isNoWallet
+          ? t('common.wallet.wallet_not_ready', 'Your wallet is not ready yet, please contact support.')
+          : (rawMsg || t('sendMoney.send_failed', 'Transaction failed'));
+      setErrorMessage(mappedMsg);
+      setToast({ title: t('common.error', 'Error'), message: mappedMsg });
     } finally {
       setIsSending(false);
     }
@@ -913,7 +1022,7 @@ export default function SendMoneyScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        
+
         {/* Header Bar */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => {
@@ -927,7 +1036,7 @@ export default function SendMoneyScreen() {
           }}>
             <Ionicons name="arrow-back" size={22} color="#1A2840" />
           </TouchableOpacity>
-          
+
           <View style={styles.headerTitleWrap}>
             <Text style={styles.headerTitle}>{t('sendMoney.sendFunds', 'Send Funds')}</Text>
             <View style={styles.secureTagRow}>
@@ -952,228 +1061,259 @@ export default function SendMoneyScreen() {
 
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
           <ScrollView style={styles.mainScroll} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-            
 
-          {/* Main White Form Card - Compact */}
-          <View style={styles.formCard}>
-            
-            {/* Section 1: Recipient Address (Search & Dropdown vs Picked Card) */}
-            <Text style={styles.fieldLabel}>{t('pos.recipient_address_caps', "RECIPIENT ADDRESS")}</Text>
 
-            {(!selectedRecipient || isSearchingRecipient) ? (
-              <View style={styles.searchSectionWrapper}>
-                {/* Search Input Box with PASTE and QR Code buttons */}
-                <View style={styles.searchInputBox}>
-                  <Ionicons name="search-outline" size={18} color="#F59E0B" style={{ marginRight: 6 }} />
-                  <TextInput
-                    style={styles.searchInputField}
-                    placeholder={t('common.wallet.search_beneficiary', "Search by name or phone...")}
-                    placeholderTextColor="#94A3B8"
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    onFocus={() => setIsDropdownVisible(true)}
-                    onBlur={() => setTimeout(() => setIsDropdownVisible(false), 200)}
-                  />
+            {/* Main White Form Card - Compact */}
+            <View style={styles.formCard}>
 
-                  {/* PASTE Button */}
-                  <TouchableOpacity style={styles.pasteButton} onPress={handlePasteClipboard} activeOpacity={0.8}>
-                    <Text style={styles.pasteButtonText}>PASTE</Text>
-                  </TouchableOpacity>
+              {/* Section 1: Recipient Address (Search & Dropdown vs Picked Card) */}
+              <Text style={styles.fieldLabel}>{t('pos.recipient_address_caps', "RECIPIENT ADDRESS")}</Text>
 
-                  {/* QR Code Icon Button */}
-                  <TouchableOpacity style={styles.qrCodeButton} onPress={() => setToast({ title: t('common.wallet.scan_to_pay', 'Scan to Pay'), message: t('sendMoney.opening_camera', 'Opening camera...') })} activeOpacity={0.8}>
-                    <Ionicons name="qr-code-outline" size={16} color="#0F172A" />
+              {(!selectedRecipient || isSearchingRecipient) ? (
+                <View style={styles.searchSectionWrapper}>
+                  {/* Search Input Box with PASTE and QR Code buttons */}
+                  <View style={styles.searchInputBox}>
+                    <Ionicons name="search-outline" size={18} color="#F59E0B" style={{ marginRight: 6 }} />
+                    <TextInput
+                      style={styles.searchInputField}
+                      placeholder={t('common.wallet.search_beneficiary', "Search by name or phone...")}
+                      placeholderTextColor="#94A3B8"
+                      value={searchQuery}
+                      onChangeText={setSearchQuery}
+                      onFocus={() => setIsDropdownVisible(true)}
+                      onBlur={() => setTimeout(() => setIsDropdownVisible(false), 200)}
+                    />
+
+                    {/* PASTE Button */}
+                    <TouchableOpacity style={styles.pasteButton} onPress={handlePasteClipboard} activeOpacity={0.8}>
+                      <Text style={styles.pasteButtonText}>PASTE</Text>
+                    </TouchableOpacity>
+
+                    {/* QR Code Icon Button */}
+                    <TouchableOpacity style={styles.qrCodeButton} onPress={() => setToast({ title: t('common.wallet.scan_to_pay', 'Scan to Pay'), message: t('sendMoney.opening_camera', 'Opening camera...') })} activeOpacity={0.8}>
+                      <Ionicons name="qr-code-outline" size={16} color="#0F172A" />
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Recipient Dropdown List Box */}
+                  {isDropdownVisible && (
+                    <View style={styles.dropdownListBox}>
+                      <ScrollView style={{ maxHeight: 260 }} nestedScrollEnabled={true} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={true}>
+                        <View style={{ paddingVertical: 4 }}>
+                          {isSearchingApi && <ActivityIndicator color="#0F172A" style={{ marginVertical: 8 }} />}
+
+                          {/* Item 0: Add permanent beneficiary */}
+                          <TouchableOpacity
+                            style={styles.addPermanentItem}
+                            onPress={() => navigation.navigate('EditBeneficiaryScreen')}
+                            activeOpacity={0.8}
+                          >
+                            <View style={styles.addPermanentIconBox}>
+                              <Ionicons name="person-add-outline" size={16} color="#D97706" />
+                            </View>
+                            <View style={styles.recipientTextWrap}>
+                              <Text style={styles.addPermanentTitle}>{t('common.wallet.add_new_beneficiary', 'Add permanent beneficiary')}</Text>
+                              <Text style={styles.addPermanentSubtitle}>{t('contacts.add_permanent_sub', "Add to permanent records")}</Text>
+                            </View>
+                          </TouchableOpacity>
+
+                          {/* Recipient List Items */}
+                          {filteredRecipients.map((item) => (
+                            <TouchableOpacity
+                              key={item.id}
+                              style={styles.dropdownItemRow}
+                              onPress={() => handleSelectRecipient(item)}
+                              activeOpacity={0.8}
+                            >
+                              <View style={styles.dropdownAvatarCircle}>
+                                <Ionicons name="person-outline" size={16} color="#94A3B8" />
+                              </View>
+                              <View style={styles.recipientTextWrap}>
+                                <Text style={styles.dropdownRecipientName}>{formatRecipientDisplay(item)}</Text>
+                                <View style={styles.tagAddressRow}>
+                                  <View style={styles.tagBadge}>
+                                    <Text style={styles.tagBadgeText}>{item.tag}</Text>
+                                  </View>
+                                  <Text style={styles.dropdownAddressText} numberOfLines={1} ellipsizeMode="middle">
+                                    {item.address}
+                                  </Text>
+                                </View>
+                              </View>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      </ScrollView>
+                    </View>
+                  )}
+                </View>
+              ) : (
+                /* Selected Recipient Card with Clear (x) Button */
+                <View style={styles.recipientCard}>
+                  <View style={styles.userAvatarCircle}>
+                    <Ionicons name="person-outline" size={16} color="#2563EB" />
+                  </View>
+
+                  <View style={styles.recipientInfoWrap}>
+                    <Text style={styles.recipientName} numberOfLines={1} ellipsizeMode="tail">
+                      {formatRecipientDisplay(selectedRecipient)}
+                    </Text>
+                    <Text style={styles.recipientAddress} numberOfLines={1} ellipsizeMode="middle">
+                      {selectedRecipient.address && selectedRecipient.address.length > 20
+                        ? `${selectedRecipient.address.slice(0, 8)}...${selectedRecipient.address.slice(-6)}`
+                        : selectedRecipient.address}
+                    </Text>
+                  </View>
+
+                  <TouchableOpacity
+                    style={styles.clearRecipientBtn}
+                    onPress={() => {
+                      setIsSearchingRecipient(true);
+                      setIsDropdownVisible(true);
+                    }}
+                    activeOpacity={0.7}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Ionicons name="close" size={14} color="#64748B" />
                   </TouchableOpacity>
                 </View>
+              )}
 
-                {/* Recipient Dropdown List Box */}
-                {isDropdownVisible && (
-                  <View style={styles.dropdownListBox}>
-                    <ScrollView style={{ maxHeight: 260 }} nestedScrollEnabled={true} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={true}>
-                      <View style={{ paddingVertical: 4 }}>
-                        {isSearchingApi && <ActivityIndicator color="#0F172A" style={{ marginVertical: 8 }} />}
-                      
-                      {/* Item 0: Add permanent beneficiary */}
-                      <TouchableOpacity 
-                        style={styles.addPermanentItem}
-                        onPress={() => navigation.navigate('EditBeneficiaryScreen')}
-                        activeOpacity={0.8}
-                      >
-                        <View style={styles.addPermanentIconBox}>
-                          <Ionicons name="person-add-outline" size={16} color="#D97706" />
-                        </View>
-                        <View style={styles.recipientTextWrap}>
-                          <Text style={styles.addPermanentTitle}>{t('common.wallet.add_new_beneficiary', 'Add permanent beneficiary')}</Text>
-                          <Text style={styles.addPermanentSubtitle}>{t('contacts.add_permanent_sub', "Add to permanent records")}</Text>
-                        </View>
-                      </TouchableOpacity>
+              {/* Section 2: Provisioned Token (Positive balances prioritized) */}
+              <Text style={styles.fieldLabel}>{t('pos.token_caps', 'TOKEN')}</Text>
+              <View style={styles.selectBoxRow}>
+                <View style={{ marginRight: 8 }}>
+                  <CryptoIcon symbol={token} size={26} />
+                </View>
+                <AppSelect
+                  value={token}
+                  options={availableTokens.map((item) => {
+                    const bal = getBalanceForToken(item.value);
+                    return {
+                      ...item,
+                      label: bal > 0 ? `${item.value} (${bal.toFixed(2)})` : item.value,
+                      subtitle: bal > 0 ? `Available: ${bal.toFixed(4)}` : item.subtitle,
+                    };
+                  })}
+                  onChange={(val) => setToken(val)}
+                  title={t('pos.choose_currency', 'Choose Currency')}
+                  style={styles.appSelectFlex}
+                  textStyle={styles.selectTextBold}
+                />
+              </View>
 
-                      {/* Recipient List Items */}
-                      {filteredRecipients.map((item) => (
-                        <TouchableOpacity 
-                          key={item.id}
-                          style={styles.dropdownItemRow}
-                          onPress={() => handleSelectRecipient(item)}
-                          activeOpacity={0.8}
-                        >
-                          <View style={styles.dropdownAvatarCircle}>
-                            <Ionicons name="person-outline" size={16} color="#94A3B8" />
-                          </View>
-                          <View style={styles.recipientTextWrap}>
-                            <Text style={styles.dropdownRecipientName}>{formatRecipientDisplay(item)}</Text>
-                            <View style={styles.tagAddressRow}>
-                              <View style={styles.tagBadge}>
-                                <Text style={styles.tagBadgeText}>{item.tag}</Text>
-                              </View>
-                              <Text style={styles.dropdownAddressText} numberOfLines={1} ellipsizeMode="middle">
-                                {item.address}
-                              </Text>
-                            </View>
-                          </View>
-                        </TouchableOpacity>
-                      ))}
-                      </View>
-                    </ScrollView>
+              {/* Compact Network Selection Under Token — Polygon default with multichain preservation */}
+              <View style={styles.compactNetworkRow}>
+                <View style={styles.compactNetworkLabelGroup}>
+                  <Text style={styles.compactNetworkLabel}>{t('common.wallet.network', 'Network')}:</Text>
+                  <CryptoIcon symbol={blockchain} size={15} style={{ marginHorizontal: 4 }} />
+                </View>
+                <AppSelect
+                  value={blockchain}
+                  options={blockchainOptions}
+                  onChange={(val) => setBlockchain(val)}
+                  title={t('common.wallet.select_chain', "Select Blockchain")}
+                  style={styles.compactAppSelect}
+                  textStyle={styles.compactSelectText}
+                />
+                {blockchain === 'Polygon' ? (
+                  <View style={styles.compactDefaultBadge}>
+                    <Text style={styles.compactDefaultBadgeText}>DEFAULT (EVM)</Text>
+                  </View>
+                ) : (
+                  <View style={styles.compactCustomBadge}>
+                    <Text style={styles.compactCustomBadgeText}>CUSTOM</Text>
                   </View>
                 )}
               </View>
-            ) : (
-              /* Selected Recipient Card with Clear (x) Button */
-              <View style={styles.recipientCard}>
-                <View style={styles.userAvatarCircle}>
-                  <Ionicons name="person-outline" size={16} color="#2563EB" />
-                </View>
-                
-                <View style={styles.recipientInfoWrap}>
-                  <Text style={styles.recipientName} numberOfLines={1} ellipsizeMode="tail">
-                    {formatRecipientDisplay(selectedRecipient)}
-                  </Text>
-                  <Text style={styles.recipientAddress} numberOfLines={1} ellipsizeMode="middle">
-                    {selectedRecipient.address && selectedRecipient.address.length > 20
-                      ? `${selectedRecipient.address.slice(0, 8)}...${selectedRecipient.address.slice(-6)}`
-                      : selectedRecipient.address}
-                  </Text>
-                </View>
 
-                <TouchableOpacity 
-                  style={styles.clearRecipientBtn}
-                  onPress={() => {
-                    setIsSearchingRecipient(true);
-                    setIsDropdownVisible(true);
-                  }}
-                  activeOpacity={0.7}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              {/* Section 3: Amount & Available Balance */}
+              <View style={styles.amountHeaderRow}>
+                <Text style={styles.fieldLabelNoMargin}>{t('common.wallet.amount', 'Amount')}</Text>
+                <View style={[styles.availableBadge, hasZeroBalance && styles.availableBadgeEmpty]}>
+                  <Text style={[styles.availableBadgeText, hasZeroBalance && styles.availableBadgeTextEmpty]}>
+                    {t('common.wallet.available', 'Available')}: {currentAvailableBalance.toFixed(4)} {token}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Top-Up CTA banner if zero balance */}
+              {hasZeroBalance && (
+                <TouchableOpacity
+                  style={styles.topUpBannerRow}
+                  onPress={() => navigation.navigate('TopUpWalletScreen', {
+                    pivotScreen: 'SendMoneyScreen',
+                    pivotParams: route.params,
+                  })}
+                  activeOpacity={0.8}
                 >
-                  <Ionicons name="close" size={14} color="#64748B" />
+                  <Ionicons name="add-circle" size={16} color="#D97706" />
+                  <Text style={styles.topUpBannerText}>
+                    {t('sendMoney.topUpNeeded', 'Zero balance. Tap to Top-Up {{token}}', { token })}
+                  </Text>
+                  <Ionicons name="arrow-forward" size={13} color="#D97706" />
                 </TouchableOpacity>
-              </View>
-            )}
-
-            {/* Section 2: Provisioned Token (Positive balances prioritized) */}
-            <Text style={styles.fieldLabel}>{t('pos.token_caps', 'TOKEN')}</Text>
-            <View style={styles.selectBoxRow}>
-              <View style={{ marginRight: 8 }}>
-                <CryptoIcon symbol={token} size={26} />
-              </View>
-              <AppSelect
-                value={token}
-                options={availableTokens.map((item) => {
-                  const bal = getBalanceForToken(item.value);
-                  return {
-                    ...item,
-                    label: bal > 0 ? `${item.value} (${bal.toFixed(2)})` : item.value,
-                    subtitle: bal > 0 ? `Available: ${bal.toFixed(4)}` : item.subtitle,
-                  };
-                })}
-                onChange={(val) => setToken(val)}
-                title={t('pos.choose_currency', 'Choose Currency')}
-                style={styles.appSelectFlex}
-                textStyle={styles.selectTextBold}
-              />
-            </View>
-
-            {/* Compact Network Selection Under Token — Polygon default with multichain preservation */}
-            <View style={styles.compactNetworkRow}>
-              <View style={styles.compactNetworkLabelGroup}>
-                <Text style={styles.compactNetworkLabel}>{t('common.wallet.network', 'Network')}:</Text>
-                <CryptoIcon symbol={blockchain} size={15} style={{ marginHorizontal: 4 }} />
-              </View>
-              <AppSelect
-                value={blockchain}
-                options={blockchainOptions}
-                onChange={(val) => setBlockchain(val)}
-                title={t('common.wallet.select_chain', "Select Blockchain")}
-                style={styles.compactAppSelect}
-                textStyle={styles.compactSelectText}
-              />
-              {blockchain === 'Polygon' ? (
-                <View style={styles.compactDefaultBadge}>
-                  <Text style={styles.compactDefaultBadgeText}>DEFAULT (EVM)</Text>
-                </View>
-              ) : (
-                <View style={styles.compactCustomBadge}>
-                  <Text style={styles.compactCustomBadgeText}>CUSTOM</Text>
-                </View>
               )}
-            </View>
 
-            {/* Section 3: Amount & Available Balance */}
-            <View style={styles.amountHeaderRow}>
-              <Text style={styles.fieldLabelNoMargin}>{t('common.wallet.amount', 'Amount')}</Text>
-              <View style={[styles.availableBadge, hasZeroBalance && styles.availableBadgeEmpty]}>
-                <Text style={[styles.availableBadgeText, hasZeroBalance && styles.availableBadgeTextEmpty]}>
-                  {t('common.wallet.available', 'Available')}: {currentAvailableBalance.toFixed(4)} {token}
+              <View style={styles.amountInputRow}>
+                <TextInput
+                  style={styles.amountInput}
+                  value={amount}
+                  onChangeText={(val) => {
+                    setAmount(val.replace(/,/g, '.'));
+                  }}
+                  keyboardType="decimal-pad"
+                  returnKeyType="done"
+                  onSubmitEditing={Keyboard.dismiss}
+                  placeholder="0"
+                  placeholderTextColor="#94A3B8"
+                />
+                <Text style={styles.amountTokenSuffix}>{token}</Text>
+              </View>
+
+              {/* Estimated Network Fee */}
+              <View style={styles.feeEstimateRow}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Ionicons name="receipt-outline" size={14} color="#64748B" style={{ marginRight: 5 }} />
+                  <Text style={styles.feeEstimateText}>
+                    {t('common.wallet.estimated_network_fee', 'Estimated network fee: ~{{fee}} USDC', { fee: estimatedFee })}
+                  </Text>
+                </View>
+                <Text style={styles.feeBadgeText}>
+                  {t('common.wallet.paid_in_usdc', 'paid in USDC')}
                 </Text>
               </View>
-            </View>
 
-            {/* Top-Up CTA banner if zero balance */}
-            {hasZeroBalance && (
+              {/* Validation Error Message */}
+              {sendValidationError ? (
+                <View style={styles.validationErrorCard}>
+                  <Ionicons name="alert-circle" size={16} color="#DC2626" style={{ marginRight: 6 }} />
+                  <Text style={styles.validationErrorText}>
+                    {sendValidationError}
+                  </Text>
+                </View>
+              ) : null}
+
+              {/* Main CTA Button */}
               <TouchableOpacity
-                style={styles.topUpBannerRow}
-                onPress={() => navigation.navigate('TopUpWalletScreen', {
-                  pivotScreen: 'SendMoneyScreen',
-                  pivotParams: route.params,
-                })}
-                activeOpacity={0.8}
+                style={[
+                  styles.sendCtaBtn,
+                  (isSending || !!sendValidationError || numAmount <= 0 || currentAvailableBalance <= 0) && styles.sendCtaBtnDisabled
+                ]}
+                onPress={handleSend}
+                activeOpacity={0.88}
+                disabled={isSending || !!sendValidationError || numAmount <= 0 || currentAvailableBalance <= 0}
               >
-                <Ionicons name="add-circle" size={16} color="#D97706" />
-                <Text style={styles.topUpBannerText}>
-                  {t('sendMoney.topUpNeeded', 'Zero balance. Tap to Top-Up {{token}}', { token })}
-                </Text>
-                <Ionicons name="arrow-forward" size={13} color="#D97706" />
+                {isSending ? <ActivityIndicator color="#FFFFFF" /> : (
+                  <>
+                    <Ionicons name="paper-plane-outline" size={17} color="#FFFFFF" style={{ marginRight: 6 }} />
+                    <Text style={styles.sendCtaText}>{t('pos.send_token', 'Send')} {token}</Text>
+                  </>
+                )}
               </TouchableOpacity>
-            )}
 
-            <View style={styles.amountInputRow}>
-              <TextInput
-                style={styles.amountInput}
-                value={amount}
-                onChangeText={(val) => {
-                  setAmount(val.replace(/,/g, '.'));
-                }}
-                keyboardType="decimal-pad"
-                returnKeyType="done"
-                onSubmitEditing={Keyboard.dismiss}
-                placeholder="0"
-                placeholderTextColor="#94A3B8"
-              />
-              <Text style={styles.amountTokenSuffix}>{token}</Text>
             </View>
 
-            {/* Main CTA Button */}
-            <TouchableOpacity style={styles.sendCtaBtn} onPress={handleSend} activeOpacity={0.88} disabled={isSending}>
-              {isSending ? <ActivityIndicator color="#FFFFFF" /> : (
-                <>
-                  <Ionicons name="paper-plane-outline" size={17} color="#FFFFFF" style={{ marginRight: 6 }} />
-                  <Text style={styles.sendCtaText}>{t('pos.send_token', 'Send')} {token}</Text>
-                </>
-              )}
-            </TouchableOpacity>
-
-          </View>
-
-          <View style={{ height: 30 }} />
+            <View style={{ height: 30 }} />
           </ScrollView>
         </KeyboardAvoidingView>
 
@@ -1196,7 +1336,7 @@ export default function SendMoneyScreen() {
               <Text style={modalStyles.title}>
                 {t('wallet.no_crypto_wallet_title', 'No Crypto Wallet Linked')}
               </Text>
-              
+
               <Text style={modalStyles.desc}>
                 {t('wallet.no_crypto_wallet_desc', "{{name}} does not have a DizzitUp wallet yet. But you should still keep them as a beneficiary because they can use Buy Goods, Pay Bills, Top-up, etc. Please enter their address manually if they have one, or send them an invite to join DizzitUp!", { name: missingWalletItem?.name || '' })}
               </Text>
@@ -1270,7 +1410,7 @@ export default function SendMoneyScreen() {
           visible={isSending}
           transparent={true}
           animationType="fade"
-          onRequestClose={() => {}}
+          onRequestClose={() => { }}
         >
           <View style={modalStyles.overlay}>
             <View style={[modalStyles.card, { alignItems: 'center', paddingVertical: 28 }]}>
@@ -1281,7 +1421,7 @@ export default function SendMoneyScreen() {
               <Text style={[modalStyles.title, { textAlign: 'center', marginBottom: 6 }]}>
                 {t('sendMoney.sending_in_progress', 'Sending {{amount}} {{token}}...', { amount, token })}
               </Text>
-              
+
               <Text style={[modalStyles.desc, { textAlign: 'center', marginBottom: 16 }]}>
                 {t('sendMoney.broadcasting_node', 'Submitting transaction to {{chain}} network...', { chain: blockchain })}
               </Text>
@@ -1312,7 +1452,7 @@ export default function SendMoneyScreen() {
               <Text style={[modalStyles.title, { textAlign: 'center', marginBottom: 8 }]}>
                 {t('sendMoney.tx_error_title', 'Transaction Notice')}
               </Text>
-              
+
               <Text style={[modalStyles.desc, { textAlign: 'center', marginBottom: 20 }]}>
                 {errorMessage}
               </Text>
@@ -1337,22 +1477,22 @@ export default function SendMoneyScreen() {
                 <Ionicons name="shield-checkmark" size={28} color="#071D54" />
               </View>
               <Text style={approvalModalStyles.modalTitle}>{t('sendMoney.signature_required', 'Signature Required')}</Text>
-              
+
               <ActivityIndicator size="large" color="#071D54" style={{ marginVertical: 20 }} />
 
               <View style={[approvalModalStyles.modalInfoBox, { borderWidth: 0, backgroundColor: 'transparent', padding: 0 }]}>
                 <Text style={[approvalModalStyles.modalInfoTextBold, { textAlign: 'center', fontSize: 14, marginBottom: 8 }]}>
                   {t('sendMoney.loading_secure_env', 'Loading Secure Environment...')}
                 </Text>
-                
+
                 <Text style={[approvalModalStyles.modalInfoText, { textAlign: 'center', marginBottom: 12, fontSize: 16, color: '#071D54', fontWeight: 'bold' }]}>
                   {t('sendMoney.wait_for_popup', 'Your DZYwallet verification code will be sent to email, please wait to receive the code')}
                 </Text>
-                
+
                 <Text style={[approvalModalStyles.modalInfoText, { textAlign: 'center', color: '#071D54', fontWeight: 'bold' }]}>
                   {t('sendMoney.crossmint_email_hint', 'You will receive an email from hello@crossmint.com with subject "Your DZYwallet verification code".')}
                 </Text>
-                
+
                 {signerEmail ? (
                   <View style={[approvalModalStyles.emailBadge, { alignSelf: 'center', marginTop: 16 }]}>
                     <Ionicons name="mail-outline" size={14} color="#0E0E0E" style={{ marginRight: 6 }} />
@@ -1379,13 +1519,15 @@ export default function SendMoneyScreen() {
         onCancel={handlePinCancel}
         amount={pinModalAmount}
         tokenName={pinModalToken}
+        estimatedFee={estimatedFee}
       />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#FAFAFA',
+  safeArea: {
+    flex: 1, backgroundColor: '#FAFAFA',
     paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 14,
   },
   container: { flex: 1, position: 'relative' },
@@ -1409,7 +1551,7 @@ const styles = StyleSheet.create({
   tokenIconBadge: { width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginRight: 8 },
   appSelectFlex: { flex: 1, borderWidth: 0, paddingHorizontal: 0, backgroundColor: 'transparent' },
   selectTextBold: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#0F172A' },
-  
+
   /* Compact Network Selection Under Token */
   compactNetworkRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4, marginBottom: 10 },
   compactNetworkLabelGroup: { flexDirection: 'row', alignItems: 'center' },
@@ -1453,7 +1595,7 @@ const styles = StyleSheet.create({
   recipientName: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#0F172A', marginBottom: 2 },
   recipientAddress: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#64748B' },
   clearRecipientBtn: { position: 'absolute', right: 12, width: 28, height: 28, borderRadius: 14, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center', elevation: 2, zIndex: 10 },
-  
+
   /* Amount Section (Compact) */
   amountHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, marginTop: 4 },
   availableBadge: { backgroundColor: '#FFFBEB', borderWidth: 1, borderColor: '#FDE68A', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
@@ -1462,7 +1604,13 @@ const styles = StyleSheet.create({
   amountInput: { flex: 1, fontFamily: 'SpaceGrotesk_700Bold', fontSize: 20, color: '#0F172A', outlineStyle: 'none' },
   amountTokenSuffix: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 13, color: '#64748B' },
   sendCtaBtn: { backgroundColor: '#071D54', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', height: 46, borderRadius: 12, boxShadow: '0px 4px 8px #071D54' },
+  sendCtaBtnDisabled: { opacity: 0.45, backgroundColor: '#94A3B8' },
   sendCtaText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#FFFFFF' },
+  feeEstimateRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6, marginBottom: 10 },
+  feeEstimateText: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#64748B' },
+  feeBadgeText: { fontFamily: 'Inter_700Bold', fontSize: 10, color: '#071D54', backgroundColor: '#FEF3C7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
+  validationErrorCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEF2F2', borderWidth: 1, borderColor: '#FEE2E2', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8, marginBottom: 10 },
+  validationErrorText: { flex: 1, fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#DC2626' },
 });
 
 const modalStyles = StyleSheet.create({

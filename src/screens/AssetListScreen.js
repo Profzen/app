@@ -24,13 +24,21 @@ const WEB_DEFAULT_TOKENS = [
   { symbol: "USDC", name: "USD Coin", chain: "solana" },
   { symbol: "USDC", name: "USD Coin", chain: "bsc" },
 
+  // EURC
+  { symbol: "EURC", name: "Euro Coin", chain: "ethereum" },
+  { symbol: "EURC", name: "Euro Coin", chain: "base" },
+  { symbol: "EURC", name: "Euro Coin", chain: "solana" },
+
   // POL
   { symbol: "POL", name: "Polygon (POL)", chain: "polygon" },
+  { symbol: "POL", name: "POL (Ethereum)", chain: "ethereum" },
+  { symbol: "WPOL", name: "Wrapped POL", chain: "polygon" },
   
   // BNB
   { symbol: "BNB", name: "BNB", chain: "bsc" },
   
   // DAI
+  { symbol: "DAI", name: "Dai Stablecoin", chain: "ethereum" },
   { symbol: "DAI", name: "Dai Stablecoin", chain: "bsc" },
 
   // ETH

@@ -19,11 +19,11 @@ const chainOptions = [
 ];
 
 const tokensByChain = {
-  polygon: ['USDC', 'USDT', 'POL', 'WETH'],
-  ethereum: ['USDC', 'USDT', 'WETH', 'WBTC'],
-  base: ['USDC', 'WETH'],
-  bsc: ['USDC', 'USDT', 'DAI'],
-  solana: ['USDC', 'USDT', 'SOL'],
+  polygon: ['USDC', 'USDT', 'POL', 'WPOL', 'WETH', 'WBTC'],
+  ethereum: ['USDC', 'USDT', 'EURC', 'ETH', 'WETH', 'WBTC', 'DAI', 'POL'],
+  base: ['USDC', 'EURC', 'ETH', 'WETH'],
+  bsc: ['BNB', 'USDC', 'USDT', 'DAI'],
+  solana: ['USDC', 'USDT', 'EURC', 'SOL'],
 };
 
 export default function SwapTokensScreen() {
@@ -367,7 +367,7 @@ export default function SwapTokensScreen() {
                 </View>
               </View>
               <View style={styles.inputRow}>
-                <AppSelect value={fromToken} options={(tokensByChain[fromChain] || []).map((value) => ({ value, label: value }))} onChange={setFromToken} title={t('common.wallet.swap_ui.from_token', 'From Token')} style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option.value} size={20} style={{ marginRight: 6 }} />} />
+                <AppSelect value={fromToken} options={(tokensByChain[fromChain] || []).map((value) => ({ value, label: value === 'POL' && fromChain === 'ethereum' ? 'POL (Ethereum)' : value }))} onChange={setFromToken} title={t('common.wallet.swap_ui.from_token', 'From Token')} style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option.value} size={20} style={{ marginRight: 6 }} />} />
                 <TouchableOpacity activeOpacity={1} style={[styles.amountInputContainer, isFocused && styles.amountInputContainerFocused]} onPress={() => amountInputRef.current?.focus()}>
                   <TextInput
                     ref={amountInputRef}
@@ -403,7 +403,7 @@ export default function SwapTokensScreen() {
                 )}
               </View>
               <View style={styles.inputRow}>
-                <AppSelect value={toToken} options={(tokensByChain[toChain] || []).map((value) => ({ value, label: value }))} onChange={setToToken} title={t('common.wallet.swap_ui.to_token', 'To Token')} style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option.value} size={20} style={{ marginRight: 6 }} />} />
+                <AppSelect value={toToken} options={(tokensByChain[toChain] || []).map((value) => ({ value, label: value === 'POL' && toChain === 'ethereum' ? 'POL (Ethereum)' : value }))} onChange={setToToken} title={t('common.wallet.swap_ui.to_token', 'To Token')} style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option.value} size={20} style={{ marginRight: 6 }} />} />
                 <View style={[styles.amountInputContainer, styles.amountInputContainerDisabled]}>
                   <TextInput
                     style={[styles.amountInput, { color: '#94A3B8' }]}

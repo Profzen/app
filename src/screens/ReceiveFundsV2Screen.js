@@ -41,8 +41,8 @@ const CHAINS = [
   { id: 'Ethereum', name: 'Ethereum', isDefault: false, subtitleKey: '', defaultSub: 'Ethereum Mainnet' },
 ];
 
-const EVM_TOKENS = ['USDC', 'USDT', 'EURC', 'DZY', 'POL', 'ETH'];
-const SOLANA_TOKENS = ['USDC', 'USDT', 'SOL', 'DZY'];
+const EVM_TOKENS = ['USDC', 'USDT', 'EURC', 'POL', 'WPOL', 'ETH', 'WETH', 'WBTC', 'DAI'];
+const SOLANA_TOKENS = ['USDC', 'USDT', 'EURC', 'SOL'];
 const QUICK_CRYPTO_AMOUNTS = ['5', '10', '25', '50', '100'];
 
 const FIAT_CURRENCIES = [
@@ -206,7 +206,17 @@ export default function ReceiveFundsV2Screen() {
     : (evmAddress || t('common.loading', 'Loading...'));
 
   // Ensure selected token matches available network tokens
-  const currentTokens = selectedChain === 'Solana' ? SOLANA_TOKENS : EVM_TOKENS;
+  // Do not offer EURC on Polygon or BNB Chain (Circle does not issue it there)
+  const currentTokens = useMemo(() => {
+    if (selectedChain === 'Solana') {
+      return SOLANA_TOKENS;
+    }
+    const clean = (selectedChain || '').toLowerCase().replace(/\s+/g, '');
+    if (clean === 'polygon' || clean === 'bnbchain' || clean === 'bsc') {
+      return EVM_TOKENS.filter((t) => t !== 'EURC');
+    }
+    return EVM_TOKENS;
+  }, [selectedChain]);
   useEffect(() => {
     if (!currentTokens.includes(token)) {
       setToken(currentTokens[0]);
@@ -702,6 +712,20 @@ export default function ReceiveFundsV2Screen() {
                     <Ionicons name={copied ? 'checkmark' : 'copy-outline'} size={18} color="#FFFFFF" />
                   </Pressable>
                 </View>
+
+                {/* Supported Tokens on Selected Network */}
+                <View style={{ marginTop: 12, paddingTop: 10, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)' }}>
+                  <Text style={{ fontSize: 10, fontWeight: '700', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>
+                    {t('receiveFunds.supportedTokens', 'Supported tokens on {{chain}}', { chain: selectedChain })}
+                  </Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                    {currentTokens.filter(t => t !== 'DZY').map((tok) => (
+                      <View key={tok} style={{ backgroundColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                        <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '700' }}>{tok}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
               </LinearGradient>
 
               {/* Action Buttons: Copy & Share */}
@@ -1170,7 +1194,7 @@ export default function ReceiveFundsV2Screen() {
                     >
                       <CryptoIcon symbol={tok} size={28} style={{ marginBottom: 6 }} />
                       <Text style={[styles.tokenGridText, isSelected && styles.tokenGridTextActive]}>
-                        {tok}
+                        {tok === 'POL' && (selectedChain || '').toLowerCase() === 'ethereum' ? 'POL (Ethereum)' : tok}
                       </Text>
                       {isSelected ? (
                         <View style={styles.tokenCheckDot}>

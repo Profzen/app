@@ -14,6 +14,7 @@ const localLogos = {
   Solana: require('../../assets/cryptos/solana.png'),
   MATIC: require('../../assets/cryptos/polygon.png'),
   POL: require('../../assets/cryptos/polygon.png'),
+  WPOL: require('../../assets/cryptos/polygon.png'),
   Polygon: require('../../assets/cryptos/polygon.png'),
   Polygone: require('../../assets/cryptos/polygon.png'),
   BASE: require('../../assets/cryptos/base.png'),

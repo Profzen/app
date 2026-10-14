@@ -9,7 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../services/supabaseClient';
 
-export const PinConfirmationModal = ({ visible, onSuccess, onCancel, amount, tokenName, title, subtitle, isChangeMode = false, isSettingsContext = false }) => {
+export const PinConfirmationModal = ({ visible, onSuccess, onCancel, amount, tokenName, estimatedFee, title, subtitle, isChangeMode = false, isSettingsContext = false }) => {
   const { t, user, logout } = useApp();
   const navigation = useNavigation();
   const [pin, setPin] = useState('');
@@ -294,6 +294,14 @@ export const PinConfirmationModal = ({ visible, onSuccess, onCancel, amount, tok
             {amount && tokenName && (
               <Text style={styles.amountText}>{amount} {tokenName}</Text>
             )}
+            {estimatedFee != null && (
+              <View style={styles.feeBadge}>
+                <Ionicons name="wallet-outline" size={13} color="#20365B" style={{ marginRight: 4 }} />
+                <Text style={styles.feeText}>
+                  {t('common.wallet.estimated_network_fee', 'Estimated network fee: ~{{fee}} USDC', { fee: estimatedFee })}
+                </Text>
+              </View>
+            )}
           </View>
 
           <View style={styles.formContainer}>
@@ -450,5 +458,21 @@ const styles = StyleSheet.create({
   },
   nextButtonTextDisabled: {
     color: '#9CA3AF',
+  },
+  feeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginTop: 6,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  feeText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: '#20365B',
   },
 });
