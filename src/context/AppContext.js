@@ -359,6 +359,7 @@ export function AppProvider({ children }) {
                 .from('merchants')
                 .select('*')
                 .eq('user_id', profile.id)
+                .eq('is_active', true)
                 .maybeSingle();
                 
               if (merchant) {

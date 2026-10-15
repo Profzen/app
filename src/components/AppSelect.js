@@ -123,7 +123,7 @@ export default function AppSelect({
                       {/* Logo Icon Badge */}
                       {option.flagUrl ? (
                         <Image source={{ uri: option.flagUrl }} style={{ width: 34, height: 34, borderRadius: 17, marginRight: 12, resizeMode: 'cover', borderWidth: 1, borderColor: '#F1F5F9' }} />
-                      ) : (option.cryptoSymbol || option.value) && (option.isCrypto || ['Polygon', 'Ethereum', 'Solana', 'BNB Chain', 'Base', 'USDC', 'USDT', 'BTC', 'ETH', 'SOL', 'POL', 'DAI', 'EURC', 'DIZ'].includes(option.cryptoSymbol || option.value)) ? (
+                      ) : (option.cryptoSymbol || option.value) && (option.isCrypto || ['Polygon', 'Ethereum', 'Solana', 'BNB Chain', 'Base', 'USDC', 'USDT', 'BTC', 'ETH', 'SOL', 'POL', 'DAI', 'EURC', 'DIZ', 'WPOL', 'WETH', 'WBTC'].includes(option.cryptoSymbol || option.value)) ? (
                         <View style={{ marginRight: 12 }}>
                           <CryptoIcon symbol={option.cryptoSymbol || option.value} size={34} />
                         </View>

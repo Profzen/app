@@ -12,11 +12,13 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
   const menuOpen = typeof isMenuOpen === 'boolean' ? isMenuOpen : localMenuOpen;
 
   let accountMode = 'personal';
+  let user = null;
   let activeLanguage = propLanguage || 'fr';
   let t = (k, f) => f || k;
   try {
     const appCtx = useApp();
     if (appCtx && appCtx.accountMode) accountMode = appCtx.accountMode;
+    if (appCtx && appCtx.user) user = appCtx.user;
     if (appCtx && appCtx.language) activeLanguage = appCtx.language;
     if (appCtx && appCtx.t) t = appCtx.t;
   } catch (e) { }
@@ -29,7 +31,7 @@ export default function BottomNavBar({ activeTab = 'Home', onCenterButtonPress, 
     }
   };
 
-  const isBusiness = accountMode === 'business';
+  const isBusiness = user?.role === 'merchant' || accountMode === 'business';
 
   const QUICK_ACTIONS = [
     isBusiness
