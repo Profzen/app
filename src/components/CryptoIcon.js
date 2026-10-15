@@ -4,7 +4,7 @@ import { Image, StyleSheet, View, Text } from 'react-native';
 const localLogos = {
   USDT: require('../../assets/cryptos/usdt.png'),
   USDC: require('../../assets/cryptos/usdc.png'),
-  EURC: require('../../assets/cryptos/eurc.png'),
+  EURC: require('../../assets/cryptos/EURC-icon.png'),
   BTC: require('../../assets/cryptos/btc.png'),
   WBTC: require('../../assets/cryptos/wbtc.png'),
   ETH: require('../../assets/cryptos/eth.png'),
@@ -14,7 +14,7 @@ const localLogos = {
   Solana: require('../../assets/cryptos/solana.png'),
   MATIC: require('../../assets/cryptos/polygon.png'),
   POL: require('../../assets/cryptos/polygon.png'),
-  WPOL: require('../../assets/cryptos/polygon.png'),
+  WPOL: require('../../assets/cryptos/wrapped-matic.png'),
   Polygon: require('../../assets/cryptos/polygon.png'),
   Polygone: require('../../assets/cryptos/polygon.png'),
   BASE: require('../../assets/cryptos/base.png'),

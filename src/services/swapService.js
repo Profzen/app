@@ -32,7 +32,13 @@ export const swapService = {
         }
       );
 
-      if (!response.ok) throw new Error('Failed to get quote');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const err = new Error(errorData.error || errorData.message || 'Failed to get quote');
+        err.status = response.status;
+        err.data = errorData;
+        throw err;
+      }
       return await response.json();
     } catch (error) {
       console.error('swapService.getQuote Error:', error);

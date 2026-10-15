@@ -669,6 +669,15 @@ export default function SendMoneyScreen() {
           return;
         }
 
+        if (data.code === 'RATE_LIMITED' || res.status === 429) {
+          const retrySec = data.retryAfterSeconds || 60;
+          const rateMsg = t('common.wallet.rate_limited', { seconds: retrySec, defaultValue: `Too many attempts. Please try again in ${retrySec} seconds.` });
+          setErrorMessage(rateMsg);
+          setToast({ title: t('common.error', 'Error'), message: rateMsg });
+          setIsSending(false);
+          return;
+        }
+
         console.error('Send transaction API error response:', data);
         const rawMsg = data.error || data.message || '';
         const isRevert = /execution_reverted|reverted/i.test(rawMsg);
@@ -709,6 +718,13 @@ export default function SendMoneyScreen() {
       });
     } catch (e) {
       console.error('[SendMoneyScreen] Send error:', e);
+      if (e?.code === 'RATE_LIMITED' || e?.status === 429) {
+        const retrySec = e?.retryAfterSeconds || 60;
+        const rateMsg = t('common.wallet.rate_limited', { seconds: retrySec, defaultValue: `Too many attempts. Please try again in ${retrySec} seconds.` });
+        setErrorMessage(rateMsg);
+        setToast({ title: t('common.error', 'Error'), message: rateMsg });
+        return;
+      }
       const rawMsg = e.message || '';
       const isRevert = /execution_reverted|reverted/i.test(rawMsg);
       const isNoWallet = /no wallet found/i.test(rawMsg);

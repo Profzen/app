@@ -9,6 +9,17 @@ import CryptoIcon from '../components/CryptoIcon';
 import AppSelect from '../components/AppSelect';
 import { useApp } from '../context/AppContext';
 import { swapService } from '../services/swapService';
+import { ESTIMATED_NETWORK_FEES_USDC } from '../config/networkFees';
+
+const formatMax6Decimals = (val) => {
+  if (val === null || val === undefined || val === '') return '';
+  const str = String(val);
+  if (!str.includes('.')) return str;
+  const [intPart, decPart] = str.split('.');
+  if (!decPart) return intPart;
+  const trimmed = decPart.slice(0, 6).replace(/0+$/, '');
+  return trimmed.length > 0 ? `${intPart}.${trimmed}` : intPart;
+};
 
 const chainOptions = [
   { value: 'polygon', label: 'Polygon', isCrypto: true, cryptoSymbol: 'Polygon' },
@@ -80,7 +91,7 @@ export default function SwapTokensScreen() {
       } else {
         setToAmount('');
       }
-    }, 600);
+    }, 500);
     return () => clearTimeout(timer);
   }, [fromAmount, fromToken, toToken, fromChain, toChain]);
 
@@ -92,8 +103,7 @@ export default function SwapTokensScreen() {
       const data = await swapService.getQuote(fromToken, toToken, fromAmount, fromChain, toChain, session?.access_token);
       if (data && data.toAmount) {
         setQuote(data);
-        // Simple decimal formatting for UI. Backend usually returns raw or formatted depending on logic.
-        setToAmount(Number(data.toAmount).toFixed(6).replace(/\.?0+$/, ''));
+        setToAmount(data.toAmount);
       } else {
         setQuote(null);
         setError(t('common.wallet.swap_ui.quote_failed', 'Could not get a quote. Please try again.'));
@@ -101,7 +111,12 @@ export default function SwapTokensScreen() {
     } catch (e) {
       console.log('Quote error', e);
       setQuote(null);
-      setError(t('common.wallet.swap_ui.quote_failed', 'Could not get a quote. Please try again.'));
+      if (e?.status === 429 || e?.data?.code === 'RATE_LIMITED') {
+        const retrySec = e?.data?.retryAfterSeconds || 60;
+        setError(t('common.wallet.rate_limited', { seconds: retrySec, defaultValue: `Too many attempts. Please try again in ${retrySec} seconds.` }));
+      } else {
+        setError(t('common.wallet.swap_ui.quote_failed', 'Could not get a quote. Please try again.'));
+      }
     } finally {
       setQuoteLoading(false);
     }
@@ -174,6 +189,13 @@ export default function SwapTokensScreen() {
       const res = await swapService.executeSwap(fromToken, toToken, fromAmount, fromChain, toChain, session?.access_token);
 
       if (res.error) {
+        if (res.status === 429 || res.data?.code === 'RATE_LIMITED') {
+          const retrySec = res.data?.retryAfterSeconds || 60;
+          setLoading(false);
+          setError(t('common.wallet.rate_limited', { seconds: retrySec, defaultValue: `Too many attempts. Please try again in ${retrySec} seconds.` }));
+          return;
+        }
+
         if (res.status === 400 && res.data?.status === 'requires-handshake') {
           const txId = res.data.txId;
           setActiveTxHash(txId);
@@ -207,7 +229,12 @@ export default function SwapTokensScreen() {
       }
     } catch (e) {
       setLoading(false);
-      setError(e.message);
+      if (e?.status === 429 || e?.data?.code === 'RATE_LIMITED' || e?.code === 'RATE_LIMITED') {
+        const retrySec = e?.data?.retryAfterSeconds || e?.retryAfterSeconds || 60;
+        setError(t('common.wallet.rate_limited', { seconds: retrySec, defaultValue: `Too many attempts. Please try again in ${retrySec} seconds.` }));
+      } else {
+        setError(e.message);
+      }
     }
   };
 
@@ -348,7 +375,7 @@ export default function SwapTokensScreen() {
               <Text style={styles.dzyBannerTitle}>ZERO-FEE SWAPS COMING</Text>
             </View>
             <Text style={styles.dzyBannerText}>
-              {t('common.wallet.swap_ui.dzy_banner_soon', 'Coming soon: hold DZY to unlock feeless trading.')}
+              {t('common.wallet.swap_ui.dzy_launch_desc', 'DZY launches soon')}
             </Text>
           </View>
 
@@ -407,7 +434,7 @@ export default function SwapTokensScreen() {
                 <View style={[styles.amountInputContainer, styles.amountInputContainerDisabled]}>
                   <TextInput
                     style={[styles.amountInput, { color: '#94A3B8' }]}
-                    value={toAmount}
+                    value={formatMax6Decimals(toAmount)}
                     editable={false}
                     placeholder="0.0"
                     placeholderTextColor="#475569"
@@ -419,21 +446,37 @@ export default function SwapTokensScreen() {
 
           </View>
 
+          {toToken === 'WPOL' && (
+            <View style={[styles.infoBox, { marginBottom: 16 }]}>
+              <Ionicons name="information-circle" size={18} color="#F59E0B" />
+              <Text style={[styles.infoText, { color: '#B45309' }]}>
+                {t('common.wallet.swap_ui.wpol_receive_warning', 'You will receive WPOL (wrapped POL), not native POL.')}
+              </Text>
+            </View>
+          )}
+
           {/* Quote Info */}
           {quote && !quoteLoading && (
             <View style={styles.quoteInfoBox}>
               <View style={styles.quoteRow}>
                 <Text style={styles.quoteLabel}>You receive about</Text>
-                <Text style={styles.quoteValue}>{toAmount} {toToken}</Text>
+                <Text style={styles.quoteValue}>{formatMax6Decimals(toAmount)} {toToken}</Text>
               </View>
               <View style={styles.quoteRow}>
                 <Text style={styles.quoteLabel}>At least (guaranteed)</Text>
-                <Text style={styles.quoteValue}>{quote.toAmountMin ? Number(quote.toAmountMin).toFixed(6).replace(/\.?0+$/, '') : toAmount} {toToken}</Text>
+                <Text style={styles.quoteValue}>{formatMax6Decimals(quote.toAmountMin || toAmount)} {toToken}</Text>
               </View>
               <View style={styles.quoteRow}>
-                <Text style={styles.quoteLabel}>Fees (bridge + network)</Text>
+                <Text style={styles.quoteLabel}>
+                  {fromChain === 'solana' ? 'Network fee (paid in USDC)' : 'Fees (bridge + network)'}
+                </Text>
                 <Text style={styles.quoteValue}>
                   {(() => {
+                    if (fromChain === 'solana') {
+                      const feeNum = parseFloat(quote.totalFeesUSD);
+                      const solanaFee = (feeNum && feeNum > 0) ? feeNum : (ESTIMATED_NETWORK_FEES_USDC?.solana ?? 0.01);
+                      return `~$${solanaFee.toFixed(2)}`;
+                    }
                     const feeStr = quote.totalFeesUSD;
                     if (!feeStr) return "$0.00";
                     const feeNum = parseFloat(feeStr);
