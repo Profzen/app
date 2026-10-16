@@ -23,6 +23,7 @@ import { convertCurrencyAmount } from '../utils/countryCurrencyUtils';
 import { getProductCoverImage } from '../utils/productMedia';
 import { getPaymentRailEligibility, COUNTRY_METADATA } from '../services/paymentCorridorService';
 import PaymentRegionModal from '../components/PaymentRegionModal';
+import ScreenFooter from '../components/ScreenFooter';
 import { contactService } from '../services/contactService';
 // import SelectableContactItem from '../components/SelectableContactItem';
 import { ALL_COUNTRIES } from '../utils/countriesData';
@@ -1257,24 +1258,30 @@ export default function OrderVerificationScreen({ route }) {
       </ScrollView>
 
       {/* Bottom Action Bar */}
-      <View style={styles.bottomActionBar}>
-        <View style={styles.securityInfo}>
-          <Ionicons name="shield-checkmark-outline" size={20} color="#10B981" style={{ marginRight: 8 }} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.securityTitle}>{t('orderVerification.securePaymentTitle', "100% Secure payment")}</Text>
-            <Text style={styles.securityDesc}>
-              {items.every(item => (item.product?.offering_type || item.offering_type) === 'service' && (item.product?.service_model || item.service_model) === 'rental_booking')
-                ? t('orderVerification.securityDescRental', "Your funds are protected until your arrival (Check-in).")
-                : items.every(item => (item.product?.offering_type || item.offering_type) === 'service' || (item.product?.offering_type || item.offering_type) === 'digital_product')
-                ? t('orderVerification.securityDescService', "Your funds are protected until the service is completed.")
-                : t('orderVerification.securityDesc', "Your funds are protected in escrow until physical delivery is confirmed.")}
-            </Text>
+      <ScreenFooter borderTop={true} backgroundColor="#FFFFFF" paddingTop={10} style={styles.footerContainer}>
+        <View style={styles.bottomActionBarInner}>
+          <View style={styles.securityInfo}>
+            <Ionicons name="shield-checkmark-outline" size={20} color="#10B981" style={{ marginRight: 8 }} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.securityTitle} maxFontSizeMultiplier={1.3}>
+                {t('orderVerification.securePaymentTitle', "100% Secure payment")}
+              </Text>
+              <Text style={styles.securityDesc} maxFontSizeMultiplier={1.3}>
+                {items.every(item => (item.product?.offering_type || item.offering_type) === 'service' && (item.product?.service_model || item.service_model) === 'rental_booking')
+                  ? t('orderVerification.securityDescRental', "Your funds are protected until your arrival (Check-in).")
+                  : items.every(item => (item.product?.offering_type || item.offering_type) === 'service' || (item.product?.offering_type || item.offering_type) === 'digital_product')
+                  ? t('orderVerification.securityDescService', "Your funds are protected until the service is completed.")
+                  : t('orderVerification.securityDesc', "Your funds are protected in escrow until physical delivery is confirmed.")}
+              </Text>
+            </View>
           </View>
+          <TouchableOpacity style={styles.btnContinue} onPress={handleProceedToConfirmation} activeOpacity={0.85}>
+            <Text style={styles.btnContinueText} maxFontSizeMultiplier={1.3}>
+              {t('orderVerification.continueBtn', "Continue")}
+            </Text>
+            <Ionicons name="chevron-forward" size={18} color="#1A2840" />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.btnContinue} onPress={handleProceedToConfirmation}>
-          <Text style={styles.btnContinueText}>{t('orderVerification.continueBtn', "Continue")}</Text>
-          <Ionicons name="chevron-forward" size={18} color="#1A2840" />
-        </TouchableOpacity>
 
         {/* Payment Region Switcher Modal */}
         <PaymentRegionModal
@@ -1287,7 +1294,7 @@ export default function OrderVerificationScreen({ route }) {
           }}
           onSelectAlternativeMethod={(method) => setPaymentRail(method)}
         />
-      </View>
+      </ScreenFooter>
     </SafeAreaView>
   );
 }
@@ -1320,7 +1327,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 110,
+    paddingBottom: 24,
     paddingHorizontal: 16,
   },
   sellerRow: {
@@ -2006,19 +2013,16 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#64748B',
   },
-  bottomActionBar: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+  footerContainer: {
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+  },
+  bottomActionBarInner: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
+    width: '100%',
   },
   securityInfo: {
     flex: 1,

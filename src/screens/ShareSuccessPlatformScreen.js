@@ -4,11 +4,15 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusB
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
+import ResponsiveGrid from '../components/ResponsiveGrid';
+import ScreenFooter from '../components/ScreenFooter';
+import { useIsSmallScreen } from '../utils/responsive';
 
 export default function ShareSuccessPlatformScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const { t } = useApp();
+  const isSmallScreen = useIsSmallScreen();
 
   const transactionData = route.params?.transactionData || {
     type: 'send',
@@ -119,13 +123,23 @@ export default function ShareSuccessPlatformScreen() {
           <Text style={styles.sectionTitle}>{t('shareSuccess.selectPlatform', "Select a platform")}</Text>
 
           {/* Platform Grid */}
-          <View style={styles.gridContainer}>
+          <ResponsiveGrid
+            minItemWidth={140}
+            maxColumns={3}
+            padding={32}
+            gap={12}
+            style={styles.gridContainer}
+          >
             {platforms.map((plat) => {
               const isSelected = selectedPlatform === plat.id;
               return (
                 <TouchableOpacity
                   key={plat.id}
-                  style={[styles.platformCard, isSelected && styles.platformCardSelected]}
+                  style={[
+                    styles.platformCard,
+                    isSmallScreen && styles.platformCardSmall,
+                    isSelected && styles.platformCardSelected,
+                  ]}
                   onPress={() => setSelectedPlatform(plat.id)}
                   activeOpacity={0.85}
                 >
@@ -135,24 +149,42 @@ export default function ShareSuccessPlatformScreen() {
                     </View>
                   )}
 
-                  <View style={[styles.iconCircle, { backgroundColor: isSelected ? '#F0FDF4' : '#F8FAFC' }]}>
-                    <Ionicons name={plat.icon} size={28} color={plat.color} />
+                  <View
+                    style={[
+                      styles.iconCircle,
+                      isSmallScreen && styles.iconCircleSmall,
+                      { backgroundColor: isSelected ? '#F0FDF4' : '#F8FAFC' },
+                    ]}
+                  >
+                    <Ionicons
+                      name={plat.icon}
+                      size={isSmallScreen ? 22 : 28}
+                      color={plat.color}
+                    />
                   </View>
-                  
-                  <Text style={[styles.platformName, isSelected && styles.platformNameSelected]}>
+
+                  <Text
+                    style={[
+                      styles.platformName,
+                      isSmallScreen && styles.platformNameSmall,
+                      isSelected && styles.platformNameSelected,
+                    ]}
+                    maxFontSizeMultiplier={1.3}
+                    numberOfLines={1}
+                  >
                     {plat.name}
                   </Text>
                 </TouchableOpacity>
               );
             })}
-          </View>
+          </ResponsiveGrid>
 
           {/* Info Banner 1: Security Privacy */}
           <View style={styles.infoBannerPrivacy}>
             <View style={styles.infoIconCirclePrivacy}>
               <Ionicons name="shield-outline" size={20} color="#3B82F6" />
             </View>
-            <Text style={styles.infoTextPrivacy}>
+            <Text style={styles.infoTextPrivacy} maxFontSizeMultiplier={1.3}>
               {t('shareSuccess.privacyInfo', "The generated visual will hide sensitive recipient details. Country and flag will remain visible.")}
             </Text>
           </View>
@@ -162,30 +194,38 @@ export default function ShareSuccessPlatformScreen() {
             <View style={styles.infoIconCircleReferral}>
               <Ionicons name="link-outline" size={18} color="#D97706" />
             </View>
-            <Text style={styles.infoTextReferral}>
+            <Text style={styles.infoTextReferral} maxFontSizeMultiplier={1.3}>
               {t('shareSuccess.referralInfo', "Trackable referral link included for your rewards.")}
             </Text>
           </View>
 
-          {/* Bottom Action Buttons */}
-          <TouchableOpacity
-            style={styles.btnSecondary}
-            onPress={() => navigation.navigate('HomeScreen')}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.btnSecondaryText}>{t('shareSuccess.later', "Later")}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.btnPrimary}
-            onPress={handleContinue}
-            activeOpacity={0.88}
-          >
-            <Text style={styles.btnPrimaryText}>{t('shareSuccess.continue', "Continue")}</Text>
-          </TouchableOpacity>
-
-          <View style={{ height: 20 }} />
+          <View style={{ height: 12 }} />
         </ScrollView>
+
+        {/* Sticky Bottom Actions above Android navigation bar */}
+        <ScreenFooter borderTop={true} backgroundColor="#FFFFFF" paddingTop={10}>
+          <View style={styles.footerButtonsRow}>
+            <TouchableOpacity
+              style={styles.btnSecondary}
+              onPress={() => navigation.navigate('HomeScreen')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.btnSecondaryText} maxFontSizeMultiplier={1.3}>
+                {t('shareSuccess.later', "Later")}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.btnPrimary}
+              onPress={handleContinue}
+              activeOpacity={0.88}
+            >
+              <Text style={styles.btnPrimaryText} maxFontSizeMultiplier={1.3}>
+                {t('shareSuccess.continue', "Continue")}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScreenFooter>
       </View>
     </SafeAreaView>
   );
@@ -364,24 +404,26 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: 20,
+    marginBottom: 16,
   },
   platformCard: {
-    width: '48.2%',
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#F1F5F9',
     borderRadius: 16,
-    paddingVertical: 18,
-    paddingHorizontal: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+    minHeight: 96,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
     boxShadow: '0px 2px 6px rgba(15,23,42,0.03)',
     elevation: 1,
+  },
+  platformCardSmall: {
+    paddingVertical: 10,
+    minHeight: 80,
+    borderRadius: 14,
   },
   platformCardSelected: {
     borderColor: '#FFC759',
@@ -389,8 +431,8 @@ const styles = StyleSheet.create({
   },
   checkBadge: {
     position: 'absolute',
-    top: 10,
-    right: 10,
+    top: 8,
+    right: 8,
     width: 18,
     height: 18,
     borderRadius: 9,
@@ -399,17 +441,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconCircle: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
+  },
+  iconCircleSmall: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginBottom: 4,
   },
   platformName: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 13,
     color: '#1A2840',
+    textAlign: 'center',
+  },
+  platformNameSmall: {
+    fontSize: 11.5,
   },
   platformNameSelected: {
     fontFamily: 'Inter_700Bold',
@@ -424,24 +476,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F1F5F9',
     borderRadius: 14,
-    padding: 14,
-    marginBottom: 12,
+    padding: 12,
+    marginBottom: 10,
   },
   infoIconCirclePrivacy: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: '#EFF6FF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 10,
   },
   infoTextPrivacy: {
     flex: 1,
     fontFamily: 'Inter_400Regular',
-    fontSize: 11.5,
+    fontSize: 11,
     color: '#64748B',
-    lineHeight: 16,
+    lineHeight: 15,
   },
 
   infoBannerReferral: {
@@ -451,36 +503,43 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#FEF08A',
     borderRadius: 14,
-    padding: 14,
-    marginBottom: 24,
+    padding: 12,
+    marginBottom: 12,
   },
   infoIconCircleReferral: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: '#FEF3C7',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 10,
   },
   infoTextReferral: {
     flex: 1,
     fontFamily: 'Inter_500Medium',
-    fontSize: 11.5,
+    fontSize: 11,
     color: '#92400E',
-    lineHeight: 16,
+    lineHeight: 15,
   },
 
-  /* Buttons */
+  /* Footer Buttons */
+  footerButtonsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    width: '100%',
+  },
   btnSecondary: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E2E8F0',
     borderRadius: 14,
-    height: 48,
-    marginBottom: 10,
+    height: 46,
+    marginBottom: 0,
   },
   btnSecondaryText: {
     fontFamily: 'SpaceGrotesk_700Bold',
@@ -488,17 +547,18 @@ const styles = StyleSheet.create({
     color: '#1A2840',
   },
   btnPrimary: {
+    flex: 1.4,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFC759',
     borderRadius: 14,
-    height: 50,
+    height: 46,
     boxShadow: '0px 4px 8px rgba(255,199,89,0.3)',
     elevation: 3,
   },
   btnPrimaryText: {
     fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 15,
+    fontSize: 14.5,
     color: '#1A2840',
   },
 });

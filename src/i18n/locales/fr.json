@@ -848,7 +848,18 @@
         "authorizing": "Autorisation...",
         "quote_failed": "Impossible d’obtenir un devis. Veuillez réessayer.",
         "dzy_banner_soon": "Bientôt : détenez des DZY pour échanger sans frais.",
-        "status_timeout": "Traitement en cours. Consultez l’historique de votre portefeuille dans quelques minutes."
+        "status_timeout": "Traitement en cours. Consultez l’historique de votre portefeuille dans quelques minutes.",
+        "modal_approval_title": "Étape 1 sur 2 : autoriser {{token}} une fois",
+        "modal_approval_body": "Cette autorisation unique permet au swap d'utiliser votre {{token}}. Vous ne le faites qu'une seule fois par jeton.",
+        "modal_swap_step2_title": "Étape 2 sur 2 : confirmer le swap",
+        "modal_swap_direct_title": "Confirmer le swap",
+        "modal_swap_body": "Confirmez le swap dans la fenêtre sécurisée. Aucun nouveau code n'est nécessaire si vous venez d'en saisir un.",
+        "tx_already_submitted": "Cette transaction a déjà été soumise pour signature. Elle pourrait encore aboutir. Consultez votre historique.",
+        "reference": "Référence",
+        "view_on_explorer": "Voir sur l'explorateur",
+        "swap_success_title": "Échange réussi !",
+        "swap_success_body": "{{fromAmount}} {{fromToken}} échangé(s) avec succès contre {{toAmount}} {{toToken}}",
+        "done": "Terminé"
       },
       "topup": {
         "choose_method": "Choisissez votre mode de paiement",
@@ -5227,7 +5238,11 @@
     "resend_code": "Code non reçu ? Renvoyer l'e-mail",
     "code_resent": "Code de vérification demandé ! Veuillez vérifier vos e-mails et spams.",
     "resend_hint": "Veuillez vérifier votre boîte de réception et vos courriers indésirables.",
-    "resend_triggered": "Vérification demandée. Veuillez consulter vos e-mails."
+    "resend_triggered": "Vérification demandée. Veuillez consulter vos e-mails.",
+    "transfer_not_confirmed": "Transfert non confirmé. Aucun fonds n'a été envoyé.",
+    "secure_confirm_hint": "Confirmez ce transfert dans la fenêtre sécurisée. Si la session de votre portefeuille est toujours active, aucun code n'est requis ; sinon vous recevrez un code par e-mail de hello@crossmint.com.",
+    "tx_already_submitted": "Cette transaction a déjà été soumise pour signature. Elle pourrait encore aboutir. Consultez votre historique.",
+    "reference_label": "Référence"
   },
   "withdrawFunds": {
     "title": "Retirer des fonds",
@@ -5923,6 +5938,11 @@
   "shareProfile.privacy": "Partagez ce profil uniquement avec des personnes de confiance. Ne communiquez jamais votre PIN.",
   "shareProfile.businessScanHint": "Scannez pour ouvrir la page vérifiée de la boutique DZYstore.",
   "shareProfile.businessMessage": "Visitez {{name}} sur DizzitUp DZYstore : {{url}}",
+  "shareProfile.verified": "VÉRIFIÉ",
+  "shareProfile.scanHintBusiness": "Scannez pour ouvrir mon DZYstore",
+  "shareProfile.referralCodeLabel": "Code de parrainage",
+  "shareProfile.messageBusiness": "Voici le profil DizzitUp de mon entreprise, {{shopName}}. Utilisez-le pour m'identifier en toute sécurité avant d'envoyer de l'argent, payer une facture ou acheter chez moi.\nDZYstore : {{storeUrl}}\nCode de parrainage : {{referralCode}}",
+  "shareProfile.createPayLink": "Créer un lien de paiement",
   "biz.dzy_coming_soon": "DZY (bientôt disponible)",
   "invoicePayLink.title": "Facture et DZYpaylink",
   "invoicePayLink.subtitle": "Créez et partagez une demande de paiement simple.",

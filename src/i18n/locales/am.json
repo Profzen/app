@@ -950,7 +950,18 @@
         "authorizing": "እየፈቀደ ነው...",
         "quote_failed": "ዋጋ ማግኘት አልተቻለም። እባክዎ እንደገና ይሞክሩ።",
         "dzy_banner_soon": "በቅርቡ፦ ያለ ክፍያ ለመገበያየት DZY ይያዙ።",
-        "status_timeout": "አሁንም በሂደት ላይ ነው። ከጥቂት ደቂቃዎች በኋላ የቦርሳዎን ታሪክ ይመልከቱ።"
+        "status_timeout": "አሁንም በሂደት ላይ ነው። ከጥቂት ደቂቃዎች በኋላ የቦርሳዎን ታሪክ ይመልከቱ።",
+        "modal_approval_title": "ደረጃ 1 ከ 2: {{token}} አንድ ጊዜ ፍቀድ",
+        "modal_approval_body": "ይህ የአንድ ጊዜ ፈቃድ ልውውጡ {{token}}ዎን እንዲጠቀም ያስችለዋል። ይህንን ለእያንዳንዱ ቶከን አንድ ጊዜ ብቻ ያደርጋሉ።",
+        "modal_swap_step2_title": "ደረጃ 2 ከ 2: ልውውጡን ያረጋግጡ",
+        "modal_swap_direct_title": "ልውውጡን ያረጋግጡ",
+        "modal_swap_body": "ልውውጡን በደህንነቱ በተጠበቀው መስኮት ውስጥ ያረጋግጡ። አሁን ያስገቡ ከሆነ አዲስ ኮድ አያስፈልግም።",
+        "tx_already_submitted": "ይህ ግብይት አስቀድሞ ለፊርማ ገብቷል። አሁንም ሊጠናቀቅ ይችላል። ታሪክዎን ያረጋግጡ።",
+        "reference": "ማጣቀሻ",
+        "view_on_explorer": "በኤክስፕሎረር ላይ ይመልከቱ",
+        "swap_success_title": "ልውውጡ ተሳክቷል!",
+        "swap_success_body": "{{fromAmount}} {{fromToken}} በተሳካ ሁኔታ ወደ {{toAmount}} {{toToken}} ተለውጧል",
+        "done": "ተከናውኗል"
       },
       "topup": {
         "choose_method": "የመክፈያ ዘዴዎን ይምረጡ",
@@ -4889,7 +4900,11 @@
     "resend_code": "ኮድ አልደረሰዎትም? ኢሜል ድጋሚ ይላኩ",
     "code_resent": "የማረጋገጫ ኮድ ተጠይቋል! እባክዎ የገቢ መልዕክት ሳጥንዎን እና ስፓም ያረጋግጡ።",
     "resend_hint": "እባክዎን የገቢ መልዕክት ሳጥንዎን እና የስፓም አቃፊዎን ያረጋግጡ።",
-    "resend_triggered": "ማረጋገጫ ተጠይቋል። እባክዎ ኢሜልዎን ያረጋግጡ።"
+    "resend_triggered": "ማረጋገጫ ተጠይቋል። እባክዎ ኢሜልዎን ያረጋግጡ።",
+    "transfer_not_confirmed": "ዝውውሩ አልተረጋገጠም። ምንም ገንዘብ አልተላከም።",
+    "secure_confirm_hint": "ይህንን ዝውውር በደህንነቱ በተጠበቀው መስኮት ውስጥ ያረጋግጡ። የኪስ ቦርሳዎ ክፍለ ጊዜ አሁንም ንቁ ከሆነ ምንም ኮድ አያስፈልግም፤ ካልሆነ ከ hello@crossmint.com በኢሜይል ኮድ ይደርስዎታል።",
+    "tx_already_submitted": "ይህ ግብይት አስቀድሞ ለፊርማ ገብቷል። አሁንም ሊጠናቀቅ ይችላል። ታሪክዎን ያረጋግጡ።",
+    "reference_label": "ማጣቀሻ"
   },
   "withdrawFunds": {
     "title": "ገንዘብ ማውጣት",
@@ -5715,6 +5730,11 @@
   "shareProfile.privacy": "ይህን መገለጫ ከሚያምኗቸው ሰዎች ጋር ብቻ ያጋሩ። PINዎን አያጋሩ።",
   "shareProfile.businessScanHint": "የተረጋገጠውን የመደብር ገጽ በDZYstore ላይ ለመክፈት ይቃኙ።",
   "shareProfile.businessMessage": "{{name}} በDizzitUp DZYstore ላይ ይጎብኙ፦ {{url}}",
+  "shareProfile.verified": "የተረጋገጠ",
+  "shareProfile.scanHintBusiness": "የእኔን DZYstore ለመክፈት ይቃኙ",
+  "shareProfile.referralCodeLabel": "የሪፈራል ኮድ",
+  "shareProfile.messageBusiness": "የንግድ ድርጅቴ የ DizzitUp መገለጫ ይኸውና፡ {{shopName}}። ገንዘብ ከመላክ፣ ሂሳብ ከመክፈል ወይም ከእኔ ከመግዛትዎ በፊት ደህንነቱ በተጠበቀ ሁኔታ እኔን ለመለየት ይጠቀሙበት።\nDZYstore: {{storeUrl}}\nየሪፈራል ኮድ: {{referralCode}}",
+  "shareProfile.createPayLink": "የክፍያ አገናኝ ፍጠር",
   "biz.dzy_coming_soon": "DZY (በቅርቡ ይመጣል)",
   "invoicePayLink.title": "ደረሰኝ እና DZYpaylink",
   "invoicePayLink.subtitle": "ቀላል የክፍያ ጥያቄ ይፍጠሩ እና ያጋሩ።",

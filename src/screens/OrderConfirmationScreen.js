@@ -1,4 +1,4 @@
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import {
@@ -26,6 +26,7 @@ import { getFullCountryName } from '../utils/countryCurrencyUtils';
 
 export default function OrderConfirmationScreen({ route }) {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const { user, updateBalance, clearCart, t, language } = useApp();
 
   const orderData = route?.params?.orderData;
@@ -616,71 +617,78 @@ export default function OrderConfirmationScreen({ route }) {
       )}
 
       {/* On-Chain Escrow Innovation Modal (Solofo Mandate) */}
+      {/* On-Chain Escrow Innovation Modal (Solofo Mandate) */}
       <Modal visible={showEscrowModal} transparent animationType="fade" onRequestClose={() => setShowEscrowModal(false)}>
-        <View style={styles.escrowModalOverlay}>
+        <View style={[styles.escrowModalOverlay, { paddingBottom: Math.max(insets.bottom, 16) }]}>
           <View style={styles.escrowModalCard}>
-            <View style={styles.escrowIconBadge}>
-              <Ionicons name="shield-checkmark" size={32} color="#D97706" />
-            </View>
-
-            <View style={styles.escrowInnovationTag}>
-              <Ionicons name="sparkles" size={13} color="#B45309" style={{ marginRight: 4 }} />
-              <Text style={styles.escrowInnovationTagText}>
-                {t('escrow.innovationTag', 'ON-CHAIN ESCROW • DIZZITUP INNOVATION')}
-              </Text>
-            </View>
-
-            <Text style={styles.escrowModalTitle}>
-              {t('escrow.modalTitle', 'On-Chain Escrow Protection')}
-            </Text>
-
-            <Text style={styles.escrowModalSub}>
-              {t('escrow.modalSub', 'World-First Decentralized Escrow Protocol')}
-            </Text>
-
-            <View style={styles.escrowPinBox}>
-              <Text style={styles.escrowPinLabel}>{t('escrow.yourPin', 'Your Secret Delivery PIN Code')}</Text>
-              <Text style={styles.escrowPinNumber}>{escrowPin}</Text>
-              <Text style={styles.escrowModalBuyerNotice}>
-                {isRental
-                  ? t('escrow.buyerWarningRental', '⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the host ONLY upon check-in.')
-                  : isService
-                  ? t('escrow.buyerWarningService', '⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the provider ONLY after the service is fully rendered.')
-                  : t('escrow.buyerWarning', '⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the courier / Shop Manager only after physical delivery and inspection of your items.')}
-              </Text>
-              <Text style={[styles.escrowModalBuyerNotice, { marginTop: 8, color: '#0369A1' }]}>
-                {t('escrow.buyerProtectionNotice', { country: recipientCountryName, defaultValue: `This protection is for you, the Buyer, and your Beneficiary in ${recipientCountryName}.` })}
-              </Text>
-            </View>
-
-            <Text style={styles.escrowModalDesc}>
-              {t('escrow.modalDesc', "Experience our exclusive On-Chain Escrow protocol — a world-first DizzitUp innovation.\n\nYour funds remain 100% safeguarded on-chain under smart contracts and are only released to the merchant after physical handover and inspection with your secret delivery PIN.\n\nLive on-chain settlements will be activated very soon!")}
-            </Text>
-
-            <TouchableOpacity
-              style={styles.escrowModalPrimaryBtn}
-              onPress={() => {
-                setShowEscrowModal(false);
-                executeOrderSimulation();
-              }}
-              activeOpacity={0.85}
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.escrowModalScrollContent}
+              bounces={false}
             >
-              <Text style={styles.escrowModalPrimaryBtnText}>
-                {t('escrow.proceedToPayment', "Understood, proceed to payment")}
-              </Text>
-            </TouchableOpacity>
+              <View style={styles.escrowIconBadge}>
+                <Ionicons name="shield-checkmark" size={32} color="#D97706" />
+              </View>
 
-            <TouchableOpacity
-              style={styles.escrowModalSecondaryBtn}
-              onPress={() => {
-                setShowEscrowModal(false);
-              }}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.escrowModalSecondaryBtnText}>
-                {t('escrow.reviewOrder', "Review order")}
+              <View style={styles.escrowInnovationTag}>
+                <Ionicons name="sparkles" size={13} color="#B45309" style={{ marginRight: 4 }} />
+                <Text style={styles.escrowInnovationTagText} maxFontSizeMultiplier={1.3}>
+                  {t('escrow.innovationTag', 'ON-CHAIN ESCROW • DIZZITUP INNOVATION')}
+                </Text>
+              </View>
+
+              <Text style={styles.escrowModalTitle} maxFontSizeMultiplier={1.3}>
+                {t('escrow.modalTitle', 'On-Chain Escrow Protection')}
               </Text>
-            </TouchableOpacity>
+
+              <Text style={styles.escrowModalSub} maxFontSizeMultiplier={1.3}>
+                {t('escrow.modalSub', 'World-First Decentralized Escrow Protocol')}
+              </Text>
+
+              <View style={styles.escrowPinBox}>
+                <Text style={styles.escrowPinLabel} maxFontSizeMultiplier={1.3}>{t('escrow.yourPin', 'Your Secret Delivery PIN Code')}</Text>
+                <Text style={styles.escrowPinNumber} maxFontSizeMultiplier={1.3}>{escrowPin}</Text>
+                <Text style={styles.escrowModalBuyerNotice} maxFontSizeMultiplier={1.3}>
+                  {isRental
+                    ? t('escrow.buyerWarningRental', '⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the host ONLY upon check-in.')
+                    : isService
+                    ? t('escrow.buyerWarningService', '⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the provider ONLY after the service is fully rendered.')
+                    : t('escrow.buyerWarning', '⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the courier / Shop Manager only after physical delivery and inspection of your items.')}
+                </Text>
+                <Text style={[styles.escrowModalBuyerNotice, { marginTop: 8, color: '#0369A1' }]} maxFontSizeMultiplier={1.3}>
+                  {t('escrow.buyerProtectionNotice', { country: recipientCountryName, defaultValue: `This protection is for you, the Buyer, and your Beneficiary in ${recipientCountryName}.` })}
+                </Text>
+              </View>
+
+              <Text style={styles.escrowModalDesc} maxFontSizeMultiplier={1.3}>
+                {t('escrow.modalDesc', "Experience our exclusive On-Chain Escrow protocol — a world-first DizzitUp innovation.\n\nYour funds remain 100% safeguarded on-chain under smart contracts and are only released to the merchant after physical handover and inspection with your secret delivery PIN.\n\nLive on-chain settlements will be activated very soon!")}
+              </Text>
+
+              <TouchableOpacity
+                style={styles.escrowModalPrimaryBtn}
+                onPress={() => {
+                  setShowEscrowModal(false);
+                  executeOrderSimulation();
+                }}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.escrowModalPrimaryBtnText} maxFontSizeMultiplier={1.3}>
+                  {t('escrow.proceedToPayment', "Understood, proceed to payment")}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.escrowModalSecondaryBtn}
+                onPress={() => {
+                  setShowEscrowModal(false);
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.escrowModalSecondaryBtnText} maxFontSizeMultiplier={1.3}>
+                  {t('escrow.reviewOrder', "Review order")}
+                </Text>
+              </TouchableOpacity>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -1115,17 +1123,22 @@ const styles = StyleSheet.create({
   escrowModalCard: {
     width: '100%',
     maxWidth: 360,
+    maxHeight: '90%',
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
-    paddingHorizontal: 22,
-    paddingTop: 24,
-    paddingBottom: 20,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.18,
     shadowRadius: 20,
     elevation: 12,
+  },
+  escrowModalScrollContent: {
+    alignItems: 'center',
+    paddingBottom: 6,
   },
   escrowIconBadge: {
     width: 60,

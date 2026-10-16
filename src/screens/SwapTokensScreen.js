@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Platform, StatusBar, Modal, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Platform, StatusBar, Modal, ActivityIndicator, Linking } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 import { useWallet, EVMWallet, SolanaWallet } from '@crossmint/client-sdk-react-native-ui';
+import { getExplorerTxUrl, isOnChainHash } from '../utils/explorer';
 
 import CryptoIcon from '../components/CryptoIcon';
 import AppSelect from '../components/AppSelect';
+import ScreenFooter from '../components/ScreenFooter';
 import { useApp } from '../context/AppContext';
 import { swapService } from '../services/swapService';
 import { ESTIMATED_NETWORK_FEES_USDC } from '../config/networkFees';
@@ -39,6 +42,7 @@ const tokensByChain = {
 
 export default function SwapTokensScreen() {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
   const { wallet: crossmintWallet, getWallet } = useWallet();
   const { user, session, refreshUser, t } = useApp();
@@ -58,12 +62,69 @@ export default function SwapTokensScreen() {
 
   const [txStatus, setTxStatus] = useState(null);
   const [activeTxHash, setActiveTxHash] = useState(null);
+  const [successTxHash, setSuccessTxHash] = useState(null);
   const [signerEmail, setSignerEmail] = useState(null);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
   const [sdkPromptOpen, setSdkPromptOpen] = useState(false);
+  const [swapStep, setSwapStep] = useState(null); // 'approval' | 'swap' | null
+  const [hadApprovalStep, setHadApprovalStep] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const amountInputRef = React.useRef(null);
   const pollIntervalRef = React.useRef(null);
+  const finalPollIntervalRef = React.useRef(null);
+  const approveCalledRef = React.useRef(false);
+
+  const stopPolling = () => {
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = null;
+    }
+    if (finalPollIntervalRef.current) {
+      clearInterval(finalPollIntervalRef.current);
+      finalPollIntervalRef.current = null;
+    }
+  };
+
+  const pollForFinalHash = (idToPoll) => {
+    let attempts = 0;
+    const maxAttempts = 30;
+    if (finalPollIntervalRef.current) {
+      clearInterval(finalPollIntervalRef.current);
+    }
+    finalPollIntervalRef.current = setInterval(async () => {
+      attempts++;
+      try {
+        const data = await swapService.checkTransactionStatus(idToPoll, session?.access_token);
+        const onChain = data.blockchainHash || data.onChain?.txHash || (data.txHash && isOnChainHash(data.txHash, fromChain) ? data.txHash : null);
+        if (onChain) {
+          setSuccessTxHash(onChain);
+          clearInterval(finalPollIntervalRef.current);
+          finalPollIntervalRef.current = null;
+        }
+      } catch (err) {
+        // Polling retry
+      }
+      if (attempts >= maxAttempts) {
+        clearInterval(finalPollIntervalRef.current);
+        finalPollIntervalRef.current = null;
+      }
+    }, 3000);
+  };
+
+  const handleResetAfterSuccess = () => {
+    setFromAmount('');
+    setToAmount('');
+    setQuote(null);
+    setTxStatus(null);
+    setSwapStep(null);
+    setHadApprovalStep(false);
+    setLoading(false);
+    setIsAuthorizing(false);
+    setSuccessTxHash(null);
+    approveCalledRef.current = false;
+    stopPolling();
+    if (typeof refreshUser === 'function') refreshUser();
+  };
 
   // Keep toChain in sync with fromChain (just in case it drifts)
   useEffect(() => {
@@ -75,9 +136,7 @@ export default function SwapTokensScreen() {
   // Cleanup polling interval on unmount
   useEffect(() => {
     return () => {
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-      }
+      stopPolling();
     };
   }, []);
 
@@ -127,9 +186,7 @@ export default function SwapTokensScreen() {
     let attempts = 0;
     const maxAttempts = 30;
 
-    if (pollIntervalRef.current) {
-      clearInterval(pollIntervalRef.current);
-    }
+    stopPolling();
 
     pollIntervalRef.current = setInterval(async () => {
       attempts++;
@@ -139,27 +196,40 @@ export default function SwapTokensScreen() {
         setTxStatus(crossStatus);
 
         if (data.status === 'COMPLETED') {
-          clearInterval(pollIntervalRef.current);
+          stopPolling();
 
           if (data.type === 'APPROVAL') {
             // If it was an approval, immediately trigger the swap execute
             setTxStatus(null);
-            handleSwap();
+            setIsAuthorizing(false);
+            setSwapStep('swap');
+            approveCalledRef.current = false;
+            handleSwap(true);
           } else {
             setLoading(false);
             setIsAuthorizing(false);
+            setSwapStep(null);
+            setHadApprovalStep(false);
             if (typeof refreshUser === 'function') refreshUser();
+
+            const onChain = data.blockchainHash || data.onChain?.txHash || (data.txHash && isOnChainHash(data.txHash, fromChain) ? data.txHash : null);
+            setSuccessTxHash(onChain || txId);
             setTxStatus('success');
-            setTimeout(() => navigation.goBack(), 2000);
+
+            if (!onChain) {
+              pollForFinalHash(txId);
+            }
           }
           return;
         }
 
         if (crossStatus === 'failed') {
-          clearInterval(pollIntervalRef.current);
+          stopPolling();
           setError(t('common.wallet.swap_ui.failed', 'Transaction failed'));
           setLoading(false);
           setIsAuthorizing(false);
+          setSwapStep(null);
+          setHadApprovalStep(false);
           return;
         }
       } catch (err) {
@@ -167,18 +237,27 @@ export default function SwapTokensScreen() {
       }
 
       if (attempts >= maxAttempts) {
-        clearInterval(pollIntervalRef.current);
+        stopPolling();
         setLoading(false);
         setIsAuthorizing(false);
+        setSwapStep(null);
+        setHadApprovalStep(false);
         setInfoMsg(t('common.wallet.swap_ui.status_timeout', 'Still processing. Check your wallet history in a few minutes.'));
       }
     }, 5000);
   };
 
-  const handleSwap = async () => {
+  const handleSwap = async (isFollowUp = false) => {
     if (!fromAmount || parseFloat(fromAmount) > availableBalance) {
       setError(t('common.wallet.swap_ui.insufficient_balance', 'INSUFFICIENT BALANCE'));
       return;
+    }
+
+    const isActualFollowUp = isFollowUp === true;
+    approveCalledRef.current = false;
+    if (!isActualFollowUp) {
+      setHadApprovalStep(false);
+      setSwapStep('swap');
     }
 
     setLoading(true);
@@ -199,6 +278,7 @@ export default function SwapTokensScreen() {
         if (res.status === 400 && res.data?.status === 'requires-handshake') {
           const txId = res.data.txId;
           setActiveTxHash(txId);
+          setSwapStep('swap');
           setTxStatus('awaiting-approval');
           setSignerEmail(res.data.signerAddress?.replace('email:', '') || user?.email);
           setLoading(false);
@@ -207,6 +287,8 @@ export default function SwapTokensScreen() {
 
         if (res.status === 400 && res.data?.status === 'requires-approval') {
           // Trigger approval flow
+          setHadApprovalStep(true);
+          setSwapStep('approval');
           const approveRes = await swapService.approve(fromToken, fromChain, res.data.spender, session?.access_token);
           if (approveRes.error && approveRes.status === 400 && approveRes.data?.status === 'requires-handshake') {
             const txId = approveRes.data.txId;
@@ -225,6 +307,7 @@ export default function SwapTokensScreen() {
       }
 
       if (res.data?.txHash) {
+        setSwapStep('swap');
         pollTransactionStatus(res.data.txHash);
       }
     } catch (e) {
@@ -258,6 +341,7 @@ export default function SwapTokensScreen() {
       await activeWallet.useSigner({ type: 'email', email: emailToUse });
       // Hide our modal while Crossmint's OTP prompt is shown
       setSdkPromptOpen(true);
+      approveCalledRef.current = true;
       try {
         await activeWallet.approve({ transactionId: activeTxHash });
       } finally {
@@ -268,7 +352,6 @@ export default function SwapTokensScreen() {
     } catch (e) {
       // Use console.log instead of console.error to prevent giant red toasts in dev mode
       console.log("Authorize error", e);
-      setIsAuthorizing(false);
       
       let errMsg = String(e.message || e);
       
@@ -290,14 +373,32 @@ export default function SwapTokensScreen() {
       
       // If the user simply closed the popup or rejected it, show a friendly info message
       if (errMsg.includes("AuthRejectedError") || errMsg.includes("Authentication was rejected")) {
-        setInfoMsg("Authorization was cancelled.");
+        if (approveCalledRef.current) {
+          setInfoMsg(t('common.wallet.swap_ui.tx_already_submitted', 'This transaction was already submitted for signing. It may still complete. Check your history.'));
+          setTxStatus(null);
+          return;
+        }
+        setInfoMsg(t('sendMoney.transfer_not_confirmed', 'Transfer not confirmed. No funds were sent.'));
+        stopPolling();
         setTxStatus(null);
+        setSwapStep(null);
+        setHadApprovalStep(false);
         return;
       }
       
-      // Show error beautifully in the main UI
+      // Show error in the main UI
+      if (approveCalledRef.current) {
+        setInfoMsg(t('common.wallet.swap_ui.tx_already_submitted', 'This transaction was already submitted for signing. It may still complete. Check your history.'));
+        setTxStatus(null);
+        return;
+      }
       setError(errMsg);
+      stopPolling();
       setTxStatus(null); // Close the modal so they can see the error
+      setSwapStep(null);
+      setHadApprovalStep(false);
+    } finally {
+      setIsAuthorizing(false);
     }
   };
 
@@ -493,34 +594,48 @@ export default function SwapTokensScreen() {
           )}
 
           {/* Action Button */}
+          <View style={{ height: 16 }} />
+        </ScrollView>
+
+        {/* Sticky Swap Action Footer */}
+        <ScreenFooter borderTop={true} backgroundColor="#FAFAFA" borderTopColor="#E2E8F0" paddingTop={10} style={{ paddingHorizontal: 16 }}>
           <TouchableOpacity
             style={[styles.btnAction, loading && styles.btnActionDisabled]}
-            onPress={handleSwap}
+            onPress={() => handleSwap(false)}
             disabled={loading || !fromAmount}
+            activeOpacity={0.85}
           >
             {loading ? (
-              <ActivityIndicator color="#0F172A" style={{ marginRight: 8 }} />
+              <ActivityIndicator color="#FFC759" style={{ marginRight: 8 }} />
             ) : (
-              <Ionicons name="flash" size={16} color="#0F172A" style={{ marginRight: 6 }} />
+              <Ionicons name="flash" size={16} color="#FFC759" style={{ marginRight: 6 }} />
             )}
-            <Text style={styles.btnActionText}>
+            <Text style={styles.btnActionText} maxFontSizeMultiplier={1.3}>
               {loading ? 'PROCESSING...' : 'EXECUTE SWAP'}
             </Text>
           </TouchableOpacity>
-
-        </ScrollView>
+        </ScreenFooter>
       </View>
 
       {/* Modern, Compact Signature Modal */}
       <Modal visible={txStatus === 'awaiting-approval' && !sdkPromptOpen} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
+        <View style={[styles.modalOverlay, { paddingBottom: Math.max(insets.bottom, 16) }]}>
           <View style={styles.modalContent}>
             
             <View style={styles.modalHeaderIcon}>
               <Ionicons name="finger-print" size={24} color="#38BDF8" />
             </View>
             
-            <Text style={styles.modalTitle}>Signature Required</Text>
+            <Text style={styles.modalTitle}>
+              {swapStep === 'approval'
+                ? t('common.wallet.swap_ui.modal_approval_title', {
+                    token: fromToken,
+                    defaultValue: `Step 1 of 2: allow ${fromToken} once`,
+                  })
+                : hadApprovalStep
+                ? t('common.wallet.swap_ui.modal_swap_step2_title', 'Step 2 of 2: confirm swap')
+                : t('common.wallet.swap_ui.modal_swap_direct_title', 'Confirm swap')}
+            </Text>
             
             <View style={styles.modalInfoBox}>
               <View style={styles.modalInfoRow}>
@@ -528,7 +643,12 @@ export default function SwapTokensScreen() {
                 <Text style={styles.modalInfoText}>{signerEmail}</Text>
               </View>
               <Text style={styles.modalInfoHint}>
-                A secure approval request was deployed. Click below and check your email for the OTP to authorize the smart contract.
+                {swapStep === 'approval'
+                  ? t('common.wallet.swap_ui.modal_approval_body', {
+                      token: fromToken,
+                      defaultValue: `This one-time permission lets the swap use your ${fromToken}. You only do this once per token.`,
+                    })
+                  : t('common.wallet.swap_ui.modal_swap_body', 'Confirm the swap in the secure window. No new code is needed if you just entered one.')}
               </Text>
             </View>
 
@@ -538,15 +658,108 @@ export default function SwapTokensScreen() {
               disabled={isAuthorizing}
             >
               {isAuthorizing ? <ActivityIndicator color="#0F172A" size="small" /> : <Ionicons name="key" size={16} color="#0F172A" style={{ marginRight: 6 }} />}
-              <Text style={styles.authBtnText}>
+              <Text style={styles.authBtnText} maxFontSizeMultiplier={1.3}>
                 {isAuthorizing ? 'VERIFYING...' : 'AUTHORIZE'}
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => setTxStatus(null)} style={styles.dismissBtn}>
-              <Text style={styles.dismissBtnText}>CANCEL</Text>
+            <TouchableOpacity
+              onPress={() => {
+                if (approveCalledRef.current) {
+                  setInfoMsg(t('common.wallet.swap_ui.tx_already_submitted', 'This transaction was already submitted for signing. It may still complete. Check your history.'));
+                  setTxStatus(null);
+                  setIsAuthorizing(false);
+                } else {
+                  stopPolling();
+                  setTxStatus(null);
+                  setIsAuthorizing(false);
+                  setSwapStep(null);
+                  setHadApprovalStep(false);
+                  setInfoMsg(t('sendMoney.transfer_not_confirmed', 'Transfer not confirmed. No funds were sent.'));
+                }
+              }}
+              style={styles.dismissBtn}
+            >
+              <Text style={styles.dismissBtnText}>{t('common.cancel', 'Cancel')}</Text>
             </TouchableOpacity>
             
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modern Swap Success Modal */}
+      <Modal visible={txStatus === 'success'} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { alignItems: 'center' }]}>
+            
+            <View style={[styles.modalHeaderIcon, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
+              <Ionicons name="checkmark-circle" size={32} color="#10B981" />
+            </View>
+            
+            <Text style={[styles.modalTitle, { textAlign: 'center', marginBottom: 6 }]}>
+              {t('common.wallet.swap_ui.swap_success_title', 'Swap successful!')}
+            </Text>
+
+            <Text style={[styles.modalInfoHint, { textAlign: 'center', marginBottom: 18 }]}>
+              {t('common.wallet.swap_ui.swap_success_body', {
+                fromAmount,
+                fromToken,
+                toAmount,
+                toToken,
+                defaultValue: `Successfully swapped ${fromAmount} ${fromToken} for ${toAmount} ${toToken}`,
+              })}
+            </Text>
+
+            {successTxHash ? (
+              <View style={{ width: '100%', marginBottom: 16 }}>
+                {!isOnChainHash(successTxHash, fromChain) ? (
+                  <View style={styles.referenceBadgeRow}>
+                    <Text style={styles.referenceLabel}>
+                      {t('common.wallet.swap_ui.reference', 'Reference')}
+                    </Text>
+                  </View>
+                ) : null}
+
+                <View style={styles.hashBox}>
+                  <Text style={styles.hashText} numberOfLines={1} ellipsisMode="middle">
+                    {successTxHash}
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.copyBtn}
+                    onPress={async () => {
+                      try {
+                        await Clipboard.setStringAsync(successTxHash);
+                        setInfoMsg(t('common.copied_title', { label: successTxHash.startsWith('0x') ? 'Hash' : 'Reference', defaultValue: 'Copied!' }));
+                      } catch (err) {}
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="copy-outline" size={16} color="#0F172A" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ) : null}
+
+            {isOnChainHash(successTxHash, fromChain) ? (
+              <TouchableOpacity
+                style={styles.explorerButton}
+                onPress={() => Linking.openURL(getExplorerTxUrl(fromChain, successTxHash))}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="open-outline" size={16} color="#071D54" style={{ marginRight: 8 }} />
+                <Text style={styles.explorerButtonText}>
+                  {t('common.wallet.swap_ui.view_on_explorer', 'View on explorer')}
+                </Text>
+              </TouchableOpacity>
+            ) : null}
+
+            <TouchableOpacity
+              onPress={handleResetAfterSuccess}
+              style={[styles.authBtn, { width: '100%', marginTop: 8 }]}
+            >
+              <Text style={styles.authBtnText}>{t('common.wallet.swap_ui.done', 'Done')}</Text>
+            </TouchableOpacity>
+
           </View>
         </View>
       </Modal>
@@ -603,7 +816,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 16,
     paddingTop: 16,
-    paddingBottom: 40,
+    paddingBottom: 16,
   },
   errorBox: {
     flexDirection: 'row',
@@ -875,7 +1088,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 0,
     shadowColor: '#1A2840',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
@@ -1007,5 +1220,65 @@ const styles = StyleSheet.create({
     color: '#878FA4',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-  }
+  },
+  referenceBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+    paddingHorizontal: 4,
+  },
+  referenceLabel: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 12,
+    color: '#64748B',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  hashBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    paddingLeft: 12,
+    paddingRight: 8,
+    height: 48,
+    width: '100%',
+  },
+  hashText: {
+    flex: 1,
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
+    color: '#475569',
+    marginRight: 8,
+  },
+  copyBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  explorerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1.5,
+    borderColor: '#FFC759',
+    borderRadius: 14,
+    height: 46,
+    marginBottom: 12,
+    width: '100%',
+  },
+  explorerButtonText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 13,
+    color: '#071D54',
+    letterSpacing: 0.2,
+  },
 });

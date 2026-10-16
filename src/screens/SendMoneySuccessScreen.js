@@ -9,11 +9,12 @@ import RatingPromptModal from '../components/RatingPromptModal';
 import { useApp } from '../context/AppContext';
 import { formatTxDate } from '../utils/formatTxDate';
 import { isSmallScreen } from '../utils/responsive';
+import { getExplorerTxUrl, isOnChainHash } from '../utils/explorer';
 
 export default function SendMoneySuccessScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { t } = useApp();
+  const { t, session, user } = useApp();
 
   const {
     amount = '',
@@ -25,15 +26,61 @@ export default function SendMoneySuccessScreen() {
     explorerUrl = null,
   } = route.params || {};
 
-  const effectiveExplorerUrl = explorerUrl || (
-    hash && hash.startsWith('0x')
-      ? (chain?.toLowerCase().includes('base')
-          ? `https://basescan.org/tx/${hash}`
-          : chain?.toLowerCase().includes('solana')
-            ? `https://solscan.io/tx/${hash}`
-            : `https://polygonscan.com/tx/${hash}`)
-      : null
-  );
+  const [currentHash, setCurrentHash] = useState(hash);
+  const isConfirmedOnChain = isOnChainHash(currentHash, chain);
+
+  const effectiveExplorerUrl = isConfirmedOnChain
+    ? (explorerUrl && isOnChainHash(explorerUrl.split('/').pop(), chain) ? explorerUrl : getExplorerTxUrl(chain, currentHash))
+    : null;
+
+  // If only Crossmint id is available, keep polling until the on-chain hash arrives
+  useEffect(() => {
+    if (isConfirmedOnChain || !currentHash) return;
+    let isSubscribed = true;
+    let attempts = 0;
+    const maxAttempts = 30;
+
+    const pollId = setInterval(async () => {
+      attempts++;
+      try {
+        let baseApi = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
+        if (Platform.OS === 'android' && baseApi.includes('localhost')) {
+          baseApi = baseApi.replace('localhost', '10.0.2.2');
+        } else if (Platform.OS === 'ios' && baseApi.includes('10.0.2.2')) {
+          baseApi = baseApi.replace('10.0.2.2', 'localhost');
+        }
+        const effectiveAuth = (user?.role === 'merchant' && user?.businessDizzyToken)
+          ? user.businessDizzyToken
+          : (user?.dizzyToken || session?.access_token);
+        if (!effectiveAuth) return;
+
+        const res = await fetch(`${baseApi}/swap/check-crossmint-status/${currentHash}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${effectiveAuth}`,
+          },
+        });
+        if (!res.ok) return;
+        const data = await res.json().catch(() => ({}));
+        const foundHash = data.blockchainHash || data.onChain?.txHash || (typeof data.txHash === 'string' && isOnChainHash(data.txHash, chain) ? data.txHash : null);
+        if (foundHash && isSubscribed) {
+          setCurrentHash(foundHash);
+          clearInterval(pollId);
+        }
+      } catch (e) {
+        // Polling retry
+      }
+      if (attempts >= maxAttempts) {
+        clearInterval(pollId);
+      }
+    }, 3000);
+
+    return () => {
+      isSubscribed = false;
+      clearInterval(pollId);
+    };
+  }, [currentHash, isConfirmedOnChain, chain, user, session]);
+
   const [toast, setToast] = useState(null);
   const [showRatingModal, setShowRatingModal] = useState(false);
   // Real timestamp captured when the success screen mounts
@@ -47,9 +94,9 @@ export default function SendMoneySuccessScreen() {
   }, []);
 
   const handleCopyHash = async () => {
-    if (!hash) return;
+    if (!currentHash) return;
     try {
-      await Clipboard.setStringAsync(hash);
+      await Clipboard.setStringAsync(currentHash);
       setToast({ title: t('common.copied', "Link copied"), message: t('sendMoney.addressCopied', 'Address copied to clipboard!') });
     } catch (err) {
       setToast({ title: t('common.copied', "Link copied"), message: t('sendMoney.addressCopied', 'Address copied to clipboard!') });
@@ -95,21 +142,30 @@ export default function SendMoneySuccessScreen() {
               {t('sendMoney.successMessage', { amount, token, recipient, defaultValue: `You successfully sent ${amount} ${token} to ${recipient}` })}
             </Text>
 
-            {/* Hash Code Copy Box */}
-            {hash ? (
-              <View style={styles.hashBox}>
-                <Text style={styles.hashText} numberOfLines={1} ellipsisMode="middle">
-                  {hash}
-                </Text>
+            {/* Hash / Reference Code Copy Box */}
+            {currentHash ? (
+              <View style={{ width: '100%', marginBottom: 12 }}>
+                {!isConfirmedOnChain ? (
+                  <View style={styles.referenceBadgeRow}>
+                    <Text style={styles.referenceLabel}>
+                      {t('sendMoney.reference_label', 'Reference')}
+                    </Text>
+                  </View>
+                ) : null}
+                <View style={styles.hashBox}>
+                  <Text style={styles.hashText} numberOfLines={1} ellipsisMode="middle">
+                    {currentHash}
+                  </Text>
 
-                <TouchableOpacity style={styles.copyBtn} onPress={handleCopyHash} activeOpacity={0.7}>
-                  <Ionicons name="copy-outline" size={18} color="#0F172A" />
-                </TouchableOpacity>
+                  <TouchableOpacity style={styles.copyBtn} onPress={handleCopyHash} activeOpacity={0.7}>
+                    <Ionicons name="copy-outline" size={18} color="#0F172A" />
+                  </TouchableOpacity>
+                </View>
               </View>
             ) : null}
 
-            {/* View on PolygonScan / Explorer Button */}
-            {effectiveExplorerUrl ? (
+            {/* View on Explorer Button */}
+            {isConfirmedOnChain && effectiveExplorerUrl ? (
               <TouchableOpacity
                 style={styles.explorerButton}
                 onPress={() => Linking.openURL(effectiveExplorerUrl)}
@@ -117,9 +173,7 @@ export default function SendMoneySuccessScreen() {
               >
                 <Ionicons name="open-outline" size={16} color="#071D54" style={{ marginRight: 8 }} />
                 <Text style={styles.explorerButtonText}>
-                  {chain?.toLowerCase().includes('polygon')
-                    ? t('sendMoney.view_on_polyscan', 'View on PolygonScan')
-                    : t('sendMoney.view_on_explorer', 'View on Block Explorer')}
+                  {t('sendMoney.view_on_explorer', 'View on explorer')}
                 </Text>
               </TouchableOpacity>
             ) : null}
@@ -135,7 +189,7 @@ export default function SendMoneySuccessScreen() {
                     token,
                     recipientName: recipient,
                     recipientCountry: recipientCountry || (recipient.includes('(') ? recipient.match(/\((.*?)\)/)?.[1] : ''),
-                    txHash: hash,
+                    txHash: currentHash,
                     date: nowDate,
                     actionKey: 'actionSent',
                   },
@@ -260,6 +314,19 @@ const styles = StyleSheet.create({
   },
   successTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: isSmallScreen ? 20 : 22, color: '#0F172A', textAlign: 'center', marginBottom: 10 },
   successSubtitle: { fontFamily: 'Inter_600SemiBold', fontSize: isSmallScreen ? 12 : 13, color: '#15803D', textAlign: 'center', paddingHorizontal: 8, lineHeight: 20, marginBottom: 24 },
+  referenceBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+    paddingHorizontal: 4,
+  },
+  referenceLabel: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 12,
+    color: '#64748B',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   hashBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 16, paddingLeft: 14, paddingRight: 8, height: 50, marginBottom: 12 },
   hashText: { flex: 1, fontFamily: 'Inter_500Medium', fontSize: isSmallScreen ? 11 : 13, color: '#475569', marginRight: 8 },
   copyBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#CBD5E1', justifyContent: 'center', alignItems: 'center' },

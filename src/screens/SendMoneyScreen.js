@@ -17,6 +17,7 @@ import { useWallet, EVMWallet, SolanaWallet } from '@crossmint/client-sdk-react-
 import * as LocalAuthentication from 'expo-local-authentication';
 import { PinConfirmationModal } from '../components/PinConfirmationModal';
 import { getEstimatedNetworkFee } from '../config/networkFees';
+import { getExplorerTxUrl } from '../utils/explorer';
 
 const BLOCKCHAINS = [
   { value: 'Polygon', label: 'Polygon', name: 'Polygon Network', isCrypto: true, cryptoSymbol: 'Polygon' },
@@ -99,6 +100,7 @@ export default function SendMoneyScreen() {
   // Crossmint's own OTP prompt is open: hide our modal so two modals never stack (Android flicker)
   const [sdkPromptOpen, setSdkPromptOpen] = useState(false);
   const approveInFlightRef = useRef(false);
+  const approveCalledRef = useRef(false);
   const pollIntervalRef = useRef(null);
 
   const stopPolling = () => {
@@ -113,6 +115,7 @@ export default function SendMoneyScreen() {
   const runSdkApproval = async (activeWallet, transactionId) => {
     if (approveInFlightRef.current) return false;
     approveInFlightRef.current = true;
+    approveCalledRef.current = true;
     setSdkPromptOpen(true);
     try {
       await activeWallet.approve({ transactionId });
@@ -565,10 +568,11 @@ export default function SendMoneyScreen() {
       return;
     }
 
-    // 🔐 DizzitUp PIN / Biometric Authentication
+    // DizzitUp PIN / Biometric Authentication
     const isAuthenticated = await requestPinAuth(amount, token);
     if (!isAuthenticated) return;
 
+    approveCalledRef.current = false;
     setIsSending(true);
     setErrorMessage(null);
     try {
@@ -621,13 +625,13 @@ export default function SendMoneyScreen() {
           setSignerEmail(actualSignerEmail);
           setIsSending(false);
 
-          // 🔐 Mirror Web WalletContext: Call getWallet -> useSigner -> approve
+          // Mirror Web WalletContext: Call getWallet -> useSigner -> approve
           // This prompts Crossmint's client signer to send the OTP email & open native signer prompt
           if (txId && typeof getWallet === 'function') {
             (async () => {
               try {
                 const chainName = (blockchain || 'polygon').toLowerCase() === 'solana' ? 'solana' : 'polygon';
-                console.log(`🔐 [SendMoneyScreen] Invoking activeWallet.approve for tx ${txId} on ${chainName}...`);
+                console.log(`[SendMoneyScreen] Invoking activeWallet.approve for tx ${txId} on ${chainName}...`);
                 const activeWallet = await getWallet({ chain: chainName });
                 if (activeWallet) {
                   if (actualSignerEmail) {
@@ -639,7 +643,7 @@ export default function SendMoneyScreen() {
 
                   const approved = await runSdkApproval(activeWallet, txId);
                   if (!approved) return; // another approval prompt is already handling this transfer
-                  console.log('✅ [SendMoneyScreen] SDK approval completed successfully');
+                  console.log('[SendMoneyScreen] SDK approval completed successfully');
                   if (typeof refreshTransactions === 'function') refreshTransactions();
                   if (typeof refreshUser === 'function') refreshUser();
                   fetchLiveBalances();
@@ -651,14 +655,28 @@ export default function SendMoneyScreen() {
                     recipient: selectedRecipient ? formatRecipientDisplay(selectedRecipient) : searchQuery,
                     recipientCountry: selectedRecipient?.country || selectedRecipient?.country_code || '',
                     hash: txId,
-                    explorerUrl: txId?.startsWith('0x') ? `https://polygonscan.com/tx/${txId}` : null,
+                    explorerUrl: getExplorerTxUrl(blockchain, txId),
                     pivotScreen: route.params?.pivotScreen,
                     pivotParams: route.params?.pivotParams,
                   });
                   return;
                 }
               } catch (sdkErr) {
-                console.warn('⚠️ [SendMoneyScreen] SDK approval flow note:', sdkErr?.message || sdkErr);
+                if (approveCalledRef.current) {
+                  setTxStatus(null);
+                  setIsAuthorizing(false);
+                  setApprovalOtp('');
+                  setApprovalMessage(null);
+                  setErrorMessage(t('sendMoney.tx_already_submitted', 'This transaction was already submitted for signing. It may still complete. Check your history.'));
+                } else {
+                  stopPolling();
+                  setTxStatus(null);
+                  setIsAuthorizing(false);
+                  setApprovalOtp('');
+                  setApprovalMessage(null);
+                  setErrorMessage(t('sendMoney.transfer_not_confirmed', 'Transfer not confirmed. No funds were sent.'));
+                }
+                console.warn('[SendMoneyScreen] SDK approval flow note:', sdkErr?.message || sdkErr);
               }
             })();
           }
@@ -699,11 +717,7 @@ export default function SendMoneyScreen() {
       fetchLiveBalances();
 
       const finalTxHash = data.txHash || data.transactionId || data.transaction?.id || 'Transaction Confirmed';
-      const finalExplorerUrl = data.explorerUrl || (
-        data.txHash && data.txHash.startsWith('0x')
-          ? `https://polygonscan.com/tx/${data.txHash}`
-          : null
-      );
+      const finalExplorerUrl = data.explorerUrl || getExplorerTxUrl(blockchain, finalTxHash);
 
       navigation.navigate('SendMoneySuccessScreen', {
         amount,
@@ -774,7 +788,7 @@ export default function SendMoneyScreen() {
 
         // Politely back off if rate limited (HTTP 429)
         if (res.status === 429) {
-          console.warn('⚠️ [SendMoneyScreen] Crossmint status polling hit 429, backing off...');
+          console.warn('[SendMoneyScreen] Crossmint status polling hit 429, backing off...');
           isPolling = false;
           return;
         }
@@ -800,9 +814,7 @@ export default function SendMoneyScreen() {
           }
 
           const confirmedHash = checkRes.blockchainHash || checkRes.onChain?.txHash || txId;
-          const confirmedExplorerUrl = checkRes.blockchainHash?.startsWith('0x')
-            ? `https://polygonscan.com/tx/${checkRes.blockchainHash}`
-            : (checkRes.onChain?.explorerLink || null);
+          const confirmedExplorerUrl = checkRes.onChain?.explorerLink || getExplorerTxUrl(blockchain, confirmedHash);
 
           navigation.navigate('SendMoneySuccessScreen', {
             amount,
@@ -1288,13 +1300,13 @@ export default function SendMoneyScreen() {
 
               {/* Estimated Network Fee */}
               <View style={styles.feeEstimateRow}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={styles.feeEstimateLeft}>
                   <Ionicons name="receipt-outline" size={14} color="#64748B" style={{ marginRight: 5 }} />
-                  <Text style={styles.feeEstimateText}>
+                  <Text style={styles.feeEstimateText} maxFontSizeMultiplier={1.3}>
                     {t('common.wallet.estimated_network_fee', 'Estimated network fee: ~{{fee}} USDC', { fee: estimatedFee })}
                   </Text>
                 </View>
-                <Text style={styles.feeBadgeText}>
+                <Text style={styles.feeBadgeText} maxFontSizeMultiplier={1.3}>
                   {t('common.wallet.paid_in_usdc', 'paid in USDC')}
                 </Text>
               </View>
@@ -1336,7 +1348,7 @@ export default function SendMoneyScreen() {
         <BottomNavBar />
         {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
 
-        {/* 🌟 Modal when beneficiary has no crypto wallet linked */}
+        {/* Modal when beneficiary has no crypto wallet linked */}
         <Modal
           visible={!!missingWalletItem}
           transparent={true}
@@ -1421,7 +1433,7 @@ export default function SendMoneyScreen() {
           </View>
         </Modal>
 
-        {/* 🌟 Full-Screen Sending Modal (Instant visual feedback & prevents double clicks) */}
+        {/* Full-Screen Sending Modal (Instant visual feedback & prevents double clicks) */}
         <Modal
           visible={isSending}
           transparent={true}
@@ -1452,7 +1464,7 @@ export default function SendMoneyScreen() {
           </View>
         </Modal>
 
-        {/* 🌟 Explicit Error Modal (Errors are never missed or obscured) */}
+        {/* Explicit Error Modal (Errors are never missed or obscured) */}
         <Modal
           visible={!!errorMessage}
           transparent={true}
@@ -1485,7 +1497,7 @@ export default function SendMoneyScreen() {
           </View>
         </Modal>
 
-        {/* 🔐 Signature / Security Verification Modal */}
+        {/* Signature / Security Verification Modal */}
         <Modal visible={txStatus === 'awaiting-approval' && !sdkPromptOpen} transparent animationType="fade">
           <View style={approvalModalStyles.modalOverlay}>
             <View style={[approvalModalStyles.modalContent, { paddingBottom: 30 }]}>
@@ -1501,12 +1513,8 @@ export default function SendMoneyScreen() {
                   {t('sendMoney.loading_secure_env', 'Loading Secure Environment...')}
                 </Text>
 
-                <Text style={[approvalModalStyles.modalInfoText, { textAlign: 'center', marginBottom: 12, fontSize: 16, color: '#071D54', fontWeight: 'bold' }]}>
-                  {t('sendMoney.wait_for_popup', 'Your DZYwallet verification code will be sent to email, please wait to receive the code')}
-                </Text>
-
-                <Text style={[approvalModalStyles.modalInfoText, { textAlign: 'center', color: '#071D54', fontWeight: 'bold' }]}>
-                  {t('sendMoney.crossmint_email_hint', 'You will receive an email from hello@crossmint.com with subject "Your DZYwallet verification code".')}
+                <Text style={[approvalModalStyles.modalInfoText, { textAlign: 'center', marginBottom: 12, fontSize: 15, color: '#071D54', fontWeight: 'bold' }]}>
+                  {t('sendMoney.secure_confirm_hint', 'Confirm this transfer in the secure window. If your wallet session is still active, no code is needed; otherwise you will receive a code by email from hello@crossmint.com.')}
                 </Text>
 
                 {signerEmail ? (
@@ -1520,7 +1528,22 @@ export default function SendMoneyScreen() {
               </View>
 
               <TouchableOpacity
-                onPress={() => { stopPolling(); setTxStatus(null); setIsAuthorizing(false); setApprovalOtp(''); setApprovalMessage(null); }}
+                onPress={() => {
+                  if (approveCalledRef.current) {
+                    setTxStatus(null);
+                    setIsAuthorizing(false);
+                    setApprovalOtp('');
+                    setApprovalMessage(null);
+                    setErrorMessage(t('sendMoney.tx_already_submitted', 'This transaction was already submitted for signing. It may still complete. Check your history.'));
+                  } else {
+                    stopPolling();
+                    setTxStatus(null);
+                    setIsAuthorizing(false);
+                    setApprovalOtp('');
+                    setApprovalMessage(null);
+                    setErrorMessage(t('sendMoney.transfer_not_confirmed', 'Transfer not confirmed. No funds were sent.'));
+                  }
+                }}
                 style={[approvalModalStyles.dismissBtn, { marginTop: 16 }]}
               >
                 <Text style={approvalModalStyles.dismissBtnText}>{t('common.cancel', 'Cancel')}</Text>
@@ -1622,9 +1645,10 @@ const styles = StyleSheet.create({
   sendCtaBtn: { backgroundColor: '#071D54', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', height: 46, borderRadius: 12, boxShadow: '0px 4px 8px #071D54' },
   sendCtaBtnDisabled: { opacity: 0.45, backgroundColor: '#94A3B8' },
   sendCtaText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 14, color: '#FFFFFF' },
-  feeEstimateRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6, marginBottom: 10 },
-  feeEstimateText: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#64748B' },
-  feeBadgeText: { fontFamily: 'Inter_700Bold', fontSize: 10, color: '#071D54', backgroundColor: '#FEF3C7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
+  feeEstimateRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6, marginBottom: 10, rowGap: 4 },
+  feeEstimateLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, flexShrink: 1, minWidth: 160, marginRight: 6 },
+  feeEstimateText: { flexShrink: 1, fontFamily: 'Inter_500Medium', fontSize: 11, color: '#64748B' },
+  feeBadgeText: { fontFamily: 'Inter_700Bold', fontSize: 10, color: '#071D54', backgroundColor: '#FEF3C7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, alignSelf: 'center' },
   validationErrorCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEF2F2', borderWidth: 1, borderColor: '#FEE2E2', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8, marginBottom: 10 },
   validationErrorText: { flex: 1, fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#DC2626' },
 });

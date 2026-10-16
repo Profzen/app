@@ -6,13 +6,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import CryptoIcon from './CryptoIcon';
 import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
 import { useApp } from '../context/AppContext';
-import { isSmallScreen } from '../utils/responsive';
+import { isSmallScreen, useIsSmallScreen } from '../utils/responsive';
 import { supabase } from '../services/supabaseClient';
 import { EMERGENCY_RATES } from '../services/currencyRateService';
 
 export default function WalletCard({ balances, badgeTitle }) {
   const navigation = useNavigation();
   const { hideBalance, toggleHideBalance, t, user, detectedCountry, getEffectiveWalletCountry } = useApp();
+  const isSmall = useIsSmallScreen();
 
   const isVisible = !hideBalance;
   
@@ -162,13 +163,13 @@ export default function WalletCard({ balances, badgeTitle }) {
 
         {/* Action Buttons Row */}
         <View style={styles.actionsContainer}>
-          <ActionItem icon="paper-plane-outline" label={t('wallet.actions.send', 'Send')} onPress={() => navigation.navigate('SendMoneyScreen')} divider />
+          <ActionItem icon="paper-plane-outline" label={t('wallet.actions.send', 'Send')} onPress={() => navigation.navigate('SendMoneyScreen')} divider isSmall={isSmall} />
           
-          <ActionItem icon="server-outline" label={t('wallet.actions.my_assets', "My Assets")} onPress={() => navigation.navigate('AssetListScreen')} divider />
+          <ActionItem icon="server-outline" label={t('wallet.actions.my_assets', "My Assets")} onPress={() => navigation.navigate('AssetListScreen')} divider isSmall={isSmall} />
 
-          <ActionItem icon="swap-horizontal-outline" label={t('wallet.actions.swap', 'Swap')} onPress={() => navigation.navigate('SwapTokensScreen')} divider />
-          <ActionItem icon="time-outline" label={t('wallet.actions.history', 'History')} onPress={() => navigation.navigate('TransactionHistoryScreen')} divider />
-          <ActionItem icon="card-outline" label={t('wallet.actions.cash_out', 'Cash-out')} onPress={() => navigation.navigate('WithdrawFundsScreen')} />
+          <ActionItem icon="swap-horizontal-outline" label={t('wallet.actions.swap', 'Swap')} onPress={() => navigation.navigate('SwapTokensScreen')} divider isSmall={isSmall} />
+          <ActionItem icon="time-outline" label={t('wallet.actions.history', 'History')} onPress={() => navigation.navigate('TransactionHistoryScreen')} divider isSmall={isSmall} />
+          <ActionItem icon="card-outline" label={t('wallet.actions.cash_out', 'Cash-out')} onPress={() => navigation.navigate('WithdrawFundsScreen')} isSmall={isSmall} />
         </View>
 
       </LinearGradient>
@@ -176,11 +177,23 @@ export default function WalletCard({ balances, badgeTitle }) {
   );
 }
 
-function ActionItem({ icon, label, onPress, divider }) {
+function ActionItem({ icon, label, onPress, divider, isSmall }) {
   return (
-    <TouchableOpacity style={[styles.actionItem, divider && styles.actionDivider]} onPress={onPress}>
-      <Ionicons name={icon} size={20} color="#FFC759" />
-      <Text style={styles.actionLabel} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{label}</Text>
+    <TouchableOpacity
+      style={[styles.actionItem, divider && styles.actionDivider, isSmall && styles.actionItemSmall]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <Ionicons name={icon} size={isSmall ? 18 : 20} color="#FFC759" />
+      <Text
+        style={[styles.actionLabel, isSmall && styles.actionLabelSmall]}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.7}
+        maxFontSizeMultiplier={1.3}
+      >
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 }
@@ -308,12 +321,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.1)',
-    paddingTop: 12,
+    paddingTop: 10,
+    marginTop: 2,
   },
   actionItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 2,
+    paddingVertical: 2,
+  },
+  actionItemSmall: {
+    paddingHorizontal: 1,
   },
   actionDivider: {
     borderRightWidth: 1,
@@ -322,8 +341,13 @@ const styles = StyleSheet.create({
   actionLabel: {
     fontFamily: 'Inter_500Medium',
     fontSize: 10.5,
-    color: 'rgba(255,255,255,0.8)',
+    color: 'rgba(255,255,255,0.85)',
     marginTop: 4,
+    textAlign: 'center',
+  },
+  actionLabelSmall: {
+    fontSize: 9.5,
+    marginTop: 3,
   },
   blurredText: {
     color: 'rgba(255,255,255,0)',

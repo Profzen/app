@@ -12,6 +12,7 @@ import { useBuyGoods } from '../hooks/useBuyGoods';
 import { useApp } from '../context/AppContext';
 import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
 import { getProductCoverImage } from '../utils/productMedia';
+import { buildDzyStoreUrl } from '../utils/storeUtils';
 
 
 export default function ShopDetailsScreen({ route }) {
@@ -260,10 +261,7 @@ export default function ShopDetailsScreen({ route }) {
   const hasAnySocial = Boolean(waUrl || tgUrl || fbUrl || igUrl || webUrl);
 
   const shopName = shop.shop_name || shop.name || 'Store';
-  const shopSlug = shop.slug || shop.id || 'store';
-  const countrySlug = (shop.country || rawData.country || 'global').toLowerCase().replace(/\s+/g, '-');
-  const citySlug = (shop.city_village || rawData.city_village || shop.city || 'city').toLowerCase().replace(/\s+/g, '-');
-  const publicStoreUrl = `https://dizzitup.com/DZYstore/${countrySlug}/${citySlug}/${shopSlug}`;
+  const publicStoreUrl = buildDzyStoreUrl(shop);
   const shareText = `Check out ${shopName} on DizzitUp!`;
   const shareMessage = t('shop.shareShopMsg', "Discover the {{name}} store on DizzitUp: {{url}}", { name: shopName, url: publicStoreUrl });
 

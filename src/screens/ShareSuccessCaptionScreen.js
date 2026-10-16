@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import * as Sharing from 'expo-sharing';
 import AppToast from '../components/AppToast';
+import ScreenFooter from '../components/ScreenFooter';
 import { useApp } from '../context/AppContext';
 import { getOperatorLogo } from '../utils/operatorLogos';
 import { ALL_COUNTRIES } from '../utils/countriesData';
@@ -391,22 +392,25 @@ export default function ShareSuccessCaptionScreen() {
             </View>
           </View>
 
-          {/* Main Action Button */}
+          <View style={{ height: 12 }} />
+        </ScrollView>
+
+        {/* Sticky Action Footer */}
+        <ScreenFooter borderTop={true} backgroundColor="#FFFFFF" paddingTop={10}>
           <TouchableOpacity style={styles.btnPrimaryShare} onPress={handleShare} activeOpacity={0.88}>
             <Ionicons name="share-social-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
-            <Text style={styles.btnPrimaryShareText}>{t('shareSuccess.shareAndEarn', 'Share and earn 1 DZY')}</Text>
+            <Text style={styles.btnPrimaryShareText} maxFontSizeMultiplier={1.3}>
+              {t('shareSuccess.shareAndEarn', 'Share and earn 1 DZY')}
+            </Text>
           </TouchableOpacity>
 
-          {/* Security Note at bottom */}
           <View style={styles.bottomSecurityRow}>
             <Ionicons name="shield-checkmark-outline" size={14} color="#10B981" style={{ marginRight: 6 }} />
-            <Text style={styles.bottomSecurityText}>
+            <Text style={styles.bottomSecurityText} maxFontSizeMultiplier={1.3}>
               {t('shareSuccess.shareSecurityNote', "Share safely. Your data remains private.")}
             </Text>
           </View>
-
-          <View style={{ height: 20 }} />
-        </ScrollView>
+        </ScreenFooter>
 
         {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
       </View>

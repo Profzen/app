@@ -2435,7 +2435,18 @@
         "authorizing": "جارٍ التفويض...",
         "quote_failed": "تعذر الحصول على عرض سعر. يرجى المحاولة مرة أخرى.",
         "dzy_banner_soon": "قريبًا: احتفظ برموز DZY لتداول بدون رسوم.",
-        "status_timeout": "لا تزال المعاملة قيد المعالجة. تحقق من سجل محفظتك بعد بضع دقائق."
+        "status_timeout": "لا تزال المعاملة قيد المعالجة. تحقق من سجل محفظتك بعد بضع دقائق.",
+        "modal_approval_title": "الخطوة 1 من 2: السماح بـ {{token}} مرة واحدة",
+        "modal_approval_body": "يسمح هذا الإذن لمرة واحدة لعملية التبديل باستخدام {{token}} الخاص بك. تقوم بهذا مرة واحدة فقط لكل رمز.",
+        "modal_swap_step2_title": "الخطوة 2 من 2: تأكيد التبديل",
+        "modal_swap_direct_title": "تأكيد التبديل",
+        "modal_swap_body": "قم بتأكيد التبديل في النافذة الآمنة. لا يلزم رمز جديد إذا كنت قد أدخلت رمزًا للتو.",
+        "tx_already_submitted": "تم إرسال هذه المعاملة للتوقيع بالفعل. قد تكتمل العملية. يرجى مراجعة سجلك.",
+        "reference": "المرجع",
+        "view_on_explorer": "عرض في المستكشف",
+        "swap_success_title": "تم التبادل بنجاح!",
+        "swap_success_body": "تم تبادل {{fromAmount}} {{fromToken}} بنجاح مقابل {{toAmount}} {{toToken}}",
+        "done": "تم"
       },
       "topup": {
         "choose_method": "اختر طريقة الدفع",
@@ -4991,7 +5002,11 @@
     "resend_code": "لم تستلم الرمز؟ إعادة إرسال البريد الإلكتروني",
     "code_resent": "تم طلب رمز التحقق! يرجى التحقق من صندوق البريد والرسائل غير المرغوب فيها.",
     "resend_hint": "يرجى التحقق من صندوق الوارد ومجلد الرسائل غير المرغوب فيها.",
-    "resend_triggered": "تم طلب التحقق. يرجى التحقق من بريدك الإلكتروني."
+    "resend_triggered": "تم طلب التحقق. يرجى التحقق من بريدك الإلكتروني.",
+    "transfer_not_confirmed": "لم يتم تأكيد التحويل. لم يتم إرسال أي أموال.",
+    "secure_confirm_hint": "قم بتأكيد هذا التحويل في النافذة الآمنة. إذا كانت جلسة محفظتك لا تزال نشطة، فلن تحتاج إلى رمز؛ وإلا ستتلقى رمزًا عبر البريد الإلكتروني من hello@crossmint.com.",
+    "tx_already_submitted": "تم إرسال هذه المعاملة للتوقيع بالفعل. قد تكتمل العملية. يرجى مراجعة سجلك.",
+    "reference_label": "المرجع"
   },
   "withdrawFunds": {
     "title": "سحب الأموال",
@@ -5723,6 +5738,11 @@
   "shareProfile.privacy": "شارك هذا الملف فقط مع أشخاص تثق بهم. لا تشارك رمز PIN أبداً.",
   "shareProfile.businessScanHint": "امسح لفتح صفحة المتجر الموثقة على DZYstore.",
   "shareProfile.businessMessage": "تفضل بزيارة {{name}} على DizzitUp DZYstore: {{url}}",
+  "shareProfile.verified": "موثق",
+  "shareProfile.scanHintBusiness": "امسح لفتح متجري DZYstore",
+  "shareProfile.referralCodeLabel": "رمز الإحالة",
+  "shareProfile.messageBusiness": "إليك ملف DizzitUp التعريفي لنشاطي التجاري، {{shopName}}. استخدمه للتحقق من هويتي بأمان قبل إرسال الأموال أو دفع فاتورة أو الشراء مني.\nDZYstore: {{storeUrl}}\nرمز الإحالة: {{referralCode}}",
+  "shareProfile.createPayLink": "إنشاء رابط دفع",
   "biz.dzy_coming_soon": "DZY (قريباً)",
   "invoicePayLink.title": "فاتورة وDZYpaylink",
   "invoicePayLink.subtitle": "أنشئ وشارك طلب دفع بسيطاً.",

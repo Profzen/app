@@ -952,7 +952,18 @@
         "authorizing": "Authorizing...",
         "quote_failed": "Could not get a quote. Please try again.",
         "dzy_banner_soon": "Coming soon: hold DZY to unlock feeless trading.",
-        "status_timeout": "Still processing. Check your wallet history in a few minutes."
+        "status_timeout": "Still processing. Check your wallet history in a few minutes.",
+        "modal_approval_title": "Step 1 of 2: allow {{token}} once",
+        "modal_approval_body": "This one-time permission lets the swap use your {{token}}. You only do this once per token.",
+        "modal_swap_step2_title": "Step 2 of 2: confirm swap",
+        "modal_swap_direct_title": "Confirm swap",
+        "modal_swap_body": "Confirm the swap in the secure window. No new code is needed if you just entered one.",
+        "tx_already_submitted": "This transaction was already submitted for signing. It may still complete. Check your history.",
+        "reference": "Reference",
+        "view_on_explorer": "View on explorer",
+        "swap_success_title": "Swap successful!",
+        "swap_success_body": "Successfully swapped {{fromAmount}} {{fromToken}} for {{toAmount}} {{toToken}}",
+        "done": "Done"
       },
       "topup": {
         "choose_method": "Choose Your Payment Method",
@@ -5189,7 +5200,11 @@
     "resend_code": "Didn't receive code? Resend email",
     "code_resent": "Verification code requested! Please check your email inbox and spam.",
     "resend_hint": "Please check your email inbox and spam folder.",
-    "resend_triggered": "Verification requested. Please check your email."
+    "resend_triggered": "Verification requested. Please check your email.",
+    "transfer_not_confirmed": "Transfer not confirmed. No funds were sent.",
+    "secure_confirm_hint": "Confirm this transfer in the secure window. If your wallet session is still active, no code is needed; otherwise you will receive a code by email from hello@crossmint.com.",
+    "tx_already_submitted": "This transaction was already submitted for signing. It may still complete. Check your history.",
+    "reference_label": "Reference"
   },
   "withdrawFunds": {
     "title": "Withdraw funds",
@@ -5900,6 +5915,11 @@
   "shareProfile.privacy": "Only share this profile with people you trust. Never share your PIN or recovery information.",
   "shareProfile.businessScanHint": "Scan to open the verified DZYstore shop page.",
   "shareProfile.businessMessage": "Visit {{name}} on DizzitUp DZYstore: {{url}}",
+  "shareProfile.verified": "VERIFIED",
+  "shareProfile.scanHintBusiness": "Scan to open my DZYstore",
+  "shareProfile.referralCodeLabel": "Referral code",
+  "shareProfile.messageBusiness": "Here is the DizzitUp profile of my business, {{shopName}}. Use it to identify me safely before sending money, paying a bill or buying from me.\nDZYstore: {{storeUrl}}\nReferral code: {{referralCode}}",
+  "shareProfile.createPayLink": "Create a pay link",
   "biz.dzy_coming_soon": "DZY (coming soon)",
   "invoicePayLink.title": "Invoice & DZYpaylink",
   "invoicePayLink.subtitle": "Create and share a simple payment request.",
