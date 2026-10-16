@@ -47,6 +47,11 @@ export default function SwapTokensScreen() {
   const { wallet: crossmintWallet, getWallet } = useWallet();
   const { user, session, refreshUser, t } = useApp();
 
+  const isMerchant = user?.role === 'merchant';
+  const authToken = (isMerchant && user?.businessDizzyToken)
+    ? user.businessDizzyToken
+    : (user?.dizzyToken || session?.access_token);
+
   const [fromChain, setFromChain] = useState('polygon');
   const [toChain, setToChain] = useState('polygon');
   const [fromAmount, setFromAmount] = useState('');
@@ -94,7 +99,7 @@ export default function SwapTokensScreen() {
     finalPollIntervalRef.current = setInterval(async () => {
       attempts++;
       try {
-        const data = await swapService.checkTransactionStatus(idToPoll, session?.access_token);
+        const data = await swapService.checkTransactionStatus(idToPoll, authToken);
         const onChain = data.blockchainHash || data.onChain?.txHash || (data.txHash && isOnChainHash(data.txHash, fromChain) ? data.txHash : null);
         if (onChain) {
           setSuccessTxHash(onChain);
@@ -159,7 +164,7 @@ export default function SwapTokensScreen() {
     setError(null);
     setInfoMsg(null);
     try {
-      const data = await swapService.getQuote(fromToken, toToken, fromAmount, fromChain, toChain, session?.access_token);
+      const data = await swapService.getQuote(fromToken, toToken, fromAmount, fromChain, toChain, authToken);
       if (data && data.toAmount) {
         setQuote(data);
         setToAmount(data.toAmount);
@@ -191,7 +196,7 @@ export default function SwapTokensScreen() {
     pollIntervalRef.current = setInterval(async () => {
       attempts++;
       try {
-        const data = await swapService.checkTransactionStatus(txId, session?.access_token);
+        const data = await swapService.checkTransactionStatus(txId, authToken);
         const crossStatus = data.crossmintStatus || data.status;
         setTxStatus(crossStatus);
 
@@ -265,7 +270,7 @@ export default function SwapTokensScreen() {
     setInfoMsg(null);
 
     try {
-      const res = await swapService.executeSwap(fromToken, toToken, fromAmount, fromChain, toChain, session?.access_token);
+      const res = await swapService.executeSwap(fromToken, toToken, fromAmount, fromChain, toChain, authToken);
 
       if (res.error) {
         if (res.status === 429 || res.data?.code === 'RATE_LIMITED') {
@@ -289,7 +294,7 @@ export default function SwapTokensScreen() {
           // Trigger approval flow
           setHadApprovalStep(true);
           setSwapStep('approval');
-          const approveRes = await swapService.approve(fromToken, fromChain, res.data.spender, session?.access_token);
+          const approveRes = await swapService.approve(fromToken, fromChain, res.data.spender, authToken);
           if (approveRes.error && approveRes.status === 400 && approveRes.data?.status === 'requires-handshake') {
             const txId = approveRes.data.txId;
             setActiveTxHash(txId);
