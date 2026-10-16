@@ -438,21 +438,25 @@ export default function AboutDizzitUpScreen() {
             <Text style={styles.sectionHeader}>{t('aboutApp.communityTitle', 'JOIN THE COMMUNITY')}</Text>
           </View>
           <View style={styles.socialRow}>
-            <TouchableOpacity style={styles.socialBtn} onPress={() => openLink('X / Twitter', 'x.com/dizzitup')}>
+            <TouchableOpacity style={styles.socialBtn} onPress={() => openLink('X / Twitter', 'https://x.com/dizzitup')}>
               <Ionicons name="logo-twitter" size={22} color="#1DA1F2" />
               <Text style={styles.socialName}>Twitter / X</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.socialBtn} onPress={() => openLink('LinkedIn', 'linkedin.com/company/dizzitup')}>
+            <TouchableOpacity style={styles.socialBtn} onPress={() => openLink('LinkedIn', 'https://www.linkedin.com/company/dizzitup')}>
               <Ionicons name="logo-linkedin" size={22} color="#0A66C2" />
               <Text style={styles.socialName}>LinkedIn</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.socialBtn} onPress={() => openLink('Telegram', 't.me/dizzitup')}>
+            <TouchableOpacity style={styles.socialBtn} onPress={() => openLink('Telegram', 'https://t.me/dizzitup_official')}>
               <Ionicons name="paper-plane" size={22} color="#229ED9" />
               <Text style={styles.socialName}>Telegram</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.socialBtn} onPress={() => openLink('YouTube', 'youtube.com/@dizzitup')}>
+            <TouchableOpacity style={styles.socialBtn} onPress={() => openLink('YouTube', 'https://www.youtube.com/@dizzitup')}>
               <Ionicons name="logo-youtube" size={22} color="#FF0000" />
               <Text style={styles.socialName}>YouTube</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.socialBtn} onPress={() => openLink('Facebook', 'https://www.facebook.com/dizzitup')}>
+              <Ionicons name="logo-facebook" size={22} color="#1877F2" />
+              <Text style={styles.socialName}>Facebook</Text>
             </TouchableOpacity>
           </View>
 
@@ -504,8 +508,8 @@ const styles = StyleSheet.create({
   divider: { height: 1, backgroundColor: '#F3F4F6' },
   linkIcon: { marginRight: 12 },
   linkText: { flex: 1, fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#1A2840' },
-  socialRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
-  socialBtn: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 1, borderColor: '#F0F2F5', paddingVertical: 12, alignItems: 'center', marginHorizontal: 4 },
+  socialRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start', marginHorizontal: -4, marginBottom: 16 },
+  socialBtn: { width: '30%', backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 1, borderColor: '#F0F2F5', paddingVertical: 12, alignItems: 'center', marginHorizontal: 4, marginBottom: 8 },
   socialName: { fontFamily: 'Inter_600SemiBold', fontSize: 11, color: '#4B5563', marginTop: 4 },
   contactBtn: { height: 50, borderRadius: 14, backgroundColor: '#FFC759', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', boxShadow: '0px 4px 8px #FFC759' },
   contactBtnText: { fontFamily: 'Inter_700Bold', fontSize: 15, color: '#1A2840' },
