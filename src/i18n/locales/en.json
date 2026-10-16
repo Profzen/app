@@ -709,6 +709,7 @@
       "rate_limited": "Too many attempts. Please try again in {{seconds}} seconds.",
       "wallet_not_ready": "Your wallet is not ready yet, please contact support.",
       "estimated_network_fee": "Estimated network fee: ~{{fee}} USDC",
+      "no_network_fee": "No network fee",
       "paid_in_usdc": "paid in USDC",
       "send_funds": "Send Funds",
       "receive_funds": "Receive Funds",

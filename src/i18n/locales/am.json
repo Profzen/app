@@ -739,6 +739,7 @@
       "rate_limited": "በጣም ብዙ ሙከራዎች። እባክዎ ከ{{seconds}} ሰከንዶች በኋላ እንደገና ይሞክሩ።",
       "wallet_not_ready": "የእርስዎ ቦርሳ ገና ዝግጁ አይደለም፣ እባክዎ ድጋፍ ሰጪን ያነጋግሩ።",
       "estimated_network_fee": "ግምታዊ የአውታረ መረብ ክፍያ: ~{{fee}} USDC",
+      "no_network_fee": "የአውታረ መረብ ክፍያ የለም",
       "paid_in_usdc": "በUSDC የሚከፈል",
       "send_funds": "ገንዘብ ላክ",
       "receive_funds": "ገንዘብ ተቀበል",

@@ -49,6 +49,9 @@ const CRYPTO_TOKENS = [
   { value: 'SOL', label: 'SOL', name: 'Solana', isCrypto: true, cryptoSymbol: 'SOL', subtitle: 'Solana Native Token' },
 ];
 
+const STABLECOIN_SYMBOLS = ['USDC', 'USDT', 'DAI', 'EURC'];
+const NATIVE_SYMBOLS = ['POL', 'MATIC', 'ETH', 'BNB', 'SOL'];
+
 
 
 export default function SendMoneyScreen() {
@@ -134,6 +137,9 @@ export default function SendMoneyScreen() {
 
   const [blockchain, setBlockchain] = useState('Polygon');
   const [token, setToken] = useState('USDC');
+
+  const hasAutoSelectedRef = useRef(false);
+  const userHasChangedRef = useRef(false);
 
   const isMerchant = user?.role === 'merchant';
   const effectiveRawBalances = (isMerchant && user?.businessRawBalances?.length)
@@ -335,16 +341,58 @@ export default function SendMoneyScreen() {
     }
   }
 
-  // Auto-switch blockchain if current chain has 0 balance for the token, but another chain has funds
+  // One-time initial choice without prices:
+  // 1. Stablecoin (USDC, USDT, DAI, EURC) with highest balance across chains, Polygon first on ties
+  // 2. If no stablecoin has balance, native coin with highest balance, Polygon first on ties
+  // 3. If all balances are 0, keep Polygon + USDC
   useEffect(() => {
-    const curBal = getBalanceForToken(token, blockchain);
-    if (curBal <= 0) {
-      const chainWithFunds = BLOCKCHAINS.find(b => getBalanceForToken(token, b.value) > 0);
-      if (chainWithFunds && chainWithFunds.value !== blockchain) {
-        setBlockchain(chainWithFunds.value);
+    if (hasAutoSelectedRef.current || userHasChangedRef.current) return;
+    if (!walletBalances || walletBalances.length === 0) return;
+
+    hasAutoSelectedRef.current = true;
+
+    let bestStable = { chain: 'Polygon', token: 'USDC', balance: 0 };
+    let bestNative = { chain: 'Polygon', token: 'POL', balance: 0 };
+
+    for (const b of BLOCKCHAINS) {
+      const chainName = b.value;
+      const cleanChain = chainName.toLowerCase().replace(/\s+/g, '');
+      const chainKey = (cleanChain === 'bnbchain' || cleanChain === 'bnb') ? 'bsc' : cleanChain;
+      const allowed = TOKENS_BY_CHAIN[chainKey] || [];
+
+      for (const sym of allowed) {
+        const bal = getBalanceForToken(sym, chainName);
+        if (bal <= 0) continue;
+
+        const symUpper = sym.toUpperCase();
+        if (STABLECOIN_SYMBOLS.includes(symUpper)) {
+          if (bal > bestStable.balance) {
+            bestStable = { chain: chainName, token: sym, balance: bal };
+          } else if (bal === bestStable.balance && bal > 0) {
+            if (chainName === 'Polygon' && bestStable.chain !== 'Polygon') {
+              bestStable = { chain: chainName, token: sym, balance: bal };
+            }
+          }
+        } else if (NATIVE_SYMBOLS.includes(symUpper)) {
+          if (bal > bestNative.balance) {
+            bestNative = { chain: chainName, token: sym, balance: bal };
+          } else if (bal === bestNative.balance && bal > 0) {
+            if (chainName === 'Polygon' && bestNative.chain !== 'Polygon') {
+              bestNative = { chain: chainName, token: sym, balance: bal };
+            }
+          }
+        }
       }
     }
-  }, [walletBalances, token]);
+
+    if (bestStable.balance > 0) {
+      setBlockchain(bestStable.chain);
+      setToken(bestStable.token);
+    } else if (bestNative.balance > 0) {
+      setBlockchain(bestNative.chain);
+      setToken(bestNative.token);
+    }
+  }, [walletBalances]);
 
   const blockchainOptions = BLOCKCHAINS.map(b => {
     const bal = getBalanceForToken(token, b.value);
@@ -365,20 +413,40 @@ export default function SendMoneyScreen() {
     return t;
   });
 
-  // Rule of provisioned tokens: only show tokens with positive balance if any exist
-  const positiveTokens = tokensForChain.filter(t => getBalanceForToken(t.value, blockchain) > 0);
-  const availableTokens = positiveTokens.length > 0 ? positiveTokens : tokensForChain;
+  // Always show all tokens valid for this chain so the dropdown always finds the selected token
+  const availableTokens = tokensForChain;
   const hasZeroBalance = currentAvailableBalance <= 0;
 
-  // Auto-select first positive token if current token has 0 balance and positive ones exist,
-  // or first allowed token if current token is not valid on this chain
+  // When blockchain changes and current token is not allowed on it, set the first allowed token
   useEffect(() => {
     if (!chainAllowedSymbols.includes(token)) {
       setToken(tokensForChain[0]?.value || 'USDC');
-    } else if (positiveTokens.length > 0 && !positiveTokens.some(pt => pt.value === token)) {
-      setToken(positiveTokens[0].value);
     }
-  }, [walletBalances, blockchain]);
+  }, [blockchain]);
+
+  const handleTokenChange = (selectedToken) => {
+    userHasChangedRef.current = true;
+    setToken(selectedToken);
+
+    // If selected token has 0 balance on current chain, switch to another allowed chain with funds
+    const curBal = getBalanceForToken(selectedToken, blockchain);
+    if (curBal <= 0) {
+      const chainWithFunds = BLOCKCHAINS.find(b => {
+        const cClean = b.value.toLowerCase().replace(/\s+/g, '');
+        const cKey = (cClean === 'bnbchain' || cClean === 'bnb') ? 'bsc' : cClean;
+        const allowed = TOKENS_BY_CHAIN[cKey] || [];
+        return allowed.includes(selectedToken) && getBalanceForToken(selectedToken, b.value) > 0;
+      });
+      if (chainWithFunds && chainWithFunds.value !== blockchain) {
+        setBlockchain(chainWithFunds.value);
+      }
+    }
+  };
+
+  const handleBlockchainChange = (selectedChain) => {
+    userHasChangedRef.current = true;
+    setBlockchain(selectedChain);
+  };
 
   const handlePasteClipboard = async () => {
     try {
@@ -1215,14 +1283,14 @@ export default function SendMoneyScreen() {
                 <AppSelect
                   value={token}
                   options={availableTokens.map((item) => {
-                    const bal = getBalanceForToken(item.value);
+                    const bal = getBalanceForToken(item.value, blockchain);
                     return {
                       ...item,
                       label: bal > 0 ? `${item.value} (${bal.toFixed(2)})` : item.value,
                       subtitle: bal > 0 ? `Available: ${bal.toFixed(4)}` : item.subtitle,
                     };
                   })}
-                  onChange={(val) => setToken(val)}
+                  onChange={handleTokenChange}
                   title={t('pos.choose_currency', 'Choose Currency')}
                   style={styles.appSelectFlex}
                   textStyle={styles.selectTextBold}
@@ -1238,7 +1306,7 @@ export default function SendMoneyScreen() {
                 <AppSelect
                   value={blockchain}
                   options={blockchainOptions}
-                  onChange={(val) => setBlockchain(val)}
+                  onChange={handleBlockchainChange}
                   title={t('common.wallet.select_chain', "Select Blockchain")}
                   style={styles.compactAppSelect}
                   textStyle={styles.compactSelectText}
@@ -1303,12 +1371,16 @@ export default function SendMoneyScreen() {
                 <View style={styles.feeEstimateLeft}>
                   <Ionicons name="receipt-outline" size={14} color="#64748B" style={{ marginRight: 5 }} />
                   <Text style={styles.feeEstimateText} maxFontSizeMultiplier={1.3}>
-                    {t('common.wallet.estimated_network_fee', 'Estimated network fee: ~{{fee}} USDC', { fee: estimatedFee })}
+                    {estimatedFee > 0
+                      ? t('common.wallet.estimated_network_fee', 'Estimated network fee: ~{{fee}} USDC', { fee: estimatedFee })
+                      : t('common.wallet.no_network_fee', 'No network fee')}
                   </Text>
                 </View>
-                <Text style={styles.feeBadgeText} maxFontSizeMultiplier={1.3}>
-                  {t('common.wallet.paid_in_usdc', 'paid in USDC')}
-                </Text>
+                {estimatedFee > 0 ? (
+                  <Text style={styles.feeBadgeText} maxFontSizeMultiplier={1.3}>
+                    {t('common.wallet.paid_in_usdc', 'paid in USDC')}
+                  </Text>
+                ) : null}
               </View>
 
               {/* Validation Error Message */}

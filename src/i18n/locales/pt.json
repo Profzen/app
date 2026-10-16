@@ -692,6 +692,7 @@
       "rate_limited": "Muitas tentativas. Por favor, tente novamente em {{seconds}} segundos.",
       "wallet_not_ready": "Sua carteira ainda não está pronta, entre em contato com o suporte.",
       "estimated_network_fee": "Taxa de rede estimada: ~{{fee}} USDC",
+      "no_network_fee": "Sem taxa de rede",
       "paid_in_usdc": "pago em USDC",
       "send_funds": "Enviar Fundos",
       "receive_funds": "Receber Fundos",
