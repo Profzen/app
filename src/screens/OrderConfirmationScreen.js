@@ -19,6 +19,7 @@ import * as Clipboard from 'expo-clipboard';
 import { WebView } from 'react-native-webview';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
+import ScreenFooter from '../components/ScreenFooter';
 import SocialShareModal from '../components/SocialShareModal';
 import { useApp } from '../context/AppContext';
 import { buyGoodsApi } from '../services/buyGoodsApi';
@@ -556,30 +557,35 @@ export default function OrderConfirmationScreen({ route }) {
       </ScrollView>
 
       {/* Bottom Fixed Action Button */}
-      <View style={styles.bottomBar}>
+      <ScreenFooter
+        backgroundColor="#FFFFFF"
+        borderTop={true}
+        borderTopColor="#F1F5F9"
+        paddingHorizontal={20}
+        paddingTop={12}
+      >
         <TouchableOpacity
           style={[styles.btnConfirm, loading && { opacity: 0.7 }]}
           onPress={handleConfirmPurchase}
           disabled={loading}
+          activeOpacity={0.88}
         >
           {loading ? (
             <ActivityIndicator color="#1A2840" />
           ) : (
-            <>
-              <View style={styles.btnConfirmCenter}>
-                <Ionicons name="lock-closed" size={16} color="#1A2840" style={{ marginRight: 8 }} />
-                <Text style={styles.btnConfirmTitle}>
-                  {t('orderConfirmation.confirmAndPay', 'Confirm and Pay')}
-                  {' • '}
-                  {orderData.paymentRail === 'crypto'
-                    ? (orderData.selectedToken === 'DZY' ? `${orderData.totalDZY} DZY` : `${orderData.totalUSDC} ${orderData.selectedToken}`)
-                    : `${(Number(orderData.totalAmount) || 0).toLocaleString(numLocale)} ${displayCurrency}`}
-                </Text>
-              </View>
-            </>
+            <View style={styles.btnConfirmCenter}>
+              <Ionicons name="lock-closed" size={16} color="#1A2840" style={{ marginRight: 8 }} />
+              <Text style={styles.btnConfirmTitle} maxFontSizeMultiplier={1.3}>
+                {t('orderConfirmation.confirmAndPay', 'Confirm and Pay')}
+                {' • '}
+                {orderData.paymentRail === 'crypto'
+                  ? (orderData.selectedToken === 'DZY' ? `${orderData.totalDZY} DZY` : `${orderData.totalUSDC} ${orderData.selectedToken}`)
+                  : `${(Number(orderData.totalAmount) || 0).toLocaleString(numLocale)} ${displayCurrency}`}
+              </Text>
+            </View>
           )}
         </TouchableOpacity>
-      </View>
+      </ScreenFooter>
 
       {/* CyberSource Modal */}
       {showCyberSourceModal && (
@@ -617,11 +623,11 @@ export default function OrderConfirmationScreen({ route }) {
       )}
 
       {/* On-Chain Escrow Innovation Modal (Solofo Mandate) */}
-      {/* On-Chain Escrow Innovation Modal (Solofo Mandate) */}
       <Modal visible={showEscrowModal} transparent animationType="fade" onRequestClose={() => setShowEscrowModal(false)}>
         <View style={[styles.escrowModalOverlay, { paddingBottom: Math.max(insets.bottom, 16) }]}>
           <View style={styles.escrowModalCard}>
             <ScrollView
+              style={{ width: '100%' }}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.escrowModalScrollContent}
               bounces={false}
@@ -1118,12 +1124,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(15, 23, 42, 0.72)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
   },
   escrowModalCard: {
     width: '100%',
-    maxWidth: 360,
-    maxHeight: '90%',
+    maxWidth: 420,
+    maxHeight: '85%',
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
     paddingHorizontal: 20,
@@ -1137,6 +1143,7 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   escrowModalScrollContent: {
+    width: '100%',
     alignItems: 'center',
     paddingBottom: 6,
   },
@@ -1174,6 +1181,7 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     textAlign: 'center',
     marginBottom: 4,
+    width: '100%',
   },
   escrowModalSub: {
     fontFamily: 'Inter_600SemiBold',
@@ -1181,6 +1189,7 @@ const styles = StyleSheet.create({
     color: '#D97706',
     textAlign: 'center',
     marginBottom: 14,
+    width: '100%',
   },
   escrowPinBox: {
     width: '100%',
@@ -1190,7 +1199,7 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
     borderStyle: 'dashed',
     paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     alignItems: 'center',
     marginBottom: 14,
   },
@@ -1213,7 +1222,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 6,
     lineHeight: 15,
-    paddingHorizontal: 8,
+    paddingHorizontal: 4,
+    width: '100%',
   },
   escrowModalDesc: {
     fontFamily: 'Inter_400Regular',
@@ -1222,10 +1232,13 @@ const styles = StyleSheet.create({
     color: '#475569',
     textAlign: 'center',
     marginBottom: 18,
+    width: '100%',
   },
   escrowModalPrimaryBtn: {
     width: '100%',
-    height: 48,
+    minHeight: 48,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
     borderRadius: 14,
     backgroundColor: '#FFB800',
     alignItems: 'center',
@@ -1241,10 +1254,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold',
     fontSize: 14,
     color: '#1A2840',
+    textAlign: 'center',
+    lineHeight: 19,
   },
   escrowModalSecondaryBtn: {
     width: '100%',
-    height: 42,
+    minHeight: 40,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1253,6 +1270,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_600SemiBold',
     fontSize: 12,
     color: '#64748B',
+    textAlign: 'center',
     textDecorationLine: 'underline',
   },
 });

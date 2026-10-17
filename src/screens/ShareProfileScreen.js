@@ -1,14 +1,20 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, StyleSheet, TouchableOpacity, Share, Platform, StatusBar, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Share, Platform, StatusBar, Image, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import Svg, { Rect } from 'react-native-svg';
 import QRCode from 'qrcode';
+import { LinearGradient } from 'expo-linear-gradient';
+import ViewShot from 'react-native-view-shot';
+import * as Sharing from 'expo-sharing';
 import { useNavigation } from '@react-navigation/native';
 import { useApp } from '../context/AppContext';
 import AppToast from '../components/AppToast';
+import ScreenFooter from '../components/ScreenFooter';
+import { isSmallScreen } from '../utils/responsive';
 import { buildDzyStoreUrl } from '../utils/storeUtils';
+import { getFullCountryName, getFlagEmoji } from '../utils/countryCurrencyUtils';
 
 function getInitials(name) {
   if (!name || typeof name !== 'string') return '';
@@ -22,12 +28,22 @@ function getInitials(name) {
 
 export default function ShareProfileScreen() {
   const navigation = useNavigation();
-  const { user, accountMode, t } = useApp();
+  const { user, accountMode, t, language } = useApp();
   const [toast, setToast] = useState(null);
   const [imageError, setImageError] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const cardShotRef = useRef(null);
 
   const isBusiness = user?.role === 'merchant' || accountMode === 'business';
   const merchant = isBusiness ? (user?.merchantProfile || null) : null;
+
+  const countryRaw = merchant?.country || merchant?.raw?.country || user?.country || '';
+  const cityRaw = merchant?.city_village || merchant?.raw?.city_village || merchant?.city || merchant?.raw?.city || user?.city || '';
+  const city = cityRaw ? (cityRaw.charAt(0).toUpperCase() + cityRaw.slice(1)) : '';
+  const countryName = getFullCountryName(countryRaw, language);
+  const flagEmoji = getFlagEmoji(countryRaw);
+  const countryPart = countryName ? [countryName, flagEmoji].filter(Boolean).join(' ') : '';
+  const locationText = [city, countryPart].filter(Boolean).join(', ');
 
   const profile = useMemo(() => {
     const isVerified = Boolean(merchant?.is_verified || merchant?.verified);
@@ -91,9 +107,10 @@ export default function ShareProfileScreen() {
     });
   }, [qrPayload, isBusiness]);
 
-  const ProfileQr = () => (
+  const qrSize = isSmallScreen ? 150 : 180;
+  const ProfileQr = ({ size = qrSize } = {}) => (
     <View style={styles.qrInnerWrapper}>
-      <Svg width={190} height={190} viewBox={`0 0 ${qr.modules.size} ${qr.modules.size}`} accessibilityLabel="QR Code">
+      <Svg width={size} height={size} viewBox={`0 0 ${qr.modules.size} ${qr.modules.size}`} accessibilityLabel="QR Code">
         <Rect width={qr.modules.size} height={qr.modules.size} fill="#FFFFFF" />
         {Array.from(qr.modules.data).map((cell, index) =>
           cell ? (
@@ -139,6 +156,69 @@ export default function ShareProfileScreen() {
     });
   };
 
+  const copyReferralCode = async () => {
+    if (!profile.referralCode) return;
+    await Clipboard.setStringAsync(profile.referralCode);
+    setToast({
+      title: t('dizzyFamily.code_copied', 'Code copied'),
+      message: t('dizzyFamily.code_copied_msg', 'The referral code has been copied.'),
+      type: 'success',
+    });
+  };
+
+  const handleShare = async () => {
+    if (!isBusiness) {
+      Share.share({ title: profile.name, message: shareText });
+      return;
+    }
+
+    const caption = (profile.storeUrl && !shareText.includes(profile.storeUrl))
+      ? `${shareText}\n${profile.storeUrl}`
+      : shareText;
+
+    let shared = false;
+    setIsSharing(true);
+
+    if (Platform.OS !== 'web' && cardShotRef.current?.capture) {
+      try {
+        const imageUri = await cardShotRef.current.capture();
+        if (imageUri) {
+          try {
+            await Clipboard.setStringAsync(caption);
+          } catch (_) {}
+
+          if (await Sharing.isAvailableAsync()) {
+            await Sharing.shareAsync(imageUri, {
+              mimeType: 'image/png',
+              dialogTitle: t('shareProfile.title', 'Share my DizzitUp profile'),
+            });
+            shared = true;
+            setToast({
+              title: t('shareSuccess.copiedTitle', 'Message copied!'),
+              message: t('shareProfile.captionCopied', 'Caption with your DZYstore link copied. Paste it in your post.'),
+              type: 'success',
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('[ShareProfile] Image capture/share failed, falling back to text:', err);
+      }
+    }
+
+    if (!shared) {
+      try {
+        await Share.share({
+          title: profile.name,
+          message: caption,
+        });
+      } catch (err) {
+        console.warn('[ShareProfile] Fallback text share failed:', err);
+      }
+    }
+
+    setIsSharing(false);
+  };
+
   const renderAvatar = () => {
     const hasImage = Boolean(profile.logoUrl) && !imageError;
     if (hasImage) {
@@ -171,79 +251,176 @@ export default function ShareProfileScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={22} color="#1A2840" />
-          </TouchableOpacity>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.title}>{t('shareProfile.title', 'Share my DizzitUp profile')}</Text>
-            <Text style={styles.subtitle}>{t('shareProfile.subtitle', 'Help people identify you before they pay or send funds.')}</Text>
-          </View>
-        </View>
-        <View style={styles.card}>
-          {renderAvatar()}
-          <Text style={styles.name}>{profile.name}</Text>
-          {!isBusiness && !!profile.identifier && (
-            <Text style={styles.identifier}>{profile.identifier}</Text>
-          )}
-          <View style={styles.qr}><ProfileQr /></View>
-          <Text style={styles.hint}>
-            {isBusiness
-              ? t('shareProfile.scanHintBusiness', 'Scan to open my DZYstore')
-              : t('shareProfile.scanHint', 'Scan to open the verified DizzitUp invitation link.')}
-          </Text>
-          {isBusiness ? (
-            <TouchableOpacity
-              style={styles.storeUrlRow}
-              onPress={copyStoreUrl}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel={profile.storeUrl}
-            >
-              <Text style={styles.storeUrlText} numberOfLines={1} ellipsizeMode="middle">
-                {profile.storeUrl}
-              </Text>
-              <Ionicons name="copy-outline" size={13} color="#64748B" style={{ marginLeft: 5 }} />
-            </TouchableOpacity>
-          ) : null}
-          {isBusiness ? (
-            !!profile.referralCode && (
-              <View style={styles.refContainer}>
-                <Text style={styles.refLabel}>{t('shareProfile.referralCodeLabel', 'Referral code')}</Text>
-                <Text style={styles.ref}>{profile.referralCode}</Text>
-              </View>
-            )
-          ) : (
-            !!profile.referralCode && <Text style={styles.ref}>{profile.referralCode}</Text>
-          )}
-          {isBusiness && (
-            <TouchableOpacity
-              style={styles.payLinkButton}
-              onPress={() => navigation.navigate('InvoicePayLinkScreen')}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="link-outline" size={17} color="#1A2840" />
-              <Text style={styles.payLinkButtonText}>
-                {t('shareProfile.createPayLink', 'Create a pay link')}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
-        <TouchableOpacity
-          style={styles.primary}
-          onPress={() => Share.share({ title: profile.name, message: shareText })}
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
         >
-          <Ionicons name="share-social-outline" size={20} color="#1A2840" />
-          <Text style={styles.primaryText}>{t('shareProfile.share', 'Share profile')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.secondary} onPress={copy}>
-          <Ionicons name="copy-outline" size={19} color="#1A2840" />
-          <Text style={styles.secondaryText}>{t('shareProfile.copy', 'Copy profile details')}</Text>
-        </TouchableOpacity>
-        <Text style={styles.privacy}>
-          {t('shareProfile.privacy', 'Only share this profile with people you trust. Never share your PIN or recovery information.')}
-        </Text>
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+              <Ionicons name="arrow-back" size={22} color="#1A2840" />
+            </TouchableOpacity>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.title} maxFontSizeMultiplier={1.3}>{t('shareProfile.title', 'Share my DizzitUp profile')}</Text>
+              <Text style={styles.subtitle} maxFontSizeMultiplier={1.3}>{t('shareProfile.subtitle', 'Help people identify you before they pay or send funds.')}</Text>
+            </View>
+          </View>
+          <View style={styles.card}>
+            {renderAvatar()}
+            <Text style={styles.name} maxFontSizeMultiplier={1.3}>{profile.name}</Text>
+            {!isBusiness && !!profile.identifier && (
+              <Text style={styles.identifier} maxFontSizeMultiplier={1.3}>{profile.identifier}</Text>
+            )}
+            <View style={styles.qr}><ProfileQr /></View>
+            <Text style={styles.hint} maxFontSizeMultiplier={1.3}>
+              {isBusiness
+                ? t('shareProfile.scanHintBusiness', 'Scan to open my DZYstore')
+                : t('shareProfile.scanHint', 'Scan to open the verified DizzitUp invitation link.')}
+            </Text>
+            {isBusiness ? (
+              <TouchableOpacity
+                style={styles.storeUrlRow}
+                onPress={copyStoreUrl}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={profile.storeUrl}
+              >
+                <Text style={styles.storeUrlText} numberOfLines={1} ellipsizeMode="middle" maxFontSizeMultiplier={1.3}>
+                  {profile.storeUrl}
+                </Text>
+                <Ionicons name="copy-outline" size={13} color="#64748B" style={{ marginLeft: 5 }} />
+              </TouchableOpacity>
+            ) : null}
+            {isBusiness ? (
+              !!profile.referralCode && (
+                <View style={styles.refContainer}>
+                  <Text style={styles.refLabel} maxFontSizeMultiplier={1.3}>{t('shareProfile.referralCodeLabel', 'Referral code')}</Text>
+                  <TouchableOpacity
+                    style={styles.refRow}
+                    onPress={copyReferralCode}
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel={profile.referralCode}
+                  >
+                    <Text style={styles.refText} maxFontSizeMultiplier={1.3}>{profile.referralCode}</Text>
+                    <Ionicons name="copy-outline" size={12} color="#A16207" style={{ marginLeft: 5 }} />
+                  </TouchableOpacity>
+                </View>
+              )
+            ) : (
+              !!profile.referralCode && <Text style={styles.ref} maxFontSizeMultiplier={1.3}>{profile.referralCode}</Text>
+            )}
+            {isBusiness && (
+              <TouchableOpacity
+                style={styles.payLinkButton}
+                onPress={() => navigation.navigate('InvoicePayLinkScreen')}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="link-outline" size={17} color="#1A2840" />
+                <Text style={styles.payLinkButtonText} maxFontSizeMultiplier={1.3}>
+                  {t('shareProfile.createPayLink', 'Create a pay link')}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </ScrollView>
+
+        <ScreenFooter
+          backgroundColor="#F8FAFC"
+          borderTop={true}
+          borderTopColor="#E8EDF4"
+          paddingHorizontal={16}
+          paddingTop={8}
+          minBottomInset={Platform.OS === 'android' ? 14 : 8}
+        >
+          <TouchableOpacity
+            style={[styles.primary, isSharing && { opacity: 0.7 }]}
+            onPress={handleShare}
+            disabled={isSharing}
+            activeOpacity={0.85}
+          >
+            {isSharing ? (
+              <ActivityIndicator color="#1A2840" size="small" />
+            ) : (
+              <>
+                <Ionicons name="share-social-outline" size={20} color="#1A2840" />
+                <Text style={styles.primaryText} maxFontSizeMultiplier={1.3}>{t('shareProfile.share', 'Share profile')}</Text>
+              </>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.secondary} onPress={copy} activeOpacity={0.75}>
+            <Ionicons name="copy-outline" size={19} color="#1A2840" />
+            <Text style={styles.secondaryText} maxFontSizeMultiplier={1.3}>{t('shareProfile.copy', 'Copy profile details')}</Text>
+          </TouchableOpacity>
+          <Text style={styles.privacy} maxFontSizeMultiplier={1.3}>
+            {t('shareProfile.privacy', 'Only share this profile with people you trust. Never share your PIN or recovery information.')}
+          </Text>
+        </ScreenFooter>
       </View>
+      {isBusiness && (
+        <View pointerEvents="none" style={styles.offscreenShotWrapper}>
+          <ViewShot
+            ref={cardShotRef}
+            options={{ format: 'png', quality: 1, result: 'tmpfile' }}
+            collapsable={false}
+          >
+            <LinearGradient
+              colors={['#20365B', '#111D33']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.shareImageCard}
+              collapsable={false}
+            >
+              <View style={styles.cardHeaderRow}>
+                <View style={styles.cardBrandRow}>
+                  <Image
+                    source={require('../../assets/brand/dizzitup_logo_cercle.png')}
+                    style={styles.cardBrandLogo}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.cardBrandText}>
+                    Dizzit<Text style={{ color: '#FFC759' }}>Up</Text>
+                  </Text>
+                </View>
+                <Text style={styles.cardHashtag}>
+                  #NoBorder<Text style={{ color: '#FFC759' }}>NoMiddleman</Text>
+                </Text>
+              </View>
+
+              <Text style={styles.cardBusinessName} numberOfLines={2}>
+                {profile.name}
+              </Text>
+
+              {!!locationText && (
+                <Text style={styles.cardLocationText} numberOfLines={1}>
+                  {locationText}
+                </Text>
+              )}
+
+              <View style={styles.cardQrContainer}>
+                <ProfileQr size={160} />
+              </View>
+
+              <Text style={styles.cardScanHint} numberOfLines={1}>
+                {t('shareProfile.scanHintBusiness', 'Scan to open my DZYstore')}
+              </Text>
+
+              <View style={styles.cardFooterRow}>
+                <Image
+                  source={require('../../assets/brand/dizzitup_logo_cercle.png')}
+                  style={styles.cardFooterLogo}
+                  resizeMode="contain"
+                />
+                <Text style={styles.cardFooterBrand}>
+                  Dizzit<Text style={{ color: '#FFC759' }}>Up</Text>
+                  {' • '}
+                  <Text style={styles.cardFooterUrl}>dizzitup.com</Text>
+                </Text>
+              </View>
+            </LinearGradient>
+          </ViewShot>
+        </View>
+      )}
       <AppToast visible={!!toast} title={toast?.title} message={toast?.message} type={toast?.type} onClose={() => setToast(null)} />
     </SafeAreaView>
   );
@@ -251,35 +428,141 @@ export default function ShareProfileScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#F8FAFC', paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 36) : 0 },
-  container: { flex: 1, padding: 20 },
-  header: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 22 },
+  container: { flex: 1 },
+  scrollView: { flex: 1 },
+  scrollContent: { paddingHorizontal: isSmallScreen ? 14 : 18, paddingTop: 10, paddingBottom: 16 },
+  header: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: isSmallScreen ? 12 : 18 },
   backBtn: { width: 42, height: 42, borderRadius: 14, backgroundColor: '#FFF', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
-  title: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 22, color: '#1A2840' },
-  subtitle: { fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 19, color: '#64748B', marginTop: 4 },
-  card: { backgroundColor: '#FFF', borderRadius: 24, padding: 24, alignItems: 'center', borderWidth: 1, borderColor: '#E8EDF4', marginBottom: 18 },
-  avatarTile: { width: 64, height: 64, borderRadius: 16, backgroundColor: '#071D54', borderWidth: 1.5, borderColor: '#FFC759', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  title: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: isSmallScreen ? 20 : 22, color: '#1A2840' },
+  subtitle: { fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 18, color: '#64748B', marginTop: 3 },
+  card: { backgroundColor: '#FFF', borderRadius: 20, padding: isSmallScreen ? 14 : 18, alignItems: 'center', borderWidth: 1, borderColor: '#E8EDF4', marginBottom: 10 },
+  avatarTile: { width: isSmallScreen ? 52 : 60, height: isSmallScreen ? 52 : 60, borderRadius: 16, backgroundColor: '#071D54', borderWidth: 1.5, borderColor: '#FFC759', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   avatarImage: { width: '100%', height: '100%' },
-  avatarInitials: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 24, color: '#FFC759', letterSpacing: 0.5 },
-  avatarInitialsVerified: { fontSize: 20, lineHeight: 24 },
+  avatarInitials: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: isSmallScreen ? 20 : 22, color: '#FFC759', letterSpacing: 0.5 },
+  avatarInitialsVerified: { fontSize: 18, lineHeight: 22 },
   verifiedBadge: { marginTop: 2, paddingHorizontal: 4, paddingVertical: 1, borderRadius: 4, backgroundColor: 'rgba(255, 199, 89, 0.18)' },
   verifiedText: { fontFamily: 'Inter_700Bold', fontSize: 7.5, color: '#FFC759', textTransform: 'uppercase', letterSpacing: 0.5 },
-  name: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 21, color: '#1A2840', marginTop: 12, textAlign: 'center' },
-  identifier: { fontFamily: 'Inter_500Medium', fontSize: 13, color: '#64748B', marginTop: 4 },
-  qr: { padding: 14, borderRadius: 18, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#E2E8F0', marginTop: 20 },
+  name: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: isSmallScreen ? 18 : 20, color: '#1A2840', marginTop: isSmallScreen ? 8 : 10, textAlign: 'center' },
+  identifier: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#64748B', marginTop: 3 },
+  qr: { padding: isSmallScreen ? 8 : 12, borderRadius: 16, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#E2E8F0', marginTop: isSmallScreen ? 10 : 14 },
   qrInnerWrapper: { position: 'relative', alignItems: 'center', justifyContent: 'center' },
-  qrCenterLogo: { position: 'absolute', width: 42, height: 42, borderRadius: 10, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E2E8F0', elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.15, shadowRadius: 2 },
-  qrLogoImg: { width: 32, height: 32, borderRadius: 6 },
-  hint: { fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 18, color: '#64748B', textAlign: 'center', marginTop: 12 },
-  storeUrlRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 6, paddingHorizontal: 12, paddingVertical: 4, backgroundColor: '#F1F5F9', borderRadius: 8, maxWidth: '90%' },
-  storeUrlText: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#3B82F6', textDecorationLine: 'underline' },
-  refContainer: { marginTop: 12, alignItems: 'center' },
-  refLabel: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#64748B', marginBottom: 4 },
-  ref: { marginTop: 4, backgroundColor: '#FFF7E1', color: '#A16207', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, fontFamily: 'Inter_700Bold' },
-  primary: { height: 54, borderRadius: 15, backgroundColor: '#FFC759', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9 },
-  primaryText: { fontFamily: 'Inter_700Bold', fontSize: 15, color: '#1A2840' },
-  secondary: { height: 50, borderRadius: 15, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#DDE4EE', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 10 },
-  secondaryText: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#1A2840' },
-  privacy: { fontFamily: 'Inter_400Regular', fontSize: 11, lineHeight: 17, color: '#94A3B8', textAlign: 'center', marginTop: 14, paddingHorizontal: 12 },
-  payLinkButton: { height: 44, borderRadius: 12, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#DDE4EE', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 14, paddingHorizontal: 16, width: '100%' },
-  payLinkButtonText: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#1A2840' },
+  qrCenterLogo: { position: 'absolute', width: 38, height: 38, borderRadius: 10, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E2E8F0', elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.15, shadowRadius: 2 },
+  qrLogoImg: { width: 28, height: 28, borderRadius: 6 },
+  hint: { fontFamily: 'Inter_400Regular', fontSize: 11, lineHeight: 16, color: '#64748B', textAlign: 'center', marginTop: 8 },
+  storeUrlRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 6, paddingHorizontal: 10, paddingVertical: 4, backgroundColor: '#F1F5F9', borderRadius: 8, maxWidth: '90%' },
+  storeUrlText: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#3B82F6', textDecorationLine: 'underline' },
+  refContainer: { marginTop: 8, alignItems: 'center' },
+  refLabel: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#64748B', marginBottom: 2 },
+  ref: { marginTop: 2, backgroundColor: '#FFF7E1', color: '#A16207', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, fontFamily: 'Inter_700Bold', fontSize: 12 },
+  refRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF7E1',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginTop: 2,
+  },
+  refText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 12,
+    color: '#A16207',
+  },
+  primary: { height: 48, borderRadius: 14, backgroundColor: '#FFC759', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9 },
+  primaryText: { fontFamily: 'Inter_700Bold', fontSize: 14, color: '#1A2840' },
+  secondary: { height: 44, borderRadius: 14, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#DDE4EE', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8 },
+  secondaryText: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#1A2840' },
+  privacy: { fontFamily: 'Inter_400Regular', fontSize: 10, lineHeight: 14, color: '#94A3B8', textAlign: 'center', marginTop: 8, paddingHorizontal: 8 },
+  payLinkButton: { height: 40, borderRadius: 12, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#DDE4EE', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 10, paddingHorizontal: 14, width: '100%' },
+  payLinkButtonText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840' },
+  offscreenShotWrapper: {
+    position: 'absolute',
+    left: -2000,
+    top: 0,
+    width: 340,
+  },
+  shareImageCard: {
+    width: 340,
+    borderRadius: 22,
+    padding: 18,
+    alignItems: 'center',
+  },
+  cardHeaderRow: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  cardBrandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cardBrandLogo: {
+    width: 24,
+    height: 24,
+    marginRight: 6,
+  },
+  cardBrandText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 15,
+    color: '#FFFFFF',
+  },
+  cardHashtag: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 10,
+    color: '#FFFFFF',
+  },
+  cardBusinessName: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 19,
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginBottom: 2,
+    width: '100%',
+  },
+  cardLocationText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: '#FFC759',
+    textAlign: 'center',
+    marginBottom: 10,
+    width: '100%',
+  },
+  cardQrContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardScanHint: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 11,
+    color: '#E2E8F0',
+    textAlign: 'center',
+    marginTop: 10,
+    width: '100%',
+  },
+  cardFooterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 12,
+  },
+  cardFooterLogo: {
+    width: 18,
+    height: 18,
+    marginRight: 6,
+  },
+  cardFooterBrand: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 12,
+    color: '#FFFFFF',
+  },
+  cardFooterUrl: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 11,
+    color: '#94A3B8',
+  },
 });

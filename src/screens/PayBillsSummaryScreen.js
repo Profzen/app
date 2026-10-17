@@ -25,6 +25,7 @@ import { getIsoCountryCode, resolveBeneficiaryCountry, getCountryFromPhone } fro
 import { ALL_COUNTRIES } from '../utils/countriesData';
 import { isSmallScreen } from '../utils/responsive';
 import { PinConfirmationModal } from '../components/PinConfirmationModal';
+import { getWalletIdentity, getWalletErrorMessage } from '../utils/walletIdentity';
 import { useRef } from 'react';
 import QRCode from 'qrcode';
 import Svg, { Rect } from 'react-native-svg';
@@ -48,6 +49,8 @@ export default function PayBillsSummaryScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const { user, session, language, t } = useApp();
+  const walletIdentity = getWalletIdentity(user, session);
+  const walletToken = walletIdentity.token;
 
   const [pinModalVisible, setPinModalVisible] = useState(false);
   const pinResolveRef = useRef(null);
@@ -117,7 +120,7 @@ export default function PayBillsSummaryScreen() {
 
   // Fetch DZYwallet balances when wallet method is selected
   useEffect(() => {
-    if (selectedMethod !== 'wallet' || !session?.access_token) return;
+    if (selectedMethod !== 'wallet' || !walletToken) return;
     let cancelled = false;
     const fetchWalletBalances = async () => {
       setWalletLoading(true);
@@ -127,7 +130,7 @@ export default function PayBillsSummaryScreen() {
           DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
         }
         const res = await fetch(`${DIZZY_URL}/wallet/balance`, {
-          headers: { 'Authorization': `Bearer ${session.access_token}` },
+          headers: { 'Authorization': `Bearer ${walletToken}` },
         });
         const data = await res.json();
         if (!cancelled && data) {
@@ -157,7 +160,7 @@ export default function PayBillsSummaryScreen() {
     };
     fetchWalletBalances();
     return () => { cancelled = true; };
-  }, [selectedMethod, session?.access_token, numTotalCost]);
+  }, [selectedMethod, walletToken, numTotalCost]);
 
 
 
@@ -413,8 +416,12 @@ export default function PayBillsSummaryScreen() {
         if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
         
         // Ensure user is authenticated to use wallet
-        if (!session?.access_token) {
-          throw new Error(t('paybillsSummary.walletAuthError', 'You must be logged in to use DizzitUp Wallet.'));
+        if (!walletToken) {
+          throw new Error(
+            walletIdentity.reason === 'no_shop'
+              ? t('common.wallet.no_shop', 'No active shop found for this business account. Please contact support.')
+              : t('paybillsSummary.walletAuthError', 'You must be logged in to use DizzitUp Wallet.')
+          );
         }
 
         if (hasInsufficientBalance) {
@@ -444,7 +451,7 @@ export default function PayBillsSummaryScreen() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
+            'Authorization': `Bearer ${walletToken}`
           },
           body: JSON.stringify(payload)
         });
@@ -926,10 +933,27 @@ export default function PayBillsSummaryScreen() {
               <View style={styles.subTokensContainer}>
                 <View style={styles.subTokensHeader}>
                   <Text style={styles.subTokensHeaderTitle}>{t('paybillsSummary.payWith', 'PAY WITH')}</Text>
-                  {walletLoading && <ActivityIndicator size="small" color="#FFC759" />}
+                  {!walletIdentity.reason && walletLoading && <ActivityIndicator size="small" color="#FFC759" />}
                 </View>
 
-                {availableDzyTokens.length > 0 ? (
+                {walletIdentity.reason ? (
+                  <View style={styles.emptyWalletBox}>
+                    <Ionicons name="alert-circle-outline" size={24} color="#D97706" />
+                    <Text style={[styles.emptyWalletTitle, { marginTop: 8 }]}>
+                      {getWalletErrorMessage(walletIdentity.reason, t)}
+                    </Text>
+                    {walletIdentity.reason === 'no_shop' && (
+                      <TouchableOpacity
+                        style={{ marginTop: 12, paddingVertical: 6, paddingHorizontal: 12 }}
+                        onPress={() => navigation.navigate('BusinessAccountScreen')}
+                      >
+                        <Text style={{ color: '#071D54', fontSize: 13, fontFamily: 'Inter_600SemiBold', textDecorationLine: 'underline' }}>
+                          {t('common.wallet.continue_setup', 'Continue setting up')}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                ) : availableDzyTokens.length > 0 ? (
                   availableDzyTokens.map((tItem) => {
                     const balItem = walletBalances.find(
                       (b) => (b.token || b.symbol)?.toLowerCase() === tItem.id
@@ -1286,9 +1310,10 @@ export default function PayBillsSummaryScreen() {
           <TouchableOpacity
             style={[
               styles.payButton, 
-              (loading || isBelowMinimumAmount || (selectedMethod === 'wallet' && walletLoading)) && styles.payButtonDisabled
+              (loading || isBelowMinimumAmount || (selectedMethod === 'wallet' && (walletLoading || !walletToken))) && styles.payButtonDisabled
             ]}
             onPress={() => {
+              if (selectedMethod === 'wallet' && !walletToken) return;
               if (selectedMethod === 'wallet' && hasInsufficientBalance) {
                 navigation.navigate('TopUpWalletScreen', {
                   pivotScreen: 'PayBillsSummaryScreen',
@@ -1298,10 +1323,18 @@ export default function PayBillsSummaryScreen() {
               }
               handleConfirmAndPay();
             }}
-            disabled={loading || isBelowMinimumAmount || (selectedMethod === 'wallet' && walletLoading)}
+            disabled={loading || isBelowMinimumAmount || (selectedMethod === 'wallet' && (walletLoading || !walletToken))}
             activeOpacity={0.8}
           >
             {loading ? (
+              <ActivityIndicator color="#20365B" size="small" />
+            ) : selectedMethod === 'wallet' && walletIdentity.reason ? (
+              <View style={styles.payButtonContent}>
+                <Text style={[styles.payButtonText, { fontSize: 12, textAlign: 'center', paddingHorizontal: 8 }]}>
+                  {getWalletErrorMessage(walletIdentity.reason, t)}
+                </Text>
+              </View>
+            ) : (selectedMethod === 'wallet' && (walletLoading || !walletToken)) ? (
               <ActivityIndicator color="#20365B" size="small" />
             ) : isBelowMinimumAmount ? (
               <View style={styles.payButtonContent}>

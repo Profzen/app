@@ -18,6 +18,7 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import { PinConfirmationModal } from '../components/PinConfirmationModal';
 import { getEstimatedNetworkFee } from '../config/networkFees';
 import { getExplorerTxUrl } from '../utils/explorer';
+import { getWalletIdentity, getWalletErrorMessage } from '../utils/walletIdentity';
 
 const BLOCKCHAINS = [
   { value: 'Polygon', label: 'Polygon', name: 'Polygon Network', isCrypto: true, cryptoSymbol: 'Polygon' },
@@ -141,7 +142,11 @@ export default function SendMoneyScreen() {
   const hasAutoSelectedRef = useRef(false);
   const userHasChangedRef = useRef(false);
 
-  const isMerchant = user?.role === 'merchant';
+  const walletIdentity = getWalletIdentity(user, session);
+  const isMerchant = walletIdentity.isMerchant;
+  const isSolana = (blockchain || 'polygon').toLowerCase() === 'solana';
+  const neededAddress = isSolana ? walletIdentity.solana : walletIdentity.evm;
+  const isWalletReady = !!walletIdentity.token && !!neededAddress;
   const effectiveRawBalances = (isMerchant && user?.businessRawBalances?.length)
     ? user.businessRawBalances
     : (user?.rawBalances?.length ? user.rawBalances : (user?.personalRawBalances || []));
@@ -207,9 +212,7 @@ export default function SendMoneyScreen() {
 
   // Fetch real live wallet balances from dizzy-wallet using appropriate auth token
   const fetchLiveBalances = useCallback(async () => {
-    const authToken = (isMerchant && user?.businessDizzyToken)
-      ? user.businessDizzyToken
-      : (user?.dizzyToken || session?.access_token);
+    const authToken = walletIdentity.token;
 
     if (!authToken) return;
     setBalancesLoading(true);
@@ -235,7 +238,7 @@ export default function SendMoneyScreen() {
     } finally {
       setBalancesLoading(false);
     }
-  }, [session?.access_token, user?.dizzyToken, user?.businessDizzyToken, isMerchant]);
+  }, [walletIdentity.token]);
 
   useEffect(() => {
     fetchLiveBalances();
@@ -651,13 +654,16 @@ export default function SendMoneyScreen() {
         DIZZY_URL = DIZZY_URL.replace('10.0.2.2', 'localhost');
       }
 
-      const authToken = (isMerchant && user?.businessDizzyToken)
-        ? user.businessDizzyToken
-        : (user?.dizzyToken || session?.access_token);
+      const authToken = walletIdentity.token;
+      if (!authToken || !neededAddress) {
+        throw new Error(
+          walletIdentity.isMerchant
+            ? 'Merchant business wallet is not ready. Please refresh the app.'
+            : 'Wallet is not ready. Please refresh the app.'
+        );
+      }
 
-      const senderFromAddress = isMerchant
-        ? (user?.businessEvmAddress || user?.evmAddress || user?.walletAddress)
-        : (user?.evmAddress || user?.walletAddress);
+      const senderFromAddress = neededAddress;
 
       const payload = {
         toAddress,
@@ -841,7 +847,7 @@ export default function SendMoneyScreen() {
           }
         }
 
-        const effectiveAuth = tokenToUse || (isMerchant && user?.businessDizzyToken ? user.businessDizzyToken : (user?.dizzyToken || session?.access_token));
+        const effectiveAuth = tokenToUse || walletIdentity.token;
         if (!effectiveAuth) {
           isPolling = false;
           return;
@@ -930,7 +936,8 @@ export default function SendMoneyScreen() {
       if (Platform.OS === 'android' && rawWalletApi.includes('localhost')) {
         rawWalletApi = rawWalletApi.replace('localhost', '10.0.2.2');
       }
-      const authToken = (isMerchant && user?.businessDizzyToken) ? user.businessDizzyToken : (user?.dizzyToken || session?.access_token);
+      const authToken = walletIdentity.token;
+      if (!authToken) return;
       const baseApi = rawWalletApi.replace(/\/wallet\/?$/, '').replace(/\/api\/?$/, '') + '/api';
 
       const res = await fetch(`${baseApi}/swap/check-crossmint-status/${activeTxHash}`, {
@@ -1029,11 +1036,9 @@ export default function SendMoneyScreen() {
         rawWalletApi = rawWalletApi.replace('localhost', '10.0.2.2');
       }
       const walletBase = rawWalletApi.replace(/\/wallet\/?$/, '').replace(/\/api\/?$/, '') + '/api/wallet';
-      const authToken = (isMerchant && user?.businessDizzyToken) ? user.businessDizzyToken : (user?.dizzyToken || session?.access_token);
-
-      const senderFromAddress = (blockchain || 'polygon').toLowerCase() === 'solana'
-        ? (user?.solanaAddress || user?.solana_wallet_address)
-        : (user?.evmAddress || user?.evm_wallet_address || user?.walletAddress);
+      const authToken = walletIdentity.token;
+      if (!authToken || !neededAddress) return;
+      const senderFromAddress = neededAddress;
 
       // 2. If OTP code entered, submit it to /approve-transaction
       if (approvalOtp.trim()) {
@@ -1397,19 +1402,40 @@ export default function SendMoneyScreen() {
               <TouchableOpacity
                 style={[
                   styles.sendCtaBtn,
-                  (isSending || !!sendValidationError || numAmount <= 0 || currentAvailableBalance <= 0) && styles.sendCtaBtnDisabled
+                  (isSending || !!sendValidationError || numAmount <= 0 || currentAvailableBalance <= 0 || !isWalletReady) && styles.sendCtaBtnDisabled
                 ]}
                 onPress={handleSend}
                 activeOpacity={0.88}
-                disabled={isSending || !!sendValidationError || numAmount <= 0 || currentAvailableBalance <= 0}
+                disabled={isSending || !!sendValidationError || numAmount <= 0 || currentAvailableBalance <= 0 || !isWalletReady}
               >
-                {isSending ? <ActivityIndicator color="#FFFFFF" /> : (
+                {isSending ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (!isWalletReady && !!session) ? (
+                  walletIdentity.reason ? (
+                    <Text style={[styles.sendCtaText, { fontSize: 12, textAlign: 'center', paddingHorizontal: 8 }]}>
+                      {getWalletErrorMessage(walletIdentity.reason, t)}
+                    </Text>
+                  ) : (
+                    <ActivityIndicator color="#FFFFFF" />
+                  )
+                ) : (
                   <>
                     <Ionicons name="paper-plane-outline" size={17} color="#FFFFFF" style={{ marginRight: 6 }} />
                     <Text style={styles.sendCtaText}>{t('pos.send_token', 'Send')} {token}</Text>
                   </>
                 )}
               </TouchableOpacity>
+
+              {walletIdentity.reason === 'no_shop' && (
+                <TouchableOpacity
+                  style={{ marginTop: 12, alignSelf: 'center', paddingVertical: 6, paddingHorizontal: 12 }}
+                  onPress={() => navigation.navigate('BusinessAccountScreen')}
+                >
+                  <Text style={{ color: '#071D54', fontSize: 13, fontFamily: 'Inter_600SemiBold', textDecorationLine: 'underline' }}>
+                    {t('common.wallet.continue_setup', 'Continue setting up')}
+                  </Text>
+                </TouchableOpacity>
+              )}
 
             </View>
 

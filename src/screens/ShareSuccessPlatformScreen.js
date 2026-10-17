@@ -57,14 +57,19 @@ export default function ShareSuccessPlatformScreen() {
           </TouchableOpacity>
           
           <View style={styles.headerTitleWrap}>
-            <Text style={styles.headerTitle}>{t('shareSuccess.headerTitle', "Share my success")}</Text>
-            <Text style={styles.headerSubtitle}>{t('shareSuccess.headerSubtitle', "Choose where to publish your DizzitUp card")}</Text>
+            <Text style={styles.headerTitle} maxFontSizeMultiplier={1.3}>
+              {t('shareSuccess.headerTitle', "Share my success")}
+            </Text>
           </View>
 
           <TouchableOpacity style={styles.helpBtn} onPress={() => navigation.navigate('AskAminataScreen')}>
             <Ionicons name="help-circle-outline" size={24} color="#1A2840" />
           </TouchableOpacity>
         </View>
+
+        <Text style={styles.headerSubtitle} maxFontSizeMultiplier={1.3}>
+          {t('shareSuccess.headerSubtitle', "Choose where to publish your DizzitUp card")}
+        </Text>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
@@ -245,7 +250,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingBottom: 4,
   },
   backBtn: {
     width: 38,
@@ -256,17 +261,23 @@ const styles = StyleSheet.create({
   headerTitleWrap: {
     flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
     fontFamily: 'SpaceGrotesk_700Bold',
     fontSize: 18,
     color: '#1A2840',
+    textAlign: 'center',
   },
   headerSubtitle: {
     fontFamily: 'Inter_400Regular',
     fontSize: 12,
     color: '#94A3B8',
+    textAlign: 'center',
+    paddingHorizontal: 20,
     marginTop: 2,
+    marginBottom: 8,
+    width: '100%',
   },
   helpBtn: {
     width: 38,

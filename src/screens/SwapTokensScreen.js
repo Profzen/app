@@ -13,6 +13,7 @@ import ScreenFooter from '../components/ScreenFooter';
 import { useApp } from '../context/AppContext';
 import { swapService } from '../services/swapService';
 import { ESTIMATED_NETWORK_FEES_USDC } from '../config/networkFees';
+import { getWalletIdentity, getWalletErrorMessage } from '../utils/walletIdentity';
 
 const formatMax6Decimals = (val) => {
   if (val === null || val === undefined || val === '') return '';
@@ -47,10 +48,9 @@ export default function SwapTokensScreen() {
   const { wallet: crossmintWallet, getWallet } = useWallet();
   const { user, session, refreshUser, t } = useApp();
 
-  const isMerchant = user?.role === 'merchant';
-  const authToken = (isMerchant && user?.businessDizzyToken)
-    ? user.businessDizzyToken
-    : (user?.dizzyToken || session?.access_token);
+  const walletIdentity = getWalletIdentity(user, session);
+  const authToken = walletIdentity.token;
+  const isMerchant = walletIdentity.isMerchant;
 
   const [fromChain, setFromChain] = useState('polygon');
   const [toChain, setToChain] = useState('polygon');
@@ -78,6 +78,7 @@ export default function SwapTokensScreen() {
   const pollIntervalRef = React.useRef(null);
   const finalPollIntervalRef = React.useRef(null);
   const approveCalledRef = React.useRef(false);
+  const silentPollingRef = React.useRef(false);
 
   const stopPolling = () => {
     if (pollIntervalRef.current) {
@@ -127,6 +128,7 @@ export default function SwapTokensScreen() {
     setIsAuthorizing(false);
     setSuccessTxHash(null);
     approveCalledRef.current = false;
+    silentPollingRef.current = false;
     stopPolling();
     if (typeof refreshUser === 'function') refreshUser();
   };
@@ -145,6 +147,10 @@ export default function SwapTokensScreen() {
     };
   }, []);
 
+  const isSolana = fromChain === 'solana';
+  const neededAddress = isSolana ? walletIdentity.solana : walletIdentity.evm;
+  const isSwapReady = !!authToken && !!neededAddress;
+
   const availableBalance = user?.rawBalances?.find((b) => (b.currency || b.token || b.symbol) === fromToken && (b.chain === fromChain || !b.chain))?.balance || 0;
 
   // Debounced quote fetching
@@ -157,9 +163,14 @@ export default function SwapTokensScreen() {
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [fromAmount, fromToken, toToken, fromChain, toChain]);
+  }, [fromAmount, fromToken, toToken, fromChain, toChain, isSwapReady]);
 
   const getQuote = async () => {
+    if (!isSwapReady) {
+      setQuote(null);
+      setToAmount('');
+      return;
+    }
     setQuoteLoading(true);
     setError(null);
     setInfoMsg(null);
@@ -198,18 +209,29 @@ export default function SwapTokensScreen() {
       try {
         const data = await swapService.checkTransactionStatus(txId, authToken);
         const crossStatus = data.crossmintStatus || data.status;
-        setTxStatus(crossStatus);
+        if (!silentPollingRef.current) {
+          setTxStatus(crossStatus);
+        }
 
         if (data.status === 'COMPLETED') {
           stopPolling();
+          const wasSilent = silentPollingRef.current;
+          silentPollingRef.current = false;
 
-          if (data.type === 'APPROVAL') {
+          if (data.type === 'APPROVAL' && !wasSilent) {
             // If it was an approval, immediately trigger the swap execute
             setTxStatus(null);
             setIsAuthorizing(false);
             setSwapStep('swap');
             approveCalledRef.current = false;
             handleSwap(true);
+          } else if (data.type === 'APPROVAL' && wasSilent) {
+            setTxStatus(null);
+            setLoading(false);
+            setIsAuthorizing(false);
+            setSwapStep(null);
+            approveCalledRef.current = false;
+            setInfoMsg(t('common.wallet.swap_ui.approval_confirmed', 'Approval confirmed. Tap Execute Swap to continue.'));
           } else {
             setLoading(false);
             setIsAuthorizing(false);
@@ -219,7 +241,12 @@ export default function SwapTokensScreen() {
 
             const onChain = data.blockchainHash || data.onChain?.txHash || (data.txHash && isOnChainHash(data.txHash, fromChain) ? data.txHash : null);
             setSuccessTxHash(onChain || txId);
-            setTxStatus('success');
+            if (wasSilent) {
+              setTxStatus(null);
+              setInfoMsg(t('common.wallet.swap_ui.swap_success_title', 'Swap successful!'));
+            } else {
+              setTxStatus('success');
+            }
 
             if (!onChain) {
               pollForFinalHash(txId);
@@ -230,7 +257,14 @@ export default function SwapTokensScreen() {
 
         if (crossStatus === 'failed') {
           stopPolling();
-          setError(t('common.wallet.swap_ui.failed', 'Transaction failed'));
+          const wasSilent = silentPollingRef.current;
+          silentPollingRef.current = false;
+          if (wasSilent) {
+            setTxStatus(null);
+            setInfoMsg(t('common.wallet.swap_ui.failed', 'Transaction failed'));
+          } else {
+            setError(t('common.wallet.swap_ui.failed', 'Transaction failed'));
+          }
           setLoading(false);
           setIsAuthorizing(false);
           setSwapStep(null);
@@ -243,6 +277,7 @@ export default function SwapTokensScreen() {
 
       if (attempts >= maxAttempts) {
         stopPolling();
+        silentPollingRef.current = false;
         setLoading(false);
         setIsAuthorizing(false);
         setSwapStep(null);
@@ -253,6 +288,12 @@ export default function SwapTokensScreen() {
   };
 
   const handleSwap = async (isFollowUp = false) => {
+    if (!isSwapReady) {
+      setError(isMerchant
+        ? 'Merchant business wallet is not ready. Please refresh the app.'
+        : 'Wallet is not ready. Please refresh the app.');
+      return;
+    }
     if (!fromAmount || parseFloat(fromAmount) > availableBalance) {
       setError(t('common.wallet.swap_ui.insufficient_balance', 'INSUFFICIENT BALANCE'));
       return;
@@ -260,6 +301,7 @@ export default function SwapTokensScreen() {
 
     const isActualFollowUp = isFollowUp === true;
     approveCalledRef.current = false;
+    silentPollingRef.current = false;
     if (!isActualFollowUp) {
       setHadApprovalStep(false);
       setSwapStep('swap');
@@ -379,12 +421,14 @@ export default function SwapTokensScreen() {
       // If the user simply closed the popup or rejected it, show a friendly info message
       if (errMsg.includes("AuthRejectedError") || errMsg.includes("Authentication was rejected")) {
         if (approveCalledRef.current) {
+          silentPollingRef.current = true;
           setInfoMsg(t('common.wallet.swap_ui.tx_already_submitted', 'This transaction was already submitted for signing. It may still complete. Check your history.'));
           setTxStatus(null);
           return;
         }
         setInfoMsg(t('sendMoney.transfer_not_confirmed', 'Transfer not confirmed. No funds were sent.'));
         stopPolling();
+        silentPollingRef.current = false;
         setTxStatus(null);
         setSwapStep(null);
         setHadApprovalStep(false);
@@ -393,6 +437,7 @@ export default function SwapTokensScreen() {
       
       // Show error in the main UI
       if (approveCalledRef.current) {
+        silentPollingRef.current = true;
         setInfoMsg(t('common.wallet.swap_ui.tx_already_submitted', 'This transaction was already submitted for signing. It may still complete. Check your history.'));
         setTxStatus(null);
         return;
@@ -605,20 +650,50 @@ export default function SwapTokensScreen() {
         {/* Sticky Swap Action Footer */}
         <ScreenFooter borderTop={true} backgroundColor="#FAFAFA" borderTopColor="#E2E8F0" paddingTop={10} style={{ paddingHorizontal: 16 }}>
           <TouchableOpacity
-            style={[styles.btnAction, loading && styles.btnActionDisabled]}
+            style={[styles.btnAction, (loading || !fromAmount || !isSwapReady) && styles.btnActionDisabled]}
             onPress={() => handleSwap(false)}
-            disabled={loading || !fromAmount}
+            disabled={loading || !fromAmount || !isSwapReady}
             activeOpacity={0.85}
           >
             {loading ? (
               <ActivityIndicator color="#FFC759" style={{ marginRight: 8 }} />
+            ) : (!isSwapReady && !!session) ? (
+              walletIdentity.reason ? (
+                <Text style={[styles.btnActionText, { fontSize: 12, textAlign: 'center', paddingHorizontal: 8 }]} maxFontSizeMultiplier={1.3}>
+                  {getWalletErrorMessage(walletIdentity.reason, t)}
+                </Text>
+              ) : (
+                <ActivityIndicator color="#FFC759" style={{ marginRight: 8 }} />
+              )
             ) : (
               <Ionicons name="flash" size={16} color="#FFC759" style={{ marginRight: 6 }} />
             )}
-            <Text style={styles.btnActionText} maxFontSizeMultiplier={1.3}>
-              {loading ? 'PROCESSING...' : 'EXECUTE SWAP'}
-            </Text>
+            {loading ? (
+              <Text style={styles.btnActionText} maxFontSizeMultiplier={1.3}>
+                PROCESSING...
+              </Text>
+            ) : (!isSwapReady && !!session) ? (
+              walletIdentity.reason ? null : (
+                <Text style={styles.btnActionText} maxFontSizeMultiplier={1.3}>
+                  {t('common.loading', 'Loading...')}
+                </Text>
+              )
+            ) : (
+              <Text style={styles.btnActionText} maxFontSizeMultiplier={1.3}>
+                EXECUTE SWAP
+              </Text>
+            )}
           </TouchableOpacity>
+          {walletIdentity.reason === 'no_shop' && (
+            <TouchableOpacity
+              style={{ marginTop: 8, marginBottom: 4, alignSelf: 'center', paddingVertical: 6, paddingHorizontal: 12 }}
+              onPress={() => navigation.navigate('BusinessAccountScreen')}
+            >
+              <Text style={{ color: '#071D54', fontSize: 13, fontFamily: 'Inter_600SemiBold', textDecorationLine: 'underline' }}>
+                {t('common.wallet.continue_setup', 'Continue setting up')}
+              </Text>
+            </TouchableOpacity>
+          )}
         </ScreenFooter>
       </View>
 
@@ -671,11 +746,13 @@ export default function SwapTokensScreen() {
             <TouchableOpacity
               onPress={() => {
                 if (approveCalledRef.current) {
+                  silentPollingRef.current = true;
                   setInfoMsg(t('common.wallet.swap_ui.tx_already_submitted', 'This transaction was already submitted for signing. It may still complete. Check your history.'));
                   setTxStatus(null);
                   setIsAuthorizing(false);
                 } else {
                   stopPolling();
+                  silentPollingRef.current = false;
                   setTxStatus(null);
                   setIsAuthorizing(false);
                   setSwapStep(null);

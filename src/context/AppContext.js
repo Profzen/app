@@ -287,6 +287,7 @@ export function AppProvider({ children }) {
       let fetchedPhone = '';
       let fetchedAvatar = null;
       let fetchedMerchantProfile = null;
+      let fetchedMerchantShopStatus = null;
       let fetchedEvmAddress = '';
       let fetchedSolanaAddress = '';
       let fetchedBusinessEvmAddress = '';
@@ -365,6 +366,21 @@ export function AppProvider({ children }) {
               if (merchant) {
                 if (merchant.shop_logo_url) fetchedAvatar = merchant.shop_logo_url;
                 fetchedMerchantProfile = merchant;
+              } else {
+                const { data: allMerchants } = await supabase
+                  .from('merchants')
+                  .select('id, is_active')
+                  .eq('user_id', profile.id);
+
+                const rows = allMerchants || [];
+                const activeCount = rows.filter((m) => m.is_active).length;
+                if (rows.length === 0) {
+                  fetchedMerchantShopStatus = 'none';
+                } else if (activeCount >= 2) {
+                  fetchedMerchantShopStatus = 'multiple';
+                } else {
+                  fetchedMerchantShopStatus = 'inactive';
+                }
               }
             }
           }
@@ -699,13 +715,13 @@ export function AppProvider({ children }) {
 
 
         const isMerchant = fetchedRole === 'merchant';
-        const primaryBalances = (isMerchant && (businessTotalUsdValue > 0 || Object.keys(businessBalances).length > 0))
+        const primaryBalances = isMerchant
           ? businessBalances
           : newBalances;
-        const primaryRawBalances = (isMerchant && businessRawBalancesArray.length > 0)
+        const primaryRawBalances = isMerchant
           ? businessRawBalancesArray
           : rawBalancesArray;
-        const primaryTotalUsd = (isMerchant && businessTotalUsdValue > 0)
+        const primaryTotalUsd = isMerchant
           ? businessTotalUsdValue
           : totalUsdValue;
 
@@ -732,6 +748,7 @@ export function AppProvider({ children }) {
           personalRawBalances: rawBalancesArray,
           personalTotalUsdValue: totalUsdValue,
           merchantProfile: fetchedMerchantProfile,
+          merchantShopStatus: fetchedMerchantShopStatus,
           evmAddress: fetchedEvmAddress,
           solanaAddress: fetchedSolanaAddress,
           businessEvmAddress: fetchedBusinessEvmAddress,

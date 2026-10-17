@@ -32,6 +32,7 @@ import { COUNTRY_METADATA } from '../services/paymentCorridorService';
 import { transactionService } from '../services/transactionService';
 import { getOperatorLogo } from '../utils/operatorLogos';
 import supabase from '../services/supabaseClient';
+import { getWalletIdentity, getWalletErrorMessage } from '../utils/walletIdentity';
 
 const CHAINS = [
   { id: 'Polygon', name: 'Polygon', isDefault: true, subtitleKey: 'receiveFunds.recommendedFast', defaultSub: 'Recommended • Fast & Lowest Fees' },
@@ -171,20 +172,39 @@ export default function ReceiveFundsV2Screen() {
     });
   }, [allCountryList, countrySearchQuery, t]);
 
+  const walletIdentity = getWalletIdentity(user, session);
+  const isMerchant = walletIdentity.isMerchant;
+  const authToken = walletIdentity.token;
+
   useEffect(() => {
     let isMounted = true;
     const fetchAddress = async () => {
       try {
-        const authToken = session?.access_token || '';
+        if (!authToken) return;
         let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
         if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) {
           DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
         }
-        const syncRes = await fetch(`${DIZZY_URL}/wallet/sync-smart-address`, {
+        let syncRes = await fetch(`${DIZZY_URL}/wallet/sync-smart-address`, {
           headers: { 'Authorization': `Bearer ${authToken}` },
         });
-        const syncData = await syncRes.json();
-        if (isMounted && syncRes.ok && syncData.success) {
+        let syncData = syncRes.ok ? await syncRes.json() : null;
+        if (!syncData || !syncData.success) {
+          const addrRes = await fetch(`${DIZZY_URL}/wallet/address`, {
+            headers: { 'Authorization': `Bearer ${authToken}` },
+          });
+          if (addrRes.ok) {
+            const addrData = await addrRes.json();
+            if (addrData.addresses) {
+              syncData = {
+                success: true,
+                evmAddress: addrData.addresses.evm,
+                solanaAddress: addrData.addresses.solana,
+              };
+            }
+          }
+        }
+        if (isMounted && syncData && syncData.success) {
           setAddresses({
             evm: syncData.evmAddress || '',
             solana: syncData.solanaAddress || '',
@@ -196,14 +216,15 @@ export default function ReceiveFundsV2Screen() {
     };
     fetchAddress();
     return () => { isMounted = false; };
-  }, [session]);
+  }, [authToken]);
 
   // Resolve current active address
-  const evmAddress = addresses.evm || user?.evmAddress || user?.businessEvmAddress || '';
-  const solanaAddress = addresses.solana || user?.solanaAddress || '';
-  const activeAddress = selectedChain === 'Solana'
-    ? (solanaAddress || t('common.loading', 'Loading...'))
-    : (evmAddress || t('common.loading', 'Loading...'));
+  const evmAddress = addresses.evm || walletIdentity.evm || '';
+  const solanaAddress = addresses.solana || walletIdentity.solana || '';
+  const neededAddress = selectedChain === 'Solana' ? solanaAddress : evmAddress;
+  const isNoShop = !!walletIdentity.reason;
+  const noShopMessage = getWalletErrorMessage(walletIdentity.reason, t);
+  const activeAddress = neededAddress || (isNoShop ? noShopMessage : t('common.loading', 'Loading...'));
 
   // Ensure selected token matches available network tokens
   // Do not offer EURC on Polygon or BNB Chain (Circle does not issue it there)
@@ -275,12 +296,12 @@ export default function ReceiveFundsV2Screen() {
         : `ethereum:${activeAddress}@137?amount=${amount}&token=${token}`)
     : activeAddress;
 
-  const qr = activeAddress && activeAddress !== t('common.loading', 'Loading...')
+  const qr = (activeAddress && activeAddress !== t('common.loading', 'Loading...') && !isNoShop)
     ? QRCode.create(qrPayload, { errorCorrectionLevel: 'M' })
     : null;
 
   const copyAddress = async () => {
-    if (!activeAddress || activeAddress === t('common.loading', 'Loading...')) return;
+    if (!activeAddress || activeAddress === t('common.loading', 'Loading...') || isNoShop) return;
     try {
       await Clipboard.setStringAsync(activeAddress);
       setCopied(true);
@@ -295,7 +316,7 @@ export default function ReceiveFundsV2Screen() {
   };
 
   const copyPaymentRequest = async () => {
-    if (!activeAddress || activeAddress === t('common.loading', 'Loading...')) return;
+    if (!activeAddress || activeAddress === t('common.loading', 'Loading...') || isNoShop) return;
     try {
       const msg = amount && parseFloat(amount) > 0
         ? t('receiveFunds.shareRequestMessage', 'Send {{amount}} {{token}} to my DizzitUp wallet ({{chain}}): {{address}}', {
@@ -318,7 +339,7 @@ export default function ReceiveFundsV2Screen() {
   };
 
   const sharePaymentRequest = () => {
-    if (!activeAddress || activeAddress === t('common.loading', 'Loading...')) return;
+    if (!activeAddress || activeAddress === t('common.loading', 'Loading...') || isNoShop) return;
     const message = amount && parseFloat(amount) > 0
       ? t('receiveFunds.shareRequestMessage', 'Send {{amount}} {{token}} to my DizzitUp wallet ({{chain}}): {{address}}', {
           amount,
@@ -367,9 +388,17 @@ export default function ReceiveFundsV2Screen() {
       ? `+${cleanDigits}`
       : `${dialCode}${cleanDigits}`;
 
-    const authToken = (user?.role === 'merchant' && user?.businessDizzyToken)
-      ? user.businessDizzyToken
-      : (user?.dizzyToken || session?.access_token);
+    if (!walletIdentity.token || !evmAddress) {
+      setToast({
+        title: t('common.error', 'Error'),
+        message: walletIdentity.isMerchant
+          ? 'Merchant business wallet is not ready. Please refresh the app.'
+          : 'Wallet is not ready. Please refresh the app.'
+      });
+      return;
+    }
+
+    const authToken = walletIdentity.token;
 
     setSendingPush(true);
     try {
@@ -461,6 +490,26 @@ export default function ReceiveFundsV2Screen() {
   };
 
   const RealQrCode = () => {
+    if (isNoShop) {
+      return (
+        <View style={{ alignItems: 'center', justifyContent: 'center', padding: 8, maxWidth: 160 }}>
+          <Ionicons name="alert-circle-outline" size={24} color="#D97706" style={{ marginBottom: 6 }} />
+          <Text style={{ fontSize: 11, color: '#64748B', textAlign: 'center' }}>
+            {noShopMessage}
+          </Text>
+          {walletIdentity.reason === 'no_shop' && (
+            <TouchableOpacity
+              style={{ marginTop: 8, paddingVertical: 4, paddingHorizontal: 8 }}
+              onPress={() => navigation.navigate('BusinessAccountScreen')}
+            >
+              <Text style={{ color: '#071D54', fontSize: 11, fontFamily: 'Inter_600SemiBold', textDecorationLine: 'underline' }}>
+                {t('common.wallet.continue_setup', 'Continue setting up')}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      );
+    }
     if (!qr) return null;
     const qrSize = isSmallScreen ? 160 : 180;
     return (
@@ -731,8 +780,9 @@ export default function ReceiveFundsV2Screen() {
               {/* Action Buttons: Copy & Share */}
               <View style={styles.actionBtnsRow}>
                 <TouchableOpacity
-                  style={styles.copyBtn}
+                  style={[styles.copyBtn, isNoShop && { opacity: 0.5 }]}
                   onPress={copyPaymentRequest}
+                  disabled={isNoShop}
                   activeOpacity={0.85}
                 >
                   <Ionicons name="copy-outline" size={18} color="#0F172A" style={{ marginRight: 8 }} />
@@ -742,8 +792,9 @@ export default function ReceiveFundsV2Screen() {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={styles.shareBtn}
+                  style={[styles.shareBtn, isNoShop && { opacity: 0.5 }]}
                   onPress={sharePaymentRequest}
+                  disabled={isNoShop}
                   activeOpacity={0.85}
                 >
                   <Ionicons name="share-outline" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
@@ -752,6 +803,17 @@ export default function ReceiveFundsV2Screen() {
                   </Text>
                 </TouchableOpacity>
               </View>
+
+              {walletIdentity.reason === 'no_shop' && (
+                <TouchableOpacity
+                  style={{ marginTop: 12, alignSelf: 'center', paddingVertical: 6, paddingHorizontal: 12 }}
+                  onPress={() => navigation.navigate('BusinessAccountScreen')}
+                >
+                  <Text style={{ color: '#071D54', fontSize: 13, fontFamily: 'Inter_600SemiBold', textDecorationLine: 'underline' }}>
+                    {t('common.wallet.continue_setup', 'Continue setting up')}
+                  </Text>
+                </TouchableOpacity>
+              )}
 
               {/* Discreet Multichain Switcher Chip */}
               <TouchableOpacity
@@ -973,13 +1035,17 @@ export default function ReceiveFundsV2Screen() {
 
                 {/* Send MoMo Push Action Button */}
                 <TouchableOpacity
-                  style={[styles.sendPushBtn, sendingPush && styles.sendPushBtnDisabled]}
+                  style={[styles.sendPushBtn, (sendingPush || !walletIdentity.token || !evmAddress || isNoShop) && styles.sendPushBtnDisabled]}
                   onPress={handleSendMomoPush}
-                  disabled={sendingPush}
+                  disabled={sendingPush || !walletIdentity.token || !evmAddress || isNoShop}
                   activeOpacity={0.88}
                 >
                   {sendingPush ? (
                     <ActivityIndicator color="#FFFFFF" size="small" />
+                  ) : isNoShop ? (
+                    <Text style={[styles.sendPushBtnText, { fontSize: 12, textAlign: 'center', paddingHorizontal: 8 }]}>
+                      {noShopMessage}
+                    </Text>
                   ) : (
                     <>
                       <Ionicons name="send" size={16} color="#FFFFFF" style={{ marginRight: 8 }} />
@@ -989,6 +1055,17 @@ export default function ReceiveFundsV2Screen() {
                     </>
                   )}
                 </TouchableOpacity>
+
+                {walletIdentity.reason === 'no_shop' && (
+                  <TouchableOpacity
+                    style={{ marginTop: 12, alignSelf: 'center', paddingVertical: 6, paddingHorizontal: 12 }}
+                    onPress={() => navigation.navigate('BusinessAccountScreen')}
+                  >
+                    <Text style={{ color: '#071D54', fontSize: 13, fontFamily: 'Inter_600SemiBold', textDecorationLine: 'underline' }}>
+                      {t('common.wallet.continue_setup', 'Continue setting up')}
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
 
               {/* Share My Contact / Details Section */}

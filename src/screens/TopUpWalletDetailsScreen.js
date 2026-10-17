@@ -10,6 +10,7 @@ import { CrossmintEmbeddedCheckout } from '@crossmint/client-sdk-react-native-ui
 import { useApp } from '../context/AppContext';
 import { transactionService } from '../services/transactionService';
 import { theme } from '../theme/theme';
+import { getWalletIdentity, getWalletErrorMessage } from '../utils/walletIdentity';
 
 // Dynamic options will be mapped inside the component to use `t()`
 const getCurrencyOptions = (t) => [
@@ -30,8 +31,44 @@ export default function TopUpWalletDetailsScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const { session, user, t } = useApp();
-  const evmAddress = user?.role === 'merchant' && user?.businessEvmAddress ? user.businessEvmAddress : user?.evmAddress || '';
-  
+  const walletIdentity = getWalletIdentity(user, session);
+  const authToken = walletIdentity.token;
+  const isMerchant = walletIdentity.isMerchant;
+  const [addresses, setAddresses] = useState({ evm: '', solana: '' });
+  const [addressesLoading, setAddressesLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchAddress = async () => {
+      try {
+        if (!authToken) return;
+        setAddressesLoading(true);
+        let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
+        if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) {
+          DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
+        }
+        const res = await fetch(`${DIZZY_URL}/wallet/address`, {
+          headers: { 'Authorization': `Bearer ${authToken}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data.addresses) {
+            setAddresses({
+              evm: data.addresses.evm || '',
+              solana: data.addresses.solana || '',
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch wallet address:', err);
+      } finally {
+        if (isMounted) setAddressesLoading(false);
+      }
+    };
+    fetchAddress();
+    return () => { isMounted = false; };
+  }, [authToken]);
+
   const currencyOptions = getCurrencyOptions(t);
   const networkOptions = getNetworkOptions(t);
   const [amount, setAmount] = useState('10');
@@ -42,25 +79,33 @@ export default function TopUpWalletDetailsScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const evmAddress = addresses.evm || walletIdentity.evm || '';
+  const solanaAddress = addresses.solana || walletIdentity.solana || '';
+  const targetWalletAddress = network === 'solana' ? solanaAddress : evmAddress;
+  const isTopUpReady = !!authToken && !!targetWalletAddress;
+  const isAddressLoading = addressesLoading && !targetWalletAddress;
+
   const handleGenerateOrder = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      if (!session?.access_token) {
-        throw new Error(t('topup.login_required', "Please log in to continue."));
+      if (!isTopUpReady) {
+        throw new Error(
+          walletIdentity.reason
+            ? getWalletErrorMessage(walletIdentity.reason, t)
+            : isMerchant
+            ? 'Merchant business wallet address is missing. Please refresh the app.'
+            : 'Wallet address is missing from your profile. Please refresh the app.'
+        );
       }
-      
       const userEmail = user?.email || session?.user?.email;
-      if (!evmAddress) {
-        throw new Error('Wallet address is missing from your profile. Please refresh the app.');
-      }
       if (!userEmail) {
         throw new Error('Email address is missing from your profile. Please refresh the app.');
       }
       
       const payload = {
         amount: parseFloat(amount || '10').toFixed(2), // Crossmint often expects 2 decimals like "10.00"
-        walletAddress: evmAddress,
+        walletAddress: targetWalletAddress,
         email: userEmail,
         token: currency,
         chain: network,
@@ -69,7 +114,7 @@ export default function TopUpWalletDetailsScreen() {
         userType: 'user'
       };
 
-      const result = await transactionService.createCrossmintOnrampOrder(session.access_token, payload);
+      const result = await transactionService.createCrossmintOnrampOrder(authToken, payload);
       setOrderIdentifier(result.orderId);
       setClientSecret(result.clientSecret || null);
     } catch (err) {
@@ -176,14 +221,35 @@ export default function TopUpWalletDetailsScreen() {
 
           {/* Crossmint Embedded Checkout */}
           <View style={styles.checkoutWrapper}>
-            {!orderIdentifier && !isLoading && !error && (
-              <TouchableOpacity style={styles.btnContinue} onPress={handleGenerateOrder}>
+            {walletIdentity.reason ? (
+              <View style={styles.errorContainer}>
+                <Ionicons name="alert-circle" size={48} color="#EF4444" />
+                <Text style={[styles.errorText, { textAlign: 'center', marginTop: 12 }]}>
+                  {getWalletErrorMessage(walletIdentity.reason, t)}
+                </Text>
+                {walletIdentity.reason === 'no_shop' && (
+                  <TouchableOpacity
+                    style={{ marginTop: 16, paddingVertical: 8, paddingHorizontal: 16, backgroundColor: '#071D54', borderRadius: 8 }}
+                    onPress={() => navigation.navigate('BusinessAccountScreen')}
+                  >
+                    <Text style={{ color: '#FFFFFF', fontSize: 13, fontFamily: 'Inter_600SemiBold' }}>
+                      {t('common.wallet.continue_setup', 'Continue setting up')}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            ) : !orderIdentifier && !isLoading && !error && !isAddressLoading ? (
+              <TouchableOpacity
+                style={[styles.btnContinue, (!isTopUpReady) && { opacity: 0.5 }]}
+                disabled={!isTopUpReady}
+                onPress={handleGenerateOrder}
+              >
                 <Text style={styles.btnContinueText}>{t('topup.continue_btn', 'CONTINUE TO SECURE PAYMENT')}</Text>
                 <Ionicons name="arrow-forward" size={18} color="#FFC759" />
               </TouchableOpacity>
-            )}
+            ) : null}
 
-            {isLoading ? (
+            {!walletIdentity.reason && (isLoading || (isAddressLoading && !orderIdentifier && !error)) ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#FFB800" />
                 <Text style={styles.loadingText}>{t('topup.preparing_transaction')}</Text>

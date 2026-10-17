@@ -9,6 +9,7 @@ import AppToast from '../components/AppToast';
 import RatingPromptModal from '../components/RatingPromptModal';
 import { useApp } from '../context/AppContext';
 import { getFlagEmoji, getCountryFromPhone, getFullCountryName } from '../utils/countryCurrencyUtils';
+import { isSmallScreen } from '../utils/responsive';
 
 export default function PaymentSuccessScreen({ route }) {
   const navigation = useNavigation();
@@ -281,11 +282,15 @@ export default function PaymentSuccessScreen({ route }) {
             <View style={styles.secondaryBtnRow}>
               <TouchableOpacity style={styles.secondaryBtn} onPress={() => navigation.navigate('ShopsScreen')}>
                 <Ionicons name="refresh-outline" size={20} color="#1A2840" style={{ marginRight: 6 }} />
-                <Text style={styles.secondaryBtnText}>{t('paymentSuccess.makeAnotherPayment', "Make Another Payment")}</Text>
+                <Text style={styles.secondaryBtnText} maxFontSizeMultiplier={1.3}>
+                  {t('paymentSuccess.makeAnotherPayment', 'New payment')}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.secondaryBtn} onPress={() => navigation.navigate('HomeScreen')}>
                 <Ionicons name="home-outline" size={20} color="#1A2840" style={{ marginRight: 6 }} />
-                <Text style={styles.secondaryBtnText}>{t('paymentSuccess.backToHome', 'Back to Home')}</Text>
+                <Text style={styles.secondaryBtnText} maxFontSizeMultiplier={1.3}>
+                  {t('paymentSuccess.backToHome', 'Home')}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -755,11 +760,12 @@ const styles = StyleSheet.create({
     color: '#1A2840',
   },
   secondaryBtnRow: {
-    flexDirection: 'row',
-    gap: 12,
+    flexDirection: isSmallScreen ? 'column' : 'row',
+    gap: 10,
   },
   secondaryBtn: {
-    flex: 1,
+    flex: isSmallScreen ? undefined : 1,
+    width: isSmallScreen ? '100%' : undefined,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -771,7 +777,7 @@ const styles = StyleSheet.create({
   },
   secondaryBtnText: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 11,
+    fontSize: 12,
     color: '#1A2840',
   },
 });
