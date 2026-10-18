@@ -34,9 +34,17 @@ const chainOptions = [
 ];
 
 const tokensByChain = {
-  polygon: ['USDC', 'USDT', 'POL', 'WPOL', 'WETH', 'WBTC'],
+  polygon: ['USDC', 'USDT', 'POL', 'WPOL', 'WETH', 'WBTC', 'DAI'],
   ethereum: ['USDC', 'USDT', 'EURC', 'ETH', 'WETH', 'WBTC', 'DAI', 'POL'],
-  base: ['USDC', 'EURC', 'ETH', 'WETH'],
+  base: ['USDC', 'EURC', 'ETH', 'WETH', 'DAI'],
+  bsc: ['BNB', 'USDC', 'USDT', 'DAI'],
+  solana: ['USDC', 'USDT', 'EURC', 'SOL'],
+};
+
+const fromTokensByChain = {
+  polygon: ['USDC', 'USDC.e', 'USDT', 'POL', 'WPOL', 'WETH', 'WBTC', 'DAI'],
+  ethereum: ['USDC', 'USDT', 'EURC', 'ETH', 'WETH', 'WBTC', 'DAI', 'POL'],
+  base: ['USDC', 'EURC', 'ETH', 'WETH', 'DAI'],
   bsc: ['BNB', 'USDC', 'USDT', 'DAI'],
   solana: ['USDC', 'USDT', 'EURC', 'SOL'],
 };
@@ -79,6 +87,8 @@ export default function SwapTokensScreen() {
   const finalPollIntervalRef = React.useRef(null);
   const approveCalledRef = React.useRef(false);
   const silentPollingRef = React.useRef(false);
+  const actionInFlightRef = React.useRef(false);
+  const sdkPromptOpenRef = React.useRef(false);
 
   const stopPolling = () => {
     if (pollIntervalRef.current) {
@@ -128,6 +138,7 @@ export default function SwapTokensScreen() {
     setIsAuthorizing(false);
     setSuccessTxHash(null);
     approveCalledRef.current = false;
+    actionInFlightRef.current = false;
     silentPollingRef.current = false;
     stopPolling();
     if (typeof refreshUser === 'function') refreshUser();
@@ -213,6 +224,12 @@ export default function SwapTokensScreen() {
           setTxStatus(crossStatus);
         }
 
+        if ((crossStatus === 'awaiting-approval' || crossStatus === 'awaiting-signature') && !sdkPromptOpenRef.current) {
+          setInfoMsg(t('common.wallet.swap_ui.waiting_confirmation', 'Your swap is waiting for your confirmation. Tap Execute Swap to continue.'));
+          setLoading(false);
+          setIsAuthorizing(false);
+        }
+
         if (data.status === 'COMPLETED') {
           stopPolling();
           const wasSilent = silentPollingRef.current;
@@ -288,6 +305,8 @@ export default function SwapTokensScreen() {
   };
 
   const handleSwap = async (isFollowUp = false) => {
+    // if (actionInFlightRef.current) return;
+    if (actionInFlightRef.current && isFollowUp !== true) return;
     if (!isSwapReady) {
       setError(isMerchant
         ? 'Merchant business wallet is not ready. Please refresh the app.'
@@ -299,6 +318,7 @@ export default function SwapTokensScreen() {
       return;
     }
 
+    actionInFlightRef.current = true;
     const isActualFollowUp = isFollowUp === true;
     approveCalledRef.current = false;
     silentPollingRef.current = false;
@@ -322,6 +342,14 @@ export default function SwapTokensScreen() {
           return;
         }
 
+        if (res.status === 400 && (res.data?.status === 'approval_in_progress' || res.data?.error?.includes('approval_in_progress') || res.data?.error?.includes('Approval in progress'))) {
+          setLoading(false);
+          setIsAuthorizing(false);
+          setSwapStep(null);
+          setInfoMsg(t('common.wallet.swap_ui.approval_in_progress', 'Your approval is being confirmed. Tap Execute Swap again in a few seconds.'));
+          return;
+        }
+
         if (res.status === 400 && res.data?.status === 'requires-handshake') {
           const txId = res.data.txId;
           setActiveTxHash(txId);
@@ -333,10 +361,24 @@ export default function SwapTokensScreen() {
         }
 
         if (res.status === 400 && res.data?.status === 'requires-approval') {
+          // Never call approve twice for the same request
+          if (approveCalledRef.current) {
+            setLoading(false);
+            return;
+          }
+          approveCalledRef.current = true;
+
           // Trigger approval flow
           setHadApprovalStep(true);
           setSwapStep('approval');
           const approveRes = await swapService.approve(fromToken, fromChain, res.data.spender, authToken);
+          if (approveRes.error && approveRes.status === 400 && (approveRes.data?.status === 'approval_in_progress' || approveRes.data?.error?.includes('approval_in_progress') || approveRes.data?.error?.includes('Approval in progress'))) {
+            setLoading(false);
+            setIsAuthorizing(false);
+            setSwapStep(null);
+            setInfoMsg(t('common.wallet.swap_ui.approval_in_progress', 'Your approval is being confirmed. Tap Execute Swap again in a few seconds.'));
+            return;
+          }
           if (approveRes.error && approveRes.status === 400 && approveRes.data?.status === 'requires-handshake') {
             const txId = approveRes.data.txId;
             setActiveTxHash(txId);
@@ -365,14 +407,17 @@ export default function SwapTokensScreen() {
       } else {
         setError(e.message);
       }
+    } finally {
+      actionInFlightRef.current = false;
     }
   };
 
   const handleAuthorize = async () => {
-    if (sdkPromptOpen) return; // Crossmint prompt already open
+    if (actionInFlightRef.current || sdkPromptOpen) return; // Crossmint prompt already open or action in flight
+    actionInFlightRef.current = true;
     try {
       setIsAuthorizing(true);
-      
+
       const chainName = fromChain === 'solana' ? 'solana' : 'polygon';
       let activeWallet = null;
       if (typeof getWallet === 'function') {
@@ -388,20 +433,22 @@ export default function SwapTokensScreen() {
       await activeWallet.useSigner({ type: 'email', email: emailToUse });
       // Hide our modal while Crossmint's OTP prompt is shown
       setSdkPromptOpen(true);
+      sdkPromptOpenRef.current = true;
       approveCalledRef.current = true;
       try {
         await activeWallet.approve({ transactionId: activeTxHash });
       } finally {
         setSdkPromptOpen(false);
+        sdkPromptOpenRef.current = false;
       }
 
       pollTransactionStatus(activeTxHash);
     } catch (e) {
       // Use console.log instead of console.error to prevent giant red toasts in dev mode
       console.log("Authorize error", e);
-      
+
       let errMsg = String(e.message || e);
-      
+
       // Try to parse JSON errors so it doesn't look ugly
       try {
         const parsed = JSON.parse(e.message);
@@ -411,13 +458,13 @@ export default function SwapTokensScreen() {
       } catch (err) {
         // Not JSON, leave as is
       }
-      
+
       // Handle already approved errors gracefully
       if (errMsg.includes("Already has the required number of approvals")) {
         pollTransactionStatus(activeTxHash);
         return;
       }
-      
+
       // If the user simply closed the popup or rejected it, show a friendly info message
       if (errMsg.includes("AuthRejectedError") || errMsg.includes("Authentication was rejected")) {
         if (approveCalledRef.current) {
@@ -434,7 +481,7 @@ export default function SwapTokensScreen() {
         setHadApprovalStep(false);
         return;
       }
-      
+
       // Show error in the main UI
       if (approveCalledRef.current) {
         silentPollingRef.current = true;
@@ -449,6 +496,7 @@ export default function SwapTokensScreen() {
       setHadApprovalStep(false);
     } finally {
       setIsAuthorizing(false);
+      actionInFlightRef.current = false;
     }
   };
 
@@ -456,8 +504,13 @@ export default function SwapTokensScreen() {
   const swapSides = () => {
     setFromChain(toChain);
     setToChain(fromChain);
-    setFromToken(toToken);
-    setToToken(fromToken);
+    const nextFromToken = toToken;
+    let nextToToken = fromToken === 'USDC.e' ? 'USDC' : fromToken;
+    if (nextFromToken === nextToToken) {
+      nextToToken = (tokensByChain[toChain] || []).find((t) => t !== nextFromToken) || 'USDT';
+    }
+    setFromToken(nextFromToken);
+    setToToken(nextToToken);
     setFromAmount(toAmount);
     setToAmount(fromAmount);
   };
@@ -499,22 +552,23 @@ export default function SwapTokensScreen() {
           <View style={styles.chainRow}>
             <View style={{ flex: 1 }}>
               <Text style={styles.inputLabel}>{t('common.wallet.swap_ui.from_chain', "From Chain")}</Text>
-              <AppSelect 
-                value={fromChain} 
-                options={chainOptions} 
+              <AppSelect
+                value={fromChain}
+                options={chainOptions}
                 onChange={(val) => {
                   setFromChain(val);
                   setToChain(val);
                   const chainTokens = tokensByChain[val] || [];
-                  if (!chainTokens.includes(fromToken) || !chainTokens.includes(toToken) || fromToken === toToken) {
-                    setFromToken(chainTokens[0] || 'USDC');
+                  const fromChainTokens = fromTokensByChain[val] || [];
+                  if (!fromChainTokens.includes(fromToken) || !chainTokens.includes(toToken) || fromToken === toToken) {
+                    setFromToken(fromChainTokens[0] || 'USDC');
                     setToToken(chainTokens[1] || chainTokens[0] || 'USDT');
                   }
-                }} 
+                }}
                 title={t('common.wallet.swap_ui.from_chain', "From Chain")}
-                style={styles.chainSelector} 
-                textStyle={styles.chainName} 
-                chevronColor="#64748B" 
+                style={styles.chainSelector}
+                textStyle={styles.chainName}
+                chevronColor="#64748B"
               />
             </View>
           </View>
@@ -545,7 +599,7 @@ export default function SwapTokensScreen() {
                 </View>
               </View>
               <View style={styles.inputRow}>
-                <AppSelect value={fromToken} options={(tokensByChain[fromChain] || []).map((value) => ({ value, label: value === 'POL' && fromChain === 'ethereum' ? 'POL (Ethereum)' : value, isCrypto: true, cryptoSymbol: value }))} onChange={setFromToken} title={t('common.wallet.swap_ui.from_token', 'From Token')} style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option?.value || fromToken} size={20} style={{ marginRight: 6 }} />} />
+                <AppSelect value={fromToken} options={(fromTokensByChain[fromChain] || []).map((value) => ({ value, label: value === 'POL' && fromChain === 'ethereum' ? 'POL (Ethereum)' : value, isCrypto: true, cryptoSymbol: value }))} onChange={setFromToken} title={t('common.wallet.swap_ui.from_token', 'From Token')} style={styles.tokenSelector} textStyle={styles.selectedTokenName} renderLeading={(option) => <CryptoIcon symbol={option?.value || fromToken} size={20} style={{ marginRight: 6 }} />} />
                 <TouchableOpacity activeOpacity={1} style={[styles.amountInputContainer, isFocused && styles.amountInputContainerFocused]} onPress={() => amountInputRef.current?.focus()}>
                   <TextInput
                     ref={amountInputRef}
@@ -650,9 +704,9 @@ export default function SwapTokensScreen() {
         {/* Sticky Swap Action Footer */}
         <ScreenFooter borderTop={true} backgroundColor="#FAFAFA" borderTopColor="#E2E8F0" paddingTop={10} style={{ paddingHorizontal: 16 }}>
           <TouchableOpacity
-            style={[styles.btnAction, (loading || !fromAmount || !isSwapReady) && styles.btnActionDisabled]}
+            style={[styles.btnAction, (loading || !fromAmount || !isSwapReady || actionInFlightRef.current) && styles.btnActionDisabled]}
             onPress={() => handleSwap(false)}
-            disabled={loading || !fromAmount || !isSwapReady}
+            disabled={loading || !fromAmount || !isSwapReady || actionInFlightRef.current}
             activeOpacity={0.85}
           >
             {loading ? (
@@ -701,41 +755,50 @@ export default function SwapTokensScreen() {
       <Modal visible={txStatus === 'awaiting-approval' && !sdkPromptOpen} transparent animationType="fade">
         <View style={[styles.modalOverlay, { paddingBottom: Math.max(insets.bottom, 16) }]}>
           <View style={styles.modalContent}>
-            
+
             <View style={styles.modalHeaderIcon}>
               <Ionicons name="finger-print" size={24} color="#38BDF8" />
             </View>
-            
+
             <Text style={styles.modalTitle}>
               {swapStep === 'approval'
                 ? t('common.wallet.swap_ui.modal_approval_title', {
-                    token: fromToken,
-                    defaultValue: `Step 1 of 2: allow ${fromToken} once`,
-                  })
+                  token: fromToken,
+                  defaultValue: `Step 1 of 2: allow ${fromToken} once`,
+                })
                 : hadApprovalStep
-                ? t('common.wallet.swap_ui.modal_swap_step2_title', 'Step 2 of 2: confirm swap')
-                : t('common.wallet.swap_ui.modal_swap_direct_title', 'Confirm swap')}
+                  ? t('common.wallet.swap_ui.modal_swap_step2_title', 'Step 2 of 2: confirm swap')
+                  : t('common.wallet.swap_ui.modal_swap_direct_title', 'Confirm swap')}
             </Text>
-            
+
             <View style={styles.modalInfoBox}>
               <View style={styles.modalInfoRow}>
                 <Ionicons name="mail" size={14} color="#94A3B8" />
                 <Text style={styles.modalInfoText}>{signerEmail}</Text>
               </View>
-              <Text style={styles.modalInfoHint}>
-                {swapStep === 'approval'
-                  ? t('common.wallet.swap_ui.modal_approval_body', {
-                      token: fromToken,
-                      defaultValue: `This one-time permission lets the swap use your ${fromToken}. You only do this once per token.`,
-                    })
-                  : t('common.wallet.swap_ui.modal_swap_body', 'Confirm the swap in the secure window. No new code is needed if you just entered one.')}
-              </Text>
+              {swapStep === 'approval' ? (
+                <Text style={styles.modalInfoHint}>
+                  {t('common.wallet.swap_ui.modal_approval_body', {
+                    token: fromToken,
+                    defaultValue: `This one-time permission lets the swap use your ${fromToken}. You only do this once per token.`,
+                  })}
+                </Text>
+              ) : (
+                <View style={{ alignItems: 'center', width: '100%', marginTop: 2 }}>
+                  <Text style={[styles.modalInfoHint, { color: '#FFC759', fontFamily: 'Inter_700Bold', marginBottom: 6 }]}>
+                    {t('common.wallet.swap_ui.signature_line1', 'No code needed once this wallet is confirmed on your phone.')}
+                  </Text>
+                  <Text style={styles.modalInfoHint}>
+                    {t('common.wallet.swap_ui.signature_line2', "The first time you use this wallet on a phone, a code arrives by email from hello@crossmint.com to the wallet's email (check Spam).")}
+                  </Text>
+                </View>
+              )}
             </View>
 
             <TouchableOpacity
-              style={[styles.authBtn, isAuthorizing && styles.authBtnDisabled]}
+              style={[styles.authBtn, (isAuthorizing || actionInFlightRef.current) && styles.authBtnDisabled]}
               onPress={handleAuthorize}
-              disabled={isAuthorizing}
+              disabled={isAuthorizing || actionInFlightRef.current}
             >
               {isAuthorizing ? <ActivityIndicator color="#0F172A" size="small" /> : <Ionicons name="key" size={16} color="#0F172A" style={{ marginRight: 6 }} />}
               <Text style={styles.authBtnText} maxFontSizeMultiplier={1.3}>
@@ -745,6 +808,7 @@ export default function SwapTokensScreen() {
 
             <TouchableOpacity
               onPress={() => {
+                actionInFlightRef.current = false;
                 if (approveCalledRef.current) {
                   silentPollingRef.current = true;
                   setInfoMsg(t('common.wallet.swap_ui.tx_already_submitted', 'This transaction was already submitted for signing. It may still complete. Check your history.'));
@@ -764,7 +828,7 @@ export default function SwapTokensScreen() {
             >
               <Text style={styles.dismissBtnText}>{t('common.cancel', 'Cancel')}</Text>
             </TouchableOpacity>
-            
+
           </View>
         </View>
       </Modal>
@@ -773,11 +837,11 @@ export default function SwapTokensScreen() {
       <Modal visible={txStatus === 'success'} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { alignItems: 'center' }]}>
-            
+
             <View style={[styles.modalHeaderIcon, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
               <Ionicons name="checkmark-circle" size={32} color="#10B981" />
             </View>
-            
+
             <Text style={[styles.modalTitle, { textAlign: 'center', marginBottom: 6 }]}>
               {t('common.wallet.swap_ui.swap_success_title', 'Swap successful!')}
             </Text>
@@ -812,7 +876,7 @@ export default function SwapTokensScreen() {
                       try {
                         await Clipboard.setStringAsync(successTxHash);
                         setInfoMsg(t('common.copied_title', { label: successTxHash.startsWith('0x') ? 'Hash' : 'Reference', defaultValue: 'Copied!' }));
-                      } catch (err) {}
+                      } catch (err) { }
                     }}
                     activeOpacity={0.7}
                   >

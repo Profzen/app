@@ -19,6 +19,7 @@ const WEB_DEFAULT_TOKENS = [
 
   // USDC
   { symbol: "USDC", name: "USD Coin", chain: "polygon" },
+  { symbol: "USDC.e", name: "Bridged USD Coin", chain: "polygon" },
   { symbol: "USDC", name: "USD Coin", chain: "ethereum" },
   { symbol: "USDC", name: "USD Coin", chain: "base" },
   { symbol: "USDC", name: "USD Coin", chain: "solana" },
@@ -38,8 +39,10 @@ const WEB_DEFAULT_TOKENS = [
   { symbol: "BNB", name: "BNB", chain: "bsc" },
   
   // DAI
+  { symbol: "DAI", name: "Dai Stablecoin", chain: "polygon" },
   { symbol: "DAI", name: "Dai Stablecoin", chain: "ethereum" },
   { symbol: "DAI", name: "Dai Stablecoin", chain: "bsc" },
+  { symbol: "DAI", name: "Dai Stablecoin", chain: "base" },
 
   // ETH
   { symbol: "ETH", name: "Ethereum", chain: "ethereum" },
@@ -117,7 +120,8 @@ export default function AssetListScreen() {
     // Merge actual user balances
     if (currentRawBalances && Array.isArray(currentRawBalances)) {
       currentRawBalances.forEach(b => {
-        const sym = (b.currency || b.token || b.symbol || '').toUpperCase();
+        const rawSym = (b.currency || b.token || b.symbol || '');
+        const sym = rawSym.toUpperCase() === 'USDC.E' ? 'USDC.e' : rawSym.toUpperCase();
         const chain = (b.chain || b.network || 'unknown').toLowerCase();
         const bal = parseFloat(b.balance || 0);
         const usd = parseFloat(b.usdValue || (bal * (b.price || 1)));
@@ -308,7 +312,7 @@ export default function AssetListScreen() {
                         <View style={styles.networkLeft}>
                           <View style={styles.networkIconWrapper}>
                              {/* Attempt to show native network icon, fallback to token icon */}
-                             <CryptoIcon symbol={net.chain === 'ethereum' ? 'ETH' : net.chain === 'polygon' ? 'POL' : net.chain === 'solana' ? 'SOL' : net.chain === 'bsc' ? 'BNB' : token.symbol} size={20} />
+                             <CryptoIcon symbol={net.chain === 'ethereum' ? 'ETH' : net.chain === 'polygon' ? 'POL' : net.chain === 'solana' ? 'SOL' : net.chain === 'bsc' ? 'BNB' : net.chain === 'base' ? 'BASE' : token.symbol} size={20} />
                           </View>
                           <View>
                             <Text style={styles.networkName}>{net.chain}</Text>

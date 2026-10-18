@@ -29,9 +29,9 @@ const BLOCKCHAINS = [
 ];
 
 const TOKENS_BY_CHAIN = {
-  polygon: ['USDC', 'USDT', 'POL', 'WPOL', 'WBTC', 'WETH'],
+  polygon: ['USDC', 'USDT', 'POL', 'WPOL', 'WBTC', 'WETH', 'DAI'],
   ethereum: ['USDC', 'USDT', 'EURC', 'ETH', 'WBTC', 'WETH', 'DAI', 'POL'],
-  base: ['USDC', 'EURC', 'ETH', 'WETH'],
+  base: ['USDC', 'EURC', 'ETH', 'WETH', 'DAI'],
   bsc: ['BNB', 'USDC', 'USDT', 'DAI'],
   solana: ['USDC', 'USDT', 'EURC', 'SOL'],
 };
@@ -1611,8 +1611,11 @@ export default function SendMoneyScreen() {
                   {t('sendMoney.loading_secure_env', 'Loading Secure Environment...')}
                 </Text>
 
-                <Text style={[approvalModalStyles.modalInfoText, { textAlign: 'center', marginBottom: 12, fontSize: 15, color: '#071D54', fontWeight: 'bold' }]}>
-                  {t('sendMoney.secure_confirm_hint', 'Confirm this transfer in the secure window. If your wallet session is still active, no code is needed; otherwise you will receive a code by email from hello@crossmint.com.')}
+                <Text style={[approvalModalStyles.modalInfoText, { textAlign: 'center', marginBottom: 6, fontSize: 14, color: '#FFC759', fontWeight: 'bold' }]}>
+                  {t('sendMoney.secure_confirm_line1', 'No code needed once this wallet is confirmed on your phone.')}
+                </Text>
+                <Text style={[approvalModalStyles.modalInfoText, { textAlign: 'center', marginBottom: 12, fontSize: 13, color: '#071D54' }]}>
+                  {t('sendMoney.secure_confirm_line2', "The first time you use this wallet on a phone, a code arrives by email from hello@crossmint.com to the wallet's email (check Spam).")}
                 </Text>
 
                 {signerEmail ? (

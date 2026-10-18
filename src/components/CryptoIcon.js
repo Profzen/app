@@ -4,6 +4,8 @@ import { Image, StyleSheet, View, Text } from 'react-native';
 const localLogos = {
   USDT: require('../../assets/cryptos/usdt.png'),
   USDC: require('../../assets/cryptos/usdc.png'),
+  'USDC.e': require('../../assets/cryptos/usdc.png'),
+  'USDC.E': require('../../assets/cryptos/usdc.png'),
   EURC: require('../../assets/cryptos/EURC-icon.png'),
   BTC: require('../../assets/cryptos/btc.png'),
   WBTC: require('../../assets/cryptos/wrapped-bitcoin.png'),
