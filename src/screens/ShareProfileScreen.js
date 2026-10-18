@@ -405,6 +405,17 @@ export default function ShareProfileScreen() {
                 {t('shareProfile.scanHintBusiness', 'Scan to open my DZYstore')}
               </Text>
 
+              {!!profile.referralCode && (
+                <View style={styles.cardReferralContainer}>
+                  <Text style={styles.cardReferralLabel}>
+                    {t('shareProfile.referralCodeLabel', 'Referral code')}
+                  </Text>
+                  <Text style={styles.cardReferralCode}>
+                    {profile.referralCode}
+                  </Text>
+                </View>
+              )}
+
               <View style={styles.cardFooterRow}>
                 <Image
                   source={require('../../assets/brand/dizzitup_logo_cercle.png')}
@@ -543,6 +554,25 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 10,
     width: '100%',
+  },
+  cardReferralContainer: {
+    alignItems: 'center',
+    marginTop: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 9,
+    backgroundColor: 'rgba(255, 199, 89, 0.14)',
+  },
+  cardReferralLabel: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 9,
+    color: '#E2E8F0',
+  },
+  cardReferralCode: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 12,
+    color: '#FFC759',
+    marginTop: 1,
   },
   cardFooterRow: {
     flexDirection: 'row',
