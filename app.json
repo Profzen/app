@@ -32,6 +32,14 @@
       "expo-secure-store",
       "expo-web-browser",
       [
+        "expo-media-library",
+        {
+          "photosPermission": false,
+          "savePhotosPermission": "Allow DizzitUp to save your Business profile image to your photo library.",
+          "granularPermissions": []
+        }
+      ],
+      [
         "expo-local-authentication",
         {
           "faceIDPermission": "Allow DizzitUp to use Face ID for secure transactions and login."

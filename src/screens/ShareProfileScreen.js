@@ -3,6 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Share, Platform, StatusBar, Image, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
+import * as MediaLibrary from 'expo-media-library';
 import Svg, { Rect } from 'react-native-svg';
 import QRCode from 'qrcode';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -32,7 +33,8 @@ export default function ShareProfileScreen() {
   const [toast, setToast] = useState(null);
   const [imageError, setImageError] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
-  const cardShotRef = useRef(null);
+  const storyShotRef = useRef(null);
+  const squareShotRef = useRef(null);
 
   const isBusiness = user?.role === 'merchant' || accountMode === 'business';
   const merchant = isBusiness ? (user?.merchantProfile || null) : null;
@@ -100,6 +102,10 @@ export default function ShareProfileScreen() {
     );
   }, [isBusiness, profile, t]);
 
+  const shareCaption = useMemo(() => (
+    isBusiness ? `${shareText}\n\n@dizzitup` : shareText
+  ), [isBusiness, shareText]);
+
   const qrPayload = isBusiness ? profile.storeUrl : profile.inviteUrl;
   const qr = useMemo(() => {
     return QRCode.create(qrPayload || 'https://dizzitup.com', {
@@ -108,7 +114,9 @@ export default function ShareProfileScreen() {
   }, [qrPayload, isBusiness]);
 
   const qrSize = isSmallScreen ? 150 : 180;
-  const ProfileQr = ({ size = qrSize } = {}) => (
+  const ProfileQr = ({ size = qrSize } = {}) => {
+    const centerLogoSize = Math.round(size * 0.24);
+    return (
     <View style={styles.qrInnerWrapper}>
       <Svg width={size} height={size} viewBox={`0 0 ${qr.modules.size} ${qr.modules.size}`} accessibilityLabel="QR Code">
         <Rect width={qr.modules.size} height={qr.modules.size} fill="#FFFFFF" />
@@ -126,22 +134,25 @@ export default function ShareProfileScreen() {
         )}
       </Svg>
       {isBusiness && (
-        <View style={styles.qrCenterLogo}>
+        <View style={[styles.qrCenterLogo, { width: centerLogoSize, height: centerLogoSize, borderRadius: centerLogoSize * 0.24 }]}>
           <Image
             source={require('../../assets/brand/finalLogo_512x512.png')}
-            style={styles.qrLogoImg}
+            style={{ width: centerLogoSize * 0.74, height: centerLogoSize * 0.74, borderRadius: centerLogoSize * 0.16 }}
             resizeMode="contain"
           />
         </View>
       )}
     </View>
-  );
+    );
+  };
 
   const copy = async () => {
-    await Clipboard.setStringAsync(shareText);
+    await Clipboard.setStringAsync(shareCaption);
     setToast({
       title: t('common.copied', 'Link copied'),
-      message: t('shareProfile.copied', 'Profile details copied to clipboard.'),
+      message: isBusiness
+        ? t('shareProfile.captionCopied', 'Caption copied. Paste it into your post.')
+        : t('shareProfile.copied', 'Profile details copied to clipboard.'),
       type: 'success',
     });
   };
@@ -168,55 +179,104 @@ export default function ShareProfileScreen() {
 
   const handleShare = async () => {
     if (!isBusiness) {
-      Share.share({ title: profile.name, message: shareText });
+      await Share.share({ title: profile.name, message: shareCaption });
       return;
     }
 
-    const caption = (profile.storeUrl && !shareText.includes(profile.storeUrl))
-      ? `${shareText}\n${profile.storeUrl}`
-      : shareText;
-
-    let shared = false;
     setIsSharing(true);
+    try {
+      const imageUri = await squareShotRef.current?.capture();
+      if (!imageUri) throw new Error('Business profile image capture is unavailable.');
 
-    if (Platform.OS !== 'web' && cardShotRef.current?.capture) {
-      try {
-        const imageUri = await cardShotRef.current.capture();
-        if (imageUri) {
-          try {
-            await Clipboard.setStringAsync(caption);
-          } catch (_) {}
-
-          if (await Sharing.isAvailableAsync()) {
-            await Sharing.shareAsync(imageUri, {
-              mimeType: 'image/png',
-              dialogTitle: t('shareProfile.title', 'Share my DizzitUp profile'),
-            });
-            shared = true;
-            setToast({
-              title: t('shareSuccess.copiedTitle', 'Message copied!'),
-              message: t('shareProfile.captionCopied', 'Caption with your DZYstore link copied. Paste it in your post.'),
-              type: 'success',
-            });
-          }
+      if (Platform.OS === 'web') {
+        const imageBlob = await (await fetch(imageUri)).blob();
+        const imageFile = new File([imageBlob], 'dizzitup-business-profile.png', { type: 'image/png' });
+        if (navigator.share && navigator.canShare?.({ files: [imageFile] })) {
+          await navigator.share({ files: [imageFile], title: profile.name, text: shareCaption });
+        } else if (navigator.share) {
+          await navigator.share({ title: profile.name, text: shareCaption, url: profile.storeUrl });
+        } else {
+          await Share.share({ title: profile.name, message: shareCaption });
         }
-      } catch (err) {
-        console.warn('[ShareProfile] Image capture/share failed, falling back to text:', err);
+        return;
       }
-    }
 
-    if (!shared) {
       try {
-        await Share.share({
+        const shareModule = await import('react-native-share');
+        const nativeShare = shareModule.default || shareModule;
+        const result = await nativeShare.open({
+          url: imageUri,
+          type: 'image/png',
+          filename: 'dizzitup-business-profile.png',
           title: profile.name,
-          message: caption,
+          message: shareCaption,
+          failOnCancel: false,
         });
-      } catch (err) {
-        console.warn('[ShareProfile] Fallback text share failed:', err);
+        if (result?.dismissedAction) return;
+      } catch (nativeShareError) {
+        if (nativeShareError?.message?.toLowerCase?.().includes('cancel')) return;
+        console.warn('[ShareProfile] Native share sheet unavailable, using Expo Sharing:', nativeShareError);
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(imageUri, {
+            mimeType: 'image/png',
+            dialogTitle: t('shareProfile.title', 'Share my DizzitUp profile'),
+          });
+        } else {
+          await Share.share({ title: profile.name, message: shareCaption });
+        }
       }
+    } catch (err) {
+      console.warn('[ShareProfile] Business profile sharing failed:', err);
+      setToast({
+        title: t('errors.error', 'Error'),
+        message: t('shareProfile.shareFailed', 'Could not open sharing. Copy the caption or save an image and try again.'),
+        type: 'error',
+      });
+    } finally {
+      setIsSharing(false);
     }
+  };
 
-    setIsSharing(false);
+  const saveImageForPosting = async (format) => {
+    const shotRef = format === 'story' ? storyShotRef : squareShotRef;
+    const fileName = `dizzitup-business-profile-${format}.png`;
+    try {
+      const imageUri = await shotRef.current?.capture();
+      if (!imageUri) throw new Error('Business profile image capture is unavailable.');
+
+      if (Platform.OS === 'web') {
+        const downloadLink = document.createElement('a');
+        downloadLink.href = imageUri;
+        downloadLink.download = fileName;
+        downloadLink.click();
+      } else {
+        const permission = await MediaLibrary.requestPermissionsAsync(true, []);
+        if (permission.status !== 'granted') {
+          setToast({
+            title: t('shareProfile.permissionTitle', 'Photo permission needed'),
+            message: t('shareProfile.permissionMessage', 'Allow photo access to save this image to your gallery.'),
+            type: 'error',
+          });
+          return;
+        }
+        await MediaLibrary.Asset.create(imageUri);
+      }
+
+      setToast({
+        title: t('shareProfile.imageSavedTitle', 'Image saved'),
+        message: format === 'story'
+          ? t('shareProfile.storySaved', 'Story image saved to your gallery.')
+          : t('shareProfile.squareSaved', 'Square image saved to your gallery.'),
+        type: 'success',
+      });
+    } catch (err) {
+      console.warn('[ShareProfile] Saving profile image failed:', err);
+      setToast({
+        title: t('errors.error', 'Error'),
+        message: t('shareProfile.saveFailed', 'Could not save the image. Please try again.'),
+        type: 'error',
+      });
+    }
   };
 
   const renderAvatar = () => {
@@ -322,6 +382,34 @@ export default function ShareProfileScreen() {
                 </Text>
               </TouchableOpacity>
             )}
+            {isBusiness && (
+              <View style={styles.saveForPostingRow}>
+                <TouchableOpacity
+                  style={styles.saveForPostingButton}
+                  onPress={() => saveImageForPosting('story')}
+                  activeOpacity={0.75}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('shareProfile.saveStory', 'Save Story image')}
+                >
+                  <Ionicons name="download-outline" size={16} color="#1A2840" />
+                  <Text style={styles.saveForPostingText} maxFontSizeMultiplier={1.2}>
+                    {t('shareProfile.saveStory', 'Save Story image')}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.saveForPostingButton}
+                  onPress={() => saveImageForPosting('square')}
+                  activeOpacity={0.75}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('shareProfile.saveSquare', 'Save square image')}
+                >
+                  <Ionicons name="download-outline" size={16} color="#1A2840" />
+                  <Text style={styles.saveForPostingText} maxFontSizeMultiplier={1.2}>
+                    {t('shareProfile.saveSquare', 'Save square image')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </ScrollView>
 
@@ -350,7 +438,11 @@ export default function ShareProfileScreen() {
           </TouchableOpacity>
           <TouchableOpacity style={styles.secondary} onPress={copy} activeOpacity={0.75}>
             <Ionicons name="copy-outline" size={19} color="#1A2840" />
-            <Text style={styles.secondaryText} maxFontSizeMultiplier={1.3}>{t('shareProfile.copy', 'Copy profile details')}</Text>
+            <Text style={styles.secondaryText} maxFontSizeMultiplier={1.3}>
+              {isBusiness
+                ? t('shareProfile.copyCaption', 'Copy caption')
+                : t('shareProfile.copy', 'Copy profile details')}
+            </Text>
           </TouchableOpacity>
           <Text style={styles.privacy} maxFontSizeMultiplier={1.3}>
             {t('shareProfile.privacy', 'Only share this profile with people you trust. Never share your PIN or recovery information.')}
@@ -359,18 +451,28 @@ export default function ShareProfileScreen() {
       </View>
       {isBusiness && (
         <View pointerEvents="none" style={styles.offscreenShotWrapper}>
-          <ViewShot
-            ref={cardShotRef}
-            options={{ format: 'png', quality: 1, result: 'tmpfile' }}
-            collapsable={false}
-          >
-            <LinearGradient
-              colors={['#20365B', '#111D33']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.shareImageCard}
-              collapsable={false}
-            >
+          {[
+            { format: 'story', ref: storyShotRef },
+            { format: 'square', ref: squareShotRef },
+          ].map(({ format, ref }) => {
+            const isStory = format === 'story';
+            const outputHeight = isStory ? 1920 : 1080;
+            const qrArtSize = isStory ? 210 : 132;
+            return (
+              <ViewShot
+                key={format}
+                ref={ref}
+                options={{ format: 'png', quality: 1, result: 'tmpfile', width: 1080, height: outputHeight }}
+                style={isStory ? styles.offscreenStoryShot : styles.offscreenSquareShot}
+                collapsable={false}
+              >
+                <LinearGradient
+                  colors={['#20365B', '#111D33']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={[styles.shareImageCard, isStory ? styles.shareImageStory : styles.shareImageSquare]}
+                  collapsable={false}
+                >
               <View style={styles.cardHeaderRow}>
                 <View style={styles.cardBrandRow}>
                   <Image
@@ -387,36 +489,36 @@ export default function ShareProfileScreen() {
                 </Text>
               </View>
 
-              <Text style={styles.cardBusinessName} numberOfLines={2}>
+              <Text style={[styles.cardBusinessName, !isStory && styles.cardBusinessNameSquare]} numberOfLines={2}>
                 {profile.name}
               </Text>
 
               {!!locationText && (
-                <Text style={styles.cardLocationText} numberOfLines={1}>
+                <Text style={[styles.cardLocationText, !isStory && styles.cardLocationTextSquare]} numberOfLines={1}>
                   {locationText}
                 </Text>
               )}
 
-              <View style={styles.cardQrContainer}>
-                <ProfileQr size={160} />
+              <View style={[styles.cardQrContainer, !isStory && styles.cardQrContainerSquare]}>
+                <ProfileQr size={qrArtSize} />
               </View>
 
-              <Text style={styles.cardScanHint} numberOfLines={1}>
+              <Text style={[styles.cardScanHint, !isStory && styles.cardScanHintSquare]} numberOfLines={1}>
                 {t('shareProfile.scanHintBusiness', 'Scan to open my DZYstore')}
               </Text>
 
               {!!profile.referralCode && (
-                <View style={styles.cardReferralContainer}>
-                  <Text style={styles.cardReferralLabel}>
+                <View style={[styles.cardReferralContainer, !isStory && styles.cardReferralContainerSquare]}>
+                  <Text style={[styles.cardReferralLabel, !isStory && styles.cardReferralLabelSquare]}>
                     {t('shareProfile.referralCodeLabel', 'Referral code')}
                   </Text>
-                  <Text style={styles.cardReferralCode}>
+                  <Text style={[styles.cardReferralCode, !isStory && styles.cardReferralCodeSquare]}>
                     {profile.referralCode}
                   </Text>
                 </View>
               )}
 
-              <View style={styles.cardFooterRow}>
+              <View style={[styles.cardFooterRow, !isStory && styles.cardFooterRowSquare]}>
                 <Image
                   source={require('../../assets/brand/dizzitup_logo_cercle.png')}
                   style={styles.cardFooterLogo}
@@ -428,8 +530,10 @@ export default function ShareProfileScreen() {
                   <Text style={styles.cardFooterUrl}>dizzitup.com</Text>
                 </Text>
               </View>
-            </LinearGradient>
-          </ViewShot>
+                </LinearGradient>
+              </ViewShot>
+            );
+          })}
         </View>
       )}
       <AppToast visible={!!toast} title={toast?.title} message={toast?.message} type={toast?.type} onClose={() => setToast(null)} />
@@ -483,6 +587,9 @@ const styles = StyleSheet.create({
   primaryText: { fontFamily: 'Inter_700Bold', fontSize: 14, color: '#1A2840' },
   secondary: { height: 44, borderRadius: 14, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#DDE4EE', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8 },
   secondaryText: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#1A2840' },
+  saveForPostingRow: { flexDirection: 'row', width: '100%', gap: 8, marginTop: 10 },
+  saveForPostingButton: { flex: 1, minHeight: 42, borderRadius: 12, backgroundColor: '#FFF8E8', borderWidth: 1, borderColor: '#F3D58C', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, paddingHorizontal: 6 },
+  saveForPostingText: { fontFamily: 'Inter_600SemiBold', fontSize: 10, color: '#1A2840', textAlign: 'center' },
   privacy: { fontFamily: 'Inter_400Regular', fontSize: 10, lineHeight: 14, color: '#94A3B8', textAlign: 'center', marginTop: 8, paddingHorizontal: 8 },
   payLinkButton: { height: 40, borderRadius: 12, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#DDE4EE', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 10, paddingHorizontal: 14, width: '100%' },
   payLinkButtonText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#1A2840' },
@@ -490,14 +597,28 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: -2000,
     top: 0,
-    width: 340,
+    width: 360,
+  },
+  offscreenStoryShot: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: 360,
+    height: 640,
+  },
+  offscreenSquareShot: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: 360,
+    height: 360,
   },
   shareImageCard: {
-    width: 340,
-    borderRadius: 22,
-    padding: 18,
+    width: '100%',
     alignItems: 'center',
   },
+  shareImageStory: { height: 640, borderRadius: 24, padding: 26, justifyContent: 'space-between' },
+  shareImageSquare: { height: 360, borderRadius: 22, padding: 16, justifyContent: 'space-between' },
   cardHeaderRow: {
     width: '100%',
     flexDirection: 'row',
@@ -532,6 +653,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
     width: '100%',
   },
+  cardBusinessNameSquare: { fontSize: 16, lineHeight: 20, marginBottom: 0 },
   cardLocationText: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 12,
@@ -540,6 +662,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     width: '100%',
   },
+  cardLocationTextSquare: { fontSize: 10, lineHeight: 13, marginBottom: 0 },
   cardQrContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
@@ -547,6 +670,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  cardQrContainerSquare: { padding: 6, borderRadius: 12 },
   cardScanHint: {
     fontFamily: 'Inter_500Medium',
     fontSize: 11,
@@ -555,6 +679,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     width: '100%',
   },
+  cardScanHintSquare: { fontSize: 9, marginTop: 0 },
   cardReferralContainer: {
     alignItems: 'center',
     marginTop: 8,
@@ -563,23 +688,27 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     backgroundColor: 'rgba(255, 199, 89, 0.14)',
   },
+  cardReferralContainerSquare: { marginTop: 0, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 7 },
   cardReferralLabel: {
     fontFamily: 'Inter_500Medium',
     fontSize: 9,
     color: '#E2E8F0',
   },
+  cardReferralLabelSquare: { fontSize: 8 },
   cardReferralCode: {
     fontFamily: 'Inter_700Bold',
     fontSize: 12,
     color: '#FFC759',
     marginTop: 1,
   },
+  cardReferralCodeSquare: { fontSize: 10 },
   cardFooterRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 12,
   },
+  cardFooterRowSquare: { marginTop: 0 },
   cardFooterLogo: {
     width: 18,
     height: 18,
