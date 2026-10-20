@@ -11,7 +11,10 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.dizzitup.app",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryUsageDescription": "Allow DizzitUp to access your photo library to select and save business visuals and profile images.",
+        "NSPhotoLibraryAddUsageDescription": "Allow DizzitUp to save your Business profile image to your photo library.",
+        "NSCameraUsageDescription": "Allow DizzitUp to access your camera to scan QR codes for payments and transactions."
       }
     },
     "android": {
@@ -34,7 +37,7 @@
       [
         "expo-media-library",
         {
-          "photosPermission": false,
+          "photosPermission": "Allow DizzitUp to access your photo library to select and save business visuals and profile images.",
           "savePhotosPermission": "Allow DizzitUp to save your Business profile image to your photo library.",
           "granularPermissions": []
         }
