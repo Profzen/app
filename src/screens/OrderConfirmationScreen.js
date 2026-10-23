@@ -24,6 +24,7 @@ import SocialShareModal from '../components/SocialShareModal';
 import { useApp } from '../context/AppContext';
 import { buyGoodsApi } from '../services/buyGoodsApi';
 import { getFullCountryName } from '../utils/countryCurrencyUtils';
+import { isPhysicalCart } from '../utils/productUtils';
 
 export default function OrderConfirmationScreen({ route }) {
   const navigation = useNavigation();
@@ -33,6 +34,7 @@ export default function OrderConfirmationScreen({ route }) {
   const orderData = route?.params?.orderData;
 
   const isPickup = orderData?.deliveryOption === 'pickup' || orderData?.deliveryOption === 'store_pickup';
+  const isPhysical = isPhysicalCart(orderData?.items || [orderData]);
   const rawCountry = isPickup
     ? (orderData?.merchant?.country || orderData?.merchant?.business_country || orderData?.recipient?.country || user?.merchantProfile?.country || user?.country || '')
     : (orderData?.recipient?.country || orderData?.merchant?.country || user?.merchantProfile?.country || user?.country || '');
@@ -151,7 +153,11 @@ export default function OrderConfirmationScreen({ route }) {
   };
 
   const handleConfirmPurchase = () => {
-    setShowEscrowModal(true);
+    if (isPhysical) {
+      setShowEscrowModal(true);
+    } else {
+      executeOrderSimulation();
+    }
   };
 
   const executeOrderSimulation = async () => {
@@ -196,7 +202,7 @@ export default function OrderConfirmationScreen({ route }) {
             network: orderData.network || 'Polygon',
             deliveryOption: orderData.deliveryOption,
             deliveryFee: orderData.deliveryFee,
-            escrowPin: escrowPin,
+            escrowPin: isPhysical ? escrowPin : null,
             recipientName: orderData.recipient?.name,
             recipientPhone: orderData.recipient?.phone,
             recipientAddress: orderData.recipient?.address,
@@ -228,7 +234,7 @@ export default function OrderConfirmationScreen({ route }) {
             amountCrypto: `${token === 'DZY' ? orderData.totalDZY : orderData.totalUSDC} ${token}`,
             paymentMethod: token,
             orderId: orderData.orderId,
-            escrowPin: escrowPin,
+            escrowPin: isPhysical ? escrowPin : null,
             recipientName: orderData.recipient?.name,
             recipientPhone: orderData.recipient?.phone,
             recipientAddress: orderData.recipient?.address,
@@ -249,7 +255,7 @@ export default function OrderConfirmationScreen({ route }) {
             currency: apiCurrency,
             paymentMethod: 'MOMO',
             metadata: {
-              escrowPin,
+              escrowPin: isPhysical ? escrowPin : null,
               recipientPhone: orderData.recipient?.phone,
               recipientName: orderData.recipient?.name,
             },
@@ -267,7 +273,7 @@ export default function OrderConfirmationScreen({ route }) {
           orderData: {
             ...orderData,
             currency: displayCurrency,
-            escrowPin,
+            escrowPin: isPhysical ? escrowPin : null,
           },
         });
         return;
@@ -296,7 +302,7 @@ export default function OrderConfirmationScreen({ route }) {
               orderData: {
                 ...orderData,
                 currency: displayCurrency,
-                escrowPin,
+                escrowPin: isPhysical ? escrowPin : null,
               },
             });
             return;
@@ -315,7 +321,7 @@ export default function OrderConfirmationScreen({ route }) {
             currency: displayCurrency,
             paymentMethod: t('orderConfirmation.cardVisaMc', 'Bank Card (Visa/MC)'),
             orderId: orderData.orderId,
-            escrowPin: escrowPin,
+            escrowPin: isPhysical ? escrowPin : null,
             recipientName: orderData.recipient?.name,
             recipientPhone: orderData.recipient?.phone,
             recipientAddress: orderData.recipient?.address,
@@ -355,14 +361,21 @@ export default function OrderConfirmationScreen({ route }) {
             <Ionicons name="lock-closed" size={20} color="#047857" />
           </View>
           <View style={styles.securityAlertContent}>
-            <Text style={styles.securityAlertTitle}>{t('orderConfirmation.securityTitle', 'DizzitUp On-chain Escrow Protection')}</Text>
+            <Text style={styles.securityAlertTitle}>
+              {isPhysical
+                ? t('orderConfirmation.securityTitle', 'DizzitUp On-chain Escrow Protection')
+                : t('orderConfirmation.securityTitleNeutral', 'Secure Payment')}
+            </Text>
             <Text style={styles.securityAlertText}>
-              {t('orderConfirmation.securityDesc', 'Your funds remain protected in blockchain escrow. The merchant is only paid once your items are delivered and verified.')}
+              {isPhysical
+                ? t('orderConfirmation.securityDesc', 'Your funds remain protected in blockchain escrow. The merchant is only paid once your items are delivered and verified.')
+                : t('orderConfirmation.securityDescNeutral', 'Your payment is processed securely.')}
             </Text>
           </View>
         </View>
 
         {/* Secret Escrow PIN Banner */}
+        {isPhysical && (
         <View style={styles.escrowPinCard}>
           <View style={styles.escrowPinHeader}>
             <View style={styles.escrowPinTitleRow}>
@@ -397,6 +410,7 @@ export default function OrderConfirmationScreen({ route }) {
             {t('escrow.buyerProtectionNotice', { country: recipientCountryName, defaultValue: `This protection is for you, the Buyer, and your Beneficiary in ${recipientCountryName}.` })}
           </Text>
         </View>
+        )}
 
         {/* You are Buying Section */}
         <View style={styles.sectionCard}>
@@ -611,7 +625,7 @@ export default function OrderConfirmationScreen({ route }) {
                       amount: orderData.totalAmount,
                       currency: displayCurrency,
                       orderId: orderData.orderId,
-                      escrowPin: escrowPin,
+                      escrowPin: isPhysical ? escrowPin : null,
                       recipientName: orderData.recipient?.name,
                     },
                   });
@@ -623,6 +637,7 @@ export default function OrderConfirmationScreen({ route }) {
       )}
 
       {/* On-Chain Escrow Innovation Modal (Solofo Mandate) */}
+      {isPhysical && (
       <Modal visible={showEscrowModal} transparent animationType="fade" onRequestClose={() => setShowEscrowModal(false)}>
         <View style={[styles.escrowModalOverlay, { paddingBottom: Math.max(insets.bottom, 16) }]}>
           <View style={styles.escrowModalCard}>
@@ -698,6 +713,7 @@ export default function OrderConfirmationScreen({ route }) {
           </View>
         </View>
       </Modal>
+      )}
 
       {/* Dedicated Social Share Sheet */}
       <SocialShareModal

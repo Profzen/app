@@ -27,6 +27,7 @@ import ScreenFooter from '../components/ScreenFooter';
 import { contactService } from '../services/contactService';
 // import SelectableContactItem from '../components/SelectableContactItem';
 import { ALL_COUNTRIES } from '../utils/countriesData';
+import { isPhysicalCart } from '../utils/productUtils';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -140,6 +141,12 @@ export default function OrderVerificationScreen({ route }) {
   const [deliveryOption, setDeliveryOption] = useState('pickup'); // 'home', 'pickup'
   const [paymentRail, setPaymentRail] = useState('crypto'); // 'crypto', 'card', 'momo'
   const [selectedToken, setSelectedToken] = useState('USDC'); // 'USDC', 'USDT', 'EURC', 'DZY'
+
+  useEffect(() => {
+    if (selectedToken === 'DZY') {
+      setSelectedToken('USDC');
+    }
+  }, [selectedToken]);
   const [network, setNetwork] = useState('Polygon'); // 'Polygon', 'Base', 'Ethereum', 'Solana'
 
   // Payer country determination (userCountry from AppContext/IP geolocation -> fallback 'DZ')
@@ -413,7 +420,8 @@ export default function OrderVerificationScreen({ route }) {
     return 0; // Free delivery if merchant hasn't specified a custom shipping rate
   }, [rawDeliveryFee, merchantObj?.currency, rawCurrency]);
 
-  const deliveryFee = deliveryOption === 'home' ? standardDeliveryFee : 0;
+  const isPhysical = useMemo(() => isPhysicalCart(items), [items]);
+  const deliveryFee = isPhysical && deliveryOption === 'home' ? standardDeliveryFee : 0;
 
   // Platform network fee (~0.10 USD / ~65 FCFA) converted to transaction currency
   const platformFee = useMemo(() => {
@@ -458,7 +466,7 @@ export default function OrderVerificationScreen({ route }) {
     let savedBeneficiaryId = null;
 
     // Validation for Home Delivery
-    if (deliveryOption === 'home') {
+    if (isPhysical && deliveryOption === 'home') {
       if (!recipientName.trim() || !recipientPhone.trim() || !recipientAddress.trim() || !deliveryCityValue) {
         setIsEditingRecipient(true);
         AppToast.showError(t('orderVerification.missingDeliveryInfo', 'Please select a beneficiary or enter delivery details.'), t('common.error', 'Error'));
@@ -494,6 +502,7 @@ export default function OrderVerificationScreen({ route }) {
         quantity: i.quantity,
         image: i.image,
         offering_type: i.product?.offering_type || i.offering_type || i.product?.metadata?.offering_type || i.metadata?.offering_type,
+        escrow_policy: i.product?.escrow_policy || i.escrow_policy,
         service_model: i.product?.service_model || i.service_model || i.product?.metadata?.service_model || i.metadata?.service_model,
       })),
       deliveryOption,
@@ -646,6 +655,7 @@ export default function OrderVerificationScreen({ route }) {
         </View>
 
         {/* Delivery Options */}
+        {isPhysical && (
         <View style={styles.deliverySection}>
           <View style={styles.sectionHeaderRow}>
             <View style={styles.iconCircle}>
@@ -696,6 +706,7 @@ export default function OrderVerificationScreen({ route }) {
             </TouchableOpacity>
           </View>
         </View>
+        )}
 
         {/* Recipient & Delivery Address Card */}
         <View style={styles.addressCard}>
@@ -988,32 +999,52 @@ export default function OrderVerificationScreen({ route }) {
               {[
                 { symbol: 'USDC', name: 'USD Coin', badge: 'ERC20 / Polygon', rate: totalUSDC },
                 { symbol: 'USDT', name: 'Tether USD', badge: 'TRC20 / Polygon', rate: totalUSDT },
-                { symbol: 'DZY', name: 'DizzitUp Token', badge: 'DIZZITUP', rate: totalDZY },
+                { symbol: 'DZY', name: 'DizzitUp Token', badge: 'DIZZITUP', rate: totalDZY, disabled: true },
                 { symbol: 'EURC', name: 'Euro Coin', badge: 'ERC20', rate: totalEURC },
               ].map((tok) => (
                 <TouchableOpacity
                   key={tok.symbol}
-                  style={[styles.paymentMethodItem, selectedToken === tok.symbol && styles.optionSelected]}
-                  onPress={() => setSelectedToken(tok.symbol)}
+                  disabled={tok.disabled}
+                  style={[
+                    styles.paymentMethodItem,
+                    selectedToken === tok.symbol && styles.optionSelected,
+                    tok.disabled && styles.paymentMethodItemDisabled,
+                  ]}
+                  onPress={() => {
+                    if (tok.disabled) return;
+                    setSelectedToken(tok.symbol);
+                  }}
                 >
-                  <View style={[styles.radioOuter, selectedToken === tok.symbol && styles.radioOuterSelected]}>
+                  <View style={[
+                    styles.radioOuter,
+                    selectedToken === tok.symbol && styles.radioOuterSelected,
+                    tok.disabled && styles.radioOuterDisabled,
+                  ]}>
                     {selectedToken === tok.symbol && <View style={styles.radioInner} />}
                   </View>
-                  <CryptoIcon symbol={tok.symbol} size={32} />
+                  <View style={tok.disabled && { opacity: 0.5 }}>
+                    <CryptoIcon symbol={tok.symbol} size={32} />
+                  </View>
                   <View style={styles.paymentMethodInfo}>
                     <View style={styles.paymentMethodNameRow}>
-                      <Text style={styles.paymentMethodName}>{tok.symbol}</Text>
-                      <View style={styles.networkBadgeBlue}>
-                        <Text style={styles.networkBadgeTextBlue}>{tok.badge}</Text>
-                      </View>
+                      <Text style={[styles.paymentMethodName, tok.disabled && styles.paymentMethodNameDisabled]}>{tok.symbol}</Text>
+                      {tok.disabled ? (
+                        <View style={styles.networkBadgeDisabled}>
+                          <Text style={styles.networkBadgeTextDisabled}>{t('orderVerification.dzyLaunchNotice', 'Available after the DZY token launch')}</Text>
+                        </View>
+                      ) : (
+                        <View style={styles.networkBadgeBlue}>
+                          <Text style={styles.networkBadgeTextBlue}>{tok.badge}</Text>
+                        </View>
+                      )}
                     </View>
-                    <Text style={styles.paymentMethodSub}>{tok.name}</Text>
+                    <Text style={[styles.paymentMethodSub, tok.disabled && styles.paymentMethodSubDisabled]}>{tok.name}</Text>
                   </View>
                   <View style={styles.paymentMethodValues}>
-                    <Text style={styles.paymentMethodValueMain}>
+                    <Text style={[styles.paymentMethodValueMain, tok.disabled && styles.paymentMethodValueMainDisabled]}>
                       {tok.rate} {tok.symbol}
                     </Text>
-                    <Text style={styles.paymentMethodValueSub}>
+                    <Text style={[styles.paymentMethodValueSub, tok.disabled && styles.paymentMethodValueSubDisabled]}>
                       ≈ {totalAmount.toLocaleString(numLocale)} {displayCurrency}
                     </Text>
                   </View>
@@ -1095,7 +1126,9 @@ export default function OrderVerificationScreen({ route }) {
                 <View style={styles.networkNoticeRow}>
                   <Ionicons name="shield-checkmark" size={13} color="#10B981" style={{ marginRight: 5 }} />
                   <Text style={styles.networkNoticeText}>
-                    {t('orderVerification.escrowDeployed', "Escrow contract verified on {{network}}", { network })}
+                    {isPhysical
+                      ? t('orderVerification.escrowDeployed', "Escrow contract verified on {{network}}", { network })
+                      : t('orderVerification.networkVerified', "Secure payment on {{network}}", { network })}
                   </Text>
                 </View>
               </View>
@@ -1267,11 +1300,9 @@ export default function OrderVerificationScreen({ route }) {
                 {t('orderVerification.securePaymentTitle', "100% Secure payment")}
               </Text>
               <Text style={styles.securityDesc} maxFontSizeMultiplier={1.3}>
-                {items.every(item => (item.product?.offering_type || item.offering_type) === 'service' && (item.product?.service_model || item.service_model) === 'rental_booking')
-                  ? t('orderVerification.securityDescRental', "Your funds are protected until your arrival (Check-in).")
-                  : items.every(item => (item.product?.offering_type || item.offering_type) === 'service' || (item.product?.offering_type || item.offering_type) === 'digital_product')
-                  ? t('orderVerification.securityDescService', "Your funds are protected until the service is completed.")
-                  : t('orderVerification.securityDesc', "Your funds are protected in escrow until physical delivery is confirmed.")}
+                {isPhysical
+                  ? t('orderVerification.securityDesc', "Your funds are protected in escrow until physical delivery is confirmed.")
+                  : t('orderVerification.securityDescNeutral', "Secure payment")}
               </Text>
             </View>
           </View>
@@ -1684,6 +1715,40 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 10,
     marginBottom: 8,
+  },
+  paymentMethodItemDisabled: {
+    backgroundColor: '#F8FAFC',
+    borderColor: '#E2E8F0',
+    opacity: 0.6,
+  },
+  radioOuterDisabled: {
+    borderColor: '#CBD5E1',
+    backgroundColor: '#F1F5F9',
+  },
+  paymentMethodNameDisabled: {
+    color: '#94A3B8',
+  },
+  paymentMethodSubDisabled: {
+    color: '#94A3B8',
+  },
+  paymentMethodValueMainDisabled: {
+    color: '#94A3B8',
+  },
+  paymentMethodValueSubDisabled: {
+    color: '#CBD5E1',
+  },
+  networkBadgeDisabled: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  networkBadgeTextDisabled: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 8,
+    color: '#64748B',
   },
   paymentMethodInfo: {
     flex: 1,

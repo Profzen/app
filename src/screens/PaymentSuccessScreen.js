@@ -10,6 +10,7 @@ import RatingPromptModal from '../components/RatingPromptModal';
 import { useApp } from '../context/AppContext';
 import { getFlagEmoji, getCountryFromPhone, getFullCountryName } from '../utils/countryCurrencyUtils';
 import { isSmallScreen } from '../utils/responsive';
+import { isPhysicalCart } from '../utils/productUtils';
 
 export default function PaymentSuccessScreen({ route }) {
   const navigation = useNavigation();
@@ -25,6 +26,7 @@ export default function PaymentSuccessScreen({ route }) {
   }, []);
 
   const tx = route?.params?.transaction || {};
+  const isPhysical = isPhysicalCart(tx.items || (tx.item ? [tx.item] : [tx]));
   const txRef = tx.orderId || tx.id || tx.txHash || (tx.created_at ? 'ORD-' + new Date(tx.created_at).getTime() : 'ORD-' + Date.now());
   const displayAmount = tx.amount
     ? `${Number(tx.amount).toLocaleString(language === 'en' ? 'en-US' : 'fr-FR')} ${tx.currency || 'FCFA'}`
@@ -49,7 +51,7 @@ export default function PaymentSuccessScreen({ route }) {
     try {
       await Share.share({
         title: t('paymentSuccess.shareTitle', 'DizzitUp Receipt'),
-        message: `${serviceTitle} • ${displayAmount} • ${t('paymentSuccess.orderRef', "Order Ref")}: ${txRef}${tx.escrowPin ? ` • PIN: ${tx.escrowPin}` : ''}`
+        message: `${serviceTitle} • ${displayAmount} • ${t('paymentSuccess.orderRef', "Order Ref")}: ${txRef}${isPhysical && tx.escrowPin ? ` • PIN: ${tx.escrowPin}` : ''}`
       });
     } finally {
       setToast({
@@ -93,7 +95,7 @@ export default function PaymentSuccessScreen({ route }) {
 
             <Text style={styles.successTitle}>{t('paymentSuccess.title', "Payment Successful!")}</Text>
             <Text style={styles.successSub}>
-              {tx.escrowPin
+              {isPhysical && tx.escrowPin
                 ? t('paymentSuccess.fundsEscrowed', "Your funds are secured by an on-chain escrow smart contract.")
                 : t('paymentSuccess.subtitle', "Your payment was processed successfully.")}
             </Text>
@@ -105,7 +107,7 @@ export default function PaymentSuccessScreen({ route }) {
           </View>
 
           {/* Secret Escrow PIN Banner for Buy Goods */}
-          {!!tx.escrowPin && (
+          {isPhysical && !!tx.escrowPin && (
             <View style={styles.escrowSuccessCard}>
               <View style={styles.escrowSuccessHeader}>
                 <Ionicons name="key" size={18} color="#FFB800" />

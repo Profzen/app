@@ -11,6 +11,7 @@ import PhysicalGoodsWarningModal from '../components/PhysicalGoodsWarningModal';
 import { useApp } from '../context/AppContext';
 import { convertCurrencyAmount } from '../utils/countryCurrencyUtils';
 import { ALL_COUNTRIES } from '../utils/countriesData';
+import { isPhysicalItem } from '../utils/productUtils';
 import { buyGoodsApi } from '../services/buyGoodsApi';
 import { getProductMedia, isVideoUrl } from '../utils/productMedia';
 
@@ -161,6 +162,13 @@ export default function ProductDetailsScreen({ route }) {
 
   const executeAddToCart = (force = false) => {
     const res = addToCart(product, quantity, shop, force);
+    if (res.mixedCart || res.error === 'MIXED_CART') {
+      setToast({
+        title: t('cart.mixedCartTitle', 'Order separately'),
+        message: res.message || t('cart.mixedCartError', 'Services and goods must be ordered separately'),
+      });
+      return;
+    }
     if (res.conflict) {
       setConflictModal({
         title: t('cart.conflictTitle', 'Different shop in cart'),
@@ -202,7 +210,7 @@ export default function ProductDetailsScreen({ route }) {
 
   const handleAddToCart = () => {
     if (!canPurchase) return;
-    if (!product.offering_type || product.offering_type === 'physical_good') {
+    if (isPhysicalItem(product)) {
       setPendingAction('cart');
       setWarningModalVisible(true);
     } else {
@@ -212,7 +220,7 @@ export default function ProductDetailsScreen({ route }) {
 
   const handleBuyNow = () => {
     if (!canPurchase) return;
-    if (!product.offering_type || product.offering_type === 'physical_good') {
+    if (isPhysicalItem(product)) {
       setPendingAction('buy');
       setWarningModalVisible(true);
     } else {
@@ -627,7 +635,11 @@ export default function ProductDetailsScreen({ route }) {
               </View>
               <View style={styles.featureContent}>
                 <Text style={styles.featureLabel}>{t('product.protection', 'Protection')}</Text>
-                <Text style={styles.featureValue}>{t('product.protectionVal', '4-digit Secure PIN payment')}</Text>
+                <Text style={styles.featureValue}>
+                  {isPhysicalItem(product)
+                    ? t('product.protectionVal', '4-digit Secure PIN payment')
+                    : t('product.protectionValService', '100% Secure payment')}
+                </Text>
               </View>
             </View>
 

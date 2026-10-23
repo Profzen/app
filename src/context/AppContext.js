@@ -14,6 +14,7 @@ import { transactionService } from '../services/transactionService';
 import contactService from '../services/contactService';
 import { buyGoodsApi } from '../services/buyGoodsApi';
 import { getProductCoverImage } from '../utils/productMedia';
+import { isPhysicalItem } from '../utils/productUtils';
 import { detectUserCountry, getCachedCountry, setManualCountry } from '../services/geolocationService';
 import { notificationService } from '../services/notificationService';
 
@@ -219,15 +220,47 @@ export function AppProvider({ children }) {
   const [isAppLocked, setIsAppLocked] = useState(false);
   const [isCheckingLock, setIsCheckingLock] = useState(true);
 
-  // Cart Hydration
+  // Cart Hydration & Legacy Item Refresh
   useEffect(() => {
+    let isMounted = true;
     const hydrateCart = async () => {
       try {
         const stored = await AsyncStorage.getItem('@dizzitup_cart');
         if (stored) {
           const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed)) {
-            setCart(parsed);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const needsRefresh = parsed.some(item => !item.offering_type);
+            if (!needsRefresh) {
+              if (isMounted) setCart(parsed);
+              return;
+            }
+
+            // Refresh legacy items from product data or remove if not found or inactive
+            const refreshedItems = [];
+            for (const item of parsed) {
+              const pid = item.productId || item.id;
+              if (!item.offering_type && pid) {
+                try {
+                  const prod = await buyGoodsApi.getProductById(pid);
+                  if (prod && (prod.status === 'active' || !prod.status) && prod.is_active !== false) {
+                    refreshedItems.push({
+                      ...item,
+                      offering_type: prod.offering_type || 'physical_good',
+                      escrow_policy: prod.escrow_policy || (isPhysicalItem(prod) ? 'physical_delivery' : 'none'),
+                    });
+                  }
+                } catch (e) {
+                  console.log("Cart item not found or inactive, removing:", pid, e);
+                }
+              } else {
+                refreshedItems.push(item);
+              }
+            }
+
+            if (isMounted) setCart(refreshedItems);
+            await AsyncStorage.setItem('@dizzitup_cart', JSON.stringify(refreshedItems));
+          } else {
+            if (isMounted) setCart([]);
           }
         }
       } catch (err) {
@@ -235,6 +268,7 @@ export function AppProvider({ children }) {
       }
     };
     hydrateCart();
+    return () => { isMounted = false; };
   }, []);
 
   const [appSettings, setAppSettings] = useState({
@@ -1135,6 +1169,22 @@ export function AppProvider({ children }) {
     const mCountry = merchant?.country || product.merchant?.country || '';
     const mCity = merchant?.city_village || product.merchant?.city_village || '';
 
+    const isProductPhysical = isPhysicalItem(product);
+
+    // Mixed cart check: block mixing services and goods with same message as web
+    if (cart.length > 0 && !force) {
+      const cartHasPhysical = cart.some(isPhysicalItem);
+      const cartHasNonPhysical = cart.some(item => !isPhysicalItem(item));
+      if ((cartHasPhysical && !isProductPhysical) || (cartHasNonPhysical && isProductPhysical)) {
+        return {
+          success: false,
+          mixedCart: true,
+          error: 'MIXED_CART',
+          message: t('cart.mixedCartError', 'Services and goods must be ordered separately'),
+        };
+      }
+    }
+
     // Single-merchant constraint check
     if (cart.length > 0 && !force) {
       const existingMerchantId = cart[0].merchantId;
@@ -1163,10 +1213,16 @@ export function AppProvider({ children }) {
       merchantCountry: mCountry,
       merchantCity: mCity,
       category: product.category || 'Marketplace',
+      offering_type: product.offering_type || 'physical_good',
+      escrow_policy: product.escrow_policy || (isProductPhysical ? 'physical_delivery' : 'none'),
     };
 
     let updated;
-    if (force && cart.length > 0 && cart[0].merchantId !== mId) {
+    const isCartMixed = cart.length > 0 && (
+      (cart.some(isPhysicalItem) && !isProductPhysical) ||
+      (cart.some(item => !isPhysicalItem(item)) && isProductPhysical)
+    );
+    if (force && cart.length > 0 && (cart[0].merchantId !== mId || isCartMixed)) {
       updated = [newItem];
     } else {
       const existingIndex = cart.findIndex(i => (i.productId === newItem.productId || i.id === newItem.id));

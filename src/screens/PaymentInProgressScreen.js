@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
 import { useApp } from '../context/AppContext';
 import { buyGoodsApi } from '../services/buyGoodsApi';
+import { isPhysicalCart } from '../utils/productUtils';
 
 export default function PaymentInProgressScreen({ route }) {
   const navigation = useNavigation();
@@ -24,6 +25,8 @@ export default function PaymentInProgressScreen({ route }) {
   const orderId = route?.params?.orderId || orderData?.orderId || orderData?.id || ('ORD-' + Math.floor(100000 + Math.random() * 900000));
   const escrowPin = orderData?.escrowPin || Math.floor(1000 + Math.random() * 9000).toString();
 
+  const isPhysical = isPhysicalCart(orderData?.items || (orderData?.item ? [orderData.item] : [orderData]));
+
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [confirmations, setConfirmations] = useState(1);
   const [isChecking, setIsChecking] = useState(false);
@@ -31,7 +34,11 @@ export default function PaymentInProgressScreen({ route }) {
   const pollTimerRef = useRef(null);
 
   const getStatusMessage = () => {
-    if (confirmations >= 4) return t('paymentInProgress.step4Msg', "Validating smart contract escrow...");
+    if (confirmations >= 4) {
+      return isPhysical
+        ? t('paymentInProgress.step4Msg', "Validating smart contract escrow...")
+        : t('paymentInProgress.step4MsgNeutral', "Finalizing payment...");
+    }
     if (confirmations === 3) return t('paymentInProgress.step3Msg', "Processing debit with partner gateway...");
     if (confirmations === 2) return t('paymentInProgress.step2Msg', "Notification sent to operator...");
     return t('paymentInProgress.waitingConfirm', "Waiting for network confirmations...");
@@ -63,7 +70,7 @@ export default function PaymentInProgressScreen({ route }) {
           ? 'DZY Wallet'
           : `${orderData.selectedToken || 'USDC'} (${orderData.network || 'Polygon'})`,
         orderId: orderId,
-        escrowPin: escrowPin,
+        escrowPin: isPhysical ? escrowPin : null,
         recipientName: orderData.recipient?.name || user?.name || '',
         recipientPhone: orderData.recipient?.phone || user?.phone || '',
         recipientAddress: orderData.recipient?.address || user?.city || '',
@@ -267,7 +274,11 @@ export default function PaymentInProgressScreen({ route }) {
             <Text style={styles.cardTitle}>{t('paymentInProgress.secureConfirmation', "Secure Confirmation")}</Text>
             <View style={styles.networkBadge}>
               <Ionicons name="shield-checkmark" size={14} color="#10B981" />
-              <Text style={styles.networkBadgeText}>{t('paymentInProgress.escrowBadge', "Smart Contract Escrow")}</Text>
+              <Text style={styles.networkBadgeText}>
+                {isPhysical
+                  ? t('paymentInProgress.escrowBadge', "Smart Contract Escrow")
+                  : t('paymentInProgress.secureBadge', "Secure Payment")}
+              </Text>
             </View>
           </View>
 
@@ -287,9 +298,15 @@ export default function PaymentInProgressScreen({ route }) {
         <View style={styles.securityBanner}>
           <Ionicons name="shield-checkmark-outline" size={22} color="#10B981" style={{ marginRight: 10 }} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.securityBannerTitle}>{t('paymentInProgress.fundsInEscrowTitle', "Funds in Escrow")}</Text>
+            <Text style={styles.securityBannerTitle}>
+              {isPhysical
+                ? t('paymentInProgress.fundsInEscrowTitle', "Funds in Escrow")
+                : t('paymentInProgress.securePaymentTitle', "Secure Payment")}
+            </Text>
             <Text style={styles.securityBannerText}>
-              {t('paymentInProgress.fundsInEscrowDesc', "The amount will only be released to the merchant after you give your secret PIN code to the courier.")}
+              {isPhysical
+                ? t('paymentInProgress.fundsInEscrowDesc', "The amount will only be released to the merchant after you give your secret PIN code to the courier.")
+                : t('paymentInProgress.securePaymentDesc', "Your transaction is encrypted and processed securely.")}
             </Text>
           </View>
         </View>

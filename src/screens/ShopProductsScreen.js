@@ -14,6 +14,7 @@ import PriceDisplay from '../components/PriceDisplay';
 import ShopSmartFilterModal from '../components/ShopSmartFilterModal';
 import WriteReviewModal from '../components/WriteReviewModal';
 import { reviewService } from '../services/reviewService';
+import { isPhysicalCart } from '../utils/productUtils';
 
 export default function ShopProductsScreen({ route }) {
   const navigation = useNavigation();
@@ -58,6 +59,7 @@ export default function ShopProductsScreen({ route }) {
   
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const isPhysical = useMemo(() => !products.length || isPhysicalCart(products), [products]);
 
   React.useEffect(() => {
     const loadProducts = async () => {
@@ -531,7 +533,11 @@ export default function ShopProductsScreen({ route }) {
               <Ionicons name="shield-checkmark-outline" size={20} color="#3B82F6" style={{marginRight: 8}} />
               <View>
                 <Text style={styles.featureTitle}>{t('shop.features.secure_payment', "Secure payment")}</Text>
-                <Text style={styles.featureSubtitle}>{t('shop.features.secure_100', "100% Escrow protected")}</Text>
+                <Text style={styles.featureSubtitle}>
+                  {isPhysical
+                    ? t('shop.features.secure_100', "100% Escrow protected")
+                    : t('shop.features.secure_payment_neutral', "100% Secure payment")}
+                </Text>
               </View>
             </View>
             <View style={styles.featureItem}>
@@ -736,7 +742,9 @@ function ShopReviewsTabContent({ shop, shopName, onOpenWriteModal, reviewsRefres
       <View style={styles.trustBanner}>
         <Ionicons name="shield-checkmark" size={18} color="#10B981" style={{ marginRight: 8 }} />
         <Text style={styles.trustBannerText}>
-          {t('shop.reviews.escrowGuarantee', "Orders protected by Escrow smart contract. Reviews are verified after delivery confirmation.")}
+          {isPhysical
+            ? t('shop.reviews.escrowGuarantee', "Orders protected by Escrow smart contract. Reviews are verified after delivery confirmation.")
+            : t('shop.reviews.secureGuarantee', "Orders protected by secure payment.")}
         </Text>
       </View>
 

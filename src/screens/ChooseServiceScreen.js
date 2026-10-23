@@ -7,6 +7,7 @@ import { useApp } from '../context/AppContext';
 import { supabase } from '../services/supabaseClient';
 import AppToast from '../components/AppToast';
 import { getFullCountryName } from '../utils/countryCurrencyUtils';
+import { isPhysicalItem } from '../utils/productUtils';
 
 const { width } = Dimensions.get('window');
 
@@ -152,7 +153,9 @@ export default function ChooseServiceScreen() {
               supplier: p.merchant?.shop_name || "Local Merchant",
               country: p.merchant?.country,
               city: p.merchant?.city_village,
-              isService: false,
+              offering_type: p.offering_type,
+              escrow_policy: p.escrow_policy,
+              isService: !isPhysicalItem(p),
               featured: p.featured
             };
           });
