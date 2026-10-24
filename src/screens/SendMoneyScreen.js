@@ -20,6 +20,8 @@ import { getEstimatedNetworkFee } from '../config/networkFees';
 import { getExplorerTxUrl } from '../utils/explorer';
 import { getWalletIdentity, getWalletErrorMessage } from '../utils/walletIdentity';
 
+import { TOKENS_BY_CHAIN } from '../config/tokensByChain';
+
 const BLOCKCHAINS = [
   { value: 'Polygon', label: 'Polygon', name: 'Polygon Network', isCrypto: true, cryptoSymbol: 'Polygon' },
   { value: 'Ethereum', label: 'Ethereum', name: 'Ethereum Mainnet', isCrypto: true, cryptoSymbol: 'Ethereum' },
@@ -27,14 +29,6 @@ const BLOCKCHAINS = [
   { value: 'BNB Chain', label: 'BNB Chain', name: 'BNB Smart Chain', isCrypto: true, cryptoSymbol: 'BNB Chain' },
   { value: 'Base', label: 'Base', name: 'Base Network', isCrypto: true, cryptoSymbol: 'Base' },
 ];
-
-const TOKENS_BY_CHAIN = {
-  polygon: ['USDC', 'USDT', 'POL', 'WPOL', 'WBTC', 'WETH', 'DAI'],
-  ethereum: ['USDC', 'USDT', 'EURC', 'ETH', 'WBTC', 'WETH', 'DAI', 'POL'],
-  base: ['USDC', 'EURC', 'ETH', 'WETH', 'DAI'],
-  bsc: ['BNB', 'USDC', 'USDT', 'DAI'],
-  solana: ['USDC', 'USDT', 'EURC', 'SOL'],
-};
 
 const CRYPTO_TOKENS = [
   { value: 'USDC', label: 'USDC', name: 'USD Coin', isCrypto: true, cryptoSymbol: 'USDC', subtitle: 'USD Coin (Stablecoin)' },

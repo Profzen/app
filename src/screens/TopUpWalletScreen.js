@@ -116,7 +116,7 @@ export default function TopUpWalletScreen() {
                   </View>
                 </View>
                 <Text style={styles.methodDesc}>
-                  Visa, Mastercard, AMEX{'\n'}
+                  Visa, Mastercard{'\n'}
                   <Text 
                     style={styles.infoLink} 
                     onPress={() => { setModalContent('card'); setModalVisible(true); }}
@@ -184,7 +184,7 @@ export default function TopUpWalletScreen() {
                   <Text style={{ fontSize: 11, color: '#10B981', fontFamily: 'Inter_500Medium' }}>Prefer transaction on Polygon or Base</Text>
                 </Text>
                 <View style={styles.countryBadge}>
-                  <Text style={styles.countryBadgeText}>{t('topUpWallet.countriesCount', '20 countries')}</Text>
+                  <Text style={styles.countryBadgeText}>{t('topUpWallet.countriesCount', 'Available in supported African countries')}</Text>
                 </View>
               </View>
             </View>

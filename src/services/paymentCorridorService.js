@@ -10,6 +10,8 @@
  * - Ecobank / CyberSource (Card & Bank settlement across 33 African countries)
  */
 
+import { getCountryFlag, getCountryDisplayName } from '../utils/countryCurrencyUtils';
+
 export const KKIAPAY_CORRIDORS = ['BJ', 'CI', 'SN', 'TG', 'NE', 'BF'];
 
 export const KOTANIPAY_CORRIDORS = [
@@ -116,7 +118,9 @@ export function getPaymentRailEligibility(countryCode, flow = 'checkout', lang =
   const meta = COUNTRY_METADATA[normCountry] || {
     name: normCountry || 'International',
     nameEn: normCountry || 'International',
-    flag: '🌍',
+    flag: normCountry.length === 2 && /^[A-Z]{2}$/.test(normCountry)
+      ? String.fromCodePoint(...normCountry.split('').map((c) => 127397 + c.charCodeAt(0)))
+      : '',
     currency: 'USD',
     dialCode: '+1',
     momoNetworks: [],
@@ -124,7 +128,8 @@ export function getPaymentRailEligibility(countryCode, flow = 'checkout', lang =
 
   const isFr = lang === 'fr';
   const isPt = lang === 'pt';
-  const localizedCountryName = isFr ? meta.name : (meta.nameEn || meta.name);
+  const translatedCountryName = getCountryDisplayName(normCountry, lang);
+  const localizedCountryName = translatedCountryName || (isFr ? meta.name : (meta.nameEn || meta.name));
   const licensedNetworkStr = isFr
     ? 'Réseau Partenaire Agréé'
     : isPt
@@ -168,8 +173,10 @@ export function getPaymentRailEligibility(countryCode, flow = 'checkout', lang =
     reason: momoSupported
       ? (isFr ? `Disponible (${meta.momoNetworks.join(', ')})` : `Available (${meta.momoNetworks.join(', ')})`)
       : (isFr
-        ? `Indisponible pour ${localizedCountryName}. Actif dans 20 pays d'Afrique Subsaharienne.`
-        : `Not available in ${localizedCountryName}. Available in 20 Sub-Saharan African countries.`),
+        ? `Indisponible pour ${localizedCountryName}. Actif dans les pays africains pris en charge.`
+        : isPt
+          ? `Indisponível para ${localizedCountryName}. Ativo nos países africanos suportados.`
+          : `Not available in ${localizedCountryName}. Available in supported African countries.`),
   };
 
   // 4. BANK TRANSFER / PAYOUT (Flow-aware)
@@ -213,7 +220,7 @@ export function getPaymentRailEligibility(countryCode, flow = 'checkout', lang =
 
   return {
     countryCode: normCountry,
-    countryName: meta.name,
+    countryName: localizedCountryName,
     countryFlag: meta.flag,
     crypto,
     card,
@@ -261,7 +268,7 @@ export function getSupportedMoMoCountries(lang = 'en') {
     return {
       code,
       name: name || code,
-      flag: meta?.flag || '🌍',
+      flag: meta?.flag || (code.length === 2 && /^[A-Z]{2}$/.test(code) ? String.fromCodePoint(...code.split('').map((c) => 127397 + c.charCodeAt(0))) : ''),
       currency: meta?.currency || 'XOF',
       networks: meta?.momoNetworks || [],
     };

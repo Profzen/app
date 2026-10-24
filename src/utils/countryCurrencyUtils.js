@@ -401,4 +401,44 @@ export const formatCurrency = (amount, currency = 'USD', locale = 'en-US', optio
     ...options
   });
 };
+export const getCountryFlag = (isoCode) => {
+  if (!isoCode || typeof isoCode !== 'string') return '';
+  const clean = isoCode.trim().toUpperCase();
+  if (clean.length !== 2 || !/^[A-Z]{2}$/.test(clean)) return '';
+  return String.fromCodePoint(...clean.split('').map((c) => 127397 + c.charCodeAt(0)));
+};
 
+export const getCountryDisplayName = (isoCode, lang = 'en', t = null) => {
+  if (!isoCode || typeof isoCode !== 'string') return '';
+  const clean = isoCode.trim().toUpperCase();
+
+  // 1. In the user's language if available via translation helper t
+  if (typeof t === 'function') {
+    const key = `countries.${clean}`;
+    const translated = t(key);
+    if (translated && translated !== key && !translated.startsWith('countries.')) {
+      return translated;
+    }
+  }
+
+  // 2. Try Intl.DisplayNames if the runtime engine supports it
+  try {
+    const locale = lang === 'fr' ? 'fr-FR' : lang === 'pt' ? 'pt-PT' : lang === 'ar' ? 'ar' : lang === 'am' ? 'am' : 'en-US';
+    const dn = new Intl.DisplayNames([locale, 'en'], { type: 'region' });
+    const name = dn.of(clean);
+    if (name && name !== clean) return name;
+  } catch (_) {}
+
+  // 3. From the country list the app already has: ALL_COUNTRIES (English fallback)
+  const countryInAll = ALL_COUNTRIES.find((c) => c.code === clean);
+  if (countryInAll?.name) {
+    return countryInAll.name;
+  }
+
+  // 4. Fallback to ISO_TO_COUNTRY_NAME in countryCurrencyUtils
+  if (ISO_TO_COUNTRY_NAME[clean]) {
+    return ISO_TO_COUNTRY_NAME[clean];
+  }
+
+  return clean;
+};

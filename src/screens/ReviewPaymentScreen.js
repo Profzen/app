@@ -161,7 +161,7 @@ export default function ReviewPaymentScreen() {
               </View>
               <View style={styles.paymentInfo}>
                 <Text style={styles.paymentTitle}>{t('reviewPayment.cardPayment', 'Card Payment')}</Text>
-                <Text style={styles.paymentSubtitle}>Visa, Mastercard, Amex</Text>
+                <Text style={styles.paymentSubtitle}>Visa, Mastercard</Text>
               </View>
               <View style={styles.selectedCheckCircle}>
                 <Ionicons name="checkmark" size={12} color="#FFFFFF" />

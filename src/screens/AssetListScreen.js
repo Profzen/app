@@ -8,59 +8,59 @@ import BottomNavBar from '../components/BottomNavBar';
 import CryptoIcon from '../components/CryptoIcon';
 import { theme } from '../theme/theme';
 
-const WEB_DEFAULT_TOKENS = [
-  { symbol: "DZY", name: "DIZZITUP INDEX", chain: "polygon" },
-  
-  // USDT
-  { symbol: "USDT", name: "Tether USD", chain: "polygon" },
-  { symbol: "USDT", name: "Tether USD", chain: "ethereum" },
-  { symbol: "USDT", name: "Tether USD", chain: "solana" },
-  { symbol: "USDT", name: "Tether USD", chain: "bsc" },
+import { WEB_DEFAULT_TOKENS } from '../config/tokensByChain';
+// const WEB_DEFAULT_TOKENS = [
+//   { symbol: "DZY", name: "DIZZITUP INDEX", chain: "polygon" },
 
-  // USDC
-  { symbol: "USDC", name: "USD Coin", chain: "polygon" },
-  { symbol: "USDC.e", name: "Bridged USD Coin", chain: "polygon" },
-  { symbol: "USDC", name: "USD Coin", chain: "ethereum" },
-  { symbol: "USDC", name: "USD Coin", chain: "base" },
-  { symbol: "USDC", name: "USD Coin", chain: "solana" },
-  { symbol: "USDC", name: "USD Coin", chain: "bsc" },
+//   // USDT
+//   { symbol: "USDT", name: "Tether USD", chain: "polygon" },
+//   { symbol: "USDT", name: "Tether USD", chain: "ethereum" },
+//   { symbol: "USDT", name: "Tether USD", chain: "solana" },
+//   { symbol: "USDT", name: "Tether USD", chain: "bsc" },
 
-  // EURC
-  { symbol: "EURC", name: "Euro Coin", chain: "ethereum" },
-  { symbol: "EURC", name: "Euro Coin", chain: "base" },
-  { symbol: "EURC", name: "Euro Coin", chain: "solana" },
+//   // USDC
+//   { symbol: "USDC", name: "USD Coin", chain: "polygon" },
+//   { symbol: "USDC.e", name: "Bridged USD Coin", chain: "polygon" },
+//   { symbol: "USDC", name: "USD Coin", chain: "ethereum" },
+//   { symbol: "USDC", name: "USD Coin", chain: "base" },
+//   { symbol: "USDC", name: "USD Coin", chain: "solana" },
+//   { symbol: "USDC", name: "USD Coin", chain: "bsc" },
 
-  // POL
-  { symbol: "POL", name: "Polygon (POL)", chain: "polygon" },
-  { symbol: "POL", name: "POL (Ethereum)", chain: "ethereum" },
-  { symbol: "WPOL", name: "Wrapped POL", chain: "polygon" },
-  
-  // BNB
-  { symbol: "BNB", name: "BNB", chain: "bsc" },
-  
-  // DAI
-  { symbol: "DAI", name: "Dai Stablecoin", chain: "polygon" },
-  { symbol: "DAI", name: "Dai Stablecoin", chain: "ethereum" },
-  { symbol: "DAI", name: "Dai Stablecoin", chain: "bsc" },
-  { symbol: "DAI", name: "Dai Stablecoin", chain: "base" },
+//   // EURC
+//   { symbol: "EURC", name: "Euro Coin", chain: "ethereum" },
+//   { symbol: "EURC", name: "Euro Coin", chain: "base" },
+//   { symbol: "EURC", name: "Euro Coin", chain: "solana" },
 
-  // ETH
-  { symbol: "ETH", name: "Ethereum", chain: "ethereum" },
-  { symbol: "ETH", name: "Ethereum", chain: "base" },
+//   // POL
+//   { symbol: "POL", name: "Polygon (POL)", chain: "polygon" },
+//   { symbol: "POL", name: "POL (Ethereum)", chain: "ethereum" },
+//   { symbol: "WPOL", name: "Wrapped POL", chain: "polygon" },
 
-  // SOL
-  { symbol: "SOL", name: "Solana", chain: "solana" },
+//   // BNB
+//   { symbol: "BNB", name: "BNB", chain: "bsc" },
 
-  // WBTC
-  { symbol: "WBTC", name: "Wrapped Bitcoin", chain: "polygon" },
-  { symbol: "WBTC", name: "Wrapped Bitcoin", chain: "ethereum" },
+//   // DAI
+//   { symbol: "DAI", name: "Dai Stablecoin", chain: "polygon" },
+//   { symbol: "DAI", name: "Dai Stablecoin", chain: "ethereum" },
+//   { symbol: "DAI", name: "Dai Stablecoin", chain: "bsc" },
+//   { symbol: "DAI", name: "Dai Stablecoin", chain: "base" },
 
-  // WETH
-  { symbol: "WETH", name: "Wrapped Ethereum", chain: "polygon" },
-  { symbol: "WETH", name: "Wrapped Ethereum", chain: "ethereum" },
-  { symbol: "WETH", name: "Wrapped Ethereum", chain: "base" },
-];
+//   // ETH
+//   { symbol: "ETH", name: "Ethereum", chain: "ethereum" },
+//   { symbol: "ETH", name: "Ethereum", chain: "base" },
 
+//   // SOL
+//   { symbol: "SOL", name: "Solana", chain: "solana" },
+
+//   // WBTC
+//   { symbol: "WBTC", name: "Wrapped Bitcoin", chain: "polygon" },
+//   { symbol: "WBTC", name: "Wrapped Bitcoin", chain: "ethereum" },
+
+//   // WETH
+//   { symbol: "WETH", name: "Wrapped Ethereum", chain: "polygon" },
+//   { symbol: "WETH", name: "Wrapped Ethereum", chain: "ethereum" },
+//   { symbol: "WETH", name: "Wrapped Ethereum", chain: "base" },
+// ];
 const CAN_BUY_SELL = ['USDC', 'USDT'];
 
 import * as Clipboard from 'expo-clipboard';
@@ -88,7 +88,7 @@ export default function AssetListScreen() {
   const currentRawBalances = isMerchant
     ? (user?.businessRawBalances?.length ? user.businessRawBalances : (user?.rawBalances || []))
     : (user?.rawBalances || []);
-  
+
   const handleBuySell = (type) => {
     if (type === 'buy') {
       navigation.navigate('TopUpWalletScreen');
@@ -96,10 +96,10 @@ export default function AssetListScreen() {
       navigation.navigate('WithdrawFundsScreen');
     }
   };
-  
+
   const groupedTokens = useMemo(() => {
     const groups = {};
-    
+
     // First, initialize groups with default tokens
     WEB_DEFAULT_TOKENS.forEach(tok => {
       if (!groups[tok.symbol]) {
@@ -131,7 +131,7 @@ export default function AssetListScreen() {
         }
         groups[sym].balance += bal;
         groups[sym].usdValue += usd;
-        
+
         const existingNet = groups[sym].networks.find(n => n.chain === chain);
         if (existingNet) {
           existingNet.balance = bal;
@@ -186,16 +186,16 @@ export default function AssetListScreen() {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView 
-        style={styles.scrollView} 
+      <ScrollView
+        style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.primary]} tintColor={theme.colors.primary} />}
       >
-        
+
         {/* Wallet Addresses Section */}
         <View style={styles.addressesContainer}>
           <Text style={styles.addressesTitle}>{t('wallet.my_addresses', 'My Wallet Addresses')}</Text>
-          
+
           <View style={styles.addressBox}>
             <View style={styles.addressLeft}>
               <View style={styles.networkLogoContainer}>
@@ -234,38 +234,38 @@ export default function AssetListScreen() {
             )}
           </View>
         </View>
-        
+
         <View style={styles.sectionHeader}>
-           <View style={styles.sectionIconWrapper}>
-             <Ionicons name="trending-up" size={18} color="#FFC759" />
-           </View>
-           <Text style={styles.sectionTitle}>{t('wallet.supportedTokens', "Supported tokens")}</Text>
+          <View style={styles.sectionIconWrapper}>
+            <Ionicons name="trending-up" size={18} color="#FFC759" />
+          </View>
+          <Text style={styles.sectionTitle}>{t('wallet.supportedTokens', "Supported tokens")}</Text>
         </View>
 
         {/* DZY Card Native Style */}
         <View style={[styles.card, styles.dzyCard]}>
-           <View style={styles.dzyTopRow}>
-             <View style={styles.dzyIconWrapper}>
-               <CryptoIcon symbol="DZY" size={32} />
-             </View>
-             <View style={styles.dzyInfo}>
-               <Text style={styles.dzyTitle}>DIZZITUP INDEX (DZY)</Text>
-               <Text style={styles.dzySubtitle}>(Reflecting Total Wallet USD)</Text>
-             </View>
-             <View style={styles.dzyBalances}>
-               <Text style={styles.dzyBalance}>{dzyToken.balance.toFixed(2)}</Text>
-               <Text style={styles.dzyUsd}>${totalUsdValue.toFixed(2)}</Text>
-             </View>
-           </View>
-           
-           <View style={styles.dzyBottomRow}>
-             <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#FFC759' }]} onPress={() => handleBuySell('buy')}>
-               <Text style={[styles.actionBtnText, { color: '#20365B' }]}>{t('wallet.buy', 'Buy')}</Text>
-             </TouchableOpacity>
-             <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#20365B' }]} onPress={() => handleBuySell('sell')}>
-               <Text style={[styles.actionBtnText, { color: '#FFFFFF' }]}>{t('wallet.sell', 'Sell')}</Text>
-             </TouchableOpacity>
-           </View>
+          <View style={styles.dzyTopRow}>
+            <View style={styles.dzyIconWrapper}>
+              <CryptoIcon symbol="DZY" size={32} />
+            </View>
+            <View style={styles.dzyInfo}>
+              <Text style={styles.dzyTitle}>DIZZITUP INDEX (DZY)</Text>
+              <Text style={styles.dzySubtitle}>(Reflecting Total Wallet USD)</Text>
+            </View>
+            <View style={styles.dzyBalances}>
+              <Text style={styles.dzyBalance}>{dzyToken.balance.toFixed(2)}</Text>
+              <Text style={styles.dzyUsd}>${totalUsdValue.toFixed(2)}</Text>
+            </View>
+          </View>
+
+          <View style={styles.dzyBottomRow}>
+            <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#FFC759' }]} onPress={() => handleBuySell('buy')}>
+              <Text style={[styles.actionBtnText, { color: '#20365B' }]}>{t('wallet.buy', 'Buy')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#20365B' }]} onPress={() => handleBuySell('sell')}>
+              <Text style={[styles.actionBtnText, { color: '#FFFFFF' }]}>{t('wallet.sell', 'Sell')}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Other Tokens Accordion */}
@@ -273,10 +273,10 @@ export default function AssetListScreen() {
           {otherTokens.map(token => {
             const isExpanded = expandedTokens[token.symbol];
             const canBuySell = CAN_BUY_SELL.includes(token.symbol);
-            
+
             return (
               <View key={token.symbol} style={styles.tokenWrapper}>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.tokenRow}
                   onPress={() => toggleExpand(token.symbol)}
                   activeOpacity={0.7}
@@ -285,23 +285,23 @@ export default function AssetListScreen() {
                     <CryptoIcon symbol={token.symbol} size={36} />
                     <View style={styles.tokenNameContainer}>
                       <Text style={styles.tokenSymbol}>{token.symbol}</Text>
-                      <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Text style={styles.tokenNetworkCount}>{token.networks.length} Networks</Text>
-                        <Ionicons name={isExpanded ? "chevron-up" : "chevron-down"} size={14} color="#878FA4" style={{marginLeft: 4, marginTop: 2}} />
+                        <Ionicons name={isExpanded ? "chevron-up" : "chevron-down"} size={14} color="#878FA4" style={{ marginLeft: 4, marginTop: 2 }} />
                       </View>
                     </View>
                   </View>
-                  
+
                   {canBuySell && (
                     <View style={styles.miniActionButtons}>
                       <TouchableOpacity style={styles.miniBtnYellow} onPress={() => handleBuySell('buy')}><Text style={styles.miniBtnYellowText}>{t('wallet.buy', 'Buy')}</Text></TouchableOpacity>
                       <TouchableOpacity style={styles.miniBtnDark} onPress={() => handleBuySell('sell')}><Text style={styles.miniBtnDarkText}>{t('wallet.sell', 'Sell')}</Text></TouchableOpacity>
                     </View>
                   )}
-                  
+
                   <View style={styles.tokenRight}>
-                     <Text style={styles.tokenBalance}>{token.balance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 4 })}</Text>
-                     <Text style={styles.tokenUsd}>${token.usdValue.toFixed(2)}</Text>
+                    <Text style={styles.tokenBalance}>{token.balance.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 4 })}</Text>
+                    <Text style={styles.tokenUsd}>${token.usdValue.toFixed(2)}</Text>
                   </View>
                 </TouchableOpacity>
 
@@ -311,8 +311,8 @@ export default function AssetListScreen() {
                       <View key={`${token.symbol}-${net.chain}-${i}`} style={styles.networkRow}>
                         <View style={styles.networkLeft}>
                           <View style={styles.networkIconWrapper}>
-                             {/* Attempt to show native network icon, fallback to token icon */}
-                             <CryptoIcon symbol={net.chain === 'ethereum' ? 'ETH' : net.chain === 'polygon' ? 'POL' : net.chain === 'solana' ? 'SOL' : net.chain === 'bsc' ? 'BNB' : net.chain === 'base' ? 'BASE' : token.symbol} size={20} />
+                            {/* Attempt to show native network icon, fallback to token icon */}
+                            <CryptoIcon symbol={net.chain === 'ethereum' ? 'ETH' : net.chain === 'polygon' ? 'POL' : net.chain === 'solana' ? 'SOL' : net.chain === 'bsc' ? 'BNB' : net.chain === 'base' ? 'BASE' : token.symbol} size={20} />
                           </View>
                           <View>
                             <Text style={styles.networkName}>{net.chain}</Text>

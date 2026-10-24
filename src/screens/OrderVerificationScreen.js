@@ -20,7 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
-import { convertCurrencyAmount, formatCurrency, getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
+import { convertCurrencyAmount, formatCurrency, getCountryCurrencyInfo, getCountryFlag, getCountryDisplayName } from '../utils/countryCurrencyUtils';
 import { currencyRateService } from '../services/currencyRateService';
 import { getProductCoverImage } from '../utils/productMedia';
 import { getPaymentRailEligibility, COUNTRY_METADATA } from '../services/paymentCorridorService';
@@ -30,6 +30,7 @@ import { contactService } from '../services/contactService';
 // import SelectableContactItem from '../components/SelectableContactItem';
 import { ALL_COUNTRIES } from '../utils/countriesData';
 import { isPhysicalCart } from '../utils/productUtils';
+import { TOKENS_BY_CHAIN, WEB_DEFAULT_TOKENS } from '../config/tokensByChain';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -53,7 +54,7 @@ const BLOCKCHAIN_NETWORKS = [
     name: 'Polygon',
     badge: 'PoS',
     tag: 'Fast & Eco',
-    logo: require('../../assets/cryptos/polygon.png'),
+    logo: require('../../assets/cryptos/pol.png'),
     accentColor: '#8247E5',
     lightBg: '#F5F3FF',
   },
@@ -94,6 +95,37 @@ const BLOCKCHAIN_NETWORKS = [
     lightBg: '#ECFDF5',
   },
 ];
+
+// Dynamic chain support derived from shared wallet token definitions (TOKENS_BY_CHAIN & WEB_DEFAULT_TOKENS)
+const NET_ID_TO_CHAIN_KEY = {
+  Polygon: 'polygon',
+  Base: 'base',
+  Ethereum: 'ethereum',
+  BNB: 'bsc',
+  Solana: 'solana',
+};
+
+const isNetworkSupportedForToken = (netId, tokenSym) => {
+  const chainKey = NET_ID_TO_CHAIN_KEY[netId];
+  if (!chainKey || !tokenSym) return false;
+  if (tokenSym === 'DZY') {
+    return WEB_DEFAULT_TOKENS.some((t) => t.symbol === 'DZY' && t.chain === chainKey);
+  }
+  return (TOKENS_BY_CHAIN[chainKey] || []).includes(tokenSym);
+};
+
+const getSupportedNetworksForToken = (tokenSym) =>
+  BLOCKCHAIN_NETWORKS.filter((net) => isNetworkSupportedForToken(net.id, tokenSym)).map((net) => net.id);
+
+// Formats token balance: up to 4 decimals below 1, 2 decimals otherwise
+const formatTokenBalance = (val) => {
+  const num = typeof val === 'number' ? val : parseFloat(val) || 0;
+  if (num === 0) return '0.00';
+  if (num < 1) {
+    return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+  }
+  return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
 
 export default function OrderVerificationScreen({ route }) {
   const navigation = useNavigation();
@@ -496,17 +528,104 @@ export default function OrderVerificationScreen({ route }) {
     return 0;
   };
 
+  // Per-chain token balance for blockchain cards
+  const getChainBalanceForToken = (symbol, networkName) => {
+    if (!symbol) return 0;
+    const cleanSym = symbol.toUpperCase();
+    const cleanChain = (networkName || '').toLowerCase().replace(/\s+/g, '');
+
+    const list = user?.businessRawBalances?.length
+      ? user.businessRawBalances
+      : (user?.rawBalances?.length ? user.rawBalances : (user?.personalRawBalances || []));
+
+    const exactMatch = list.find((b) => {
+      const bSym = (b.token || b.symbol || b.currency || '').toUpperCase();
+      const bChain = (b.chain || b.network || '').toLowerCase().replace(/\s+/g, '');
+      const chainMatches = !cleanChain ||
+        bChain === cleanChain ||
+        (cleanChain === 'polygon' && (bChain === 'matic' || bChain === 'polygon')) ||
+        (cleanChain === 'bnb' && (bChain === 'bsc' || bChain === 'binance' || bChain === 'bnb' || bChain === 'bnbchain')) ||
+        (cleanChain === 'bnbchain' && (bChain === 'bsc' || bChain === 'binance' || bChain === 'bnb' || bChain === 'bnbchain')) ||
+        (cleanChain === 'ethereum' && (bChain === 'eth' || bChain === 'mainnet' || bChain === 'ethereum')) ||
+        (cleanChain === 'solana' && (bChain === 'sol' || bChain === 'solana')) ||
+        (cleanChain === 'base' && bChain === 'base');
+
+      return bSym === cleanSym && chainMatches;
+    });
+
+    if (exactMatch && exactMatch.balance !== undefined) {
+      return parseFloat(exactMatch.balance || 0);
+    }
+
+    if (cleanSym === 'DZY' && (cleanChain === 'polygon' || !cleanChain)) {
+      return Number(user?.balanceDZY ?? (user?.allBalances?.DZY || 0));
+    }
+
+    return 0;
+  };
+
   // User balance for selected token
   const userBalance = useMemo(() => {
     return getTokenBalance(selectedToken);
   }, [user, selectedToken]);
 
-  const hasInsufficientBalance = useMemo(() => {
+  // Pre-select first token that has enough balance
+  const hasAutoSelectedTokenRef = React.useRef(false);
+
+  useEffect(() => {
+    if (hasAutoSelectedTokenRef.current || balancesLoading) return;
+    const candidates = [
+      { symbol: 'USDC', rate: parseFloat(totalUSDC) },
+      { symbol: 'USDT', rate: parseFloat(totalUSDT) },
+      { symbol: 'EURC', rate: parseFloat(totalEURC) },
+    ];
+    const covered = candidates.find((c) => getTokenBalance(c.symbol) >= c.rate);
+    if (covered) {
+      setSelectedToken(covered.symbol);
+      hasAutoSelectedTokenRef.current = true;
+    }
+  }, [balancesLoading, totalUSDC, totalUSDT, totalEURC, user]);
+
+  const handleSelectToken = (sym) => {
+    hasAutoSelectedTokenRef.current = true;
+    setSelectedToken(sym);
+  };
+
+  // Ensure network is supported for currently selected token
+  useEffect(() => {
+    const allowedChains = getSupportedNetworksForToken(selectedToken);
+    if (!allowedChains.includes(network)) {
+      const chainWithBal = allowedChains.find((c) => getChainBalanceForToken(selectedToken, c) > 0);
+      setNetwork(chainWithBal || allowedChains[0] || 'Polygon');
+    }
+  }, [selectedToken, network]);
+
+  // Warning box shows ONLY when NO token has enough balance
+  const noTokenHasEnoughBalance = useMemo(() => {
     if (paymentRail !== 'crypto' || balancesLoading) return false;
-    if (selectedToken === 'DZY') return userBalance < parseFloat(totalDZY);
-    if (selectedToken === 'EURC') return userBalance < parseFloat(totalEURC);
-    return userBalance < parseFloat(totalUSDC);
-  }, [paymentRail, balancesLoading, selectedToken, userBalance, totalDZY, totalEURC, totalUSDC]);
+    const usdcCovered = getTokenBalance('USDC') >= parseFloat(totalUSDC);
+    const usdtCovered = getTokenBalance('USDT') >= parseFloat(totalUSDT);
+    const eurcCovered = getTokenBalance('EURC') >= parseFloat(totalEURC);
+    return !usdcCovered && !usdtCovered && !eurcCovered;
+  }, [paymentRail, balancesLoading, totalUSDC, totalUSDT, totalEURC, user]);
+
+  // Fiat amounts & fee formatting for Bank Card and Mobile Money tabs (NOT hardcoded, computed from real platformFee)
+  const cardOrMomoCurrency = paymentRail === 'card'
+    ? ((buyerCurrency === 'EUR' || apiCurrency === 'EUR') ? 'EUR' : 'USD')
+    : 'USD';
+  const cardOrMomoFeeEquiv = useMemo(() => {
+    const feeInCard = convertCurrencyAmount(platformFee, rawCurrency, cardOrMomoCurrency);
+    return `${formatCurrency(feeInCard, cardOrMomoCurrency, numLocale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${cardOrMomoCurrency}`;
+  }, [platformFee, rawCurrency, cardOrMomoCurrency, numLocale]);
+  const cardOrMomoEquivAmount = useMemo(() => {
+    const amt = convertCurrencyAmount(totalAmount, rawCurrency, cardOrMomoCurrency);
+    return formatCurrency(amt, cardOrMomoCurrency, numLocale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }, [totalAmount, rawCurrency, cardOrMomoCurrency, numLocale]);
+  const cryptoFeeEquiv = useMemo(() => {
+    const targetCurr = selectedToken === 'EURC' ? 'EUR' : 'USD';
+    const feeInToken = convertCurrencyAmount(platformFee, rawCurrency, targetCurr);
+    return `${formatCurrency(feeInToken, targetCurr, numLocale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${selectedToken === 'DZY' ? 'DZY' : selectedToken}`;
+  }, [platformFee, rawCurrency, selectedToken, numLocale]);
 
   const handleProceedToConfirmation = async () => {
     if (isSavingAddress) return;
@@ -1028,8 +1147,10 @@ export default function OrderVerificationScreen({ route }) {
               onPress={() => setRegionModalVisible(true)}
               activeOpacity={0.8}
             >
-              <Text style={styles.payerRegionFlag}>{railEligibility.countryFlag}</Text>
-              <Text style={styles.payerRegionText}>{railEligibility.countryName || payerCountry}</Text>
+              <Text style={styles.payerRegionFlag}>{getCountryFlag(payerCountry)}</Text>
+              <Text style={styles.payerRegionText}>
+                {getCountryDisplayName(payerCountry, language, t) || railEligibility.countryName || payerCountry}
+              </Text>
               <Ionicons name="chevron-down" size={12} color="#64748B" style={{ marginLeft: 3 }} />
             </TouchableOpacity>
           </View>
@@ -1079,81 +1200,102 @@ export default function OrderVerificationScreen({ route }) {
           {/* Rail 1: Crypto / Stablecoins */}
           {paymentRail === 'crypto' && (
             <View style={styles.cryptoTokenList}>
+              {/* Summary Card Above Token List */}
+              <View style={styles.amountToPayCard}>
+                <View style={styles.amountToPayHeader}>
+                  <View style={styles.amountToPayIconCircle}>
+                    <Ionicons name="wallet-outline" size={14} color="#D97706" />
+                  </View>
+                  <Text style={styles.amountToPayLabel}>
+                    {t('orderVerification.amountToPay', 'Amount to pay')}
+                  </Text>
+                </View>
+                <View style={styles.amountToPayValuesRow}>
+                  <Text style={styles.amountToPayUsdBold} numberOfLines={1} adjustsFontSizeToFit>{`${totalUSDC} USD`}</Text>
+                  {displayBuyerCurrency !== 'USD' && (
+                    <Text style={styles.amountToPayBuyerEquiv}>
+                      {`≈ ${formatBuyer(buyerTotalAmount)} ${displayBuyerCurrency}`}
+                    </Text>
+                  )}
+                </View>
+              </View>
+
+              {/* Token Rows */}
               {[
-                { symbol: 'USDC', name: 'USD Coin', badge: 'ERC20 / Polygon', rate: totalUSDC },
-                { symbol: 'USDT', name: 'Tether USD', badge: 'TRC20 / Polygon', rate: totalUSDT },
-                { symbol: 'DZY', name: 'DizzitUp Token', badge: 'DIZZITUP', rate: totalDZY, disabled: true },
-                { symbol: 'EURC', name: 'Euro Coin', badge: 'ERC20', rate: totalEURC },
+                { symbol: 'USDC', name: 'USD Coin', rate: totalUSDC },
+                { symbol: 'USDT', name: 'Tether USD', rate: totalUSDT },
+                { symbol: 'EURC', name: 'Euro Coin', rate: totalEURC },
+                { symbol: 'DZY', name: 'DizzitUp Token', rate: totalDZY, disabled: true },
               ].map((tok) => {
+                if (tok.disabled) {
+                  return (
+                    <View
+                      key={tok.symbol}
+                      style={[styles.paymentMethodItem, styles.paymentMethodItemDisabled]}
+                    >
+                      <View style={styles.tokenLeftCol}>
+                        <View style={styles.tokenLogoWrapperDisabled}>
+                          <CryptoIcon symbol={tok.symbol} size={32} style={{ opacity: 0.5 }} />
+                        </View>
+                        <View style={styles.tokenNameCol}>
+                          <Text style={styles.tokenSymbolDisabled}>{tok.symbol}</Text>
+                          <Text style={styles.tokenFullNameDisabled}>{tok.name}</Text>
+                        </View>
+                      </View>
+                      <View style={styles.comingSoonBadge}>
+                        <Text style={styles.comingSoonBadgeText}>
+                          {t('orderVerification.comingSoon', 'Coming soon')}
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                }
+
                 const bal = getTokenBalance(tok.symbol);
-                const isInsufficient = !balancesLoading && bal < parseFloat(tok.rate);
-                const formattedBal = Number(bal).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                const isCovered = !balancesLoading && bal >= parseFloat(tok.rate);
+                const isSelected = selectedToken === tok.symbol;
 
                 return (
                   <TouchableOpacity
                     key={tok.symbol}
-                    disabled={tok.disabled}
                     style={[
                       styles.paymentMethodItem,
-                      selectedToken === tok.symbol && styles.optionSelected,
-                      tok.disabled && styles.paymentMethodItemDisabled,
+                      isSelected && styles.paymentMethodItemSelected,
                     ]}
-                    onPress={() => {
-                      if (tok.disabled) return;
-                      setSelectedToken(tok.symbol);
-                    }}
+                    onPress={() => handleSelectToken(tok.symbol)}
+                    activeOpacity={0.8}
                   >
-                    <View style={[
-                      styles.radioOuter,
-                      selectedToken === tok.symbol && styles.radioOuterSelected,
-                      tok.disabled && styles.radioOuterDisabled,
-                    ]}>
-                      {selectedToken === tok.symbol && <View style={styles.radioInner} />}
-                    </View>
-                    <View style={tok.disabled && { opacity: 0.5 }}>
-                      <CryptoIcon symbol={tok.symbol} size={32} />
-                    </View>
-                    <View style={styles.paymentMethodInfo}>
-                      <View style={styles.paymentMethodNameRow}>
-                        <Text style={[styles.paymentMethodName, tok.disabled && styles.paymentMethodNameDisabled]}>{tok.symbol}</Text>
-                        {tok.disabled ? (
-                          <View style={styles.comingSoonBadge}>
-                            <Text style={styles.comingSoonBadgeText}>{t('orderVerification.comingSoon', 'Coming soon')}</Text>
-                          </View>
-                        ) : (
-                          <View style={styles.networkBadgeBlue}>
-                            <Text style={styles.networkBadgeTextBlue}>{tok.badge}</Text>
-                          </View>
-                        )}
+                    {/* Left: Radio + Logo + Symbol + Full Name (+ EURC needed) */}
+                    <View style={styles.tokenLeftCol}>
+                      <View style={[styles.radioOuter, isSelected && styles.radioOuterPaymentSelected]}>
+                        {isSelected && <View style={styles.radioInnerPayment} />}
                       </View>
-                      <Text style={[styles.paymentMethodSub, tok.disabled && styles.paymentMethodSubDisabled]}>{tok.name}</Text>
-                    </View>
-                    {!tok.disabled && (
-                      <View style={styles.paymentMethodValues}>
-                        <Text style={styles.paymentMethodValueMain}>
-                          {t('orderVerification.toPay', 'To pay')}: {tok.rate} {tok.symbol}
-                          {displayBuyerCurrency !== tok.symbol && (
-                            <Text style={styles.paymentMethodValueSub}>
-                              {` ≈ ${formatBuyer(buyerTotalAmount)} ${displayBuyerCurrency}`}
-                            </Text>
-                          )}
+                      <View style={styles.tokenLogoWrapper}>
+                        <CryptoIcon symbol={tok.symbol} size={32} />
+                      </View>
+                      <View style={styles.tokenNameCol}>
+                        <Text style={styles.tokenSymbol}>{tok.symbol}</Text>
+                        <Text style={styles.tokenFullName}>{tok.name}</Text>
+                        <Text style={styles.tokenNeededText}>
+                          {`${tok.rate} ${tok.symbol} ${t('orderVerification.needed', 'needed')}`}
                         </Text>
-                        <View style={styles.balanceRow}>
-                          <Text style={styles.paymentMethodBalanceText}>
-                            {balancesLoading
-                              ? `${t('orderVerification.balance', 'Balance')}: ...`
-                              : `${t('orderVerification.balance', 'Balance')}: ${formattedBal} ${tok.symbol}`}
-                          </Text>
-                          {isInsufficient && (
-                            <View style={styles.insufficientChip}>
-                              <Text style={styles.insufficientChipText}>
-                                {t('orderVerification.insufficient', 'Insufficient')}
-                              </Text>
-                            </View>
-                          )}
-                        </View>
                       </View>
-                    )}
+                    </View>
+
+                    {/* Right: Balance label + Balance value + Status Chip */}
+                    <View style={styles.tokenRightCol}>
+                      <Text style={styles.balanceLabel}>
+                        {t('orderVerification.balance', 'Balance')}
+                      </Text>
+                      <Text style={styles.balanceValue}>
+                        {balancesLoading ? '...' : `${formatTokenBalance(bal)} ${tok.symbol}`}
+                      </Text>
+                      <View style={[styles.statusChip, isCovered ? styles.statusChipAvailable : styles.statusChipNotEnough]}>
+                        <Text style={[styles.statusChipText, isCovered ? styles.statusChipTextAvailable : styles.statusChipTextNotEnough]}>
+                          {isCovered ? t('orderVerification.available', 'Available') : t('orderVerification.notEnough', 'Not enough')}
+                        </Text>
+                      </View>
+                    </View>
                   </TouchableOpacity>
                 );
               })}
@@ -1178,8 +1320,11 @@ export default function OrderVerificationScreen({ route }) {
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.networkScroll}
                 >
-                  {BLOCKCHAIN_NETWORKS.map((net) => {
+                  {BLOCKCHAIN_NETWORKS.filter((net) =>
+                    isNetworkSupportedForToken(net.id, selectedToken)
+                  ).map((net) => {
                     const isSelected = network === net.id;
+                    const chainBal = getChainBalanceForToken(selectedToken, net.id);
                     return (
                       <TouchableOpacity
                         key={net.id}
@@ -1199,7 +1344,7 @@ export default function OrderVerificationScreen({ route }) {
                           />
                         </View>
 
-                        {/* Name & Badge */}
+                        {/* Name & Badge & Chain Balance */}
                         <View style={styles.networkCardInfo}>
                           <View style={styles.networkCardTitleRow}>
                             <Text style={[styles.networkCardTitle, isSelected && styles.networkCardTitleSelected]}>
@@ -1213,6 +1358,9 @@ export default function OrderVerificationScreen({ route }) {
                           </View>
                           <Text style={styles.networkCardTag} numberOfLines={1}>
                             {net.tag}
+                          </Text>
+                          <Text style={[styles.networkChainBalance, isSelected && styles.networkChainBalanceSelected]} numberOfLines={1}>
+                            {`${formatTokenBalance(chainBal)} ${selectedToken}`}
                           </Text>
                         </View>
 
@@ -1240,7 +1388,7 @@ export default function OrderVerificationScreen({ route }) {
                 </View>
               </View>
 
-              {hasInsufficientBalance && (
+              {noTokenHasEnoughBalance && (
                 <View style={styles.balanceWarningCard}>
                   <Ionicons name="alert-circle" size={18} color="#EF4444" style={{ marginRight: 8 }} />
                   <View style={{ flex: 1 }}>
@@ -1336,7 +1484,7 @@ export default function OrderVerificationScreen({ route }) {
                 <Text style={styles.railDisabledDesc}>
                   {t(
                     'paymentRails.momoUnavailableExplanation',
-                    "Mobile Money is not available for {{country}}. It is active in 20 African countries (Benin, Ivory Coast, Senegal, Togo, Kenya, Ghana...).",
+                    "Mobile Money is not available for {{country}}. It is active in supported African countries (Benin, Ivory Coast, Senegal, Togo, Kenya, Ghana...).",
                     { country: railEligibility.countryName }
                   )}
                 </Text>
@@ -1372,7 +1520,12 @@ export default function OrderVerificationScreen({ route }) {
               <Text style={styles.summaryLabel}>{t('orderVerification.networkFeeEst', "Network / Platform fee")}</Text>
               <Ionicons name="information-circle-outline" size={14} color="#64748B" style={{ marginLeft: 4 }} />
             </View>
-            <Text style={styles.summaryValue}>{formatBuyer(buyerPlatformFee)} {displayBuyerCurrency} (≈ 0.10 USDC)</Text>
+            <Text style={styles.summaryValue}>
+              {formatBuyer(buyerPlatformFee)} {displayBuyerCurrency}
+              {paymentRail === 'crypto'
+                ? ` (≈ ${cryptoFeeEquiv})`
+                : ` (≈ ${cardOrMomoFeeEquiv})`}
+            </Text>
           </View>
 
           <View style={styles.totalRow}>
@@ -1389,8 +1542,10 @@ export default function OrderVerificationScreen({ route }) {
               </Text>
               <Text style={styles.totalValueSub}>
                 {paymentRail === 'crypto'
-                  ? `≈ ${formatBuyer(buyerTotalAmount)} ${displayBuyerCurrency}`
-                  : `≈ ${totalUSDC} USDC`}
+                  ? (displayBuyerCurrency !== selectedToken ? `≈ ${formatBuyer(buyerTotalAmount)} ${displayBuyerCurrency}` : '')
+                  : (displayBuyerCurrency !== cardOrMomoCurrency
+                      ? `≈ ${cardOrMomoEquivAmount} ${cardOrMomoCurrency}`
+                      : '')}
               </Text>
             </View>
           </View>
@@ -1832,135 +1987,187 @@ const styles = StyleSheet.create({
   cryptoTokenList: {
     marginTop: 4,
   },
+  amountToPayCard: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  amountToPayHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  amountToPayIconCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#FFFBEB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  amountToPayLabel: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12,
+    color: '#64748B',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  amountToPayValuesRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  amountToPayUsdBold: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 22,
+    color: '#1A2840',
+  },
+  amountToPayBuyerEquiv: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 13,
+    color: '#64748B',
+  },
   paymentMethodItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     backgroundColor: '#FFFFFF',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#F1F5F9',
-    borderRadius: 12,
-    padding: 10,
-    marginBottom: 8,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.02,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  paymentMethodItemSelected: {
+    backgroundColor: '#FFFDF5',
+    borderColor: '#FFB800',
   },
   paymentMethodItemDisabled: {
     backgroundColor: '#F8FAFC',
     borderColor: '#E2E8F0',
-    opacity: 0.6,
+    opacity: 0.55,
   },
-  radioOuterDisabled: {
-    borderColor: '#CBD5E1',
-    backgroundColor: '#F1F5F9',
+  radioOuterPaymentSelected: {
+    borderColor: '#FFB800',
   },
-  paymentMethodNameDisabled: {
-    color: '#94A3B8',
-  },
-  paymentMethodSubDisabled: {
-    color: '#94A3B8',
-  },
-  paymentMethodValueMainDisabled: {
-    color: '#94A3B8',
-  },
-  paymentMethodValueSubDisabled: {
-    color: '#CBD5E1',
-  },
-  networkBadgeDisabled: {
-    backgroundColor: '#F1F5F9',
-    paddingHorizontal: 6,
-    paddingVertical: 1.5,
+  radioInnerPayment: {
+    width: 8,
+    height: 8,
     borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    backgroundColor: '#FFB800',
   },
-  networkBadgeTextDisabled: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 8,
-    color: '#64748B',
-  },
-  paymentMethodInfo: {
-    flex: 1,
-    marginLeft: 10,
-  },
-  paymentMethodNameRow: {
+  tokenLeftCol: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+    marginRight: 10,
   },
-  paymentMethodName: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 13,
+  tokenLogoWrapper: {
+    marginRight: 10,
+  },
+  tokenLogoWrapperDisabled: {
+    marginRight: 10,
+    opacity: 0.7,
+  },
+  tokenNameCol: {
+    flex: 1,
+  },
+  tokenSymbol: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 14,
     color: '#1A2840',
-    marginRight: 6,
   },
-  networkBadgeBlue: {
-    backgroundColor: '#EFF6FF',
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-    borderRadius: 4,
+  tokenSymbolDisabled: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 14,
+    color: '#94A3B8',
   },
-  networkBadgeTextBlue: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 8,
-    color: '#3B82F6',
-  },
-  paymentMethodSub: {
+  tokenFullName: {
     fontFamily: 'Inter_400Regular',
     fontSize: 11,
     color: '#64748B',
+    marginTop: 1,
   },
-  paymentMethodValues: {
-    alignItems: 'flex-end',
-  },
-  paymentMethodValueMain: {
-    fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 12,
-    color: '#1A2840',
-  },
-  paymentMethodValueSub: {
+  tokenFullNameDisabled: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    color: '#64748B',
+    fontSize: 11,
+    color: '#94A3B8',
+    marginTop: 1,
   },
-  balanceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  tokenNeededText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 10.5,
+    color: '#64748B',
     marginTop: 2,
   },
-  paymentMethodBalanceText: {
+  tokenRightCol: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  balanceLabel: {
     fontFamily: 'Inter_400Regular',
     fontSize: 10,
     color: '#64748B',
   },
-  insufficientChip: {
+  balanceValue: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 12.5,
+    color: '#1A2840',
+    marginTop: 1,
+  },
+  statusChip: {
+    marginTop: 4,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignSelf: 'flex-end',
+  },
+  statusChipAvailable: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#A7F3D0',
+  },
+  statusChipNotEnough: {
     backgroundColor: '#FEF2F2',
     borderColor: '#FECACA',
-    borderWidth: 1,
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-    borderRadius: 4,
-    marginLeft: 5,
   },
-  insufficientChipText: {
+  statusChipText: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 9,
-    color: '#DC2626',
+    fontSize: 9.5,
+  },
+  statusChipTextAvailable: {
+    color: '#059669',
+  },
+  statusChipTextNotEnough: {
+    color: '#64748B',
   },
   comingSoonBadge: {
     backgroundColor: '#F1F5F9',
     borderColor: '#E2E8F0',
     borderWidth: 1,
-    paddingHorizontal: 6,
-    paddingVertical: 1.5,
-    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
   },
   comingSoonBadgeText: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 9,
-    color: '#64748B',
-  },
-  paymentMethodBalanceInsufficient: {
-    color: '#EF4444',
-    fontFamily: 'Inter_600SemiBold',
-  },
-  paymentMethodBalanceSufficient: {
+    fontSize: 10,
     color: '#64748B',
   },
   networkSubSection: {
@@ -2040,10 +2247,20 @@ const styles = StyleSheet.create({
     marginRight: 10,
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.05)',
+    overflow: 'hidden',
   },
   networkLogoImg: {
-    width: 20,
-    height: 20,
+    width: 22,
+    height: 22,
+  },
+  networkChainBalance: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 10.5,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  networkChainBalanceSelected: {
+    color: '#1A2840',
   },
   networkCardInfo: {
     flex: 1,

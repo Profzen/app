@@ -13,6 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../context/AppContext';
 import { getSupportedMoMoCountries, COUNTRY_METADATA } from '../services/paymentCorridorService';
+import { getCountryFlag, getCountryDisplayName } from '../utils/countryCurrencyUtils';
 
 const { width } = Dimensions.get('window');
 
@@ -28,12 +29,8 @@ export default function PaymentRegionModal({
 
   const supportedCountries = useMemo(() => getSupportedMoMoCountries(language), [language]);
 
-  const currentMeta = COUNTRY_METADATA[currentCountryCode?.toUpperCase()] || {
-    name: currentCountryCode || 'International',
-    nameEn: currentCountryCode || 'International',
-    flag: '🌍',
-  };
-  const currentCountryName = (language === 'en' ? currentMeta.nameEn : currentMeta.name) || currentMeta.name;
+  const currentFlag = getCountryFlag(currentCountryCode) || (COUNTRY_METADATA[currentCountryCode?.toUpperCase()]?.flag || '');
+  const currentCountryName = getCountryDisplayName(currentCountryCode, language, t) || currentCountryCode || 'International';
 
   const filteredCountries = useMemo(() => {
     if (!search.trim()) return supportedCountries;
@@ -58,7 +55,7 @@ export default function PaymentRegionModal({
                 {t('paymentRails.regionModalTitle', "Mobile Money Payment Region")}
               </Text>
               <Text style={styles.subtitle}>
-                {t('paymentRails.regionModalSub', "Currently detected:")} {currentMeta.flag} {currentCountryName}
+                {t('paymentRails.regionModalSub', "Currently detected:")} {currentFlag} {currentCountryName}
               </Text>
             </View>
             <TouchableOpacity style={styles.closeBtn} onPress={onClose} activeOpacity={0.7}>
