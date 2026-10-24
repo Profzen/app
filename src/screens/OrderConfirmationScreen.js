@@ -113,11 +113,15 @@ export default function OrderConfirmationScreen({ route }) {
     }
     return false;
   });
-  const rawCurrency = orderData?.currency || orderData?.items?.[0]?.currency || 'XOF';
+  const rawCurrency = orderData?.apiCurrency || orderData?.currency || orderData?.items?.[0]?.currency || 'XOF';
   // Banking / orchestration gateways require ISO-4217 code (XOF, USD, EUR, NGN, etc.)
-  const apiCurrency = rawCurrency === 'FCFA' ? 'XOF' : rawCurrency;
+  const apiCurrency = orderData?.apiCurrency || (rawCurrency === 'FCFA' ? 'XOF' : rawCurrency);
   // User-facing display currency label
-  const displayCurrency = rawCurrency === 'XOF' ? 'FCFA' : rawCurrency;
+  const displayCurrency = orderData?.displayCurrency || (rawCurrency === 'XOF' ? 'FCFA' : rawCurrency);
+  const displayTotalAmount = orderData?.displayTotalAmount ?? orderData?.totalAmount;
+  const displaySubtotal = orderData?.displaySubtotal ?? orderData?.subtotal;
+  const displayDeliveryFee = orderData?.displayDeliveryFee ?? orderData?.deliveryFee;
+  const displayPlatformFee = orderData?.displayPlatformFee ?? orderData?.platformFee;
   const numLocale = language === 'en' ? 'en-US' : 'fr-FR';
 
   const shareOrder = () => {
@@ -176,7 +180,7 @@ export default function OrderConfirmationScreen({ route }) {
         if (token === 'DZY' && (user?.balanceDZY || 0) < costDZY) {
           AppToast.showError(
             t('orderConfirmation.insufficientDZY', 'Your DZY balance is insufficient to complete this purchase.'),
-            t('common.error', "Error")
+            t('common.error', 'Error')
           );
           setLoading(false);
           return;
@@ -207,7 +211,7 @@ export default function OrderConfirmationScreen({ route }) {
             recipientPhone: orderData.recipient?.phone,
             recipientAddress: orderData.recipient?.address,
             orderSource: 'dizzitapp-mobile',
-            status: 'held_in_escrow',
+            status: isPhysical ? 'held_in_escrow' : 'completed',
             merchantName: orderData.merchant?.name,
             currency: displayCurrency,
           },
@@ -223,13 +227,13 @@ export default function OrderConfirmationScreen({ route }) {
         setLoading(false);
 
         const orderTitle = orderData.items.length > 1
-          ? `${orderData.items[0].name} ${t('orderConfirmation.moreItems', "+ {{count}} more", { count: orderData.items.length - 1 })}`
-          : (orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', "Marketplace Purchase"));
+          ? `${orderData.items[0].name} ${t('orderConfirmation.moreItems', '+ {{count}} more', { count: orderData.items.length - 1 })}`
+          : (orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', 'Marketplace Purchase'));
 
         navigation.navigate('PaymentSuccessScreen', {
           transaction: {
             title: orderTitle,
-            amount: orderData.totalAmount,
+            amount: displayTotalAmount,
             currency: displayCurrency,
             amountCrypto: `${token === 'DZY' ? orderData.totalDZY : orderData.totalUSDC} ${token}`,
             paymentMethod: token,
@@ -264,16 +268,21 @@ export default function OrderConfirmationScreen({ route }) {
           console.log('MoMo orchestration dispatched:', orchestrateErr.message);
         }
 
-        clearCart();
+        if (isPhysical) {
+          clearCart();
+        }
         setLoading(false);
 
-        // Navigate to live status polling screen
+        // Navigate to live status polling screen (cart cleared only upon confirmation for services)
         navigation.navigate('PaymentInProgressScreen', {
           orderId: orderData.orderId,
           orderData: {
             ...orderData,
             currency: displayCurrency,
+            displayCurrency,
+            displayTotalAmount,
             escrowPin: isPhysical ? escrowPin : null,
+            isPhysical,
           },
         });
         return;
@@ -281,8 +290,9 @@ export default function OrderConfirmationScreen({ route }) {
 
       // 3. CARTE BANCAIRE (Ecobank CyberSource)
       if (rail === 'card') {
+        let cardRes = null;
         try {
-          const cardRes = await buyGoodsApi.orchestratePayment({
+          cardRes = await buyGoodsApi.orchestratePayment({
             orderId: orderData.orderId,
             amount: orderData.totalAmount,
             currency: apiCurrency,
@@ -295,41 +305,64 @@ export default function OrderConfirmationScreen({ route }) {
           });
 
           if (cardRes && cardRes.redirectUrl) {
-            clearCart();
-            setLoading(false);
-            navigation.navigate('PaymentInProgressScreen', {
-              orderId: orderData.orderId,
-              orderData: {
-                ...orderData,
-                currency: displayCurrency,
-                escrowPin: isPhysical ? escrowPin : null,
-              },
-            });
-            return;
+            if (isPhysical) {
+              clearCart();
+              setLoading(false);
+              navigation.navigate('PaymentInProgressScreen', {
+                orderId: orderData.orderId,
+                orderData: {
+                  ...orderData,
+                  currency: displayCurrency,
+                  displayCurrency,
+                  displayTotalAmount,
+                  escrowPin: escrowPin,
+                  isPhysical: true,
+                },
+              });
+              return;
+            } else {
+              // Real service checkout: open 3DS CyberSource WebView
+              setLoading(false);
+              setCyberSourceUrl(cardRes.redirectUrl);
+              setShowCyberSourceModal(true);
+              return;
+            }
           }
         } catch (cardErr) {
-          console.warn('Card orchestrate fallback:', cardErr);
+          console.warn('Card orchestrate note:', cardErr?.message || cardErr);
         }
 
-        // Direct card verification navigation
-        clearCart();
-        setLoading(false);
-        navigation.navigate('PaymentSuccessScreen', {
-          transaction: {
-            title: orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', "Marketplace Purchase"),
-            amount: orderData.totalAmount,
-            currency: displayCurrency,
-            paymentMethod: t('orderConfirmation.cardVisaMc', 'Bank Card (Visa/MC)'),
-            orderId: orderData.orderId,
-            escrowPin: isPhysical ? escrowPin : null,
-            recipientName: orderData.recipient?.name,
-            recipientPhone: orderData.recipient?.phone,
-            recipientAddress: orderData.recipient?.address,
-            recipientCountry: orderData.recipient?.country || user?.country,
-            merchantName: orderData.merchant?.name,
-            date: new Date().toISOString(),
-          },
-        });
+        // Handle failure / no redirectUrl
+        if (isPhysical) {
+          // Physical goods demo fallback for CEO
+          clearCart();
+          setLoading(false);
+          navigation.navigate('PaymentSuccessScreen', {
+            transaction: {
+              title: orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', 'Marketplace Purchase'),
+              amount: displayTotalAmount,
+              currency: displayCurrency,
+              paymentMethod: t('orderConfirmation.cardVisaMc', 'Bank Card (Visa/MC)'),
+              orderId: orderData.orderId,
+              escrowPin: escrowPin,
+              recipientName: orderData.recipient?.name,
+              recipientPhone: orderData.recipient?.phone,
+              recipientAddress: orderData.recipient?.address,
+              recipientCountry: orderData.recipient?.country || user?.country,
+              merchantName: orderData.merchant?.name,
+              date: new Date().toISOString(),
+            },
+          });
+          return;
+        } else {
+          // Services: REAL - stay on screen, keep cart, show error
+          setLoading(false);
+          AppToast.showError(
+            cardRes?.message || t('orderConfirmation.cardError', 'Card payment could not be processed. Please try again or use another payment method.'),
+            t('common.error', 'Error')
+          );
+          return;
+        }
       }
     } catch (err) {
       console.error('Order confirmation error:', err);
@@ -444,7 +477,7 @@ export default function OrderConfirmationScreen({ route }) {
               </View>
               <View style={styles.productPriceCol}>
                 <Text style={styles.productPrice}>
-                  {(Number(item.price) || 0).toLocaleString(numLocale)} {displayCurrency}
+                  {(Number(item.displayPrice ?? item.price) || 0).toLocaleString(numLocale)} {displayCurrency}
                 </Text>
                 <View style={styles.qtyBadge}>
                   <Text style={styles.qtyBadgeText}>{t('orderConfirmation.qty', "Qty: {{qty}}", { qty: item.quantity })}</Text>
@@ -514,21 +547,21 @@ export default function OrderConfirmationScreen({ route }) {
 
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('orderConfirmation.subtotal', 'Subtotal')}</Text>
-            <Text style={styles.detailValue}>{(Number(orderData.subtotal) || 0).toLocaleString(numLocale)} {displayCurrency}</Text>
+            <Text style={styles.detailValue}>{(Number(displaySubtotal) || 0).toLocaleString(numLocale)} {displayCurrency}</Text>
           </View>
 
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('orderConfirmation.deliveryFee', 'Delivery fee')}</Text>
             <Text style={styles.detailValue}>
-              {orderData.deliveryFee > 0
-                ? `${Number(orderData.deliveryFee).toLocaleString(numLocale)} ${displayCurrency}`
+              {displayDeliveryFee > 0
+                ? `${Number(displayDeliveryFee).toLocaleString(numLocale)} ${displayCurrency}`
                 : t('orderConfirmation.free', 'Free')}
             </Text>
           </View>
 
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('orderConfirmation.networkFee', 'Network service fee')}</Text>
-            <Text style={styles.detailValue}>{(Number(orderData.platformFee) || 0).toLocaleString(numLocale)} {displayCurrency}</Text>
+            <Text style={styles.detailValue}>{(Number(displayPlatformFee) || 0).toLocaleString(numLocale)} {displayCurrency}</Text>
           </View>
 
           <View style={[styles.detailRow, styles.totalRow]}>
@@ -539,11 +572,11 @@ export default function OrderConfirmationScreen({ route }) {
                   ? orderData.selectedToken === 'DZY'
                     ? `${orderData.totalDZY} DZY`
                     : `${orderData.totalUSDC} ${orderData.selectedToken}`
-                  : `${(Number(orderData.totalAmount) || 0).toLocaleString(numLocale)} ${displayCurrency}`}
+                  : `${(Number(displayTotalAmount) || 0).toLocaleString(numLocale)} ${displayCurrency}`}
               </Text>
               <Text style={styles.totalValueSub}>
                 {orderData.paymentRail === 'crypto'
-                  ? `≈ ${(Number(orderData.totalAmount) || 0).toLocaleString(numLocale)} ${displayCurrency}`
+                  ? `≈ ${(Number(displayTotalAmount) || 0).toLocaleString(numLocale)} ${displayCurrency}`
                   : `≈ ${orderData.totalUSDC} USDC`}
               </Text>
             </View>
@@ -594,7 +627,7 @@ export default function OrderConfirmationScreen({ route }) {
                 {' • '}
                 {orderData.paymentRail === 'crypto'
                   ? (orderData.selectedToken === 'DZY' ? `${orderData.totalDZY} DZY` : `${orderData.totalUSDC} ${orderData.selectedToken}`)
-                  : `${(Number(orderData.totalAmount) || 0).toLocaleString(numLocale)} ${displayCurrency}`}
+                  : `${(Number(displayTotalAmount) || 0).toLocaleString(numLocale)} ${displayCurrency}`}
               </Text>
             </View>
           )}
@@ -619,16 +652,20 @@ export default function OrderConfirmationScreen({ route }) {
               onNavigationStateChange={(navState) => {
                 if (navState.url.includes('success') || navState.url.includes('confirm')) {
                   setShowCyberSourceModal(false);
+                  clearCart();
                   navigation.navigate('PaymentSuccessScreen', {
                     transaction: {
                       title: orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', "Marketplace Purchase"),
-                      amount: orderData.totalAmount,
+                      amount: displayTotalAmount,
                       currency: displayCurrency,
                       orderId: orderData.orderId,
                       escrowPin: isPhysical ? escrowPin : null,
                       recipientName: orderData.recipient?.name,
                     },
                   });
+                } else if (navState.url.includes('/payments/failure') || navState.url.includes('decision=DECLINE') || navState.url.includes('decision=CANCEL')) {
+                  setShowCyberSourceModal(false);
+                  AppToast.showError(t('orderConfirmation.cardError', 'Card payment could not be processed. Please try again or use another payment method.'));
                 }
               }}
             />

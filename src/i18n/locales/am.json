@@ -4588,7 +4588,11 @@
     "securePaymentOf": "ደህንነቱ የተጠበቀ ክፍያ {{amount}}",
     "cyberSourceTitle": "ሳይበርሶርስ ደህንነቱ የተጠበቀ ክፍያ",
     "escrowPinBuyerWarning": "⚠️ ይህ ኮድ ለገዢው ነው። በሚስጥር ያስቀምጡት! ይህንን ኮድ ከተጠቃሚዎ ውጪ ለማንም አይስጡ፣ ወይም እቃዎችዎ በአካል ከደረሱና ከተመረመሩ በኋላ ብቻ ለፖስታ አስተላላፊው / ለሱቅ ስራ አስኪያጅ ይስጡ።",
-    "copied": "ተቀድቷል"
+    "copied": "ተቀድቷል",
+    "cryptoUnavailable": "ይህ የክፍያ ዘዴ እስካሁን በመተግበሪያው ውስጥ አይገኝም። ለመክፈል በድረ-ገጽ ይቀጥሉ።",
+    "continueOnWeb": "ለመክፈል በድረ-ገጽ ይቀጥሉ",
+    "cardInitFailed": "የካርድ ክፍያ ማስጀመሪያ አልተሳካም። እባክዎ ሌላ የክፍያ ዘዴ ይሞክሩ።",
+    "cardError": "የካርድ ክፍያ ሊሰራ አልቻለም። እባክዎ እንደገና ይሞክሩ ወይም ሌላ የክፍያ ዘዴ ይጠቀሙ።"
   },
   "escrow": {
     "innovationTag": "የኦን-ቼይን ኤስክሮው • የDIZZITUP ፈጠራ",
@@ -4682,6 +4686,8 @@
   "paymentInProgress": {
     "title": "ክፍያ በሂደት ላይ",
     "subtitle": "መተግበሪያውን አይዝጉ። ግብይቱ በብሎክቼይን ላይ እየተሰራ ነው።",
+    "pendingTitle": "ክፍያ በመጠባበቅ ላይ",
+    "pendingNotice": "ክፍያ በመጠባበቅ ላይ፦ ሲረጋገጥ ትዕዛዝዎን እናዘምነዋለን",
     "dzyWalletStep": "ክፍያ ተጀምሯል",
     "smartContractStep": "በሂደት ላይ",
     "merchantStep": "በመጠባበቅ ላይ",

@@ -4888,7 +4888,11 @@
     "securePaymentOf": "Secure payment of {{amount}}",
     "cyberSourceTitle": "CyberSource Secure Payment",
     "escrowPinBuyerWarning": "⚠️ This code is for the Buyer. Keep it strictly secret! Never give it to anyone except your Beneficiary, or to the courier / Shop Manager only after physical delivery and inspection of your items.",
-    "copied": "Copied"
+    "copied": "Copied",
+    "cryptoUnavailable": "This payment method is not available in the app yet. Continue on the web to pay.",
+    "continueOnWeb": "Continue on the web to pay",
+    "cardInitFailed": "Card payment initiation failed. Please try another payment method.",
+    "cardError": "Card payment could not be processed. Please try again or use another payment method."
   },
   "escrow": {
     "innovationTag": "ON-CHAIN ESCROW • DIZZITUP INNOVATION",
@@ -4982,6 +4986,8 @@
   "paymentInProgress": {
     "title": "Payment in Progress",
     "subtitle": "Do not leave the app. The transaction is being confirmed on the blockchain.",
+    "pendingTitle": "Payment Pending",
+    "pendingNotice": "Payment pending: we'll update your order when it's confirmed",
     "dzyWalletStep": "Payment initiated",
     "smartContractStep": "Processing",
     "merchantStep": "Pending",

@@ -25,15 +25,25 @@ export default function PaymentInProgressScreen({ route }) {
   const orderId = route?.params?.orderId || orderData?.orderId || orderData?.id || ('ORD-' + Math.floor(100000 + Math.random() * 900000));
   const escrowPin = orderData?.escrowPin || Math.floor(1000 + Math.random() * 9000).toString();
 
-  const isPhysical = isPhysicalCart(orderData?.items || (orderData?.item ? [orderData.item] : [orderData]));
+  const isPhysical = orderData?.isPhysical !== undefined
+    ? Boolean(orderData.isPhysical)
+    : isPhysicalCart(orderData?.items || (orderData?.item ? [orderData.item] : [orderData]));
+
+  const MAX_POLL_SECONDS = 60;
 
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [confirmations, setConfirmations] = useState(1);
   const [isChecking, setIsChecking] = useState(false);
+  const [isPollingEnded, setIsPollingEnded] = useState(false);
+  const [pollError, setPollError] = useState(null);
 
   const pollTimerRef = useRef(null);
 
   const getStatusMessage = () => {
+    if (pollError) return pollError;
+    if (isPollingEnded) {
+      return t('paymentInProgress.pendingNotice', "Payment pending: we'll update your order when it's confirmed");
+    }
     if (confirmations >= 4) {
       return isPhysical
         ? t('paymentInProgress.step4Msg', "Validating smart contract escrow...")
@@ -44,8 +54,8 @@ export default function PaymentInProgressScreen({ route }) {
     return t('paymentInProgress.waitingConfirm', "Waiting for network confirmations...");
   };
 
-  const totalAmountVal = Number(orderData.totalAmount ?? orderData.amount ?? 0);
-  const orderCurrency = orderData.currency || orderData.items?.[0]?.currency || 'FCFA';
+  const totalAmountVal = Number(orderData.displayTotalAmount ?? orderData.totalAmount ?? orderData.amount ?? 0);
+  const orderCurrency = orderData.displayCurrency || orderData.currency || orderData.items?.[0]?.currency || 'FCFA';
 
   const formatTimer = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -85,8 +95,14 @@ export default function PaymentInProgressScreen({ route }) {
     try {
       setIsChecking(true);
       const res = await buyGoodsApi.getPaymentStatus(orderId);
-      if (res && (res.status === 'completed' || res.status === 'confirmed' || res.status === 'success' || res.success)) {
+      const st = String(res?.status || '').toLowerCase();
+      if (res && (st === 'completed' || st === 'confirmed' || st === 'success' || res.success)) {
         handlePaymentSuccess();
+        return;
+      }
+      if (res && (st === 'failed' || st === 'declined' || st === 'cancelled')) {
+        if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+        setPollError(t('orderConfirmation.cardError', 'Payment could not be processed. Please try again.'));
         return;
       }
     } catch (e) {
@@ -103,13 +119,17 @@ export default function PaymentInProgressScreen({ route }) {
         const next = prev + 1;
         if (next === 5) {
           setConfirmations(2);
-        } else if (next === 12) {
+        } else if (next === 15) {
           setConfirmations(3);
-        } else if (next === 20) {
+        } else if (next === 30) {
           setConfirmations(4);
-        } else if (next >= 30) {
-          // If in demo or test environment and 30s elapsed, auto-resolve to avoid infinite wait
-          handlePaymentSuccess();
+          if (isPhysical) {
+            handlePaymentSuccess();
+          }
+        } else if (next >= MAX_POLL_SECONDS && !isPhysical) {
+          // Polling window ended without confirmation for real services: stop automatic poll, show pending notice
+          if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+          setIsPollingEnded(true);
         }
         return next;
       });
@@ -143,9 +163,21 @@ export default function PaymentInProgressScreen({ route }) {
         {/* Status Header */}
         <View style={styles.statusHeader}>
           <View style={styles.spinnerContainer}>
-            <ActivityIndicator size="large" color="#FFB800" />
+            {pollError ? (
+              <Ionicons name="close-circle-outline" size={48} color="#EF4444" />
+            ) : isPollingEnded ? (
+              <Ionicons name="time-outline" size={48} color="#D97706" />
+            ) : (
+              <ActivityIndicator size="large" color="#FFB800" />
+            )}
           </View>
-          <Text style={styles.statusTitle}>{t('paymentInProgress.title', "Payment in Progress")}</Text>
+          <Text style={styles.statusTitle}>
+            {pollError
+              ? t('common.error', "Error")
+              : isPollingEnded
+              ? t('paymentInProgress.pendingTitle', "Payment Pending")
+              : t('paymentInProgress.title', "Payment in Progress")}
+          </Text>
           <Text style={styles.statusSubtitle}>
             {getStatusMessage()}
           </Text>

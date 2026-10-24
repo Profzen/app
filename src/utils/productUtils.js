@@ -34,14 +34,24 @@ export function isTicketProduct(product) {
   return categoryStr.includes('event') || categoryStr.includes('ticket') || kind === 'ticket' || offeringType === 'ticket';
 }
 
+export function getWebCartUrl() {
+  const envUrl = process.env.EXPO_PUBLIC_BUY_GOODS_URL;
+  const baseUrl = (envUrl && typeof envUrl === 'string' && envUrl.trim())
+    ? envUrl.trim().replace(/\/+$/, '')
+    : 'https://dizzitup.com';
+  return `${baseUrl}/cart`;
+}
+
 /**
  * Build the web URL for a product to open in the browser.
  * Uses EXPO_PUBLIC_BUY_GOODS_URL if present, otherwise falls back to https://dizzitup.com.
+ * If no productId is provided, falls back to the web cart URL.
  */
 export function getWebProductUrl(productId) {
   const envUrl = process.env.EXPO_PUBLIC_BUY_GOODS_URL;
   const baseUrl = (envUrl && typeof envUrl === 'string' && envUrl.trim())
     ? envUrl.trim().replace(/\/+$/, '')
     : 'https://dizzitup.com';
-  return `${baseUrl}/product/${productId}`;
+  return productId ? `${baseUrl}/product/${productId}` : `${baseUrl}/cart`;
 }
+

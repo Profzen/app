@@ -4664,7 +4664,11 @@
     "securePaymentOf": "Pagamento seguro de {{amount}}",
     "cyberSourceTitle": "Pagamento Seguro CyberSource",
     "escrowPinBuyerWarning": "⚠️ Este código é para o Comprador. Mantenha-o estritamente secreto! Nunca o dê a ninguém, exceto ao seu Beneficiário, ou ao entregador / Gerente da Loja apenas após a entrega física e inspeção de seus itens.",
-    "copied": "Copiado"
+    "copied": "Copiado",
+    "cryptoUnavailable": "Este método de pagamento ainda não está disponível no aplicativo. Continue na web para pagar.",
+    "continueOnWeb": "Continuar na web para pagar",
+    "cardInitFailed": "Falha ao iniciar o pagamento com cartão. Tente outro método de pagamento.",
+    "cardError": "O pagamento com cartão não pôde ser processado. Tente novamente ou use outro método de pagamento."
   },
   "escrow": {
     "innovationTag": "ESCROW ON-CHAIN • INOVAÇÃO DIZZITUP",
@@ -4758,6 +4762,8 @@
   "paymentInProgress": {
     "title": "Pagamento em curso",
     "subtitle": "Não saia da aplicação. A transação está a ser processada na blockchain.",
+    "pendingTitle": "Pagamento pendente",
+    "pendingNotice": "Pagamento pendente: atualizaremos seu pedido quando for confirmado",
     "dzyWalletStep": "Pagamento iniciado",
     "smartContractStep": "Em processamento",
     "merchantStep": "Pendente",
