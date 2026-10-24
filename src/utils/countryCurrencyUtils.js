@@ -377,3 +377,28 @@ export const convertCurrencyAmount = (amount, fromCurrency = 'USD', toCurrency =
   return currencyRateService.convert(amount, fromCurrency, toCurrency);
 };
 
+export const ZERO_DECIMAL_CURRENCIES = new Set([
+  'MGA', 'XOF', 'XAF', 'UGX', 'RWF', 'JPY', 'KRW', 'BIF', 'CLP', 'DJF', 'GNF', 'ISK', 'KMF', 'PYG', 'VND', 'VUV', 'FCFA'
+]);
+
+/**
+ * Shared currency formatter supporting standard decimals:
+ * Zero-decimal currencies (MGA, XOF, XAF, UGX, RWF, etc.) show 0 decimals by default.
+ * Standard currencies show 2 decimals by default.
+ */
+export const formatCurrency = (amount, currency = 'USD', locale = 'en-US', options = {}) => {
+  const num = Number(amount) || 0;
+  const curr = String(currency || 'USD').toUpperCase();
+  const isZeroDec = ZERO_DECIMAL_CURRENCIES.has(curr);
+  const defaultDecimals = isZeroDec ? 0 : 2;
+
+  const minDigits = options.minimumFractionDigits !== undefined ? options.minimumFractionDigits : defaultDecimals;
+  const maxDigits = options.maximumFractionDigits !== undefined ? options.maximumFractionDigits : defaultDecimals;
+
+  return num.toLocaleString(locale, {
+    minimumFractionDigits: minDigits,
+    maximumFractionDigits: maxDigits,
+    ...options
+  });
+};
+

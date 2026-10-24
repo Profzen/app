@@ -3,8 +3,8 @@ import * as Cellular from 'expo-cellular';
 import { Platform } from 'react-native';
 
 let memoryCountry = null;
+let inFlightPromise = null;
 const BACKEND_GEO_URL = `${process.env.EXPO_PUBLIC_BUY_GOODS_API_URL || 'http://localhost:3001/api'}/public/geo/ip-country`;
-
 
 export const COUNTRY_NAME_TO_CODE = {
   'ALGERIA': 'DZ', 'ALGÉRIE': 'DZ', 'ALGERIE': 'DZ',
@@ -39,33 +39,95 @@ const GEO_PROVIDERS = [
 ];
 
 /**
- * Detect user's actual physical country via IP geolocation with multiple fallbacks.
- * Queries fast IP providers sequentially with 2.5s timeouts.
- * @param {string} [userProfileCountry] - Optional fallback country code or name from profile/settings
- * @returns {Promise<string|null>} 2-letter ISO country code (e.g. 'FR', 'MG', 'DZ', 'BJ', 'US') or fallback
+ * Shared marketplace country detection function for mobile (dizzitapp-v2).
+ * Priority Order:
+ *   1. Manual "Pay with" choice (manual parameter or AsyncStorage selection)
+ *   2. IP providers tried sequentially with a short timeout (~2.5s), session-cached
+ *   3. User's profile country
+ *   4. SIM operator on mobile (Cellular.isoCountryCode)
+ *   5. Finally no conversion (returns null -> product currency plus USD)
+ *
+ * Never derives country from device/system language (French does not mean France).
+ *
+ * @param {Object} [options]
+ * @param {string} [options.manualCountry] - Manual override/selection from UI
+ * @param {string} [options.userProfileCountry] - Profile/account country code or name
+ * @returns {Promise<string|null>} 2-letter uppercase ISO country code, or null for no conversion
  */
-export async function detectUserCountry(userProfileCountry) {
-  // 1. Query fast IP geolocation services (REAL PHYSICAL LOCATION)
-  for (const provider of GEO_PROVIDERS) {
+export async function getEffectiveMarketplaceCountry(options = {}) {
+  // 1. Manual "Pay with" choice
+  if (options.manualCountry && typeof options.manualCountry === 'string') {
+    const clean = options.manualCountry.trim().toUpperCase();
+    if (clean.length === 2) return clean;
+    if (COUNTRY_NAME_TO_CODE[clean]) return COUNTRY_NAME_TO_CODE[clean];
+  }
+
+  try {
+    const manual = await AsyncStorage.getItem('dizzit_user_selected_country');
+    if (manual && manual.trim().length === 2) {
+      return manual.trim().toUpperCase();
+    }
+  } catch (e) {}
+
+  // Session Cache check: if already resolved during this app session, return immediately
+  // so every screen shows the same country and we do not call external APIs on every screen.
+  if (memoryCountry) {
+    return memoryCountry;
+  }
+
+  // Deduplicate concurrent detection calls across screens
+  if (inFlightPromise) {
+    return await inFlightPromise;
+  }
+
+  inFlightPromise = (async () => {
+    // 2. IP providers tried one after another with short timeout (2.5s)
+    for (const provider of GEO_PROVIDERS) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+        const res = await fetch(provider.url, {
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Mobile; DizzitApp)',
+          },
+        });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const data = await res.json();
+          const raw = provider.extract(data);
+
+          if (raw && typeof raw === 'string') {
+            const code = raw.trim().substring(0, 2).toUpperCase();
+            if (/^[A-Z]{2}$/.test(code)) {
+              memoryCountry = code;
+              AsyncStorage.setItem('dizzit_detected_country', code).catch(() => {});
+              return code;
+            }
+          }
+        }
+      } catch (e) {
+        // Next provider
+      }
+    }
+
+    // Backend Edge IP Detection fallback
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 2500);
-
-      const res = await fetch(provider.url, {
+      const res = await fetch(BACKEND_GEO_URL, {
         signal: controller.signal,
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'Mozilla/5.0 (Mobile; DizzitApp)',
-        },
+        headers: { 'Accept': 'application/json' },
       });
       clearTimeout(timeoutId);
 
       if (res.ok) {
         const data = await res.json();
-        const raw = provider.extract(data);
-
-        if (raw && typeof raw === 'string') {
-          const code = raw.trim().substring(0, 2).toUpperCase();
+        if (data?.success && data.countryCode) {
+          const code = data.countryCode.trim().substring(0, 2).toUpperCase();
           if (/^[A-Z]{2}$/.test(code)) {
             memoryCountry = code;
             AsyncStorage.setItem('dizzit_detected_country', code).catch(() => {});
@@ -73,88 +135,68 @@ export async function detectUserCountry(userProfileCountry) {
           }
         }
       }
-    } catch (e) {
-      // Failover to next IP provider immediately
-    }
-  }
+    } catch (e) {}
 
-  // 2. Priority 2: SIM Card Country Detection (Instant, VPN-proof)
-  try {
-    if (Platform.OS !== 'web' && Cellular.isoCountryCode) {
-      const code = Cellular.isoCountryCode.toUpperCase();
-      if (/^[A-Z]{2}$/.test(code)) {
+    // Check previously stored detected country from AsyncStorage (offline session recovery)
+    try {
+      const cached = await AsyncStorage.getItem('dizzit_detected_country');
+      if (cached && typeof cached === 'string' && /^[A-Z]{2}$/i.test(cached.trim())) {
+        const code = cached.trim().toUpperCase();
         memoryCountry = code;
-        AsyncStorage.setItem('dizzit_detected_country', code).catch(() => {});
-        console.log("📍 Geolocation via SIM Card:", code);
+        return code;
+      }
+    } catch (e) {}
+
+    // 3. User's profile country
+    const profileCandidate = options.userProfileCountry;
+    if (profileCandidate && typeof profileCandidate === 'string') {
+      const clean = profileCandidate.trim().toUpperCase();
+      if (/^[A-Z]{2}$/.test(clean)) {
+        memoryCountry = clean;
+        return clean;
+      }
+      if (COUNTRY_NAME_TO_CODE[clean]) {
+        const code = COUNTRY_NAME_TO_CODE[clean];
+        memoryCountry = code;
         return code;
       }
     }
-  } catch (e) {
-    console.log("SIM Card detection failed", e);
-  }
 
-  // 3. Priority 3: Backend Edge IP Detection (Cloudflare / Hostinger proxy)
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
-    const res = await fetch(BACKEND_GEO_URL, {
-      signal: controller.signal,
-      headers: { 'Accept': 'application/json' },
-    });
-    clearTimeout(timeoutId);
-
-    if (res.ok) {
-      const data = await res.json();
-      if (data?.success && data.countryCode) {
-        const code = data.countryCode.toUpperCase();
-        memoryCountry = code;
-        AsyncStorage.setItem('dizzit_detected_country', code).catch(() => {});
-        console.log(`📍 Geolocation via Backend Edge (${data.source}):`, code);
-        return code;
+    // 4. SIM operator on mobile
+    try {
+      if (Platform.OS !== 'web' && Cellular.isoCountryCode) {
+        const simCode = Cellular.isoCountryCode.trim().substring(0, 2).toUpperCase();
+        if (/^[A-Z]{2}$/.test(simCode)) {
+          memoryCountry = simCode;
+          AsyncStorage.setItem('dizzit_detected_country', simCode).catch(() => {});
+          return simCode;
+        }
       }
-    }
-  } catch (e) {
-    console.log("Backend Edge detection failed", e);
-  }
+    } catch (e) {}
 
-  // 4. Fallback to memory cache from current session
-  if (memoryCountry) {
-    return memoryCountry;
-  }
+    // 5. Finally no conversion (product currency plus USD)
+    return null;
+  })();
 
-  // 3. Fallback to AsyncStorage cache from previous IP detection
   try {
-    const cached = await AsyncStorage.getItem('dizzit_detected_country');
-    if (cached && typeof cached === 'string' && /^[A-Z]{2}$/i.test(cached.trim())) {
-      const code = cached.trim().toUpperCase();
-      memoryCountry = code;
-      return code;
-    }
-  } catch (e) {
-    // Ignore cache read errors
+    return await inFlightPromise;
+  } finally {
+    inFlightPromise = null;
   }
+}
 
-  // 4. Fallback to profile / settings country if provided
-  if (userProfileCountry && typeof userProfileCountry === 'string') {
-    const clean = userProfileCountry.trim().toUpperCase();
-    if (/^[A-Z]{2}$/.test(clean)) {
-      memoryCountry = clean;
-      return clean;
-    }
-    if (COUNTRY_NAME_TO_CODE[clean]) {
-      const code = COUNTRY_NAME_TO_CODE[clean];
-      memoryCountry = code;
-      return code;
-    }
-  }
-
-  return null;
+/**
+ * Legacy wrapper: delegates to getEffectiveMarketplaceCountry
+ */
+export async function detectUserCountry(userProfileCountry) {
+  return await getEffectiveMarketplaceCountry({ userProfileCountry });
 }
 
 export async function setManualCountry(code) {
   if (!code || typeof code !== 'string') return;
   const clean = code.trim().toUpperCase();
   if (clean.length === 2) {
+    memoryCountry = clean;
     try {
       await AsyncStorage.setItem('dizzit_user_selected_country', clean);
     } catch (e) {}
@@ -162,28 +204,14 @@ export async function setManualCountry(code) {
 }
 
 export async function clearManualCountry() {
+  memoryCountry = null;
   try {
     await AsyncStorage.removeItem('dizzit_user_selected_country');
   } catch (e) {}
 }
 
 export async function getEffectiveCountry(userProfileCountry) {
-  // 1. Check if user manually selected a region in this device
-  try {
-    const manual = await AsyncStorage.getItem('dizzit_user_selected_country');
-    if (manual && manual.length === 2) {
-      return manual.toUpperCase();
-    }
-  } catch (e) {}
-
-  // 2. Profile country if valid
-  if (userProfileCountry && typeof userProfileCountry === 'string') {
-    const clean = userProfileCountry.trim().toUpperCase();
-    if (clean.length === 2) return clean;
-  }
-
-  // 3. Fallback to IP detection
-  return await detectUserCountry();
+  return await getEffectiveMarketplaceCountry({ userProfileCountry });
 }
 
 export function getCachedCountry() {

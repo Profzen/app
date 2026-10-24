@@ -19,6 +19,7 @@ import { isSmallScreen, isShortScreen } from '../utils/responsive';
 import AppSelect from '../components/AppSelect';
 import { ALL_COUNTRIES, getCountryName, guessCountryByPhone } from '../utils/countriesData';
 import { parsePhoneNumberFromString, parsePhoneNumberWithError, AsYouType, isValidPhoneNumber } from 'libphonenumber-js';
+import { getEffectiveMarketplaceCountry } from '../services/geolocationService';
 
 export default function RegisterScreen({ route }) {
   const navigation = useNavigation();
@@ -82,18 +83,17 @@ export default function RegisterScreen({ route }) {
       setParrain(incomingRef);
     }
     
-    // Auto-detect country
-    fetch('https://ipapi.co/json/')
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.country_name) {
-          const matchedCountry = ALL_COUNTRIES.find(c => c.name === data.country_name);
+    // Auto-detect country via unified geolocation service
+    getEffectiveMarketplaceCountry()
+      .then(code => {
+        if (code) {
+          const matchedCountry = ALL_COUNTRIES.find(c => c.code === code);
           if (matchedCountry) {
             setCountry(matchedCountry.name);
           }
         }
       })
-      .catch(() => {}); // silently fail if blocked
+      .catch(() => {});
   }, [route?.params]);
 
   const appVersion = Application.nativeApplicationVersion || Constants?.expoConfig?.version || '1.0.0';

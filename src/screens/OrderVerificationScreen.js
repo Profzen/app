@@ -14,12 +14,14 @@ import {
   Alert,
   LayoutAnimation,
   UIManager,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
-import { convertCurrencyAmount } from '../utils/countryCurrencyUtils';
+import { convertCurrencyAmount, formatCurrency, getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
+import { currencyRateService } from '../services/currencyRateService';
 import { getProductCoverImage } from '../utils/productMedia';
 import { getPaymentRailEligibility, COUNTRY_METADATA } from '../services/paymentCorridorService';
 import PaymentRegionModal from '../components/PaymentRegionModal';
@@ -95,7 +97,7 @@ const BLOCKCHAIN_NETWORKS = [
 
 export default function OrderVerificationScreen({ route }) {
   const navigation = useNavigation();
-  const { user, session, cart, updateCartQuantity, removeFromCart, cartMerchant, t, language, userCountry, setUserCountry } = useApp();
+  const { user, isUserLoading, session, cart, updateCartQuantity, removeFromCart, cartMerchant, t, language, userCountry, setUserCountry } = useApp();
 
   const directOrder = route?.params?.directOrder;
 
@@ -149,10 +151,10 @@ export default function OrderVerificationScreen({ route }) {
   }, [selectedToken]);
   const [network, setNetwork] = useState('Polygon'); // 'Polygon', 'Base', 'Ethereum', 'Solana'
 
-  // Payer country determination (userCountry from AppContext/IP geolocation -> fallback 'DZ')
+  // Payer country determination (userCountry from AppContext/IP geolocation)
   const [payerCountry, setPayerCountry] = useState(() => {
-    const raw = (userCountry || user?.country_code || user?.country || 'DZ').toUpperCase().trim();
-    return raw.length === 2 ? raw : (raw === 'FRANCE' ? 'FR' : raw === 'MAROC' ? 'MA' : 'DZ');
+    const raw = (userCountry || user?.country_code || user?.country || '').toUpperCase().trim();
+    return raw.length === 2 ? raw : (raw === 'FRANCE' ? 'FR' : raw === 'MAROC' ? 'MA' : '');
   });
   const [regionModalVisible, setRegionModalVisible] = useState(false);
 
@@ -175,13 +177,38 @@ export default function OrderVerificationScreen({ route }) {
     }
   }, [payerCountry, railEligibility.momo.enabled]);
 
-  // Dynamic currency
+  // Re-render when live currency exchange rates update
+  const [, setRateVersion] = useState(0);
+  useEffect(() => {
+    const unsub = currencyRateService.subscribe(() => setRateVersion((v) => v + 1));
+    return unsub;
+  }, []);
+
+  // Dynamic currency (merchant / product base)
   const rawCurrency = items[0]?.currency || directOrder?.product?.currency || 'XOF';
   // Banking / Gateway payload requires official ISO-4217 code (XOF, USD, EUR, NGN, etc.)
   const apiCurrency = rawCurrency === 'FCFA' ? 'XOF' : rawCurrency;
   // User-facing display currency label
   const displayCurrency = rawCurrency === 'XOF' ? 'FCFA' : rawCurrency;
   const numLocale = language === 'en' ? 'en-US' : 'fr-FR';
+  const formatLocal = (amt, curr = displayCurrency, opts = {}) => formatCurrency(amt, curr, numLocale, opts);
+
+  // Buyer's detected currency (matches product page PriceDisplay detection)
+  const buyerCountryKey = useMemo(() => {
+    return (
+      payerCountry ||
+      userCountry ||
+      user?.COI ||
+      user?.country ||
+      user?.country_name ||
+      ''
+    ).toString().toLowerCase().trim();
+  }, [payerCountry, userCountry, user?.COI, user?.country, user?.country_name]);
+
+  const buyerCountryInfo = useMemo(() => (buyerCountryKey ? getCountryCurrencyInfo(buyerCountryKey) : null), [buyerCountryKey]);
+  const buyerCurrency = buyerCountryInfo?.currency || (cart[0]?.currency || 'USD');
+  const displayBuyerCurrency = (buyerCurrency === 'XOF' || buyerCurrency === 'XAF') ? 'FCFA' : buyerCurrency;
+  const formatBuyer = (amt, opts = {}) => formatCurrency(amt, buyerCurrency, numLocale, opts);
 
   // Recipient info (Home Delivery)
   const currentUserId = user?.id || session?.user?.id;
@@ -440,21 +467,46 @@ export default function OrderVerificationScreen({ route }) {
   const totalDZY = (totalAmountInUsd * 10).toFixed(1); // 1 USD = 10 DZY
   const totalEURC = (totalAmountInUsd / 1.08).toFixed(2);
 
-  // User balance for selected token
-  const userBalance = useMemo(() => {
-    if (selectedToken === 'DZY') return user?.balanceDZY || 0;
-    if (user?.allBalances && user.allBalances[selectedToken]) {
-      return parseFloat(user.allBalances[selectedToken]) || 0;
+  // Converted amounts in buyer's local detected currency for order summary & "≈" amounts
+  const buyerSubtotal = useMemo(() => {
+    return convertCurrencyAmount(subtotal, rawCurrency, buyerCurrency);
+  }, [subtotal, rawCurrency, buyerCurrency]);
+
+  const buyerDeliveryFee = useMemo(() => {
+    return convertCurrencyAmount(deliveryFee, rawCurrency, buyerCurrency);
+  }, [deliveryFee, rawCurrency, buyerCurrency]);
+
+  const buyerPlatformFee = useMemo(() => {
+    return convertCurrencyAmount(platformFee, rawCurrency, buyerCurrency);
+  }, [platformFee, rawCurrency, buyerCurrency]);
+
+  const buyerTotalAmount = useMemo(() => {
+    return convertCurrencyAmount(totalAmount, rawCurrency, buyerCurrency);
+  }, [totalAmount, rawCurrency, buyerCurrency]);
+
+  // Balances loading status
+  const balancesLoading = isUserLoading || (!user?.allBalances && user?.balanceDZY === undefined);
+
+  // Helper to get balance for any token
+  const getTokenBalance = (symbol) => {
+    if (symbol === 'DZY') return Number(user?.balanceDZY ?? (user?.allBalances?.DZY || 0));
+    if (user?.allBalances && user.allBalances[symbol] !== undefined) {
+      return parseFloat(user.allBalances[symbol]) || 0;
     }
     return 0;
+  };
+
+  // User balance for selected token
+  const userBalance = useMemo(() => {
+    return getTokenBalance(selectedToken);
   }, [user, selectedToken]);
 
   const hasInsufficientBalance = useMemo(() => {
-    if (paymentRail !== 'crypto') return false;
+    if (paymentRail !== 'crypto' || balancesLoading) return false;
     if (selectedToken === 'DZY') return userBalance < parseFloat(totalDZY);
     if (selectedToken === 'EURC') return userBalance < parseFloat(totalEURC);
     return userBalance < parseFloat(totalUSDC);
-  }, [paymentRail, selectedToken, userBalance, totalDZY, totalEURC, totalUSDC]);
+  }, [paymentRail, balancesLoading, selectedToken, userBalance, totalDZY, totalEURC, totalUSDC]);
 
   const handleProceedToConfirmation = async () => {
     if (isSavingAddress) return;
@@ -497,8 +549,8 @@ export default function OrderVerificationScreen({ route }) {
         id: i.id,
         productId: i.productId || i.id,
         name: i.name,
-        price: i.price,
-        currency: displayCurrency,
+        price: convertCurrencyAmount(i.price, i.currency || rawCurrency, buyerCurrency),
+        currency: displayBuyerCurrency,
         quantity: i.quantity,
         image: i.image,
         offering_type: i.product?.offering_type || i.offering_type || i.product?.metadata?.offering_type || i.metadata?.offering_type,
@@ -506,11 +558,11 @@ export default function OrderVerificationScreen({ route }) {
         service_model: i.product?.service_model || i.service_model || i.product?.metadata?.service_model || i.metadata?.service_model,
       })),
       deliveryOption,
-      deliveryFee,
-      platformFee,
-      subtotal,
-      totalAmount,
-      currency: displayCurrency,
+      deliveryFee: buyerDeliveryFee,
+      platformFee: buyerPlatformFee,
+      subtotal: buyerSubtotal,
+      totalAmount: buyerTotalAmount,
+      currency: displayBuyerCurrency,
       apiCurrency,
       totalUSDC: parseFloat(totalUSDC),
       totalDZY: parseFloat(totalDZY),
@@ -584,6 +636,30 @@ export default function OrderVerificationScreen({ route }) {
       </View>
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {!isPhysical && (
+          <View style={styles.webOnlyNoticeCard}>
+            <Ionicons name="globe-outline" size={22} color="#1D4ED8" style={{ marginRight: 10 }} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.webOnlyNoticeTitle}>
+                {t('orderVerification.webOnlyPurchase', "This purchase is available on the website")}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.btnWebOnly}
+              onPress={() => {
+                const targetId = items[0]?.productId || items[0]?.id;
+                const url = getWebProductUrl(targetId);
+                Linking.openURL(url).catch(err => console.warn('Failed to open web URL:', err));
+              }}
+            >
+              <Text style={styles.btnWebOnlyText}>
+                {t('product.buyOnDizzitUp', "Buy on DizzitUp")}
+              </Text>
+              <Ionicons name="open-outline" size={14} color="#FFFFFF" style={{ marginLeft: 4 }} />
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Merchant Banner */}
         <View style={styles.sellerRow}>
           <View style={styles.sellerLogo}>
@@ -630,9 +706,16 @@ export default function OrderVerificationScreen({ route }) {
                 <Text style={styles.productTitle} numberOfLines={2}>
                   {item.name}
                 </Text>
-                <Text style={styles.productPrice}>
-                  {(Number(item.price) || 0).toLocaleString(numLocale)} {displayCurrency}
-                </Text>
+                <View style={styles.productPriceRow}>
+                  <Text style={styles.productPrice}>
+                    {formatBuyer(convertCurrencyAmount(item.price, item.currency || rawCurrency, buyerCurrency))} {displayBuyerCurrency}
+                  </Text>
+                  <View style={styles.usdBadge}>
+                    <Text style={styles.usdBadgeText}>
+                      {convertCurrencyAmount(item.price, item.currency || rawCurrency, 'USD').toFixed(2)} USD
+                    </Text>
+                  </View>
+                </View>
 
                 <View style={styles.quantityRow}>
                   <View style={styles.qtyControls}>
@@ -693,7 +776,7 @@ export default function OrderVerificationScreen({ route }) {
                   <Text style={styles.optionTitle}>{t('orderVerification.homeDelivery', "Home Delivery")}</Text>
                   {standardDeliveryFee > 0 ? (
                     <Text style={styles.optionPrice}>
-                      {standardDeliveryFee.toLocaleString(numLocale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} {displayCurrency}
+                      {formatLocal(standardDeliveryFee)} {displayCurrency}
                     </Text>
                   ) : (
                     <Text style={[styles.optionPrice, { color: '#10B981' }]}>
@@ -1001,55 +1084,79 @@ export default function OrderVerificationScreen({ route }) {
                 { symbol: 'USDT', name: 'Tether USD', badge: 'TRC20 / Polygon', rate: totalUSDT },
                 { symbol: 'DZY', name: 'DizzitUp Token', badge: 'DIZZITUP', rate: totalDZY, disabled: true },
                 { symbol: 'EURC', name: 'Euro Coin', badge: 'ERC20', rate: totalEURC },
-              ].map((tok) => (
-                <TouchableOpacity
-                  key={tok.symbol}
-                  disabled={tok.disabled}
-                  style={[
-                    styles.paymentMethodItem,
-                    selectedToken === tok.symbol && styles.optionSelected,
-                    tok.disabled && styles.paymentMethodItemDisabled,
-                  ]}
-                  onPress={() => {
-                    if (tok.disabled) return;
-                    setSelectedToken(tok.symbol);
-                  }}
-                >
-                  <View style={[
-                    styles.radioOuter,
-                    selectedToken === tok.symbol && styles.radioOuterSelected,
-                    tok.disabled && styles.radioOuterDisabled,
-                  ]}>
-                    {selectedToken === tok.symbol && <View style={styles.radioInner} />}
-                  </View>
-                  <View style={tok.disabled && { opacity: 0.5 }}>
-                    <CryptoIcon symbol={tok.symbol} size={32} />
-                  </View>
-                  <View style={styles.paymentMethodInfo}>
-                    <View style={styles.paymentMethodNameRow}>
-                      <Text style={[styles.paymentMethodName, tok.disabled && styles.paymentMethodNameDisabled]}>{tok.symbol}</Text>
-                      {tok.disabled ? (
-                        <View style={styles.networkBadgeDisabled}>
-                          <Text style={styles.networkBadgeTextDisabled}>{t('orderVerification.dzyLaunchNotice', 'Available after the DZY token launch')}</Text>
-                        </View>
-                      ) : (
-                        <View style={styles.networkBadgeBlue}>
-                          <Text style={styles.networkBadgeTextBlue}>{tok.badge}</Text>
-                        </View>
-                      )}
+              ].map((tok) => {
+                const bal = getTokenBalance(tok.symbol);
+                const isInsufficient = !balancesLoading && bal < parseFloat(tok.rate);
+                const formattedBal = Number(bal).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+                return (
+                  <TouchableOpacity
+                    key={tok.symbol}
+                    disabled={tok.disabled}
+                    style={[
+                      styles.paymentMethodItem,
+                      selectedToken === tok.symbol && styles.optionSelected,
+                      tok.disabled && styles.paymentMethodItemDisabled,
+                    ]}
+                    onPress={() => {
+                      if (tok.disabled) return;
+                      setSelectedToken(tok.symbol);
+                    }}
+                  >
+                    <View style={[
+                      styles.radioOuter,
+                      selectedToken === tok.symbol && styles.radioOuterSelected,
+                      tok.disabled && styles.radioOuterDisabled,
+                    ]}>
+                      {selectedToken === tok.symbol && <View style={styles.radioInner} />}
                     </View>
-                    <Text style={[styles.paymentMethodSub, tok.disabled && styles.paymentMethodSubDisabled]}>{tok.name}</Text>
-                  </View>
-                  <View style={styles.paymentMethodValues}>
-                    <Text style={[styles.paymentMethodValueMain, tok.disabled && styles.paymentMethodValueMainDisabled]}>
-                      {tok.rate} {tok.symbol}
-                    </Text>
-                    <Text style={[styles.paymentMethodValueSub, tok.disabled && styles.paymentMethodValueSubDisabled]}>
-                      ≈ {totalAmount.toLocaleString(numLocale)} {displayCurrency}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
+                    <View style={tok.disabled && { opacity: 0.5 }}>
+                      <CryptoIcon symbol={tok.symbol} size={32} />
+                    </View>
+                    <View style={styles.paymentMethodInfo}>
+                      <View style={styles.paymentMethodNameRow}>
+                        <Text style={[styles.paymentMethodName, tok.disabled && styles.paymentMethodNameDisabled]}>{tok.symbol}</Text>
+                        {tok.disabled ? (
+                          <View style={styles.comingSoonBadge}>
+                            <Text style={styles.comingSoonBadgeText}>{t('orderVerification.comingSoon', 'Coming soon')}</Text>
+                          </View>
+                        ) : (
+                          <View style={styles.networkBadgeBlue}>
+                            <Text style={styles.networkBadgeTextBlue}>{tok.badge}</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={[styles.paymentMethodSub, tok.disabled && styles.paymentMethodSubDisabled]}>{tok.name}</Text>
+                    </View>
+                    {!tok.disabled && (
+                      <View style={styles.paymentMethodValues}>
+                        <Text style={styles.paymentMethodValueMain}>
+                          {t('orderVerification.toPay', 'To pay')}: {tok.rate} {tok.symbol}
+                          {displayBuyerCurrency !== tok.symbol && (
+                            <Text style={styles.paymentMethodValueSub}>
+                              {` ≈ ${formatBuyer(buyerTotalAmount)} ${displayBuyerCurrency}`}
+                            </Text>
+                          )}
+                        </Text>
+                        <View style={styles.balanceRow}>
+                          <Text style={styles.paymentMethodBalanceText}>
+                            {balancesLoading
+                              ? `${t('orderVerification.balance', 'Balance')}: ...`
+                              : `${t('orderVerification.balance', 'Balance')}: ${formattedBal} ${tok.symbol}`}
+                          </Text>
+                          {isInsufficient && (
+                            <View style={styles.insufficientChip}>
+                              <Text style={styles.insufficientChipText}>
+                                {t('orderVerification.insufficient', 'Insufficient')}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
 
               {/* Blockchain Network Selector */}
               <View style={styles.networkSubSection}>
@@ -1250,13 +1357,13 @@ export default function OrderVerificationScreen({ route }) {
 
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>{t('orderVerification.subtotal', "Subtotal (Product)")}</Text>
-            <Text style={styles.summaryValue}>{subtotal.toLocaleString(numLocale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} {displayCurrency}</Text>
+            <Text style={styles.summaryValue}>{formatBuyer(buyerSubtotal)} {displayBuyerCurrency}</Text>
           </View>
 
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>{t('orderVerification.delivery', "Delivery")}</Text>
             <Text style={[styles.summaryValue, deliveryFee === 0 && { color: '#10B981', fontFamily: 'Inter_700Bold' }]}>
-              {deliveryFee > 0 ? `${deliveryFee.toLocaleString(numLocale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ${displayCurrency}` : t('orderVerification.free', "Free")}
+              {deliveryFee > 0 ? `${formatBuyer(buyerDeliveryFee)} ${displayBuyerCurrency}` : t('orderVerification.free', "Free")}
             </Text>
           </View>
 
@@ -1265,7 +1372,7 @@ export default function OrderVerificationScreen({ route }) {
               <Text style={styles.summaryLabel}>{t('orderVerification.networkFeeEst', "Network / Platform fee")}</Text>
               <Ionicons name="information-circle-outline" size={14} color="#64748B" style={{ marginLeft: 4 }} />
             </View>
-            <Text style={styles.summaryValue}>{platformFee.toLocaleString(numLocale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} {displayCurrency} (≈ 0.10 USDC)</Text>
+            <Text style={styles.summaryValue}>{formatBuyer(buyerPlatformFee)} {displayBuyerCurrency} (≈ 0.10 USDC)</Text>
           </View>
 
           <View style={styles.totalRow}>
@@ -1278,11 +1385,11 @@ export default function OrderVerificationScreen({ route }) {
                     : selectedToken === 'EURC'
                       ? `${totalEURC} EURC`
                       : `${totalUSDC} ${selectedToken}`
-                  : `${totalAmount.toLocaleString(numLocale)} ${displayCurrency}`}
+                  : `${formatBuyer(buyerTotalAmount)} ${displayBuyerCurrency}`}
               </Text>
               <Text style={styles.totalValueSub}>
                 {paymentRail === 'crypto'
-                  ? `≈ ${totalAmount.toLocaleString(numLocale)} ${displayCurrency}`
+                  ? `≈ ${formatBuyer(buyerTotalAmount)} ${displayBuyerCurrency}`
                   : `≈ ${totalUSDC} USDC`}
               </Text>
             </View>
@@ -1302,7 +1409,7 @@ export default function OrderVerificationScreen({ route }) {
               <Text style={styles.securityDesc} maxFontSizeMultiplier={1.3}>
                 {isPhysical
                   ? t('orderVerification.securityDesc', "Your funds are protected in escrow until physical delivery is confirmed.")
-                  : t('orderVerification.securityDescNeutral', "Secure payment")}
+                  : t('orderVerification.securityDescNeutral', "Your payment is processed securely.")}
               </Text>
             </View>
           </View>
@@ -1465,11 +1572,30 @@ const styles = StyleSheet.create({
     color: '#1A2840',
     marginBottom: 4,
   },
+  productPriceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+    flexWrap: 'wrap',
+  },
   productPrice: {
     fontFamily: 'SpaceGrotesk_700Bold',
     fontSize: 13,
     color: '#1A2840',
-    marginBottom: 8,
+  },
+  usdBadge: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#A7F3D0',
+    borderWidth: 1,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  usdBadgeText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 10,
+    color: '#047857',
   },
   quantityRow: {
     flexDirection: 'row',
@@ -1791,6 +1917,50 @@ const styles = StyleSheet.create({
   paymentMethodValueSub: {
     fontFamily: 'Inter_400Regular',
     fontSize: 10,
+    color: '#64748B',
+  },
+  balanceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  paymentMethodBalanceText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 10,
+    color: '#64748B',
+  },
+  insufficientChip: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA',
+    borderWidth: 1,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 4,
+    marginLeft: 5,
+  },
+  insufficientChipText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 9,
+    color: '#DC2626',
+  },
+  comingSoonBadge: {
+    backgroundColor: '#F1F5F9',
+    borderColor: '#E2E8F0',
+    borderWidth: 1,
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 6,
+  },
+  comingSoonBadgeText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 9,
+    color: '#64748B',
+  },
+  paymentMethodBalanceInsufficient: {
+    color: '#EF4444',
+    fontFamily: 'Inter_600SemiBold',
+  },
+  paymentMethodBalanceSufficient: {
     color: '#64748B',
   },
   networkSubSection: {

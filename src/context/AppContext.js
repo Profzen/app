@@ -14,8 +14,8 @@ import { transactionService } from '../services/transactionService';
 import contactService from '../services/contactService';
 import { buyGoodsApi } from '../services/buyGoodsApi';
 import { getProductCoverImage } from '../utils/productMedia';
-import { isPhysicalItem } from '../utils/productUtils';
-import { detectUserCountry, getCachedCountry, setManualCountry } from '../services/geolocationService';
+import { isPhysicalItem, isTicketProduct } from '../utils/productUtils';
+import { detectUserCountry, getCachedCountry, setManualCountry, getEffectiveMarketplaceCountry } from '../services/geolocationService';
 import { notificationService } from '../services/notificationService';
 
 const AppContext = createContext();
@@ -96,7 +96,9 @@ export function AppProvider({ children }) {
         if (stored && stored.length === 2 && isMounted) {
           setUserSelectedCountry(stored.toUpperCase());
         }
-        const detected = await detectUserCountry();
+        const detected = await getEffectiveMarketplaceCountry({
+          userProfileCountry: user?.country_code || user?.country,
+        });
         if (detected && isMounted) {
           setDetectedCountry(detected);
         }
@@ -106,13 +108,13 @@ export function AppProvider({ children }) {
     };
     initGeolocation();
     return () => { isMounted = false; };
-  }, []);
+  }, [user?.country_code, user?.country]);
 
   const userCountry = userSelectedCountry || 
     detectedCountry || 
     (user?.country_code && user.country_code.length === 2 ? user.country_code : null) || 
     (user?.country && user.country.length === 2 ? user.country : null) || 
-    'DZ';
+    null;
 
   /**
    * Rule 1 (Wallet): 
@@ -229,20 +231,22 @@ export function AppProvider({ children }) {
         if (stored) {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            const needsRefresh = parsed.some(item => !item.offering_type);
+            const hasTickets = parsed.some(item => isTicketProduct(item));
+            const needsRefresh = parsed.some(item => !item.offering_type) || hasTickets;
             if (!needsRefresh) {
               if (isMounted) setCart(parsed);
               return;
             }
 
-            // Refresh legacy items from product data or remove if not found or inactive
+            // Refresh legacy items from product data or remove if not found, inactive, or tickets
             const refreshedItems = [];
             for (const item of parsed) {
+              if (isTicketProduct(item)) continue;
               const pid = item.productId || item.id;
               if (!item.offering_type && pid) {
                 try {
                   const prod = await buyGoodsApi.getProductById(pid);
-                  if (prod && (prod.status === 'active' || !prod.status) && prod.is_active !== false) {
+                  if (prod && !isTicketProduct(prod) && (prod.status === 'active' || !prod.status) && prod.is_active !== false) {
                     refreshedItems.push({
                       ...item,
                       offering_type: prod.offering_type || 'physical_good',
@@ -1168,6 +1172,16 @@ export function AppProvider({ children }) {
     const mName = merchant?.shop_name || merchant?.name || product.merchant?.shop_name || product.merchant?.name || t('paymentSuccess.partnerMerchant', 'Commerçant Partenaire');
     const mCountry = merchant?.country || product.merchant?.country || '';
     const mCity = merchant?.city_village || product.merchant?.city_village || '';
+
+    // Block tickets: must be purchased on the web
+    if (isTicketProduct(product)) {
+      return {
+        success: false,
+        isTicket: true,
+        error: 'TICKETS_NOT_SUPPORTED_IN_MOBILE_CART',
+        message: t('cart.ticketsWebOnly', 'Tickets can only be purchased on the website.'),
+      };
+    }
 
     const isProductPhysical = isPhysicalItem(product);
 

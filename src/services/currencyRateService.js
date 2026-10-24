@@ -97,7 +97,7 @@ class CurrencyRateService {
         const newRates = { ...EMERGENCY_RATES, USD: 1 };
         const dbRatesObj = {};
         data.forEach((r) => {
-          if (r.target_currency && r.rate) {
+          if (r.target_currency && r.rate && dbRatesObj[r.target_currency] === undefined) {
             newRates[r.target_currency] = Number(r.rate);
             dbRatesObj[r.target_currency] = Number(r.rate);
           }

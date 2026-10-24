@@ -1,7 +1,7 @@
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Dimensions, Share, Platform, StatusBar, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Dimensions, Share, Platform, StatusBar, ActivityIndicator, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import CryptoIcon from '../components/CryptoIcon';
 import AppToast from '../components/AppToast';
@@ -9,9 +9,9 @@ import AppConfirmModal from '../components/AppConfirmModal';
 import PriceDisplay from '../components/PriceDisplay';
 import PhysicalGoodsWarningModal from '../components/PhysicalGoodsWarningModal';
 import { useApp } from '../context/AppContext';
-import { convertCurrencyAmount } from '../utils/countryCurrencyUtils';
+import { convertCurrencyAmount, formatCurrency } from '../utils/countryCurrencyUtils';
 import { ALL_COUNTRIES } from '../utils/countriesData';
-import { isPhysicalItem } from '../utils/productUtils';
+import { isPhysicalItem, isTicketProduct, getWebProductUrl } from '../utils/productUtils';
 import { buyGoodsApi } from '../services/buyGoodsApi';
 import { getProductMedia, isVideoUrl } from '../utils/productMedia';
 
@@ -39,7 +39,7 @@ export default function ProductDetailsScreen({ route }) {
     setIsHydrating(true);
     buyGoodsApi.getProductById(id)
       .then((p) => { if (active && p) setFetchedProduct(p); })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => { if (active) setIsHydrating(false); });
     return () => { active = false; };
   }, [routeProduct?.id]);
@@ -91,11 +91,13 @@ export default function ProductDetailsScreen({ route }) {
   const displayCurrency = rawCurrency === 'XOF' ? 'FCFA' : rawCurrency;
   const numLocale = language === 'en' ? 'en-US' : 'fr-FR';
 
-  const rawAmount = typeof product.price === 'number' 
-    ? product.price 
+  const isTicket = useMemo(() => isTicketProduct(product), [product]);
+
+  const rawAmount = typeof product.price === 'number'
+    ? product.price
     : (product.variants?.[0]?.prices?.[0]?.amount || product.amount || product.price);
   const displayPrice = (rawAmount !== undefined && rawAmount !== null && !isNaN(Number(rawAmount)))
-    ? `${Number(rawAmount).toLocaleString(numLocale)} ${displayCurrency}`
+    ? `${formatCurrency(rawAmount, rawCurrency, numLocale)} ${displayCurrency}`
     : (product.price || '');
   const hasValidPrice = rawAmount !== undefined && rawAmount !== null && rawAmount !== '' && !isNaN(Number(rawAmount));
   // Never let a product be bought while its real price is still loading / unknown
@@ -136,8 +138,8 @@ export default function ProductDetailsScreen({ route }) {
   const rawDeliveryFee = (shop?.delivery_fee !== undefined && shop?.delivery_fee !== null)
     ? Number(shop.delivery_fee)
     : (product?.merchant?.delivery_fee !== undefined && product?.merchant?.delivery_fee !== null)
-    ? Number(product.merchant.delivery_fee)
-    : null;
+      ? Number(product.merchant.delivery_fee)
+      : null;
 
   const standardDeliveryFee = rawDeliveryFee !== null
     ? (rawDeliveryFee > 0 ? convertCurrencyAmount(rawDeliveryFee, shop?.currency || 'XOF', rawCurrency) : 0)
@@ -153,8 +155,8 @@ export default function ProductDetailsScreen({ route }) {
   const merchantCity = shop?.city || shop?.shop_city || product?.merchant?.city || product?.merchant?.shop_city || product?.city || '';
   const merchantCountryRaw = shop?.country || shop?.shop_country || product?.merchant?.country || product?.merchant?.shop_country || product?.country || '';
 
-  const matchedCountry = ALL_COUNTRIES.find(c => 
-    c.code.toLowerCase() === String(merchantCountryRaw).toLowerCase() || 
+  const matchedCountry = ALL_COUNTRIES.find(c =>
+    c.code.toLowerCase() === String(merchantCountryRaw).toLowerCase() ||
     c.name.toLowerCase() === String(merchantCountryRaw).toLowerCase()
   );
   const merchantFlag = matchedCountry?.flag || (merchantCountryRaw && String(merchantCountryRaw).length === 2 ? String(merchantCountryRaw).toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)) : '🌍');
@@ -208,24 +210,37 @@ export default function ProductDetailsScreen({ route }) {
     });
   };
 
+  const handleOpenWebProduct = () => {
+    const url = getWebProductUrl(product?.id || product?._id || product?.product_id);
+    Linking.openURL(url).catch(err => console.warn('Failed to open web product URL:', err));
+  };
+
   const handleAddToCart = () => {
     if (!canPurchase) return;
-    if (isPhysicalItem(product)) {
-      setPendingAction('cart');
-      setWarningModalVisible(true);
-    } else {
-      executeAddToCart();
+    if (isTicket) {
+      handleOpenWebProduct();
+      return;
     }
+    if (!isPhysicalItem(product)) {
+      executeAddToCart();
+      return;
+    }
+    setPendingAction('cart');
+    setWarningModalVisible(true);
   };
 
   const handleBuyNow = () => {
     if (!canPurchase) return;
-    if (isPhysicalItem(product)) {
-      setPendingAction('buy');
-      setWarningModalVisible(true);
-    } else {
-      executeBuyNow();
+    if (isTicket) {
+      handleOpenWebProduct();
+      return;
     }
+    if (!isPhysicalItem(product)) {
+      executeBuyNow();
+      return;
+    }
+    setPendingAction('buy');
+    setWarningModalVisible(true);
   };
 
   const handleWarningContinue = () => {
@@ -239,33 +254,33 @@ export default function ProductDetailsScreen({ route }) {
     setPendingAction(null);
   };
 
-  const shareProduct = async () => { 
-    try { 
+  const shareProduct = async () => {
+    try {
       await Share.share({
-        title: product.name || product.title, 
+        title: product.name || product.title,
         message: t('product.shareMessage', 'Check out {{name}} on DizzitUp.', { name: product.name || product.title })
-      }); 
-    } finally { 
+      });
+    } finally {
       setToast({
-        title: t('product.sharedTitle', 'Product shared'), 
+        title: t('product.sharedTitle', 'Product shared'),
         message: t('product.sharedDesc', 'Sharing link prepared successfully.')
-      }); 
-    } 
+      });
+    }
   };
 
-  const shareProductGift = async () => { 
+  const shareProductGift = async () => {
     const pName = product.name || product.title || 'Produit';
     const sName = merchantName || 'DizzitUp';
     const productUrl = `https://dizzitup.com/product/${product.id}`;
-    try { 
+    try {
       await Share.share({
         title: t('shop.giftProductTitle', "Buy this for me: {{name}}", { name: pName }),
         message: t('shop.giftProductMsg', "I would love this on DizzitUp: {{name}} ({{price}}) from {{shop}}. You can buy it for me here: {{url}}", { name: pName, price: displayPrice, shop: sName, url: productUrl })
-      }); 
+      });
       setToast({
         title: t('shop.shareSuccessTitle', "Gift link ready"),
         message: t('shop.shareSuccessDesc', "The link is ready to be shared with friends and family.")
-      }); 
+      });
     } catch {
       setToast({
         title: t('shop.shareCopiedTitle', "Link copied"),
@@ -276,7 +291,7 @@ export default function ProductDetailsScreen({ route }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
@@ -315,7 +330,7 @@ export default function ProductDetailsScreen({ route }) {
       </View>
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
+
         {/* Full-width media carousel (swipe or arrows), images + videos */}
         <View style={styles.galleryWrap} onLayout={(e) => setGalleryWidth(e.nativeEvent.layout.width || width)}>
           <ScrollView
@@ -405,7 +420,7 @@ export default function ProductDetailsScreen({ route }) {
             )}
 
             {/* Merchant Identity & Location (Solofo request: Merchant name, logo, city, country with flag) */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.merchantHeaderCard}
               onPress={() => navigation.navigate('ShopDetailsScreen', { shop: shop || { id: product?.merchant_id, name: merchantName } })}
               activeOpacity={0.8}
@@ -428,9 +443,9 @@ export default function ProductDetailsScreen({ route }) {
               </View>
               <Ionicons name="chevron-forward" size={14} color="#94A3B8" style={{ marginLeft: 'auto' }} />
             </TouchableOpacity>
-            
+
             <Text style={styles.productTitle}>{product.name}</Text>
-            
+
             {/* Real rating from the database (products.rating / review_count) */}
             <View style={styles.ratingRow}>
               {[1, 2, 3, 4, 5].map((i) => (
@@ -470,10 +485,10 @@ export default function ProductDetailsScreen({ route }) {
             <View style={styles.qtyContainer}>
               <Text style={styles.qtyLabel}>
                 {product?.pricing_model === 'per_night' ? t('product.nights', "Nights") :
-                 product?.pricing_model === 'per_month' ? t('product.months', "Months") :
-                 product?.pricing_model === 'per_day' ? t('product.days', "Days") :
-                 product?.pricing_model === 'per_hour' ? t('product.hours', "Hours") :
-                 t('orderVerification.qty', "Qty")}
+                  product?.pricing_model === 'per_month' ? t('product.months', "Months") :
+                    product?.pricing_model === 'per_day' ? t('product.days', "Days") :
+                      product?.pricing_model === 'per_hour' ? t('product.hours', "Hours") :
+                        t('orderVerification.qty', "Qty")}
               </Text>
               <View style={styles.qtyControls}>
                 <TouchableOpacity
@@ -502,7 +517,7 @@ export default function ProductDetailsScreen({ route }) {
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>{t('product.acceptedPaymentMethods', 'Accepted payment methods')}</Text>
           <View style={styles.paymentCard}>
-            
+
             {/* 1. Visa, Mastercard */}
             <View style={styles.paymentMethodRow}>
               <View style={styles.cardLogoBadge}>
@@ -608,7 +623,7 @@ export default function ProductDetailsScreen({ route }) {
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>{t('product.specs', 'Specifications')}</Text>
           <View style={styles.featuresGrid}>
-            
+
             <View style={styles.featureItem}>
               <View style={styles.featureIconBox}>
                 <Ionicons name="phone-portrait-outline" size={16} color="#3B82F6" />
@@ -674,21 +689,21 @@ export default function ProductDetailsScreen({ route }) {
           <View style={styles.deliveryCard}>
             <View style={styles.deliveryRow}>
               <View style={styles.deliveryItem}>
-                <Ionicons name="bus-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
+                <Ionicons name="bus-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
                 <View>
                   <Text style={styles.deliveryLabel}>{t('product.homeDelivery', 'Home delivery')}</Text>
                   <Text style={styles.deliveryValue}>{t('product.deliveryDelay', '1 to 3 business days')}</Text>
                 </View>
               </View>
               <View style={styles.deliveryItem}>
-                <Ionicons name="storefront-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
+                <Ionicons name="storefront-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
                 <View>
                   <Text style={styles.deliveryLabel}>{t('product.storePickup', 'Store pickup')}</Text>
                   <Text style={styles.deliveryValue}>{t('product.pickupToday', 'Today')}</Text>
                 </View>
               </View>
               <View style={styles.deliveryItem}>
-                <Ionicons name="shield-checkmark-outline" size={20} color="#1A2840" style={{marginRight: 8}} />
+                <Ionicons name="shield-checkmark-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
                 <View>
                   <Text style={styles.deliveryLabel}>{t('product.deliveryFees', 'Delivery fee')}</Text>
                   <Text style={styles.deliveryValue}>{t('product.fromDeliveryFee', "From {{fee}}", { fee: deliveryFeeFormatted })}</Text>
@@ -721,10 +736,10 @@ export default function ProductDetailsScreen({ route }) {
             <View style={styles.vendorContent}>
               <View style={styles.vendorNameRow}>
                 <Text style={styles.vendorName} numberOfLines={1}>{merchantName}</Text>
-                <Ionicons name="checkmark-circle" size={16} color="#3B82F6" style={{marginLeft: 4}} />
+                <Ionicons name="checkmark-circle" size={16} color="#3B82F6" style={{ marginLeft: 4 }} />
               </View>
               <View style={styles.vendorLocationRow}>
-                <Ionicons name="location-outline" size={13} color="#64748B" style={{marginRight: 3}} />
+                <Ionicons name="location-outline" size={13} color="#64748B" style={{ marginRight: 3 }} />
                 <Text style={styles.vendorLocationText} numberOfLines={1}>
                   {merchantFlag} {merchantCity ? `${merchantCity}, ` : ''}{merchantCountryName || t('common.global', 'International')}
                 </Text>
@@ -735,9 +750,9 @@ export default function ProductDetailsScreen({ route }) {
               <Text style={styles.vendorSince}>{t('product.partnerPlatform', 'DizzitUp Partner')}</Text>
             </View>
             <TouchableOpacity style={styles.btnStore} onPress={() => navigation.navigate('ShopDetailsScreen', { shop: shop || { id: product?.merchant_id, name: merchantName } })}>
-              <Ionicons name="storefront-outline" size={16} color="#1A2840" style={{marginRight: 6}} />
+              <Ionicons name="storefront-outline" size={16} color="#1A2840" style={{ marginRight: 6 }} />
               <Text style={styles.btnStoreText}>{t('product.visitShop', 'Store')}</Text>
-              <Ionicons name="chevron-forward" size={14} color="#1A2840" style={{marginLeft: 4}} />
+              <Ionicons name="chevron-forward" size={14} color="#1A2840" style={{ marginLeft: 4 }} />
             </TouchableOpacity>
           </View>
         </View>
@@ -746,42 +761,57 @@ export default function ProductDetailsScreen({ route }) {
 
       {/* Bottom Floating Ergonomic Action Bar */}
       <View style={[styles.bottomActionBar, { paddingBottom: bottomPadding }]}>
-        {/* Buy Me / Diaspora Gift Action */}
-        <TouchableOpacity
-          style={styles.btnGiftModern}
-          onPress={shareProductGift}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="gift-outline" size={18} color="#2563EB" style={{ marginRight: 5 }} />
-          <Text style={[styles.btnGiftModernText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy_me', 'Buy me')}</Text>
-        </TouchableOpacity>
+        {isTicket ? (
+          <TouchableOpacity
+            style={[styles.btnBuyModern, { flex: 1, backgroundColor: '#FFC759' }]}
+            onPress={handleOpenWebProduct}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="ticket-outline" size={18} color="#1A2840" style={{ marginRight: 6 }} />
+            <Text style={[styles.btnBuyModernText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>
+              {t('product.getTicket', 'Get ticket')}
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <>
+            {/* Buy Me / Diaspora Gift Action */}
+            <TouchableOpacity
+              style={styles.btnGiftModern}
+              onPress={shareProductGift}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="gift-outline" size={18} color="#2563EB" style={{ marginRight: 5 }} />
+              <Text style={[styles.btnGiftModernText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy_me', 'Buy me')}</Text>
+            </TouchableOpacity>
 
-        {/* Add to Cart Action */}
-        <TouchableOpacity 
-          style={[styles.btnCartModern, !canPurchase && { opacity: 0.5 }]} 
-          onPress={() => handleAddToCart(false)}
-          disabled={!canPurchase}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="cart-outline" size={18} color="#1A2840" style={{ marginRight: 5 }} />
-          <Text style={[styles.btnCartModernText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('product.addToCart', 'Add to cart')}</Text>
-          {cartCount > 0 && (
-            <View style={styles.cartCountDot}>
-              <Text style={styles.cartCountDotText} adjustsFontSizeToFit numberOfLines={1}>{cartCount}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+            {/* Add to Cart Action */}
+            <TouchableOpacity
+              style={[styles.btnCartModern, !canPurchase && { opacity: 0.5 }]}
+              onPress={() => handleAddToCart()}
+              disabled={!canPurchase}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="cart-outline" size={18} color="#1A2840" style={{ marginRight: 5 }} />
+              <Text style={[styles.btnCartModernText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('product.addToCart', 'Add to cart')}</Text>
+              {cartCount > 0 && (
+                <View style={styles.cartCountDot}>
+                  <Text style={styles.cartCountDotText} adjustsFontSizeToFit numberOfLines={1}>{cartCount}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
 
-        {/* Primary CTA: Buy Now */}
-        <TouchableOpacity 
-          style={[styles.btnBuyModern, !canPurchase && { opacity: 0.5 }]} 
-          onPress={handleBuyNow}
-          disabled={!canPurchase}
-          activeOpacity={0.85}
-        >
-          <Ionicons name="flash" size={16} color="#1A2840" style={{ marginRight: 5 }} />
-          <Text style={[styles.btnBuyModernText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('product.buyNow', 'Buy now')}</Text>
-        </TouchableOpacity>
+            {/* Primary CTA: Buy Now */}
+            <TouchableOpacity
+              style={[styles.btnBuyModern, !canPurchase && { opacity: 0.5 }]}
+              onPress={handleBuyNow}
+              disabled={!canPurchase}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="flash" size={16} color="#1A2840" style={{ marginRight: 5 }} />
+              <Text style={[styles.btnBuyModernText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('product.buyNow', 'Buy now')}</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
       {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
 
@@ -799,7 +829,7 @@ export default function ProductDetailsScreen({ route }) {
         onConfirm={conflictModal?.onConfirm}
       />
 
-      <PhysicalGoodsWarningModal 
+      <PhysicalGoodsWarningModal
         visible={warningModalVisible}
         onClose={() => setWarningModalVisible(false)}
         onContinue={handleWarningContinue}

@@ -25,24 +25,28 @@ export default function PriceDisplay({
   }, []);
 
   // Determine user's local currency based on geolocalization / profile / merchant region
-  const userCountryKey = (
+  const rawCountryKey = (
     targetCountry ||
     contextCountry ||
     user?.COI ||
     user?.country ||
     user?.country_name ||
-    'Algeria' // active marketplace geolocated context
-  ).toLowerCase().trim();
+    ''
+  );
+  const userCountryKey = rawCountryKey ? rawCountryKey.toLowerCase().trim() : '';
 
-  const primaryCountry = getCountryCurrencyInfo(userCountryKey);
-  const localCurrency = primaryCountry?.currency || 'DZD';
+  const primaryCountry = userCountryKey ? getCountryCurrencyInfo(userCountryKey) : null;
+  const localCurrency = primaryCountry?.currency || baseCurrency || 'USD';
 
   const totalBaseAmount = (Number(amount) || 0) * (Number(quantity) || 1);
 
-  // Derive amounts using unified conversion utility
-  const localAmount = convertCurrencyAmount(totalBaseAmount, baseCurrency, localCurrency);
+  // Derive amounts using unified conversion utility:
+  // If no country was resolved, show native product amount (no conversion, product currency plus USD)
+  const localAmount = userCountryKey && localCurrency !== baseCurrency
+    ? convertCurrencyAmount(totalBaseAmount, baseCurrency, localCurrency)
+    : totalBaseAmount;
   const dzyAmount = convertCurrencyAmount(totalBaseAmount, baseCurrency, 'DZY');
-  const usdtAmount = convertCurrencyAmount(totalBaseAmount, baseCurrency, 'USDT');
+  const usdAmount = convertCurrencyAmount(totalBaseAmount, baseCurrency, 'USD');
 
   const formatLocal = (num) => (num || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   const formatCompact = (num) => {
@@ -84,16 +88,16 @@ export default function PriceDisplay({
         )}
       </View>
 
-      {/* SECONDARY: DZY (LEFT) and USDT (RIGHT) Badges */}
+      {/* SECONDARY: DZY (LEFT) and USD (RIGHT) Badges */}
       <View style={[styles.secondaryRow, isLarge && styles.secondaryRowLarge]}>
         <View style={[styles.dzyBadge, isLarge && styles.dzyBadgeLarge]}>
           <Text style={[styles.dzyBadgeText, isLarge && styles.dzyBadgeTextLarge]}>
             {formatCompact(dzyAmount)} DZY
           </Text>
         </View>
-        <View style={[styles.usdtBadge, isLarge && styles.usdtBadgeLarge]}>
-          <Text style={[styles.usdtBadgeText, isLarge && styles.usdtBadgeTextLarge]}>
-            {usdtAmount.toFixed(2)} USDT
+        <View style={[styles.usdBadge, isLarge && styles.usdBadgeLarge]}>
+          <Text style={[styles.usdBadgeText, isLarge && styles.usdBadgeTextLarge]}>
+            {usdAmount.toFixed(2)} USD
           </Text>
         </View>
       </View>
@@ -177,6 +181,29 @@ const styles = StyleSheet.create({
   },
   dzyBadgeTextLarge: {
     fontSize: 12,
+  },
+  usdBadge: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#A7F3D0',
+    borderWidth: 1,
+    paddingHorizontal: 6,
+    paddingVertical: 2.5,
+    borderRadius: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  usdBadgeLarge: {
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  usdBadgeText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 10,
+    color: '#047857',
+  },
+  usdBadgeTextLarge: {
+    fontSize: 11.5,
   },
   usdtBadge: {
     backgroundColor: '#ECFDF5',

@@ -2087,6 +2087,8 @@
     "rating": "Rating",
     "contactSeller": "Contact seller",
     "buyNow": "Buy now",
+    "getTicket": "Get ticket",
+    "buyOnDizzitUp": "Buy on DizzitUp",
     "soldBy": "Sold by",
     "deliveryAndPickup": "Delivery & pickup",
     "homeDelivery": "Home delivery",
@@ -4809,7 +4811,13 @@
     "securityDesc": "Your funds are protected in escrow until physical delivery is confirmed.",
     "comingSoon": "Coming soon",
     "dzyLaunchNotice": "Available after the DZY token launch",
-    "securityDescNeutral": "Secure payment",
+    "toPay": "To pay",
+    "balance": "Balance",
+    "insufficient": "Insufficient",
+    "yourBalance": "Your balance",
+    "insufficientBalanceShort": "Insufficient balance",
+    "webOnlyPurchase": "This purchase is available on the website",
+    "securityDescNeutral": "Your payment is processed securely.",
     "networkVerified": "Secure payment on {{network}}",
     "article": "item",
     "articles": "items",
@@ -5793,7 +5801,8 @@
     "addedSuccessTitle": "Item added!",
     "addedSuccessMsg": "{{qty}}x {{name}} added to cart ({{count}} items).",
     "mixedCartTitle": "Order separately",
-    "mixedCartError": "Services and goods must be ordered separately"
+    "mixedCartError": "Services and goods must be ordered separately",
+    "ticketsWebOnly": "Tickets can only be purchased on the website."
   },
   "order": {
     "emptyCart": "Your cart is empty",

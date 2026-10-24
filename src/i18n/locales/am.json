@@ -2054,6 +2054,8 @@
     "rating": "ደረጃ",
     "contactSeller": "ሻጩን ያግኙ",
     "buyNow": "አሁን ግዛ",
+    "getTicket": "ቲኬት ያግኙ",
+    "buyOnDizzitUp": "በ DizzitUp ላይ ይግዙ",
     "soldBy": "የተሸጠው በ",
     "deliveryAndPickup": "ማድረስ እና መውሰድ",
     "homeDelivery": "የቤት ማድረስ",
@@ -4509,7 +4511,13 @@
     "securityDesc": "ገንዘብዎ ማድረስ እስኪረጋገጥ ድረስ በኤስክሮው የተጠበቀ ነው።",
     "comingSoon": "በቅርቡ ይመጣል",
     "dzyLaunchNotice": "የ DZY ቶከን ከተለቀቀ በኋላ ይገኛል",
-    "securityDescNeutral": "ደህንነቱ የተጠበቀ ክፍያ",
+    "toPay": "የሚከፈለው",
+    "balance": "ቀሪ ሒሳብ",
+    "insufficient": "በቂ ያልሆነ",
+    "yourBalance": "የእርስዎ ቀሪ ሂሳብ",
+    "insufficientBalanceShort": "በቂ ያልሆነ ቀሪ ሂሳብ",
+    "webOnlyPurchase": "ይህ ግዢ በድረ-ገጹ ላይ ይገኛል",
+    "securityDescNeutral": "ክፍያዎ ደህንነቱ በተጠበቀ ሁኔታ ይከናወናል።",
     "networkVerified": "በ{{network}} ላይ ደህንነቱ የተጠበቀ ክፍያ",
     "article": "እቃ",
     "articles": "እቃዎች",
@@ -5608,7 +5616,8 @@
     "addedSuccessTitle": "ዕቃው ተጨምሯል!",
     "addedSuccessMsg": "{{qty}}x {{name}} ወደ ጋሪ ታክሏል ({{count}} ዕቃዎች)።",
     "mixedCartTitle": "ለይተው ይዘዙ",
-    "mixedCartError": "አገልግሎቶች እና እቃዎች በተናጠል መታዘዝ አለባቸው"
+    "mixedCartError": "አገልግሎቶች እና እቃዎች በተናጠል መታዘዝ አለባቸው",
+    "ticketsWebOnly": "ቲኬቶችን በድረ-ገጹ ላይ ብቻ መግዛት ይቻላል።"
   },
   "order": {
     "emptyCart": "ጋሪዎ ባዶ ነው",

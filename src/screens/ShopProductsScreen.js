@@ -1,7 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useMemo, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Share, useWindowDimensions, Platform, StatusBar, ActivityIndicator, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Share, useWindowDimensions, Platform, StatusBar, ActivityIndicator, Image, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import CryptoIcon from '../components/CryptoIcon';
@@ -14,7 +14,7 @@ import PriceDisplay from '../components/PriceDisplay';
 import ShopSmartFilterModal from '../components/ShopSmartFilterModal';
 import WriteReviewModal from '../components/WriteReviewModal';
 import { reviewService } from '../services/reviewService';
-import { isPhysicalCart } from '../utils/productUtils';
+import { isPhysicalCart, isPhysicalItem, isTicketProduct, getWebProductUrl } from '../utils/productUtils';
 
 export default function ShopProductsScreen({ route }) {
   const navigation = useNavigation();
@@ -503,23 +503,40 @@ export default function ShopProductsScreen({ route }) {
                       </Text>
                     </View>
                     
-                    {/* Dual Action: Buy (Acheter) & Buy me (Achetez-moi) */}
+                    {/* Dual Action: Buy (Acheter) & Buy me (Achetez-moi) OR Get ticket */}
                     <View style={styles.cardActionsRow}>
-                      <TouchableOpacity 
-                        style={styles.btnBuyCard} 
-                        onPress={() => navigation.navigate('ProductDetailsScreen', { product: product, shop: shop })}
-                      >
-                        <Ionicons name="cart-outline" size={13} color="#1A2840" style={{marginRight: 4}} />
-                        <Text style={[styles.btnBuyCardText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy', "Buy")}</Text>
-                      </TouchableOpacity>
+                      {isTicketProduct(product) ? (
+                        <TouchableOpacity 
+                          style={[styles.btnBuyCard, { flex: 1, backgroundColor: '#FFC759' }]} 
+                          onPress={() => {
+                            const url = getWebProductUrl(product.id || product._id || product.product_id);
+                            Linking.openURL(url).catch(err => console.warn('Failed to open web product URL:', err));
+                          }}
+                        >
+                          <Ionicons name="ticket-outline" size={13} color="#1A2840" style={{marginRight: 4}} />
+                          <Text style={[styles.btnBuyCardText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>
+                            {t('product.getTicket', "Get ticket")}
+                          </Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <>
+                          <TouchableOpacity 
+                            style={styles.btnBuyCard} 
+                            onPress={() => navigation.navigate('ProductDetailsScreen', { product: product, shop: shop })}
+                          >
+                            <Ionicons name="cart-outline" size={13} color="#1A2840" style={{marginRight: 4}} />
+                            <Text style={[styles.btnBuyCardText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy', "Buy")}</Text>
+                          </TouchableOpacity>
 
-                      <TouchableOpacity 
-                        style={styles.btnBuyMeCard} 
-                        onPress={() => shareProductGift(product)}
-                      >
-                        <Ionicons name="gift-outline" size={13} color="#1D4ED8" style={{marginRight: 4}} />
-                        <Text style={[styles.btnBuyMeCardText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy_me', "Buy me")}</Text>
-                      </TouchableOpacity>
+                          <TouchableOpacity 
+                            style={styles.btnBuyMeCard} 
+                            onPress={() => shareProductGift(product)}
+                          >
+                            <Ionicons name="gift-outline" size={13} color="#1D4ED8" style={{marginRight: 4}} />
+                            <Text style={[styles.btnBuyMeCardText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy_me', "Buy me")}</Text>
+                          </TouchableOpacity>
+                        </>
+                      )}
                     </View>
                   </View>
                 </View>

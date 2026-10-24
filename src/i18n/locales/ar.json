@@ -1310,6 +1310,8 @@
     "rating": "التقييم",
     "contactSeller": "الاتصال بالبائع",
     "buyNow": "اشترِ الآن",
+    "getTicket": "الحصول على التذكرة",
+    "buyOnDizzitUp": "الشراء على DizzitUp",
     "soldBy": "تم البيع بواسطة",
     "deliveryAndPickup": "التوصيل والاستلام",
     "homeDelivery": "توصيل للمنازل",
@@ -4611,7 +4613,13 @@
     "securityDesc": "أموالك محمية في حساب الضمان حتى تأكيد الاستلام الفعلي.",
     "comingSoon": "قريباً",
     "dzyLaunchNotice": "متاح بعد إطلاق رمز DZY",
-    "securityDescNeutral": "دفع آمن",
+    "toPay": "للدفع",
+    "balance": "الرصيد",
+    "insufficient": "غير كافٍ",
+    "yourBalance": "رصيدك",
+    "insufficientBalanceShort": "رصيد غير كافٍ",
+    "webOnlyPurchase": "عملية الشراء هذه متاحة على الموقع الإلكتروني",
+    "securityDescNeutral": "تتم معالجة دفعتك بأمان.",
     "networkVerified": "دفع آمن على {{network}}",
     "article": "عنصر",
     "articles": "عناصر",
@@ -5616,7 +5624,8 @@
     "addedSuccessTitle": "تمت إضافة المنتج!",
     "addedSuccessMsg": "تمت إضافة {{qty}}x {{name}} إلى السلة ({{count}} منتجات).",
     "mixedCartTitle": "اطلب بشكل منفصل",
-    "mixedCartError": "يجب طلب الخدمات والسلع بشكل منفصل"
+    "mixedCartError": "يجب طلب الخدمات والسلع بشكل منفصل",
+    "ticketsWebOnly": "لا يمكن شراء التذاكر إلا من خلال الموقع الإلكتروني."
   },
   "order": {
     "emptyCart": "سلتك فارغة",

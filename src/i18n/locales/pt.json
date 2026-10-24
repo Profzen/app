@@ -2033,6 +2033,8 @@
     "rating": "Classificação",
     "contactSeller": "Contactar o vendedor",
     "buyNow": "Comprar agora",
+    "getTicket": "Obter bilhete",
+    "buyOnDizzitUp": "Comprar no DizzitUp",
     "soldBy": "Vendido por",
     "deliveryAndPickup": "Entrega e recolha",
     "homeDelivery": "Entrega ao domicílio",
@@ -4585,7 +4587,13 @@
     "securityDesc": "Os seus fundos estão protegidos sob custódia até à confirmação da entrega.",
     "comingSoon": "Em breve",
     "dzyLaunchNotice": "Disponível após o lançamento do token DZY",
-    "securityDescNeutral": "Pagamento seguro",
+    "toPay": "A pagar",
+    "balance": "Saldo",
+    "insufficient": "Insuficiente",
+    "yourBalance": "Seu saldo",
+    "insufficientBalanceShort": "Saldo insuficiente",
+    "webOnlyPurchase": "Esta compra está disponível no site",
+    "securityDescNeutral": "O seu pagamento é processado com segurança.",
     "networkVerified": "Pagamento seguro em {{network}}",
     "article": "artigo",
     "articles": "artigos",
@@ -5589,7 +5597,8 @@
     "addedSuccessTitle": "Artigo adicionado!",
     "addedSuccessMsg": "{{qty}}x {{name}} adicionado ao carrinho ({{count}} artigos).",
     "mixedCartTitle": "Encomendar separadamente",
-    "mixedCartError": "Serviços e bens devem ser encomendados separadamente"
+    "mixedCartError": "Serviços e bens devem ser encomendados separadamente",
+    "ticketsWebOnly": "Os bilhetes só podem ser adquiridos no site."
   },
   "order": {
     "emptyCart": "O seu carrinho está vazio",

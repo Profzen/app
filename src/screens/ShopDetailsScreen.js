@@ -13,6 +13,7 @@ import { useApp } from '../context/AppContext';
 import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
 import { getProductCoverImage } from '../utils/productMedia';
 import { buildDzyStoreUrl } from '../utils/storeUtils';
+import { isPhysicalItem, isTicketProduct, getWebProductUrl } from '../utils/productUtils';
 
 
 export default function ShopDetailsScreen({ route }) {
@@ -944,14 +945,30 @@ export default function ShopDetailsScreen({ route }) {
                   <Text style={styles.productStock}>{product.stock_quantity > 0 || !product.stock_quantity ? t('shop.products.in_stock', "In stock") : t('outOfStock', "Out of stock")}</Text>
                 </View>
 
-                <TouchableOpacity style={styles.btnBuySmall} onPress={() => navigation.navigate('ProductDetailsScreen', { product, shop })}>
-                  <Text style={styles.btnBuySmallText} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy', "Buy")}</Text>
+                <TouchableOpacity 
+                  style={[styles.btnBuySmall, isTicketProduct(product) && { backgroundColor: '#FFC759' }]} 
+                  onPress={() => {
+                    if (isTicketProduct(product)) {
+                      const url = getWebProductUrl(product.id || product._id || product.product_id);
+                      Linking.openURL(url).catch(err => console.warn('Failed to open web product URL:', err));
+                    } else {
+                      navigation.navigate('ProductDetailsScreen', { product, shop });
+                    }
+                  }}
+                >
+                  <Text style={styles.btnBuySmallText} adjustsFontSizeToFit numberOfLines={1}>
+                    {isTicketProduct(product)
+                      ? t('product.getTicket', "Get ticket")
+                      : t('shop.actions.buy', "Buy")}
+                  </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.btnBuyMeSmall} onPress={() => shareProductGift(product)}>
-                  <Ionicons name="gift-outline" size={11} color="#1A2840" style={{ marginRight: 3 }} />
-                  <Text style={[styles.btnBuyMeSmallText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy_me', "Buy me")}</Text>
-                </TouchableOpacity>
+                {!isTicketProduct(product) && (
+                  <TouchableOpacity style={styles.btnBuyMeSmall} onPress={() => shareProductGift(product)}>
+                    <Ionicons name="gift-outline" size={11} color="#1A2840" style={{ marginRight: 3 }} />
+                    <Text style={[styles.btnBuyMeSmallText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy_me', "Buy me")}</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             ))}
           </ScrollView>
