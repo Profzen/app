@@ -58,3 +58,20 @@ export const WEB_DEFAULT_TOKENS = [
   { symbol: "WETH", name: "Wrapped Ethereum", chain: "ethereum" },
   { symbol: "WETH", name: "Wrapped Ethereum", chain: "base" },
 ];
+
+/**
+ * Normalizes a blockchain identifier into canonical form (e.g., 'bnbchain' / 'bnb' -> 'bsc').
+ * Strips whitespace, converts to lowercase, and validates input. Returns null if missing or invalid.
+ */
+export const normalizeChainName = (chain) => {
+  if (!chain || typeof chain !== 'string') return null;
+  const clean = chain.toLowerCase().trim().replace(/\s+/g, '');
+  if (!clean) return null;
+  if (clean === 'bnbchain' || clean === 'bnb' || clean === 'binancesmartchain' || clean === 'binance') {
+    return 'bsc';
+  }
+  if (clean === 'matic') return 'polygon';
+  if (clean === 'eth' || clean === 'mainnet') return 'ethereum';
+  if (clean === 'sol') return 'solana';
+  return clean;
+};

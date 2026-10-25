@@ -11,6 +11,20 @@ import { generateAndShareStatement } from '../utils/pdfGenerator';
 import { calculateTransactionStats, getActiveCurrencies } from '../utils/statisticsHelper';
 import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
 
+const parseTxMetadata = (m) => {
+  if (!m) return {};
+  if (typeof m === 'object') return m;
+  if (typeof m === 'string') {
+    try {
+      const parsed = JSON.parse(m);
+      return typeof parsed === 'object' && parsed !== null ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+  return {};
+};
+
 export default function TransactionHistoryScreen() {
   const navigation = useNavigation();
   const { transactions, isTransactionsLoading, refreshTransactions, t, user } = useApp();
@@ -36,8 +50,9 @@ export default function TransactionHistoryScreen() {
     if (filterType === 'ALL') return cleanTransactions;
     return cleanTransactions.filter(tx => {
       const type = (tx.type || '').toUpperCase();
-      const metaType = tx.metadata?.type || '';
-      const paymentCtx = tx.metadata?.payment_context || '';
+      const meta = parseTxMetadata(tx.metadata);
+      const metaType = meta.type || '';
+      const paymentCtx = meta.payment_context || '';
 
       switch(filterType) {
         case 'PAY_BILLS': return paymentCtx === 'bill_payment' || metaType === 'invoice_payment';
@@ -58,8 +73,9 @@ export default function TransactionHistoryScreen() {
     await generateAndShareStatement(filteredTransactions, user, t);
   };
 
-  const getTypeIcon = (type, meta = {}) => {
-    const isBill = meta?.payment_context === 'bill_payment' || meta?.type === 'invoice_payment' || meta?.type === 'invoice';
+  const getTypeIcon = (type, rawMeta = {}) => {
+    const meta = parseTxMetadata(rawMeta);
+    const isBill = meta.payment_context === 'bill_payment' || meta.type === 'invoice_payment' || meta.type === 'invoice';
     if (isBill) return <Ionicons name="cart" size={20} color="#10B981" />; // Emerald
 
     const typeUpper = (type || '').toUpperCase();
@@ -131,7 +147,7 @@ export default function TransactionHistoryScreen() {
 
   const formatToFrom = (tx) => {
     const text = tx.toFrom;
-    const meta = tx.metadata || {};
+    const meta = parseTxMetadata(tx.metadata);
     
     if (meta.merchant_name) return <Text style={styles.txToFromValue}>{meta.merchant_name}</Text>;
     if (meta.shop_name) return <Text style={styles.txToFromValue}>{meta.shop_name}</Text>;

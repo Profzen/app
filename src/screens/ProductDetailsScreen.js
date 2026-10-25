@@ -200,7 +200,6 @@ export default function ProductDetailsScreen({ route }) {
   };
 
   const executeBuyNow = () => {
-    addToCart(product, quantity, shop, true);
     navigation.navigate('OrderVerificationScreen', {
       directOrder: {
         product,

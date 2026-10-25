@@ -10,9 +10,11 @@ import { getExplorerTxUrl, isOnChainHash } from '../utils/explorer';
 import CryptoIcon from '../components/CryptoIcon';
 import AppSelect from '../components/AppSelect';
 import ScreenFooter from '../components/ScreenFooter';
+import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import { swapService } from '../services/swapService';
 import { ESTIMATED_NETWORK_FEES_USDC } from '../config/networkFees';
+import { normalizeChainName } from '../config/tokensByChain';
 import { getWalletIdentity, getWalletErrorMessage } from '../utils/walletIdentity';
 
 const formatMax6Decimals = (val) => {
@@ -89,6 +91,33 @@ export default function SwapTokensScreen() {
   const silentPollingRef = React.useRef(false);
   const actionInFlightRef = React.useRef(false);
   const sdkPromptOpenRef = React.useRef(false);
+  const modalDismissResolveRef = React.useRef(null);
+
+  const handleModalDismiss = () => {
+    if (modalDismissResolveRef.current) {
+      modalDismissResolveRef.current();
+      modalDismissResolveRef.current = null;
+    }
+  };
+
+  const closeConfirmModalAndWait = async () => {
+    if (txStatus === 'awaiting-approval' && !sdkPromptOpenRef.current) {
+      await new Promise((resolve) => {
+        modalDismissResolveRef.current = resolve;
+        setSdkPromptOpen(true);
+        sdkPromptOpenRef.current = true;
+        setTimeout(() => {
+          if (modalDismissResolveRef.current) {
+            modalDismissResolveRef.current();
+            modalDismissResolveRef.current = null;
+          }
+        }, Platform.OS === 'ios' ? 450 : 50);
+      });
+      if (Platform.OS === 'ios') {
+        await new Promise((r) => setTimeout(r, 100));
+      }
+    }
+  };
 
   const stopPolling = () => {
     if (pollIntervalRef.current) {
@@ -137,6 +166,8 @@ export default function SwapTokensScreen() {
     setLoading(false);
     setIsAuthorizing(false);
     setSuccessTxHash(null);
+    setInfoMsg(null);
+    setError(null);
     approveCalledRef.current = false;
     actionInFlightRef.current = false;
     silentPollingRef.current = false;
@@ -236,11 +267,13 @@ export default function SwapTokensScreen() {
           silentPollingRef.current = false;
 
           if (data.type === 'APPROVAL' && !wasSilent) {
-            // If it was an approval, immediately trigger the swap execute
+            // If it was an approval, immediately show progress and trigger the swap execute
             setTxStatus(null);
             setIsAuthorizing(false);
             setSwapStep('swap');
             approveCalledRef.current = false;
+            setInfoMsg(t('common.wallet.swap_ui.authorizing_on_network', 'Authorizing on the network...'));
+            setLoading(true);
             handleSwap(true);
           } else if (data.type === 'APPROVAL' && wasSilent) {
             setTxStatus(null);
@@ -254,6 +287,7 @@ export default function SwapTokensScreen() {
             setIsAuthorizing(false);
             setSwapStep(null);
             setHadApprovalStep(false);
+            setInfoMsg(null); // Clear "waiting for confirmation" or progress banner
             if (typeof refreshUser === 'function') refreshUser();
 
             const onChain = data.blockchainHash || data.onChain?.txHash || (data.txHash && isOnChainHash(data.txHash, fromChain) ? data.txHash : null);
@@ -305,8 +339,11 @@ export default function SwapTokensScreen() {
   };
 
   const handleSwap = async (isFollowUp = false) => {
-    // if (actionInFlightRef.current) return;
-    if (actionInFlightRef.current && isFollowUp !== true) return;
+    const isWaiting = loading || isAuthorizing || txStatus === 'awaiting-approval' || actionInFlightRef.current || !!pollIntervalRef.current;
+    if (isWaiting && isFollowUp !== true) {
+      AppToast.showInfo(t('common.wallet.swap_ui.duplicate_in_progress', 'A swap is already in progress. Please wait for it to complete.'));
+      return;
+    }
     if (!isSwapReady) {
       setError(isMerchant
         ? 'Merchant business wallet is not ready. Please refresh the app.'
@@ -315,6 +352,14 @@ export default function SwapTokensScreen() {
     }
     if (!fromAmount || parseFloat(fromAmount) > availableBalance) {
       setError(t('common.wallet.swap_ui.insufficient_balance', 'INSUFFICIENT BALANCE'));
+      return;
+    }
+
+    const normalizedChain = normalizeChainName(fromChain);
+    if (!normalizedChain) {
+      const chainErr = t('common.wallet.swap_ui.missing_chain', 'Blockchain network is missing. Please select a valid network.');
+      setError(chainErr);
+      AppToast.showError(chainErr, t('common.error', 'Error'));
       return;
     }
 
@@ -329,16 +374,20 @@ export default function SwapTokensScreen() {
 
     setLoading(true);
     setError(null);
-    setInfoMsg(null);
+    if (!isActualFollowUp) {
+      setInfoMsg(null);
+    }
 
     try {
       const res = await swapService.executeSwap(fromToken, toToken, fromAmount, fromChain, toChain, authToken);
 
       if (res.error) {
         if (res.status === 429 || res.data?.code === 'RATE_LIMITED') {
-          const retrySec = res.data?.retryAfterSeconds || 60;
           setLoading(false);
-          setError(t('common.wallet.rate_limited', { seconds: retrySec, defaultValue: `Too many attempts. Please try again in ${retrySec} seconds.` }));
+          const retrySec = res.data?.retryAfterSeconds || 60;
+          const rateMsg = t('common.wallet.rate_limited', { seconds: retrySec, defaultValue: `Too many attempts. Please try again in ${retrySec} seconds.` });
+          setError(rateMsg);
+          AppToast.showError(rateMsg, t('common.error', 'Error'));
           return;
         }
 
@@ -350,6 +399,16 @@ export default function SwapTokensScreen() {
           return;
         }
 
+        if (res.status === 400 && (res.data?.status === 'swap_in_progress' || res.data?.error?.includes('swap_in_progress') || res.data?.error?.includes('A swap is already waiting'))) {
+          setLoading(false);
+          setIsAuthorizing(false);
+          setSwapStep(null);
+          const msg = t('common.wallet.swap_ui.duplicate_in_progress', 'A swap is already waiting for confirmation or processing. Please wait for it to complete.');
+          setInfoMsg(msg);
+          AppToast.showInfo(msg, t('common.notice', 'Notice'));
+          return;
+        }
+
         if (res.status === 400 && res.data?.status === 'requires-handshake') {
           const txId = res.data.txId;
           setActiveTxHash(txId);
@@ -357,10 +416,27 @@ export default function SwapTokensScreen() {
           setTxStatus('awaiting-approval');
           setSignerEmail(res.data.signerAddress?.replace('email:', '') || user?.email);
           setLoading(false);
+          setIsAuthorizing(false);
+          setInfoMsg(null);
           return;
         }
 
         if (res.status === 400 && res.data?.status === 'requires-approval') {
+          const spender = res.data.spender;
+          // Point 4: Check existing allowance first and skip approval step if already enough
+          try {
+            const checkRes = await swapService.checkApproval(fromToken, fromChain, spender, fromAmount, authToken);
+            if (checkRes && checkRes.needsApproval === false) {
+              console.log('[SwapTokensScreen] Token allowance is already sufficient. Skipping approval step.');
+              setHadApprovalStep(false);
+              setSwapStep('swap');
+              handleSwap(true);
+              return;
+            }
+          } catch (chkErr) {
+            console.warn('[SwapTokensScreen] Could not check existing allowance:', chkErr?.message || chkErr);
+          }
+
           // Never call approve twice for the same request
           if (approveCalledRef.current) {
             setLoading(false);
@@ -385,6 +461,8 @@ export default function SwapTokensScreen() {
             setTxStatus('awaiting-approval');
             setSignerEmail(approveRes.data?.signerAddress?.replace('email:', '') || user?.email || user?.user_metadata?.email || 'your registered email');
             setLoading(false);
+            setIsAuthorizing(false);
+            setInfoMsg(null);
             return;
           }
           if (!approveRes.error && approveRes.data?.txHash) {
@@ -413,12 +491,25 @@ export default function SwapTokensScreen() {
   };
 
   const handleAuthorize = async () => {
-    if (actionInFlightRef.current || sdkPromptOpen) return; // Crossmint prompt already open or action in flight
+    if (actionInFlightRef.current || sdkPromptOpen) return;
     actionInFlightRef.current = true;
     try {
       setIsAuthorizing(true);
+      setError(null);
 
-      const chainName = fromChain === 'solana' ? 'solana' : 'polygon';
+      // Point 2: Stop and show error if chain is missing (never default to a chain)
+      const chainName = normalizeChainName(fromChain);
+      if (!chainName) {
+        const chainErr = t('common.wallet.swap_ui.missing_chain', 'Blockchain network is missing. Please select a valid network.');
+        setError(chainErr);
+        AppToast.showError(chainErr, t('common.error', 'Error'));
+        setIsAuthorizing(false);
+        return;
+      }
+
+      // Point 1: Fully close our modal and wait for dismiss to finish before calling approve() or swap signature
+      await closeConfirmModalAndWait();
+
       let activeWallet = null;
       if (typeof getWallet === 'function') {
         activeWallet = await getWallet({ chain: chainName });
@@ -431,12 +522,11 @@ export default function SwapTokensScreen() {
       const emailToUse = signerEmail || user?.email;
 
       await activeWallet.useSigner({ type: 'email', email: emailToUse });
-      // Hide our modal while Crossmint's OTP prompt is shown
-      setSdkPromptOpen(true);
-      sdkPromptOpenRef.current = true;
-      approveCalledRef.current = true;
+
       try {
         await activeWallet.approve({ transactionId: activeTxHash });
+        approveCalledRef.current = true;
+        setTxStatus(null);
       } finally {
         setSdkPromptOpen(false);
         sdkPromptOpenRef.current = false;
@@ -444,56 +534,62 @@ export default function SwapTokensScreen() {
 
       pollTransactionStatus(activeTxHash);
     } catch (e) {
-      // Use console.log instead of console.error to prevent giant red toasts in dev mode
-      console.log("Authorize error", e);
+      console.error('[SwapTokensScreen] Authorize error:', e);
 
-      let errMsg = String(e.message || e);
-
-      // Try to parse JSON errors so it doesn't look ugly
+      let errMsg = String(e?.message || e);
       try {
         const parsed = JSON.parse(e.message);
         if (parsed && parsed.message) {
           errMsg = parsed.message;
         }
-      } catch (err) {
-        // Not JSON, leave as is
-      }
+      } catch (err) {}
 
       // Handle already approved errors gracefully
-      if (errMsg.includes("Already has the required number of approvals")) {
+      if (errMsg.includes('Already has the required number of approvals')) {
         pollTransactionStatus(activeTxHash);
         return;
       }
 
-      // If the user simply closed the popup or rejected it, show a friendly info message
-      if (errMsg.includes("AuthRejectedError") || errMsg.includes("Authentication was rejected")) {
-        if (approveCalledRef.current) {
-          silentPollingRef.current = true;
-          setInfoMsg(t('common.wallet.swap_ui.tx_already_submitted', 'This transaction was already submitted for signing. It may still complete. Check your history.'));
-          setTxStatus(null);
-          return;
-        }
-        setInfoMsg(t('sendMoney.transfer_not_confirmed', 'Transfer not confirmed. No funds were sent.'));
-        stopPolling();
-        silentPollingRef.current = false;
-        setTxStatus(null);
-        setSwapStep(null);
-        setHadApprovalStep(false);
-        return;
-      }
-
-      // Show error in the main UI
-      if (approveCalledRef.current) {
-        silentPollingRef.current = true;
-        setInfoMsg(t('common.wallet.swap_ui.tx_already_submitted', 'This transaction was already submitted for signing. It may still complete. Check your history.'));
-        setTxStatus(null);
-        return;
-      }
-      setError(errMsg);
       stopPolling();
-      setTxStatus(null); // Close the modal so they can see the error
+      setTxStatus(null);
       setSwapStep(null);
       setHadApprovalStep(false);
+
+      // Point 5: Show translated toast (cancelled, code failed, insufficient balance, network error) and log real error
+      const errLower = errMsg.toLowerCase();
+      let translatedToast = errMsg;
+
+      if (
+        errMsg.includes('AuthRejectedError') ||
+        errMsg.includes('Authentication was rejected') ||
+        errLower.includes('user cancel') ||
+        errLower.includes('cancelled') ||
+        errLower.includes('canceled')
+      ) {
+        translatedToast = t('common.wallet.swap_ui.cancelled', 'Swap authorization cancelled.');
+      } else if (
+        errLower.includes('code') ||
+        errLower.includes('otp') ||
+        errLower.includes('invalid') ||
+        errLower.includes('verification')
+      ) {
+        translatedToast = t('common.wallet.swap_ui.code_failed', 'Verification code failed. Please check the code and try again.');
+      } else if (
+        errLower.includes('insufficient') ||
+        errLower.includes('balance')
+      ) {
+        translatedToast = t('common.wallet.swap_ui.insufficient_balance', 'INSUFFICIENT BALANCE');
+      } else if (
+        errLower.includes('network') ||
+        errLower.includes('timeout') ||
+        errLower.includes('fetch') ||
+        errLower.includes('connection')
+      ) {
+        translatedToast = t('common.wallet.swap_ui.network_error', 'Network error. Please try again.');
+      }
+
+      setError(translatedToast);
+      AppToast.showError(translatedToast, t('common.error', 'Error'));
     } finally {
       setIsAuthorizing(false);
       actionInFlightRef.current = false;
@@ -704,9 +800,9 @@ export default function SwapTokensScreen() {
         {/* Sticky Swap Action Footer */}
         <ScreenFooter borderTop={true} backgroundColor="#FAFAFA" borderTopColor="#E2E8F0" paddingTop={10} style={{ paddingHorizontal: 16 }}>
           <TouchableOpacity
-            style={[styles.btnAction, (loading || !fromAmount || !isSwapReady || actionInFlightRef.current) && styles.btnActionDisabled]}
+            style={[styles.btnAction, (loading || !fromAmount || !isSwapReady || actionInFlightRef.current || isAuthorizing || txStatus === 'awaiting-approval' || !!pollIntervalRef.current) && styles.btnActionDisabled]}
             onPress={() => handleSwap(false)}
-            disabled={loading || !fromAmount || !isSwapReady || actionInFlightRef.current}
+            disabled={loading || !fromAmount || !isSwapReady || actionInFlightRef.current || isAuthorizing || txStatus === 'awaiting-approval' || !!pollIntervalRef.current}
             activeOpacity={0.85}
           >
             {loading ? (
@@ -752,7 +848,7 @@ export default function SwapTokensScreen() {
       </View>
 
       {/* Modern, Compact Signature Modal */}
-      <Modal visible={txStatus === 'awaiting-approval' && !sdkPromptOpen} transparent animationType="fade">
+      <Modal visible={txStatus === 'awaiting-approval' && !sdkPromptOpen} transparent animationType="fade" onDismiss={handleModalDismiss}>
         <View style={[styles.modalOverlay, { paddingBottom: Math.max(insets.bottom, 16) }]}>
           <View style={styles.modalContent}>
 

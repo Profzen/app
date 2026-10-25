@@ -1,3 +1,5 @@
+import { normalizeChainName } from './tokensByChain';
+
 // Estimated Crossmint network fees paid in USDC per chain
 export const ESTIMATED_NETWORK_FEES_USDC = {
   polygon: 0,
@@ -9,7 +11,6 @@ export const ESTIMATED_NETWORK_FEES_USDC = {
 };
 
 export const getEstimatedNetworkFee = (chain) => {
-  const c = (chain || "").toLowerCase().replace(/\s+/g, "");
-  if (c === "bnbchain" || c === "bnb") return ESTIMATED_NETWORK_FEES_USDC.bsc;
+  const c = normalizeChainName(chain);
   return ESTIMATED_NETWORK_FEES_USDC[c] ?? ESTIMATED_NETWORK_FEES_USDC.default;
 };

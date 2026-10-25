@@ -83,8 +83,15 @@ export default function ContactHistoryScreen({ route }) {
 
             walletList.forEach(tx => {
               const toAddr = (tx.to || '').toLowerCase();
-              const metaName = (tx.metadata?.recipientName || tx.metadata?.beneficiary_name || '').toLowerCase().trim();
-              const metaPhone = (tx.metadata?.beneficiary_phone || '').replace(/[^0-9]/g, '');
+              let meta = {};
+              if (tx.metadata) {
+                if (typeof tx.metadata === 'object') meta = tx.metadata;
+                else if (typeof tx.metadata === 'string') {
+                  try { meta = JSON.parse(tx.metadata); } catch (e) {}
+                }
+              }
+              const metaName = (meta.recipientName || meta.beneficiary_name || '').toLowerCase().trim();
+              const metaPhone = (meta.beneficiary_phone || '').replace(/[^0-9]/g, '');
 
               const isMatch = (cEvm && toAddr === cEvm) ||
                               (cSol && toAddr === cSol) ||

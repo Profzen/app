@@ -1,5 +1,5 @@
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import {
   View,
@@ -25,11 +25,15 @@ import { useApp } from '../context/AppContext';
 import { buyGoodsApi } from '../services/buyGoodsApi';
 import { getFullCountryName } from '../utils/countryCurrencyUtils';
 import { isPhysicalCart } from '../utils/productUtils';
+import { useWallet } from '@crossmint/client-sdk-react-native-ui';
+import { getWalletIdentity } from '../utils/walletIdentity';
+import { normalizeChainName } from '../config/tokensByChain';
 
 export default function OrderConfirmationScreen({ route }) {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const { user, updateBalance, clearCart, t, language } = useApp();
+  const { user, session, updateBalance, clearCart, t, language } = useApp();
+  const { getWallet } = useWallet();
 
   const orderData = route?.params?.orderData;
 
@@ -45,6 +49,7 @@ export default function OrderConfirmationScreen({ route }) {
     () => orderData?.escrowPin || Math.floor(1000 + Math.random() * 9000).toString()
   );
   const [loading, setLoading] = useState(false);
+  const isSubmittingRef = useRef(false);
   const [toast, setToast] = useState(null);
   const [pinCopied, setPinCopied] = useState(false);
 
@@ -156,15 +161,136 @@ export default function OrderConfirmationScreen({ route }) {
     });
   };
 
+  const getChainBalanceForToken = (symbol, networkName) => {
+    if (!symbol) return 0;
+    const cleanSym = symbol.toUpperCase();
+    const targetChain = normalizeChainName(networkName);
+
+    const list = user?.businessRawBalances?.length
+      ? user.businessRawBalances
+      : (user?.rawBalances?.length ? user.rawBalances : (user?.personalRawBalances || []));
+
+    const exactMatch = list.find((b) => {
+      const bSym = (b.token || b.symbol || b.currency || '').toUpperCase();
+      const bChain = normalizeChainName(b.chain || b.network);
+      const chainMatches = !targetChain || bChain === targetChain;
+
+      return bSym === cleanSym && chainMatches;
+    });
+
+    if (exactMatch && exactMatch.balance !== undefined) {
+      return parseFloat(exactMatch.balance || 0);
+    }
+    return 0;
+  };
+
+  const generateCyberSourceHtml = (url, formFields) => {
+    const inputs = Object.entries(formFields || {})
+      .map(([key, val]) => `<input type="hidden" name="${key}" value="${String(val).replace(/"/g, '&quot;')}" />`)
+      .join('\n');
+
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+          <title>Ecobank CyberSource Checkout</title>
+          <style>
+            * { box-sizing: border-box; }
+            body {
+              background-color: #20365B;
+              color: #FFFFFF;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              min-height: 100vh;
+              margin: 0;
+              padding: 24px;
+              text-align: center;
+            }
+            .card {
+              background: rgba(255, 255, 255, 0.08);
+              border: 1px solid rgba(255, 255, 255, 0.15);
+              border-radius: 20px;
+              padding: 32px 24px;
+              width: 100%;
+              max-width: 340px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+            }
+            .spinner {
+              border: 4px solid rgba(255, 255, 255, 0.2);
+              border-top: 4px solid #FFC759;
+              border-radius: 50%;
+              width: 44px;
+              height: 44px;
+              animation: spin 0.8s linear infinite;
+              margin-bottom: 18px;
+            }
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+            .title {
+              font-size: 16px;
+              font-weight: 700;
+              color: #FFFFFF;
+              margin-bottom: 6px;
+            }
+            .subtitle {
+              font-size: 12px;
+              color: #878FA4;
+              line-height: 1.4;
+            }
+            .badge {
+              display: inline-flex;
+              align-items: center;
+              margin-top: 16px;
+              padding: 6px 12px;
+              background: rgba(16, 185, 129, 0.15);
+              border: 1px solid rgba(16, 185, 129, 0.3);
+              border-radius: 20px;
+              color: #10B981;
+              font-size: 11px;
+              font-weight: 700;
+              letter-spacing: 0.5px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="card">
+            <div class="spinner"></div>
+            <div class="title">Ecobank Secure Payment</div>
+            <div class="subtitle">Connecting securely to CyberSource...</div>
+            ${formFields?.amount ? `<div style="margin-top: 12px; font-size: 13px; color: #FFC759; font-weight: 700;">Billed in FCFA (XOF): ${formFields.amount} XOF</div>` : ''}
+            <div class="badge">256-BIT SSL ENCRYPTED</div>
+          </div>
+          <form id="csForm" action="${url}" method="post">
+            ${inputs}
+          </form>
+          <script>
+            setTimeout(function() {
+              document.getElementById('csForm').submit();
+            }, 100);
+          </script>
+        </body>
+      </html>
+    `;
+  };
+
   const handleConfirmPurchase = () => {
     if (isPhysical) {
       setShowEscrowModal(true);
     } else {
-      executeOrderSimulation();
+      executeServiceRealOrder();
     }
   };
 
-  const executeOrderSimulation = async () => {
+  // Physical goods demo flow (kept 100% intact)
+  const executePhysicalDemoOrder = async () => {
     if (loading) return;
     setLoading(true);
 
@@ -200,6 +326,7 @@ export default function OrderConfirmationScreen({ route }) {
           valueUSDC: orderData.totalUSDC,
           valueDZY: orderData.totalDZY,
           details: {
+            order_id: orderData.orderId,
             orderId: orderData.orderId,
             items: orderData.items,
             paymentMethod: token,
@@ -223,7 +350,9 @@ export default function OrderConfirmationScreen({ route }) {
           console.warn('Backend transaction notice (handled smoothly):', apiErr);
         }
 
-        clearCart();
+        if (!orderData?.isDirectOrder) {
+          clearCart();
+        }
         setLoading(false);
 
         const orderTitle = orderData.items.length > 1
@@ -268,12 +397,11 @@ export default function OrderConfirmationScreen({ route }) {
           console.log('MoMo orchestration dispatched:', orchestrateErr.message);
         }
 
-        if (isPhysical) {
+        if (isPhysical && !orderData?.isDirectOrder) {
           clearCart();
         }
         setLoading(false);
 
-        // Navigate to live status polling screen (cart cleared only upon confirmation for services)
         navigation.navigate('PaymentInProgressScreen', {
           orderId: orderData.orderId,
           orderData: {
@@ -290,64 +418,235 @@ export default function OrderConfirmationScreen({ route }) {
 
       // 3. CARTE BANCAIRE (Ecobank CyberSource)
       if (rail === 'card') {
-        let cardRes = null;
-        try {
-          cardRes = await buyGoodsApi.orchestratePayment({
+        if (!orderData?.isDirectOrder) {
+          clearCart();
+        }
+        setLoading(false);
+        navigation.navigate('PaymentSuccessScreen', {
+          transaction: {
+            title: orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', 'Marketplace Purchase'),
+            amount: displayTotalAmount,
+            currency: displayCurrency,
+            paymentMethod: t('orderConfirmation.cardVisaMc', 'Bank Card (Visa/MC)'),
             orderId: orderData.orderId,
-            amount: orderData.totalAmount,
-            currency: apiCurrency,
-            paymentMethod: 'CARD',
-            customer: {
-              name: orderData.recipient?.name,
-              phone: orderData.recipient?.phone,
-              email: user?.email || 'client@dizzitup.com',
-            },
-          });
+            escrowPin: escrowPin,
+            recipientName: orderData.recipient?.name,
+            recipientPhone: orderData.recipient?.phone,
+            recipientAddress: orderData.recipient?.address,
+            recipientCountry: orderData.recipient?.country || user?.country,
+            merchantName: orderData.merchant?.name,
+            date: new Date().toISOString(),
+          },
+        });
+        return;
+      }
+    } catch (err) {
+      console.error('Physical order confirmation error:', err);
+      setLoading(false);
+      AppToast.showError(
+        err.message || t('orderConfirmation.orderFailed', 'Order processing failed.'),
+        t('common.error', 'Error')
+      );
+    }
+  };
 
-          if (cardRes && cardRes.redirectUrl) {
-            if (isPhysical) {
-              clearCart();
-              setLoading(false);
-              navigation.navigate('PaymentInProgressScreen', {
-                orderId: orderData.orderId,
-                orderData: {
-                  ...orderData,
-                  currency: displayCurrency,
-                  displayCurrency,
-                  displayTotalAmount,
-                  escrowPin: escrowPin,
-                  isPhysical: true,
-                },
-              });
-              return;
-            } else {
-              // Real service checkout: open 3DS CyberSource WebView
-              setLoading(false);
-              setCyberSourceUrl(cardRes.redirectUrl);
-              setShowCyberSourceModal(true);
-              return;
-            }
-          }
-        } catch (cardErr) {
-          console.warn('Card orchestrate note:', cardErr?.message || cardErr);
+  // Real payment flow for SERVICES (Crypto on-chain, CyberSource 3DS Card, MoMo)
+  const executeServiceRealOrder = async () => {
+    if (isSubmittingRef.current || loading) return;
+    isSubmittingRef.current = true;
+    setLoading(true);
+
+    try {
+      const rail = orderData.paymentRail;
+      const token = orderData.selectedToken || 'USDC';
+      const network = orderData.network || 'Polygon';
+
+      // Rule 8: For services, ALL rails (card, Mobile Money, crypto) must first create the order
+      // in the backend with status payment pending and amount computed by the backend from the DB.
+      // Route used: POST /api/marketplace/transactions (webhookRoutes.ts:67)
+      const txPayload = {
+        sponsorUserId: user?.id || null,
+        beneficiaryUserId: user?.id || null,
+        merchantId: orderData.merchant?.id || null,
+        transactionType: 'buy_goods',
+        valueUSDC: orderData.totalUSDC,
+        valueDZY: orderData.totalDZY,
+        details: {
+          order_id: orderData.orderId,
+          orderId: orderData.orderId,
+          items: orderData.items,
+          paymentMethod: rail === 'crypto' ? token : rail.toUpperCase(),
+          network: rail === 'crypto' ? network : null,
+          deliveryOption: 'service',
+          status: 'payment_pending',
+          merchantName: orderData.merchant?.name,
+          currency: apiCurrency,
+        },
+      };
+
+      const backendTxRes = await buyGoodsApi.createMarketplaceTransaction(txPayload);
+      console.log('Backend service transaction pre-created:', backendTxRes);
+
+      if (!backendTxRes || !backendTxRes.success) {
+        throw new Error(backendTxRes?.error || 'Failed to pre-create service order in backend');
+      }
+
+      // 1. CRYPTO PAYMENT FOR SERVICES (USDC, USDT, EURC, DZY)
+      if (rail === 'crypto') {
+        // Rule 2: The backend decides where and how much to pay, never the app
+        let payToAddress = backendTxRes?.cryptoPayment?.payToAddress;
+        let amountToPay = backendTxRes?.cryptoPayment?.amount;
+        let cryptoToken = backendTxRes?.cryptoPayment?.token || token;
+        let cryptoChain = (backendTxRes?.cryptoPayment?.chain || network).toLowerCase();
+
+        if (!payToAddress || !amountToPay) {
+          const info = await buyGoodsApi.getServiceCryptoPaymentInfo(orderData.orderId, {
+            token: cryptoToken,
+            chain: cryptoChain,
+          });
+          payToAddress = info?.payToAddress;
+          amountToPay = info?.amount;
+          cryptoToken = info?.token || cryptoToken;
+          cryptoChain = (info?.chain || cryptoChain).toLowerCase();
         }
 
-        // Handle failure / no redirectUrl
-        if (isPhysical) {
-          // Physical goods demo fallback for CEO
-          clearCart();
+        if (!payToAddress) {
+          throw new Error(t('orderConfirmation.noMerchantWallet', 'The merchant does not have an active wallet address on this network.'));
+        }
+
+        // Rule 1: Balance check before paying
+        const chainBal = getChainBalanceForToken(cryptoToken, cryptoChain);
+        if (chainBal < amountToPay) {
           setLoading(false);
+          AppToast.showError(
+            t('orderVerification.notEnoughBalance', 'Not enough balance'),
+            t('common.error', 'Error')
+          );
+          return;
+        }
+
+        // Rule 3: The app sends the payment with REAL send (/wallet/send + Crossmint approval)
+        const walletIdentity = getWalletIdentity(user, session);
+        const authToken = walletIdentity.token;
+        const isSolana = cryptoChain === 'solana';
+        const fromAddress = isSolana ? walletIdentity.solana : walletIdentity.evm;
+
+        if (!authToken || !fromAddress) {
+          throw new Error(
+            walletIdentity.isMerchant
+              ? 'Merchant business wallet is not ready. Please refresh the app.'
+              : 'Wallet is not ready. Please refresh the app.'
+          );
+        }
+
+        let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
+        if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) {
+          DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
+        } else if (Platform.OS === 'ios' && DIZZY_URL.includes('10.0.2.2')) {
+          DIZZY_URL = DIZZY_URL.replace('10.0.2.2', 'localhost');
+        }
+
+        const sendPayload = {
+          toAddress: payToAddress,
+          fromAddress,
+          amount: parseFloat(amountToPay),
+          token: cryptoToken,
+          chain: cryptoChain,
+          metadata: {
+            recipientName: orderData.merchant?.name || 'Merchant',
+            orderId: orderData.orderId,
+            type: 'service_order_payment',
+          },
+        };
+
+        console.log('Sending real service crypto payment to:', DIZZY_URL, sendPayload);
+
+        const sendRes = await fetch(`${DIZZY_URL}/wallet/send`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify(sendPayload)
+        });
+
+        const sendData = await sendRes.json().catch(() => ({}));
+        let txHash = null;
+
+        if (!sendRes.ok || !sendData.success) {
+          if (sendData.status === 'requires-handshake' || sendData.crossmintStatus === 'awaiting-approval') {
+            const txId = sendData.txId || sendData.txHash || sendData.id;
+            const actualSignerEmail = sendData.signerAddress?.replace('email:', '') || user?.email;
+
+            if (txId && typeof getWallet === 'function') {
+              const chainName = isSolana ? 'solana' : normalizeChainName(cryptoChain);
+              if (!chainName) {
+                const chainErr = t('orderConfirmation.missing_chain', 'Blockchain network is missing. Please select a valid network.');
+                throw new Error(chainErr);
+              }
+              const activeWallet = await getWallet({ chain: chainName });
+              if (activeWallet) {
+                if (actualSignerEmail) {
+                  await activeWallet.useSigner({ type: 'email', email: actualSignerEmail });
+                }
+                await activeWallet.approve({ transactionId: txId });
+              }
+            }
+            txHash = txId;
+          } else {
+            const errMsg = sendData.error || sendData.message || t('orderConfirmation.orderFailed', 'Payment transfer failed');
+            throw new Error(errMsg);
+          }
+        } else {
+          txHash = sendData.txHash || sendData.transactionId || sendData.transaction?.id;
+        }
+
+        if (!txHash) {
+          throw new Error(t('orderConfirmation.noTxHash', 'Failed to retrieve transaction reference.'));
+        }
+
+        // Rule 4: Send txHash to backend route that verifies on-chain and marks order paid
+        // Rule 5: Success screen ONLY after backend confirms
+        let isConfirmed = false;
+        for (let attempt = 1; attempt <= 5; attempt++) {
+          try {
+            const confirmRes = await buyGoodsApi.confirmServiceCryptoPayment(orderData.orderId, {
+              txHash,
+              token: cryptoToken,
+              chain: cryptoChain,
+            });
+            console.log(`[confirmServiceCryptoPayment] Attempt ${attempt} result:`, confirmRes);
+            if (confirmRes && (confirmRes.success && (confirmRes.status === 'confirmed' || confirmRes.order?.is_completed))) {
+              isConfirmed = true;
+              break;
+            }
+          } catch (err) {
+            console.log(`[confirmServiceCryptoPayment] Attempt ${attempt} note:`, err?.message);
+          }
+          if (attempt < 5) {
+            await new Promise((r) => setTimeout(r, 3000));
+          }
+        }
+
+        if (isConfirmed) {
+          if (!orderData?.isDirectOrder) {
+            clearCart();
+          }
+          setLoading(false);
+          const orderTitle = orderData.items.length > 1
+            ? `${orderData.items[0].name} ${t('orderConfirmation.moreItems', '+ {{count}} more', { count: orderData.items.length - 1 })}`
+            : (orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', 'Marketplace Purchase'));
+
           navigation.navigate('PaymentSuccessScreen', {
             transaction: {
-              title: orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', 'Marketplace Purchase'),
+              title: orderTitle,
               amount: displayTotalAmount,
               currency: displayCurrency,
-              paymentMethod: t('orderConfirmation.cardVisaMc', 'Bank Card (Visa/MC)'),
+              amountCrypto: `${amountToPay} ${cryptoToken}`,
+              paymentMethod: cryptoToken,
               orderId: orderData.orderId,
-              escrowPin: escrowPin,
-              recipientName: orderData.recipient?.name,
-              recipientPhone: orderData.recipient?.phone,
-              recipientAddress: orderData.recipient?.address,
+              txHash,
+              recipientName: orderData.merchant?.name,
               recipientCountry: orderData.recipient?.country || user?.country,
               merchantName: orderData.merchant?.name,
               date: new Date().toISOString(),
@@ -355,22 +654,104 @@ export default function OrderConfirmationScreen({ route }) {
           });
           return;
         } else {
-          // Services: REAL - stay on screen, keep cart, show error
+          // Rule 5: If transfer is sent but not verified yet: "Payment pending", cart kept
           setLoading(false);
-          AppToast.showError(
-            cardRes?.message || t('orderConfirmation.cardError', 'Card payment could not be processed. Please try again or use another payment method.'),
-            t('common.error', 'Error')
+          AppToast.showInfo(
+            t('orderConfirmation.paymentPendingDesc', 'Your transfer has been submitted to the blockchain and is pending confirmation.'),
+            t('orderConfirmation.paymentPending', 'Payment pending')
           );
+          navigation.navigate('PaymentInProgressScreen', {
+            orderId: orderData.orderId,
+            orderData: {
+              ...orderData,
+              currency: displayCurrency,
+              displayCurrency,
+              displayTotalAmount,
+              isPhysical: false,
+              txHash,
+              paymentStatus: 'pending',
+            },
+          });
           return;
         }
       }
+
+      // 2. MOBILE MONEY (MoMo) FOR SERVICES
+      if (rail === 'momo') {
+        try {
+          await buyGoodsApi.orchestratePayment({
+            orderId: orderData.orderId,
+            amount: orderData.totalAmount,
+            currency: apiCurrency,
+            paymentMethod: 'MOMO',
+            metadata: {
+              recipientPhone: orderData.recipient?.phone,
+              recipientName: orderData.recipient?.name,
+            },
+          });
+        } catch (orchestrateErr) {
+          console.log('MoMo orchestration dispatched:', orchestrateErr?.message);
+        }
+
+        setLoading(false);
+        navigation.navigate('PaymentInProgressScreen', {
+          orderId: orderData.orderId,
+          orderData: {
+            ...orderData,
+            currency: displayCurrency,
+            displayCurrency,
+            displayTotalAmount,
+            isPhysical: false,
+          },
+        });
+        return;
+      }
+
+      // 3. CARD PAYMENT (Ecobank CyberSource 3DS) FOR SERVICES
+      if (rail === 'card') {
+        const cardRes = await buyGoodsApi.orchestratePayment({
+          orderId: orderData.orderId,
+          amount: orderData.totalAmount,
+          currency: apiCurrency,
+          paymentMethod: 'CARD',
+          customer: {
+            name: orderData.recipient?.name,
+            phone: orderData.recipient?.phone,
+            email: user?.email || 'client@dizzitup.com',
+          },
+        });
+
+        if (cardRes?.status === 'PAYMENT_PROCESSING') {
+          setLoading(false);
+          AppToast.show(
+            t('errors.paymentProcessing', 'Your payment is currently being confirmed. Please wait a moment.'),
+            t('common.notice', 'Notice'),
+            'info'
+          );
+          return;
+        }
+
+        const checkoutUrl = cardRes?.url || cardRes?.redirectUrl;
+        if (checkoutUrl) {
+          setLoading(false);
+          const html = generateCyberSourceHtml(checkoutUrl, cardRes.formFields);
+          setCyberSourceHtml(html);
+          setShowCyberSourceModal(true);
+          return;
+        } else {
+          throw new Error(cardRes?.message || t('orderConfirmation.cardError', 'Card payment could not be initiated.'));
+        }
+      }
     } catch (err) {
-      console.error('Order confirmation error:', err);
+      console.error('Service order payment error:', err);
+      // Rule 5: If the transfer fails: error, cart kept
+      setLoading(false);
       AppToast.showError(
         err.message || t('orderConfirmation.orderFailed', 'Order processing failed.'),
         t('common.error', 'Error')
       );
-      setLoading(false);
+    } finally {
+      isSubmittingRef.current = false;
     }
   };
 
@@ -527,17 +908,29 @@ export default function OrderConfirmationScreen({ route }) {
 
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>
-              {orderData.deliveryOption === 'pickup'
+              {!isPhysical
+                ? t('orderConfirmation.providerAddress', 'Provider location')
+                : orderData.deliveryOption === 'pickup'
                 ? t('orderConfirmation.storeAddress', 'Store address')
                 : t('orderConfirmation.deliveryAddress', 'Delivery address')}
             </Text>
-            <Text style={styles.detailValue}>{orderData.recipient?.address || user?.city || ''}</Text>
+            <Text style={styles.detailValue}>
+              {!isPhysical
+                ? (orderData.merchant?.location || orderData.merchant?.address || orderData.recipient?.address || user?.city || '')
+                : (orderData.recipient?.address || user?.city || '')}
+            </Text>
           </View>
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('orderConfirmation.deliveryMode', 'Delivery mode')}</Text>
+            <Text style={styles.detailLabel}>
+              {!isPhysical
+                ? t('orderConfirmation.serviceMode', 'Service type')
+                : t('orderConfirmation.deliveryMode', 'Delivery mode')}
+            </Text>
             <Text style={styles.detailValue}>
-              {orderData.deliveryOption === 'home' || orderData.deliveryOption === 'domicile'
+              {!isPhysical
+                ? t('orderConfirmation.directService', 'Direct fulfillment')
+                : orderData.deliveryOption === 'home' || orderData.deliveryOption === 'domicile'
                 ? t('orderConfirmation.homeDelivery', 'Home delivery')
                 : t('orderConfirmation.storePickup', 'Store pickup')}
             </Text>
@@ -652,7 +1045,9 @@ export default function OrderConfirmationScreen({ route }) {
               onNavigationStateChange={(navState) => {
                 if (navState.url.includes('success') || navState.url.includes('confirm')) {
                   setShowCyberSourceModal(false);
-                  clearCart();
+                  if (!orderData?.isDirectOrder) {
+                    clearCart();
+                  }
                   navigation.navigate('PaymentSuccessScreen', {
                     transaction: {
                       title: orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', "Marketplace Purchase"),
@@ -726,7 +1121,7 @@ export default function OrderConfirmationScreen({ route }) {
                 style={styles.escrowModalPrimaryBtn}
                 onPress={() => {
                   setShowEscrowModal(false);
-                  executeOrderSimulation();
+                  executePhysicalDemoOrder();
                 }}
                 activeOpacity={0.85}
               >

@@ -972,7 +972,13 @@
         "swap_success_title": "Swap successful!",
         "swap_success_body": "Successfully swapped {{fromAmount}} {{fromToken}} for {{toAmount}} {{toToken}}",
         "done": "Done",
-        "approval_confirmed": "Approval confirmed. Tap Execute Swap to continue."
+        "approval_confirmed": "Approval confirmed. Tap Execute Swap to continue.",
+        "authorizing_on_network": "Authorizing on the network...",
+        "cancelled": "Swap authorization cancelled.",
+        "code_failed": "Verification code failed. Please check the code and try again.",
+        "network_error": "Network error. Please try again.",
+        "duplicate_in_progress": "A swap is already in progress. Please wait for it to complete.",
+        "missing_chain": "Blockchain network is missing. Please select a valid network."
       },
       "topup": {
         "choose_method": "Choose Your Payment Method",
@@ -3547,7 +3553,15 @@
   "errors": {
     "linkedEmailNotFound": "This email is not registered as a personal account. Please create a user account first.",
     "linkedEmailError": "Failed to send verification code. Please try again.",
-    "error": "Error"
+    "error": "Error",
+    "alreadyPaid": "This order has already been paid and completed.",
+    "paymentProcessing": "Your payment is currently being confirmed. Please wait a moment.",
+    "paymentInitFailed": "Unable to initiate payment. Please try again.",
+    "cardDeclined": "Card payment was declined or could not be processed. Please check your card or try another method.",
+    "networkError": "Connection issue. Please check your internet connection and try again.",
+    "serverError": "A temporary error occurred. Please try again in a moment.",
+    "insufficientBalance": "Insufficient balance for this payment. Please choose another method or top up.",
+    "transferFailed": "Payment transfer could not be completed. Please try again."
   },
   "search": {
     "metaPlaceholder": "All Africa Meta Search: Find products, stores, services...",
@@ -4827,10 +4841,18 @@
     "articles": "items",
     "escrowDeployed": "Escrow contract verified on {{network}}",
     "securityDescRental": "Your funds are protected until your arrival (Check-in).",
-    "securityDescService": "Your funds are protected until the service is completed."
+    "securityDescService": "Your funds are protected until the service is completed.",
+    "notEnoughBalance": "Not enough balance",
+    "serviceProviderTitle": "Service Provider",
+    "serviceFulfillmentNotice": "Direct service rendered by this provider."
   },
   "orderConfirmation": {
     "storeAddress": "Store address",
+    "providerAddress": "Provider location",
+    "serviceMode": "Service type",
+    "directService": "Direct fulfillment",
+    "paymentPending": "Payment pending",
+    "paymentPendingDesc": "Your transfer has been submitted to the blockchain and is pending confirmation.",
     "title": "Summary & Confirmation",
     "alertTitle": "Review and confirm your purchase",
     "alertDesc": "Your payment will be securely sent to the seller after blockchain confirmation.",
@@ -4857,6 +4879,7 @@
     "orderRefCopied": "Order reference {{id}} copied to clipboard.",
     "pinCopiedTitle": "PIN Code Copied!",
     "pinCopied": "Secret PIN code {{pin}} copied.",
+    "missing_chain": "Blockchain network is missing. Please select a valid network.",
     "securityTitle": "DizzitUp On-chain Escrow Protection",
     "securityTitleNeutral": "Secure Payment",
     "securityDesc": "Your funds remain protected in blockchain escrow. The merchant is only paid once your items are delivered and verified.",
@@ -5212,6 +5235,7 @@
     "view_on_polyscan": "View on PolygonScan",
     "view_on_explorer": "View on Block Explorer",
     "sending_in_progress": "Sending {{amount}} {{token}}...",
+    "missing_chain": "Blockchain network is missing. Please select a valid network.",
     "broadcasting_node": "Submitting transaction to {{chain}} network...",
     "secured_blockchain_tx": "SECURED BLOCKCHAIN TRANSACTION",
     "tx_error_title": "Transaction Notice",
@@ -5865,6 +5889,7 @@
     "payWithCard": "Pay with Card",
     "payWithCrypto": "Pay with Crypto",
     "unavailableInCountry": "Unavailable in {{country}}",
+    "notAvailableInCountry": "Not available in {{country}}",
     "switchCountry": "Change country",
     "momoUnavailableExplanation": "Mobile Money is not available for {{country}}. It is active in supported African countries (Benin, Ivory Coast, Senegal, Togo, Kenya, Ghana...).",
     "paymentRegion": "Payment region:",

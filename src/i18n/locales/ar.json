@@ -2458,7 +2458,13 @@
         "swap_success_title": "تم التبادل بنجاح!",
         "swap_success_body": "تم تبادل {{fromAmount}} {{fromToken}} بنجاح مقابل {{toAmount}} {{toToken}}",
         "done": "تم",
-        "approval_confirmed": "تم تأكيد الموافقة. اضغط على تنفيذ التبادل للمتابعة."
+        "approval_confirmed": "تم تأكيد الموافقة. اضغط على تنفيذ التبادل للمتابعة.",
+        "authorizing_on_network": "جارٍ التفويض على الشبكة...",
+        "cancelled": "تم إلغاء تفويض المبادلة.",
+        "code_failed": "فشل رمز التحقق. يرجى التحقق من الرمز والمحاولة مرة أخرى.",
+        "network_error": "خطأ في الشبكة. يرجى المحاولة مرة أخرى.",
+        "duplicate_in_progress": "هناك مبادلة قيد التنفيذ بالفعل. يرجى الانتظار حتى تكتمل.",
+        "missing_chain": "شبكة البلوكشين مفقودة. يرجى اختيار شبكة صالحة."
       },
       "topup": {
         "choose_method": "اختر طريقة الدفع",
@@ -3431,7 +3437,15 @@
   "errors": {
     "linkedEmailNotFound": "هذا البريد الإلكتروني غير مسجل كحساب شخصي. يرجى إنشاء حساب مستخدم أولاً.",
     "linkedEmailError": "فشل إرسال رمز التحقق. يرجى المحاولة مرة أخرى.",
-    "error": "خطأ"
+    "error": "خطأ",
+    "alreadyPaid": "تم سداد هذا الطلب وإكماله بالفعل.",
+    "paymentProcessing": "جارٍ تأكيد الدفع حالياً. يُرجى الانتظار لحظة.",
+    "paymentInitFailed": "تعذر بدء عملية الدفع. يرجى المحاولة مرة أخرى.",
+    "cardDeclined": "تم رفض الدفع بالبطاقة أو تعذر معالجته. يرجى التحقق من بطاقتك أو تجربة طريقة أخرى.",
+    "networkError": "مشكلة في الاتصال. يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.",
+    "serverError": "حدث خطأ مؤقت. يرجى المحاولة مرة أخرى بعد قليل.",
+    "insufficientBalance": "الرصيد غير كافٍ لهذا الدفع. يرجى اختيار طريقة أخرى أو شحن الرصيد.",
+    "transferFailed": "تعذر إكمال تحويل الدفع. يرجى المحاولة مرة أخرى."
   },
   "search": {
     "metaPlaceholder": "بحث إفريقيا الشامل: ابحث عن المنتجات والمتاجر والخدمات...",
@@ -4629,10 +4643,18 @@
     "articles": "عناصر",
     "escrowDeployed": "عقد الضمان معتمد على {{network}}",
     "securityDescRental": "Your funds are protected until your arrival (Check-in).",
-    "securityDescService": "Your funds are protected until the service is completed."
+    "securityDescService": "Your funds are protected until the service is completed.",
+    "notEnoughBalance": "الرصيد غير كافٍ",
+    "serviceProviderTitle": "مقدم الخدمة",
+    "serviceFulfillmentNotice": "خدمة مباشرة مقدمة من هذا المزود."
   },
   "orderConfirmation": {
     "storeAddress": "عنوان المتجر",
+    "providerAddress": "موقع مقدم الخدمة",
+    "serviceMode": "نوع الخدمة",
+    "directService": "تقديم مباشر",
+    "paymentPending": "الدفع قيد الانتظار",
+    "paymentPendingDesc": "تم إرسال معاملتك إلى البلوكشين وهي قيد التأكيد.",
     "title": "الملخص والتأكيد",
     "alertTitle": "راجع وأكد عملية الشراء",
     "alertDesc": "سيتم إرسال دفعتك بأمان إلى البائع بعد تأكيد المعاملة على البلوكشين.",
@@ -4659,6 +4681,7 @@
     "orderRefCopied": "تم نسخ مرجع الطلب {{id}} إلى الحافظة.",
     "pinCopiedTitle": "تم نسخ رمز PIN!",
     "pinCopied": "تم نسخ رمز PIN السري {{pin}}.",
+    "missing_chain": "شبكة البلوكشين مفقودة. يرجى اختيار شبكة صالحة.",
     "securityTitle": "حماية إسكرو عبر البلوكشين من ديزت-أب",
     "securityTitleNeutral": "دفع آمن",
     "securityDesc": "أموالك تظل محمية في إسكرو البلوكشين. يتم الدفع للتاجر فقط بمجرد تسليم أغراضك والتحقق منها.",
@@ -5014,6 +5037,7 @@
     "view_on_polyscan": "عرض على PolygonScan",
     "view_on_explorer": "عرض في مستكشف البلوكتشين",
     "sending_in_progress": "جارٍ إرسال {{amount}} {{token}}...",
+    "missing_chain": "شبكة البلوكشين مفقودة. يرجى اختيار شبكة صالحة.",
     "broadcasting_node": "إرسال المعاملة إلى شبكة {{chain}}...",
     "secured_blockchain_tx": "معاملة بلوكتشين آمنة",
     "tx_error_title": "إشعار المعاملة",
@@ -5688,6 +5712,7 @@
     "payWithCard": "الدفع بالبطاقة البنكية",
     "payWithCrypto": "الدفع بالعملات المشفرة",
     "unavailableInCountry": "غير متوفر في {{country}}",
+    "notAvailableInCountry": "غير متوفر في {{country}}",
     "switchCountry": "تغيير البلد",
     "momoUnavailableExplanation": "خدمة Mobile Money غير متاحة في {{country}}. الخدمة نشطة في البلدان الأفريقية المدعومة (بنين، كوت ديفوار، السنغال، توغو، كينيا...).",
     "suggestAlternative": "يرجى اختيار البطاقة البنكية أو العملات الرقمية (USDC/USDT) أعلاه.",

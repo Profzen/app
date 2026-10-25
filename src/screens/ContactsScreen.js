@@ -119,11 +119,18 @@ export default function ContactsScreen() {
         .eq('beneficiary_user_id', currentUserId);
       if (incomingTxs && incomingTxs.length > 0) {
         incomingTxs.forEach(tx => {
+          let meta = {};
+          if (tx.metadata) {
+            if (typeof tx.metadata === 'object') meta = tx.metadata;
+            else if (typeof tx.metadata === 'string') {
+              try { meta = JSON.parse(tx.metadata); } catch (e) {}
+            }
+          }
           if (tx.sponsor_user_id) sponsorMatches.add(String(tx.sponsor_user_id).toLowerCase());
           if (tx.sender_address) sponsorMatches.add(String(tx.sender_address).toLowerCase());
-          if (tx.metadata?.sender_phone) sponsorMatches.add(String(tx.metadata.sender_phone).toLowerCase());
-          if (tx.metadata?.sender_email) sponsorMatches.add(String(tx.metadata.sender_email).toLowerCase());
-          if (tx.metadata?.sender_name) sponsorMatches.add(String(tx.metadata.sender_name).toLowerCase());
+          if (meta.sender_phone) sponsorMatches.add(String(meta.sender_phone).toLowerCase());
+          if (meta.sender_email) sponsorMatches.add(String(meta.sender_email).toLowerCase());
+          if (meta.sender_name) sponsorMatches.add(String(meta.sender_name).toLowerCase());
         });
       }
     } catch (e) {

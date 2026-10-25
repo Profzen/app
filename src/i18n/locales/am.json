@@ -970,7 +970,13 @@
         "swap_success_title": "ልውውጡ ተሳክቷል!",
         "swap_success_body": "{{fromAmount}} {{fromToken}} በተሳካ ሁኔታ ወደ {{toAmount}} {{toToken}} ተለውጧል",
         "done": "ተከናውኗል",
-        "approval_confirmed": "ማረጋገጫው ጸድቋል። ለመቀጠል ስዋፕ ፈጽም የሚለውን ይጫኑ።"
+        "approval_confirmed": "ማረጋገጫው ጸድቋል። ለመቀጠል ስዋፕ ፈጽም የሚለውን ይጫኑ።",
+        "authorizing_on_network": "በመረቡ ላይ ፈቃድ እየተሰጠ ነው...",
+        "cancelled": "የመቀያየር ፈቃድ ተሰርዟል።",
+        "code_failed": "የማረጋገጫ ኮድ አልተሳካም። እባክዎ ኮዱን ያረጋግጡና እንደገና ይሞክሩ።",
+        "network_error": "የመረብ ስህተት። እባክዎ እንደገና ይሞክሩ።",
+        "duplicate_in_progress": "መቀያየር አስቀድሞ በሂደት ላይ ነው። እባክዎ እስኪጠናቀቅ ይጠብቁ።",
+        "missing_chain": "የብሎክቼይን ኔትወርክ ጠፍቷል። እባክዎ ትክክለኛ ኔትወርክ ይምረጡ።"
       },
       "topup": {
         "choose_method": "የመክፈያ ዘዴዎን ይምረጡ",
@@ -3398,7 +3404,15 @@
   "errors": {
     "linkedEmailNotFound": "ይህ ኢሜይል እንደ የግል መለያ አልተመዘገበም። እባክዎ መጀመሪያ የተጠቃሚ መለያ ይፍጠሩ።",
     "linkedEmailError": "የማረጋገጫ ኮድ መላክ አልተሳካም። እባክዎ እንደገና ይሞክሩ።",
-    "error": "ስህተት"
+    "error": "ስህተት",
+    "alreadyPaid": "ይህ ትዕዛዝ አስቀድሞ ተከፍሎ ተጠናቋል።",
+    "paymentProcessing": "ክፍያዎ እየተረጋገጠ ነው። እባክዎ ትንሽ ይጠብቁ።",
+    "paymentInitFailed": "ክፍያ መጀመር አልተቻለም። እባክዎ እንደገና ይሞክሩ።",
+    "cardDeclined": "የካርድ ክፍያው ውድቅ ተደርጓል ወይም አልተሳካም። እባክዎ ካርድዎን ያረጋግጡ ወይም ሌላ ዘዴ ይሞክሩ።",
+    "networkError": "የግንኙነት ችግር ተፈጥሯል። እባክዎ የበይነመረብ ግንኙነትዎን ያረጋግጡና እንደገና ይሞክሩ።",
+    "serverError": "ጊዜያዊ ስህተት ተከስቷል። እባክዎ ትንሽ ቆይተው እንደገና ይሞክሩ።",
+    "insufficientBalance": "ለዚህ ክፍያ በቂ ሂሳብ የለም። እባክዎ ሌላ ዘዴ ይምረጡ ወይም ሂሳብ ይሙሉ::",
+    "transferFailed": "የክፍያ ማስተላለፍ አልተጠናቀቀም። እባክዎ እንደገና ይሞክሩ።"
   },
   "search": {
     "metaPlaceholder": "መላው አፍሪካ የፍለጋ ማዕከል፡ ምርቶችን፣ ሱቆችን፣ አገልግሎቶችን ያግኙ...",
@@ -4527,10 +4541,18 @@
     "articles": "እቃዎች",
     "escrowDeployed": "በ{{network}} ላይ የተረጋገጠ የኤስክሮው ውል",
     "securityDescRental": "Your funds are protected until your arrival (Check-in).",
-    "securityDescService": "Your funds are protected until the service is completed."
+    "securityDescService": "Your funds are protected until the service is completed.",
+    "notEnoughBalance": "በቂ ቀሪ ሂሳብ የለም",
+    "serviceProviderTitle": "አገልግሎት ሰጪ",
+    "serviceFulfillmentNotice": "በዚህ አገልግሎት ሰጪ የቀረበ ቀጥተኛ አገልግሎት።"
   },
   "orderConfirmation": {
     "storeAddress": "የመደብሩ አድራሻ",
+    "providerAddress": "የአገልግሎት ሰጪው አድራሻ",
+    "serviceMode": "የአገልግሎት አይነት",
+    "directService": "ቀጥታ አፈፃፀም",
+    "paymentPending": "ክፍያው በመጠባበቅ ላይ ነው",
+    "paymentPendingDesc": "ማስተላለፍዎ ወደ ብሎክቼይን ተልኳል እና ማረጋገጫ በመጠባበቅ ላይ ነው።",
     "title": "ማጠቃለያ እና ማረጋገጫ",
     "alertTitle": "ግዢዎን ይገምግሙ እና ያረጋግጡ",
     "alertDesc": "ክፍያዎ በብሎክቼይን ከተረጋገጠ በኋላ ለሻጩ በደህንነት ይላካል።",
@@ -4557,6 +4579,7 @@
     "orderRefCopied": "የትዕዛዝ ማጣቀሻ {{id}} ወደ ቅንጥብ ሰሌዳ ተቀድቷል።",
     "pinCopiedTitle": "የፒን ኮድ ተቀድቷል!",
     "pinCopied": "ሚስጥራዊ የፒን ኮድ {{pin}} ተቀድቷል።",
+    "missing_chain": "የብሎክቼይን ኔትወርክ ጠፍቷል። እባክዎ ትክክለኛ ኔትወርክ ይምረጡ።",
     "securityTitle": "DizzitUp On-chain Escrow ጥበቃ",
     "securityTitleNeutral": "ደህንነቱ የተጠበቀ ክፍያ",
     "securityDesc": "ገንዘብዎ በብሎክቼን escrow ውስጥ እንደተጠበቀ ይቆያል። ነጋዴው ክፍያ የሚያገኘው ዕቃዎችዎ ከደረሱና ከተረጋገጡ በኋላ ብቻ ነው።",
@@ -4912,6 +4935,7 @@
     "view_on_polyscan": "በ PolygonScan ላይ ይመልከቱ",
     "view_on_explorer": "በብሎክ ኤክስፕሎረር ላይ ይመልከቱ",
     "sending_in_progress": "{{amount}} {{token}} በመላክ ላይ...",
+    "missing_chain": "የብሎክቼይን ኔትወርክ ጠፍቷል። እባክዎ ትክክለኛ ኔትወርክ ይምረጡ።",
     "broadcasting_node": "ግብይቱን ወደ {{chain}} አውታረ መረብ በማስገባት ላይ...",
     "secured_blockchain_tx": "ደህንነቱ የተጠበቀ የብሎክቼይን ግብይት",
     "tx_error_title": "የግብይት ማስታወቂያ",
@@ -5680,6 +5704,7 @@
     "payWithCard": "በካርድ ይክፈሉ",
     "payWithCrypto": "በክሪፕቶ ይክፈሉ",
     "unavailableInCountry": "በ{{country}} አይገኝም",
+    "notAvailableInCountry": "በ{{country}} አይገኝም",
     "switchCountry": "አገር ቀይር",
     "momoUnavailableExplanation": "የሞባይል ገንዘብ ክፍያ ለ{{country}} አይገኝም። በተደገፉ የአፍሪካ አገሮች (ቤኒን፣ ኮትዲቯር፣ ሴኔጋል፣ ቶጎ፣ ኬንያ...) ውስጥ ይሰራል::",
     "paymentRegion": "የክፍያ ክልል፦",

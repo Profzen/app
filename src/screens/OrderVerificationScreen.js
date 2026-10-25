@@ -165,10 +165,45 @@ export default function OrderVerificationScreen({ route }) {
       : null
   );
 
-  // Active items list: cart items take priority if cart has items, otherwise direct item
+  // Sync directItem when directOrder changes (e.g. from new Buy Now click)
+  useEffect(() => {
+    if (directOrder?.product) {
+      setDirectItem({
+        id: directOrder.product.id || 'direct_1',
+        productId: directOrder.product.id,
+        name: directOrder.product.name || directOrder.product.title || t('product.notFound', "Product not found"),
+        price:
+          typeof directOrder.product.price === 'number'
+            ? directOrder.product.price
+            : parseFloat(String(directOrder.product.price || '').replace(/[^0-9.]/g, '')) ||
+            (directOrder.product.variants?.[0]?.prices?.[0]?.amount
+              ? parseFloat(directOrder.product.variants[0].prices[0].amount)
+              : 0),
+        currency: directOrder.product.currency || 'XOF',
+        quantity: directOrder.quantity || 1,
+        image: getProductCoverImage(directOrder.product),
+        category: directOrder.product.category || 'Marketplace',
+        offering_type: directOrder.product?.offering_type,
+        service_model: directOrder.product?.service_model,
+        merchantId: directOrder.shop?.id || directOrder.product?.merchant_id || null,
+        merchantName:
+          directOrder.shop?.shop_name ||
+          directOrder.shop?.name ||
+          directOrder.product?.merchant?.shop_name ||
+          t('paymentSuccess.partnerMerchant', "Partner Merchant"),
+        merchantCity: directOrder.shop?.city_village || directOrder.product?.merchant?.city_village || '',
+        merchantCountry: directOrder.shop?.country || directOrder.product?.merchant?.country || '',
+      });
+    } else {
+      setDirectItem(null);
+    }
+  }, [directOrder]);
+
+  // Active items list: if directItem is present (from "Buy Now"), checkout ONLY that single item.
+  // Otherwise, checkout the items currently in the user's cart.
   const items = useMemo(() => {
-    if (cart && cart.length > 0) return cart;
     if (directItem) return [directItem];
+    if (cart && cart.length > 0) return cart;
     return [];
   }, [cart, directItem]);
 
@@ -627,10 +662,31 @@ export default function OrderVerificationScreen({ route }) {
     return `${formatCurrency(feeInToken, targetCurr, numLocale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${selectedToken === 'DZY' ? 'DZY' : selectedToken}`;
   }, [platformFee, rawCurrency, selectedToken, numLocale]);
 
+  const selectedTokenAmount = useMemo(() => {
+    if (selectedToken === 'EURC') return parseFloat(totalEURC);
+    if (selectedToken === 'USDT') return parseFloat(totalUSDT);
+    if (selectedToken === 'DZY') return parseFloat(totalDZY);
+    return parseFloat(totalUSDC);
+  }, [selectedToken, totalEURC, totalUSDT, totalDZY, totalUSDC]);
+
+  const selectedNetworkTokenBalance = useMemo(() => {
+    return getChainBalanceForToken(selectedToken, network);
+  }, [selectedToken, network, user]);
+
+  const isServiceCryptoInsufficient = useMemo(() => {
+    if (isPhysical || paymentRail !== 'crypto') return false;
+    return selectedNetworkTokenBalance < selectedTokenAmount;
+  }, [isPhysical, paymentRail, selectedNetworkTokenBalance, selectedTokenAmount]);
+
   const handleProceedToConfirmation = async () => {
     if (isSavingAddress) return;
     if (items.length === 0) {
       AppToast.showError(t('cart.emptyDesc', "Your cart contains no items for now."), t('common.error', 'Error'));
+      return;
+    }
+
+    if (isServiceCryptoInsufficient) {
+      AppToast.showError(t('orderVerification.notEnoughBalance', 'Not enough balance'), t('common.error', 'Error'));
       return;
     }
 
@@ -715,6 +771,7 @@ export default function OrderVerificationScreen({ route }) {
       payerCountry,
       selectedToken: paymentRail === 'crypto' ? selectedToken : null,
       network: paymentRail === 'crypto' ? network : null,
+      isDirectOrder: Boolean(directItem),
       createdAt: new Date().toISOString(),
     };
 
@@ -920,21 +977,31 @@ export default function OrderVerificationScreen({ route }) {
         {/* Recipient & Delivery Address Card */}
         <View style={styles.addressCard}>
           <View style={styles.cardHeaderRow}>
-            <View style={[styles.iconCircle, deliveryOption === 'pickup' && styles.iconCirclePickup]}>
+            <View style={[styles.iconCircle, (!isPhysical || deliveryOption === 'pickup') && styles.iconCirclePickup]}>
               <Ionicons
-                name={deliveryOption === 'pickup' ? 'storefront-outline' : 'location-outline'}
+                name={!isPhysical ? 'briefcase-outline' : (deliveryOption === 'pickup' ? 'storefront-outline' : 'location-outline')}
                 size={18}
-                color={deliveryOption === 'pickup' ? '#D97706' : '#3B82F6'}
+                color={!isPhysical ? '#4F46E5' : (deliveryOption === 'pickup' ? '#D97706' : '#3B82F6')}
               />
             </View>
             <View style={styles.addressInfo}>
               <Text style={styles.sectionLabel}>
-                {deliveryOption === 'pickup'
+                {!isPhysical
+                  ? t('orderVerification.serviceProviderTitle', 'Service Provider')
+                  : deliveryOption === 'pickup'
                   ? t('orderVerification.pickupLocationTitle', 'Store pickup location')
                   : t('orderVerification.deliveryAddress', "Delivery address")}
               </Text>
 
-              {deliveryOption === 'pickup' ? (
+              {!isPhysical ? (
+                <>
+                  <Text style={styles.recipientNameText}>{merchantName}</Text>
+                  {merchantFullAddress ? <Text style={styles.addressValue}>{merchantFullAddress}</Text> : null}
+                  <Text style={{ fontSize: 12, color: '#10B981', marginTop: 2, fontFamily: 'Inter_500Medium' }}>
+                    {t('orderVerification.serviceFulfillmentNotice', 'Direct service rendered by this provider.')}
+                  </Text>
+                </>
+              ) : deliveryOption === 'pickup' ? (
                 <>
                   <Text style={styles.recipientNameText}>{merchantName}</Text>
                   <Text style={styles.addressValue}>{merchantFullAddress}</Text>
@@ -1199,7 +1266,11 @@ export default function OrderVerificationScreen({ route }) {
                 <Text style={[styles.railTabText, styles.railTabTextDisabled]} adjustsFontSizeToFit numberOfLines={1}>
                   {t('orderVerification.momoTab', 'Mobile Money')}
                 </Text>
-                <View style={styles.unavailableMiniDot} />
+                <Text style={styles.railTabUnavailableSubtext} adjustsFontSizeToFit numberOfLines={1}>
+                  {t('paymentRails.notAvailableInCountry', 'Not available in {{country}}', {
+                    country: getCountryDisplayName(payerCountry, language, t) || railEligibility.countryName || payerCountry,
+                  })}
+                </Text>
               </TouchableOpacity>
             )}
           </View>
@@ -1395,14 +1466,14 @@ export default function OrderVerificationScreen({ route }) {
                 </View>
               </View>
 
-              {noTokenHasEnoughBalance && (
+              {(noTokenHasEnoughBalance || isServiceCryptoInsufficient) && (
                 <View style={styles.balanceWarningCard}>
                   <Ionicons name="alert-circle" size={18} color="#EF4444" style={{ marginRight: 8 }} />
                   <View style={{ flex: 1 }}>
                     <Text style={styles.balanceWarningTitle}>{t('orderVerification.insufficientBalanceTitle', 'Insufficient balance')}</Text>
                     <Text style={styles.balanceWarningText}>
                       {t('orderVerification.insufficientBalanceDesc', "Your current balance is {{balance}} {{token}}. You can top up your account or choose another payment method.", {
-                        balance: Number(userBalance).toLocaleString('en-US', { maximumFractionDigits: 4 }),
+                        balance: Number(selectedNetworkTokenBalance).toLocaleString('en-US', { maximumFractionDigits: 4 }),
                         token: selectedToken
                       })}
                     </Text>
@@ -1575,11 +1646,18 @@ export default function OrderVerificationScreen({ route }) {
               </Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.btnContinue} onPress={handleProceedToConfirmation} activeOpacity={0.85}>
-            <Text style={styles.btnContinueText} maxFontSizeMultiplier={1.3}>
-              {t('orderVerification.continueBtn', "Continue")}
+          <TouchableOpacity
+            style={[styles.btnContinue, isServiceCryptoInsufficient && styles.btnContinueDisabled]}
+            onPress={handleProceedToConfirmation}
+            disabled={isServiceCryptoInsufficient}
+            activeOpacity={isServiceCryptoInsufficient ? 1 : 0.85}
+          >
+            <Text style={[styles.btnContinueText, isServiceCryptoInsufficient && styles.btnContinueTextDisabled]} maxFontSizeMultiplier={1.3}>
+              {isServiceCryptoInsufficient
+                ? t('orderVerification.notEnoughBalance', 'Not enough balance')
+                : t('orderVerification.continueBtn', "Continue")}
             </Text>
-            <Ionicons name="chevron-forward" size={18} color="#1A2840" />
+            {!isServiceCryptoInsufficient && <Ionicons name="chevron-forward" size={18} color="#1A2840" />}
           </TouchableOpacity>
         </View>
 
@@ -2516,11 +2594,19 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  btnContinueDisabled: {
+    backgroundColor: '#E2E8F0',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
   btnContinueText: {
     fontFamily: 'Inter_700Bold',
     fontSize: 13.5,
     color: '#1A2840',
     marginRight: 4,
+  },
+  btnContinueTextDisabled: {
+    color: '#94A3B8',
   },
   emptyContainer: {
     flex: 1,
@@ -2591,21 +2677,21 @@ const styles = StyleSheet.create({
   },
   railTabDisabled: {
     backgroundColor: '#F8FAFC',
-    opacity: 0.65,
+    opacity: 0.75,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    borderStyle: 'dashed',
   },
   railTabTextDisabled: {
     color: '#94A3B8',
-    fontFamily: 'Inter_500Medium',
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
   },
-  unavailableMiniDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#EF4444',
-    marginLeft: 3,
+  railTabUnavailableSubtext: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 8.5,
+    color: '#94A3B8',
+    marginTop: 2,
+    textAlign: 'center',
   },
   railDetailCardDisabled: {
     backgroundColor: '#F8FAFC',

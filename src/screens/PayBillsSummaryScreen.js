@@ -66,8 +66,11 @@ export default function PayBillsSummaryScreen() {
     });
   };
 
-  const handlePinSuccess = () => {
+  const handlePinSuccess = async () => {
     setPinModalVisible(false);
+    if (Platform.OS === 'ios') {
+      await new Promise(r => setTimeout(r, 350));
+    }
     if (pinResolveRef.current) {
       pinResolveRef.current(true);
       pinResolveRef.current = null;

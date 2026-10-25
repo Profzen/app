@@ -20,7 +20,7 @@ import { getEstimatedNetworkFee } from '../config/networkFees';
 import { getExplorerTxUrl } from '../utils/explorer';
 import { getWalletIdentity, getWalletErrorMessage } from '../utils/walletIdentity';
 
-import { TOKENS_BY_CHAIN } from '../config/tokensByChain';
+import { TOKENS_BY_CHAIN, normalizeChainName } from '../config/tokensByChain';
 
 const BLOCKCHAINS = [
   { value: 'Polygon', label: 'Polygon', name: 'Polygon Network', isCrypto: true, cryptoSymbol: 'Polygon' },
@@ -109,12 +109,29 @@ export default function SendMoneyScreen() {
   };
   useEffect(() => stopPolling, []); // stop polling when leaving the screen
 
+  const modalDismissResolveRef = useRef(null);
+
+  const handleApprovalModalDismiss = () => {
+    if (modalDismissResolveRef.current) {
+      modalDismissResolveRef.current();
+      modalDismissResolveRef.current = null;
+    }
+  };
+
+  const closeApprovalModalAndWait = async () => {
+    setSdkPromptOpen(true);
+    await new Promise(resolve => {
+      modalDismissResolveRef.current = resolve;
+      setTimeout(resolve, Platform.OS === 'ios' ? 400 : 100);
+    });
+  };
+
   // Single entry point to Crossmint approval: one prompt at a time, our modal hidden meanwhile
   const runSdkApproval = async (activeWallet, transactionId) => {
     if (approveInFlightRef.current) return false;
     approveInFlightRef.current = true;
     approveCalledRef.current = true;
-    setSdkPromptOpen(true);
+    await closeApprovalModalAndWait();
     try {
       await activeWallet.approve({ transactionId });
       return true;
@@ -353,8 +370,7 @@ export default function SendMoneyScreen() {
 
     for (const b of BLOCKCHAINS) {
       const chainName = b.value;
-      const cleanChain = chainName.toLowerCase().replace(/\s+/g, '');
-      const chainKey = (cleanChain === 'bnbchain' || cleanChain === 'bnb') ? 'bsc' : cleanChain;
+      const chainKey = normalizeChainName(chainName);
       const allowed = TOKENS_BY_CHAIN[chainKey] || [];
 
       for (const sym of allowed) {
@@ -400,9 +416,8 @@ export default function SendMoneyScreen() {
   });
 
   // Filter tokens allowed on current blockchain
-  const cleanCurrentChain = (blockchain || '').toLowerCase().replace(/\s+/g, '');
-  const chainKey = (cleanCurrentChain === 'bnbchain' || cleanCurrentChain === 'bnb') ? 'bsc' : cleanCurrentChain;
-  const chainAllowedSymbols = TOKENS_BY_CHAIN[chainKey] || TOKENS_BY_CHAIN.polygon;
+  const chainKey = normalizeChainName(blockchain);
+  const chainAllowedSymbols = (chainKey && TOKENS_BY_CHAIN[chainKey]) || TOKENS_BY_CHAIN.polygon;
   const tokensForChain = CRYPTO_TOKENS.filter(t => chainAllowedSymbols.includes(t.value)).map(t => {
     if (t.value === 'POL' && chainKey === 'ethereum') {
       return { ...t, name: 'POL (Ethereum)', label: 'POL (Ethereum)', subtitle: 'POL ERC-20 on Ethereum' };
@@ -429,8 +444,7 @@ export default function SendMoneyScreen() {
     const curBal = getBalanceForToken(selectedToken, blockchain);
     if (curBal <= 0) {
       const chainWithFunds = BLOCKCHAINS.find(b => {
-        const cClean = b.value.toLowerCase().replace(/\s+/g, '');
-        const cKey = (cClean === 'bnbchain' || cClean === 'bnb') ? 'bsc' : cClean;
+        const cKey = normalizeChainName(b.value);
         const allowed = TOKENS_BY_CHAIN[cKey] || [];
         return allowed.includes(selectedToken) && getBalanceForToken(selectedToken, b.value) > 0;
       });
@@ -698,7 +712,13 @@ export default function SendMoneyScreen() {
           if (txId && typeof getWallet === 'function') {
             (async () => {
               try {
-                const chainName = (blockchain || 'polygon').toLowerCase() === 'solana' ? 'solana' : 'polygon';
+                const chainName = normalizeChainName(blockchain);
+                if (!chainName) {
+                  const chainErr = t('sendMoney.missing_chain', 'Blockchain network is missing. Please select a valid network.');
+                  setErrorMessage(chainErr);
+                  AppToast.showError(chainErr, t('common.error', 'Error'));
+                  return;
+                }
                 console.log(`[SendMoneyScreen] Invoking activeWallet.approve for tx ${txId} on ${chainName}...`);
                 const activeWallet = await getWallet({ chain: chainName });
                 if (activeWallet) {
@@ -988,7 +1008,13 @@ export default function SendMoneyScreen() {
       setIsResendingOtp(true);
       setApprovalMessage(null);
       if (activeTxHash && typeof getWallet === 'function') {
-        const chainName = (blockchain || 'polygon').toLowerCase() === 'solana' ? 'solana' : 'polygon';
+        const chainName = normalizeChainName(blockchain);
+        if (!chainName) {
+          const chainErr = t('sendMoney.missing_chain', 'Blockchain network is missing. Please select a valid network.');
+          setErrorMessage(chainErr);
+          AppToast.showError(chainErr, t('common.error', 'Error'));
+          return;
+        }
         const activeWallet = await getWallet({ chain: chainName });
         if (activeWallet) {
           if (signerEmail) {
@@ -1590,7 +1616,12 @@ export default function SendMoneyScreen() {
         </Modal>
 
         {/* Signature / Security Verification Modal */}
-        <Modal visible={txStatus === 'awaiting-approval' && !sdkPromptOpen} transparent animationType="fade">
+        <Modal
+          visible={txStatus === 'awaiting-approval' && !sdkPromptOpen}
+          transparent
+          animationType="fade"
+          onDismiss={handleApprovalModalDismiss}
+        >
           <View style={approvalModalStyles.modalOverlay}>
             <View style={[approvalModalStyles.modalContent, { paddingBottom: 30 }]}>
               <View style={approvalModalStyles.modalHeaderIcon}>

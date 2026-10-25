@@ -869,7 +869,13 @@
         "swap_success_title": "Échange réussi !",
         "swap_success_body": "{{fromAmount}} {{fromToken}} échangé(s) avec succès contre {{toAmount}} {{toToken}}",
         "done": "Terminé",
-        "approval_confirmed": "Approbation confirmée. Appuyez sur Exécuter le swap pour continuer."
+        "approval_confirmed": "Approbation confirmée. Appuyez sur Exécuter le swap pour continuer.",
+        "authorizing_on_network": "Autorisation sur le réseau...",
+        "cancelled": "Autorisation d'échange annulée.",
+        "code_failed": "Échec du code de vérification. Veuillez vérifier le code et réessayer.",
+        "network_error": "Erreur réseau. Veuillez réessayer.",
+        "duplicate_in_progress": "Un échange est déjà en cours. Veuillez attendre qu'il se termine.",
+        "missing_chain": "Le réseau blockchain est manquant. Veuillez sélectionner un réseau valide."
       },
       "topup": {
         "choose_method": "Choisissez votre mode de paiement",
@@ -3596,9 +3602,17 @@
     }
   },
   "errors": {
-    "linkedEmailNotFound": "Cet e-mail n'est pas enregistr� en tant que compte personnel. Veuillez d'abord cr�er un compte utilisateur.",
-    "linkedEmailError": "�chec de l'envoi du code de v�rification. Veuillez r�essayer.",
-    "error": "Erreur"
+    "linkedEmailNotFound": "Cet e-mail n'est pas enregistré en tant que compte personnel. Veuillez d'abord créer un compte utilisateur.",
+    "linkedEmailError": "Échec de l'envoi du code de vérification. Veuillez réessayer.",
+    "error": "Erreur",
+    "alreadyPaid": "Cette commande a déjà été réglée et complétée.",
+    "paymentProcessing": "Votre paiement est en cours de confirmation. Veuillez patienter un instant.",
+    "paymentInitFailed": "Impossible d'initier le paiement. Veuillez réessayer.",
+    "cardDeclined": "Le paiement par carte a été refusé ou n'a pas pu être traité. Veuillez vérifier votre carte ou essayer un autre moyen.",
+    "networkError": "Problème de connexion. Veuillez vérifier votre connexion internet et réessayer.",
+    "serverError": "Une erreur temporaire est survenue. Veuillez réessayer dans un instant.",
+    "insufficientBalance": "Solde insuffisant pour ce paiement. Veuillez choisir un autre moyen ou recharger.",
+    "transferFailed": "Le transfert de paiement n'a pas pu aboutir. Veuillez réessayer."
   },
   "search": {
     "metaPlaceholder": "Recherche Méta Afrique : Trouvez produits, magasins, services...",
@@ -4868,10 +4882,18 @@
     "articles": "articles",
     "escrowDeployed": "Séquestre Escrow vérifié sur {{network}}",
     "securityDescRental": "Vos fonds sont protégés jusqu'à votre arrivée (Check-in).",
-    "securityDescService": "Vos fonds sont protégés jusqu'à la réalisation du service."
+    "securityDescService": "Vos fonds sont protégés jusqu'à la réalisation du service.",
+    "notEnoughBalance": "Solde insuffisant",
+    "serviceProviderTitle": "Prestataire de service",
+    "serviceFulfillmentNotice": "Prestation directe fournie par ce prestataire."
   },
   "orderConfirmation": {
     "storeAddress": "Adresse de la boutique",
+    "providerAddress": "Lieu du prestataire",
+    "serviceMode": "Type de service",
+    "directService": "Prestation directe",
+    "paymentPending": "Paiement en attente",
+    "paymentPendingDesc": "Votre transfert a été soumis à la blockchain et est en attente de confirmation.",
     "title": "Résumé et confirmation",
     "alertTitle": "Vérifiez et confirmez votre achat",
     "alertDesc": "Votre paiement sera envoyé en toute sécurité au vendeur après confirmation sur la blockchain.",
@@ -4898,6 +4920,7 @@
     "orderRefCopied": "Référence commande {{id}} copiée dans le presse-papier.",
     "pinCopiedTitle": "Code PIN copié !",
     "pinCopied": "Code PIN secret {{pin}} copié.",
+    "missing_chain": "Le réseau blockchain est manquant. Veuillez sélectionner un réseau valide.",
     "securityTitle": "Protection Escrow On-chain DizzitUp",
     "securityTitleNeutral": "Paiement sécurisé",
     "securityDesc": "Vos fonds restent protégés par un escrow sur blockchain. Le marchand n'est payé qu'une fois vos articles livrés et vérifiés.",
@@ -5253,6 +5276,7 @@
     "view_on_polyscan": "Voir sur PolygonScan",
     "view_on_explorer": "Voir sur l'explorateur Blockchain",
     "sending_in_progress": "Envoi de {{amount}} {{token}}...",
+    "missing_chain": "Le réseau blockchain est manquant. Veuillez sélectionner un réseau valide.",
     "broadcasting_node": "Soumission de la transaction au réseau {{chain}}...",
     "secured_blockchain_tx": "TRANSACTION BLOCKCHAIN SÉCURISÉE",
     "tx_error_title": "Avis de transaction",
@@ -5888,6 +5912,7 @@
     "payWithCard": "Payer par Carte",
     "payWithCrypto": "Payer en Crypto",
     "unavailableInCountry": "Indisponible en/au {{country}}",
+    "notAvailableInCountry": "Non disponible en/au {{country}}",
     "switchCountry": "Changer de pays",
     "momoUnavailableExplanation": "Le paiement Mobile Money n'est pas disponible pour {{country}}. Il est actif dans les pays d'Afrique pris en charge (Bénin, Côte d'Ivoire, Sénégal, Togo, Cameroun, Kenya...).",
     "paymentRegion": "Région de paiement :",

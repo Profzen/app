@@ -287,6 +287,39 @@ export const buyGoodsApi = {
       console.error('buyGoodsApi.createMarketplaceTransaction Error:', error);
       throw error;
     }
+  },
+
+  getServiceCryptoPaymentInfo: async (orderId, { token, chain } = {}) => {
+    try {
+      const params = new URLSearchParams();
+      if (token) params.append('token', token);
+      if (chain) params.append('chain', chain);
+      const qs = params.toString() ? `?${params.toString()}` : '';
+      const response = await fetch(`${BASE_URL}/marketplace/orders/${orderId}/crypto-payment-info${qs}`);
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || data.message || 'Failed to fetch crypto payment info');
+      }
+      return data;
+    } catch (error) {
+      console.error('buyGoodsApi.getServiceCryptoPaymentInfo Error:', error);
+      throw error;
+    }
+  },
+
+  confirmServiceCryptoPayment: async (orderId, { txHash, token, chain }) => {
+    try {
+      const response = await fetch(`${BASE_URL}/marketplace/orders/${orderId}/confirm-crypto`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ txHash, token, chain }),
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('buyGoodsApi.confirmServiceCryptoPayment Error:', error);
+      throw error;
+    }
   }
 };
 

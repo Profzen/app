@@ -29,7 +29,19 @@ export const normalizeTransaction = (tx, source, currentUserId) => {
 
 const mapWalletTx = (tx, currentUserId) => {
   const type = tx.type?.toUpperCase() || "SEND";
-  const meta = typeof tx.metadata === "string" ? JSON.parse(tx.metadata || "{}") : (tx.metadata || {});
+  let meta = {};
+  if (tx && tx.metadata) {
+    if (typeof tx.metadata === "object") {
+      meta = tx.metadata;
+    } else if (typeof tx.metadata === "string") {
+      try {
+        meta = JSON.parse(tx.metadata);
+        if (typeof meta === "string") meta = JSON.parse(meta);
+      } catch {
+        meta = {};
+      }
+    }
+  }
 
   let toFrom = "External Wallet";
   if (type === "SWAP" || type === "STAKE" || type === "TOP-UP") {
