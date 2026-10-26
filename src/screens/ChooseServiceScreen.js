@@ -8,6 +8,7 @@ import { supabase } from '../services/supabaseClient';
 import AppToast from '../components/AppToast';
 import { getFullCountryName } from '../utils/countryCurrencyUtils';
 import { isPhysicalItem } from '../utils/productUtils';
+import { stripMarkdown } from '../utils/markdownUtils';
 
 const { width } = Dimensions.get('window');
 
@@ -512,7 +513,7 @@ export default function ChooseServiceScreen() {
                         <Text style={styles.productTitle} numberOfLines={2}>{item.name}</Text>
                         {isSelected && <Ionicons name="checkmark-circle" size={20} color="#FFC759" />}
                       </View>
-                      <Text style={styles.productDesc} numberOfLines={2}>{item.description}</Text>
+                      <Text style={styles.productDesc} numberOfLines={2}>{stripMarkdown(item.description)}</Text>
                       
                       <View style={styles.productFooter}>
                         <View style={styles.supplierBadge}>

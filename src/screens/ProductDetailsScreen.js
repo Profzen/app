@@ -16,6 +16,7 @@ import { buyGoodsApi } from '../services/buyGoodsApi';
 import { getProductMedia, isVideoUrl } from '../utils/productMedia';
 
 import ProductVideoSlide from '../components/ProductVideoSlide';
+import RichDescription from '../components/RichDescription';
 
 const { width } = Dimensions.get('window');
 // Compact gallery so price, quantity and actions stay visible without scrolling
@@ -607,9 +608,14 @@ export default function ProductDetailsScreen({ route }) {
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>{t('product.description', 'Description')}</Text>
           <View style={styles.descRow}>
-            <Text style={styles.descText} numberOfLines={descriptionExpanded ? undefined : 3}>
-              {product.description || product.subtitle || t('product.defaultDesc', 'Product guaranteed and verified by our DizzitUp partner merchant network.')}
-            </Text>
+            <View style={{ flex: 1, paddingRight: 8 }}>
+              <RichDescription
+                content={product.description || product.subtitle || t('product.defaultDesc', 'Product guaranteed and verified by our DizzitUp partner merchant network.')}
+                numberOfLines={3}
+                isExpanded={descriptionExpanded}
+                isRtl={language === 'ar'}
+              />
+            </View>
             <TouchableOpacity style={styles.descChevron} onPress={() => setDescriptionExpanded(!descriptionExpanded)}>
               <Ionicons name={descriptionExpanded ? "chevron-up" : "chevron-down"} size={20} color="#1A2840" />
             </TouchableOpacity>

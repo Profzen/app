@@ -15,6 +15,7 @@ import ShopSmartFilterModal from '../components/ShopSmartFilterModal';
 import WriteReviewModal from '../components/WriteReviewModal';
 import { reviewService } from '../services/reviewService';
 import { isPhysicalCart, isPhysicalItem, isTicketProduct, getWebProductUrl } from '../utils/productUtils';
+import { stripMarkdown } from '../utils/markdownUtils';
 
 export default function ShopProductsScreen({ route }) {
   const navigation = useNavigation();
@@ -490,7 +491,7 @@ export default function ShopProductsScreen({ route }) {
                     <TouchableOpacity onPress={() => navigation.navigate('ProductDetailsScreen', { product: product, shop: shop })}>
                       <Text style={styles.productName} numberOfLines={1}>{product.title || product.name}</Text>
                       <Text style={styles.productDesc} numberOfLines={1}>{product.subtitle || ''}</Text>
-                      <Text style={styles.productDescLines} numberOfLines={2}>{product.description || ''}</Text>
+                      <Text style={styles.productDescLines} numberOfLines={2}>{stripMarkdown(product.description || '')}</Text>
                     </TouchableOpacity>
                     
                     <View style={styles.priceStockRow}>
