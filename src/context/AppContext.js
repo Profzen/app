@@ -1227,8 +1227,11 @@ export function AppProvider({ children }) {
       merchantCountry: mCountry,
       merchantCity: mCity,
       category: product.category || 'Marketplace',
-      offering_type: product.offering_type || 'physical_good',
+      offering_type: product.offering_type || (isProductPhysical ? 'physical_good' : 'service'),
       escrow_policy: product.escrow_policy || (isProductPhysical ? 'physical_delivery' : 'none'),
+      service_model: product.service_model,
+      metadata: product.metadata,
+      product,
     };
 
     let updated;

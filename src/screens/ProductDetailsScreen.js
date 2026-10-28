@@ -217,10 +217,6 @@ export default function ProductDetailsScreen({ route }) {
 
   const handleAddToCart = () => {
     if (!canPurchase) return;
-    if (isTicket) {
-      handleOpenWebProduct();
-      return;
-    }
     if (!isPhysicalItem(product)) {
       executeAddToCart();
       return;
@@ -231,10 +227,6 @@ export default function ProductDetailsScreen({ route }) {
 
   const handleBuyNow = () => {
     if (!canPurchase) return;
-    if (isTicket) {
-      handleOpenWebProduct();
-      return;
-    }
     if (!isPhysicalItem(product)) {
       executeBuyNow();
       return;
@@ -768,8 +760,9 @@ export default function ProductDetailsScreen({ route }) {
       <View style={[styles.bottomActionBar, { paddingBottom: bottomPadding }]}>
         {isTicket ? (
           <TouchableOpacity
-            style={[styles.btnBuyModern, { flex: 1, backgroundColor: '#FFC759' }]}
-            onPress={handleOpenWebProduct}
+            style={[styles.btnBuyModern, { flex: 1, backgroundColor: '#FFC759' }, !canPurchase && { opacity: 0.5 }]}
+            onPress={handleBuyNow}
+            disabled={!canPurchase}
             activeOpacity={0.85}
           >
             <Ionicons name="ticket-outline" size={18} color="#1A2840" style={{ marginRight: 6 }} />

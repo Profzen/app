@@ -1,5 +1,5 @@
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import {
   View,
@@ -23,8 +23,8 @@ import ScreenFooter from '../components/ScreenFooter';
 import SocialShareModal from '../components/SocialShareModal';
 import { useApp } from '../context/AppContext';
 import { buyGoodsApi } from '../services/buyGoodsApi';
-import { getFullCountryName } from '../utils/countryCurrencyUtils';
-import { isPhysicalCart } from '../utils/productUtils';
+import { getFullCountryName, formatCurrency } from '../utils/countryCurrencyUtils';
+import { isPhysicalCart, isTicketProduct } from '../utils/productUtils';
 import { useWallet } from '@crossmint/client-sdk-react-native-ui';
 import { getWalletIdentity } from '../utils/walletIdentity';
 import { normalizeChainName } from '../config/tokensByChain';
@@ -38,7 +38,12 @@ export default function OrderConfirmationScreen({ route }) {
   const orderData = route?.params?.orderData;
 
   const isPickup = orderData?.deliveryOption === 'pickup' || orderData?.deliveryOption === 'store_pickup';
-  const isPhysical = isPhysicalCart(orderData?.items || [orderData]);
+  const isTicket = Boolean(
+    orderData?.isTicket ||
+    orderData?.items?.some(i => isTicketProduct(i) || isTicketProduct(i.product))
+  );
+  const isPhysical = !isTicket && (orderData?.isPhysical !== undefined ? orderData.isPhysical : isPhysicalCart(orderData?.items || [orderData]));
+  const beneficiary = orderData?.beneficiary || null;
   const rawCountry = isPickup
     ? (orderData?.merchant?.country || orderData?.merchant?.business_country || orderData?.recipient?.country || user?.merchantProfile?.country || user?.country || '')
     : (orderData?.recipient?.country || orderData?.merchant?.country || user?.merchantProfile?.country || user?.country || '');
@@ -129,18 +134,46 @@ export default function OrderConfirmationScreen({ route }) {
   const displayPlatformFee = orderData?.displayPlatformFee ?? orderData?.platformFee;
   const numLocale = language === 'en' ? 'en-US' : 'fr-FR';
 
+  const ticketInvoice = orderData?.ticketInvoice;
+  const ticketInvoiceAmount = ticketInvoice?.amount ?? ticketInvoice?.expected_amount_usd ?? null;
+  const ticketPaymentAsset = (orderData?.paymentRail === 'crypto' || ticketInvoice?.rail === 'stablecoin')
+    ? orderData?.selectedToken
+    : ticketInvoice?.currency;
+
+  const ticketPayUrl = ticketInvoice?.payUrl || null;
+
+  const canShare = isTicket
+    ? Boolean(ticketPayUrl && ticketInvoiceAmount && ticketPaymentAsset)
+    : Boolean(orderData?.orderId && displayTotalAmount);
+
+  const shareFormattedAmount = isTicket
+    ? (canShare ? `${formatCurrency(ticketInvoiceAmount, ticketPaymentAsset, numLocale)} ${ticketPaymentAsset}` : '')
+    : `${formatCurrency(displayTotalAmount, displayCurrency, numLocale)} ${displayCurrency}`;
+
+  const shareOrderUrl = isTicket
+    ? ticketPayUrl
+    : (orderData?.payUrl || (orderData?.orderId ? `https://dizzitup.com/orders/${orderData.orderId}` : ''));
+
+  const shareOrderMessage = (canShare && orderData?.orderId)
+    ? t('share.orderShareMessage', 'Can you please pay for my order {{orderId}} ({{amount}}) on DizzitUp?', {
+        orderId: orderData.orderId,
+        amount: shareFormattedAmount,
+      })
+    : '';
+
   const shareOrder = () => {
     setShowShareModal(true);
   };
 
   const copyOrder = async () => {
-    await Clipboard.setStringAsync(orderData.orderId);
+    const refToCopy = orderData.paymentLinkId || orderData.orderId;
+    await Clipboard.setStringAsync(refToCopy);
     setToast({
       title: t('orderConfirmation.orderRefCopiedTitle', 'Reference Copied!'),
       message: t(
         'orderConfirmation.orderRefCopied',
         "Order reference {{id}} copied to clipboard.",
-        { id: orderData.orderId }
+        { id: refToCopy }
       ),
     });
   };
@@ -181,6 +214,11 @@ export default function OrderConfirmationScreen({ route }) {
     if (exactMatch && exactMatch.balance !== undefined) {
       return parseFloat(exactMatch.balance || 0);
     }
+
+    if (cleanSym === 'DZY' && (targetChain === 'polygon' || !targetChain)) {
+      return Number(user?.balanceDZY ?? (user?.allBalances?.DZY || 0));
+    }
+
     return 0;
   };
 
@@ -281,7 +319,39 @@ export default function OrderConfirmationScreen({ route }) {
     `;
   };
 
+  const stablecoinDiscountPercent = useMemo(() => {
+    if (orderData?.paymentRail !== 'crypto') return 0;
+    if (orderData?.stablecoinDiscount?.percent) {
+      return Number(orderData.stablecoinDiscount.percent) || 0;
+    }
+    const ticketPct = orderData?.ticketInvoice?.discount_percent ?? orderData?.ticketInvoice?.metadata?.discount_percent;
+    if (ticketPct) return Number(ticketPct) || 0;
+    return 0;
+  }, [orderData]);
+
+  const isInsufficientFunds = useMemo(() => {
+    if (orderData?.paymentRail !== 'crypto') return false;
+    const chosenToken = (orderData?.selectedToken || 'USDC').toUpperCase();
+    if (chosenToken === 'DZY') {
+      const costDZY = parseFloat(orderData?.totalDZY) || 0;
+      return (user?.balanceDZY || 0) < costDZY;
+    }
+    const chosenChain = orderData?.network || 'Polygon';
+    const amountToPay = (isTicket && (orderData?.ticketInvoice?.amount !== undefined || orderData?.ticketInvoice?.expected_amount_usd !== undefined))
+      ? (orderData?.ticketInvoice?.amount ?? orderData?.ticketInvoice?.expected_amount_usd)
+      : parseFloat(orderData?.totalUSDC || 0);
+    const chainBal = getChainBalanceForToken(chosenToken, chosenChain);
+    return chainBal < amountToPay;
+  }, [orderData, isTicket, user]);
+
   const handleConfirmPurchase = () => {
+    if (isInsufficientFunds) {
+      AppToast.showError(
+        t('orderVerification.notEnoughBalance', 'Not enough balance'),
+        t('common.error', 'Error')
+      );
+      return;
+    }
     if (isPhysical) {
       setShowEscrowModal(true);
     } else {
@@ -291,7 +361,7 @@ export default function OrderConfirmationScreen({ route }) {
 
   // Physical goods demo flow (kept 100% intact)
   const executePhysicalDemoOrder = async () => {
-    if (loading) return;
+    if (loading || isTicket || !isPhysical) return;
     setLoading(true);
 
     try {
@@ -310,6 +380,19 @@ export default function OrderConfirmationScreen({ route }) {
           );
           setLoading(false);
           return;
+        }
+
+        if (token !== 'DZY') {
+          const chainBal = getChainBalanceForToken(token, orderData.network);
+          const amountToPay = parseFloat(orderData.totalUSDC || 0);
+          if (chainBal < amountToPay) {
+            setLoading(false);
+            AppToast.showError(
+              t('orderVerification.notEnoughBalance', 'Not enough balance'),
+              t('common.error', 'Error')
+            );
+            return;
+          }
         }
 
         // Deduct DZY if paid with DZY
@@ -359,7 +442,7 @@ export default function OrderConfirmationScreen({ route }) {
           ? `${orderData.items[0].name} ${t('orderConfirmation.moreItems', '+ {{count}} more', { count: orderData.items.length - 1 })}`
           : (orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', 'Marketplace Purchase'));
 
-        navigation.navigate('PaymentSuccessScreen', {
+        navigation.replace('PaymentSuccessScreen', {
           transaction: {
             title: orderTitle,
             amount: displayTotalAmount,
@@ -373,6 +456,8 @@ export default function OrderConfirmationScreen({ route }) {
             recipientAddress: orderData.recipient?.address,
             recipientCountry: orderData.recipient?.country || user?.country,
             merchantName: orderData.merchant?.name,
+            merchant: orderData.merchant,
+            shop: orderData.merchant || orderData.shop,
             date: new Date().toISOString(),
           },
         });
@@ -422,7 +507,7 @@ export default function OrderConfirmationScreen({ route }) {
           clearCart();
         }
         setLoading(false);
-        navigation.navigate('PaymentSuccessScreen', {
+        navigation.replace('PaymentSuccessScreen', {
           transaction: {
             title: orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', 'Marketplace Purchase'),
             amount: displayTotalAmount,
@@ -435,6 +520,8 @@ export default function OrderConfirmationScreen({ route }) {
             recipientAddress: orderData.recipient?.address,
             recipientCountry: orderData.recipient?.country || user?.country,
             merchantName: orderData.merchant?.name,
+            merchant: orderData.merchant,
+            shop: orderData.merchant || orderData.shop,
             date: new Date().toISOString(),
           },
         });
@@ -461,9 +548,252 @@ export default function OrderConfirmationScreen({ route }) {
       const token = orderData.selectedToken || 'USDC';
       const network = orderData.network || 'Polygon';
 
-      // Rule 8: For services, ALL rails (card, Mobile Money, crypto) must first create the order
-      // in the backend with status payment pending and amount computed by the backend from the DB.
-      // Route used: POST /api/marketplace/transactions (webhookRoutes.ts:67)
+      // ── SPECIAL CASE: TICKET STABLECOIN CHECKOUT (Plan B) ──
+      if (rail === 'crypto' && isTicket) {
+        const ticketItem = orderData.items[0];
+        const ticketCheckoutPayload = {
+          productId: ticketItem.productId || ticketItem.id,
+          quantity: ticketItem.quantity || 1,
+          rail: 'stablecoin',
+          token: token || 'USDC',
+          chain: network || 'polygon',
+          buyer: {
+            name: user?.name || user?.full_name || 'Buyer',
+            email: user?.email || session?.user?.email,
+            phone: user?.mobile_number || user?.phone || user?.phone_number || '',
+          },
+          beneficiary: beneficiary && !beneficiary.isForMe ? {
+            id: beneficiary.id || null,
+            name: beneficiary.name,
+            phone: beneficiary.phone,
+            email: beneficiary.email,
+          } : null,
+        };
+
+        const ticketInvoice = orderData.ticketInvoice || await buyGoodsApi.ticketCheckout(ticketCheckoutPayload);
+        console.log('[ticketCheckout] Active invoice:', ticketInvoice);
+
+        const acceptedAssets = (ticketInvoice.accepted_assets || ticketInvoice.acceptedAssets || []).map((a) => String(a).toUpperCase());
+        const acceptedChains = (ticketInvoice.accepted_chains || ticketInvoice.acceptedChains || []).map((c) => String(c).toLowerCase());
+        const chosenToken = token.toUpperCase();
+        const chosenChain = network.toLowerCase();
+
+        if (acceptedAssets.length > 0 && !acceptedAssets.includes(chosenToken)) {
+          throw new Error(
+            t(
+              'orderConfirmation.unsupportedChainToken',
+              'The selected token is not supported for this ticket. Supported tokens: {{tokens}}',
+              { tokens: acceptedAssets.join(', ') }
+            )
+          );
+        }
+        if (acceptedChains.length > 0 && !acceptedChains.includes(chosenChain)) {
+          throw new Error(
+            t(
+              'orderConfirmation.unsupportedChainToken',
+              'The selected network is not supported for this ticket. Supported networks: {{networks}}',
+              { networks: acceptedChains.join(', ') }
+            )
+          );
+        }
+
+        const payToAddress = ticketInvoice.pay_to_addresses?.[chosenChain] || ticketInvoice.payToAddresses?.[chosenChain] || ticketInvoice.pay_to_address || ticketInvoice.payToAddress;
+        if (!payToAddress) {
+          throw new Error(t('orderConfirmation.noMerchantWallet', 'The merchant does not have an active wallet address on this network.'));
+        }
+        const amountToPay = (ticketInvoice.amount !== undefined ? ticketInvoice.amount : ticketInvoice.expected_amount_usd) || orderData.totalUSDC;
+
+        // Balance check before paying
+        const chainBal = getChainBalanceForToken(chosenToken, chosenChain);
+        if (chainBal < amountToPay) {
+          setLoading(false);
+          AppToast.showError(
+            t('orderVerification.notEnoughBalance', 'Not enough balance'),
+            t('common.error', 'Error')
+          );
+          return;
+        }
+
+        const walletIdentity = getWalletIdentity(user, session);
+        const authToken = walletIdentity.token;
+        const isSolana = chosenChain === 'solana';
+        const fromAddress = isSolana ? walletIdentity.solana : walletIdentity.evm;
+
+        if (!authToken || !fromAddress) {
+          throw new Error(
+            walletIdentity.isMerchant
+              ? 'Merchant business wallet is not ready. Please refresh the app.'
+              : 'Wallet is not ready. Please refresh the app.'
+          );
+        }
+
+        let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
+        if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) {
+          DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
+        } else if (Platform.OS === 'ios' && DIZZY_URL.includes('10.0.2.2')) {
+          DIZZY_URL = DIZZY_URL.replace('10.0.2.2', 'localhost');
+        }
+
+        const sendPayload = {
+          toAddress: payToAddress,
+          fromAddress,
+          amount: parseFloat(amountToPay),
+          token: chosenToken,
+          chain: chosenChain,
+          metadata: {
+            recipientName: orderData.merchant?.name || 'Ticket Merchant',
+            orderId: orderData.orderId,
+            paymentLinkId: ticketInvoice.paymentLinkId,
+            type: 'ticket_stablecoin_payment',
+          },
+        };
+
+        console.log('Sending real ticket stablecoin payment to:', DIZZY_URL, sendPayload);
+
+        const sendRes = await fetch(`${DIZZY_URL}/wallet/send`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify(sendPayload),
+        });
+
+        const sendData = await sendRes.json().catch(() => ({}));
+        let txHash = null;
+
+        if (!sendRes.ok || !sendData.success) {
+          if (sendData.status === 'requires-handshake' || sendData.crossmintStatus === 'awaiting-approval') {
+            const txId = sendData.txId || sendData.txHash || sendData.id;
+            const actualSignerEmail = sendData.signerAddress?.replace('email:', '') || user?.email;
+
+            if (txId && typeof getWallet === 'function') {
+              const chainName = isSolana ? 'solana' : normalizeChainName(chosenChain);
+              if (!chainName) {
+                const chainErr = t('orderConfirmation.missing_chain', 'Blockchain network is missing. Please select a valid network.');
+                throw new Error(chainErr);
+              }
+              const activeWallet = await getWallet({ chain: chainName });
+              if (activeWallet) {
+                if (actualSignerEmail) {
+                  await activeWallet.useSigner({ type: 'email', email: actualSignerEmail });
+                }
+                await activeWallet.approve({ transactionId: txId });
+              }
+            }
+
+            let confirmedHash = txId;
+            try {
+              for (let p = 0; p < 8; p++) {
+                await new Promise((r) => setTimeout(r, 2000));
+                const pollRes = await fetch(`${DIZZY_URL}/swap/check-crossmint-status/${txId}`, {
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${authToken}`,
+                  },
+                });
+                if (pollRes.ok) {
+                  const checkData = await pollRes.json().catch(() => ({}));
+                  const realHash = checkData.blockchainHash || checkData.onChain?.txHash;
+                  if (realHash) {
+                    confirmedHash = realHash;
+                    break;
+                  }
+                }
+              }
+            } catch (pollErr) {
+              console.warn('[Crossmint poll note]:', pollErr?.message);
+            }
+            txHash = confirmedHash;
+          } else {
+            const errMsg = sendData.error || sendData.message || t('orderConfirmation.orderFailed', 'Payment transfer failed');
+            throw new Error(errMsg);
+          }
+        } else {
+          txHash = sendData.txHash || sendData.transactionId || sendData.transaction?.id;
+        }
+
+        if (!txHash) {
+          throw new Error(t('orderConfirmation.noTxHash', 'Failed to retrieve transaction reference.'));
+        }
+
+        const paymentLinkId = ticketInvoice.paymentLinkId || ticketInvoice.payment_link_id;
+        const invoiceId = ticketInvoice.invoiceId || ticketInvoice.id;
+        const resolvedTicketRef = paymentLinkId || invoiceId || orderData.orderId;
+
+        // Backend confirmation of stablecoin hash
+        let isConfirmed = false;
+        for (let attempt = 1; attempt <= 6; attempt++) {
+          try {
+            const confirmRes = await buyGoodsApi.confirmTicketStablecoinHash({
+              paymentLinkId,
+              txHash,
+            });
+            console.log(`[confirmTicketStablecoinHash] Attempt ${attempt} result:`, confirmRes);
+            if (confirmRes && (confirmRes.status === 'paid' || confirmRes.status === 'confirmed' || confirmRes.invoice?.status === 'paid')) {
+              isConfirmed = true;
+              break;
+            }
+          } catch (err) {
+            console.log(`[confirmTicketStablecoinHash] Attempt ${attempt} note:`, err?.message);
+          }
+          if (attempt < 6) {
+            await new Promise((r) => setTimeout(r, 3000));
+          }
+        }
+
+        if (isConfirmed) {
+          if (!orderData?.isDirectOrder) {
+            clearCart();
+          }
+          setLoading(false);
+          const orderTitle = ticketItem?.name || t('paymentSuccess.ticketPurchase', 'Ticket Purchase');
+
+          navigation.replace('PaymentSuccessScreen', {
+            transaction: {
+              title: orderTitle,
+              amount: displayTotalAmount,
+              currency: displayCurrency,
+              amountCrypto: `${amountToPay} ${chosenToken}`,
+              paymentMethod: chosenToken,
+              orderId: resolvedTicketRef,
+              invoiceId,
+              paymentLinkId,
+              txHash,
+              recipientName: beneficiary?.name || user?.name,
+              recipientCountry: orderData.recipient?.country || user?.country,
+              merchantName: orderData.merchant?.name,
+              merchant: orderData.merchant,
+              shop: orderData.merchant || orderData.shop,
+              date: new Date().toISOString(),
+            },
+          });
+          return;
+        } else {
+          setLoading(false);
+          AppToast.showInfo(
+            t('orderConfirmation.paymentPendingDesc', 'Your transfer has been submitted to the blockchain and is pending confirmation.'),
+            t('orderConfirmation.paymentPending', 'Payment pending')
+          );
+          navigation.navigate('PaymentInProgressScreen', {
+            orderId: resolvedTicketRef,
+            orderData: {
+              ...orderData,
+              orderId: resolvedTicketRef,
+              currency: displayCurrency,
+              displayCurrency,
+              displayTotalAmount,
+              isPhysical: false,
+              txHash,
+              paymentLinkId,
+              paymentStatus: 'pending',
+            },
+          });
+          return;
+        }
+      }
+
+      // ── GENERAL SERVICE ORDER FLOW (Crypto, MoMo, Card) ──
       const txPayload = {
         sponsorUserId: user?.id || null,
         beneficiaryUserId: user?.id || null,
@@ -481,6 +811,14 @@ export default function OrderConfirmationScreen({ route }) {
           status: 'payment_pending',
           merchantName: orderData.merchant?.name,
           currency: apiCurrency,
+          recipientName: beneficiary?.name || orderData.recipient?.name,
+          recipientPhone: beneficiary?.phone || orderData.recipient?.phone,
+          beneficiaryName: beneficiary?.name || orderData.recipient?.name,
+          beneficiaryPhone: beneficiary?.phone || orderData.recipient?.phone,
+          beneficiaryEmail: beneficiary?.email || null,
+          beneficiaryId: beneficiary?.id || null,
+          buyer_name: user?.name || user?.full_name || 'Buyer',
+          buyer_email: user?.email || session?.user?.email || null,
         },
       };
 
@@ -493,7 +831,6 @@ export default function OrderConfirmationScreen({ route }) {
 
       // 1. CRYPTO PAYMENT FOR SERVICES (USDC, USDT, EURC, DZY)
       if (rail === 'crypto') {
-        // Rule 2: The backend decides where and how much to pay, never the app
         let payToAddress = backendTxRes?.cryptoPayment?.payToAddress;
         let amountToPay = backendTxRes?.cryptoPayment?.amount;
         let cryptoToken = backendTxRes?.cryptoPayment?.token || token;
@@ -514,7 +851,6 @@ export default function OrderConfirmationScreen({ route }) {
           throw new Error(t('orderConfirmation.noMerchantWallet', 'The merchant does not have an active wallet address on this network.'));
         }
 
-        // Rule 1: Balance check before paying
         const chainBal = getChainBalanceForToken(cryptoToken, cryptoChain);
         if (chainBal < amountToPay) {
           setLoading(false);
@@ -525,7 +861,6 @@ export default function OrderConfirmationScreen({ route }) {
           return;
         }
 
-        // Rule 3: The app sends the payment with REAL send (/wallet/send + Crossmint approval)
         const walletIdentity = getWalletIdentity(user, session);
         const authToken = walletIdentity.token;
         const isSolana = cryptoChain === 'solana';
@@ -592,7 +927,30 @@ export default function OrderConfirmationScreen({ route }) {
                 await activeWallet.approve({ transactionId: txId });
               }
             }
-            txHash = txId;
+
+            let confirmedHash = txId;
+            try {
+              for (let p = 0; p < 8; p++) {
+                await new Promise((r) => setTimeout(r, 2000));
+                const pollRes = await fetch(`${DIZZY_URL}/swap/check-crossmint-status/${txId}`, {
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${authToken}`,
+                  },
+                });
+                if (pollRes.ok) {
+                  const checkData = await pollRes.json().catch(() => ({}));
+                  const realHash = checkData.blockchainHash || checkData.onChain?.txHash;
+                  if (realHash) {
+                    confirmedHash = realHash;
+                    break;
+                  }
+                }
+              }
+            } catch (pollErr) {
+              console.warn('[Crossmint poll note]:', pollErr?.message);
+            }
+            txHash = confirmedHash;
           } else {
             const errMsg = sendData.error || sendData.message || t('orderConfirmation.orderFailed', 'Payment transfer failed');
             throw new Error(errMsg);
@@ -605,8 +963,6 @@ export default function OrderConfirmationScreen({ route }) {
           throw new Error(t('orderConfirmation.noTxHash', 'Failed to retrieve transaction reference.'));
         }
 
-        // Rule 4: Send txHash to backend route that verifies on-chain and marks order paid
-        // Rule 5: Success screen ONLY after backend confirms
         let isConfirmed = false;
         for (let attempt = 1; attempt <= 5; attempt++) {
           try {
@@ -637,7 +993,7 @@ export default function OrderConfirmationScreen({ route }) {
             ? `${orderData.items[0].name} ${t('orderConfirmation.moreItems', '+ {{count}} more', { count: orderData.items.length - 1 })}`
             : (orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', 'Marketplace Purchase'));
 
-          navigation.navigate('PaymentSuccessScreen', {
+          navigation.replace('PaymentSuccessScreen', {
             transaction: {
               title: orderTitle,
               amount: displayTotalAmount,
@@ -649,12 +1005,13 @@ export default function OrderConfirmationScreen({ route }) {
               recipientName: orderData.merchant?.name,
               recipientCountry: orderData.recipient?.country || user?.country,
               merchantName: orderData.merchant?.name,
+              merchant: orderData.merchant,
+              shop: orderData.merchant || orderData.shop,
               date: new Date().toISOString(),
             },
           });
           return;
         } else {
-          // Rule 5: If transfer is sent but not verified yet: "Payment pending", cart kept
           setLoading(false);
           AppToast.showInfo(
             t('orderConfirmation.paymentPendingDesc', 'Your transfer has been submitted to the blockchain and is pending confirmation.'),
@@ -687,6 +1044,12 @@ export default function OrderConfirmationScreen({ route }) {
             metadata: {
               recipientPhone: orderData.recipient?.phone,
               recipientName: orderData.recipient?.name,
+              beneficiaryPhone: beneficiary?.phone,
+              beneficiaryName: beneficiary?.name,
+              beneficiaryEmail: beneficiary?.email,
+              beneficiaryId: beneficiary?.id,
+              buyer_name: user?.name || user?.full_name || 'Buyer',
+              buyer_email: user?.email || session?.user?.email || null,
             },
           });
         } catch (orchestrateErr) {
@@ -717,7 +1080,7 @@ export default function OrderConfirmationScreen({ route }) {
           customer: {
             name: orderData.recipient?.name,
             phone: orderData.recipient?.phone,
-            email: user?.email || 'client@dizzitup.com',
+            email: user?.email || session?.user?.email || null,
           },
         });
 
@@ -831,7 +1194,7 @@ export default function OrderConfirmationScreen({ route }) {
           <View style={styles.sectionTitleRow}>
             <Text style={styles.sectionTitle}>{t('orderConfirmation.youAreBuying', 'You are buying')}</Text>
             <TouchableOpacity onPress={copyOrder} style={styles.orderRefBadge}>
-              <Text style={styles.orderRefText}>{orderData.orderId}</Text>
+              <Text style={styles.orderRefText}>{orderData.paymentLinkId || orderData.orderId}</Text>
               <Ionicons name="copy-outline" size={12} color="#64748B" style={{ marginLeft: 4 }} />
             </TouchableOpacity>
           </View>
@@ -858,7 +1221,7 @@ export default function OrderConfirmationScreen({ route }) {
               </View>
               <View style={styles.productPriceCol}>
                 <Text style={styles.productPrice}>
-                  {(Number(item.displayPrice ?? item.price) || 0).toLocaleString(numLocale)} {displayCurrency}
+                  {formatCurrency(item.displayPrice ?? item.price, displayCurrency, numLocale)} {displayCurrency}
                 </Text>
                 <View style={styles.qtyBadge}>
                   <Text style={styles.qtyBadgeText}>{t('orderConfirmation.qty', "Qty: {{qty}}", { qty: item.quantity })}</Text>
@@ -908,7 +1271,9 @@ export default function OrderConfirmationScreen({ route }) {
 
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>
-              {!isPhysical
+              {isTicket
+                ? t('orderConfirmation.eventVenue', 'Event venue')
+                : !isPhysical
                 ? t('orderConfirmation.providerAddress', 'Provider location')
                 : orderData.deliveryOption === 'pickup'
                 ? t('orderConfirmation.storeAddress', 'Store address')
@@ -923,13 +1288,21 @@ export default function OrderConfirmationScreen({ route }) {
 
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>
-              {!isPhysical
+              {isTicket
+                ? t('orderConfirmation.ticketDeliveryMode', 'Delivery mode')
+                : !isPhysical
                 ? t('orderConfirmation.serviceMode', 'Service type')
                 : t('orderConfirmation.deliveryMode', 'Delivery mode')}
             </Text>
             <Text style={styles.detailValue}>
-              {!isPhysical
-                ? t('orderConfirmation.directService', 'Direct fulfillment')
+              {isTicket
+                ? t('orderConfirmation.digitalTicketDelivery', 'Digital ticket (Email / SMS)')
+                : !isPhysical
+                ? (orderData.deliveryOption === 'online'
+                    ? t('orderVerification.deliveryOnline', 'Online')
+                    : orderData.deliveryOption === 'on_site'
+                    ? t('orderVerification.deliveryOnSite', 'On site')
+                    : t('orderConfirmation.directService', 'Direct fulfillment'))
                 : orderData.deliveryOption === 'home' || orderData.deliveryOption === 'domicile'
                 ? t('orderConfirmation.homeDelivery', 'Home delivery')
                 : t('orderConfirmation.storePickup', 'Store pickup')}
@@ -940,36 +1313,52 @@ export default function OrderConfirmationScreen({ route }) {
 
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('orderConfirmation.subtotal', 'Subtotal')}</Text>
-            <Text style={styles.detailValue}>{(Number(displaySubtotal) || 0).toLocaleString(numLocale)} {displayCurrency}</Text>
+            <Text style={styles.detailValue}>{formatCurrency(displaySubtotal, displayCurrency, numLocale)} {displayCurrency}</Text>
           </View>
 
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('orderConfirmation.deliveryFee', 'Delivery fee')}</Text>
-            <Text style={styles.detailValue}>
-              {displayDeliveryFee > 0
-                ? `${Number(displayDeliveryFee).toLocaleString(numLocale)} ${displayCurrency}`
-                : t('orderConfirmation.free', 'Free')}
-            </Text>
-          </View>
+          {!isTicket && (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>{t('orderConfirmation.deliveryFee', 'Delivery fee')}</Text>
+              <Text style={styles.detailValue}>
+                {displayDeliveryFee > 0
+                  ? `${formatCurrency(displayDeliveryFee, displayCurrency, numLocale)} ${displayCurrency}`
+                  : t('orderConfirmation.free', 'Free')}
+              </Text>
+            </View>
+          )}
 
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>{t('orderConfirmation.networkFee', 'Network service fee')}</Text>
-            <Text style={styles.detailValue}>{(Number(displayPlatformFee) || 0).toLocaleString(numLocale)} {displayCurrency}</Text>
-          </View>
+          {!isTicket && (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>{t('orderConfirmation.networkFee', 'Network service fee')}</Text>
+              <Text style={styles.detailValue}>{formatCurrency(displayPlatformFee, displayCurrency, numLocale)} {displayCurrency}</Text>
+            </View>
+          )}
 
           <View style={[styles.detailRow, styles.totalRow]}>
             <Text style={styles.totalLabel}>{t('orderConfirmation.netTotal', 'Net total')}</Text>
             <View style={{ alignItems: 'flex-end' }}>
-              <Text style={styles.totalValueMain}>
+              {stablecoinDiscountPercent > 0 && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 3 }}>
+                  <Text style={{ fontSize: 13, color: '#94A3B8', textDecorationLine: 'line-through', marginRight: 6 }}>
+                    {orderData.stablecoinDiscount?.undiscountedUSDC || (orderData.totalUSDC ? (parseFloat(orderData.totalUSDC) / (1 - stablecoinDiscountPercent / 100)).toFixed(2) : '')} {orderData.selectedToken}
+                  </Text>
+                  <View style={{ backgroundColor: '#DCFCE7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, borderWidth: 1, borderColor: '#86EFAC' }}>
+                    <Text style={{ fontSize: 11, fontFamily: 'SpaceGrotesk_700Bold', color: '#15803D' }}>
+                      -{stablecoinDiscountPercent}%
+                    </Text>
+                  </View>
+                </View>
+              )}
+              <Text style={[styles.totalValueMain, stablecoinDiscountPercent > 0 && { color: '#059669' }]}>
                 {orderData.paymentRail === 'crypto'
                   ? orderData.selectedToken === 'DZY'
                     ? `${orderData.totalDZY} DZY`
-                    : `${orderData.totalUSDC} ${orderData.selectedToken}`
-                  : `${(Number(displayTotalAmount) || 0).toLocaleString(numLocale)} ${displayCurrency}`}
+                    : `${(isTicket && (orderData.ticketInvoice?.amount !== undefined || orderData.ticketInvoice?.expected_amount_usd !== undefined) ? (orderData.ticketInvoice?.amount ?? orderData.ticketInvoice?.expected_amount_usd) : orderData.totalUSDC)} ${orderData.selectedToken}`
+                  : `${formatCurrency(displayTotalAmount, displayCurrency, numLocale)} ${displayCurrency}`}
               </Text>
               <Text style={styles.totalValueSub}>
                 {orderData.paymentRail === 'crypto'
-                  ? `≈ ${(Number(displayTotalAmount) || 0).toLocaleString(numLocale)} ${displayCurrency}`
+                  ? `≈ ${formatCurrency(displayTotalAmount, displayCurrency, numLocale)} ${displayCurrency}`
                   : `≈ ${orderData.totalUSDC} USDC`}
               </Text>
             </View>
@@ -977,23 +1366,25 @@ export default function OrderConfirmationScreen({ route }) {
         </View>
 
         {/* Share Banner */}
-        <View style={styles.shareBanner}>
-          <View style={styles.shareBannerLeft}>
-            <View style={styles.shareIconCircle}>
-              <Ionicons name="people-outline" size={22} color="#3B82F6" />
+        {canShare && (
+          <View style={styles.shareBanner}>
+            <View style={styles.shareBannerLeft}>
+              <View style={styles.shareIconCircle}>
+                <Ionicons name="people-outline" size={22} color="#3B82F6" />
+              </View>
+              <View style={styles.shareContent}>
+                <Text style={styles.shareTitle}>{t('orderConfirmation.shareTitle', 'Share with a loved one')}</Text>
+                <Text style={styles.shareText}>
+                  {t('orderConfirmation.shareText', 'A friend, family member, or sponsor can pay for this order remotely.')}
+                </Text>
+              </View>
             </View>
-            <View style={styles.shareContent}>
-              <Text style={styles.shareTitle}>{t('orderConfirmation.shareTitle', 'Share with a loved one')}</Text>
-              <Text style={styles.shareText}>
-                {t('orderConfirmation.shareText', 'A friend, family member, or sponsor can pay for this order remotely.')}
-              </Text>
-            </View>
+            <TouchableOpacity style={styles.btnShare} onPress={shareOrder}>
+              <Ionicons name="arrow-redo-outline" size={15} color="#3B82F6" style={{ marginRight: 4 }} />
+              <Text style={styles.btnShareText}>{t('orderConfirmation.shareBtn', 'Share')}</Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.btnShare} onPress={shareOrder}>
-            <Ionicons name="arrow-redo-outline" size={15} color="#3B82F6" style={{ marginRight: 4 }} />
-            <Text style={styles.btnShareText}>{t('orderConfirmation.shareBtn', 'Share')}</Text>
-          </TouchableOpacity>
-        </View>
+        )}
       </ScrollView>
 
       {/* Bottom Fixed Action Button */}
@@ -1005,22 +1396,29 @@ export default function OrderConfirmationScreen({ route }) {
         paddingTop={12}
       >
         <TouchableOpacity
-          style={[styles.btnConfirm, loading && { opacity: 0.7 }]}
+          style={[styles.btnConfirm, (loading || isInsufficientFunds) && { opacity: 0.6, backgroundColor: isInsufficientFunds ? '#94A3B8' : styles.btnConfirm.backgroundColor }]}
           onPress={handleConfirmPurchase}
-          disabled={loading}
+          disabled={loading || isInsufficientFunds}
           activeOpacity={0.88}
         >
           {loading ? (
             <ActivityIndicator color="#1A2840" />
           ) : (
             <View style={styles.btnConfirmCenter}>
-              <Ionicons name="lock-closed" size={16} color="#1A2840" style={{ marginRight: 8 }} />
+              <Ionicons
+                name={isInsufficientFunds ? "alert-circle-outline" : "lock-closed"}
+                size={16}
+                color="#1A2840"
+                style={{ marginRight: 8 }}
+              />
               <Text style={styles.btnConfirmTitle} maxFontSizeMultiplier={1.3}>
-                {t('orderConfirmation.confirmAndPay', 'Confirm and Pay')}
+                {isInsufficientFunds
+                  ? t('orderVerification.notEnoughBalance', 'Not enough balance')
+                  : t('orderConfirmation.confirmAndPay', 'Confirm and Pay')}
                 {' • '}
                 {orderData.paymentRail === 'crypto'
-                  ? (orderData.selectedToken === 'DZY' ? `${orderData.totalDZY} DZY` : `${orderData.totalUSDC} ${orderData.selectedToken}`)
-                  : `${(Number(displayTotalAmount) || 0).toLocaleString(numLocale)} ${displayCurrency}`}
+                  ? (orderData.selectedToken === 'DZY' ? `${orderData.totalDZY} DZY` : `${(isTicket && (orderData.ticketInvoice?.amount !== undefined || orderData.ticketInvoice?.expected_amount_usd !== undefined) ? (orderData.ticketInvoice?.amount ?? orderData.ticketInvoice?.expected_amount_usd) : orderData.totalUSDC)} ${orderData.selectedToken}`)
+                  : `${formatCurrency(displayTotalAmount, displayCurrency, numLocale)} ${displayCurrency}`}
               </Text>
             </View>
           )}
@@ -1048,7 +1446,7 @@ export default function OrderConfirmationScreen({ route }) {
                   if (!orderData?.isDirectOrder) {
                     clearCart();
                   }
-                  navigation.navigate('PaymentSuccessScreen', {
+                  navigation.replace('PaymentSuccessScreen', {
                     transaction: {
                       title: orderData.items[0]?.name || t('paymentSuccess.marketplacePurchase', "Marketplace Purchase"),
                       amount: displayTotalAmount,
@@ -1056,6 +1454,9 @@ export default function OrderConfirmationScreen({ route }) {
                       orderId: orderData.orderId,
                       escrowPin: isPhysical ? escrowPin : null,
                       recipientName: orderData.recipient?.name,
+                      merchantName: orderData.merchant?.name,
+                      merchant: orderData.merchant,
+                      shop: orderData.merchant || orderData.shop,
                     },
                   });
                 } else if (navState.url.includes('/payments/failure') || navState.url.includes('decision=DECLINE') || navState.url.includes('decision=CANCEL')) {
@@ -1153,11 +1554,8 @@ export default function OrderConfirmationScreen({ route }) {
         onClose={() => setShowShareModal(false)}
         title={t('orderConfirmation.shareTitle', 'Share with a loved one')}
         subtitle={t('orderConfirmation.shareText', 'A friend, family member, or sponsor can pay for this order remotely.')}
-        shareUrl={`https://dizzitup.com/orders/${orderData.orderId}`}
-        shareMessage={t('share.orderShareMessage', 'Can you please pay for my order {{orderId}} ({{amount}}) on DizzitUp?', {
-          orderId: orderData.orderId,
-          amount: `${(Number(orderData.totalAmount) || 0).toLocaleString(numLocale)} ${displayCurrency}`,
-        })}
+        shareUrl={shareOrderUrl}
+        shareMessage={shareOrderMessage}
         recipientPhone={orderData.recipient?.phone || ''}
       />
 

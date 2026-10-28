@@ -42,22 +42,36 @@ const localLogos = {
 };
 
 export default function CryptoIcon({ symbol, size = 36, style: customStyle }) {
-  const iconStyle = { width: size, height: size, borderRadius: size / 2, overflow: 'hidden' };
   if (!symbol) return null;
   const upper = String(symbol).trim().toUpperCase();
+  const lower = String(symbol).trim().toLowerCase();
+
+  let logoSource = null;
   if (upper === 'DZY' || upper === 'DIZZY') {
-    return <Image source={require('../../assets/brand/finalLogo_512x512.png')} style={[iconStyle, customStyle]} resizeMode="contain" />;
+    logoSource = require('../../assets/brand/finalLogo_512x512.png');
+  } else if (localLogos[symbol]) {
+    logoSource = localLogos[symbol];
+  } else if (localLogos[upper]) {
+    logoSource = localLogos[upper];
+  } else if (localLogos[lower]) {
+    logoSource = localLogos[lower];
+  } else {
+    const matchedKey = Object.keys(localLogos).find((k) => k.toLowerCase() === lower);
+    if (matchedKey) {
+      logoSource = localLogos[matchedKey];
+    }
   }
-  if (localLogos[symbol]) {
-    return <Image source={localLogos[symbol]} style={[iconStyle, customStyle]} resizeMode="contain" />;
+
+  if (logoSource) {
+    return (
+      <View style={[{ width: size, height: size, borderRadius: size / 2, overflow: 'hidden' }, customStyle]}>
+        <Image source={logoSource} style={{ width: size, height: size }} resizeMode="contain" />
+      </View>
+    );
   }
-  // Try case-insensitive lookup
-  const matchedKey = Object.keys(localLogos).find((k) => k.toLowerCase() === symbol.toLowerCase());
-  if (matchedKey) {
-    return <Image source={localLogos[matchedKey]} style={[iconStyle, customStyle]} resizeMode="contain" />;
-  }
+
   return (
-    <View style={[styles.fallback, iconStyle, customStyle]}>
+    <View style={[styles.fallback, { width: size, height: size, borderRadius: size / 2, overflow: 'hidden' }, customStyle]}>
       <Text style={styles.text}>{symbol?.slice(0, 1)}</Text>
     </View>
   );

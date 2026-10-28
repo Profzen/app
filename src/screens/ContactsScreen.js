@@ -492,7 +492,7 @@ export default function ContactsScreen() {
                           setSearchQuery(contact.name);
                           setIsDropdownOpen(false);
                           if (nextScreen) {
-                            navigation.navigate(nextScreen, { beneficiary: contact, contact });
+                            navigation.navigate(nextScreen, { beneficiary: contact, contact, ...(route.params?.returnParams || {}) });
                           }
                         }}
                         activeOpacity={0.7}
@@ -545,7 +545,7 @@ export default function ContactsScreen() {
                           setIsDropdownOpen(false);
                           Keyboard.dismiss();
                           if (nextScreen) {
-                            navigation.navigate(nextScreen, { beneficiary: contact, contact });
+                            navigation.navigate(nextScreen, { beneficiary: contact, contact, ...(route.params?.returnParams || {}) });
                           } else {
                             setSelectedContact(contact);
                           }
@@ -742,7 +742,7 @@ export default function ContactsScreen() {
                       contact={contact} 
                       onPress={() => {
                         if (nextScreen) {
-                          navigation.navigate(nextScreen, { beneficiary: contact, contact });
+                          navigation.navigate(nextScreen, { beneficiary: contact, contact, ...(route.params?.returnParams || {}) });
                         } else {
                           navigation.navigate('ContactProfileScreen', { 
                             contact, 

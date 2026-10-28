@@ -320,6 +320,52 @@ export const buyGoodsApi = {
       console.error('buyGoodsApi.confirmServiceCryptoPayment Error:', error);
       throw error;
     }
+  },
+
+  ticketCheckout: async (payload) => {
+    try {
+      const response = await fetch(`${BASE_URL}/tickets/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      if (!response.ok || data.error) {
+        throw new Error(data.error || 'Ticket checkout failed');
+      }
+      return data;
+    } catch (error) {
+      console.error('buyGoodsApi.ticketCheckout Error:', error);
+      throw error;
+    }
+  },
+
+  confirmTicketStablecoinHash: async ({ paymentLinkId, txHash }) => {
+    try {
+      const response = await fetch(`${BASE_URL}/tickets/confirm-stablecoin-hash`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentLinkId, txHash }),
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('buyGoodsApi.confirmTicketStablecoinHash Error:', error);
+      throw error;
+    }
+  },
+
+  getActiveDiscount: async (productId, rail = 'stablecoin') => {
+    try {
+      if (!productId) return null;
+      const response = await fetch(`${BASE_URL}/discounts/active?productId=${productId}&rail=${rail}`);
+      if (!response.ok) return null;
+      const data = await response.json();
+      return data?.discount || null;
+    } catch (error) {
+      console.warn('buyGoodsApi.getActiveDiscount error:', error);
+      return null;
+    }
   }
 };
 

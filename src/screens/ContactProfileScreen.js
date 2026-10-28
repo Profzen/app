@@ -1,7 +1,9 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar, Linking, Share, Modal } from 'react-native';
+import QRCode from 'qrcode';
+import Svg, { Rect } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
@@ -13,10 +15,25 @@ import { handleUserInviteShare } from '../utils/shareHelper';
 import { useApp } from '../context/AppContext';
 
 export default function ContactProfileScreen({ route }) {
-  const { t, user } = useApp();
+  const { t, user, isFavorite, toggleFavorite } = useApp();
   const navigation = useNavigation();
   const contact = route?.params?.contact;
   const [optionsModalVisible, setOptionsModalVisible] = useState(false);
+  const [showShareSheet, setShowShareSheet] = useState(false);
+  const [showQrInShareSheet, setShowQrInShareSheet] = useState(false);
+
+  const contactId = contact?.id || contact?.phone || contact?.name;
+  const isContactFavorite = isFavorite('contact', contactId);
+  const contactProfileUrl = contact?.storeUrl || contact?.profileUrl || (contact?.phone ? `https://dizzitup.com/invite?ref=${encodeURIComponent(contact.phone)}` : `https://dizzitup.com/invite?ref=${user?.referralCode || 'DZY500'}`);
+  const contactShareText = t('store.shareInvite', 'Connect with {{name}} on DizzitUp: {{url}}', { name: contact?.name || 'Contact', url: contactProfileUrl });
+
+  const contactQr = useMemo(() => {
+    try {
+      return QRCode.create(contactProfileUrl, { errorCorrectionLevel: 'M' });
+    } catch {
+      return null;
+    }
+  }, [contactProfileUrl]);
 
   if (!contact) {
     return (
@@ -63,6 +80,10 @@ export default function ContactProfileScreen({ route }) {
             <Ionicons name="arrow-back" size={20} color="#20365B" />
           </TouchableOpacity>
           <View style={styles.headerRightActionsPill}>
+            <TouchableOpacity style={styles.actionPillBtn} onPress={() => setShowShareSheet(true)}>
+              <Ionicons name="share-social-outline" size={18} color="#20365B" />
+            </TouchableOpacity>
+            <View style={styles.pillDivider} />
             <TouchableOpacity style={styles.actionPillBtn} onPress={() => navigation.navigate('EditBeneficiaryScreen', { isEditing: true, beneficiary: contact })}>
               <Ionicons name="pencil-outline" size={18} color="#20365B" />
             </TouchableOpacity>
@@ -332,6 +353,172 @@ export default function ContactProfileScreen({ route }) {
           AppToast.showInfo(t('common.comingSoon', "Coming Soon"));
         }}
       />
+
+      {/* Instagram-style Share Sheet Modal (Task 7) */}
+      <Modal
+        visible={showShareSheet}
+        transparent
+        animationType="slide"
+        onRequestClose={() => {
+          setShowShareSheet(false);
+          setShowQrInShareSheet(false);
+        }}
+      >
+        <TouchableOpacity
+          style={styles.modalBackdrop}
+          activeOpacity={1}
+          onPress={() => {
+            setShowShareSheet(false);
+            setShowQrInShareSheet(false);
+          }}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.modalCard}
+            onPress={(e) => e?.stopPropagation && e.stopPropagation()}
+          >
+            <View style={styles.sheetHandle} />
+
+            {/* Profile Avatar */}
+            <View style={styles.shareProfileAvatarWrapper}>
+              <Avatar
+                image={contact.avatar_url || contact.image}
+                name={contact.first_name ? `${contact.first_name} ${contact.last_name}` : contact.name}
+                size={74}
+              />
+              {isRegisteredUser && (
+                <View style={styles.shareProfileVerifiedBadge}>
+                  <Ionicons name="checkmark-circle" size={18} color="#10B981" />
+                </View>
+              )}
+            </View>
+
+            {/* Profile Name & Subtitle */}
+            <Text style={styles.shareProfileName} numberOfLines={2}>{contact.name}</Text>
+            <Text style={styles.shareProfileSubtitle} numberOfLines={1}>
+              {contact.relation ? `${contact.relation} • ` : ''}{contact.location || contact.phone || 'DizzitUp'}
+            </Text>
+
+            {/* QR Code view toggle */}
+            {showQrInShareSheet && contactQr ? (
+              <View style={styles.qrDisplayBox}>
+                <View style={styles.qrCodeWrapper}>
+                  <Svg width={180} height={180} viewBox={`0 0 ${contactQr.modules.size} ${contactQr.modules.size}`}>
+                    <Rect width={contactQr.modules.size} height={contactQr.modules.size} fill="#FFFFFF" />
+                    {Array.from(contactQr.modules.data).map((cell, index) =>
+                      cell ? (
+                        <Rect
+                          key={index}
+                          x={index % contactQr.modules.size}
+                          y={Math.floor(index / contactQr.modules.size)}
+                          width="1"
+                          height="1"
+                          fill="#1A2840"
+                        />
+                      ) : null
+                    )}
+                  </Svg>
+                </View>
+                <Text style={styles.qrScanHint}>{t('store.scanToVisit', 'Scan to visit this store on any device')}</Text>
+              </View>
+            ) : null}
+
+            {/* 4 Instagram-style Action Buttons: Follow, Share, Copy link, QR code */}
+            <View style={styles.instaActionsRow}>
+              {/* 1. Follow / Favorite */}
+              <TouchableOpacity
+                style={styles.instaActionItem}
+                onPress={async () => {
+                  await toggleFavorite('contact', contactId);
+                }}
+                activeOpacity={0.8}
+              >
+                <View style={[styles.instaActionCircle, isContactFavorite && styles.instaActionCircleActive]}>
+                  <Ionicons
+                    name={isContactFavorite ? "heart" : "heart-outline"}
+                    size={24}
+                    color={isContactFavorite ? "#EF4444" : "#1A2840"}
+                  />
+                </View>
+                <Text style={styles.instaActionLabel} numberOfLines={1}>
+                  {isContactFavorite ? t('store.following', 'Following') : t('store.follow', 'Follow')}
+                </Text>
+              </TouchableOpacity>
+
+              {/* 2. Share */}
+              <TouchableOpacity
+                style={styles.instaActionItem}
+                onPress={async () => {
+                  try {
+                    await Share.share({
+                      title: contact.name,
+                      message: contactShareText,
+                      url: contactProfileUrl,
+                    });
+                  } catch (err) {
+                    console.log('Share error:', err?.message);
+                  }
+                }}
+                activeOpacity={0.8}
+              >
+                <View style={styles.instaActionCircle}>
+                  <Ionicons name="share-social-outline" size={24} color="#1A2840" />
+                </View>
+                <Text style={styles.instaActionLabel} numberOfLines={1}>
+                  {t('common.share', 'Share')}
+                </Text>
+              </TouchableOpacity>
+
+              {/* 3. Copy Link */}
+              <TouchableOpacity
+                style={styles.instaActionItem}
+                onPress={async () => {
+                  await Clipboard.setStringAsync(contactProfileUrl);
+                  AppToast.showSuccess(t('common.copied', 'Link copied'));
+                }}
+                activeOpacity={0.8}
+              >
+                <View style={styles.instaActionCircle}>
+                  <Ionicons name="link-outline" size={24} color="#1A2840" />
+                </View>
+                <Text style={styles.instaActionLabel} numberOfLines={1}>
+                  {t('store.copyLink', 'Copy link')}
+                </Text>
+              </TouchableOpacity>
+
+              {/* 4. QR Code */}
+              <TouchableOpacity
+                style={styles.instaActionItem}
+                onPress={() => setShowQrInShareSheet(prev => !prev)}
+                activeOpacity={0.8}
+              >
+                <View style={[styles.instaActionCircle, showQrInShareSheet && styles.instaActionCircleActive]}>
+                  <Ionicons
+                    name="qr-code-outline"
+                    size={24}
+                    color={showQrInShareSheet ? "#3B82F6" : "#1A2840"}
+                  />
+                </View>
+                <Text style={styles.instaActionLabel} numberOfLines={1}>
+                  {t('store.qrCode', 'QR code')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Close Button */}
+            <TouchableOpacity
+              style={styles.modalCloseBtn}
+              onPress={() => {
+                setShowShareSheet(false);
+                setShowQrInShareSheet(false);
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.modalCloseBtnText}>{t('common.close', 'Close')}</Text>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -385,5 +572,127 @@ const styles = StyleSheet.create({
   verifiedBannerSubtext: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280', lineHeight: 15 },
   verifiedCheckBadge: { width: 22, height: 22, borderRadius: 11, backgroundColor: '#FFC759', justifyContent: 'center', alignItems: 'center', marginLeft: 8 },
   btnSendMoney: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFC759', height: 48, borderRadius: 12, marginHorizontal: 16, marginBottom: 10 },
-  btnSendMoneyText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#1A2840' }
+  btnSendMoneyText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#1A2840' },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    justifyContent: 'flex-end',
+  },
+  modalCard: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 36 : 24,
+    width: '100%',
+    alignItems: 'center',
+    boxShadow: '0px -4px 20px rgba(0,0,0,0.12)',
+    elevation: 10,
+  },
+  sheetHandle: {
+    width: 38,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#CBD5E1',
+    marginBottom: 18,
+  },
+  shareProfileAvatarWrapper: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 3,
+    borderColor: '#FFC759',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+    position: 'relative',
+    backgroundColor: '#1A2840',
+  },
+  shareProfileVerifiedBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 9,
+  },
+  shareProfileName: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 20,
+    color: '#1A2840',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  shareProfileSubtitle: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 13,
+    color: '#64748B',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  qrDisplayBox: {
+    alignItems: 'center',
+    marginVertical: 14,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  qrCodeWrapper: {
+    backgroundColor: '#FFFFFF',
+    padding: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  qrScanHint: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  instaActionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    width: '100%',
+    marginVertical: 18,
+  },
+  instaActionItem: {
+    alignItems: 'center',
+    width: 70,
+  },
+  instaActionCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  instaActionCircleActive: {
+    backgroundColor: '#EFF6FF',
+    borderColor: '#93C5FD',
+  },
+  instaActionLabel: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    color: '#1A2840',
+    textAlign: 'center',
+  },
+  modalCloseBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginTop: 4,
+  },
+  modalCloseBtnText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
+    color: '#64748B',
+  },
 });

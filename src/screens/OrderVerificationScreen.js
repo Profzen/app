@@ -27,10 +27,10 @@ import { getPaymentRailEligibility, COUNTRY_METADATA } from '../services/payment
 import PaymentRegionModal from '../components/PaymentRegionModal';
 import ScreenFooter from '../components/ScreenFooter';
 import { contactService } from '../services/contactService';
-// import SelectableContactItem from '../components/SelectableContactItem';
 import { ALL_COUNTRIES } from '../utils/countriesData';
-import { isPhysicalCart } from '../utils/productUtils';
+import { isPhysicalCart, isTicketProduct } from '../utils/productUtils';
 import { TOKENS_BY_CHAIN, WEB_DEFAULT_TOKENS } from '../config/tokensByChain';
+import { buyGoodsApi } from '../services/buyGoodsApi';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -152,7 +152,10 @@ export default function OrderVerificationScreen({ route }) {
         image: getProductCoverImage(directOrder.product),
         category: directOrder.product.category || 'Marketplace',
         offering_type: directOrder.product?.offering_type,
+        escrow_policy: directOrder.product?.escrow_policy,
         service_model: directOrder.product?.service_model,
+        metadata: directOrder.product?.metadata,
+        product: directOrder.product,
         merchantId: directOrder.shop?.id || directOrder.product?.merchant_id || null,
         merchantName:
           directOrder.shop?.shop_name ||
@@ -184,7 +187,10 @@ export default function OrderVerificationScreen({ route }) {
         image: getProductCoverImage(directOrder.product),
         category: directOrder.product.category || 'Marketplace',
         offering_type: directOrder.product?.offering_type,
+        escrow_policy: directOrder.product?.escrow_policy,
         service_model: directOrder.product?.service_model,
+        metadata: directOrder.product?.metadata,
+        product: directOrder.product,
         merchantId: directOrder.shop?.id || directOrder.product?.merchant_id || null,
         merchantName:
           directOrder.shop?.shop_name ||
@@ -198,6 +204,17 @@ export default function OrderVerificationScreen({ route }) {
       setDirectItem(null);
     }
   }, [directOrder]);
+
+  // Beneficiary state for Services & Tickets (reusing existing ContactsScreen flow)
+  const [isForMe, setIsForMe] = useState(() => !route?.params?.beneficiary);
+  const [selectedServiceBeneficiary, setSelectedServiceBeneficiary] = useState(() => route?.params?.beneficiary || null);
+
+  useEffect(() => {
+    if (route?.params?.beneficiary) {
+      setSelectedServiceBeneficiary(route.params.beneficiary);
+      setIsForMe(false);
+    }
+  }, [route?.params?.beneficiary]);
 
   // Active items list: if directItem is present (from "Buy Now"), checkout ONLY that single item.
   // Otherwise, checkout the items currently in the user's cart.
@@ -514,13 +531,15 @@ export default function OrderVerificationScreen({ route }) {
     return 0; // Free delivery if merchant hasn't specified a custom shipping rate
   }, [rawDeliveryFee, merchantObj?.currency, rawCurrency]);
 
-  const isPhysical = useMemo(() => isPhysicalCart(items), [items]);
+  const isTicket = useMemo(() => items.some(i => isTicketProduct(i) || isTicketProduct(i.product)), [items]);
+  const isPhysical = useMemo(() => !isTicket && isPhysicalCart(items), [isTicket, items]);
   const deliveryFee = isPhysical && deliveryOption === 'home' ? standardDeliveryFee : 0;
 
   // Platform network fee (~0.10 USD / ~65 FCFA) converted to transaction currency
   const platformFee = useMemo(() => {
+    if (isTicket) return 0;
     return convertCurrencyAmount(0.10, 'USD', rawCurrency);
-  }, [rawCurrency]);
+  }, [isTicket, rawCurrency]);
 
   const totalAmount = subtotal + deliveryFee + platformFee;
 
@@ -533,6 +552,160 @@ export default function OrderVerificationScreen({ route }) {
   const totalUSDT = totalAmountInUsd.toFixed(2);
   const totalDZY = (totalAmountInUsd * 10).toFixed(1); // 1 USD = 10 DZY
   const totalEURC = (totalAmountInUsd / 1.08).toFixed(2);
+
+  // Active Stablecoin Discount (from buy-goods-backend /api/discounts/active?productId=...&rail=stablecoin)
+  const [activeStablecoinDiscount, setActiveStablecoinDiscount] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchDiscount = async () => {
+      const targetId = items[0]?.product?.id || items[0]?.id || directOrder?.product?.id;
+      if (!targetId) {
+        if (isMounted) setActiveStablecoinDiscount(null);
+        return;
+      }
+      try {
+        const disc = await buyGoodsApi.getActiveDiscount(targetId, 'stablecoin');
+        if (isMounted) {
+          setActiveStablecoinDiscount(disc && disc.percent > 0 ? disc : null);
+        }
+      } catch (_) {
+        if (isMounted) setActiveStablecoinDiscount(null);
+      }
+    };
+    fetchDiscount();
+    return () => { isMounted = false; };
+  }, [items, directOrder]);
+
+  const stablecoinDiscountPercent = useMemo(() => {
+    if (activeStablecoinDiscount?.percent) return Number(activeStablecoinDiscount.percent);
+    return 0;
+  }, [activeStablecoinDiscount]);
+
+  const discountedCryptoAmounts = useMemo(() => {
+    if (stablecoinDiscountPercent <= 0) {
+      return { usdc: totalUSDC, usdt: totalUSDT, eurc: totalEURC, dzy: totalDZY };
+    }
+    const factor = 1 - stablecoinDiscountPercent / 100;
+    return {
+      usdc: (parseFloat(totalUSDC) * factor).toFixed(2),
+      usdt: (parseFloat(totalUSDT) * factor).toFixed(2),
+      eurc: (parseFloat(totalEURC) * factor).toFixed(2),
+      dzy: (parseFloat(totalDZY) * factor).toFixed(1),
+    };
+  }, [stablecoinDiscountPercent, totalUSDC, totalUSDT, totalEURC, totalDZY]);
+
+  const effectiveCryptoRates = useMemo(() => {
+    return stablecoinDiscountPercent > 0 ? discountedCryptoAmounts : {
+      usdc: totalUSDC,
+      usdt: totalUSDT,
+      eurc: totalEURC,
+      dzy: totalDZY,
+    };
+  }, [stablecoinDiscountPercent, discountedCryptoAmounts, totalUSDC, totalUSDT, totalEURC, totalDZY]);
+
+  const effectiveBuyerTotalAmount = useMemo(() => {
+    if (stablecoinDiscountPercent <= 0) return buyerTotalAmount;
+    return buyerTotalAmount * (1 - stablecoinDiscountPercent / 100);
+  }, [buyerTotalAmount, stablecoinDiscountPercent]);
+
+  // Non-physical fulfillment options: On site vs Online based on real fields
+  const nonPhysicalDeliverySupport = useMemo(() => {
+    if (isPhysical) return null;
+    const target = items[0]?.product || items[0] || directOrder?.product || {};
+    const rawMeta = target.metadata || target.product?.metadata || directOrder?.product?.metadata;
+    const metadata = typeof rawMeta === 'string'
+      ? (() => { try { return JSON.parse(rawMeta); } catch (_) { return {}; } })()
+      : (rawMeta || {});
+    const offeringType = target.offering_type || metadata.offering_type || '';
+    const isDigital = target.is_digital === true || metadata.is_digital === true || offeringType === 'digital_product';
+    const serviceModel = target.service_model || metadata.service_model || '';
+    const courseFormat = String(metadata.course_format || '').toLowerCase();
+    const consultationType = String(metadata.consultation_type || '').toLowerCase();
+    const deliveryMode = String(metadata.delivery_mode || metadata.location_type || metadata.format || metadata.delivery_type || '').toLowerCase();
+
+    // Check all real venue and location fields used across product editor, ticket service and catalog
+    const venueValue = (
+      metadata.venue ||
+      metadata.location ||
+      metadata.event_location ||
+      metadata.event_venue ||
+      metadata.address ||
+      metadata.place ||
+      target.venue ||
+      target.location ||
+      target.event_location ||
+      target.event_venue ||
+      target.address ||
+      target.product?.venue ||
+      target.product?.location ||
+      target.product?.event_location ||
+      target.product?.address ||
+      ''
+    );
+    const hasVenue = Boolean(typeof venueValue === 'string' ? venueValue.trim() : venueValue);
+
+    let supportsOnline = false;
+    let supportsOnSite = false;
+
+    if (isTicket) {
+      if (hasVenue) {
+        supportsOnSite = true;
+        supportsOnline = false;
+      } else {
+        supportsOnline = true;
+        supportsOnSite = false;
+      }
+    } else if (serviceModel === 'rental_booking') {
+      supportsOnSite = true;
+      supportsOnline = false;
+    } else if (courseFormat) {
+      if (courseFormat.includes('online')) supportsOnline = true;
+      if (courseFormat.includes('in-person') || courseFormat.includes('in person') || courseFormat.includes('onsite') || courseFormat.includes('on-site')) {
+        supportsOnSite = true;
+      }
+      if (!supportsOnline && !supportsOnSite) supportsOnSite = true;
+    } else if (consultationType) {
+      if (consultationType.includes('telemedicine') || consultationType.includes('online') || consultationType.includes('remote')) {
+        supportsOnline = true;
+      }
+      if (consultationType.includes('in-clinic') || consultationType.includes('clinic') || consultationType.includes('onsite') || consultationType.includes('on-site')) {
+        supportsOnSite = true;
+      }
+      if (!supportsOnline && !supportsOnSite) supportsOnSite = true;
+    } else if (deliveryMode) {
+      if (deliveryMode.includes('online') || deliveryMode.includes('virtual') || deliveryMode.includes('remote')) {
+        supportsOnline = true;
+      }
+      if (deliveryMode.includes('on_site') || deliveryMode.includes('onsite') || deliveryMode.includes('in_person') || deliveryMode.includes('physical')) {
+        supportsOnSite = true;
+      }
+    } else if (isDigital || offeringType === 'digital_product') {
+      supportsOnline = true;
+      supportsOnSite = false;
+    } else {
+      supportsOnSite = true;
+      supportsOnline = true;
+    }
+
+    if (!supportsOnline && !supportsOnSite) {
+      supportsOnSite = true;
+    }
+
+    return { supportsOnline, supportsOnSite };
+  }, [isPhysical, items, directOrder, isTicket]);
+
+  useEffect(() => {
+    if (!isPhysical && nonPhysicalDeliverySupport) {
+      if (nonPhysicalDeliverySupport.supportsOnline && !nonPhysicalDeliverySupport.supportsOnSite) {
+        setDeliveryOption('online');
+      } else if (nonPhysicalDeliverySupport.supportsOnSite && !nonPhysicalDeliverySupport.supportsOnline) {
+        setDeliveryOption('on_site');
+      } else if (deliveryOption !== 'online' && deliveryOption !== 'on_site') {
+        setDeliveryOption(nonPhysicalDeliverySupport.supportsOnSite ? 'on_site' : 'online');
+      }
+    }
+  }, [isPhysical, nonPhysicalDeliverySupport]);
 
   // Converted amounts in buyer's local detected currency for order summary & "≈" amounts
   const buyerSubtotal = useMemo(() => {
@@ -663,20 +836,32 @@ export default function OrderVerificationScreen({ route }) {
   }, [platformFee, rawCurrency, selectedToken, numLocale]);
 
   const selectedTokenAmount = useMemo(() => {
-    if (selectedToken === 'EURC') return parseFloat(totalEURC);
-    if (selectedToken === 'USDT') return parseFloat(totalUSDT);
-    if (selectedToken === 'DZY') return parseFloat(totalDZY);
-    return parseFloat(totalUSDC);
-  }, [selectedToken, totalEURC, totalUSDT, totalDZY, totalUSDC]);
+    const amounts = stablecoinDiscountPercent > 0 ? discountedCryptoAmounts : {
+      usdc: parseFloat(totalUSDC),
+      usdt: parseFloat(totalUSDT),
+      eurc: parseFloat(totalEURC),
+      dzy: parseFloat(totalDZY),
+    };
+    if (selectedToken === 'EURC') return parseFloat(amounts.eurc);
+    if (selectedToken === 'USDT') return parseFloat(amounts.usdt);
+    if (selectedToken === 'DZY') return parseFloat(amounts.dzy);
+    return parseFloat(amounts.usdc);
+  }, [selectedToken, stablecoinDiscountPercent, discountedCryptoAmounts, totalEURC, totalUSDT, totalDZY, totalUSDC]);
 
   const selectedNetworkTokenBalance = useMemo(() => {
     return getChainBalanceForToken(selectedToken, network);
   }, [selectedToken, network, user]);
 
-  const isServiceCryptoInsufficient = useMemo(() => {
-    if (isPhysical || paymentRail !== 'crypto') return false;
+  const isCryptoInsufficient = useMemo(() => {
+    if (paymentRail !== 'crypto') return false;
     return selectedNetworkTokenBalance < selectedTokenAmount;
-  }, [isPhysical, paymentRail, selectedNetworkTokenBalance, selectedTokenAmount]);
+  }, [paymentRail, selectedNetworkTokenBalance, selectedTokenAmount]);
+  const isServiceCryptoInsufficient = isCryptoInsufficient;
+  const selectedTokenDeficit = useMemo(() => {
+    const diff = selectedTokenAmount - selectedNetworkTokenBalance;
+    if (diff <= 0) return '0.00';
+    return selectedToken === 'DZY' ? diff.toFixed(1) : diff.toFixed(2);
+  }, [selectedTokenAmount, selectedNetworkTokenBalance, selectedToken]);
 
   const handleProceedToConfirmation = async () => {
     if (isSavingAddress) return;
@@ -688,6 +873,21 @@ export default function OrderVerificationScreen({ route }) {
     if (isServiceCryptoInsufficient) {
       AppToast.showError(t('orderVerification.notEnoughBalance', 'Not enough balance'), t('common.error', 'Error'));
       return;
+    }
+
+    // Validation for Services & Tickets Beneficiary
+    if (!isPhysical || isTicket) {
+      if (isForMe && isTicket) {
+        const buyerEmail = (user?.email || session?.user?.email || '').trim();
+        if (!buyerEmail) {
+          AppToast.showError(t('orderVerification.emailRequiredForTicket', 'A valid email is required to receive your ticket.'), t('common.error', 'Error'));
+          return;
+        }
+      }
+      if (!isForMe && !selectedServiceBeneficiary) {
+        AppToast.showError(t('orderVerification.selectBeneficiaryError', 'Please select a beneficiary from your contacts.'), t('common.error', 'Error'));
+        return;
+      }
     }
 
     let savedBeneficiaryId = null;
@@ -713,9 +913,101 @@ export default function OrderVerificationScreen({ route }) {
       savedBeneficiaryId = await saveDeliveryAddress(deliveryCityValue);
     }
 
+    let finalBeneficiary = null;
+    if (!isPhysical || isTicket) {
+      if (isForMe) {
+        finalBeneficiary = {
+          id: null,
+          name: user?.name || user?.full_name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || 'Buyer',
+          phone: user?.mobile_number || user?.phone || user?.phone_number || '',
+          email: user?.email || session?.user?.email || '',
+          isForMe: true,
+        };
+      } else if (selectedServiceBeneficiary) {
+        finalBeneficiary = {
+          id: selectedServiceBeneficiary.id || null,
+          name: selectedServiceBeneficiary.name || `${selectedServiceBeneficiary.first_name || ''} ${selectedServiceBeneficiary.last_name || ''}`.trim() || selectedServiceBeneficiary.phone || '',
+          phone: selectedServiceBeneficiary.phone || selectedServiceBeneficiary.phone_number || '',
+          email: selectedServiceBeneficiary.email || '',
+          isForMe: false,
+        };
+      }
+    }
+
+    let ticketInvoice = null;
+    let orderRef = null;
+
+    if (isTicket && paymentRail === 'crypto') {
+      const ticketItem = items[0];
+      const buyerEmail = (user?.email || session?.user?.email || '').trim();
+      if (!buyerEmail) {
+        AppToast.showError(
+          t('orderVerification.emailRequiredForTicket', 'A valid email is required to receive your ticket.'),
+          t('common.error', 'Error')
+        );
+        return;
+      }
+
+      const ticketCheckoutPayload = {
+        productId: ticketItem.productId || ticketItem.id,
+        quantity: ticketItem.quantity || 1,
+        rail: 'stablecoin',
+        token: selectedToken || 'USDC',
+        chain: network || 'polygon',
+        buyer: {
+          name: user?.name || user?.full_name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || 'Buyer',
+          email: buyerEmail,
+          phone: user?.mobile_number || user?.phone || user?.phone_number || '',
+        },
+        beneficiary: finalBeneficiary && !finalBeneficiary.isForMe ? {
+          id: finalBeneficiary.id || null,
+          name: finalBeneficiary.name,
+          phone: finalBeneficiary.phone,
+          email: finalBeneficiary.email,
+        } : null,
+      };
+
+      try {
+        ticketInvoice = await buyGoodsApi.ticketCheckout(ticketCheckoutPayload);
+        orderRef = ticketInvoice.paymentLinkId || ticketInvoice.invoiceId;
+      } catch (invoiceErr) {
+        console.error('Failed to create ticket invoice:', invoiceErr);
+        AppToast.showError(
+          invoiceErr.message || t('orderConfirmation.orderFailed', 'Failed to initialize ticket checkout.'),
+          t('common.error', 'Error')
+        );
+        return;
+      }
+    } else {
+      orderRef = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
+    }
+
+    const ticketAmount = (isTicket && ticketInvoice?.amount !== undefined)
+      ? Number(ticketInvoice.amount)
+      : (isTicket && ticketInvoice?.expected_amount_usd !== undefined ? Number(ticketInvoice.expected_amount_usd) : null);
+
+    const effectiveTotalUSDC = ticketAmount !== null ? ticketAmount : parseFloat(totalUSDC);
+    const effectiveTotalAmount = ticketAmount !== null ? ticketAmount : totalAmount;
+    const effectiveSubtotal = ticketAmount !== null ? ticketAmount : subtotal;
+    const effectivePlatformFee = isTicket ? 0 : platformFee;
+    const effectiveDeliveryFee = isTicket ? 0 : deliveryFee;
+    const effectiveDisplayPlatformFee = isTicket ? 0 : buyerPlatformFee;
+    const effectiveDisplayDeliveryFee = isTicket ? 0 : buyerDeliveryFee;
+    const effectiveDisplaySubtotal = ticketAmount !== null
+      ? convertCurrencyAmount(ticketAmount, 'USD', buyerCurrency)
+      : buyerSubtotal;
+    const effectiveDisplayTotalAmount = ticketAmount !== null
+      ? convertCurrencyAmount(ticketAmount, 'USD', buyerCurrency)
+      : buyerTotalAmount;
+
     const orderPayload = {
-      orderId: 'ORD-' + Math.floor(100000 + Math.random() * 900000),
+      orderId: orderRef,
+      paymentLinkId: ticketInvoice?.paymentLinkId || null,
+      invoiceId: ticketInvoice?.invoiceId || null,
+      payUrl: ticketInvoice?.payUrl || null,
+      ticketInvoice,
       merchant: {
+        ...(cartMerchant || directOrder?.shop || items[0]?.merchant || {}),
         id: cartMerchant?.id || directOrder?.shop?.id || items[0]?.merchantId || null,
         name: merchantName,
         location: merchantLocation,
@@ -733,22 +1025,47 @@ export default function OrderVerificationScreen({ route }) {
         offering_type: i.product?.offering_type || i.offering_type || i.product?.metadata?.offering_type || i.metadata?.offering_type,
         escrow_policy: i.product?.escrow_policy || i.escrow_policy,
         service_model: i.product?.service_model || i.service_model || i.product?.metadata?.service_model || i.metadata?.service_model,
+        category: i.product?.category || i.category,
+        metadata: i.product?.metadata || i.metadata,
+        product: i.product || i,
       })),
       deliveryOption,
-      deliveryFee,
-      platformFee,
-      subtotal,
-      totalAmount,
+      deliveryFee: effectiveDeliveryFee,
+      platformFee: effectivePlatformFee,
+      subtotal: effectiveSubtotal,
+      totalAmount: effectiveTotalAmount,
       currency: apiCurrency,
       apiCurrency,
-      totalUSDC: parseFloat(totalUSDC),
-      totalDZY: parseFloat(totalDZY),
-      displayDeliveryFee: buyerDeliveryFee,
-      displayPlatformFee: buyerPlatformFee,
-      displaySubtotal: buyerSubtotal,
-      displayTotalAmount: buyerTotalAmount,
+      totalUSDC: (isTicket && ticketAmount !== null) ? ticketAmount : (stablecoinDiscountPercent > 0 ? parseFloat(discountedCryptoAmounts.usdc) : effectiveTotalUSDC),
+      totalUSDT: (isTicket && ticketAmount !== null) ? ticketAmount : (stablecoinDiscountPercent > 0 ? parseFloat(discountedCryptoAmounts.usdt) : parseFloat(totalUSDT)),
+      totalEURC: stablecoinDiscountPercent > 0 ? parseFloat(discountedCryptoAmounts.eurc) : parseFloat(totalEURC),
+      totalDZY: ticketAmount !== null ? ticketAmount * 10 : (stablecoinDiscountPercent > 0 ? parseFloat(discountedCryptoAmounts.dzy) : parseFloat(totalDZY)),
+      stablecoinDiscount: (stablecoinDiscountPercent > 0 || ticketInvoice?.metadata?.discount_percent)
+        ? {
+            percent: stablecoinDiscountPercent || Number(ticketInvoice?.metadata?.discount_percent),
+            originalTotalUSDC: (ticketInvoice?.metadata?.list_price_usd ? Number(ticketInvoice.metadata.list_price_usd) * (items[0]?.quantity || 1) : totalUSDC),
+          }
+        : null,
+      displayDeliveryFee: effectiveDisplayDeliveryFee,
+      displayPlatformFee: effectiveDisplayPlatformFee,
+      displaySubtotal: effectiveDisplaySubtotal,
+      displayTotalAmount: effectiveDisplayTotalAmount,
       displayCurrency: displayBuyerCurrency,
-      recipient: deliveryOption === 'pickup'
+      beneficiary: finalBeneficiary,
+      isTicket,
+      isPhysical,
+      recipient: (!isPhysical || isTicket) && finalBeneficiary
+        ? {
+          name: finalBeneficiary.name,
+          phone: finalBeneficiary.phone,
+          email: finalBeneficiary.email,
+          beneficiaryId: finalBeneficiary.id,
+          address: merchantFullAddress,
+          city: merchantCityRaw,
+          country: merchantCountryRaw,
+          deliveryOption,
+        }
+        : deliveryOption === 'pickup'
         ? {
           name: user?.name || t('common.me', 'Me'),
           phone: user?.phone || '',
@@ -819,30 +1136,6 @@ export default function OrderVerificationScreen({ route }) {
       </View>
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {!isPhysical && (
-          <View style={styles.webOnlyNoticeCard}>
-            <Ionicons name="globe-outline" size={22} color="#1D4ED8" style={{ marginRight: 10 }} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.webOnlyNoticeTitle}>
-                {t('orderVerification.webOnlyPurchase', "This purchase is available on the website")}
-              </Text>
-            </View>
-            <TouchableOpacity
-              style={styles.btnWebOnly}
-              onPress={() => {
-                const targetId = items[0]?.productId || items[0]?.id;
-                const url = getWebProductUrl(targetId);
-                Linking.openURL(url).catch(err => console.warn('Failed to open web URL:', err));
-              }}
-            >
-              <Text style={styles.btnWebOnlyText}>
-                {t('product.buyOnDizzitUp', "Buy on DizzitUp")}
-              </Text>
-              <Ionicons name="open-outline" size={14} color="#FFFFFF" style={{ marginLeft: 4 }} />
-            </TouchableOpacity>
-          </View>
-        )}
-
         {/* Merchant Banner */}
         <View style={styles.sellerRow}>
           <View style={styles.sellerLogo}>
@@ -921,7 +1214,7 @@ export default function OrderVerificationScreen({ route }) {
         </View>
 
         {/* Delivery Options */}
-        {isPhysical && (
+        {isPhysical ? (
         <View style={styles.deliverySection}>
           <View style={styles.sectionHeaderRow}>
             <View style={styles.iconCircle}>
@@ -972,56 +1265,96 @@ export default function OrderVerificationScreen({ route }) {
             </TouchableOpacity>
           </View>
         </View>
+        ) : (
+          nonPhysicalDeliverySupport && (
+            <View style={styles.deliverySection}>
+              <View style={styles.sectionHeaderRow}>
+                <View style={styles.iconCircle}>
+                  <Ionicons name="navigate-outline" size={18} color="#3B82F6" />
+                </View>
+                <Text style={styles.sectionLabel}>{t('orderVerification.deliveryOption', "Delivery mode")}</Text>
+              </View>
+
+              <View style={styles.deliveryOptionsRow}>
+                {nonPhysicalDeliverySupport.supportsOnSite && (
+                  <TouchableOpacity
+                    style={[styles.deliveryOption, deliveryOption === 'on_site' && styles.optionSelected]}
+                    onPress={() => setDeliveryOption('on_site')}
+                  >
+                    <View style={[styles.radioOuter, deliveryOption === 'on_site' && styles.radioOuterSelected]}>
+                      {deliveryOption === 'on_site' && <View style={styles.radioInner} />}
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
+                        <Text style={styles.optionTitle}>{t('orderVerification.deliveryOnSite', "On site")}</Text>
+                        <Text style={[styles.optionPrice, { color: '#10B981' }]}>{t('orderVerification.free', "Free")}</Text>
+                      </View>
+                      <Text style={styles.optionDesc}>{t('orderVerification.deliveryOnSiteDesc', "Direct in-person access at provider location")}</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+
+                {nonPhysicalDeliverySupport.supportsOnline && (
+                  <TouchableOpacity
+                    style={[styles.deliveryOption, deliveryOption === 'online' && styles.optionSelected]}
+                    onPress={() => setDeliveryOption('online')}
+                  >
+                    <View style={[styles.radioOuter, deliveryOption === 'online' && styles.radioOuterSelected]}>
+                      {deliveryOption === 'online' && <View style={styles.radioInner} />}
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
+                        <Text style={styles.optionTitle}>{t('orderVerification.deliveryOnline', "Online")}</Text>
+                        <Text style={[styles.optionPrice, { color: '#10B981' }]}>{t('orderVerification.free', "Free")}</Text>
+                      </View>
+                      <Text style={styles.optionDesc}>{t('orderVerification.deliveryOnlineDesc', "Digital delivery directly to your account or email")}</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          )
         )}
 
-        {/* Recipient & Delivery Address Card */}
-        <View style={styles.addressCard}>
-          <View style={styles.cardHeaderRow}>
-            <View style={[styles.iconCircle, (!isPhysical || deliveryOption === 'pickup') && styles.iconCirclePickup]}>
-              <Ionicons
-                name={!isPhysical ? 'briefcase-outline' : (deliveryOption === 'pickup' ? 'storefront-outline' : 'location-outline')}
-                size={18}
-                color={!isPhysical ? '#4F46E5' : (deliveryOption === 'pickup' ? '#D97706' : '#3B82F6')}
-              />
-            </View>
-            <View style={styles.addressInfo}>
-              <Text style={styles.sectionLabel}>
-                {!isPhysical
-                  ? t('orderVerification.serviceProviderTitle', 'Service Provider')
-                  : deliveryOption === 'pickup'
-                  ? t('orderVerification.pickupLocationTitle', 'Store pickup location')
-                  : t('orderVerification.deliveryAddress', "Delivery address")}
-              </Text>
+        {/* Recipient & Delivery Address Card (Physical Goods) */}
+        {isPhysical && (
+          <View style={styles.addressCard}>
+            <View style={styles.cardHeaderRow}>
+              <View style={[styles.iconCircle, deliveryOption === 'pickup' && styles.iconCirclePickup]}>
+                <Ionicons
+                  name={deliveryOption === 'pickup' ? 'storefront-outline' : 'location-outline'}
+                  size={18}
+                  color={deliveryOption === 'pickup' ? '#D97706' : '#3B82F6'}
+                />
+              </View>
+              <View style={styles.addressInfo}>
+                <Text style={styles.sectionLabel}>
+                  {deliveryOption === 'pickup'
+                    ? t('orderVerification.pickupLocationTitle', 'Store pickup location')
+                    : t('orderVerification.deliveryAddress', "Delivery address")}
+                </Text>
 
-              {!isPhysical ? (
-                <>
-                  <Text style={styles.recipientNameText}>{merchantName}</Text>
-                  {merchantFullAddress ? <Text style={styles.addressValue}>{merchantFullAddress}</Text> : null}
-                  <Text style={{ fontSize: 12, color: '#10B981', marginTop: 2, fontFamily: 'Inter_500Medium' }}>
-                    {t('orderVerification.serviceFulfillmentNotice', 'Direct service rendered by this provider.')}
-                  </Text>
-                </>
-              ) : deliveryOption === 'pickup' ? (
-                <>
-                  <Text style={styles.recipientNameText}>{merchantName}</Text>
-                  <Text style={styles.addressValue}>{merchantFullAddress}</Text>
-                  <Text style={{ fontSize: 12, color: '#10B981', marginTop: 2, fontFamily: 'Inter_500Medium' }}>
-                    {t('orderVerification.pickupNotice', 'You will collect your order at this address.')}
-                  </Text>
-                </>
-              ) : (
-                <>
-                  {(recipientName || recipientAddress) ? (
-                    <>
-                      <Text style={styles.recipientNameText}>{recipientName}</Text>
-                      <Text style={styles.addressValue}>
-                        {[recipientPhone, [recipientAddress, deliveryCityValue].filter(Boolean).join(', ')].filter(Boolean).join(' • ')}
-                      </Text>
-                    </>
-                  ) : null}
-                </>
-              )}
-            </View>
+                {deliveryOption === 'pickup' ? (
+                  <>
+                    <Text style={styles.recipientNameText}>{merchantName}</Text>
+                    <Text style={styles.addressValue}>{merchantFullAddress}</Text>
+                    <Text style={{ fontSize: 12, color: '#10B981', marginTop: 2, fontFamily: 'Inter_500Medium' }}>
+                      {t('orderVerification.pickupNotice', 'You will collect your order at this address.')}
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    {(recipientName || recipientAddress) ? (
+                      <>
+                        <Text style={styles.recipientNameText}>{recipientName}</Text>
+                        <Text style={styles.addressValue}>
+                          {[recipientPhone, [recipientAddress, deliveryCityValue].filter(Boolean).join(', ')].filter(Boolean).join(' • ')}
+                        </Text>
+                      </>
+                    ) : null}
+                  </>
+                )}
+              </View>
 
             {deliveryOption === 'home' && (recipientName || recipientAddress || isEditingRecipient) && (
               <TouchableOpacity style={styles.btnModifier} onPress={() => setIsEditingRecipient(!isEditingRecipient)}>
@@ -1204,8 +1537,168 @@ export default function OrderVerificationScreen({ route }) {
             </View>
           )}
         </View>
+        )}
 
+        {/* Beneficiary Card for Services & Tickets */}
+        {(!isPhysical || isTicket) && (
+          <View style={styles.addressCard}>
+            <View style={styles.cardHeaderRow}>
+              <View style={[styles.iconCircle, { backgroundColor: '#EEF2FF' }]}>
+                <Ionicons name="person-outline" size={18} color="#4F46E5" />
+              </View>
+              <View style={styles.addressInfo}>
+                <Text style={styles.sectionLabel}>
+                  {t('orderVerification.beneficiaryTitle', 'Beneficiary')}
+                </Text>
+              </View>
+            </View>
 
+            {/* Toggle Pills: For Me vs For Someone Else */}
+            <View style={{ flexDirection: 'row', gap: 10, marginTop: 12, marginBottom: 12 }}>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  paddingVertical: 10,
+                  paddingHorizontal: 12,
+                  borderRadius: 10,
+                  borderWidth: 1.5,
+                  borderColor: isForMe ? '#D97706' : '#E2E8F0',
+                  backgroundColor: isForMe ? '#FFFBEB' : '#FFFFFF',
+                  alignItems: 'center',
+                }}
+                onPress={() => setIsForMe(true)}
+              >
+                <Text
+                  style={{
+                    fontFamily: isForMe ? 'Inter_600SemiBold' : 'Inter_400Regular',
+                    fontSize: 13,
+                    color: isForMe ? '#B45309' : '#475569',
+                  }}
+                >
+                  {t('orderVerification.forMe', 'For me')}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  paddingVertical: 10,
+                  paddingHorizontal: 12,
+                  borderRadius: 10,
+                  borderWidth: 1.5,
+                  borderColor: !isForMe ? '#D97706' : '#E2E8F0',
+                  backgroundColor: !isForMe ? '#FFFBEB' : '#FFFFFF',
+                  alignItems: 'center',
+                }}
+                onPress={() => {
+                  setIsForMe(false);
+                  if (!selectedServiceBeneficiary) {
+                    navigation.navigate('ContactsScreen', {
+                      nextScreen: 'OrderVerificationScreen',
+                      returnParams: { directOrder: route?.params?.directOrder },
+                    });
+                  }
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: !isForMe ? 'Inter_600SemiBold' : 'Inter_400Regular',
+                    fontSize: 13,
+                    color: !isForMe ? '#B45309' : '#475569',
+                  }}
+                >
+                  {t('orderVerification.forSomeoneElse', 'For someone else')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Details based on selection */}
+            {isForMe ? (
+              <View style={{ backgroundColor: '#F8FAFC', borderRadius: 10, padding: 12 }}>
+                <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#1E293B' }}>
+                  {user?.name || user?.full_name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || t('orderVerification.buyerDefault', 'Myself')}
+                </Text>
+                {Boolean(user?.mobile_number || user?.phone) && (
+                  <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 13, color: '#64748B', marginTop: 3 }}>
+                    {user?.mobile_number || user?.phone}
+                  </Text>
+                )}
+                {Boolean(user?.email || session?.user?.email) ? (
+                  <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 13, color: '#64748B', marginTop: 2 }}>
+                    {user?.email || session?.user?.email}
+                  </Text>
+                ) : isTicket ? (
+                  <Text style={{ fontFamily: 'Inter_500Medium', fontSize: 12, color: '#DC2626', marginTop: 4 }}>
+                    {t('orderVerification.emailRequiredForTicket', 'A valid email is required to receive your ticket.')}
+                  </Text>
+                ) : null}
+              </View>
+            ) : (
+              selectedServiceBeneficiary ? (
+                <View style={{ backgroundColor: '#F8FAFC', borderRadius: 10, padding: 12 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <View style={{ flex: 1, marginRight: 8 }}>
+                      <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#1E293B' }}>
+                        {selectedServiceBeneficiary.name || `${selectedServiceBeneficiary.first_name || ''} ${selectedServiceBeneficiary.last_name || ''}`.trim() || selectedServiceBeneficiary.phone}
+                      </Text>
+                      {Boolean(selectedServiceBeneficiary.phone || selectedServiceBeneficiary.phone_number) && (
+                        <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 13, color: '#64748B', marginTop: 3 }}>
+                          {selectedServiceBeneficiary.phone || selectedServiceBeneficiary.phone_number}
+                        </Text>
+                      )}
+                      {Boolean(selectedServiceBeneficiary.email) && (
+                        <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 13, color: '#64748B', marginTop: 2 }}>
+                          {selectedServiceBeneficiary.email}
+                        </Text>
+                      )}
+                    </View>
+                    <TouchableOpacity
+                      style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: '#FEF3C7' }}
+                      onPress={() => {
+                        navigation.navigate('ContactsScreen', {
+                          nextScreen: 'OrderVerificationScreen',
+                          returnParams: { directOrder: route?.params?.directOrder },
+                        });
+                      }}
+                    >
+                      <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#D97706' }}>
+                        {t('orderVerification.changeBeneficiary', 'Change')}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ) : (
+                <View style={{ backgroundColor: '#F8FAFC', borderRadius: 10, padding: 14, alignItems: 'center' }}>
+                  <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 13, color: '#64748B', marginBottom: 10, textAlign: 'center' }}>
+                    {t('orderVerification.noBeneficiarySelected', 'Please select a beneficiary from your contacts.')}
+                  </Text>
+                  <TouchableOpacity
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: '#D97706',
+                      paddingHorizontal: 16,
+                      paddingVertical: 9,
+                      borderRadius: 10,
+                      gap: 6,
+                    }}
+                    onPress={() => {
+                      navigation.navigate('ContactsScreen', {
+                        nextScreen: 'OrderVerificationScreen',
+                        returnParams: { directOrder: route?.params?.directOrder },
+                      });
+                    }}
+                  >
+                    <Ionicons name="people-outline" size={16} color="#FFFFFF" />
+                    <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#FFFFFF' }}>
+                      {t('orderVerification.selectBeneficiaryBtn', 'Select from contacts')}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )
+            )}
+          </View>
+        )}
 
         {/* Payment Rails Selector */}
         <View style={styles.paymentSection}>
@@ -1234,9 +1727,16 @@ export default function OrderVerificationScreen({ route }) {
               style={[styles.railTab, paymentRail === 'crypto' && styles.railTabActive]}
               onPress={() => setPaymentRail('crypto')}
             >
-              <Text style={[styles.railTabText, paymentRail === 'crypto' && styles.railTabTextActive]} adjustsFontSizeToFit numberOfLines={1}>
-                {t('orderVerification.cryptoTab', 'DZY & Stablecoins')}
-              </Text>
+              <View style={styles.tabContentCol}>
+                <Text style={[styles.railTabText, paymentRail === 'crypto' && styles.railTabTextActive]} adjustsFontSizeToFit numberOfLines={1}>
+                  {t('orderVerification.cryptoTab', 'DZY & Stablecoins')}
+                </Text>
+                {stablecoinDiscountPercent > 0 && (
+                  <View style={styles.tabDiscountBadgeUnder}>
+                    <Text style={styles.tabDiscountBadgeText}>{`-${stablecoinDiscountPercent}%`}</Text>
+                  </View>
+                )}
+              </View>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -1288,22 +1788,75 @@ export default function OrderVerificationScreen({ route }) {
                     {t('orderVerification.amountToPay', 'Amount to pay')}
                   </Text>
                 </View>
-                <View style={styles.amountToPayValuesRow}>
-                  <Text style={styles.amountToPayUsdBold} numberOfLines={1} adjustsFontSizeToFit>{`${totalUSDC} USD`}</Text>
-                  {displayBuyerCurrency !== 'USD' && (
-                    <Text style={styles.amountToPayBuyerEquiv}>
-                      {`≈ ${formatBuyer(buyerTotalAmount)} ${displayBuyerCurrency}`}
-                    </Text>
-                  )}
-                </View>
+                {stablecoinDiscountPercent > 0 ? (
+                  <>
+                    <View style={styles.amountStrikethroughRow}>
+                      <Text style={styles.amountToPayStrikethrough}>
+                        {`${totalUSDC} USD`}
+                      </Text>
+                    </View>
+                    <View style={styles.amountToPayValuesRow}>
+                      <Text style={styles.amountToPayUsdBold} numberOfLines={1} adjustsFontSizeToFit>
+                        {`${discountedCryptoAmounts.usdc} USD`}
+                      </Text>
+                      {displayBuyerCurrency !== 'USD' && (
+                        <Text style={styles.amountToPayBuyerEquiv}>
+                          {`≈ ${formatBuyer(effectiveBuyerTotalAmount)} ${displayBuyerCurrency}`}
+                        </Text>
+                      )}
+                    </View>
+                    <View style={styles.amountToPaySavingsRow}>
+                      <Text style={styles.amountToPaySavingsText}>
+                        {t('orderVerification.youSaveAmount', 'You save {{amount}} {{currency}} (-{{percent}}%)', {
+                          amount: (parseFloat(totalUSDC) - parseFloat(discountedCryptoAmounts.usdc)).toFixed(2),
+                          currency: (isTicket ? (ticketInvoice?.currency || items[0]?.currency) : (items[0]?.currency || directOrder?.product?.currency || rawCurrency)) || 'USD',
+                          percent: stablecoinDiscountPercent,
+                        })}
+                      </Text>
+                    </View>
+                  </>
+                ) : (
+                  <View style={styles.amountToPayValuesRow}>
+                    <Text style={styles.amountToPayUsdBold} numberOfLines={1} adjustsFontSizeToFit>{`${totalUSDC} USD`}</Text>
+                    {displayBuyerCurrency !== 'USD' && (
+                      <Text style={styles.amountToPayBuyerEquiv}>
+                        {`≈ ${formatBuyer(buyerTotalAmount)} ${displayBuyerCurrency}`}
+                      </Text>
+                    )}
+                  </View>
+                )}
               </View>
+
+              {/* Insufficient Selected Token Banner */}
+              {isCryptoInsufficient && (
+                <View style={styles.tokenNeedLine}>
+                  <Ionicons name="alert-circle-outline" size={16} color="#DC2626" style={{ marginRight: 6 }} />
+                  <Text style={styles.tokenNeedText} numberOfLines={1} adjustsFontSizeToFit>
+                    {t('orderVerification.youNeedMoreToken', 'You need {{amount}} more {{token}} on {{network}}', {
+                      amount: selectedTokenDeficit,
+                      token: selectedToken,
+                      network: network,
+                    })}
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.tokenNeedTopUpBtn}
+                    onPress={() => navigation.navigate('TopUpScreen')}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.tokenNeedTopUpText}>
+                      {t('orderVerification.topUpBtn', 'Top Up')}
+                    </Text>
+                    <Ionicons name="arrow-forward" size={12} color="#1A2840" style={{ marginLeft: 2 }} />
+                  </TouchableOpacity>
+                </View>
+              )}
 
               {/* Token Rows */}
               {[
-                { symbol: 'USDC', name: 'USD Coin', rate: totalUSDC },
-                { symbol: 'USDT', name: 'Tether USD', rate: totalUSDT },
-                { symbol: 'EURC', name: 'Euro Coin', rate: totalEURC },
-                { symbol: 'DZY', name: 'DizzitUp Token', rate: totalDZY, disabled: true },
+                { symbol: 'USDC', name: 'USD Coin', rate: effectiveCryptoRates.usdc },
+                { symbol: 'USDT', name: 'Tether USD', rate: effectiveCryptoRates.usdt },
+                { symbol: 'EURC', name: 'Euro Coin', rate: effectiveCryptoRates.eurc },
+                { symbol: 'DZY', name: 'DizzitUp Token', rate: effectiveCryptoRates.dzy, disabled: true },
               ].map((tok) => {
                 if (tok.disabled) {
                   return (
@@ -1368,11 +1921,13 @@ export default function OrderVerificationScreen({ route }) {
                       <Text style={styles.balanceValue}>
                         {balancesLoading ? '...' : `${formatTokenBalance(bal)} ${tok.symbol}`}
                       </Text>
-                      <View style={[styles.statusChip, isCovered ? styles.statusChipAvailable : styles.statusChipNotEnough]}>
-                        <Text style={[styles.statusChipText, isCovered ? styles.statusChipTextAvailable : styles.statusChipTextNotEnough]}>
-                          {isCovered ? t('orderVerification.available', 'Available') : t('orderVerification.notEnough', 'Not enough')}
-                        </Text>
-                      </View>
+                      {(!isSelected || isCovered) && (
+                        <View style={[styles.statusChip, isCovered ? styles.statusChipAvailable : styles.statusChipNotEnough]}>
+                          <Text style={[styles.statusChipText, isCovered ? styles.statusChipTextAvailable : styles.statusChipTextNotEnough]}>
+                            {isCovered ? t('orderVerification.available', 'Available') : t('orderVerification.notEnough', 'Not enough')}
+                          </Text>
+                        </View>
+                      )}
                     </View>
                   </TouchableOpacity>
                 );
@@ -1465,24 +2020,6 @@ export default function OrderVerificationScreen({ route }) {
                   </Text>
                 </View>
               </View>
-
-              {(noTokenHasEnoughBalance || isServiceCryptoInsufficient) && (
-                <View style={styles.balanceWarningCard}>
-                  <Ionicons name="alert-circle" size={18} color="#EF4444" style={{ marginRight: 8 }} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.balanceWarningTitle}>{t('orderVerification.insufficientBalanceTitle', 'Insufficient balance')}</Text>
-                    <Text style={styles.balanceWarningText}>
-                      {t('orderVerification.insufficientBalanceDesc', "Your current balance is {{balance}} {{token}}. You can top up your account or choose another payment method.", {
-                        balance: Number(selectedNetworkTokenBalance).toLocaleString('en-US', { maximumFractionDigits: 4 }),
-                        token: selectedToken
-                      })}
-                    </Text>
-                  </View>
-                  <TouchableOpacity style={styles.btnTopUpMini} onPress={() => navigation.navigate('TopUpScreen')}>
-                    <Text style={styles.btnTopUpMiniText}>{t('orderVerification.topUpBtn', "Top Up")}</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
             </View>
           )}
 
@@ -1502,6 +2039,17 @@ export default function OrderVerificationScreen({ route }) {
               <Text style={styles.railDetailDesc}>
                 {t('orderVerification.cardDesc', "Direct and secure payment via international bank card through Ecobank CyberSource gateway. No hidden fees.")}
               </Text>
+              {stablecoinDiscountPercent > 0 && (
+                <TouchableOpacity
+                  style={styles.cardDiscountHintRow}
+                  onPress={() => setPaymentRail('crypto')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.cardDiscountHintText}>
+                    {t('orderVerification.payWithStablecoinsHint', 'Pay with stablecoins and save {{percent}}%', { percent: stablecoinDiscountPercent })}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           )}
 
@@ -1609,15 +2157,37 @@ export default function OrderVerificationScreen({ route }) {
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>{t('orderVerification.youWillPay', "You will pay")}</Text>
             <View style={{ alignItems: 'flex-end' }}>
-              <Text style={styles.totalValueMain}>
-                {paymentRail === 'crypto'
-                  ? selectedToken === 'DZY'
-                    ? `${totalDZY} DZY`
-                    : selectedToken === 'EURC'
-                      ? `${totalEURC} EURC`
-                      : `${totalUSDC} ${selectedToken}`
-                  : `${formatBuyer(buyerTotalAmount)} ${displayBuyerCurrency}`}
-              </Text>
+              {paymentRail === 'crypto' && stablecoinDiscountPercent > 0 ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text style={styles.summaryTotalStrikethrough}>
+                    {selectedToken === 'DZY'
+                      ? `${totalDZY} DZY`
+                      : selectedToken === 'EURC'
+                        ? `${totalEURC} EURC`
+                        : `${totalUSDC} ${selectedToken}`}
+                  </Text>
+                  <Text style={styles.totalValueMain}>
+                    {selectedToken === 'DZY'
+                      ? `${discountedCryptoAmounts.dzy} DZY`
+                      : selectedToken === 'EURC'
+                        ? `${discountedCryptoAmounts.eurc} EURC`
+                        : `${discountedCryptoAmounts.usdc} ${selectedToken}`}
+                  </Text>
+                  <View style={styles.summaryDiscountBadge}>
+                    <Text style={styles.summaryDiscountBadgeText}>{`-${stablecoinDiscountPercent}%`}</Text>
+                  </View>
+                </View>
+              ) : (
+                <Text style={styles.totalValueMain}>
+                  {paymentRail === 'crypto'
+                    ? selectedToken === 'DZY'
+                      ? `${totalDZY} DZY`
+                      : selectedToken === 'EURC'
+                        ? `${totalEURC} EURC`
+                        : `${totalUSDC} ${selectedToken}`
+                    : `${formatBuyer(buyerTotalAmount)} ${displayBuyerCurrency}`}
+                </Text>
+              )}
               <Text style={styles.totalValueSub}>
                 {paymentRail === 'crypto'
                   ? (displayBuyerCurrency !== selectedToken ? `≈ ${formatBuyer(buyerTotalAmount)} ${displayBuyerCurrency}` : '')
@@ -1625,6 +2195,11 @@ export default function OrderVerificationScreen({ route }) {
                       ? `≈ ${cardOrMomoEquivAmount} ${cardOrMomoCurrency}`
                       : '')}
               </Text>
+              {paymentRail === 'card' && stablecoinDiscountPercent > 0 && (
+                <Text style={styles.cardStablecoinHint}>
+                  {t('orderVerification.payWithStablecoinsHint', 'Pay with stablecoins and save {{percent}}%', { percent: stablecoinDiscountPercent })}
+                </Text>
+              )}
             </View>
           </View>
         </View>
@@ -2121,6 +2696,148 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_500Medium',
     fontSize: 13,
     color: '#64748B',
+  },
+  tabContentCol: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  tabDiscountBadge: {
+    backgroundColor: '#10B981',
+    borderRadius: 8,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    marginLeft: 6,
+  },
+  tabDiscountBadgeUnder: {
+    backgroundColor: '#10B981',
+    borderRadius: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    marginTop: 3,
+    alignSelf: 'center',
+  },
+  tabDiscountBadgeText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 10,
+    color: '#FFFFFF',
+  },
+  amountStrikethroughRow: {
+    marginBottom: 2,
+  },
+  amountToPayStrikethrough: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 13,
+    color: '#94A3B8',
+    textDecorationLine: 'line-through',
+  },
+  amountToPaySavingsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  amountToPaySavingsText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 12.5,
+    color: '#15803D',
+  },
+  tokenNeedLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+  },
+  tokenNeedText: {
+    flex: 1,
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12.5,
+    color: '#991B1B',
+  },
+  tokenNeedTopUpBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFB800',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 7,
+    marginLeft: 8,
+  },
+  tokenNeedTopUpText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 11.5,
+    color: '#1A2840',
+  },
+  cardDiscountHintRow: {
+    marginTop: 10,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  cardDiscountHintText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
+    color: '#64748B',
+  },
+  cardStablecoinHint: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 4,
+    textAlign: 'right',
+  },
+  discountBadgePill: {
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    borderRadius: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  discountBadgePillText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 11,
+    color: '#059669',
+  },
+  tokenOriginalNeededText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    color: '#94A3B8',
+    textDecorationLine: 'line-through',
+  },
+  tokenDiscountBadge: {
+    backgroundColor: '#ECFDF5',
+    borderRadius: 6,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+  },
+  tokenDiscountBadgeText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 9,
+    color: '#059669',
+  },
+  summaryTotalStrikethrough: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 14,
+    color: '#94A3B8',
+    textDecorationLine: 'line-through',
+  },
+  summaryDiscountBadge: {
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    borderRadius: 6,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+  },
+  summaryDiscountBadgeText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 10,
+    color: '#059669',
   },
   paymentMethodItem: {
     flexDirection: 'row',

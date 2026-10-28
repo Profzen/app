@@ -1,7 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Share, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Share, Platform, StatusBar, BackHandler } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import BottomNavBar from '../components/BottomNavBar';
 import * as Clipboard from 'expo-clipboard';
@@ -24,6 +24,18 @@ export default function PaymentSuccessScreen({ route }) {
     }, 1200);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    const onBackPress = () => {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'HomeScreen' }],
+      });
+      return true;
+    };
+    const backSubscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => backSubscription.remove();
+  }, [navigation]);
 
   const tx = route?.params?.transaction || {};
   const isPhysical = isPhysicalCart(tx.items || (tx.item ? [tx.item] : [tx]));
@@ -75,7 +87,12 @@ export default function PaymentSuccessScreen({ route }) {
 
         {/* Header (Top Right Icons only) */}
         <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('HomeScreen')}>
+          <TouchableOpacity style={styles.iconBtn} onPress={() => {
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'HomeScreen' }],
+            });
+          }}>
             <Ionicons name="home-outline" size={22} color="#1A2840" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconBtn} onPress={shareReceipt} accessibilityLabel={t('paymentSuccess.receiptSharedTitle', "Receipt shared")}>
@@ -217,18 +234,37 @@ export default function PaymentSuccessScreen({ route }) {
             style={styles.shareCtaCard}
             onPress={() => {
               const finalRecipient = tx.merchantName || merchantName || tx.title || serviceTitle || t('paymentSuccess.partnerMerchant', 'Partner Merchant');
+              const isCryptoPayment = !!tx.amountCrypto || tx.paymentMethod === 'USDC' || tx.paymentMethod === 'USDT' || tx.paymentMethod === 'EURC' || tx.paymentMethod === 'DZY';
+
+              let shareAmount = '';
+              let shareToken = '';
+              if (tx.amountCrypto) {
+                const parts = String(tx.amountCrypto).trim().split(' ');
+                shareAmount = parts[0] || '';
+                shareToken = parts[1] || tx.paymentMethod || 'USDC';
+              } else if (isCryptoPayment && tx.amount) {
+                shareAmount = String(tx.amount);
+                shareToken = tx.paymentMethod || 'USDC';
+              } else {
+                shareAmount = tx.amount ? String(tx.amount) : '';
+                shareToken = tx.currency || 'FCFA';
+              }
+
               navigation.navigate('ShareSuccessPlatformScreen', {
                 transactionData: {
                   type: 'payment',
-                  amount: tx.amount ? String(tx.amount) : '',
-                  token: tx.currency || 'FCFA',
+                  amount: shareAmount,
+                  token: shareToken,
                   recipientName: finalRecipient,
                   merchantName: tx.merchantName || merchantName,
+                  merchant: tx.merchant || tx.shop,
+                  shop: tx.shop || tx.merchant || (tx.merchantName ? { name: tx.merchantName, country: recipientCountryName, city: user?.city } : null),
                   serviceTitle: serviceTitle,
                   recipientCountry: recipientCountryName || user?.country || '',
                   recipientFlag: recipientFlag,
                   date: dateFormatted,
                   txHash: txRef,
+                  orderId: tx.orderId || txRef,
                   actionKey: 'actionPaid',
                   actionType: `Paid for ${tx.merchantName || merchantName || serviceTitle || 'service'}`,
                 },

@@ -239,7 +239,7 @@ export default function SocialShareModal({
 
           {/* Message Preview Card with Copy Button */}
           <View style={styles.previewCard}>
-            <Text style={styles.previewText} numberOfLines={3}>
+            <Text style={styles.previewText} numberOfLines={6}>
               {fullText}
             </Text>
             <TouchableOpacity style={styles.copyPill} onPress={handleCopyLink} activeOpacity={0.8}>

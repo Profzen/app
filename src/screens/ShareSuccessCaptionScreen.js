@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput, Share as NativeShare, Platform, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,6 +10,8 @@ import AppToast from '../components/AppToast';
 import ScreenFooter from '../components/ScreenFooter';
 import { useApp } from '../context/AppContext';
 import { getOperatorLogo } from '../utils/operatorLogos';
+import { formatCurrency } from '../utils/countryCurrencyUtils';
+import { buildDzyStoreUrl } from '../utils/storeUtils';
 import { ALL_COUNTRIES } from '../utils/countriesData';
 
 // Safely resolve RNShare only when native module is linked in binary (e.g. custom dev client / production build)
@@ -32,7 +34,7 @@ const getRNShare = () => {
 export default function ShareSuccessCaptionScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { t, user } = useApp();
+  const { t, user, language } = useApp();
 
   const { platform = 'whatsapp', transactionData = {}, cardStyle = ['#20365B', '#111D33'] } = route.params || {};
 
@@ -122,20 +124,37 @@ export default function ShareSuccessCaptionScreen() {
     return [firstName, recipientFlag, recipientCountryCode].filter(Boolean).join(' ');
   };
 
-  // Clean, modern, professional social message (preserves Country and clean link)
+  const numLocale = language === 'en' ? 'en-US' : 'fr-FR';
+  const displayAmount = transactionData?.formattedAmount || formatCurrency(amount, token, numLocale);
+
+  const referralCode = user?.referralCode || user?.referral_code || (user?.id ? `DZY-${user.id.slice(0, 6).toUpperCase()}` : '');
+  const shopObj = transactionData.shop || transactionData.merchant || (transactionData.merchantName ? { name: transactionData.merchantName, country: transactionData.recipientCountry, city: transactionData.recipientCity } : null);
+  const isShopPayment = isPayment && !!(shopObj && (shopObj.slug || shopObj.name || shopObj.shop_name || shopObj.id));
+
+  const baseStoreUrl = isShopPayment ? buildDzyStoreUrl(shopObj) : null;
+  const targetShareUrl = transactionData?.targetShareUrl || (baseStoreUrl
+    ? (referralCode ? `${baseStoreUrl}?ref=${encodeURIComponent(referralCode)}` : baseStoreUrl)
+    : (referralCode ? `https://dizzitup.com/invite?ref=${encodeURIComponent(referralCode)}` : 'https://dizzitup.com'));
+
+  // Clean, modern, professional social message (preserves Country, formatted amount and referral link)
   const generateDefaultCaption = () => {
     const formattedRecipient = formatRecipientCaptionName();
     if (isWithdraw) {
-      return `Successfully cashed out ${amount} ${token} to ${formattedRecipient} with @DizzitUp. Instant, borderless, and without middlemen.\n\nhttps://dizzitup.com`;
+      return `Successfully cashed out ${displayAmount} ${token} to ${formattedRecipient} with @DizzitUp. Instant, borderless, and without middlemen.\n\n${targetShareUrl}`;
     }
     if (isPayment) {
       const targetEntity = transactionData.merchantName || transactionData.serviceTitle || formattedRecipient;
-      return `Successfully paid for ${targetEntity} (${amount} ${token}) with @DizzitUp. Instant, borderless, and without middlemen.\n\nhttps://dizzitup.com`;
+      return `Successfully paid for ${targetEntity} (${displayAmount} ${token}) with @DizzitUp. Instant, borderless, and without middlemen.\n\n${targetShareUrl}`;
     }
-    return `Successfully sent ${amount} ${token} to ${formattedRecipient} with @DizzitUp. Fast, borderless, and secure on Polygon.\n\nhttps://dizzitup.com`;
+    return `Successfully sent ${displayAmount} ${token} to ${formattedRecipient} with @DizzitUp. Fast, borderless, and secure on ${network || 'Polygon'}.\n\n${targetShareUrl}`;
   };
 
   const [captionText, setCaptionText] = useState(generateDefaultCaption);
+
+  useEffect(() => {
+    setCaptionText(generateDefaultCaption());
+  }, [route.params?.transactionData, targetShareUrl, displayAmount]);
+
   const [isFocused, setIsFocused] = useState(false);
   const [toast, setToast] = useState(null);
 
@@ -158,8 +177,9 @@ export default function ShareSuccessCaptionScreen() {
             telegram: RNShare.Social.TELEGRAM,
           };
           const targetSocial = socialByPlatform[platform];
+          const isFacebookOnIos = platform === 'facebook' && Platform.OS === 'ios';
 
-          if (targetSocial) {
+          if (targetSocial && !isFacebookOnIos) {
             try {
               await RNShare.shareSingle({
                 social: targetSocial,
@@ -176,7 +196,7 @@ export default function ShareSuccessCaptionScreen() {
           }
         }
 
-        if (!sharedWithFile && await Sharing.isAvailableAsync()) {
+        if (!sharedWithFile && (await Sharing.isAvailableAsync())) {
           await Sharing.shareAsync(cardUri, {
             mimeType: 'image/png',
             dialogTitle: t('shareSuccess.shareModalTitle', 'Share my DizzitUp success'),
@@ -191,13 +211,13 @@ export default function ShareSuccessCaptionScreen() {
           await navigator.share({
             title: t('shareSuccess.shareModalTitle', "Share my DizzitUp success"),
             text: captionText,
-            url: 'https://dizzitup.com/',
+            url: targetShareUrl,
           });
         } else {
           await NativeShare.share({
             title: t('shareSuccess.shareModalTitle', "Share my DizzitUp success"),
             message: captionText,
-            url: 'https://dizzitup.com/',
+            url: targetShareUrl,
           });
         }
       }
@@ -298,7 +318,7 @@ export default function ShareSuccessCaptionScreen() {
               <View style={styles.compactHeroLeft}>
                 <Text style={styles.compactActionLabel}>{resolvedAction}</Text>
                 <Text style={styles.compactAmountText}>
-                  {amount} <Text style={{ color: '#FFC759' }}>{token}</Text>
+                  {displayAmount} <Text style={{ color: '#FFC759' }}>{token}</Text>
                 </Text>
                 <Text style={styles.compactViaText}>via <Text style={{ color: '#FFC759', fontWeight: '700' }}>DZYWallet</Text></Text>
               </View>

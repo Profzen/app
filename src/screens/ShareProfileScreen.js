@@ -57,7 +57,10 @@ export default function ShareProfileScreen() {
     const referralCode = user?.referralCode || user?.referral_code || (user?.id ? `DZY-${user.id.slice(0, 6).toUpperCase()}` : '');
     const inviteUrl = referralCode ? `https://dizzitup.com/invite?ref=${encodeURIComponent(referralCode)}` : 'https://dizzitup.com';
 
-    const storeUrl = isBusiness ? buildDzyStoreUrl(merchant) : '';
+    const baseStoreUrl = isBusiness ? buildDzyStoreUrl(merchant) : '';
+    const storeUrl = baseStoreUrl
+      ? (referralCode ? `${baseStoreUrl}?ref=${encodeURIComponent(referralCode)}` : baseStoreUrl)
+      : '';
     const logoUrl = isBusiness
       ? (merchant?.shop_logo_url || null)
       : (user?.avatar_url || user?.avatar?.uri || null);
@@ -179,59 +182,82 @@ export default function ShareProfileScreen() {
 
   const handleShare = async () => {
     if (!isBusiness) {
-      await Share.share({ title: profile.name, message: shareCaption });
+      const shareUrl = profile.storeUrl || profile.inviteUrl;
+      await Share.share(
+        Platform.OS === 'ios' && shareUrl
+          ? { title: profile.name, message: shareCaption, url: shareUrl }
+          : { title: profile.name, message: shareCaption }
+      );
       return;
     }
 
     setIsSharing(true);
     try {
-      const imageUri = await squareShotRef.current?.capture();
-      if (!imageUri) throw new Error('Business profile image capture is unavailable.');
-
-      if (Platform.OS === 'web') {
-        const imageBlob = await (await fetch(imageUri)).blob();
-        const imageFile = new File([imageBlob], 'dizzitup-business-profile.png', { type: 'image/png' });
-        if (navigator.share && navigator.canShare?.({ files: [imageFile] })) {
-          await navigator.share({ files: [imageFile], title: profile.name, text: shareCaption });
-        } else if (navigator.share) {
-          await navigator.share({ title: profile.name, text: shareCaption, url: profile.storeUrl });
-        } else {
-          await Share.share({ title: profile.name, message: shareCaption });
-        }
-        return;
-      }
-
+      let imageUri = null;
       try {
-        const shareModule = await import('react-native-share');
-        const nativeShare = shareModule.default || shareModule;
-        const result = await nativeShare.open({
-          url: imageUri,
-          type: 'image/png',
-          filename: 'dizzitup-business-profile.png',
-          title: profile.name,
-          message: shareCaption,
-          failOnCancel: false,
-        });
-        if (result?.dismissedAction) return;
-      } catch (nativeShareError) {
-        if (nativeShareError?.message?.toLowerCase?.().includes('cancel')) return;
-        console.warn('[ShareProfile] Native share sheet unavailable, using Expo Sharing:', nativeShareError);
-        if (await Sharing.isAvailableAsync()) {
-          await Sharing.shareAsync(imageUri, {
-            mimeType: 'image/png',
-            dialogTitle: t('shareProfile.title', 'Share my DizzitUp profile'),
-          });
+        imageUri = await squareShotRef.current?.capture();
+      } catch (capErr) {
+        console.warn('[ShareProfile] Offscreen view capture failed, using direct Share sheet:', capErr);
+      }
+
+      if (imageUri) {
+        if (Platform.OS === 'web') {
+          const imageBlob = await (await fetch(imageUri)).blob();
+          const imageFile = new File([imageBlob], 'dizzitup-business-profile.png', { type: 'image/png' });
+          if (navigator.share && navigator.canShare?.({ files: [imageFile] })) {
+            await navigator.share({ files: [imageFile], title: profile.name, text: shareCaption });
+            return;
+          } else if (navigator.share) {
+            await navigator.share({ title: profile.name, text: shareCaption, url: profile.storeUrl || profile.inviteUrl });
+            return;
+          }
         } else {
-          await Share.share({ title: profile.name, message: shareCaption });
+          try {
+            const shareModule = await import('react-native-share');
+            const nativeShare = shareModule.default || shareModule;
+            const result = await nativeShare.open({
+              url: imageUri,
+              type: 'image/png',
+              filename: 'dizzitup-business-profile.png',
+              title: profile.name,
+              message: shareCaption,
+              failOnCancel: false,
+            });
+            if (result?.dismissedAction) return;
+            return;
+          } catch (nativeShareError) {
+            if (nativeShareError?.message?.toLowerCase?.().includes('cancel')) return;
+            console.warn('[ShareProfile] Native share sheet unavailable, trying Expo Sharing:', nativeShareError);
+            if (await Sharing.isAvailableAsync()) {
+              await Sharing.shareAsync(imageUri, {
+                mimeType: 'image/png',
+                dialogTitle: t('shareProfile.title', 'Share my DizzitUp profile'),
+              });
+              return;
+            }
+          }
         }
       }
+
+      // Reliable native share fallback for iOS and devices where offscreen capture is blocked
+      const shareUrl = profile.storeUrl || profile.inviteUrl;
+      await Share.share(
+        Platform.OS === 'ios' && shareUrl
+          ? { title: profile.name, message: shareCaption, url: shareUrl }
+          : { title: profile.name, message: shareCaption }
+      );
     } catch (err) {
-      console.warn('[ShareProfile] Business profile sharing failed:', err);
-      setToast({
-        title: t('errors.error', 'Error'),
-        message: t('shareProfile.shareFailed', 'Could not open sharing. Copy the caption or save an image and try again.'),
-        type: 'error',
-      });
+      if (err?.message?.toLowerCase?.().includes('cancel')) return;
+      console.warn('[ShareProfile] Business profile sharing fallback:', err);
+      try {
+        await Share.share({ title: profile.name, message: shareCaption });
+      } catch (fallbackErr) {
+        setToast({
+          title: t('errors.error', 'Error'),
+          message: t('shareProfile.shareFailed', 'Could not open sharing. Copy the caption or save an image and try again.'),
+          type: 'error',
+        });
+      }
     } finally {
       setIsSharing(false);
     }

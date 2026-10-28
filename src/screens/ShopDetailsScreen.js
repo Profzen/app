@@ -14,6 +14,8 @@ import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
 import { getProductCoverImage } from '../utils/productMedia';
 import { buildDzyStoreUrl } from '../utils/storeUtils';
 import { isPhysicalItem, isTicketProduct, getWebProductUrl } from '../utils/productUtils';
+import QRCode from 'qrcode';
+import Svg, { Rect } from 'react-native-svg';
 
 
 export default function ShopDetailsScreen({ route }) {
@@ -34,6 +36,7 @@ export default function ShopDetailsScreen({ route }) {
   const [paymentInfoExpanded, setPaymentInfoExpanded] = useState(false);
   const [toast, setToast] = useState(null);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showQrInShareModal, setShowQrInShareModal] = useState(false);
 
   // Favorites (shared user_favorites table). Merchants can't favorite their own shop or products.
   const shopId = shop?.id || shop?.merchant_id || null;
@@ -262,9 +265,21 @@ export default function ShopDetailsScreen({ route }) {
   const hasAnySocial = Boolean(waUrl || tgUrl || fbUrl || igUrl || webUrl);
 
   const shopName = shop.shop_name || shop.name || 'Store';
-  const publicStoreUrl = buildDzyStoreUrl(shop);
+  const userRefCode = user?.referralCode || user?.referral_code || (user?.id ? `DZY-${user.id.slice(0, 6).toUpperCase()}` : '');
+  const rawStoreUrl = buildDzyStoreUrl(shop);
+  const publicStoreUrl = userRefCode ? `${rawStoreUrl}?ref=${encodeURIComponent(userRefCode)}` : rawStoreUrl;
   const shareText = `Check out ${shopName} on DizzitUp!`;
   const shareMessage = t('shop.shareShopMsg', "Discover the {{name}} store on DizzitUp: {{url}}", { name: shopName, url: publicStoreUrl });
+
+  const shopQr = useMemo(() => {
+    try {
+      return QRCode.create(publicStoreUrl || 'https://dizzitup.com', {
+        errorCorrectionLevel: 'M',
+      });
+    } catch {
+      return null;
+    }
+  }, [publicStoreUrl]);
 
   const copyStoreLink = async () => {
     try {
@@ -383,33 +398,28 @@ export default function ShopDetailsScreen({ route }) {
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
-          {/* Banner Cover Area */}
+          {/* Banner Cover Area (Task 4: full width ~3:1, cover, soft dark gradient, logo circle overlapping bottom-left edge, no text on banner) */}
           <View style={styles.coverContainer}>
-            {/* Cover Banner */}
             <View style={styles.coverBg}>
-              <View style={styles.coverTextContent}>
-                <Text style={styles.coverTitle} numberOfLines={2}>{shop.shop_name || shop.name || t('shop.default_name', "Shop")}</Text>
-                <Text style={styles.coverSubtitle}>{t('shop.cover_subtitle', "Everything you\nneed, delivered\nto you.")}</Text>
-              </View>
               <Image
                 source={shop.shop_banner_url ? { uri: shop.shop_banner_url } : (shop.bannerUrl ? { uri: shop.bannerUrl } : require('../../assets/brand/store_default_banner.jpg'))}
                 defaultSource={require('../../assets/brand/store_default_banner.jpg')}
                 style={styles.coverImage}
+                resizeMode="cover"
               />
-              {!shop.shop_banner_url && !shop.bannerUrl && (
-                <View style={{position: 'absolute', bottom: 10, right: 14, backgroundColor: 'rgba(26, 40, 64, 0.7)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12}}>
-                  <Text style={{fontFamily: 'SpaceGrotesk_700Bold', fontSize: 10, color: '#FFF'}}>DZYstore • Dizzitup</Text>
-                </View>
-              )}
+              <LinearGradient
+                colors={['transparent', 'rgba(15, 23, 42, 0.65)']}
+                style={StyleSheet.absoluteFillObject}
+              />
             </View>
 
-            {/* Circular Logo overlay */}
+            {/* Circular Logo overlapping bottom-left edge */}
             <View style={styles.logoContainer}>
               <View style={styles.logoCircle}>
                 {(shop.shop_logo_url || shop.logoUrl) ? (
-                  <Image source={{ uri: shop.shop_logo_url || shop.logoUrl }} style={{ width: 44, height: 44, borderRadius: 22 }} resizeMode="cover" />
+                  <Image source={{ uri: shop.shop_logo_url || shop.logoUrl }} style={{ width: 64, height: 64, borderRadius: 32 }} resizeMode="cover" />
                 ) : (
-                  <Image source={require('../../assets/brand/shop_placeholder.jpg')} style={{ width: 44, height: 44, borderRadius: 22 }} resizeMode="cover" />
+                  <Image source={require('../../assets/brand/shop_placeholder.jpg')} style={{ width: 64, height: 64, borderRadius: 32 }} resizeMode="cover" />
                 )}
               </View>
               {(shop.is_verified || shop.verified) && (
@@ -948,12 +958,7 @@ export default function ShopDetailsScreen({ route }) {
                 <TouchableOpacity 
                   style={[styles.btnBuySmall, isTicketProduct(product) && { backgroundColor: '#FFC759' }]} 
                   onPress={() => {
-                    if (isTicketProduct(product)) {
-                      const url = getWebProductUrl(product.id || product._id || product.product_id);
-                      Linking.openURL(url).catch(err => console.warn('Failed to open web product URL:', err));
-                    } else {
-                      navigation.navigate('ProductDetailsScreen', { product, shop });
-                    }
+                    navigation.navigate('ProductDetailsScreen', { product, shop });
                   }}
                 >
                   <Text style={styles.btnBuySmallText} adjustsFontSizeToFit numberOfLines={1}>
@@ -989,154 +994,159 @@ export default function ShopDetailsScreen({ route }) {
           <View style={{ height: 40 }} />
         </ScrollView>
 
-        {/* Share Store Modal (Pixel-perfect replica of web DZYstore Share Store modal) */}
+        {/* Instagram-style Profile Share Modal (Task 7) */}
         <Modal
           visible={showShareModal}
           transparent
-          animationType="fade"
-          onRequestClose={() => setShowShareModal(false)}
+          animationType="slide"
+          onRequestClose={() => {
+            setShowShareModal(false);
+            setShowQrInShareModal(false);
+          }}
         >
           <TouchableOpacity
             style={styles.modalBackdrop}
             activeOpacity={1}
-            onPress={() => setShowShareModal(false)}
+            onPress={() => {
+              setShowShareModal(false);
+              setShowQrInShareModal(false);
+            }}
           >
             <TouchableOpacity
               activeOpacity={1}
               style={styles.modalCard}
               onPress={(e) => e?.stopPropagation && e.stopPropagation()}
             >
-              <Text style={styles.modalTitle}>
-                {t('store.shareStoreTitle', 'Share Store')}
-              </Text>
-              <Text style={styles.modalSubtitle}>
-                {t('store.helpStoreReach', { storeName: shopName, defaultValue: `Help ${shopName} reach more customers!` })}
-              </Text>
+              <View style={styles.sheetHandle} />
 
-              {/* 4 Share Channels Grid */}
-              <View style={styles.shareChannelsRow}>
-                {/* X (Twitter) */}
-                <TouchableOpacity
-                  style={styles.shareChannelItem}
-                  onPress={() => {
-                    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(publicStoreUrl)}`;
-                    Linking.openURL(url).catch(() => {});
-                  }}
-                  activeOpacity={0.8}
-                >
-                  <View style={[styles.shareChannelIconBox, { backgroundColor: '#F1F5F9' }]}>
-                    <Text style={{ fontFamily: 'SpaceGrotesk_700Bold', fontSize: 20, color: '#000000' }}>X</Text>
+              {/* Profile Avatar */}
+              <View style={styles.shareProfileAvatarWrapper}>
+                {(shop.shop_logo_url || shop.logoUrl) ? (
+                  <Image source={{ uri: shop.shop_logo_url || shop.logoUrl }} style={styles.shareProfileAvatar} resizeMode="cover" />
+                ) : (
+                  <Image source={require('../../assets/brand/shop_placeholder.jpg')} style={styles.shareProfileAvatar} resizeMode="cover" />
+                )}
+                {(shop.is_verified || shop.verified) && (
+                  <View style={styles.shareProfileVerifiedBadge}>
+                    <Ionicons name="checkmark-circle" size={18} color="#10B981" />
                   </View>
-                  <Text style={styles.shareChannelLabel} numberOfLines={1}>X (Twitter)</Text>
-                </TouchableOpacity>
-
-                {/* Facebook */}
-                <TouchableOpacity
-                  style={styles.shareChannelItem}
-                  onPress={() => {
-                    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(publicStoreUrl)}`;
-                    Linking.openURL(url).catch(() => {});
-                  }}
-                  activeOpacity={0.8}
-                >
-                  <View style={[styles.shareChannelIconBox, { backgroundColor: '#1877F215' }]}>
-                    <Ionicons name="logo-facebook" size={24} color="#1877F2" />
-                  </View>
-                  <Text style={styles.shareChannelLabel} numberOfLines={1}>Facebook</Text>
-                </TouchableOpacity>
-
-                {/* Telegram */}
-                <TouchableOpacity
-                  style={styles.shareChannelItem}
-                  onPress={async () => {
-                    const tgAppUrl = `tg://msg?text=${encodeURIComponent(shareText + ' ' + publicStoreUrl)}`;
-                    const tgWebUrl = `https://t.me/share/url?url=${encodeURIComponent(publicStoreUrl)}&text=${encodeURIComponent(shareText)}`;
-                    const supported = await Linking.canOpenURL(tgAppUrl);
-                    if (supported) {
-                      Linking.openURL(tgAppUrl);
-                    } else {
-                      Linking.openURL(tgWebUrl).catch(() => {});
-                    }
-                  }}
-                  activeOpacity={0.8}
-                >
-                  <View style={[styles.shareChannelIconBox, { backgroundColor: '#229ED915' }]}>
-                    <Ionicons name="paper-plane" size={20} color="#229ED9" />
-                  </View>
-                  <Text style={styles.shareChannelLabel} numberOfLines={1}>Telegram</Text>
-                </TouchableOpacity>
-
-                {/* WhatsApp */}
-                <TouchableOpacity
-                  style={styles.shareChannelItem}
-                  onPress={async () => {
-                    const nativeWa = `whatsapp://send?text=${encodeURIComponent(shareText + ' ' + publicStoreUrl)}`;
-                    const webWa = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + publicStoreUrl)}`;
-                    const supported = await Linking.canOpenURL(nativeWa);
-                    if (supported) {
-                      Linking.openURL(nativeWa);
-                    } else {
-                      Linking.openURL(webWa).catch(() => {});
-                    }
-                  }}
-                  activeOpacity={0.8}
-                >
-                  <View style={[styles.shareChannelIconBox, { backgroundColor: '#25D36615' }]}>
-                    <Ionicons name="logo-whatsapp" size={24} color="#25D366" />
-                  </View>
-                  <Text style={styles.shareChannelLabel} numberOfLines={1}>WhatsApp</Text>
-                </TouchableOpacity>
+                )}
               </View>
 
-              {/* Instagram Row Centered */}
-              <View style={styles.instagramShareRow}>
+              {/* Profile Name & Location */}
+              <Text style={styles.shareProfileName} numberOfLines={2}>{shopName}</Text>
+              <Text style={styles.shareProfileSubtitle} numberOfLines={1}>{displayLocation || t('shop.default_name', 'Shop')}</Text>
+
+              {/* QR Code view toggle */}
+              {showQrInShareModal && shopQr ? (
+                <View style={styles.qrDisplayBox}>
+                  <View style={styles.qrCodeWrapper}>
+                    <Svg width={180} height={180} viewBox={`0 0 ${shopQr.modules.size} ${shopQr.modules.size}`}>
+                      <Rect width={shopQr.modules.size} height={shopQr.modules.size} fill="#FFFFFF" />
+                      {Array.from(shopQr.modules.data).map((cell, index) =>
+                        cell ? (
+                          <Rect
+                            key={index}
+                            x={index % shopQr.modules.size}
+                            y={Math.floor(index / shopQr.modules.size)}
+                            width="1"
+                            height="1"
+                            fill="#1A2840"
+                          />
+                        ) : null
+                      )}
+                    </Svg>
+                  </View>
+                  <Text style={styles.qrScanHint}>{t('store.scanToVisit', 'Scan to visit this store on any device')}</Text>
+                </View>
+              ) : null}
+
+              {/* 4 Instagram-style Action Buttons: Follow, Share, Copy link, QR code */}
+              <View style={styles.instaActionsRow}>
+                {/* 1. Follow / Favorite */}
+                {!isOwnShop ? (
+                  <TouchableOpacity
+                    style={styles.instaActionItem}
+                    onPress={() => handleToggleFavorite('merchant', shopId, shopName)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={[styles.instaActionCircle, shopIsFavorite && styles.instaActionCircleActive]}>
+                      <Ionicons
+                        name={shopIsFavorite ? "heart" : "heart-outline"}
+                        size={24}
+                        color={shopIsFavorite ? "#EF4444" : "#1A2840"}
+                      />
+                    </View>
+                    <Text style={styles.instaActionLabel} numberOfLines={1}>
+                      {shopIsFavorite ? t('store.following', 'Following') : t('store.follow', 'Follow')}
+                    </Text>
+                  </TouchableOpacity>
+                ) : null}
+
+                {/* 2. Share */}
                 <TouchableOpacity
-                  style={styles.shareChannelItem}
+                  style={styles.instaActionItem}
                   onPress={async () => {
-                    // Instagram doesn't support text intent sharing directly to chats.
-                    // The native Share sheet is the best way to show a user's recent direct contacts.
                     try {
                       await Share.share({
-                        message: shareText + ' ' + publicStoreUrl,
-                        url: publicStoreUrl, // iOS only
-                        title: shareText,
+                        title: shopName,
+                        message: `${shareText} ${publicStoreUrl}`,
+                        url: publicStoreUrl,
                       });
-                    } catch (error) {
-                      console.log('Share error:', error.message);
+                    } catch (err) {
+                      console.log('Share error:', err?.message);
                     }
                   }}
                   activeOpacity={0.8}
                 >
-                  <LinearGradient
-                    colors={['#f09433', '#e6683c', '#dc2743', '#cc2366', '#bc1888']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.shareChannelIconBox}
-                  >
-                    <Ionicons name="logo-instagram" size={24} color="#FFFFFF" />
-                  </LinearGradient>
-                  <Text style={styles.shareChannelLabel}>Instagram</Text>
+                  <View style={styles.instaActionCircle}>
+                    <Ionicons name="share-social-outline" size={24} color="#1A2840" />
+                  </View>
+                  <Text style={styles.instaActionLabel} numberOfLines={1}>
+                    {t('common.share', 'Share')}
+                  </Text>
                 </TouchableOpacity>
-              </View>
-              {/* Copy URL Bar */}
-              <View style={styles.copyUrlBar}>
-                <Text style={styles.copyUrlText} numberOfLines={1}>
-                  {publicStoreUrl}
-                </Text>
+
+                {/* 3. Copy Link */}
                 <TouchableOpacity
-                  style={styles.copyUrlBtn}
+                  style={styles.instaActionItem}
                   onPress={copyStoreLink}
                   activeOpacity={0.8}
                 >
-                  <Ionicons name="copy-outline" size={13} color="#FFFFFF" style={{ marginRight: 6 }} />
-                  <Text style={styles.copyUrlBtnText}>{t('store.copyBtn', 'Copy')}</Text>
+                  <View style={styles.instaActionCircle}>
+                    <Ionicons name="link-outline" size={24} color="#1A2840" />
+                  </View>
+                  <Text style={styles.instaActionLabel} numberOfLines={1}>
+                    {t('store.copyLink', 'Copy link')}
+                  </Text>
+                </TouchableOpacity>
+
+                {/* 4. QR Code */}
+                <TouchableOpacity
+                  style={styles.instaActionItem}
+                  onPress={() => setShowQrInShareModal(prev => !prev)}
+                  activeOpacity={0.8}
+                >
+                  <View style={[styles.instaActionCircle, showQrInShareModal && styles.instaActionCircleActive]}>
+                    <Ionicons
+                      name="qr-code-outline"
+                      size={24}
+                      color={showQrInShareModal ? "#3B82F6" : "#1A2840"}
+                    />
+                  </View>
+                  <Text style={styles.instaActionLabel} numberOfLines={1}>
+                    {t('store.qrCode', 'QR code')}
+                  </Text>
                 </TouchableOpacity>
               </View>
 
               {/* Close Button */}
               <TouchableOpacity
                 style={styles.modalCloseBtn}
-                onPress={() => setShowShareModal(false)}
+                onPress={() => {
+                  setShowShareModal(false);
+                  setShowQrInShareModal(false);
+                }}
                 activeOpacity={0.7}
               >
                 <Text style={styles.modalCloseBtnText}>{t('common.close', 'Close')}</Text>
@@ -1165,14 +1175,11 @@ const styles = StyleSheet.create({
   shareBadgeDot: { position: 'absolute', top: 6, right: 6, width: 6, height: 6, borderRadius: 3, backgroundColor: '#FFC759' },
   scrollView: { flex: 1 },
   scrollContent: { paddingBottom: 30 },
-  coverContainer: { marginHorizontal: 16, marginBottom: 40, position: 'relative', marginTop: 4 },
-  coverBg: { height: 140, backgroundColor: '#1A2840', borderRadius: 16, flexDirection: 'row', overflow: 'hidden', padding: 16, position: 'relative' },
-  coverTextContent: { flex: 1, zIndex: 2 },
-  coverTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 22, lineHeight: 26, color: '#FFFFFF', marginBottom: 4 },
-  coverSubtitle: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#FFFFFF', lineHeight: 16 },
-  coverImage: { width: 140, height: '120%', position: 'absolute', right: 0, top: 0, borderRadius: 16, opacity: 0.9 },
-  logoContainer: { position: 'absolute', bottom: -30, left: 14 },
-  logoCircle: { width: 70, height: 70, borderRadius: 35, backgroundColor: '#1A2840', borderWidth: 3, borderColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', boxShadow: '0px 2px 4px rgba(0,0,0,0.1)', elevation: 3 },
+  coverContainer: { width: '100%', marginBottom: 38, position: 'relative' },
+  coverBg: { width: '100%', height: 135, backgroundColor: '#1A2840', overflow: 'hidden', position: 'relative' },
+  coverImage: { width: '100%', height: '100%' },
+  logoContainer: { position: 'absolute', bottom: -30, left: 16 },
+  logoCircle: { width: 70, height: 70, borderRadius: 35, backgroundColor: '#1A2840', borderWidth: 3, borderColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', boxShadow: '0px 2px 6px rgba(0,0,0,0.15)', elevation: 4 },
   logoText: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#FFFFFF' },
   verifiedBadge: { position: 'absolute', bottom: 2, right: 2, backgroundColor: '#FFFFFF', borderRadius: 10 },
   shopInfoHeader: { paddingHorizontal: 16, marginBottom: 16 },
@@ -1249,100 +1256,125 @@ const styles = StyleSheet.create({
   },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    justifyContent: 'flex-end',
   },
   modalCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 24,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 36 : 24,
     width: '100%',
-    maxWidth: 380,
     alignItems: 'center',
-    boxShadow: '0px 10px 25px rgba(0,0,0,0.15)',
-    elevation: 8,
+    boxShadow: '0px -4px 20px rgba(0,0,0,0.12)',
+    elevation: 10,
   },
-  modalTitle: {
+  sheetHandle: {
+    width: 38,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#CBD5E1',
+    marginBottom: 18,
+  },
+  shareProfileAvatarWrapper: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 3,
+    borderColor: '#FFC759',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+    position: 'relative',
+    backgroundColor: '#1A2840',
+  },
+  shareProfileAvatar: {
+    width: 74,
+    height: 74,
+    borderRadius: 37,
+  },
+  shareProfileVerifiedBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 9,
+  },
+  shareProfileName: {
     fontFamily: 'SpaceGrotesk_700Bold',
-    fontSize: 22,
+    fontSize: 20,
     color: '#1A2840',
-    marginBottom: 6,
     textAlign: 'center',
+    marginBottom: 4,
   },
-  modalSubtitle: {
+  shareProfileSubtitle: {
     fontFamily: 'Inter_500Medium',
     fontSize: 13,
     color: '#64748B',
-    marginBottom: 22,
     textAlign: 'center',
-    paddingHorizontal: 8,
+    marginBottom: 8,
   },
-  shareChannelsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: 16,
-  },
-  shareChannelItem: {
+  qrDisplayBox: {
     alignItems: 'center',
-    width: 68,
-  },
-  shareChannelIconBox: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  shareChannelLabel: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 10,
-    color: '#1A2840',
-    textAlign: 'center',
-  },
-  instagramShareRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    width: '100%',
-    marginBottom: 20,
-  },
-  copyUrlBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    marginVertical: 14,
     backgroundColor: '#F8FAFC',
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  qrCodeWrapper: {
+    backgroundColor: '#FFFFFF',
+    padding: 10,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    padding: 6,
-    width: '100%',
-    marginBottom: 16,
   },
-  copyUrlText: {
-    flex: 1,
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
+  qrScanHint: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 11,
     color: '#64748B',
-    paddingHorizontal: 8,
+    marginTop: 8,
+    textAlign: 'center',
   },
-  copyUrlBtn: {
+  instaActionsRow: {
     flexDirection: 'row',
+    justifyContent: 'space-around',
     alignItems: 'center',
-    backgroundColor: '#1A2840',
-    borderRadius: 10,
-    paddingVertical: 9,
-    paddingHorizontal: 14,
+    width: '100%',
+    marginVertical: 18,
   },
-  copyUrlBtnText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 12,
-    color: '#FFFFFF',
+  instaActionItem: {
+    alignItems: 'center',
+    width: 70,
+  },
+  instaActionCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  instaActionCircleActive: {
+    backgroundColor: '#EFF6FF',
+    borderColor: '#93C5FD',
+  },
+  instaActionLabel: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    color: '#1A2840',
+    textAlign: 'center',
   },
   modalCloseBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginTop: 4,
   },
   modalCloseBtnText: {
     fontFamily: 'Inter_600SemiBold',

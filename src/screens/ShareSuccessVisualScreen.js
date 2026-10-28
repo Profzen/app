@@ -1,20 +1,24 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Platform, StatusBar, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import ViewShot from 'react-native-view-shot';
+import QRCode from 'qrcode';
+import Svg, { Rect } from 'react-native-svg';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import { getOperatorLogo } from '../utils/operatorLogos';
+import { formatCurrency } from '../utils/countryCurrencyUtils';
+import { buildDzyStoreUrl } from '../utils/storeUtils';
 
 import { ALL_COUNTRIES } from '../utils/countriesData';
 
 export default function ShareSuccessVisualScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { t, user } = useApp();
+  const { t, user, language } = useApp();
 
   const { platform = 'whatsapp', transactionData = {} } = route.params || {};
 
@@ -59,6 +63,30 @@ export default function ShareSuccessVisualScreen() {
       ? t(`shareSuccess.${actionKey}`, actionType || 'transferred')
       : (actionType || t('shareSuccess.actionSent', "I sent funds"));
 
+  const numLocale = language === 'en' ? 'en-US' : 'fr-FR';
+  const formattedAmount = formatCurrency(amount, token, numLocale);
+
+  const referralCode = user?.referralCode || user?.referral_code || (user?.id ? `DZY-${user.id.slice(0, 6).toUpperCase()}` : '');
+  const shopObj = transactionData.shop || transactionData.merchant || (transactionData.merchantName ? { name: transactionData.merchantName, country: transactionData.recipientCountry, city: transactionData.recipientCity } : null);
+  const isShopPayment = isPayment && !!(shopObj && (shopObj.slug || shopObj.name || shopObj.shop_name || shopObj.id));
+
+  const baseStoreUrl = isShopPayment ? buildDzyStoreUrl(shopObj) : null;
+  const targetShareUrl = baseStoreUrl
+    ? (referralCode ? `${baseStoreUrl}?ref=${encodeURIComponent(referralCode)}` : baseStoreUrl)
+    : (referralCode ? `https://dizzitup.com/invite?ref=${encodeURIComponent(referralCode)}` : 'https://dizzitup.com');
+
+  const displayShareLink = baseStoreUrl
+    ? (referralCode ? `${baseStoreUrl.replace(/^https?:\/\//, '')}?ref=${referralCode}` : baseStoreUrl.replace(/^https?:\/\//, ''))
+    : (referralCode ? `dizzitup.com/invite?ref=${referralCode}` : 'dizzitup.com');
+
+  const qr = useMemo(() => {
+    try {
+      return QRCode.create(targetShareUrl, { errorCorrectionLevel: 'M' });
+    } catch {
+      return null;
+    }
+  }, [targetShareUrl]);
+
   const [toast, setToast] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [customStyleIndex, setCustomStyleIndex] = useState(0);
@@ -95,7 +123,12 @@ export default function ShareSuccessVisualScreen() {
     }
     navigation.navigate('ShareSuccessCaptionScreen', {
       platform,
-      transactionData,
+      transactionData: {
+        ...transactionData,
+        formattedAmount,
+        targetShareUrl,
+        displayShareLink,
+      },
       cardStyle: cardBackgrounds[customStyleIndex],
       cardImageUri,
     });
@@ -173,7 +206,7 @@ export default function ShareSuccessVisualScreen() {
 
       {/* Amount */}
       <Text style={styles.amountLargeText}>
-        {amount} <Text style={{ color: '#FFC759' }}>{token}</Text>
+        {formattedAmount} <Text style={{ color: '#FFC759' }}>{token}</Text>
       </Text>
       <Text style={styles.amountSubText}>
         via <Text style={{ color: '#FFC759', fontFamily: 'Inter_700Bold' }}>DZYWallet</Text>
@@ -265,15 +298,35 @@ export default function ShareSuccessVisualScreen() {
           <Text style={styles.joinText}>Join Dizzit<Text style={{ color: '#FFC759' }}>Up</Text></Text>
           <View style={styles.urlPill}>
             <Ionicons name="globe-outline" size={12} color="#FFC759" style={{ marginRight: 5 }} />
-            <Text style={styles.urlPillText}>dizzitup.com</Text>
+            <Text style={styles.urlPillText} numberOfLines={1}>{displayShareLink}</Text>
           </View>
         </View>
 
         <View style={styles.footerRight}>
-          <Image
-            source={require('../../assets/brand/dizzitup_logo_cercle.png')}
-            style={styles.logoCircleFooter}
-          />
+          {qr && qr.modules ? (
+            <View style={styles.qrCodeWrapper}>
+              <Svg width={46} height={46} viewBox={`0 0 ${qr.modules.size} ${qr.modules.size}`} accessibilityLabel="QR Code">
+                <Rect width={qr.modules.size} height={qr.modules.size} fill="#FFFFFF" />
+                {Array.from(qr.modules.data).map((cell, index) =>
+                  cell ? (
+                    <Rect
+                      key={index}
+                      x={index % qr.modules.size}
+                      y={Math.floor(index / qr.modules.size)}
+                      width="1"
+                      height="1"
+                      fill="#071D54"
+                    />
+                  ) : null
+                )}
+              </Svg>
+            </View>
+          ) : (
+            <Image
+              source={require('../../assets/brand/dizzitup_logo_cercle.png')}
+              style={styles.logoCircleFooter}
+            />
+          )}
           <Text style={styles.footerBrandTitle}>Dizzit<Text style={{ color: '#FFC759' }}>Up</Text></Text>
           <Text style={styles.footerBrandTagline}>{t('shareSuccess.sendMoreGetMore', 'Send More, Get More')}</Text>
         </View>
@@ -697,6 +750,14 @@ const styles = StyleSheet.create({
     color: '#071D54',
   },
   footerRight: { alignItems: 'center' },
+  qrCodeWrapper: {
+    padding: 3,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 6,
+    marginBottom: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   logoCircleFooter: {
     width: 32,
     height: 32,

@@ -1,5 +1,5 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,6 +9,8 @@ import CryptoIcon from '../components/CryptoIcon';
 import { useApp } from '../context/AppContext';
 
 import { getPaymentRailEligibility, COUNTRY_METADATA, ALL_MOMO_CORRIDORS } from '../services/paymentCorridorService';
+import { currencyRateService } from '../services/currencyRateService';
+import { convertCurrencyAmount, formatCurrency, getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
 
 const countryOptions = [
   { value: '+229', label: '🇧🇯  +229', subtitle: 'Benin', flag: '🇧🇯', code: 'BJ' },
@@ -90,6 +92,12 @@ const tokenOptions = [
 export default function TopUpDetailsScreen({ route }) {
   const navigation = useNavigation();
   const { t, userCountry, language } = useApp();
+
+  const [, setRateVersion] = useState(0);
+  useEffect(() => {
+    const unsub = currencyRateService.subscribe(() => setRateVersion((v) => v + 1));
+    return unsub;
+  }, []);
 
   const passedCountry = route?.params?.country;
   const isUserCountrySupported = ALL_MOMO_CORRIDORS.includes((userCountry || '').toUpperCase());
@@ -256,27 +264,25 @@ export default function TopUpDetailsScreen({ route }) {
                 <Text style={styles.currencyText}>USD</Text>
               </View>
               
-              <Text style={styles.equivText}>
-                {(() => {
-                  const val = parseFloat(amount) || 0;
-                  switch (selectedCountry.code) {
-                    case 'MG':
-                      return `≈ ${Math.round(val * 4600).toLocaleString()} MGA`;
-                    case 'CM':
-                    case 'GA':
-                    case 'CD':
-                      return `≈ ${Math.round(val * 610).toLocaleString()} XAF`;
-                    case 'KE':
-                      return `≈ ${Math.round(val * 130).toLocaleString()} KES`;
-                    case 'GH':
-                      return `≈ ${Math.round(val * 15.5).toLocaleString()} GHS`;
-                    case 'NG':
-                      return `≈ ${Math.round(val * 1500).toLocaleString()} NGN`;
-                    default:
-                      return `≈ ${Math.round(val * 605).toLocaleString()} XOF`;
-                  }
-                })()}
-              </Text>
+              {(() => {
+                const val = parseFloat(amount) || 0;
+                if (val <= 0) return null;
+                const cCode = selectedCountry?.code;
+                const localCurrency = COUNTRY_METADATA[cCode]?.currency || getCountryCurrencyInfo(cCode)?.currency;
+                if (!localCurrency || localCurrency === 'USD') return null;
+                const norm = currencyRateService.normalizeCurrency(localCurrency);
+                const rates = currencyRateService.getRates() || {};
+                if (!rates[norm]) return null;
+                const converted = convertCurrencyAmount(val, 'USD', norm);
+                if (converted === null || converted === undefined) return null;
+                const numLocale = language === 'fr' ? 'fr-FR' : 'en-US';
+                const formatted = formatCurrency(converted, norm, numLocale);
+                return (
+                  <Text style={styles.equivText}>
+                    {`≈ ${formatted} ${norm}`}
+                  </Text>
+                );
+              })()}
             </View>
             
             <View style={[styles.formGroup, {flex: 1, marginLeft: 8}]}>

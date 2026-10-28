@@ -509,10 +509,7 @@ export default function ShopProductsScreen({ route }) {
                       {isTicketProduct(product) ? (
                         <TouchableOpacity 
                           style={[styles.btnBuyCard, { flex: 1, backgroundColor: '#FFC759' }]} 
-                          onPress={() => {
-                            const url = getWebProductUrl(product.id || product._id || product.product_id);
-                            Linking.openURL(url).catch(err => console.warn('Failed to open web product URL:', err));
-                          }}
+                          onPress={() => navigation.navigate('ProductDetailsScreen', { product: product, shop: shop })}
                         >
                           <Ionicons name="ticket-outline" size={13} color="#1A2840" style={{marginRight: 4}} />
                           <Text style={[styles.btnBuyCardText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>

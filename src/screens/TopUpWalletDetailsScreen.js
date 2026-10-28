@@ -11,6 +11,7 @@ import { useApp } from '../context/AppContext';
 import { transactionService } from '../services/transactionService';
 import { theme } from '../theme/theme';
 import { getWalletIdentity, getWalletErrorMessage } from '../utils/walletIdentity';
+import { currencyRateService } from '../services/currencyRateService';
 
 // Dynamic options will be mapped inside the component to use `t()`
 const getCurrencyOptions = (t) => [
@@ -69,15 +70,83 @@ export default function TopUpWalletDetailsScreen() {
     return () => { isMounted = false; };
   }, [authToken]);
 
-  const currencyOptions = getCurrencyOptions(t);
-  const networkOptions = getNetworkOptions(t);
+  const [supportedPairs, setSupportedPairs] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchSupportedTokens = async () => {
+      try {
+        let DIZZY_URL = process.env.EXPO_PUBLIC_DIZZY_WALLET_API_URL || 'http://localhost:5000/api';
+        if (Platform.OS === 'android' && DIZZY_URL.includes('localhost')) {
+          DIZZY_URL = DIZZY_URL.replace('localhost', '10.0.2.2');
+        }
+        const res = await fetch(`${DIZZY_URL}/onramp/supported-tokens`);
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && Array.isArray(data.supportedTokens)) {
+            setSupportedPairs(data.supportedTokens);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load onramp supported tokens:', err);
+      }
+    };
+    fetchSupportedTokens();
+    return () => { isMounted = false; };
+  }, []);
+
+  const allCurrencies = useMemo(() => getCurrencyOptions(t), [t]);
+  const allNetworks = useMemo(() => getNetworkOptions(t), [t]);
+
+  const currencyOptions = useMemo(() => {
+    if (!supportedPairs || supportedPairs.length === 0) return allCurrencies;
+    const availableTokenSymbols = new Set(supportedPairs.map((p) => p.token));
+    const filtered = allCurrencies.filter((c) => availableTokenSymbols.has(c.value));
+    return filtered.length > 0 ? filtered : allCurrencies;
+  }, [supportedPairs, allCurrencies]);
+
   const [amount, setAmount] = useState('10');
   const [currency, setCurrency] = useState('USDC');
   const [network, setNetwork] = useState('base');
+
+  const networkOptions = useMemo(() => {
+    if (!supportedPairs || supportedPairs.length === 0) return allNetworks;
+    const chainsForToken = new Set(
+      supportedPairs.filter((p) => p.token === currency).map((p) => p.chain.toLowerCase())
+    );
+    const filtered = allNetworks.filter((n) => chainsForToken.has(n.value.toLowerCase()));
+    return filtered.length > 0 ? filtered : allNetworks;
+  }, [supportedPairs, currency, allNetworks]);
+
+  useEffect(() => {
+    if (currencyOptions.length > 0 && !currencyOptions.some((c) => c.value === currency)) {
+      setCurrency(currencyOptions[0].value);
+      setError(null);
+    }
+  }, [currencyOptions, currency]);
+
+  useEffect(() => {
+    if (networkOptions.length > 0 && !networkOptions.some((n) => n.value.toLowerCase() === network.toLowerCase())) {
+      setNetwork(networkOptions[0].value);
+      setError(null);
+    }
+  }, [networkOptions, network]);
+
   const [orderIdentifier, setOrderIdentifier] = useState(null);
   const [clientSecret, setClientSecret] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [, setRateVersion] = useState(0);
+
+  useEffect(() => {
+    const unsub = currencyRateService.subscribe(() => setRateVersion((v) => v + 1));
+    return unsub;
+  }, []);
+
+  const parsedAmount = parseFloat(amount);
+  const estimatedEURC = currency === 'EURC' && !isNaN(parsedAmount) && parsedAmount > 0
+    ? currencyRateService.convert(parsedAmount, 'USD', 'EURC')
+    : null;
 
   const evmAddress = addresses.evm || walletIdentity.evm || '';
   const solanaAddress = addresses.solana || walletIdentity.solana || '';
@@ -119,7 +188,16 @@ export default function TopUpWalletDetailsScreen() {
       setClientSecret(result.clientSecret || null);
     } catch (err) {
       console.error(err);
-      setError(err.message || t('topup.network_error'));
+      const msg = String(err?.message || '');
+      if (
+        msg.toLowerCase().includes('not supported') ||
+        msg.toLowerCase().includes('token locator') ||
+        msg.toLowerCase().includes('unsupported')
+      ) {
+        setError(t('topup.tokenNetworkNotSupported', "This token is not available for card top-up on this network. Please choose another token or network."));
+      } else {
+        setError(err.message || t('topup.network_error', 'Network error during order creation'));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -205,22 +283,52 @@ export default function TopUpWalletDetailsScreen() {
               />
               <Text style={styles.currencyText}>USD</Text>
             </View>
+            {currency === 'EURC' && estimatedEURC !== null && (
+              <Text style={styles.estimatedReceivedText}>
+                {t('topup.estimated_eurc_received', { amount: estimatedEURC.toFixed(2) })}
+              </Text>
+            )}
           </View>
 
           {/* Form: Devise */}
           <View style={styles.formGroup}>
             <Text style={styles.label}>{t('topup.crypto_currency')}</Text>
-            <AppSelect value={currency} options={currencyOptions} onChange={setCurrency} title={t('topup.choose_currency')} renderLeading={(option) => <CryptoIcon symbol={option.value} size={26} style={{marginRight: 12}} />} />
+            <AppSelect
+              value={currency}
+              options={currencyOptions}
+              onChange={(val) => {
+                setCurrency(val);
+                setError(null);
+              }}
+              title={t('topup.choose_currency')}
+              renderLeading={(option) => <CryptoIcon symbol={option.value} size={26} style={{marginRight: 12}} />}
+            />
           </View>
 
           {/* Form: Réseau de transaction */}
           <View style={styles.formGroup}>
             <Text style={styles.label}>{t('topup.transaction_network')}</Text>
-            <AppSelect value={network} options={networkOptions} onChange={setNetwork} title={t('topup.choose_network')} renderLeading={(option) => <CryptoIcon symbol={option.iconSymbol} size={26} style={{marginRight: 12}} />} />
+            <AppSelect
+              value={network}
+              options={networkOptions}
+              onChange={(val) => {
+                setNetwork(val);
+                setError(null);
+              }}
+              title={t('topup.choose_network')}
+              renderLeading={(option) => <CryptoIcon symbol={option.iconSymbol} size={26} style={{marginRight: 12}} />}
+            />
           </View>
 
           {/* Crossmint Embedded Checkout */}
           <View style={styles.checkoutWrapper}>
+            {error && (
+              <View style={styles.errorBanner}>
+                <Ionicons name="alert-circle" size={20} color="#DC2626" style={{ marginRight: 8, flexShrink: 0 }} />
+                <Text style={styles.errorBannerText}>{error}</Text>
+              </View>
+            )}
+
             {walletIdentity.reason ? (
               <View style={styles.errorContainer}>
                 <Ionicons name="alert-circle" size={48} color="#EF4444" />
@@ -238,31 +346,31 @@ export default function TopUpWalletDetailsScreen() {
                   </TouchableOpacity>
                 )}
               </View>
-            ) : !orderIdentifier && !isLoading && !error && !isAddressLoading ? (
+            ) : !orderIdentifier ? (
               <TouchableOpacity
-                style={[styles.btnContinue, (!isTopUpReady) && { opacity: 0.5 }]}
-                disabled={!isTopUpReady}
+                style={[styles.btnContinue, (!isTopUpReady || isLoading) && { opacity: 0.5 }]}
+                disabled={!isTopUpReady || isLoading}
                 onPress={handleGenerateOrder}
               >
-                <Text style={styles.btnContinueText}>{t('topup.continue_btn', 'CONTINUE TO SECURE PAYMENT')}</Text>
-                <Ionicons name="arrow-forward" size={18} color="#FFC759" />
+                {isLoading ? (
+                  <ActivityIndicator size="small" color="#FFC759" />
+                ) : (
+                  <>
+                    <Text style={styles.btnContinueText}>{t('topup.continue_btn', 'CONTINUE TO SECURE PAYMENT')}</Text>
+                    <Ionicons name="arrow-forward" size={18} color="#FFC759" />
+                  </>
+                )}
               </TouchableOpacity>
             ) : null}
 
-            {!walletIdentity.reason && (isLoading || (isAddressLoading && !orderIdentifier && !error)) ? (
+            {!walletIdentity.reason && (isAddressLoading && !orderIdentifier && !error) ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#FFB800" />
                 <Text style={styles.loadingText}>{t('topup.preparing_transaction')}</Text>
               </View>
-            ) : error ? (
-              <View style={styles.errorContainer}>
-                <Ionicons name="alert-circle" size={48} color="#EF4444" />
-                <Text style={styles.errorText}>{error}</Text>
-                <TouchableOpacity style={styles.retryBtn} onPress={() => setError(null)}>
-                  <Text style={styles.retryText}>{t('topup.retry')}</Text>
-                </TouchableOpacity>
-              </View>
-            ) : orderIdentifier ? (
+            ) : null}
+
+            {orderIdentifier ? (
               <View style={styles.crossmintContainer}>
                 <CrossmintEmbeddedCheckout
                   orderId={orderIdentifier}
@@ -485,6 +593,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#64748B',
   },
+  estimatedReceivedText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
+    color: '#059669',
+    marginTop: 6,
+    marginLeft: 4,
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -496,6 +611,24 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_500Medium',
     color: '#64748B',
     fontSize: 14,
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 16,
+  },
+  errorBannerText: {
+    flex: 1,
+    fontFamily: 'Inter_500Medium',
+    fontSize: 13,
+    color: '#991B1B',
+    lineHeight: 18,
   },
   errorContainer: {
     flex: 1,
