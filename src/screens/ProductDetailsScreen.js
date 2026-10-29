@@ -702,7 +702,12 @@ export default function ProductDetailsScreen({ route }) {
         {/* Livraison & Retrait Section */}
         {showDeliverySection && (
           <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>{t('product.deliveryAndPickup', 'Delivery & pickup')}</Text>
+            {/* <Text style={styles.sectionTitle}>{t('product.deliveryAndPickup', 'Delivery & pickup')}</Text> */}
+            <Text style={styles.sectionTitle}>
+              {isPhysical
+                ? t('product.deliveryAndPickup', 'Delivery & pickup')
+                : t('orderVerification.deliveryOption', 'Delivery mode')}
+            </Text>
             <View style={styles.deliveryCard}>
               <View style={styles.deliveryRow}>
                 {hasMerchantDelivery && (
