@@ -34,7 +34,7 @@ export default function ShareSuccessPlatformScreen() {
   ];
 
   const handleContinue = () => {
-    navigation.navigate('ShareSuccessVisualScreen', {
+    navigation.push('ShareSuccessVisualScreen', {
       platform: selectedPlatform,
       transactionData,
     });

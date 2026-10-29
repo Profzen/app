@@ -182,7 +182,7 @@ export default function SendMoneySuccessScreen() {
             <TouchableOpacity 
               style={styles.shareCtaCard}
               onPress={() => {
-                navigation.navigate('ShareSuccessPlatformScreen', {
+                navigation.push('ShareSuccessPlatformScreen', {
                   transactionData: {
                     type: 'send',
                     amount,

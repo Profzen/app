@@ -250,7 +250,7 @@ export default function PaymentSuccessScreen({ route }) {
                 shareToken = tx.currency || 'FCFA';
               }
 
-              navigation.navigate('ShareSuccessPlatformScreen', {
+              navigation.push('ShareSuccessPlatformScreen', {
                 transactionData: {
                   type: 'payment',
                   amount: shareAmount,

@@ -5885,5 +5885,20 @@
   "invoicePayLink.invoiceLanguage": "Idioma da fatura",
   "invoicePayLink.selectLanguage": "Selecionar idioma",
   "invoicePayLink.recentRequestsHeader": "Pedidos recentes",
-  "topUpWallet.unsupportedPair": "Este token não está disponível para recarga com cartão nesta rede. Por favor, escolha outro token ou rede."
+  "topUpWallet.unsupportedPair": "Este token não está disponível para recarga com cartão nesta rede. Por favor, escolha outro token ou rede.",
+  "preHome": {
+    "everyone": "PARA TODOS",
+    "business": "PARA EMPRESAS",
+    "walletTitle": "Uma carteira para o seu dinheiro",
+    "walletBody": "Envie e receba stablecoins em USD ou EUR além-fronteiras.",
+    "everydayTitle": "Simplifique o seu dia a dia",
+    "everydayBody": "Compre, pague contas e recarregue o telemóvel num só lugar.",
+    "storeTitle": "Abra a sua DZYStore",
+    "storeBody": "Apresente os seus produtos e serviços a clientes de todo o mundo.",
+    "paymentsTitle": "Receba pagamentos sem fronteiras",
+    "paymentsBody": "Partilhe um link de pagamento ou uma fatura e receba stablecoins.",
+    "skip": "Saltar introdução",
+    "next": "Seguinte",
+    "getStarted": "Começar"
+  }
 }

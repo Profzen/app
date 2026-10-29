@@ -121,7 +121,7 @@ export default function ShareSuccessVisualScreen() {
         return;
       }
     }
-    navigation.navigate('ShareSuccessCaptionScreen', {
+    navigation.push('ShareSuccessCaptionScreen', {
       platform,
       transactionData: {
         ...transactionData,

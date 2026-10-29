@@ -6120,5 +6120,20 @@
   "shareSuccess.captionCopiedForPost": "Le visuel a été envoyé et la légende copiée. Collez-la dans votre publication et identifiez @DizzitUp.",
   "shareSuccess.shareFailedTitle": "Partage annulé",
   "shareSuccess.shareFailedMessage": "Aucun contenu n’a été publié. Vous pourrez réessayer lorsque vous serez prêt.",
-  "topUpWallet.unsupportedPair": "Ce jeton n'est pas disponible pour le rechargement par carte sur ce réseau. Veuillez choisir un autre jeton ou un autre réseau."
+  "topUpWallet.unsupportedPair": "Ce jeton n'est pas disponible pour le rechargement par carte sur ce réseau. Veuillez choisir un autre jeton ou un autre réseau.",
+  "preHome": {
+    "everyone": "POUR TOUS",
+    "business": "POUR LES ENTREPRISES",
+    "walletTitle": "Un portefeuille pour votre argent",
+    "walletBody": "Envoyez et recevez des stablecoins en USD ou EUR au-delà des frontières.",
+    "everydayTitle": "Simplifiez votre quotidien",
+    "everydayBody": "Achetez, payez vos factures et rechargez votre mobile au même endroit.",
+    "storeTitle": "Ouvrez votre DZYStore",
+    "storeBody": "Présentez vos produits et services à des clients du monde entier.",
+    "paymentsTitle": "Recevez des paiements sans frontières",
+    "paymentsBody": "Partagez un lien de paiement ou une facture et recevez des stablecoins.",
+    "skip": "Passer l’introduction",
+    "next": "Suivant",
+    "getStarted": "Commencer"
+  }
 }

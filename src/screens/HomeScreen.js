@@ -15,7 +15,7 @@ import { getProductCoverImage } from '../utils/productMedia';
 import { useApp } from '../context/AppContext';
 import { useBuyGoods } from '../hooks/useBuyGoods';
 import { buyGoodsApi } from '../services/buyGoodsApi';
-import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
+import { getCountryCurrencyInfo, getFlagEmoji } from '../utils/countryCurrencyUtils';
 import PriceDisplay from '../components/PriceDisplay';
 
 import { isSmallScreen, isShortScreen } from '../utils/responsive';
@@ -663,7 +663,8 @@ export default function HomeScreen() {
             ) : timelineTab === 'featured' ? (
               <View style={styles.timelineList}>
                 {featuredShops.length > 0 ? featuredShops.map((shop, index) => {
-                  const locationStr = `${shop.city_village || 'Local'}, ${shop.country || 'Global'}`;
+                  const shopCountry = shop.country || shop.country_code || shop.countryCode || '';
+                  const locationStr = `${shop.city_village || 'Local'}, ${getFlagEmoji(shopCountry)} ${shopCountry || 'Global'}`;
                   return (
                     <TouchableOpacity key={`shop-${shop.id || 'id'}-${index}`} style={styles.timelineCard} onPress={() => navigation.navigate('ShopDetailsScreen', { shop })}>
                       <Image

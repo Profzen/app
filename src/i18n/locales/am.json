@@ -5904,5 +5904,20 @@
   "invoicePayLink.invoiceLanguage": "የደረሰኝ ቋንቋ",
   "invoicePayLink.selectLanguage": "ቋንቋ ይምረጡ",
   "invoicePayLink.recentRequestsHeader": "የቅርብ ጊዜ ጥያቄዎች",
-  "topUpWallet.unsupportedPair": "ይህ ቶከን በዚህ አውታረ መረብ ላይ በካርድ ለመሙላት አይገኝም። እባክዎ ሌላ ቶከን ወይም አውታረ መረብ ይምረጡ።"
+  "topUpWallet.unsupportedPair": "ይህ ቶከን በዚህ አውታረ መረብ ላይ በካርድ ለመሙላት አይገኝም። እባክዎ ሌላ ቶከን ወይም አውታረ መረብ ይምረጡ።",
+  "preHome": {
+    "everyone": "ለሁሉም",
+    "business": "ለንግድ",
+    "walletTitle": "ለገንዘብዎ አንድ የኪስ ቦርሳ",
+    "walletBody": "በዶላር ወይም በዩሮ የተመሰረቱ ስቴብልኮይኖችን ድንበር አቋርጠው ይላኩ እና ይቀበሉ።",
+    "everydayTitle": "ዕለታዊ ኑሮዎን ያቀልሉ",
+    "everydayBody": "በአንድ ቦታ ይግዙ፣ ሂሳቦችን ይክፈሉ እና ስልክዎን ይሙሉ።",
+    "storeTitle": "የእርስዎን DZYStore ይክፈቱ",
+    "storeBody": "ምርቶችዎን እና አገልግሎቶችዎን ለዓለም አቀፍ ደንበኞች ያቅርቡ።",
+    "paymentsTitle": "ከድንበር ተሻጋሪ ክፍያዎችን ይቀበሉ",
+    "paymentsBody": "የክፍያ አገናኝ ወይም ደረሰኝ ያጋሩ እና ስቴብልኮይኖችን ይቀበሉ።",
+    "skip": "መግቢያውን ዝለሉ",
+    "next": "ቀጣይ",
+    "getStarted": "ይጀምሩ"
+  }
 }

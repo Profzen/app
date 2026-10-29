@@ -682,9 +682,27 @@ export default function ProductDetailsScreen({ route }) {
 
         {/* Livraison & Retrait Section */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>{t('product.deliveryAndPickup', 'Delivery & pickup')}</Text>
+          <Text style={styles.sectionTitle}>
+            {isPhysicalItem(product)
+              ? t('product.deliveryAndPickup', 'Delivery & pickup')
+              : t('orderVerification.deliveryOption', 'Delivery mode')}
+          </Text>
           <View style={styles.deliveryCard}>
             <View style={styles.deliveryRow}>
+              {!isPhysicalItem(product) ? (
+                <View style={styles.deliveryItem}>
+                  <Ionicons name="navigate-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
+                  <View>
+                    <Text style={styles.deliveryLabel}>
+                      {isTicket
+                        ? t('orderVerification.deliveryOnlineInSitu', 'Online / In-situ')
+                        : product.offering_type === 'digital_product'
+                          ? t('orderVerification.deliveryOnline', 'Online')
+                          : t('orderVerification.deliveryOnlineInSitu', 'Online / In-situ')}
+                    </Text>
+                  </View>
+                </View>
+              ) : <>
               <View style={styles.deliveryItem}>
                 <Ionicons name="bus-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
                 <View>
@@ -706,6 +724,7 @@ export default function ProductDetailsScreen({ route }) {
                   <Text style={styles.deliveryValue}>{t('product.fromDeliveryFee', "From {{fee}}", { fee: deliveryFeeFormatted })}</Text>
                 </View>
               </View>
+              </>}
             </View>
           </View>
         </View>

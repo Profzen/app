@@ -223,7 +223,7 @@ export default function TopUpWalletConfirmationScreen() {
           <TouchableOpacity 
             style={styles.shareCtaCard}
             onPress={() => {
-              navigation.navigate('ShareSuccessPlatformScreen', {
+              navigation.push('ShareSuccessPlatformScreen', {
                 transactionData: {
                   type: 'topup',
                   amount: '10',

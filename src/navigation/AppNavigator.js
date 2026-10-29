@@ -23,7 +23,7 @@ import PayBillsSummaryScreen from '../screens/PayBillsSummaryScreen';
 import DashboardEngScreen from '../screens/DashboardEngScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import FiltersScreen from '../screens/FiltersScreen';
-import HomeScreen from '../screens/HomeScreen';
+import HomeEntryGate from '../screens/HomeEntryGate';
 import LocalExchangeScreen from '../screens/LocalExchangeScreen';
 import LoginScreen from '../screens/LoginScreen';
 import MobileRechargeScreen from '../screens/MobileRechargeScreen';
@@ -139,7 +139,7 @@ export default function AppNavigator() {
       <Stack.Screen name="DashboardEngScreen" component={DashboardEngScreen} />
       <Stack.Screen name="DashboardScreen" component={DashboardScreen} />
       <Stack.Screen name="FiltersScreen" component={FiltersScreen} />
-      <Stack.Screen name="HomeScreen" component={HomeScreen} />
+      <Stack.Screen name="HomeScreen" component={HomeEntryGate} />
       <Stack.Screen name="LocalExchangeScreen" component={LocalExchangeScreen} />
       <Stack.Screen name="LoginScreen" component={LoginScreen} />
       <Stack.Screen name="MobileRechargeScreen" component={MobileRechargeScreen} />
