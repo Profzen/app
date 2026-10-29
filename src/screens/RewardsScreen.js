@@ -26,8 +26,9 @@ import {
   isShortScreen,
   windowWidth,
 } from '../utils/responsive';
-import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
+import { getCountryCurrencyInfo, convertCurrencyAmount } from '../utils/countryCurrencyUtils';
 import { supabase } from '../services/supabaseClient';
+import { getUserReferralStats } from '../services/referralService';
 
 export default function RewardsScreen() {
   const navigation = useNavigation();
@@ -46,6 +47,26 @@ export default function RewardsScreen() {
 
   // Dynamic Rewards Balance from user profile / wallet (no mock value)
   const totalRewardsDzy = Number(user?.rewardsDZY ?? user?.rewards_dzy ?? 0) || 0;
+
+  // Pending referral rewards from public.referrals
+  const [pendingReferralDzy, setPendingReferralDzy] = useState(0);
+
+  useEffect(() => {
+    let isMounted = true;
+      const fetchPendingRewards = async () => {
+        if (!user?.id) return;
+        try {
+          const { totalEarnedDzy, error } = await getUserReferralStats(user.id);
+          if (!error && isMounted) {
+            setPendingReferralDzy(totalEarnedDzy);
+          }
+        } catch (e) {
+          console.warn('Failed to fetch pending referral rewards', e);
+        }
+      };
+      fetchPendingRewards();
+      return () => { isMounted = false; };
+    }, [user?.id]);
 
   // Currency conversion setup
   const userCountryKey = (user?.country || '').toLowerCase().trim();
@@ -79,7 +100,7 @@ export default function RewardsScreen() {
   }, []);
 
   // 10 DZY = $1.00 USD -> 1 DZY = $0.10 USD
-  const dzyInUsd = totalRewardsDzy * 0.1;
+  const dzyInUsd = convertCurrencyAmount(totalRewardsDzy, 'DZY', 'USD');
   const localRate = exchangeRates[primaryCountry.currency] || 655.957; // Default XOF rate if unavailable
   const primaryBalance = dzyInUsd * localRate;
 
@@ -262,6 +283,19 @@ export default function RewardsScreen() {
                   </Text>
                 </View>
               </View>
+
+              {pendingReferralDzy > 0 && (
+                <View style={styles.pendingReferralContainer}>
+                  <Text
+                    style={[styles.pendingReferralText, !isVisible && styles.blurredText]}
+                    numberOfLines={1}
+                  >
+                    {t('rewards.pending_referral_rewards', 'Pending referral rewards: {{amount}} DZY', {
+                      amount: formatNum(pendingReferralDzy, 2, 2),
+                    })}
+                  </Text>
+                </View>
+              )}
 
               {/* Status Pill */}
               <View style={styles.statusPillContainer}>
@@ -848,79 +882,79 @@ export default function RewardsScreen() {
               </View>
 
               <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
-              <Text style={styles.modalTitle}>
-                {t('rewards.faq_title', 'About DZY Rewards')}
-              </Text>
-
-              <Text style={styles.modalDesc}>
-                {t(
-                  'rewards.faq_desc',
-                  "DZY is DizzitUp's community utility token designed to reward every payment, referral, and merchant in Africa and the diaspora."
-                )}
-              </Text>
-
-              <View style={styles.modalHighlightRow}>
-                <View style={styles.modalDot} />
-                <Text style={styles.modalHighlightText}>
-                  <Text style={styles.modalLabelText}>
-                    {t('rewards.faq_pre_tge_label', 'Pre-TGE:')}{' '}
+                  <Text style={styles.modalTitle}>
+                    {t('rewards.faq_title', 'About DZY Rewards')}
                   </Text>
-                  {t('rewards.faq_item_1', '1 DZY = $0.10 USD (10 DZY = $1.00 USD).')}
-                </Text>
-              </View>
 
-              <View style={styles.modalHighlightRow}>
-                <View style={styles.modalDot} />
-                <Text style={styles.modalHighlightText}>
-                  {t(
+                  <Text style={styles.modalDesc}>
+                    {t(
+                      'rewards.faq_desc',
+                      "DZY is DizzitUp's community utility token designed to reward every payment, referral, and merchant in Africa and the diaspora."
+                    )}
+                  </Text>
+
+                  <View style={styles.modalHighlightRow}>
+                    <View style={styles.modalDot} />
+                    <Text style={styles.modalHighlightText}>
+                      <Text style={styles.modalLabelText}>
+                        {t('rewards.faq_pre_tge_label', 'Pre-TGE:')}{' '}
+                      </Text>
+                      {t('rewards.faq_item_1', '1 DZY = $0.10 USD (10 DZY = $1.00 USD).')}
+                    </Text>
+                  </View>
+
+                    <View style={styles.modalHighlightRow}>
+                      <View style={styles.modalDot} />
+                      <Text style={styles.modalHighlightText}>
+                        {t(
                     'rewards.faq_item_2',
-                    'Earn up to 5% instant cashback on all utility bills, mobile airtime, and marketplace purchases.'
-                  )}
-                </Text>
-              </View>
+                          'Earn up to 5% instant cashback on all utility bills, mobile airtime, and marketplace purchases.'
+                        )}
+                      </Text>
+                    </View>
 
-              <View style={styles.modalHighlightRow}>
-                <View style={styles.modalDot} />
-                <Text style={styles.modalHighlightText}>
-                  {t(
-                    'rewards.faq_item_3',
-                    'No complicated tiers: everyone gets fair, high-yield cashback based directly on the payment method used.'
-                  )}
-                </Text>
-              </View>
+                    <View style={styles.modalHighlightRow}>
+                      <View style={styles.modalDot} />
+                      <Text style={styles.modalHighlightText}>
+                        {t(
+                          'rewards.faq_item_3',
+                          'No complicated tiers: everyone gets fair, high-yield cashback based directly on the payment method used.'
+                        )}
+                      </Text>
+                    </View>
 
-              <View style={styles.modalHighlightRow}>
-                <View style={styles.modalDot} />
-                <Text style={styles.modalHighlightText}>
-                  {t(
-                    'rewards.faq_item_4',
-                    'Tokens accumulate safely in your account before TGE, where they will convert 1:1 to on-chain Polygon DZY.'
-                  )}
-                </Text>
-              </View>
+                    <View style={styles.modalHighlightRow}>
+                      <View style={styles.modalDot} />
+                      <Text style={styles.modalHighlightText}>
+                        {t(
+                          'rewards.faq_item_4',
+                          'Tokens accumulate safely in your account before TGE, where they will convert 1:1 to on-chain Polygon DZY.'
+                        )}
+                      </Text>
+                    </View>
 
-              <View style={styles.modalHighlightRow}>
-                <View style={[styles.modalDot, { backgroundColor: '#7C3AED' }]} />
-                <Text style={styles.modalHighlightText}>
-                  <Text style={[styles.modalLabelText, { color: '#6D28D9' }]}>
-                    {t('rewards.faq_merchants_label', 'For Merchants:')}{' '}
-                  </Text>
-                  {t('rewards.faq_item_5', 'Earn up to a 3% bonus for selling on DizzitUp.')}
-                </Text>
-              </View>
-              </ScrollView>
+                        <View style={styles.modalHighlightRow}>
+                          <View style={[styles.modalDot, { backgroundColor: '#7C3AED' }]} />
+                          <Text style={styles.modalHighlightText}>
+                            <Text style={[styles.modalLabelText, { color: '#6D28D9' }]}>
+                              {t('rewards.faq_merchants_label', 'For Merchants:')}{' '}
+                            </Text>
+                        {t('rewards.faq_item_5', 'Earn up to a 3% bonus for selling on DizzitUp.')}
+                      </Text>
+                    </View>
+                  </ScrollView>
 
-              <TouchableOpacity
-                style={styles.modalDismissBtn}
-                onPress={() => setShowHelpModal(false)}
-                activeOpacity={0.85}
-              >
-                <Text style={styles.modalDismissBtnText}>
-                  {t('rewards.modal_close', 'Got it')}
-                </Text>
-              </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.modalDismissBtn}
+                    onPress={() => setShowHelpModal(false)}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={styles.modalDismissBtnText}>
+                      {t('rewards.modal_close', 'Got it')}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
             </View>
-          </View>
         </Modal>
       </View>
     </SafeAreaView>
@@ -1210,6 +1244,17 @@ const styles = StyleSheet.create({
     fontFamily: 'SpaceGrotesk_500Medium',
     fontSize: isSmallScreen ? 12 : 13,
     color: 'rgba(255, 255, 255, 0.85)',
+  },
+  pendingReferralContainer: {
+    alignItems: 'center',
+    marginTop: -8,
+    marginBottom: 10,
+  },
+  pendingReferralText: {
+    fontFamily: 'SpaceGrotesk_400Regular',
+    fontSize: isSmallScreen ? 11 : 12,
+    color: '#FFC759',
+    textAlign: 'center',
   },
   equivTextLocal: {
     color: '#FFC759',

@@ -3588,6 +3588,7 @@
     "your_statistics": "إحصائياتك",
     "invited_referrals": "الإحالات المدعوة",
     "earned_in_dzy": "الأرباح بعملة DZY",
+    "pending_until_launch": "معلق حتى إطلاق DZY",
     "active_cashback": "استرداد نقدي نشط",
     "gold_perks": "مزايا ديزي فاميلي الذهبية",
     "benefit_1_title": "مكافأة استرداد نقدي +2%",
@@ -4666,7 +4667,9 @@
     "noBeneficiarySelected": "يرجى تحديد مستفيد من جهات الاتصال الخاصة بك.",
     "selectBeneficiaryBtn": "اختيار من جهات الاتصال",
     "selectBeneficiaryError": "يرجى تحديد مستفيد من جهات الاتصال الخاصة بك.",
-    "eventVenueTitle": "الحدث والمكان"
+    "eventVenueTitle": "الحدث والمكان",
+    "deliveryOnlineInSitu": "عبر الإنترنت / في الموقع",
+    "deliveryOnlineInSituDesc": "خدمة في الموقع أو عن بُعد"
   },
   "orderConfirmation": {
     "ticketDeliveryMode": "طريقة التسليم",
@@ -5511,6 +5514,7 @@
     "pre_tge_chip": "مكافآت خارج السلسلة قبل TGE",
     "token_valuation": "1 DZY = 0.10 دولار أمريكي (Polygon ERC-20)",
     "total_earned_label": "إجمالي رصيد المكافآت",
+    "pending_referral_rewards": "مكافآت الإحالة المعلقة: {{amount}} DZY",
     "accrued_subtext": "متراكمة بأمان في حسابك",
     "distinction_note": "DZY هو رصيد مكافآت الولاء الخاص بك. تكسب DZY مع كل فاتورة وإعادة شحن وشراء. تتراكم العملات وسيتم تفعيلها عند حدث TGE.",
     "cashback_badge_pill": "استرداد نقدي يصل إلى 5%",

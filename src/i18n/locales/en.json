@@ -3704,6 +3704,7 @@
     "your_statistics": "YOUR STATISTICS",
     "invited_referrals": "Invited Referrals",
     "earned_in_dzy": "Earned in DZY",
+    "pending_until_launch": "Pending until DZY launch",
     "active_cashback": "Active Cashback",
     "gold_perks": "DIZZYFAMILY GOLD PERKS",
     "benefit_1_title": "Cashback Bonus +2%",
@@ -4864,7 +4865,9 @@
     "noBeneficiarySelected": "Please select a beneficiary from your contacts.",
     "selectBeneficiaryBtn": "Select from contacts",
     "selectBeneficiaryError": "Please select a beneficiary from your contacts.",
-    "eventVenueTitle": "Event & Venue"
+    "eventVenueTitle": "Event & Venue",
+    "deliveryOnlineInSitu": "Online / In-situ",
+    "deliveryOnlineInSituDesc": "Service at location or remote"
   },
   "orderConfirmation": {
     "ticketDeliveryMode": "Delivery mode",
@@ -5698,6 +5701,7 @@
     "pre_tge_chip": "Pre-TGE Off-Chain Rewards",
     "token_valuation": "1 DZY = $0.10 USD (Polygon ERC-20)",
     "total_earned_label": "TOTAL REWARDS BALANCE",
+    "pending_referral_rewards": "Pending referral rewards: {{amount}} DZY",
     "accrued_subtext": "Safely accrued in your account",
     "distinction_note": "DZY is your loyalty reward balance. You earn DZY on every bill, mobile recharge, and purchase. All tokens accumulate in your account and will unlock at the Token Generation Event (TGE).",
     "cashback_badge_pill": "Up to 5% Cashback",

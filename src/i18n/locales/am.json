@@ -3551,6 +3551,7 @@
     "your_statistics": "የእርስዎ ስታቲስቲክስ",
     "invited_referrals": "የተጋበዙ ተጠቃሚዎች",
     "earned_in_dzy": "በDZY የተገኘ",
+    "pending_until_launch": "እስከ DZY ማስጀመሪያ ድረስ በመጠባበቅ ላይ",
     "active_cashback": "ንቁ ገንዘብ ተመላሽ",
     "gold_perks": "የDIZZYFAMILY የወርቅ ጥቅሞች",
     "benefit_1_title": "ተጨማሪ 2% የገንዘብ ተመላሽ ቦነስ",
@@ -4558,7 +4559,9 @@
     "noBeneficiarySelected": "እባክዎ ከተገናኙዋቸው ሰዎች ተጠቃሚ ይምረጡ።",
     "selectBeneficiaryBtn": "ከተገናኙዋቸው ይምረጡ",
     "selectBeneficiaryError": "እባክዎ ከተገናኙዋቸው ሰዎች ተጠቃሚ ይምረጡ።",
-    "eventVenueTitle": "ክስተት እና ቦታ"
+    "eventVenueTitle": "ክስተት እና ቦታ",
+    "deliveryOnlineInSitu": "በመስመር ላይ / በቦታው ላይ",
+    "deliveryOnlineInSituDesc": "በቦታው ላይ ወይም በርቀት አገልግሎት"
   },
   "orderConfirmation": {
     "ticketDeliveryMode": "የማድረሻ ሁኔታ",
@@ -5499,6 +5502,7 @@
     "pre_tge_chip": "የቅድመ-TGE ሽልማቶች ክምችት",
     "token_valuation": "1 DZY = $0.10 USD (Polygon ERC-20)",
     "total_earned_label": "ጠቅላላ የሽልማት ቀሪ ሂሳብ",
+    "pending_referral_rewards": "በመጠባበቅ ላይ ያሉ የግብዣ ሽልማቶች፡ {{amount}} DZY",
     "accrued_subtext": "በመለያዎ ውስጥ ደህንነቱ በተጠበቀ ሁኔታ የተከማቸ",
     "distinction_note": "DZY የታማኝነት ሽልማት ቀሪ ሂሳብዎ ነው። በእያንዳንዱ ክፍያ እና ግዢ ላይ DZY ያገኛሉ። ሁሉም ቶከኖች በ TGE ጊዜ ይለቀቃሉ።",
     "cashback_badge_pill": "እስከ 5% ተመላሽ ገንዘብ",

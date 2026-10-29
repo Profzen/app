@@ -23,7 +23,6 @@ export default function AboutDizzitUpScreen() {
   const appBuildNumber = Application.nativeBuildVersion || '—';
 
   const currentYear = new Date().getFullYear();
-  const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
   const copyToClipboard = async (text) => {
     await Clipboard.setStringAsync(text);
@@ -80,12 +79,13 @@ export default function AboutDizzitUpScreen() {
         const buildNum = Number(appBuildNumber);
         const hasValidBuild = !isNaN(buildNum) && appBuildNumber !== '—';
         const col = Platform.OS === 'ios' ? 'ios_build' : 'android_build';
+        const langCode = (language || 'en').split('-')[0].toLowerCase();
 
         let query = supabase
           .from('app_releases')
-          .select('new_features, fixes, updated_at')
-          .eq('platform', 'all')
-          .eq('language', language.split('-')[0])
+          .select('new_features, fixes, created_at, android_build, ios_build')
+          .in('platform', ['all', Platform.OS === 'ios' ? 'ios' : 'android'])
+          .eq('language', langCode)
           .neq('status', 'draft')
           .order(col, { ascending: false })
           .limit(1);
@@ -95,15 +95,29 @@ export default function AboutDizzitUpScreen() {
         }
 
         let { data, error } = await query.maybeSingle();
-
         if (error) throw error;
+
+        // If no release found <= buildNum for this language, get the latest published release for this language
+        if (!data) {
+          const latestForLang = await supabase
+            .from('app_releases')
+            .select('new_features, fixes, created_at, android_build, ios_build')
+            .in('platform', ['all', Platform.OS === 'ios' ? 'ios' : 'android'])
+            .eq('language', langCode)
+            .neq('status', 'draft')
+            .order(col, { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (latestForLang.data) data = latestForLang.data;
+        }
 
         // Fall back to English if the current language has no release-note entry
         if (!data) {
           let fallbackQuery = supabase
             .from('app_releases')
-            .select('new_features, fixes, updated_at')
-            .eq('platform', 'all')
+            .select('new_features, fixes, created_at, android_build, ios_build')
+            .in('platform', ['all', Platform.OS === 'ios' ? 'ios' : 'android'])
             .eq('language', 'en')
             .neq('status', 'draft')
             .order(col, { ascending: false })
@@ -113,10 +127,19 @@ export default function AboutDizzitUpScreen() {
             fallbackQuery = fallbackQuery.lte(col, buildNum);
           }
 
-          const fallback = await fallbackQuery.maybeSingle();
-
-          if (fallback.error) throw fallback.error;
-          data = fallback.data;
+          let fallback = await fallbackQuery.maybeSingle();
+          if (!fallback?.data) {
+            fallback = await supabase
+              .from('app_releases')
+              .select('new_features, fixes, created_at, android_build, ios_build')
+              .in('platform', ['all', Platform.OS === 'ios' ? 'ios' : 'android'])
+              .eq('language', 'en')
+              .neq('status', 'draft')
+              .order(col, { ascending: false })
+              .limit(1)
+              .maybeSingle();
+          }
+          data = fallback?.data;
         }
 
         const sanitizeReleaseNote = (note) => {
@@ -137,13 +160,13 @@ export default function AboutDizzitUpScreen() {
             .replace(/Maisha\s*pay/gi, 'Payment Gateway');
         };
 
-        const formattedDate = data?.updated_at
-          ? new Date(data.updated_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-          : currentDate;
+        const localeMap = { fr: 'fr-FR', pt: 'pt-PT', ar: 'ar-SA', am: 'am-ET', en: 'en-US' };
+        const dateLocale = localeMap[langCode] || 'en-US';
+        const formattedDate = data?.created_at
+          ? new Date(data.created_at).toLocaleDateString(dateLocale, { month: 'long', day: 'numeric', year: 'numeric' })
+          : null;
 
         setReleaseNotes({
-          // features: data?.new_features || [],
-          // fixes: data?.fixes || [],
           features: (data?.new_features || []).map(sanitizeReleaseNote),
           fixes: (data?.fixes || []).map(sanitizeReleaseNote),
           releaseDate: formattedDate,
@@ -151,7 +174,7 @@ export default function AboutDizzitUpScreen() {
         });
       } catch (err) {
         console.log('Failed to fetch release notes from Supabase:', err.message);
-        setReleaseNotes({ isLoading: false, features: [], fixes: [], releaseDate: currentDate });
+        setReleaseNotes({ isLoading: false, features: [], fixes: [], releaseDate: null });
       }
     };
     fetchReleaseNotes();
@@ -224,10 +247,12 @@ export default function AboutDizzitUpScreen() {
               <View style={styles.versionChip}>
                 <Text style={styles.versionChipText} selectable={true}>{`v${appVersion}`}</Text>
               </View>
-              <View style={styles.dateBadge}>
-                <Ionicons name="calendar-outline" size={12} color="#6B7280" style={{ marginRight: 4 }} />
-                <Text style={styles.dateBadgeText} selectable={true}>{releaseNotes.releaseDate || currentDate}</Text>
-              </View>
+              {releaseNotes.releaseDate ? (
+                <View style={styles.dateBadge}>
+                  <Ionicons name="calendar-outline" size={12} color="#6B7280" style={{ marginRight: 4 }} />
+                  <Text style={styles.dateBadgeText} selectable={true}>{releaseNotes.releaseDate}</Text>
+                </View>
+              ) : null}
             </View>
 
             {/* New Features */}

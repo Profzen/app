@@ -3533,6 +3533,7 @@
     "your_statistics": "AS SUAS ESTATÍSTICAS",
     "invited_referrals": "Indicados convidados",
     "earned_in_dzy": "Ganhos em DZY",
+    "pending_until_launch": "Pendente até ao lançamento do DZY",
     "active_cashback": "Cashback Ativo",
     "gold_perks": "VANTAGENS DIZZYFAMILY GOLD",
     "benefit_1_title": "Bónus de Cashback +2%",
@@ -4636,7 +4637,9 @@
     "noBeneficiarySelected": "Por favor, selecione um beneficiário dos seus contatos.",
     "selectBeneficiaryBtn": "Selecionar dos contatos",
     "selectBeneficiaryError": "Por favor, selecione um beneficiário dos seus contatos.",
-    "eventVenueTitle": "Evento e local"
+    "eventVenueTitle": "Evento e local",
+    "deliveryOnlineInSitu": "Online / No local",
+    "deliveryOnlineInSituDesc": "Serviço no local ou remoto"
   },
   "orderConfirmation": {
     "ticketDeliveryMode": "Modo de entrega",
@@ -5480,6 +5483,7 @@
     "pre_tge_chip": "Recompensas Fora da Cadeia Pré-TGE",
     "token_valuation": "1 DZY = $0.10 USD (Polygon ERC-20)",
     "total_earned_label": "SALDO TOTAL DE RECOMPENSAS",
+    "pending_referral_rewards": "Recompensas de indicação pendentes: {{amount}} DZY",
     "accrued_subtext": "Acumulado com segurança na sua conta",
     "distinction_note": "O DZY é seu saldo de recompensas de fidelidade. Ganhe DZY em cada fatura, recarga móvel e compra. Todos os tokens acumulam e serão liberados no TGE.",
     "cashback_badge_pill": "Até 5% de Cashback",

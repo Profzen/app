@@ -1296,7 +1296,9 @@ export default function OrderConfirmationScreen({ route }) {
             </Text>
             <Text style={styles.detailValue}>
               {isTicket
-                ? t('orderConfirmation.digitalTicketDelivery', 'Digital ticket (Email / SMS)')
+                ? (orderData?.deliveryOption === 'online_in_situ'
+                    ? t('orderVerification.deliveryOnlineInSitu', 'Online / In-situ')
+                    : t('orderConfirmation.digitalTicketDelivery', 'Digital ticket (Email / SMS)'))
                 : !isPhysical
                 ? (orderData.deliveryOption === 'online'
                     ? t('orderVerification.deliveryOnline', 'Online')

@@ -1,5 +1,5 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -7,11 +7,37 @@ import BottomNavBar from '../components/BottomNavBar';
 import AppToast from '../components/AppToast';
 import { useApp } from '../context/AppContext';
 import { shareInviteLink } from '../utils/shareHelper';
+import { getUserReferralStats } from '../services/referralService';
+import { convertCurrencyAmount, formatCurrency } from '../utils/countryCurrencyUtils';
 
 export default function DizzyFamilyScreen() {
   const navigation = useNavigation();
   const { language, t, user } = useApp();
   const [toast, setToast] = useState(null);
+  const [invitedCount, setInvitedCount] = useState(0);
+  const [earnedDzy, setEarnedDzy] = useState(Number(user?.rewardsDZY ?? user?.rewards_dzy ?? 0) || 0);
+
+  const numLocale = language === 'fr' ? 'fr-FR' : (language === 'pt' ? 'pt-PT' : (language === 'ar' ? 'ar' : (language === 'am' ? 'am' : 'en-US')));
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchReferralStats = async () => {
+      if (!user?.id) return;
+      try {
+        const { count, totalEarnedDzy, error } = await getUserReferralStats(user.id);
+        if (error) {
+          console.warn('[DizzyFamilyScreen] referrals query error:', error.message);
+        } else if (isMounted) {
+          setInvitedCount(count);
+          setEarnedDzy(totalEarnedDzy);
+        }
+      } catch (err) {
+        console.warn('[DizzyFamilyScreen] fetchReferralStats failed:', err);
+      }
+    };
+    fetchReferralStats();
+    return () => { isMounted = false; };
+  }, [user?.id]);
 
   // Generate the dynamic referral code using DZY- and the first 6 characters of the user's ID
   const referralCode = user?.id ? `DZY-${user.id.substring(0, 6).toUpperCase()}` : 'DZY500';
@@ -83,18 +109,14 @@ export default function DizzyFamilyScreen() {
           <View style={styles.statsRow}>
             <View style={styles.statBox}>
               <Ionicons name="people-outline" size={22} color="#3B82F6" />
-              <Text style={styles.statNumber}>12</Text>
+              <Text style={styles.statNumber}>{invitedCount}</Text>
               <Text style={styles.statLabel}>{t('dizzyFamily.invited_referrals', "Invited Referrals")}</Text>
             </View>
             <View style={styles.statBox}>
               <Ionicons name="cash-outline" size={22} color="#10B981" />
-              <Text style={styles.statNumber}>$60</Text>
-              <Text style={styles.statLabel}>{t('dizzyFamily.earned_in_dzy', "Earned in DZY")}</Text>
-            </View>
-            <View style={styles.statBox}>
-              <Ionicons name="flash-outline" size={22} color="#F59E0B" />
-              <Text style={styles.statNumber}>5%</Text>
-              <Text style={styles.statLabel}>{t('dizzyFamily.active_cashback', "Active Cashback")}</Text>
+              <Text style={styles.statNumber}>{formatCurrency(earnedDzy, 'DZY', numLocale)} DZY</Text>
+              <Text style={styles.statUsdEquiv}>≈ ${formatCurrency(convertCurrencyAmount(earnedDzy, 'DZY', 'USD'), 'USD', numLocale)} USD</Text>
+              <Text style={styles.statLabel}>{t('dizzyFamily.pending_until_launch', "Pending until DZY launch")}</Text>
             </View>
           </View>
 
@@ -181,6 +203,7 @@ const styles = StyleSheet.create({
   statsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 },
   statBox: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 1, borderColor: '#F0F2F5', padding: 12, alignItems: 'center', marginHorizontal: 4 },
   statNumber: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 18, color: '#1A2840', marginTop: 6 },
+  statUsdEquiv: { fontFamily: 'Inter_500Medium', fontSize: 11, color: '#10B981', marginTop: 2 },
   statLabel: { fontFamily: 'Inter_400Regular', fontSize: 11, color: '#6B7280', marginTop: 2, textAlign: 'center' },
   card: { backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#F0F2F5', paddingHorizontal: 16, paddingVertical: 6, marginBottom: 16 },
   benefitRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12 },

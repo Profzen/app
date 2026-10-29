@@ -696,7 +696,9 @@ export default function OrderVerificationScreen({ route }) {
   }, [isPhysical, items, directOrder, isTicket]);
 
   useEffect(() => {
-    if (!isPhysical && nonPhysicalDeliverySupport) {
+    if (isTicket) {
+      setDeliveryOption('online_in_situ');
+    } else if (!isPhysical && nonPhysicalDeliverySupport) {
       if (nonPhysicalDeliverySupport.supportsOnline && !nonPhysicalDeliverySupport.supportsOnSite) {
         setDeliveryOption('online');
       } else if (nonPhysicalDeliverySupport.supportsOnSite && !nonPhysicalDeliverySupport.supportsOnline) {
@@ -705,7 +707,7 @@ export default function OrderVerificationScreen({ route }) {
         setDeliveryOption(nonPhysicalDeliverySupport.supportsOnSite ? 'on_site' : 'online');
       }
     }
-  }, [isPhysical, nonPhysicalDeliverySupport]);
+  }, [isPhysical, isTicket, nonPhysicalDeliverySupport]);
 
   // Converted amounts in buyer's local detected currency for order summary & "≈" amounts
   const buyerSubtotal = useMemo(() => {
@@ -1276,40 +1278,57 @@ export default function OrderVerificationScreen({ route }) {
               </View>
 
               <View style={styles.deliveryOptionsRow}>
-                {nonPhysicalDeliverySupport.supportsOnSite && (
-                  <TouchableOpacity
-                    style={[styles.deliveryOption, deliveryOption === 'on_site' && styles.optionSelected]}
-                    onPress={() => setDeliveryOption('on_site')}
-                  >
-                    <View style={[styles.radioOuter, deliveryOption === 'on_site' && styles.radioOuterSelected]}>
-                      {deliveryOption === 'on_site' && <View style={styles.radioInner} />}
+                {isTicket ? (
+                  <View style={[styles.deliveryOption, styles.optionSelected]}>
+                    <View style={[styles.radioOuter, styles.radioOuterSelected]}>
+                      <View style={styles.radioInner} />
                     </View>
                     <View style={{ flex: 1 }}>
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
-                        <Text style={styles.optionTitle}>{t('orderVerification.deliveryOnSite', "On site")}</Text>
+                        <Text style={styles.optionTitle}>{t('orderVerification.deliveryOnlineInSitu', "Online / In-situ")}</Text>
                         <Text style={[styles.optionPrice, { color: '#10B981' }]}>{t('orderVerification.free', "Free")}</Text>
                       </View>
-                      <Text style={styles.optionDesc}>{t('orderVerification.deliveryOnSiteDesc', "Direct in-person access at provider location")}</Text>
+                      <Text style={styles.optionDesc}>{t('orderVerification.deliveryOnlineInSituDesc', "Service at location or remote")}</Text>
                     </View>
-                  </TouchableOpacity>
-                )}
+                  </View>
+                ) : (
+                  <>
+                    {nonPhysicalDeliverySupport.supportsOnSite && (
+                      <TouchableOpacity
+                        style={[styles.deliveryOption, deliveryOption === 'on_site' && styles.optionSelected]}
+                        onPress={() => setDeliveryOption('on_site')}
+                      >
+                        <View style={[styles.radioOuter, deliveryOption === 'on_site' && styles.radioOuterSelected]}>
+                          {deliveryOption === 'on_site' && <View style={styles.radioInner} />}
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
+                            <Text style={styles.optionTitle}>{t('orderVerification.deliveryOnSite', "On site")}</Text>
+                            <Text style={[styles.optionPrice, { color: '#10B981' }]}>{t('orderVerification.free', "Free")}</Text>
+                          </View>
+                          <Text style={styles.optionDesc}>{t('orderVerification.deliveryOnSiteDesc', "Direct in-person access at provider location")}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    )}
 
-                {nonPhysicalDeliverySupport.supportsOnline && (
-                  <TouchableOpacity
-                    style={[styles.deliveryOption, deliveryOption === 'online' && styles.optionSelected]}
-                    onPress={() => setDeliveryOption('online')}
-                  >
-                    <View style={[styles.radioOuter, deliveryOption === 'online' && styles.radioOuterSelected]}>
-                      {deliveryOption === 'online' && <View style={styles.radioInner} />}
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
-                        <Text style={styles.optionTitle}>{t('orderVerification.deliveryOnline', "Online")}</Text>
-                        <Text style={[styles.optionPrice, { color: '#10B981' }]}>{t('orderVerification.free', "Free")}</Text>
-                      </View>
-                      <Text style={styles.optionDesc}>{t('orderVerification.deliveryOnlineDesc', "Digital delivery directly to your account or email")}</Text>
-                    </View>
-                  </TouchableOpacity>
+                    {nonPhysicalDeliverySupport.supportsOnline && (
+                      <TouchableOpacity
+                        style={[styles.deliveryOption, deliveryOption === 'online' && styles.optionSelected]}
+                        onPress={() => setDeliveryOption('online')}
+                      >
+                        <View style={[styles.radioOuter, deliveryOption === 'online' && styles.radioOuterSelected]}>
+                          {deliveryOption === 'online' && <View style={styles.radioInner} />}
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
+                            <Text style={styles.optionTitle}>{t('orderVerification.deliveryOnline', "Online")}</Text>
+                            <Text style={[styles.optionPrice, { color: '#10B981' }]}>{t('orderVerification.free', "Free")}</Text>
+                          </View>
+                          <Text style={styles.optionDesc}>{t('orderVerification.deliveryOnlineDesc', "Digital delivery directly to your account or email")}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    )}
+                  </>
                 )}
               </View>
             </View>
