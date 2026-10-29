@@ -5914,5 +5914,20 @@
   "invoicePayLink.invoiceLanguage": "لغة الفاتورة",
   "invoicePayLink.selectLanguage": "اختر اللغة",
   "invoicePayLink.recentRequestsHeader": "الطلبات الأخيرة",
-  "topUpWallet.unsupportedPair": "هذا الرمز غير متاح لإعادة الشحن بالبطاقة على هذه الشبكة. يُرجى اختيار رمز أو شبكة أخرى."
+  "topUpWallet.unsupportedPair": "هذا الرمز غير متاح لإعادة الشحن بالبطاقة على هذه الشبكة. يُرجى اختيار رمز أو شبكة أخرى.",
+"preHome": {
+  "everyone": "للجميع",
+  "business": "للأعمال",
+  "walletTitle": "محفظة واحدة لأموالك",
+  "walletBody": "أرسل واستقبل العملات المستقرة بالدولار أو اليورو عبر الحدود.",
+  "everydayTitle": "اجعل حياتك اليومية أسهل",
+  "everydayBody": "تسوق وادفع الفواتير واشحن رصيد هاتفك في مكان واحد.",
+  "storeTitle": "افتح متجر DZYStore الخاص بك",
+  "storeBody": "اعرض منتجاتك وخدماتك لعملاء حول العالم.",
+  "paymentsTitle": "استقبل المدفوعات عبر الحدود",
+  "paymentsBody": "شارك رابط دفع أو فاتورة واستقبل العملات المستقرة.",
+  "skip": "تخطي المقدمة",
+  "next": "التالي",
+  "getStarted": "ابدأ"
+}
 }

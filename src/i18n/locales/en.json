@@ -6099,5 +6099,20 @@
   "shareSuccess.captionCopiedForPost": "The visual was sent and the caption was copied. Paste it into your post and tag @DizzitUp.",
   "shareSuccess.shareFailedTitle": "Sharing cancelled",
   "shareSuccess.shareFailedMessage": "Nothing was posted. You can try again when ready.",
-  "topUpWallet.unsupportedPair": "This token is not available for card top-up on this network. Please choose another token or network."
+  "topUpWallet.unsupportedPair": "This token is not available for card top-up on this network. Please choose another token or network.",
+"preHome": {
+  "everyone": "FOR EVERYONE",
+  "business": "FOR BUSINESS",
+  "walletTitle": "One wallet for your money",
+  "walletBody": "Send and receive USD or EUR stablecoins across borders.",
+  "everydayTitle": "Make everyday life easier",
+  "everydayBody": "Shop, pay bills and top up mobile airtime in one place.",
+  "storeTitle": "Open your DZYStore",
+  "storeBody": "Present your products and services to customers worldwide.",
+  "paymentsTitle": "Get paid across borders",
+  "paymentsBody": "Share a payment link or invoice and receive stablecoins.",
+  "skip": "Skip introduction",
+  "next": "Next",
+  "getStarted": "Get started"
+}
 }

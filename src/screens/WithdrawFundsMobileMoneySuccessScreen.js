@@ -269,7 +269,7 @@ export default function WithdrawFundsMobileMoneySuccessScreen() {
           <TouchableOpacity
             style={styles.shareCtaCardWrapper}
             onPress={() => {
-              navigation.navigate('ShareSuccessPlatformScreen', {
+              navigation.push('ShareSuccessPlatformScreen', {
                 transactionData: {
                   type: 'withdraw',
                   amount: `${formattedAmount} ${effectiveCurrency}`,

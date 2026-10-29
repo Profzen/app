@@ -175,7 +175,7 @@ export default function CashierSuccessScreen() {
           <TouchableOpacity 
             style={styles.shareCtaCard}
             onPress={() => {
-              navigation.navigate('ShareSuccessPlatformScreen', {
+              navigation.push('ShareSuccessPlatformScreen', {
                 transactionData: {
                   type: 'cashier',
                   amount: '2 000 FCFA',
