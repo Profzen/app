@@ -542,7 +542,7 @@ export default function SwapTokensScreen() {
         if (parsed && parsed.message) {
           errMsg = parsed.message;
         }
-      } catch (err) {}
+      } catch (err) { }
 
       // Handle already approved errors gracefully
       if (errMsg.includes('Already has the required number of approvals')) {
@@ -618,7 +618,8 @@ export default function SwapTokensScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-back" size={20} color="#E2E8F0" />
+            {/* <Ionicons name="chevron-back" size={20} color="#E2E8F0" /> */}
+            <Ionicons name="chevron-back" size={20} color="#1A2840" />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <Text style={styles.pageTitle}>{t('common.wallet.swap_ui.swap_tokens', 'Swap Tokens')}</Text>
@@ -700,7 +701,8 @@ export default function SwapTokensScreen() {
                   <TextInput
                     ref={amountInputRef}
                     style={styles.amountInput}
-                    value={fromAmount}
+                    // value={fromAmount}
+                    value={isFocused ? fromAmount : formatMax6Decimals(fromAmount)}
                     onChangeText={(val) => setFromAmount(val.replace(/,/g, '.'))}
                     keyboardType="decimal-pad"
                     placeholder="0.0"
