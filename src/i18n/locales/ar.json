@@ -1314,6 +1314,8 @@
     "buyOnDizzitUp": "الشراء على DizzitUp",
     "soldBy": "تم البيع بواسطة",
     "deliveryAndPickup": "التوصيل والاستلام",
+    "deliveryOnlineInSitu": "عبر الإنترنت / في الموقع",
+    "deliveryOnlineInSituDesc": "خدمة في الموقع أو عن بُعد",
     "homeDelivery": "توصيل للمنازل",
     "storePickup": "استلام من المتجر",
     "deliveryFees": "رسوم التوصيل",

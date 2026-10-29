@@ -135,707 +135,734 @@ export default function ProductDetailsScreen({ route }) {
     ? product.metadata.specifications.filter((s) => s && s.key && s.value)
     : [];
 
-  // Dynamic delivery fee from merchant settings in buygoods backend
-  const rawDeliveryFee = (shop?.delivery_fee !== undefined && shop?.delivery_fee !== null)
-    ? Number(shop.delivery_fee)
-    : (product?.merchant?.delivery_fee !== undefined && product?.merchant?.delivery_fee !== null)
-      ? Number(product.merchant.delivery_fee)
-      : null;
+  // Merchant delivery options from merchant settings (merchants.delivery_modes)
+  const deliveryModes = Array.isArray(product?.merchant?.delivery_modes)
+    ? product.merchant.delivery_modes
+    : [];
 
-  const standardDeliveryFee = rawDeliveryFee !== null
-    ? (rawDeliveryFee > 0 ? convertCurrencyAmount(rawDeliveryFee, shop?.currency || 'XOF', rawCurrency) : 0)
-    : 0;
+  const hasStorePickup = deliveryModes.includes('picking');
+  const hasMerchantDelivery = deliveryModes.includes('delivery');
+  const hasOnlineInSitu = deliveryModes.includes('online_insitu');
+  const showDeliverySection = hasStorePickup || hasMerchantDelivery || hasOnlineInSitu;
 
-  const deliveryFeeFormatted = standardDeliveryFee > 0
-    ? `${Number(standardDeliveryFee).toLocaleString(numLocale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ${displayCurrency}`
-    : t('orderVerification.free', "Free");
+  const deliveryFeeFormatted = useMemo(() => {
+    const rawFee = product?.merchant?.delivery_fee;
+    if (rawFee === null || rawFee === undefined || rawFee === '') return null;
+    const numFee = Number(rawFee);
+    if (isNaN(numFee)) return null;
 
-  const merchantName = shop?.shop_name || shop?.name || product?.merchant?.shop_name || product?.merchant?.name || product?.merchant_name || t('paymentSuccess.partnerMerchant', 'Partner Merchant');
-  const merchantInitial = (merchantName || 'DZ').slice(0, 2).toUpperCase();
-  const merchantLogo = shop?.shop_logo_url || shop?.logoUrl || shop?.raw?.shop_logo_url || product?.merchant?.shop_logo_url || product?.merchant?.logoUrl || product?.merchant_logo || product?.merchant?.logo;
-  const merchantCity = shop?.city || shop?.shop_city || product?.merchant?.city || product?.merchant?.shop_city || product?.city || '';
-  const merchantCountryRaw = shop?.country || shop?.shop_country || product?.merchant?.country || product?.merchant?.shop_country || product?.country || '';
-
-  const matchedCountry = ALL_COUNTRIES.find(c =>
-    c.code.toLowerCase() === String(merchantCountryRaw).toLowerCase() ||
-    c.name.toLowerCase() === String(merchantCountryRaw).toLowerCase()
-  );
-  const merchantFlag = matchedCountry?.flag || (merchantCountryRaw && String(merchantCountryRaw).length === 2 ? String(merchantCountryRaw).toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)) : '🌍');
-  const merchantCountryName = matchedCountry?.name || merchantCountryRaw;
-
-  const executeAddToCart = (force = false) => {
-    const res = addToCart(product, quantity, shop, force);
-    if (res.mixedCart || res.error === 'MIXED_CART') {
-      setToast({
-        title: t('cart.mixedCartTitle', 'Order separately'),
-        message: res.message || t('cart.mixedCartError', 'Services and goods must be ordered separately'),
-      });
-      return;
+    if (numFee === 0) {
+      return t('orderVerification.free', 'Free');
     }
-    if (res.conflict) {
-      setConflictModal({
-        title: t('cart.conflictTitle', 'Different shop in cart'),
-        message: t('cart.conflictMsg', {
-          currentMerchantName: res.currentMerchantName,
-          newMerchantName: res.newMerchantName,
-          defaultValue: `Your cart already contains items from "${res.currentMerchantName}". Would you like to clear your cart and start fresh with "${res.newMerchantName}"?`
-        }),
-        onConfirm: () => {
-          setConflictModal(null);
-          executeAddToCart(true);
-        },
-      });
-      return;
-    }
-    if (res.success) {
-      setToast({
-        title: t('cart.addedSuccessTitle', 'Item added!'),
-        message: t('cart.addedSuccessMsg', {
-          qty: quantity,
-          name: product.name || product.title,
-          count: res.count,
-          defaultValue: `${quantity}x ${product.name || product.title} added to cart (${res.count} items).`
-        }),
-      });
-    }
-  };
 
-  const executeBuyNow = () => {
-    navigation.navigate('OrderVerificationScreen', {
-      directOrder: {
-        product,
-        shop,
-        quantity,
-      }
+    if (numFee > 0) {
+      const merchantCurrency = product?.merchant?.default_currency && product.merchant.default_currency !== 'LOCAL'
+        ? product.merchant.default_currency
+        : null;
+      if (!merchantCurrency) return null;
+
+      const converted = convertCurrencyAmount(numFee, merchantCurrency, rawCurrency);
+      return `${formatCurrency(converted, rawCurrency, numLocale)} ${displayCurrency}`;
+    }
+
+    return null;
+}, [product?.merchant?.delivery_fee, product?.merchant?.default_currency, rawCurrency, displayCurrency, numLocale, t]);
+
+const merchantName = shop?.shop_name || shop?.name || product?.merchant?.shop_name || product?.merchant?.name || product?.merchant_name || t('paymentSuccess.partnerMerchant', 'Partner Merchant');
+const merchantInitial = (merchantName || 'DZ').slice(0, 2).toUpperCase();
+const merchantLogo = shop?.shop_logo_url || shop?.logoUrl || shop?.raw?.shop_logo_url || product?.merchant?.shop_logo_url || product?.merchant?.logoUrl || product?.merchant_logo || product?.merchant?.logo;
+const merchantCity = shop?.city || shop?.shop_city || product?.merchant?.city || product?.merchant?.shop_city || product?.city || '';
+const merchantCountryRaw = shop?.country || shop?.shop_country || product?.merchant?.country || product?.merchant?.shop_country || product?.country || '';
+
+const matchedCountry = ALL_COUNTRIES.find(c =>
+  c.code.toLowerCase() === String(merchantCountryRaw).toLowerCase() ||
+  c.name.toLowerCase() === String(merchantCountryRaw).toLowerCase()
+);
+const merchantFlag = matchedCountry?.flag || (merchantCountryRaw && String(merchantCountryRaw).length === 2 ? String(merchantCountryRaw).toUpperCase().replace(/./g, char => String.fromCodePoint(char.charCodeAt(0) + 127397)) : '🌍');
+const merchantCountryName = matchedCountry?.name || merchantCountryRaw;
+
+const executeAddToCart = (force = false) => {
+  const res = addToCart(product, quantity, shop, force);
+  if (res.mixedCart || res.error === 'MIXED_CART') {
+    setToast({
+      title: t('cart.mixedCartTitle', 'Order separately'),
+      message: res.message || t('cart.mixedCartError', 'Services and goods must be ordered separately'),
     });
-  };
+    return;
+  }
+  if (res.conflict) {
+    setConflictModal({
+      title: t('cart.conflictTitle', 'Different shop in cart'),
+      message: t('cart.conflictMsg', {
+        currentMerchantName: res.currentMerchantName,
+        newMerchantName: res.newMerchantName,
+        defaultValue: `Your cart already contains items from "${res.currentMerchantName}". Would you like to clear your cart and start fresh with "${res.newMerchantName}"?`
+      }),
+      onConfirm: () => {
+        setConflictModal(null);
+        executeAddToCart(true);
+      },
+    });
+    return;
+  }
+  if (res.success) {
+    setToast({
+      title: t('cart.addedSuccessTitle', 'Item added!'),
+      message: t('cart.addedSuccessMsg', {
+        qty: quantity,
+        name: product.name || product.title,
+        count: res.count,
+        defaultValue: `${quantity}x ${product.name || product.title} added to cart (${res.count} items).`
+      }),
+    });
+  }
+};
 
-  const handleOpenWebProduct = () => {
-    const url = getWebProductUrl(product?.id || product?._id || product?.product_id);
-    Linking.openURL(url).catch(err => console.warn('Failed to open web product URL:', err));
-  };
-
-  const handleAddToCart = () => {
-    if (!canPurchase) return;
-    if (!isPhysicalItem(product)) {
-      executeAddToCart();
-      return;
+const executeBuyNow = () => {
+  navigation.navigate('OrderVerificationScreen', {
+    directOrder: {
+      product,
+      shop,
+      quantity,
     }
-    setPendingAction('cart');
-    setWarningModalVisible(true);
-  };
+  });
+};
 
-  const handleBuyNow = () => {
-    if (!canPurchase) return;
-    if (!isPhysicalItem(product)) {
-      executeBuyNow();
-      return;
-    }
-    setPendingAction('buy');
-    setWarningModalVisible(true);
-  };
+const handleOpenWebProduct = () => {
+  const url = getWebProductUrl(product?.id || product?._id || product?.product_id);
+  Linking.openURL(url).catch(err => console.warn('Failed to open web product URL:', err));
+};
 
-  const handleWarningContinue = () => {
-    setWarningModalVisible(false);
-    // Execute the action that was originally requested before the warning
-    if (pendingAction === 'buy') {
-      executeBuyNow();
-    } else if (pendingAction === 'cart') {
-      executeAddToCart();
-    }
-    setPendingAction(null);
-  };
+const handleAddToCart = () => {
+  if (!canPurchase) return;
+  if (!isPhysicalItem(product)) {
+    executeAddToCart();
+    return;
+  }
+  setPendingAction('cart');
+  setWarningModalVisible(true);
+};
 
-  const shareProduct = async () => {
-    try {
-      await Share.share({
-        title: product.name || product.title,
-        message: t('product.shareMessage', 'Check out {{name}} on DizzitUp.', { name: product.name || product.title })
-      });
-    } finally {
-      setToast({
-        title: t('product.sharedTitle', 'Product shared'),
-        message: t('product.sharedDesc', 'Sharing link prepared successfully.')
-      });
-    }
-  };
+const handleBuyNow = () => {
+  if (!canPurchase) return;
+  if (!isPhysicalItem(product)) {
+    executeBuyNow();
+    return;
+  }
+  setPendingAction('buy');
+  setWarningModalVisible(true);
+};
 
-  const shareProductGift = async () => {
-    const pName = product.name || product.title || 'Produit';
-    const sName = merchantName || 'DizzitUp';
-    const productUrl = `https://dizzitup.com/product/${product.id}`;
-    try {
-      await Share.share({
-        title: t('shop.giftProductTitle', "Buy this for me: {{name}}", { name: pName }),
-        message: t('shop.giftProductMsg', "I would love this on DizzitUp: {{name}} ({{price}}) from {{shop}}. You can buy it for me here: {{url}}", { name: pName, price: displayPrice, shop: sName, url: productUrl })
-      });
-      setToast({
-        title: t('shop.shareSuccessTitle', "Gift link ready"),
-        message: t('shop.shareSuccessDesc', "The link is ready to be shared with friends and family.")
-      });
-    } catch {
-      setToast({
-        title: t('shop.shareCopiedTitle', "Link copied"),
-        message: `${productUrl}`
-      });
-    }
-  };
+const handleWarningContinue = () => {
+  setWarningModalVisible(false);
+  // Execute the action that was originally requested before the warning
+  if (pendingAction === 'buy') {
+    executeBuyNow();
+  } else if (pendingAction === 'cart') {
+    executeAddToCart();
+  }
+  setPendingAction(null);
+};
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
+const shareProduct = async () => {
+  try {
+    await Share.share({
+      title: product.name || product.title,
+      message: t('product.shareMessage', 'Check out {{name}} on DizzitUp.', { name: product.name || product.title })
+    });
+  } finally {
+    setToast({
+      title: t('product.sharedTitle', 'Product shared'),
+      message: t('product.sharedDesc', 'Sharing link prepared successfully.')
+    });
+  }
+};
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#1A2840" />
-        </TouchableOpacity>
-        <View style={styles.headerRightIcons}>
-          <TouchableOpacity
-            style={styles.iconBtnRight}
-            onPress={() => {
-              if (cartCount > 0) {
-                navigation.navigate('OrderVerificationScreen');
-              } else {
-                setToast({
-                  title: t('cart.emptyTitle', "Empty cart"),
-                  message: t('cart.emptyDesc', "Your cart contains no items for now.")
-                });
-              }
-            }}
-          >
-            <Ionicons name="cart-outline" size={20} color="#1A2840" />
-            {cartCount > 0 && (
-              <View style={styles.cartBadge}>
-                <Text style={styles.cartBadgeText}>{cartCount}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-          {!isOwnProduct && (
-            <TouchableOpacity style={styles.iconBtnRight} onPress={handleToggleFavorite} disabled={favoriteBusy} accessibilityRole="button" accessibilityState={{ selected: productIsFavorite }}>
-              <Ionicons name={productIsFavorite ? "heart" : "heart-outline"} size={20} color={productIsFavorite ? "#EF4444" : "#1A2840"} />
-            </TouchableOpacity>
+const shareProductGift = async () => {
+  const pName = product.name || product.title || 'Produit';
+  const sName = merchantName || 'DizzitUp';
+  const productUrl = `https://dizzitup.com/product/${product.id}`;
+  try {
+    await Share.share({
+      title: t('shop.giftProductTitle', "Buy this for me: {{name}}", { name: pName }),
+      message: t('shop.giftProductMsg', "I would love this on DizzitUp: {{name}} ({{price}}) from {{shop}}. You can buy it for me here: {{url}}", { name: pName, price: displayPrice, shop: sName, url: productUrl })
+    });
+    setToast({
+      title: t('shop.shareSuccessTitle', "Gift link ready"),
+      message: t('shop.shareSuccessDesc', "The link is ready to be shared with friends and family.")
+    });
+  } catch {
+    setToast({
+      title: t('shop.shareCopiedTitle', "Link copied"),
+      message: `${productUrl}`
+    });
+  }
+};
+
+return (
+  <SafeAreaView style={styles.safeArea}>
+
+    {/* Header */}
+    <View style={styles.header}>
+      <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={24} color="#1A2840" />
+      </TouchableOpacity>
+      <View style={styles.headerRightIcons}>
+        <TouchableOpacity
+          style={styles.iconBtnRight}
+          onPress={() => {
+            if (cartCount > 0) {
+              navigation.navigate('OrderVerificationScreen');
+            } else {
+              setToast({
+                title: t('cart.emptyTitle', "Empty cart"),
+                message: t('cart.emptyDesc', "Your cart contains no items for now.")
+              });
+            }
+          }}
+        >
+          <Ionicons name="cart-outline" size={20} color="#1A2840" />
+          {cartCount > 0 && (
+            <View style={styles.cartBadge}>
+              <Text style={styles.cartBadgeText}>{cartCount}</Text>
+            </View>
           )}
-          <TouchableOpacity style={styles.iconBtnRight} onPress={shareProduct}>
-            <Ionicons name="share-outline" size={20} color="#1A2840" />
+        </TouchableOpacity>
+        {!isOwnProduct && (
+          <TouchableOpacity style={styles.iconBtnRight} onPress={handleToggleFavorite} disabled={favoriteBusy} accessibilityRole="button" accessibilityState={{ selected: productIsFavorite }}>
+            <Ionicons name={productIsFavorite ? "heart" : "heart-outline"} size={20} color={productIsFavorite ? "#EF4444" : "#1A2840"} />
+          </TouchableOpacity>
+        )}
+        <TouchableOpacity style={styles.iconBtnRight} onPress={shareProduct}>
+          <Ionicons name="share-outline" size={20} color="#1A2840" />
+        </TouchableOpacity>
+      </View>
+    </View>
+
+    <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+
+      {/* Full-width media carousel (swipe or arrows), images + videos */}
+      <View style={styles.galleryWrap} onLayout={(e) => setGalleryWidth(e.nativeEvent.layout.width || width)}>
+        <ScrollView
+          ref={galleryRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          scrollEventThrottle={16}
+          onScroll={(e) => {
+            const idx = Math.round(e.nativeEvent.contentOffset.x / (galleryWidth || 1));
+            if (idx !== safeMediaIndex && idx >= 0 && idx < media.length) {
+              setActiveMediaIndex(idx);
+              thumbsRef.current?.scrollTo({ x: Math.max(0, idx * THUMB_STEP - THUMB_STEP * 2), animated: true });
+            }
+          }}
+        >
+          {(media.length > 0 ? media : [null]).map((url, idx) => (
+            <View key={`${url || 'placeholder'}-${idx}`} style={{ width: galleryWidth, height: GALLERY_HEIGHT }}>
+              {url && isVideoUrl(url) ? (
+                <ProductVideoSlide
+                  uri={url}
+                  isActive={idx === safeMediaIndex}
+                  playLabel={t('product.playVideo', 'Play video')}
+                  errorTitle={t('product.videoErrorTitle', 'Video unavailable')}
+                  errorDesc={t('product.videoErrorDesc', 'This video could not be opened on your device.')}
+                />
+              ) : (
+                <Image
+                  source={url ? { uri: url } : require('../../assets/brand/product_no_image.jpg')}
+                  defaultSource={require('../../assets/brand/product_no_image.jpg')}
+                  style={{ width: '100%', height: '100%' }}
+                  resizeMode="contain"
+                />
+              )}
+            </View>
+          ))}
+        </ScrollView>
+
+        {media.length > 1 && safeMediaIndex > 0 && (
+          <TouchableOpacity style={[styles.galleryArrow, { left: 12 }]} onPress={() => goToMedia(safeMediaIndex - 1)} accessibilityLabel={t('common.previous', "PREVIOUS")}>
+            <Ionicons name="chevron-back" size={22} color="#1A2840" />
+          </TouchableOpacity>
+        )}
+        {media.length > 1 && safeMediaIndex < media.length - 1 && (
+          <TouchableOpacity style={[styles.galleryArrow, { right: 12 }]} onPress={() => goToMedia(safeMediaIndex + 1)} accessibilityLabel={t('common.next', "NEXT")}>
+            <Ionicons name="chevron-forward" size={22} color="#1A2840" />
+          </TouchableOpacity>
+        )}
+        {media.length > 1 && (
+          <View style={styles.mediaCounter}>
+            {activeMedia && isVideoUrl(activeMedia) && <Ionicons name="videocam" size={12} color="#FFB800" style={{ marginRight: 4 }} />}
+            <Text style={styles.mediaCounterText}>{safeMediaIndex + 1}/{media.length}</Text>
+          </View>
+        )}
+      </View>
+
+      {media.length > 1 && (
+        <ScrollView ref={thumbsRef} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.mediaThumbRow}>
+          {media.map((url, idx) => (
+            <TouchableOpacity
+              key={`${url}-${idx}`}
+              style={[styles.mediaThumb, idx === safeMediaIndex && styles.mediaThumbActive]}
+              onPress={() => goToMedia(idx)}
+              activeOpacity={0.8}
+            >
+              {isVideoUrl(url) ? (
+                <View style={styles.mediaThumbVideo}>
+                  <Ionicons name="play-circle" size={24} color="#FFB800" />
+                </View>
+              ) : (
+                <Image source={{ uri: url }} style={styles.mediaThumbImage} resizeMode="cover" />
+              )}
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
+
+      {/* Top Section: Product Info */}
+      <View style={styles.topSection}>
+
+        {/* Right Column: Product Info */}
+        <View style={styles.rightCol}>
+          {!!(product.category || product.desc1) && (
+            <View style={styles.categoryBadge}>
+              <Text style={styles.categoryBadgeText}>{product.category || product.desc1}</Text>
+            </View>
+          )}
+
+          {/* Merchant Identity & Location (Solofo request: Merchant name, logo, city, country with flag) */}
+          <TouchableOpacity
+            style={styles.merchantHeaderCard}
+            onPress={() => navigation.navigate('ShopDetailsScreen', { shop: shop || { id: product?.merchant_id, name: merchantName } })}
+            activeOpacity={0.8}
+          >
+            <View style={styles.merchantHeaderLogoWrap}>
+              {merchantLogo ? (
+                <Image source={{ uri: merchantLogo }} style={styles.merchantHeaderLogoImg} resizeMode="cover" />
+              ) : (
+                <Text style={styles.merchantHeaderMonogram}>{merchantInitial}</Text>
+              )}
+            </View>
+            <View style={styles.merchantHeaderTextWrap}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.merchantHeaderNameText} numberOfLines={1}>{merchantName}</Text>
+                <Ionicons name="checkmark-circle" size={13} color="#3B82F6" style={{ marginLeft: 3 }} />
+              </View>
+              <Text style={styles.merchantHeaderLocationText} numberOfLines={1}>
+                {merchantFlag} {merchantCity ? `${merchantCity}, ` : ''}{merchantCountryName || t('common.global', 'International')}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={14} color="#94A3B8" style={{ marginLeft: 'auto' }} />
+          </TouchableOpacity>
+
+          <Text style={styles.productTitle}>{product.name}</Text>
+
+          {/* Real rating from the database (products.rating / review_count) */}
+          <View style={styles.ratingRow}>
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Ionicons
+                key={`star-${i}`}
+                name={reviewCount > 0 && ratingValue >= i ? 'star' : reviewCount > 0 && ratingValue >= i - 0.5 ? 'star-half' : 'star-outline'}
+                size={14}
+                color={reviewCount > 0 ? '#F59E0B' : '#CBD5E1'}
+              />
+            ))}
+            {reviewCount > 0 ? (
+              <>
+                <Text style={styles.ratingText}>{ratingValue.toFixed(1)}</Text>
+                <Text style={styles.reviewsText}>{t('product.reviewsCount', '({{count}} reviews)', { count: reviewCount.toLocaleString(numLocale) })}</Text>
+              </>
+            ) : (
+              <Text style={styles.reviewsText}>{t('product.noReviewsYet', 'No reviews yet')}</Text>
+            )}
+          </View>
+
+          {/* Multi-Currency Price Display: Local currency first, USDT & DZY */}
+          {hasValidPrice ? (
+            <PriceDisplay
+              amount={rawAmount}
+              baseCurrency={rawCurrency}
+              quantity={quantity}
+              size="large"
+              style={{ marginVertical: 8 }}
+            />
+          ) : (
+            <View style={{ marginVertical: 14, alignItems: 'flex-start' }}>
+              <ActivityIndicator size="small" color="#FFB800" />
+            </View>
+          )}
+
+          {/* Quantity Selector */}
+          <View style={styles.qtyContainer}>
+            <Text style={styles.qtyLabel}>
+              {product?.pricing_model === 'per_night' ? t('product.nights', "Nights") :
+                product?.pricing_model === 'per_month' ? t('product.months', "Months") :
+                  product?.pricing_model === 'per_day' ? t('product.days', "Days") :
+                    product?.pricing_model === 'per_hour' ? t('product.hours', "Hours") :
+                      t('orderVerification.qty', "Qty")}
+            </Text>
+            <View style={styles.qtyControls}>
+              <TouchableOpacity
+                style={styles.qtyBtn}
+                onPress={() => setQuantity(prev => Math.max(1, prev - 1))}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="remove" size={16} color="#1A2840" />
+              </TouchableOpacity>
+              <Text style={styles.qtyValue}>{quantity}</Text>
+              <TouchableOpacity
+                style={styles.qtyBtn}
+                onPress={() => setQuantity(prev => prev + 1)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="add" size={16} color="#1A2840" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.divider} />
+
+      {/* Accepted Payment Methods Section */}
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>{t('product.acceptedPaymentMethods', 'Accepted payment methods')}</Text>
+        <View style={styles.paymentCard}>
+
+          {/* 1. Visa, Mastercard */}
+          <View style={styles.paymentMethodRow}>
+            <View style={styles.cardLogoBadge}>
+              <Text style={styles.visaLogoText}>VISA</Text>
+              <View style={styles.mcCirclesWrap}>
+                <View style={[styles.mcCircle, { backgroundColor: '#EB001B' }]} />
+                <View style={[styles.mcCircle, { backgroundColor: '#F79E1B', marginLeft: -5, opacity: 0.95 }]} />
+              </View>
+            </View>
+            <View style={styles.paymentMethodInfo}>
+              <Text style={styles.paymentMethodTitle}>{t('product.visaMastercard', 'Visa, Mastercard')}</Text>
+              <Text style={styles.paymentMethodSubtitle}>{t('product.visaMastercardSub', 'International credit & debit cards (3D Secure)')}</Text>
+            </View>
+            <View style={styles.paymentMethodTag}>
+              <Ionicons name="shield-checkmark" size={11} color="#2563EB" style={{ marginRight: 3 }} />
+              <Text style={styles.paymentMethodTagText}>3D Secure</Text>
+            </View>
+          </View>
+
+          {/* 2. Mobile Money */}
+          <View style={styles.paymentMethodRow}>
+            <View style={[styles.paymentMethodIconBox, { backgroundColor: '#FEF3C7', borderColor: '#FDE68A' }]}>
+              <Ionicons name="phone-portrait-outline" size={20} color="#D97706" />
+            </View>
+            <View style={styles.paymentMethodInfo}>
+              <Text style={styles.paymentMethodTitle}>{t('product.mobileMoney', 'Mobile Money')}</Text>
+              <Text style={styles.paymentMethodSubtitle}>{t('product.mobileMoneySub', 'Orange Money, MTN MoMo, Moov, Wave...')}</Text>
+            </View>
+            <View style={[styles.paymentMethodTag, { backgroundColor: '#FEF3C7', borderColor: '#FDE68A' }]}>
+              <Ionicons name="flash" size={10} color="#D97706" style={{ marginRight: 3 }} />
+              <Text style={[styles.paymentMethodTagText, { color: '#B45309' }]}>Instant</Text>
+            </View>
+          </View>
+
+          {/* 3. Stablecoins (USDC, USDT, EURC) - No mention of 'Crypto' */}
+          <View style={styles.paymentMethodRow}>
+            <View style={[styles.paymentMethodIconBox, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
+              <View style={styles.multiCryptoRow}>
+                <CryptoIcon symbol="USDT" size={18} />
+                <View style={{ marginLeft: -6 }}>
+                  <CryptoIcon symbol="USDC" size={18} />
+                </View>
+                <View style={{ marginLeft: -6 }}>
+                  <CryptoIcon symbol="EURC" size={18} />
+                </View>
+              </View>
+            </View>
+            <View style={styles.paymentMethodInfo}>
+              <Text style={styles.paymentMethodTitle}>{t('product.stablecoins', 'Stablecoins (USDT, USDC, EURC)')}</Text>
+              <Text style={styles.paymentMethodSubtitle}>{t('product.stablecoinsSub', 'USDC, USDT, EURC (1:1 USD / EUR)')}</Text>
+            </View>
+            <View style={[styles.paymentMethodTag, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
+              <Text style={[styles.paymentMethodTagText, { color: '#059669' }]}>0% Fee</Text>
+            </View>
+          </View>
+
+          {/* 4. DZY Token */}
+          <View style={[styles.paymentMethodRow, { marginBottom: 6 }]}>
+            <View style={[styles.paymentMethodIconBox, { backgroundColor: '#FFFDF0', borderColor: '#FDE68A' }]}>
+              <CryptoIcon symbol="DZY" size={26} />
+            </View>
+            <View style={styles.paymentMethodInfo}>
+              <Text style={styles.paymentMethodTitle}>{t('product.dzyToken', 'DZY Token')}</Text>
+              <Text style={styles.paymentMethodSubtitle}>{t('product.dzyTokenSub', 'Native DizzitUp digital token & discounts')}</Text>
+            </View>
+            <View style={[styles.paymentMethodTag, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}>
+              <Text style={[styles.paymentMethodTagText, { color: '#1D4ED8' }]}>Rewards</Text>
+            </View>
+          </View>
+
+          {/* Security Banner */}
+          <View style={styles.securityBanner}>
+            <View style={styles.securityIconBox}>
+              <Ionicons name="shield-checkmark" size={18} color="#2563EB" />
+            </View>
+            <View style={styles.securityContent}>
+              <Text style={styles.securityTitle}>{t('product.securePurchaseTitle', '100% Secure purchase')}</Text>
+              <Text style={styles.securityText}>{t('product.securePurchaseDesc', 'Pay securely with Cards, Mobile Money, Stablecoins or DZY Token.')}</Text>
+            </View>
+          </View>
+
+        </View>
+      </View>
+
+      <View style={styles.divider} />
+
+      {/* Description Section */}
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>{t('product.description', 'Description')}</Text>
+        <View style={styles.descRow}>
+          <View style={{ flex: 1, paddingRight: 8 }}>
+            <RichDescription
+              content={product.description || product.subtitle || t('product.defaultDesc', 'Product guaranteed and verified by our DizzitUp partner merchant network.')}
+              numberOfLines={3}
+              isExpanded={descriptionExpanded}
+              isRtl={language === 'ar'}
+            />
+          </View>
+          <TouchableOpacity style={styles.descChevron} onPress={() => setDescriptionExpanded(!descriptionExpanded)}>
+            <Ionicons name={descriptionExpanded ? "chevron-up" : "chevron-down"} size={20} color="#1A2840" />
           </TouchableOpacity>
         </View>
       </View>
 
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <View style={styles.divider} />
 
-        {/* Full-width media carousel (swipe or arrows), images + videos */}
-        <View style={styles.galleryWrap} onLayout={(e) => setGalleryWidth(e.nativeEvent.layout.width || width)}>
-          <ScrollView
-            ref={galleryRef}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            scrollEventThrottle={16}
-            onScroll={(e) => {
-              const idx = Math.round(e.nativeEvent.contentOffset.x / (galleryWidth || 1));
-              if (idx !== safeMediaIndex && idx >= 0 && idx < media.length) {
-                setActiveMediaIndex(idx);
-                thumbsRef.current?.scrollTo({ x: Math.max(0, idx * THUMB_STEP - THUMB_STEP * 2), animated: true });
-              }
-            }}
-          >
-            {(media.length > 0 ? media : [null]).map((url, idx) => (
-              <View key={`${url || 'placeholder'}-${idx}`} style={{ width: galleryWidth, height: GALLERY_HEIGHT }}>
-                {url && isVideoUrl(url) ? (
-                  <ProductVideoSlide
-                    uri={url}
-                    isActive={idx === safeMediaIndex}
-                    playLabel={t('product.playVideo', 'Play video')}
-                    errorTitle={t('product.videoErrorTitle', 'Video unavailable')}
-                    errorDesc={t('product.videoErrorDesc', 'This video could not be opened on your device.')}
-                  />
-                ) : (
-                  <Image
-                    source={url ? { uri: url } : require('../../assets/brand/product_no_image.jpg')}
-                    defaultSource={require('../../assets/brand/product_no_image.jpg')}
-                    style={{ width: '100%', height: '100%' }}
-                    resizeMode="contain"
-                  />
-                )}
-              </View>
-            ))}
-          </ScrollView>
+      {/* Caractéristiques Section */}
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>{t('product.specs', 'Specifications')}</Text>
+        <View style={styles.featuresGrid}>
 
-          {media.length > 1 && safeMediaIndex > 0 && (
-            <TouchableOpacity style={[styles.galleryArrow, { left: 12 }]} onPress={() => goToMedia(safeMediaIndex - 1)} accessibilityLabel={t('common.previous', "PREVIOUS")}>
-              <Ionicons name="chevron-back" size={22} color="#1A2840" />
-            </TouchableOpacity>
-          )}
-          {media.length > 1 && safeMediaIndex < media.length - 1 && (
-            <TouchableOpacity style={[styles.galleryArrow, { right: 12 }]} onPress={() => goToMedia(safeMediaIndex + 1)} accessibilityLabel={t('common.next', "NEXT")}>
-              <Ionicons name="chevron-forward" size={22} color="#1A2840" />
-            </TouchableOpacity>
-          )}
-          {media.length > 1 && (
-            <View style={styles.mediaCounter}>
-              {activeMedia && isVideoUrl(activeMedia) && <Ionicons name="videocam" size={12} color="#FFB800" style={{ marginRight: 4 }} />}
-              <Text style={styles.mediaCounterText}>{safeMediaIndex + 1}/{media.length}</Text>
+          <View style={styles.featureItem}>
+            <View style={styles.featureIconBox}>
+              <Ionicons name="phone-portrait-outline" size={16} color="#3B82F6" />
             </View>
-          )}
-        </View>
-
-        {media.length > 1 && (
-          <ScrollView ref={thumbsRef} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.mediaThumbRow}>
-            {media.map((url, idx) => (
-              <TouchableOpacity
-                key={`${url}-${idx}`}
-                style={[styles.mediaThumb, idx === safeMediaIndex && styles.mediaThumbActive]}
-                onPress={() => goToMedia(idx)}
-                activeOpacity={0.8}
-              >
-                {isVideoUrl(url) ? (
-                  <View style={styles.mediaThumbVideo}>
-                    <Ionicons name="play-circle" size={24} color="#FFB800" />
-                  </View>
-                ) : (
-                  <Image source={{ uri: url }} style={styles.mediaThumbImage} resizeMode="cover" />
-                )}
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
-
-        {/* Top Section: Product Info */}
-        <View style={styles.topSection}>
-
-          {/* Right Column: Product Info */}
-          <View style={styles.rightCol}>
-            {!!(product.category || product.desc1) && (
-              <View style={styles.categoryBadge}>
-                <Text style={styles.categoryBadgeText}>{product.category || product.desc1}</Text>
-              </View>
-            )}
-
-            {/* Merchant Identity & Location (Solofo request: Merchant name, logo, city, country with flag) */}
-            <TouchableOpacity
-              style={styles.merchantHeaderCard}
-              onPress={() => navigation.navigate('ShopDetailsScreen', { shop: shop || { id: product?.merchant_id, name: merchantName } })}
-              activeOpacity={0.8}
-            >
-              <View style={styles.merchantHeaderLogoWrap}>
-                {merchantLogo ? (
-                  <Image source={{ uri: merchantLogo }} style={styles.merchantHeaderLogoImg} resizeMode="cover" />
-                ) : (
-                  <Text style={styles.merchantHeaderMonogram}>{merchantInitial}</Text>
-                )}
-              </View>
-              <View style={styles.merchantHeaderTextWrap}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Text style={styles.merchantHeaderNameText} numberOfLines={1}>{merchantName}</Text>
-                  <Ionicons name="checkmark-circle" size={13} color="#3B82F6" style={{ marginLeft: 3 }} />
-                </View>
-                <Text style={styles.merchantHeaderLocationText} numberOfLines={1}>
-                  {merchantFlag} {merchantCity ? `${merchantCity}, ` : ''}{merchantCountryName || t('common.global', 'International')}
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={14} color="#94A3B8" style={{ marginLeft: 'auto' }} />
-            </TouchableOpacity>
-
-            <Text style={styles.productTitle}>{product.name}</Text>
-
-            {/* Real rating from the database (products.rating / review_count) */}
-            <View style={styles.ratingRow}>
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Ionicons
-                  key={`star-${i}`}
-                  name={reviewCount > 0 && ratingValue >= i ? 'star' : reviewCount > 0 && ratingValue >= i - 0.5 ? 'star-half' : 'star-outline'}
-                  size={14}
-                  color={reviewCount > 0 ? '#F59E0B' : '#CBD5E1'}
-                />
-              ))}
-              {reviewCount > 0 ? (
-                <>
-                  <Text style={styles.ratingText}>{ratingValue.toFixed(1)}</Text>
-                  <Text style={styles.reviewsText}>{t('product.reviewsCount', '({{count}} reviews)', { count: reviewCount.toLocaleString(numLocale) })}</Text>
-                </>
-              ) : (
-                <Text style={styles.reviewsText}>{t('product.noReviewsYet', 'No reviews yet')}</Text>
-              )}
+            <View style={styles.featureContent}>
+              <Text style={styles.featureLabel}>{t('product.category', 'Category')}</Text>
+              <Text style={styles.featureValue}>{product.category || product.desc1 || t('common.general', 'General')}</Text>
             </View>
+          </View>
 
-            {/* Multi-Currency Price Display: Local currency first, USDT & DZY */}
-            {hasValidPrice ? (
-              <PriceDisplay
-                amount={rawAmount}
-                baseCurrency={rawCurrency}
-                quantity={quantity}
-                size="large"
-                style={{ marginVertical: 8 }}
-              />
-            ) : (
-              <View style={{ marginVertical: 14, alignItems: 'flex-start' }}>
-                <ActivityIndicator size="small" color="#FFB800" />
-              </View>
-            )}
+          <View style={styles.featureItem}>
+            <View style={styles.featureIconBox}>
+              <Ionicons name="shield-checkmark-outline" size={16} color="#3B82F6" />
+            </View>
+            <View style={styles.featureContent}>
+              <Text style={styles.featureLabel}>{t('product.warranty', 'Warranty')}</Text>
+              <Text style={styles.featureValue}>{product.warranty || t('product.warrantyVal', 'DizzitUp Warranty')}</Text>
+            </View>
+          </View>
 
-            {/* Quantity Selector */}
-            <View style={styles.qtyContainer}>
-              <Text style={styles.qtyLabel}>
-                {product?.pricing_model === 'per_night' ? t('product.nights', "Nights") :
-                  product?.pricing_model === 'per_month' ? t('product.months', "Months") :
-                    product?.pricing_model === 'per_day' ? t('product.days', "Days") :
-                      product?.pricing_model === 'per_hour' ? t('product.hours', "Hours") :
-                        t('orderVerification.qty', "Qty")}
+          <View style={styles.featureItem}>
+            <View style={styles.featureIconBox}>
+              <Ionicons name="lock-closed-outline" size={16} color="#3B82F6" />
+            </View>
+            <View style={styles.featureContent}>
+              <Text style={styles.featureLabel}>{t('product.protection', 'Protection')}</Text>
+              <Text style={styles.featureValue}>
+                {isPhysicalItem(product)
+                  ? t('product.protectionVal', '4-digit Secure PIN payment')
+                  : t('product.protectionValService', '100% Secure payment')}
               </Text>
-              <View style={styles.qtyControls}>
-                <TouchableOpacity
-                  style={styles.qtyBtn}
-                  onPress={() => setQuantity(prev => Math.max(1, prev - 1))}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons name="remove" size={16} color="#1A2840" />
-                </TouchableOpacity>
-                <Text style={styles.qtyValue}>{quantity}</Text>
-                <TouchableOpacity
-                  style={styles.qtyBtn}
-                  onPress={() => setQuantity(prev => prev + 1)}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons name="add" size={16} color="#1A2840" />
-                </TouchableOpacity>
-              </View>
             </View>
           </View>
-        </View>
 
-        <View style={styles.divider} />
-
-        {/* Accepted Payment Methods Section */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>{t('product.acceptedPaymentMethods', 'Accepted payment methods')}</Text>
-          <View style={styles.paymentCard}>
-
-            {/* 1. Visa, Mastercard */}
-            <View style={styles.paymentMethodRow}>
-              <View style={styles.cardLogoBadge}>
-                <Text style={styles.visaLogoText}>VISA</Text>
-                <View style={styles.mcCirclesWrap}>
-                  <View style={[styles.mcCircle, { backgroundColor: '#EB001B' }]} />
-                  <View style={[styles.mcCircle, { backgroundColor: '#F79E1B', marginLeft: -5, opacity: 0.95 }]} />
-                </View>
-              </View>
-              <View style={styles.paymentMethodInfo}>
-                <Text style={styles.paymentMethodTitle}>{t('product.visaMastercard', 'Visa, Mastercard')}</Text>
-                <Text style={styles.paymentMethodSubtitle}>{t('product.visaMastercardSub', 'International credit & debit cards (3D Secure)')}</Text>
-              </View>
-              <View style={styles.paymentMethodTag}>
-                <Ionicons name="shield-checkmark" size={11} color="#2563EB" style={{ marginRight: 3 }} />
-                <Text style={styles.paymentMethodTagText}>3D Secure</Text>
-              </View>
+          <View style={styles.featureItem}>
+            <View style={styles.featureIconBox}>
+              <Ionicons name="cube-outline" size={16} color="#3B82F6" />
             </View>
-
-            {/* 2. Mobile Money */}
-            <View style={styles.paymentMethodRow}>
-              <View style={[styles.paymentMethodIconBox, { backgroundColor: '#FEF3C7', borderColor: '#FDE68A' }]}>
-                <Ionicons name="phone-portrait-outline" size={20} color="#D97706" />
-              </View>
-              <View style={styles.paymentMethodInfo}>
-                <Text style={styles.paymentMethodTitle}>{t('product.mobileMoney', 'Mobile Money')}</Text>
-                <Text style={styles.paymentMethodSubtitle}>{t('product.mobileMoneySub', 'Orange Money, MTN MoMo, Moov, Wave...')}</Text>
-              </View>
-              <View style={[styles.paymentMethodTag, { backgroundColor: '#FEF3C7', borderColor: '#FDE68A' }]}>
-                <Ionicons name="flash" size={10} color="#D97706" style={{ marginRight: 3 }} />
-                <Text style={[styles.paymentMethodTagText, { color: '#B45309' }]}>Instant</Text>
-              </View>
+            <View style={styles.featureContent}>
+              <Text style={styles.featureLabel}>{t('product.condition', 'Condition')}</Text>
+              <Text style={styles.featureValue}>{product.condition || (product.stock ? t('product.inStock', 'In stock') : t('product.brandNew', 'New in stock'))}</Text>
             </View>
-
-            {/* 3. Stablecoins (USDC, USDT, EURC) - No mention of 'Crypto' */}
-            <View style={styles.paymentMethodRow}>
-              <View style={[styles.paymentMethodIconBox, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
-                <View style={styles.multiCryptoRow}>
-                  <CryptoIcon symbol="USDT" size={18} />
-                  <View style={{ marginLeft: -6 }}>
-                    <CryptoIcon symbol="USDC" size={18} />
-                  </View>
-                  <View style={{ marginLeft: -6 }}>
-                    <CryptoIcon symbol="EURC" size={18} />
-                  </View>
-                </View>
-              </View>
-              <View style={styles.paymentMethodInfo}>
-                <Text style={styles.paymentMethodTitle}>{t('product.stablecoins', 'Stablecoins (USDT, USDC, EURC)')}</Text>
-                <Text style={styles.paymentMethodSubtitle}>{t('product.stablecoinsSub', 'USDC, USDT, EURC (1:1 USD / EUR)')}</Text>
-              </View>
-              <View style={[styles.paymentMethodTag, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}>
-                <Text style={[styles.paymentMethodTagText, { color: '#059669' }]}>0% Fee</Text>
-              </View>
-            </View>
-
-            {/* 4. DZY Token */}
-            <View style={[styles.paymentMethodRow, { marginBottom: 6 }]}>
-              <View style={[styles.paymentMethodIconBox, { backgroundColor: '#FFFDF0', borderColor: '#FDE68A' }]}>
-                <CryptoIcon symbol="DZY" size={26} />
-              </View>
-              <View style={styles.paymentMethodInfo}>
-                <Text style={styles.paymentMethodTitle}>{t('product.dzyToken', 'DZY Token')}</Text>
-                <Text style={styles.paymentMethodSubtitle}>{t('product.dzyTokenSub', 'Native DizzitUp digital token & discounts')}</Text>
-              </View>
-              <View style={[styles.paymentMethodTag, { backgroundColor: '#EFF6FF', borderColor: '#BFDBFE' }]}>
-                <Text style={[styles.paymentMethodTagText, { color: '#1D4ED8' }]}>Rewards</Text>
-              </View>
-            </View>
-
-            {/* Security Banner */}
-            <View style={styles.securityBanner}>
-              <View style={styles.securityIconBox}>
-                <Ionicons name="shield-checkmark" size={18} color="#2563EB" />
-              </View>
-              <View style={styles.securityContent}>
-                <Text style={styles.securityTitle}>{t('product.securePurchaseTitle', '100% Secure purchase')}</Text>
-                <Text style={styles.securityText}>{t('product.securePurchaseDesc', 'Pay securely with Cards, Mobile Money, Stablecoins or DZY Token.')}</Text>
-              </View>
-            </View>
-
-          </View>
-        </View>
-
-        <View style={styles.divider} />
-
-        {/* Description Section */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>{t('product.description', 'Description')}</Text>
-          <View style={styles.descRow}>
-            <View style={{ flex: 1, paddingRight: 8 }}>
-              <RichDescription
-                content={product.description || product.subtitle || t('product.defaultDesc', 'Product guaranteed and verified by our DizzitUp partner merchant network.')}
-                numberOfLines={3}
-                isExpanded={descriptionExpanded}
-                isRtl={language === 'ar'}
-              />
-            </View>
-            <TouchableOpacity style={styles.descChevron} onPress={() => setDescriptionExpanded(!descriptionExpanded)}>
-              <Ionicons name={descriptionExpanded ? "chevron-up" : "chevron-down"} size={20} color="#1A2840" />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.divider} />
-
-        {/* Caractéristiques Section */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>{t('product.specs', 'Specifications')}</Text>
-          <View style={styles.featuresGrid}>
-
-            <View style={styles.featureItem}>
-              <View style={styles.featureIconBox}>
-                <Ionicons name="phone-portrait-outline" size={16} color="#3B82F6" />
-              </View>
-              <View style={styles.featureContent}>
-                <Text style={styles.featureLabel}>{t('product.category', 'Category')}</Text>
-                <Text style={styles.featureValue}>{product.category || product.desc1 || t('common.general', 'General')}</Text>
-              </View>
-            </View>
-
-            <View style={styles.featureItem}>
-              <View style={styles.featureIconBox}>
-                <Ionicons name="shield-checkmark-outline" size={16} color="#3B82F6" />
-              </View>
-              <View style={styles.featureContent}>
-                <Text style={styles.featureLabel}>{t('product.warranty', 'Warranty')}</Text>
-                <Text style={styles.featureValue}>{product.warranty || t('product.warrantyVal', 'DizzitUp Warranty')}</Text>
-              </View>
-            </View>
-
-            <View style={styles.featureItem}>
-              <View style={styles.featureIconBox}>
-                <Ionicons name="lock-closed-outline" size={16} color="#3B82F6" />
-              </View>
-              <View style={styles.featureContent}>
-                <Text style={styles.featureLabel}>{t('product.protection', 'Protection')}</Text>
-                <Text style={styles.featureValue}>
-                  {isPhysicalItem(product)
-                    ? t('product.protectionVal', '4-digit Secure PIN payment')
-                    : t('product.protectionValService', '100% Secure payment')}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.featureItem}>
-              <View style={styles.featureIconBox}>
-                <Ionicons name="cube-outline" size={16} color="#3B82F6" />
-              </View>
-              <View style={styles.featureContent}>
-                <Text style={styles.featureLabel}>{t('product.condition', 'Condition')}</Text>
-                <Text style={styles.featureValue}>{product.condition || (product.stock ? t('product.inStock', 'In stock') : t('product.brandNew', 'New in stock'))}</Text>
-              </View>
-            </View>
-
           </View>
 
-          {/* Merchant-defined specifications (products.metadata.specifications) */}
-          {merchantSpecs.length > 0 && (
-            <View style={styles.merchantSpecsCard}>
-              {merchantSpecs.map((spec, idx) => (
-                <View key={`${spec.key}-${idx}`} style={[styles.merchantSpecRow, idx < merchantSpecs.length - 1 && styles.merchantSpecDivider]}>
-                  <Text style={styles.merchantSpecKey}>{spec.key}</Text>
-                  <Text style={styles.merchantSpecValue}>{spec.value}</Text>
-                </View>
-              ))}
-            </View>
-          )}
         </View>
 
-        {/* Livraison & Retrait Section */}
+        {/* Merchant-defined specifications (products.metadata.specifications) */}
+        {merchantSpecs.length > 0 && (
+          <View style={styles.merchantSpecsCard}>
+            {merchantSpecs.map((spec, idx) => (
+              <View key={`${spec.key}-${idx}`} style={[styles.merchantSpecRow, idx < merchantSpecs.length - 1 && styles.merchantSpecDivider]}>
+                <Text style={styles.merchantSpecKey}>{spec.key}</Text>
+                <Text style={styles.merchantSpecValue}>{spec.value}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
+
+      {/* Livraison & Retrait Section */}
+      {showDeliverySection && (
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>{t('product.deliveryAndPickup', 'Delivery & pickup')}</Text>
           <View style={styles.deliveryCard}>
             <View style={styles.deliveryRow}>
-              <View style={styles.deliveryItem}>
-                <Ionicons name="bus-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
-                <View>
-                  <Text style={styles.deliveryLabel}>{t('product.homeDelivery', 'Home delivery')}</Text>
-                  <Text style={styles.deliveryValue}>{t('product.deliveryDelay', '1 to 3 business days')}</Text>
+              {hasMerchantDelivery && (
+                <View style={styles.deliveryItem}>
+                  <Ionicons name="bus-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.deliveryLabel}>{t('product.homeDelivery', 'Home delivery')}</Text>
+                    {deliveryFeeFormatted ? (
+                      <Text style={styles.deliveryValue}>{deliveryFeeFormatted}</Text>
+                    ) : null}
+                  </View>
                 </View>
-              </View>
-              <View style={styles.deliveryItem}>
-                <Ionicons name="storefront-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
-                <View>
-                  <Text style={styles.deliveryLabel}>{t('product.storePickup', 'Store pickup')}</Text>
-                  <Text style={styles.deliveryValue}>{t('product.pickupToday', 'Today')}</Text>
+              )}
+              {hasStorePickup && (
+                <View style={styles.deliveryItem}>
+                  <Ionicons name="storefront-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.deliveryLabel}>{t('product.storePickup', 'Store pickup')}</Text>
+                  </View>
                 </View>
-              </View>
-              <View style={styles.deliveryItem}>
-                <Ionicons name="shield-checkmark-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
-                <View>
-                  <Text style={styles.deliveryLabel}>{t('product.deliveryFees', 'Delivery fee')}</Text>
-                  <Text style={styles.deliveryValue}>{t('product.fromDeliveryFee', "From {{fee}}", { fee: deliveryFeeFormatted })}</Text>
+              )}
+              {hasOnlineInSitu && (
+                <View style={styles.deliveryItem}>
+                  <Ionicons name="globe-outline" size={20} color="#1A2840" style={{ marginRight: 8 }} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.deliveryLabel}>{t('product.deliveryOnlineInSitu', t('orderVerification.deliveryOnlineInSitu', 'Online / In-person'))}</Text>
+                    <Text style={styles.deliveryValue}>{t('product.deliveryOnlineInSituDesc', t('orderVerification.deliveryOnlineInSituDesc', 'Services at location or remote'))}</Text>
+                  </View>
                 </View>
-              </View>
+              )}
             </View>
           </View>
         </View>
+      )}
 
-        {/* Vendu par Section */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>{t('product.soldBy', 'Sold by')}</Text>
-          <View style={styles.vendorRow}>
-            {merchantLogo ? (
-              <View style={styles.vendorLogoImageWrapper}>
-                <Image
-                  source={{ uri: merchantLogo }}
-                  style={styles.vendorLogoImage}
-                  resizeMode="cover"
-                />
+      {/* Vendu par Section */}
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>{t('product.soldBy', 'Sold by')}</Text>
+        <View style={styles.vendorRow}>
+          {merchantLogo ? (
+            <View style={styles.vendorLogoImageWrapper}>
+              <Image
+                source={{ uri: merchantLogo }}
+                style={styles.vendorLogoImage}
+                resizeMode="cover"
+              />
+            </View>
+          ) : (
+            <View style={styles.vendorMonogramContainer}>
+              <Text style={styles.vendorMonogramText}>{merchantInitial}</Text>
+              <View style={styles.vendorVerifiedTag}>
+                <Text style={styles.vendorVerifiedTagText}>VERIFIED</Text>
               </View>
-            ) : (
-              <View style={styles.vendorMonogramContainer}>
-                <Text style={styles.vendorMonogramText}>{merchantInitial}</Text>
-                <View style={styles.vendorVerifiedTag}>
-                  <Text style={styles.vendorVerifiedTagText}>VERIFIED</Text>
-                </View>
+            </View>
+          )}
+          <View style={styles.vendorContent}>
+            <View style={styles.vendorNameRow}>
+              <Text style={styles.vendorName} numberOfLines={1}>{merchantName}</Text>
+              <Ionicons name="checkmark-circle" size={16} color="#3B82F6" style={{ marginLeft: 4 }} />
+            </View>
+            <View style={styles.vendorLocationRow}>
+              <Ionicons name="location-outline" size={13} color="#64748B" style={{ marginRight: 3 }} />
+              <Text style={styles.vendorLocationText} numberOfLines={1}>
+                {merchantFlag} {merchantCity ? `${merchantCity}, ` : ''}{merchantCountryName || t('common.global', 'International')}
+              </Text>
+            </View>
+            <View style={styles.vendorCategoryBadge}>
+              <Text style={styles.vendorCategoryText}>{t('product.verifiedPartner', "Verified merchant")}</Text>
+            </View>
+            <Text style={styles.vendorSince}>{t('product.partnerPlatform', 'DizzitUp Partner')}</Text>
+          </View>
+          <TouchableOpacity style={styles.btnStore} onPress={() => navigation.navigate('ShopDetailsScreen', { shop: shop || { id: product?.merchant_id, name: merchantName } })}>
+            <Ionicons name="storefront-outline" size={16} color="#1A2840" style={{ marginRight: 6 }} />
+            <Text style={styles.btnStoreText}>{t('product.visitShop', 'Store')}</Text>
+            <Ionicons name="chevron-forward" size={14} color="#1A2840" style={{ marginLeft: 4 }} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+    </ScrollView>
+
+    {/* Bottom Floating Ergonomic Action Bar */}
+    <View style={[styles.bottomActionBar, { paddingBottom: bottomPadding }]}>
+      {isTicket ? (
+        <TouchableOpacity
+          style={[styles.btnBuyModern, { flex: 1, backgroundColor: '#FFC759' }, !canPurchase && { opacity: 0.5 }]}
+          onPress={handleBuyNow}
+          disabled={!canPurchase}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="ticket-outline" size={18} color="#1A2840" style={{ marginRight: 6 }} />
+          <Text style={[styles.btnBuyModernText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>
+            {t('product.getTicket', 'Get ticket')}
+          </Text>
+        </TouchableOpacity>
+      ) : (
+        <>
+          {/* Buy Me / Diaspora Gift Action */}
+          <TouchableOpacity
+            style={styles.btnGiftModern}
+            onPress={shareProductGift}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="gift-outline" size={18} color="#2563EB" style={{ marginRight: 5 }} />
+            <Text style={[styles.btnGiftModernText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy_me', 'Buy me')}</Text>
+          </TouchableOpacity>
+
+          {/* Add to Cart Action */}
+          <TouchableOpacity
+            style={[styles.btnCartModern, !canPurchase && { opacity: 0.5 }]}
+            onPress={() => handleAddToCart()}
+            disabled={!canPurchase}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="cart-outline" size={18} color="#1A2840" style={{ marginRight: 5 }} />
+            <Text style={[styles.btnCartModernText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('product.addToCart', 'Add to cart')}</Text>
+            {cartCount > 0 && (
+              <View style={styles.cartCountDot}>
+                <Text style={styles.cartCountDotText} adjustsFontSizeToFit numberOfLines={1}>{cartCount}</Text>
               </View>
             )}
-            <View style={styles.vendorContent}>
-              <View style={styles.vendorNameRow}>
-                <Text style={styles.vendorName} numberOfLines={1}>{merchantName}</Text>
-                <Ionicons name="checkmark-circle" size={16} color="#3B82F6" style={{ marginLeft: 4 }} />
-              </View>
-              <View style={styles.vendorLocationRow}>
-                <Ionicons name="location-outline" size={13} color="#64748B" style={{ marginRight: 3 }} />
-                <Text style={styles.vendorLocationText} numberOfLines={1}>
-                  {merchantFlag} {merchantCity ? `${merchantCity}, ` : ''}{merchantCountryName || t('common.global', 'International')}
-                </Text>
-              </View>
-              <View style={styles.vendorCategoryBadge}>
-                <Text style={styles.vendorCategoryText}>{t('product.verifiedPartner', "Verified merchant")}</Text>
-              </View>
-              <Text style={styles.vendorSince}>{t('product.partnerPlatform', 'DizzitUp Partner')}</Text>
-            </View>
-            <TouchableOpacity style={styles.btnStore} onPress={() => navigation.navigate('ShopDetailsScreen', { shop: shop || { id: product?.merchant_id, name: merchantName } })}>
-              <Ionicons name="storefront-outline" size={16} color="#1A2840" style={{ marginRight: 6 }} />
-              <Text style={styles.btnStoreText}>{t('product.visitShop', 'Store')}</Text>
-              <Ionicons name="chevron-forward" size={14} color="#1A2840" style={{ marginLeft: 4 }} />
-            </TouchableOpacity>
-          </View>
-        </View>
+          </TouchableOpacity>
 
-      </ScrollView>
-
-      {/* Bottom Floating Ergonomic Action Bar */}
-      <View style={[styles.bottomActionBar, { paddingBottom: bottomPadding }]}>
-        {isTicket ? (
+          {/* Primary CTA: Buy Now */}
           <TouchableOpacity
-            style={[styles.btnBuyModern, { flex: 1, backgroundColor: '#FFC759' }, !canPurchase && { opacity: 0.5 }]}
+            style={[styles.btnBuyModern, !canPurchase && { opacity: 0.5 }]}
             onPress={handleBuyNow}
             disabled={!canPurchase}
             activeOpacity={0.85}
           >
-            <Ionicons name="ticket-outline" size={18} color="#1A2840" style={{ marginRight: 6 }} />
-            <Text style={[styles.btnBuyModernText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>
-              {t('product.getTicket', 'Get ticket')}
-            </Text>
+            <Ionicons name="flash" size={16} color="#1A2840" style={{ marginRight: 5 }} />
+            <Text style={[styles.btnBuyModernText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('product.buyNow', 'Buy now')}</Text>
           </TouchableOpacity>
-        ) : (
-          <>
-            {/* Buy Me / Diaspora Gift Action */}
-            <TouchableOpacity
-              style={styles.btnGiftModern}
-              onPress={shareProductGift}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="gift-outline" size={18} color="#2563EB" style={{ marginRight: 5 }} />
-              <Text style={[styles.btnGiftModernText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('shop.actions.buy_me', 'Buy me')}</Text>
-            </TouchableOpacity>
+        </>
+      )}
+    </View>
+    {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
 
-            {/* Add to Cart Action */}
-            <TouchableOpacity
-              style={[styles.btnCartModern, !canPurchase && { opacity: 0.5 }]}
-              onPress={() => handleAddToCart()}
-              disabled={!canPurchase}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="cart-outline" size={18} color="#1A2840" style={{ marginRight: 5 }} />
-              <Text style={[styles.btnCartModernText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('product.addToCart', 'Add to cart')}</Text>
-              {cartCount > 0 && (
-                <View style={styles.cartCountDot}>
-                  <Text style={styles.cartCountDotText} adjustsFontSizeToFit numberOfLines={1}>{cartCount}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
+    <AppConfirmModal
+      visible={!!conflictModal}
+      title={conflictModal?.title}
+      message={conflictModal?.message}
+      icon="cart-outline"
+      iconColor="#FFB800"
+      iconBg="#FFFBEB"
+      cancelText={t('common.cancel', 'Cancel')}
+      confirmText={t('cart.replaceBtn', 'Replace cart')}
+      confirmVariant="warning"
+      onCancel={() => setConflictModal(null)}
+      onConfirm={conflictModal?.onConfirm}
+    />
 
-            {/* Primary CTA: Buy Now */}
-            <TouchableOpacity
-              style={[styles.btnBuyModern, !canPurchase && { opacity: 0.5 }]}
-              onPress={handleBuyNow}
-              disabled={!canPurchase}
-              activeOpacity={0.85}
-            >
-              <Ionicons name="flash" size={16} color="#1A2840" style={{ marginRight: 5 }} />
-              <Text style={[styles.btnBuyModernText, { flexShrink: 1 }]} adjustsFontSizeToFit numberOfLines={1}>{t('product.buyNow', 'Buy now')}</Text>
-            </TouchableOpacity>
-          </>
-        )}
-      </View>
-      {!!toast && <View style={styles.toastWrap}><AppToast title={toast.title} message={toast.message} onClose={() => setToast(null)} /></View>}
+    <PhysicalGoodsWarningModal
+      visible={warningModalVisible}
+      onClose={() => setWarningModalVisible(false)}
+      onContinue={handleWarningContinue}
+      shopCountry={shop?.country || product?.merchant?.country || 'your region'}
+    />
 
-      <AppConfirmModal
-        visible={!!conflictModal}
-        title={conflictModal?.title}
-        message={conflictModal?.message}
-        icon="cart-outline"
-        iconColor="#FFB800"
-        iconBg="#FFFBEB"
-        cancelText={t('common.cancel', 'Cancel')}
-        confirmText={t('cart.replaceBtn', 'Replace cart')}
-        confirmVariant="warning"
-        onCancel={() => setConflictModal(null)}
-        onConfirm={conflictModal?.onConfirm}
-      />
-
-      <PhysicalGoodsWarningModal
-        visible={warningModalVisible}
-        onClose={() => setWarningModalVisible(false)}
-        onContinue={handleWarningContinue}
-        shopCountry={shop?.country || product?.merchant?.country || 'your region'}
-      />
-
-    </SafeAreaView>
-  );
+  </SafeAreaView>
+);
 }
 
 const styles = StyleSheet.create({
