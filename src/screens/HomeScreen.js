@@ -15,7 +15,8 @@ import { getProductCoverImage } from '../utils/productMedia';
 import { useApp } from '../context/AppContext';
 import { useBuyGoods } from '../hooks/useBuyGoods';
 import { buyGoodsApi } from '../services/buyGoodsApi';
-import { getCountryCurrencyInfo, getFlagEmoji } from '../utils/countryCurrencyUtils';
+import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
+import { parseCleanCategories, getCountryFlagUrl, formatMerchantLocation } from '../utils/categoryUtils';
 import PriceDisplay from '../components/PriceDisplay';
 
 import { isSmallScreen, isShortScreen } from '../utils/responsive';
@@ -175,10 +176,10 @@ export default function HomeScreen() {
 
         // Apply Geolocation logic primarily, fallback to COI or user country
         const targetCountry = (detectedCountry || user?.COI || user?.country || 'Senegal').toLowerCase();
-        
+
         let localMerchants = merchants.filter(m => (m.country || '').toLowerCase() === targetCountry);
         let localProducts = products.filter(p => (p.merchant?.country || '').toLowerCase() === targetCountry);
-        
+
         // Diaspora fallback: if they have no local physical merchants, show global/digital services
         if (localMerchants.length === 0) {
           localMerchants = merchants.filter(m => (m.shop_categories || '').toLowerCase().includes('digital') || (m.shop_categories || '').toLowerCase().includes('global'));
@@ -212,7 +213,7 @@ export default function HomeScreen() {
 
   // Dynamically generate To-Do List based on real user state
   const TODO_LIST = [];
-  
+
   TODO_LIST.push({
     id: '1',
     icon: 'people-outline',
@@ -256,15 +257,15 @@ export default function HomeScreen() {
   // Only show Business/Merchant card if the user is actually a merchant
   if (user?.role === 'merchant') {
     TODO_LIST.push({
-        id: '4',
-        icon: 'storefront-outline',
-        iconColor: '#8B5CF6',
-        iconBgColor: '#F5F3FF',
-        title: t('home.todos.merchant_dashboard.title', 'Manage your business account'),
-        buttonText: t('home.todos.merchant_dashboard.button', 'Manage'),
-        buttonColor: '#8B5CF6',
-        buttonBgColor: '#F5F3FF',
-        route: 'BusinessAccountScreen'
+      id: '4',
+      icon: 'storefront-outline',
+      iconColor: '#8B5CF6',
+      iconBgColor: '#F5F3FF',
+      title: t('home.todos.merchant_dashboard.title', 'Manage your business account'),
+      buttonText: t('home.todos.merchant_dashboard.button', 'Manage'),
+      buttonColor: '#8B5CF6',
+      buttonBgColor: '#F5F3FF',
+      route: 'BusinessAccountScreen'
     });
   }
 
@@ -281,9 +282,9 @@ export default function HomeScreen() {
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       <View style={styles.container}>
-        <ScrollView 
-          style={styles.scrollView} 
-          showsVerticalScrollIndicator={false} 
+        <ScrollView
+          style={styles.scrollView}
+          showsVerticalScrollIndicator={false}
           bounces={true}
           refreshControl={
             <RefreshControl
@@ -518,10 +519,10 @@ export default function HomeScreen() {
           ) : (
             <View>
               <WalletCard balances={walletBalances} />
-              
+
               {/* POS (Cash Register) Quick Access for Merchants */}
               {user?.role === 'merchant' && (
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.merchantPosButton}
                   onPress={() => navigation.navigate('CashRegisterScreen')}
                   activeOpacity={0.8}
@@ -582,8 +583,8 @@ export default function HomeScreen() {
                     <Text style={styles.inviteSubtitle}>
                       {t('home.inviteBannerDesc', "Send Stablecoins, shop, pay bills, and earn rewards together.")}
                     </Text>
-                    <TouchableOpacity 
-                      style={[styles.inviteButton, { backgroundColor: '#071D54' }]} 
+                    <TouchableOpacity
+                      style={[styles.inviteButton, { backgroundColor: '#071D54' }]}
                       onPress={() => {
                         handleUserInviteShare(user);
                       }}
@@ -635,7 +636,7 @@ export default function HomeScreen() {
 
 
           <View style={styles.timelineTabsContainer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.timelineTab, timelineTab === 'featured' && styles.timelineTabActive]}
               onPress={() => setTimelineTab('featured')}
               activeOpacity={0.8}
@@ -644,7 +645,7 @@ export default function HomeScreen() {
                 {t('home.tabs.featured', 'Featured')}
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.timelineTab, timelineTab === 'news' && styles.timelineTabActive]}
               onPress={() => setTimelineTab('news')}
               activeOpacity={0.8}
@@ -663,8 +664,14 @@ export default function HomeScreen() {
             ) : timelineTab === 'featured' ? (
               <View style={styles.timelineList}>
                 {featuredShops.length > 0 ? featuredShops.map((shop, index) => {
-                  const shopCountry = shop.country || shop.country_code || shop.countryCode || '';
-                  const locationStr = `${shop.city_village || 'Local'}, ${getFlagEmoji(shopCountry)} ${shopCountry || 'Global'}`;
+                  const flagUrl = getCountryFlagUrl(shop.country || shop.raw?.country);
+                  const locationText = formatMerchantLocation(
+                    shop.city_village || shop.raw?.city_village,
+                    shop.country || shop.raw?.country
+                  );
+                  const categories = parseCleanCategories(shop.shop_categories || shop.raw?.shop_categories);
+                  const visibleCategories = categories.slice(0, 2);
+                  const remainingCount = categories.length - visibleCategories.length;
                   return (
                     <TouchableOpacity key={`shop-${shop.id || 'id'}-${index}`} style={styles.timelineCard} onPress={() => navigation.navigate('ShopDetailsScreen', { shop })}>
                       <Image
@@ -675,7 +682,30 @@ export default function HomeScreen() {
                       <View style={styles.timelineCardContent}>
                         <View style={styles.timelineBadge}><Text style={styles.timelineBadgeText}>{language === 'en' ? 'Featured' : 'En vedette'}</Text></View>
                         <Text style={styles.timelineTitle} numberOfLines={1}>{shop.shop_name}</Text>
-                        <Text style={styles.timelineSubtitle} numberOfLines={2}>{locationStr} • {shop.shop_categories || 'Marketplace'}</Text>
+                        <View style={styles.timelineLocationRow}>
+                          {flagUrl ? (
+                            <Image source={{ uri: flagUrl }} style={styles.timelineFlag} resizeMode="cover" />
+                          ) : null}
+                          {locationText ? (
+                            <Text style={styles.timelineLocationText} numberOfLines={1}>
+                              {locationText}
+                            </Text>
+                          ) : null}
+                        </View>
+                        {visibleCategories.length > 0 && (
+                          <View style={styles.timelinePillsRow}>
+                            {visibleCategories.map((cat, cIdx) => (
+                              <View key={cIdx} style={styles.timelineCategoryPill}>
+                                <Text style={styles.timelineCategoryPillText} numberOfLines={1}>{cat}</Text>
+                              </View>
+                            ))}
+                            {remainingCount > 0 && (
+                              <View style={styles.timelineCategoryPillMore}>
+                                <Text style={styles.timelineCategoryPillMoreText} numberOfLines={1}>+{remainingCount}</Text>
+                              </View>
+                            )}
+                          </View>
+                        )}
                       </View>
                     </TouchableOpacity>
                   );
@@ -747,25 +777,25 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { 
-    flex: 1, 
-    backgroundColor: '#FFFFFF', 
-    paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 8 
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    paddingTop: Platform.OS === 'android' ? Math.max(StatusBar.currentHeight || 0, 44) + 6 : 8
   },
   container: { flex: 1 },
   scrollView: { flex: 1 },
-  header: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    paddingHorizontal: isSmallScreen ? 14 : 20, 
-    paddingBottom: 8 
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: isSmallScreen ? 14 : 20,
+    paddingBottom: 8
   },
-  userInfo: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    flex: 1, 
-    marginRight: 6 
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 6
   },
   userTextCol: {
     flex: 1,
@@ -774,14 +804,14 @@ const styles = StyleSheet.create({
   avatarRing: { width: 44, height: 44, borderRadius: 22, borderWidth: 2, alignItems: 'center', justifyContent: 'center', marginRight: 10 },
   merchantRing: { borderColor: '#8B5CF6' },
   userRing: { borderColor: '#3B82F6' },
-  avatarWrapper: { 
-    width: 38, 
-    height: 38, 
-    borderRadius: 19, 
-    backgroundColor: '#071D54', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    overflow: 'hidden' 
+  avatarWrapper: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#071D54',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden'
   },
   avatarImage: { ...StyleSheet.absoluteFill, width: 38, height: 38, borderRadius: 19 },
   greetingText: { fontFamily: 'Inter_500Medium', fontSize: 12, color: '#64748B', lineHeight: 15 },
@@ -789,37 +819,37 @@ const styles = StyleSheet.create({
   merchantBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#8B5CF6', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginLeft: 6 },
   merchantBadgeText: { fontFamily: 'Inter_700Bold', fontSize: 9, color: '#FFFFFF', letterSpacing: 0.5 },
   headerIcons: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  iconButton: { 
-    width: 34, 
-    height: 34, 
-    borderRadius: 10, 
-    borderWidth: 1, 
-    borderColor: '#F3F4F6', 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    position: 'relative', 
-    backgroundColor: '#FFFFFF' 
+  iconButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    backgroundColor: '#FFFFFF'
   },
   notificationDot: { position: 'absolute', top: 5, right: 6, width: 7, height: 7, borderRadius: 3.5, backgroundColor: '#FFC759', borderWidth: 1, borderColor: '#FFFFFF' },
-  sectionHeader: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    paddingHorizontal: isSmallScreen ? 14 : 20, 
-    marginTop: 14, 
-    marginBottom: 8 
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: isSmallScreen ? 14 : 20,
+    marginTop: 14,
+    marginBottom: 8
   },
   sectionTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 15, color: '#1A2840' },
   viewAllText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: '#F59E0B' },
-  todoCard: { 
-    marginHorizontal: isSmallScreen ? 14 : 20, 
-    marginTop: 10, 
-    borderRadius: 16, 
-    borderWidth: 1, 
-    borderColor: '#F0F2F6', 
-    backgroundColor: '#FFFFFF', 
-    boxShadow: '0px 4px 12px #0A1737', 
-    overflow: 'hidden' 
+  todoCard: {
+    marginHorizontal: isSmallScreen ? 14 : 20,
+    marginTop: 10,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#F0F2F6',
+    backgroundColor: '#FFFFFF',
+    boxShadow: '0px 4px 12px #0A1737',
+    overflow: 'hidden'
   },
   merchantPosButton: {
     flexDirection: 'row',
@@ -886,20 +916,20 @@ const styles = StyleSheet.create({
   activeDotSlide0: { backgroundColor: '#10B981', width: 7, height: 7, borderRadius: 3.5 },
   activeDotSlide1: { backgroundColor: '#10B981', width: 7, height: 7, borderRadius: 3.5 },
   inactiveDot: { backgroundColor: '#D1D5DB' },
-  quickActionsGrid: { 
-    flexDirection: 'row', 
-    flexWrap: 'wrap', 
+  quickActionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     paddingHorizontal: isSmallScreen ? 10 : 16,
     justifyContent: 'space-between',
   },
-  actionGridItem: { 
-    width: '23.5%', 
-    alignItems: 'center', 
-    minHeight: 80, 
-    paddingHorizontal: 2, 
-    paddingVertical: 7, 
-    borderWidth: 1, 
-    borderColor: '#F1F3F7', 
+  actionGridItem: {
+    width: '23.5%',
+    alignItems: 'center',
+    minHeight: 80,
+    paddingHorizontal: 2,
+    paddingVertical: 7,
+    borderWidth: 1,
+    borderColor: '#F1F3F7',
     borderRadius: 12,
     marginBottom: 8,
     backgroundColor: '#FFFFFF',
@@ -996,20 +1026,75 @@ const styles = StyleSheet.create({
     color: '#1A2840',
     marginBottom: 4
   },
+  timelineLocationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  timelineFlag: {
+    width: 18,
+    height: 12,
+    marginRight: 6,
+    borderRadius: 2,
+    resizeMode: 'cover',
+  },
+  timelineLocationText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    color: '#64748B',
+    flexShrink: 1,
+  },
+  timelinePillsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'nowrap',
+    overflow: 'hidden',
+    maxWidth: '100%',
+  },
+  timelineCategoryPill: {
+    backgroundColor: '#F5F3FF',
+    borderWidth: 1,
+    borderColor: '#EDE9FE',
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
+    borderRadius: 8,
+    marginRight: 6,
+    flexShrink: 1,
+    maxWidth: 120,
+  },
+  timelineCategoryPillText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 10,
+    color: '#7C3AED',
+  },
+  timelineCategoryPillMore: {
+    backgroundColor: '#F5F3FF',
+    borderWidth: 1,
+    borderColor: '#EDE9FE',
+    paddingHorizontal: 6,
+    paddingVertical: 2.5,
+    borderRadius: 8,
+    flexShrink: 0,
+  },
+  timelineCategoryPillMoreText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 10,
+    color: '#7C3AED',
+  },
   timelineSubtitle: {
     fontFamily: 'Inter_400Regular',
     fontSize: 11,
     color: '#64748B',
     lineHeight: 16
   },
-  securityBanner: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    backgroundColor: '#F8F9FA', 
-    marginHorizontal: isSmallScreen ? 14 : 20, 
-    borderRadius: 14, 
-    padding: 10, 
-    marginTop: 8 
+  securityBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    marginHorizontal: isSmallScreen ? 14 : 20,
+    borderRadius: 14,
+    padding: 10,
+    marginTop: 8
   },
   securityIconWrapper: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', marginRight: 10, boxShadow: '0px 2px 4px #000' },
   securityTextContent: { flex: 1 },

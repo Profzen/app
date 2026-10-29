@@ -2042,6 +2042,8 @@
     "buyOnDizzitUp": "Comprar no DizzitUp",
     "soldBy": "Vendido por",
     "deliveryAndPickup": "Entrega e recolha",
+    "deliveryOnlineInSitu": "Online / Presencial",
+    "deliveryOnlineInSituDesc": "Serviço no local ou remoto",
     "homeDelivery": "Entrega ao domicílio",
     "storePickup": "Recolha na loja",
     "deliveryFees": "Taxa de entrega",

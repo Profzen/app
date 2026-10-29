@@ -2096,6 +2096,8 @@
     "buyOnDizzitUp": "Buy on DizzitUp",
     "soldBy": "Sold by",
     "deliveryAndPickup": "Delivery & pickup",
+    "deliveryOnlineInSitu": "Online / In-person",
+    "deliveryOnlineInSituDesc": "Services at location or remote",
     "homeDelivery": "Home delivery",
     "storePickup": "Store pickup",
     "deliveryFees": "Delivery fee",

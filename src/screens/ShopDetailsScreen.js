@@ -10,7 +10,7 @@ import AppToast from '../components/AppToast';
 import PriceDisplay from '../components/PriceDisplay';
 import { useBuyGoods } from '../hooks/useBuyGoods';
 import { useApp } from '../context/AppContext';
-import { getCountryCurrencyInfo } from '../utils/countryCurrencyUtils';
+import { parseCleanCategories, getCountryFlagUrl, formatMerchantLocation } from '../utils/categoryUtils';
 import { getProductCoverImage } from '../utils/productMedia';
 import { buildDzyStoreUrl } from '../utils/storeUtils';
 import { isPhysicalItem, isTicketProduct, getWebProductUrl } from '../utils/productUtils';
@@ -55,32 +55,14 @@ export default function ShopDetailsScreen({ route }) {
 
   const shopCategoriesList = useMemo(() => {
     const raw = shop.shop_categories || shop.raw?.shop_categories || shop.category;
-    if (!raw) return [t('shop.badges.marketplace', 'Marketplace')];
-    if (Array.isArray(raw)) {
-      return raw.map(c => (typeof c === 'string' ? c.trim() : (c?.name || String(c)))).filter(Boolean);
-    }
-    if (typeof raw === 'string') {
-      const trimmed = raw.trim();
-      if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
-        try {
-          const parsed = JSON.parse(trimmed);
-          if (Array.isArray(parsed)) {
-            return parsed.map(c => (typeof c === 'string' ? c.trim() : (c?.name || String(c)))).filter(Boolean);
-          }
-        } catch (e) {}
-      }
-      return trimmed.split(',').map(c => c.trim()).filter(Boolean);
-    }
+    const parsed = parseCleanCategories(raw);
+    if (parsed.length > 0) return parsed;
     return [t('shop.badges.marketplace', 'Marketplace')];
   }, [shop.shop_categories, shop.raw?.shop_categories, shop.category, t]);
 
-  const getFlagCode = (countryInput) => {
-    if (!countryInput) return 'us';
-    if (countryInput.length === 2) return countryInput.toLowerCase();
-    const iso = getCountryCurrencyInfo(countryInput);
-    if (iso && iso.code) return iso.code.toLowerCase();
-    return 'us';
-  };
+  const storeFlagUrl = useMemo(() => {
+    return getCountryFlagUrl(shop.country || shop.raw?.country || shop.country_code);
+  }, [shop.country, shop.raw?.country, shop.country_code]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -438,9 +420,14 @@ export default function ShopDetailsScreen({ route }) {
                 {(shop.is_verified || shop.verified) && <Ionicons name="checkmark-circle" size={18} color="#3B82F6" style={{ marginLeft: 6, flexShrink: 0 }} />}
               </View>
               <View style={[styles.flagCityBadge, { marginLeft: 0 }]}>
-                <Image source={{ uri: `https://flagcdn.com/w20/${getFlagCode(shop.country || shop.raw?.country || shop.country_code)}.png` }} style={{ width: 16, height: 11, marginRight: 4, borderRadius: 2 }} />
+                {storeFlagUrl ? (
+                  <Image source={{ uri: storeFlagUrl }} style={{ width: 16, height: 11, marginRight: 4, borderRadius: 2 }} />
+                ) : null}
                 <Text style={styles.flagCityText}>
-                  {shop.city_village || shop.raw?.city_village || shop.city || ''}
+                  {formatMerchantLocation(
+                    shop.city_village || shop.raw?.city_village || shop.city,
+                    shop.country || shop.raw?.country || shop.country_code
+                  )}
                 </Text>
               </View>
             </View>
@@ -453,11 +440,20 @@ export default function ShopDetailsScreen({ route }) {
                 <Ionicons name="bus-outline" size={12} color="#64748B" style={{ marginRight: 4 }} />
                 <Text style={[styles.statusBadgeText, { color: '#64748B' }]}>{shop.deliveryTime || '24h'}</Text>
               </View>
-              {shopCategoriesList.map((cat, idx) => (
-                <View key={idx} style={[styles.statusBadge, { backgroundColor: '#F5F3FF', borderWidth: 1, borderColor: '#EDE9FE' }]}>
-                  <Text style={[styles.statusBadgeText, { color: '#7C3AED' }]}>{cat}</Text>
-                </View>
-              ))}
+                {
+                  shopCategoriesList.slice(0, 2).map((cat, idx) => (
+                    <View key={idx} style={[styles.statusBadge, { backgroundColor: '#F5F3FF', borderWidth: 1, borderColor: '#EDE9FE' }]}>
+                      <Text style={[styles.statusBadgeText, { color: '#7C3AED' }]} numberOfLines={1}>{cat}</Text>
+                    </View>
+                  ))
+                }
+              {
+                  shopCategoriesList.length > 2 && (
+                    <View style={[styles.statusBadge, { backgroundColor: '#F5F3FF', borderWidth: 1, borderColor: '#EDE9FE' }]}>
+                      <Text style={[styles.statusBadgeText, { color: '#7C3AED' }]} numberOfLines={1}>+{shopCategoriesList.length - 2}</Text>
+                    </View>
+                  )
+                }
             </View>
 
             <View style={styles.shopMetaRow}>
@@ -947,16 +943,16 @@ export default function ShopDetailsScreen({ route }) {
 
                 <View style={styles.productInfo}>
                   <Text style={styles.productName} numberOfLines={1}>{product.name || product.title || 'Produit'}</Text>
-                  <PriceDisplay 
-                    amount={product.price || 0} 
-                    baseCurrency={product.currency || shop?.currency || 'XOF'} 
+                  <PriceDisplay
+                    amount={product.price || 0}
+                    baseCurrency={product.currency || shop?.currency || 'XOF'}
                     size="compact"
                   />
                   <Text style={styles.productStock}>{product.stock_quantity > 0 || !product.stock_quantity ? t('shop.products.in_stock', "In stock") : t('outOfStock', "Out of stock")}</Text>
                 </View>
 
-                <TouchableOpacity 
-                  style={[styles.btnBuySmall, isTicketProduct(product) && { backgroundColor: '#FFC759' }]} 
+                <TouchableOpacity
+                  style={[styles.btnBuySmall, isTicketProduct(product) && { backgroundColor: '#FFC759' }]}
                   onPress={() => {
                     navigation.navigate('ProductDetailsScreen', { product, shop });
                   }}
