@@ -5,49 +5,94 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useApp } from '../context/AppContext';
 
+const STABLECOINS = [
+  { symbol: 'USDC', image: require('../../assets/cryptos/usdc.png') },
+  { symbol: 'USDT', image: require('../../assets/cryptos/usdt.png') },
+  { symbol: 'EURC', image: require('../../assets/cryptos/eurc.png') },
+];
+
 // Each account receives an overview/benefits page followed by its own features.
+// Visuals are native UI illustrations: no Bitcoin, DZ or unsupported crypto art.
 const CONTENT = {
   diaspora: {
-    label: ['diasporaLabel', 'AFRICAN DIASPORA'], title: ['diasporaTitle', 'Support your loved ones in Africa with peace of mind'],
-    benefits: [['diasporaBenefit', 'Stay in control of how your support is used.']],
+    label: ['diasporaLabel', 'AFRICAN DIASPORA'], title: ['diasporaTitle', 'Support your loved ones in Africa, directly'],
+    benefits: [['diasporaBenefit', 'Pay for what your family needs from abroad.']],
     features: [
-      ['diasporaShop', 'Buy what they need', 'Shop for goods and essentials for loved ones in Africa.', 'bag-handle-outline', require('../../assets/promo_shop.png')],
-      ['diasporaBills', 'Cover everyday needs', 'Pay their bills and mobile top-ups directly.', 'receipt-outline', require('../../assets/promo_wallet.png')],
-      ['diasporaTrack', 'Follow your support', 'See your payments and purchases in one place.', 'time-outline', require('../../assets/promo_blue_wallet.png')],
+      ['diasporaShop', 'Buy locally, from abroad', 'Buy what your family needs from African merchants.', 'storefront-outline', 'store'],
+      ['diasporaBills', 'Cover everyday needs', 'Pay Bills, gifts and services for loved ones back home.', 'receipt-outline', 'bills'],
+      ['diasporaTrack', 'One DZYwallet for your support', 'Use USDC, USDT or EURC and follow your payments in one place.', 'wallet-outline', 'wallet'],
     ],
-    image: require('../../assets/promo_shop.png'),
+    visual: 'store',
   },
   africanPersonal: {
-    label: ['africanPersonalLabel', 'AFRICAN ACCOUNT'], title: ['africanPersonalTitle', 'Your money, beyond borders'],
-    benefits: [['financialFreedom', 'More financial freedom.'], ['globalInclusion', 'Access to global finance.'], ['yourBank', 'Be your own banker.']],
+    label: ['africanPersonalLabel', 'USER IN AFRICA'], title: ['africanPersonalTitle', 'Your money, beyond borders'],
+    benefits: [['financialFreedom', 'A DZYwallet in USDC, USDT and EURC.'], ['globalInclusion', 'Pay, shop and receive from family abroad.']],
     features: [
-      ['africanShop', 'Shop across Africa', 'Discover and buy from African shops and businesses.', 'bag-handle-outline', require('../../assets/promo_shop.png')],
-      ['africanWealth', 'Build digital wealth', 'Manage USD and EUR stablecoins in a borderless wallet.', 'wallet-outline', require('../../assets/promo_blue_wallet.png')],
+      ['africanShop', 'Pay and shop locally', 'Pay Bills, buy airtime and shop from local merchants.', 'bag-handle-outline', 'store'],
+      ['africanWealth', 'Keep value in stablecoins', 'Manage USDC, USDT and EURC in your DZYwallet.', 'wallet-outline', 'wallet'],
+      ['africanReceive', 'Receive from family abroad', 'Receive support with no fees between family members.', 'people-outline', 'wallet'],
     ],
-    image: require('../../assets/promo_blue_wallet.png'),
+    visual: 'wallet',
   },
   africanBusiness: {
     label: ['africanBusinessLabel', 'AFRICAN BUSINESS'], title: ['africanBusinessTitle', 'Grow your business beyond borders'],
-    benefits: [['expandedBusiness', 'Reach more customers worldwide.'], ['globalInclusion', 'Access to global finance.'], ['yourBank', 'Be your own banker.']],
+    benefits: [['expandedBusiness', 'Create your DZYstore and sell globally.'], ['globalInclusion', 'Get paid in stablecoins and track your sales.']],
     features: [
-      ['businessSell', 'Sell worldwide', 'Showcase your products and services to global customers.', 'storefront-outline', require('../../assets/promo_shop.png')],
-      ['businessPaid', 'Get paid across borders', 'Accept USD and EUR stablecoins or supported local mobile money.', 'link-outline', require('../../assets/wallet_banner.png')],
-      ['businessSuppliers', 'Pay global suppliers', 'Send stablecoin payments to suppliers across borders.', 'send-outline', require('../../assets/promo_wallet.png')],
-      ['businessTreasury', 'Manage your treasury', 'Keep your business funds in a borderless digital wallet.', 'wallet-outline', require('../../assets/promo_blue_wallet.png')],
+      ['businessSell', 'Open your DZYstore', 'Create your DZYstore in 5 minutes, for free, and sell globally.', 'storefront-outline', 'store'],
+      ['businessPaid', 'Get paid with DZYpaylink', 'Share a payment link or invoice for USDC, USDT or EURC.', 'link-outline', 'paylink'],
+      ['businessTreasury', 'Manage your treasury', 'Get paid worldwide in USDC, USDT or EURC, and follow every sale and payout in one DZYwallet.', 'wallet-outline', 'treasury'],
     ],
-    image: require('../../assets/promo_shop.png'),
+    visual: 'store',
   },
   globalBusiness: {
     label: ['globalBusinessLabel', 'GLOBAL BUSINESS'], title: ['globalBusinessTitle', 'Source from Africa with confidence'],
-    benefits: [['vettedBusinesses', 'Connect with vetted African businesses.'], ['secureTerms', 'Pay securely on terms that work for you.']],
+    benefits: [['vettedBusinesses', 'Connect with African merchants and businesses.'], ['secureTerms', 'Choose the available payment method that suits you.']],
     features: [
-      ['globalSource', 'Find African partners', 'Discover vetted merchants, freelancers and businesses.', 'search-outline', require('../../assets/promo_shop.png')],
-      ['globalBuy', 'Buy with confidence', 'Source products and services across Africa securely.', 'shield-checkmark-outline', require('../../assets/promo_wallet.png')],
-      ['globalPay', 'Choose how to pay', 'Use the available payment method and terms that suit your purchase.', 'card-outline', require('../../assets/wallet_banner.png')],
+      ['globalSource', 'Find African partners', 'Discover merchants, freelancers and businesses in DZYstore.', 'search-outline', 'store'],
+      ['globalBuy', 'Buy with confidence', 'Source products and services across Africa securely.', 'shield-checkmark-outline', 'store'],
+      ['globalPay', 'Choose how to pay', 'Use the available payment method and terms that suit your purchase.', 'card-outline', 'wallet'],
     ],
-    image: require('../../assets/promo_shop.png'),
+    visual: 'store',
   },
 };
+
+const VISUAL_META = {
+  store: { icon: 'storefront-outline', label: 'DZYstore' },
+  bills: { icon: 'receipt-outline', label: 'Pay Bills' },
+  wallet: { icon: 'wallet-outline', label: 'DZYwallet' },
+  paylink: { icon: 'link-outline', label: 'DZYpaylink' },
+  treasury: { icon: 'analytics-outline', label: 'DZYwallet' },
+  rewards: { icon: 'gift-outline', label: 'DZY Rewards' },
+};
+
+function SlideVisual({ kind, icon, t }) {
+  const visual = VISUAL_META[kind] || VISUAL_META.wallet;
+  const label = kind === 'bills' ? t('preHome.payBillsLabel', visual.label)
+    : kind === 'rewards' ? t('preHome.rewardsLabel', visual.label)
+      : visual.label;
+  return (
+    <LinearGradient colors={['#172D51', '#234677']} style={styles.visual}>
+      <View style={styles.visualHeader}>
+        <Text style={styles.visualBrand}>DizzitUp</Text>
+        <Ionicons name="sparkles-outline" size={18} color="#FFC759" />
+      </View>
+      <View style={styles.visualCard}>
+        <View style={styles.visualIcon}><Ionicons name={icon || visual.icon} size={42} color="#172D51" /></View>
+        <Text style={styles.visualLabel}>{label}</Text>
+        <View style={styles.visualDivider} />
+        <View style={styles.coinRow}>
+          {STABLECOINS.map(coin => (
+            <View key={coin.symbol} style={styles.coinChip}>
+              <Image source={coin.image} style={styles.coinIcon} resizeMode="contain" />
+              <Text style={styles.coinText}>{coin.symbol}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+      <View style={styles.visualBottom}><View style={styles.visualBottomLine} /><View style={styles.visualBottomLineShort} /></View>
+    </LinearGradient>
+  );
+}
 
 export default function PreHomeSlidesScreen({ profile = 'africanPersonal', onComplete }) {
   const { t } = useApp();
@@ -56,8 +101,9 @@ export default function PreHomeSlidesScreen({ profile = 'africanPersonal', onCom
   const [page, setPage] = useState(0);
   const content = CONTENT[profile] || CONTENT.africanPersonal;
   const slides = [
-    { id: 'overview', title: content.title, image: content.image, icon: 'sparkles-outline', benefits: content.benefits },
-    ...content.features.map(([key, title, body, icon, image]) => ({ id: key, title: [`${key}Title`, title], body: [`${key}Body`, body], icon, image })),
+    { id: 'overview', title: content.title, visual: content.visual, benefits: content.benefits },
+    ...content.features.map(([key, title, body, icon, visual]) => ({ id: key, title: [`${key}Title`, title], body: [`${key}Body`, body], icon, visual })),
+    { id: 'rewards', title: ['rewardsTitle', 'Earn DZY rewards'], body: ['rewardsBody', 'Earn DZY rewards as you use DizzitUp (pre-TGE).'], visual: 'rewards' },
   ];
   const translate = ([key, fallback]) => t(`preHome.${key}`, fallback);
   const next = () => {
@@ -81,8 +127,7 @@ export default function PreHomeSlidesScreen({ profile = 'africanPersonal', onCom
         {slides.map(slide => (
           <View key={slide.id} style={[styles.slide, { width }]}>
             <View style={styles.imageFrame}>
-              <Image source={slide.image} style={styles.image} resizeMode="contain" />
-              <View style={styles.iconBadge}><Ionicons name={slide.icon} size={21} color="#1A2840" /></View>
+              <SlideVisual kind={slide.visual} icon={slide.icon} t={t} />
             </View>
             <Text style={styles.audience}>{translate(content.label)}</Text>
             <Text style={styles.title}>{translate(slide.title)}</Text>
@@ -99,7 +144,7 @@ export default function PreHomeSlidesScreen({ profile = 'africanPersonal', onCom
       <View style={styles.footer}>
         <View style={styles.dots}>{slides.map((slide, index) => <View key={slide.id} style={[styles.dot, page === index && styles.activeDot]} />)}</View>
         <TouchableOpacity onPress={next} style={styles.button} accessibilityRole="button">
-          <Text style={styles.buttonText}>{page === slides.length - 1 ? t('preHome.getStarted', 'Get started') : t('preHome.next', 'Next')}</Text>
+          <Text style={styles.buttonText}>{page === slides.length - 1 ? t('preHome.explore', 'Explore DizzitUp') : t('preHome.next', 'Next')}</Text>
           <Ionicons name="arrow-forward" size={18} color="#FFC759" />
         </TouchableOpacity>
       </View>
@@ -113,9 +158,21 @@ const styles = StyleSheet.create({
   brand: { color: '#1A2840', fontSize: 18, fontFamily: 'SpaceGrotesk_700Bold' },
   skip: { color: '#64748B', fontSize: 13, fontFamily: 'Inter_600SemiBold', padding: 8 },
   slide: { flex: 1, paddingHorizontal: 28, alignItems: 'center', justifyContent: 'center', paddingBottom: 14 },
-  imageFrame: { width: '100%', height: '48%', maxHeight: 330, borderRadius: 24, overflow: 'hidden', backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', marginBottom: 24, elevation: 3, position: 'relative' },
-  image: { width: '100%', height: '100%' },
-  iconBadge: { position: 'absolute', bottom: 14, right: 14, width: 42, height: 42, borderRadius: 14, backgroundColor: '#FFC759', alignItems: 'center', justifyContent: 'center' },
+  imageFrame: { width: '100%', height: '48%', maxHeight: 330, borderRadius: 24, overflow: 'hidden', backgroundColor: '#172D51', justifyContent: 'center', alignItems: 'center', marginBottom: 24, elevation: 3 },
+  visual: { width: '100%', height: '100%', padding: 18, justifyContent: 'space-between' },
+  visualHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  visualBrand: { color: '#FFFFFF', fontSize: 15, fontFamily: 'SpaceGrotesk_700Bold' },
+  visualCard: { backgroundColor: '#FFFFFF', borderRadius: 22, paddingVertical: 20, paddingHorizontal: 14, alignItems: 'center', marginHorizontal: 12 },
+  visualIcon: { width: 72, height: 72, borderRadius: 22, backgroundColor: '#FFF3CF', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
+  visualLabel: { color: '#172D51', fontSize: 20, fontFamily: 'SpaceGrotesk_700Bold', textAlign: 'center' },
+  visualDivider: { height: 1, backgroundColor: '#E7EBF2', alignSelf: 'stretch', marginVertical: 16 },
+  coinRow: { flexDirection: 'row', justifyContent: 'center', gap: 8 },
+  coinChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#F4F7FA', borderRadius: 10, paddingHorizontal: 7, paddingVertical: 6 },
+  coinIcon: { width: 17, height: 17 },
+  coinText: { color: '#243956', fontSize: 10, fontFamily: 'Inter_700Bold' },
+  visualBottom: { flexDirection: 'row', gap: 6, alignSelf: 'center' },
+  visualBottomLine: { height: 4, width: 44, borderRadius: 2, backgroundColor: '#FFC759' },
+  visualBottomLineShort: { height: 4, width: 18, borderRadius: 2, backgroundColor: '#6786AD' },
   audience: { color: '#AE7813', fontSize: 11, letterSpacing: 1.2, fontFamily: 'Inter_700Bold', marginBottom: 10 },
   title: { color: '#1A2840', fontSize: 25, lineHeight: 31, textAlign: 'center', fontFamily: 'SpaceGrotesk_700Bold', marginBottom: 11 },
   body: { color: '#64748B', fontSize: 14, lineHeight: 22, textAlign: 'center', fontFamily: 'Inter_400Regular', maxWidth: 340 },

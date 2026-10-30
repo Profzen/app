@@ -6,7 +6,7 @@ import HomeScreen from './HomeScreen';
 import PreHomeSlidesScreen from './PreHomeSlidesScreen';
 import { ALL_COUNTRIES } from '../utils/countriesData';
 
-const INTRO_VERSION = 'v2';
+const INTRO_VERSION = 'v3';
 const AFRICAN_CODES = new Set('DZ AO BJ BW BF BI CV CM CF TD KM CD CG CI DJ EG GQ ER SZ ET GA GM GH GN GW KE LS LR LY MG MW ML MR MU YT MA MZ NA NE NG RE RW ST SN SC SL SO ZA SS SD TZ TG TN UG ZM ZW'.split(' '));
 
 function isAfricanCountry(value) {
@@ -47,7 +47,7 @@ export default function HomeEntryGate(props) {
   if (showIntro === null) {
     return <View style={styles.loading}><ActivityIndicator color="#1A2840" /></View>;
   }
-  if (showIntro) return <PreHomeSlidesScreen profile={profile} onComplete={completeIntro} />;
+  if (showIntro) return <PreHomeSlidesScreen key={profile} profile={profile} onComplete={completeIntro} />;
   return <HomeScreen {...props} />;
 }
 
