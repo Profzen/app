@@ -30,7 +30,7 @@ const CONTENT = {
     features: [
       ['africanShop', 'Pay and shop locally', 'Pay Bills, buy airtime and shop from local merchants.', 'bag-handle-outline', 'store'],
       ['africanWealth', 'Keep value in stablecoins', 'Manage USDC, USDT and EURC in your DZYwallet.', 'wallet-outline', 'wallet'],
-      ['africanReceive', 'Receive from family abroad', 'Receive support with no fees between family members.', 'people-outline', 'wallet'],
+      ['africanReceive', 'Receive from family abroad', 'Receive support from family abroad, with no DizzitUp fees between members.', 'people-outline', 'wallet'],
     ],
     visual: 'wallet',
   },
@@ -46,9 +46,9 @@ const CONTENT = {
   },
   globalBusiness: {
     label: ['globalBusinessLabel', 'GLOBAL BUSINESS'], title: ['globalBusinessTitle', 'Source from Africa with confidence'],
-    benefits: [['vettedBusinesses', 'Connect with African merchants and businesses.'], ['secureTerms', 'Choose the available payment method that suits you.']],
+    benefits: [['vettedBusinesses', 'Connect with African merchants and businesses.'], ['secureTerms', 'Pay with stablecoins or card, securely.']],
     features: [
-      ['globalSource', 'Find African partners', 'Discover merchants, freelancers and businesses in DZYstore.', 'search-outline', 'store'],
+      ['globalSource', 'Find African partners', 'Discover merchants, freelancers and businesses on DizzitUp.', 'search-outline', 'store'],
       ['globalBuy', 'Buy with confidence', 'Source products and services across Africa securely.', 'shield-checkmark-outline', 'store'],
       ['globalPay', 'Choose how to pay', 'Use the available payment method and terms that suit your purchase.', 'card-outline', 'wallet'],
     ],

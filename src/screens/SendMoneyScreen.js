@@ -144,6 +144,7 @@ export default function SendMoneyScreen() {
   const [apiRecipients, setApiRecipients] = useState([]);
   const [savedBeneficiaries, setSavedBeneficiaries] = useState([]);
   const [isSending, setIsSending] = useState(false);
+  const isSendBusy = isSending || txStatus === 'awaiting-approval' || isAuthorizing || sdkPromptOpen;
   const [errorMessage, setErrorMessage] = useState(null);
   const [isSearchingApi, setIsSearchingApi] = useState(false);
 
@@ -601,6 +602,7 @@ export default function SendMoneyScreen() {
   };
 
   const handleSend = async () => {
+    if (isSendBusy || approveInFlightRef.current) return;
     if (!amount || parseFloat(amount) <= 0) {
       setToast({ title: t('wallet.invalid_amount', 'Invalid amount'), message: t('common.wallet.amount_greater_zero', "Amount must be greater than zero") });
       return;
@@ -1422,13 +1424,13 @@ export default function SendMoneyScreen() {
               <TouchableOpacity
                 style={[
                   styles.sendCtaBtn,
-                  (isSending || !!sendValidationError || numAmount <= 0 || currentAvailableBalance <= 0 || !isWalletReady) && styles.sendCtaBtnDisabled
+                  (isSendBusy || !!sendValidationError || numAmount <= 0 || currentAvailableBalance <= 0 || !isWalletReady) && styles.sendCtaBtnDisabled
                 ]}
                 onPress={handleSend}
                 activeOpacity={0.88}
-                disabled={isSending || !!sendValidationError || numAmount <= 0 || currentAvailableBalance <= 0 || !isWalletReady}
+                disabled={isSendBusy || !!sendValidationError || numAmount <= 0 || currentAvailableBalance <= 0 || !isWalletReady}
               >
-                {isSending ? (
+                {isSendBusy ? (
                   <ActivityIndicator color="#FFFFFF" />
                 ) : (!isWalletReady && !!session) ? (
                   walletIdentity.reason ? (
