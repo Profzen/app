@@ -100,6 +100,7 @@ export default function SendMoneyScreen() {
   const approveInFlightRef = useRef(false);
   const approveCalledRef = useRef(false);
   const pollIntervalRef = useRef(null);
+  const completedTxRef = useRef(false);
 
   const stopPolling = () => {
     if (pollIntervalRef.current) {
@@ -144,7 +145,7 @@ export default function SendMoneyScreen() {
   const [apiRecipients, setApiRecipients] = useState([]);
   const [savedBeneficiaries, setSavedBeneficiaries] = useState([]);
   const [isSending, setIsSending] = useState(false);
-  const isSendBusy = isSending || txStatus === 'awaiting-approval' || isAuthorizing || sdkPromptOpen;
+  const isSendBusy = isSending || txStatus === 'awaiting-approval' || txStatus === 'processing' || isAuthorizing || sdkPromptOpen;
   const [errorMessage, setErrorMessage] = useState(null);
   const [isSearchingApi, setIsSearchingApi] = useState(false);
 
@@ -654,6 +655,7 @@ export default function SendMoneyScreen() {
     if (!isAuthenticated) return;
 
     approveCalledRef.current = false;
+    completedTxRef.current = false;
     setIsSending(true);
     setErrorMessage(null);
     try {
@@ -734,24 +736,16 @@ export default function SendMoneyScreen() {
                   const approved = await runSdkApproval(activeWallet, txId);
                   if (!approved) return; // another approval prompt is already handling this transfer
                   console.log('[SendMoneyScreen] SDK approval completed successfully');
-                  if (typeof refreshTransactions === 'function') refreshTransactions();
-                  if (typeof refreshUser === 'function') refreshUser();
-                  fetchLiveBalances();
-                  setTxStatus(null);
-                  navigation.navigate('SendMoneySuccessScreen', {
-                    amount,
-                    token,
-                    chain: blockchain,
-                    recipient: selectedRecipient ? formatRecipientDisplay(selectedRecipient) : searchQuery,
-                    recipientCountry: selectedRecipient?.country || selectedRecipient?.country_code || '',
-                    hash: txId,
-                    explorerUrl: getExplorerTxUrl(blockchain, txId),
-                    pivotScreen: route.params?.pivotScreen,
-                    pivotParams: route.params?.pivotParams,
-                  });
+                  // Signer approval is not on-chain completion. Keep the send
+                  // locked until the status poll confirms the transaction.
+                  if (!completedTxRef.current) {
+                    setTxStatus('processing');
+                    pollTransactionStatus(txId, authToken, DIZZY_URL);
+                  }
                   return;
                 }
               } catch (sdkErr) {
+                if (completedTxRef.current) return;
                 if (approveCalledRef.current) {
                   setTxStatus(null);
                   setIsAuthorizing(false);
@@ -851,6 +845,10 @@ export default function SendMoneyScreen() {
 
     stopPolling(); // never run two polling timers at once
     const interval = setInterval(async () => {
+      if (completedTxRef.current) {
+        clearInterval(interval);
+        return;
+      }
       if (isPolling) return;
       attempts++;
       isPolling = true;
@@ -889,10 +887,13 @@ export default function SendMoneyScreen() {
         }
 
         const checkRes = await res.json().catch(() => ({}));
+        if (completedTxRef.current) return;
         const crossStatus = (checkRes.crossmintStatus || checkRes.status || '').toLowerCase();
 
         if (checkRes.status === 'COMPLETED' || crossStatus === 'completed' || crossStatus === 'success') {
-          clearInterval(interval);
+          if (completedTxRef.current) return;
+          completedTxRef.current = true;
+          stopPolling();
           setTxStatus(null);
           setIsAuthorizing(false);
 
@@ -967,6 +968,9 @@ export default function SendMoneyScreen() {
         const data = await res.json().catch(() => ({}));
         const crossStatus = (data.crossmintStatus || data.status || '').toLowerCase();
         if (crossStatus === 'completed' || crossStatus === 'success') {
+          if (completedTxRef.current) return;
+          completedTxRef.current = true;
+          stopPolling();
           setTxStatus(null);
           setIsAuthorizing(false);
           if (typeof refreshTransactions === 'function') refreshTransactions();
@@ -1102,6 +1106,9 @@ export default function SendMoneyScreen() {
         const checkData = await checkRes.json().catch(() => ({}));
         const st = (checkData.crossmintStatus || checkData.status || '').toLowerCase();
         if (st === 'completed' || st === 'success') {
+          if (completedTxRef.current) return;
+          completedTxRef.current = true;
+          stopPolling();
           setTxStatus(null);
           setIsAuthorizing(false);
           if (typeof refreshTransactions === 'function') refreshTransactions();
@@ -1555,7 +1562,7 @@ export default function SendMoneyScreen() {
 
         {/* Full-Screen Sending Modal (Instant visual feedback & prevents double clicks) */}
         <Modal
-          visible={isSending}
+          visible={isSending || txStatus === 'processing'}
           transparent={true}
           animationType="fade"
           onRequestClose={() => { }}
