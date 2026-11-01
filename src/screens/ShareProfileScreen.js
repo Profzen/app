@@ -182,6 +182,12 @@ export default function ShareProfileScreen() {
 
   const handleShare = async () => {
     if (!isBusiness) {
+      await Clipboard.setStringAsync(shareCaption);
+      setToast({
+        title: t('common.copied', 'Link copied'),
+        message: t('shareProfile.copied', 'Profile details copied to clipboard.'),
+        type: 'success',
+      });
       const shareUrl = profile.storeUrl || profile.inviteUrl;
       await Share.share(
         Platform.OS === 'ios' && shareUrl
@@ -193,6 +199,15 @@ export default function ShareProfileScreen() {
 
     setIsSharing(true);
     try {
+      // Automatically copy caption to clipboard so it is immediately available
+      // on Instagram, Facebook and other apps where the OS share extension strips text attachments (Meta policy)
+      await Clipboard.setStringAsync(shareCaption);
+      setToast({
+        title: t('common.copied', 'Caption copied'),
+        message: t('shareProfile.captionCopied', 'Caption with your DZYstore link copied. Paste it in your post.'),
+        type: 'success',
+      });
+
       let imageUri = null;
       try {
         imageUri = await squareShotRef.current?.capture();
@@ -288,11 +303,14 @@ export default function ShareProfileScreen() {
         await MediaLibrary.Asset.create(imageUri);
       }
 
+      // Automatically copy caption to clipboard when saving image so user can paste it immediately
+      await Clipboard.setStringAsync(shareCaption);
+
       setToast({
         title: t('shareProfile.imageSavedTitle', 'Image saved'),
         message: format === 'story'
-          ? t('shareProfile.storySaved', 'Story image saved to your gallery.')
-          : t('shareProfile.squareSaved', 'Square image saved to your gallery.'),
+          ? `${t('shareProfile.storySaved', 'Story image saved to your gallery.')} ${t('shareProfile.captionCopied', 'Caption with your DZYstore link copied. Paste it in your post.')}`
+          : `${t('shareProfile.squareSaved', 'Square image saved to your gallery.')} ${t('shareProfile.captionCopied', 'Caption with your DZYstore link copied. Paste it in your post.')}`,
         type: 'success',
       });
     } catch (err) {
