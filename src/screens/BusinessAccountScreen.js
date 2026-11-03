@@ -63,6 +63,14 @@ export default function BusinessAccountScreen() {
               <Text style={styles.pageTitle}>{t('biz.title', 'Business Account')}</Text>
               <Text style={styles.pageSubtitle}>{t('biz.subtitle', 'Merchant Profile & Mode Switcher')}</Text>
             </View>
+            <TouchableOpacity
+              style={styles.headerShareButton}
+              onPress={() => navigation.navigate('ShareProfileScreen')}
+              accessibilityRole="button"
+              accessibilityLabel={t('shareProfile.title', 'Share my DizzitUp profile')}
+            >
+              <Ionicons name="share-social-outline" size={20} color="#1A2840" />
+            </TouchableOpacity>
           </View>
 
           {/* Account Mode Switcher */}
@@ -250,6 +258,17 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, },
   backButton: { paddingRight: 14, paddingVertical: 4 },
   headerTitleContainer: { flex: 1 },
+  headerShareButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
   pageTitle: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 22, color: '#1A2840' },
   pageSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#6B7280', marginTop: 2 },
   sectionHeader: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: 11, color: '#9CA3AF', letterSpacing: 0.8, marginTop: 14, marginBottom: 8, marginLeft: 4 },

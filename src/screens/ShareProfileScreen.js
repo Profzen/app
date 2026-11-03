@@ -361,13 +361,26 @@ export default function ShareProfileScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} accessibilityLabel="Retour">
               <Ionicons name="arrow-back" size={22} color="#1A2840" />
             </TouchableOpacity>
             <View style={{ flex: 1 }}>
               <Text style={styles.title} maxFontSizeMultiplier={1.3}>{t('shareProfile.title', 'Share my DizzitUp profile')}</Text>
               <Text style={styles.subtitle} maxFontSizeMultiplier={1.3}>{t('shareProfile.subtitle', 'Help people identify you before they pay or send funds.')}</Text>
             </View>
+            <TouchableOpacity
+              onPress={handleShare}
+              disabled={isSharing}
+              style={[styles.headerShareBtn, isSharing && { opacity: 0.6 }]}
+              accessibilityRole="button"
+              accessibilityLabel={t('shareProfile.share', 'Share profile')}
+            >
+              {isSharing ? (
+                <ActivityIndicator size="small" color="#1A2840" />
+              ) : (
+                <Ionicons name="share-social-outline" size={20} color="#1A2840" />
+              )}
+            </TouchableOpacity>
           </View>
           <View style={styles.card}>
             {renderAvatar()}
@@ -592,6 +605,17 @@ const styles = StyleSheet.create({
   scrollContent: { paddingHorizontal: isSmallScreen ? 14 : 18, paddingTop: 10, paddingBottom: 16 },
   header: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: isSmallScreen ? 12 : 18 },
   backBtn: { width: 42, height: 42, borderRadius: 14, backgroundColor: '#FFF', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  headerShareBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: '#FFF',
+    borderWidth: 1,
+    borderColor: '#E8EDF4',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 10,
+  },
   title: { fontFamily: 'SpaceGrotesk_700Bold', fontSize: isSmallScreen ? 20 : 22, color: '#1A2840' },
   subtitle: { fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 18, color: '#64748B', marginTop: 3 },
   card: { backgroundColor: '#FFF', borderRadius: 20, padding: isSmallScreen ? 14 : 18, alignItems: 'center', borderWidth: 1, borderColor: '#E8EDF4', marginBottom: 10 },
